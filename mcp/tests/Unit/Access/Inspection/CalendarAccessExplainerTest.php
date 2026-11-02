@@ -12,9 +12,9 @@ use OCA\Mcp\Db\ResourceScopeMapper;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Access\Inspection\CalendarAccessExplainer as E;
-use OCA\Mcp\Tools\Calendar\CalendarAccess;
-use OCA\Mcp\Tools\Calendar\CalendarException;
-use OCA\Mcp\Tools\Calendar\ScopedCalendarAccess;
+use OCA\Mcp\Modules\Calendar\Locating\CalendarAccess;
+use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
+use OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

@@ -44,7 +44,7 @@ final class WritePlanContractTest extends TestCase {
 			\OCA\Mcp\Tools\Talk\TalkModule::class => TalkPlanRendererTest::class,
 			\OCA\Mcp\Tools\Contacts\ContactsModule::class => ContactsPlanRendererTest::class,
 			\OCA\Mcp\Tools\Tasks\TasksModule::class => TasksPlanRendererTest::class,
-			\OCA\Mcp\Tools\Calendar\CalendarModule::class => CalendarApprovalTest::class,
+			\OCA\Mcp\Modules\Calendar\CalendarModule::class => CalendarApprovalTest::class,
 			\OCA\Mcp\Tools\Mail\MailModule::class => MailPlanRendererTest::class,
 			\OCA\Mcp\Tools\Tables\TablesModule::class => TablesPlanRendererTest::class,
 			\OCA\Mcp\Tools\Forms\FormsModule::class => \OCA\Mcp\Tests\Unit\Tools\Forms\Creation\CreatePlanRendererTest::class,

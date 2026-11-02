@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 
 use OCA\Mcp\Tests\Unit\Tools\Calendar\FakeCalendarDav;
-use OCA\Mcp\Tools\Calendar\CalendarDav;
-use OCA\Mcp\Tools\Calendar\DavResult;
+use OCA\Mcp\Modules\Calendar\Writing\CalendarDav;
+use OCA\Mcp\Modules\Calendar\Writing\DavResult;
 
 /**
  * CalendarDav of the Calendar and Tasks effect contracts: every request goes unchanged to {@see FakeCalendarDav}, so

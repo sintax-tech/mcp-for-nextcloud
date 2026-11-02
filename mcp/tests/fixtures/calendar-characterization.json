@@ -1,0 +1,2341 @@
+{
+    "list calendars": [
+        {
+            "step": "call calendar_list_calendars",
+            "arguments": [],
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "[\n    {\n        \"name\": \"Pessoal\",\n        \"path\": \"/remote.php/dav/calendars/alice/personal/\",\n        \"owner\": \"alice\",\n        \"writable\": true\n    },\n    {\n        \"name\": \"Trabalho\",\n        \"path\": \"/remote.php/dav/calendars/alice/work/\",\n        \"owner\": \"alice\",\n        \"writable\": true\n    },\n    {\n        \"name\": \"Equipe (bob)\",\n        \"path\": \"/remote.php/dav/calendars/alice/team_shared_by_bob/\",\n        \"owner\": \"bob\",\n        \"writable\": true\n    },\n    {\n        \"name\": \"Outra (bob)\",\n        \"path\": \"/remote.php/dav/calendars/alice/other_shared_by_bob/\",\n        \"owner\": \"bob\",\n        \"writable\": true\n    }\n]"
+                        }
+                    ]
+                }
+            },
+            "dav": []
+        },
+        {
+            "state": {
+                "objects": {
+                    "1": {
+                        "evt-a.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-a\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:A\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-g.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-g\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:G\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-r.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-r\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:R\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nRRULE:FREQ=WEEKLY;COUNT=3\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": {
+                        "evt-t.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-t\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:T\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "4": []
+                },
+                "trash": [],
+                "scheduled": []
+            }
+        }
+    ],
+    "list events": [
+        {
+            "step": "call calendar_list_events",
+            "arguments": {
+                "from": "2026-09-01",
+                "to": "2026-12-31"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "[\n    {\n        \"uid\": \"evt-a\",\n        \"summary\": \"A\",\n        \"start\": \"2026-10-01T12:00:00.000Z\",\n        \"end\": \"2026-10-01T13:00:00.000Z\",\n        \"location\": \"\",\n        \"allDay\": false,\n        \"calendar\": \"/remote.php/dav/calendars/alice/personal/\"\n    },\n    {\n        \"uid\": \"evt-g\",\n        \"summary\": \"G\",\n        \"start\": \"2026-10-01T12:00:00.000Z\",\n        \"end\": \"2026-10-01T13:00:00.000Z\",\n        \"location\": \"\",\n        \"allDay\": false,\n        \"calendar\": \"/remote.php/dav/calendars/alice/personal/\"\n    },\n    {\n        \"uid\": \"evt-r\",\n        \"summary\": \"R\",\n        \"start\": \"2026-10-01T12:00:00.000Z\",\n        \"end\": \"2026-10-01T13:00:00.000Z\",\n        \"location\": \"\",\n        \"allDay\": false,\n        \"calendar\": \"/remote.php/dav/calendars/alice/personal/\"\n    },\n    {\n        \"uid\": \"evt-r\",\n        \"summary\": \"R\",\n        \"start\": \"2026-10-08T12:00:00.000Z\",\n        \"end\": \"2026-10-08T13:00:00.000Z\",\n        \"location\": \"\",\n        \"allDay\": false,\n        \"calendar\": \"/remote.php/dav/calendars/alice/personal/\"\n    },\n    {\n        \"uid\": \"evt-r\",\n        \"summary\": \"R\",\n        \"start\": \"2026-10-15T12:00:00.000Z\",\n        \"end\": \"2026-10-15T13:00:00.000Z\",\n        \"location\": \"\",\n        \"allDay\": false,\n        \"calendar\": \"/remote.php/dav/calendars/alice/personal/\"\n    },\n    {\n        \"uid\": \"evt-t\",\n        \"summary\": \"T\",\n        \"start\": \"2026-10-01T12:00:00.000Z\",\n        \"end\": \"2026-10-01T13:00:00.000Z\",\n        \"location\": \"\",\n        \"allDay\": false,\n        \"calendar\": \"/remote.php/dav/calendars/alice/team_shared_by_bob/\"\n    }\n]"
+                        }
+                    ]
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_list_events",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "from": "2026-09-01",
+                "to": "2026-12-31"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "[\n    {\n        \"uid\": \"evt-a\",\n        \"summary\": \"A\",\n        \"start\": \"2026-10-01T12:00:00.000Z\",\n        \"end\": \"2026-10-01T13:00:00.000Z\",\n        \"location\": \"\",\n        \"allDay\": false,\n        \"calendar\": \"/remote.php/dav/calendars/alice/personal/\"\n    },\n    {\n        \"uid\": \"evt-g\",\n        \"summary\": \"G\",\n        \"start\": \"2026-10-01T12:00:00.000Z\",\n        \"end\": \"2026-10-01T13:00:00.000Z\",\n        \"location\": \"\",\n        \"allDay\": false,\n        \"calendar\": \"/remote.php/dav/calendars/alice/personal/\"\n    },\n    {\n        \"uid\": \"evt-r\",\n        \"summary\": \"R\",\n        \"start\": \"2026-10-01T12:00:00.000Z\",\n        \"end\": \"2026-10-01T13:00:00.000Z\",\n        \"location\": \"\",\n        \"allDay\": false,\n        \"calendar\": \"/remote.php/dav/calendars/alice/personal/\"\n    },\n    {\n        \"uid\": \"evt-r\",\n        \"summary\": \"R\",\n        \"start\": \"2026-10-08T12:00:00.000Z\",\n        \"end\": \"2026-10-08T13:00:00.000Z\",\n        \"location\": \"\",\n        \"allDay\": false,\n        \"calendar\": \"/remote.php/dav/calendars/alice/personal/\"\n    },\n    {\n        \"uid\": \"evt-r\",\n        \"summary\": \"R\",\n        \"start\": \"2026-10-15T12:00:00.000Z\",\n        \"end\": \"2026-10-15T13:00:00.000Z\",\n        \"location\": \"\",\n        \"allDay\": false,\n        \"calendar\": \"/remote.php/dav/calendars/alice/personal/\"\n    }\n]"
+                        }
+                    ]
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_list_events",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/nope/"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Calendar or event not found."
+                        }
+                    ],
+                    "isError": true
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_list_events",
+            "arguments": {
+                "from": "not a date"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Modules\\Calendar\\Failures\\CalendarArgumentException",
+                        "message": "Invalid ISO date in from.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": []
+        },
+        {
+            "state": {
+                "objects": {
+                    "1": {
+                        "evt-a.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-a\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:A\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-g.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-g\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:G\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-r.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-r\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:R\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nRRULE:FREQ=WEEKLY;COUNT=3\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": {
+                        "evt-t.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-t\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:T\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "4": []
+                },
+                "trash": [],
+                "scheduled": []
+            }
+        }
+    ],
+    "create": [
+        {
+            "step": "preview calendar_create_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "summary": "Reunião",
+                "start": "2026-10-02T09:00:00Z",
+                "end": "2026-10-02T10:00:00Z"
+            },
+            "outcome": {
+                "result": {
+                    "requiresConfirmation": true,
+                    "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                    "action": "calendar_create_event",
+                    "calendar": {
+                        "id": 1,
+                        "uri": "personal",
+                        "name": "Pessoal",
+                        "ownerId": "alice",
+                        "ownerPrincipal": "principals/users/alice",
+                        "writable": true,
+                        "path": "/remote.php/dav/calendars/alice/personal/"
+                    },
+                    "destination": null,
+                    "uid": null,
+                    "etag": null,
+                    "before": null,
+                    "after": {
+                        "summary": "Reunião",
+                        "location": "",
+                        "description": "",
+                        "start": "2026-10-02T09:00:00+00:00",
+                        "end": "2026-10-02T10:00:00+00:00",
+                        "allDay": false,
+                        "timeZone": null,
+                        "attendees": [],
+                        "organizer": null,
+                        "recurring": false
+                    },
+                    "participants": {
+                        "current": [],
+                        "proposed": [],
+                        "added": [],
+                        "removed": [],
+                        "names": []
+                    },
+                    "recoverable": false,
+                    "consequence": null,
+                    "scheduling": {
+                        "requested": false,
+                        "imipEnabled": true,
+                        "participantsNotified": false,
+                        "message": "No invitations or cancellations will be scheduled in this change.",
+                        "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                    },
+                    "timezone": "UTC",
+                    "shared": [],
+                    "warnings": [],
+                    "sharedCalendars": [],
+                    "suggestedCalendar": null
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_create_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "confirm": true,
+                "summary": "Reunião",
+                "start": "2026-10-02T09:00:00Z",
+                "end": "2026-10-02T10:00:00Z"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"UUID-1\",\n    \"summary\": \"Reunião\",\n    \"start\": \"2026-10-02T09:00:00.000Z\",\n    \"end\": \"2026-10-02T10:00:00.000Z\",\n    \"location\": \"\",\n    \"allDay\": false,\n    \"calendar\": \"/remote.php/dav/calendars/alice/personal/\",\n    \"etag\": \"\\\"MD5-1\\\"\",\n    \"scheduling\": {\n        \"requested\": false,\n        \"imipEnabled\": true,\n        \"message\": \"no invitations were scheduled\"\n    }\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                {
+                    "operation": "put",
+                    "calendar": "personal",
+                    "object": "UUID-1.ics",
+                    "ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:UUID-1\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART:20261002T090000Z\r\nDTEND:20261002T100000Z\r\nSUMMARY:Reunião\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                    "scheduling": false
+                }
+            ]
+        },
+        {
+            "step": "call calendar_create_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "confirm": true,
+                "attendees": [
+                    "bob"
+                ],
+                "send_invitations": true,
+                "summary": "Reunião",
+                "start": "2026-10-02T09:00:00Z",
+                "end": "2026-10-02T10:00:00Z"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"UUID-2\",\n    \"summary\": \"Reunião\",\n    \"start\": \"2026-10-02T09:00:00.000Z\",\n    \"end\": \"2026-10-02T10:00:00.000Z\",\n    \"location\": \"\",\n    \"allDay\": false,\n    \"calendar\": \"/remote.php/dav/calendars/alice/personal/\",\n    \"etag\": \"\\\"MD5-2\\\"\",\n    \"scheduling\": {\n        \"requested\": true,\n        \"imipEnabled\": true,\n        \"message\": \"invitation delivered to Nextcloud scheduling\",\n        \"participants\": [\n            {\n                \"email\": \"mailto:bob@example.invalid\",\n                \"scheduleStatus\": null,\n                \"meaning\": \"no delivery record\"\n            }\n        ]\n    }\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                {
+                    "operation": "put",
+                    "calendar": "personal",
+                    "object": "UUID-2.ics",
+                    "ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:UUID-2\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART:20261002T090000Z\r\nDTEND:20261002T100000Z\r\nSUMMARY:Reunião\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT\r\n =NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                    "scheduling": true
+                }
+            ]
+        },
+        {
+            "step": "preview calendar_create_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "start": "x",
+                "summary": "Reunião",
+                "end": "2026-10-02T10:00:00Z"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Modules\\Calendar\\Failures\\CalendarArgumentException",
+                        "message": "Invalid ISO date in start.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_create_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "confirm": true,
+                "start": "x",
+                "summary": "Reunião",
+                "end": "2026-10-02T10:00:00Z"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Modules\\Calendar\\Failures\\CalendarArgumentException",
+                        "message": "Invalid ISO date in start.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_create_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/nope/",
+                "confirm": true,
+                "summary": "Reunião",
+                "start": "2026-10-02T09:00:00Z",
+                "end": "2026-10-02T10:00:00Z"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Calendar or event not found."
+                        }
+                    ],
+                    "isError": true
+                }
+            },
+            "dav": []
+        },
+        {
+            "state": {
+                "objects": {
+                    "1": {
+                        "evt-a.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-a\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:A\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-g.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-g\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:G\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-r.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-r\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:R\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nRRULE:FREQ=WEEKLY;COUNT=3\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "UUID-1.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:UUID-1\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART:20261002T090000Z\r\nDTEND:20261002T100000Z\r\nSUMMARY:Reunião\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "UUID-2.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:UUID-2\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART:20261002T090000Z\r\nDTEND:20261002T100000Z\r\nSUMMARY:Reunião\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT\r\n =NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": {
+                        "evt-t.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-t\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:T\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "4": []
+                },
+                "trash": [],
+                "scheduled": []
+            }
+        }
+    ],
+    "create shared": [
+        {
+            "step": "preview calendar_create_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "summary": "Reunião",
+                "start": "2026-10-02T09:00:00Z",
+                "end": "2026-10-02T10:00:00Z"
+            },
+            "outcome": {
+                "result": {
+                    "requiresConfirmation": true,
+                    "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                    "action": "calendar_create_event",
+                    "calendar": {
+                        "id": 3,
+                        "uri": "team_shared_by_bob",
+                        "name": "Equipe (bob)",
+                        "ownerId": "bob",
+                        "ownerPrincipal": "principals/users/bob",
+                        "writable": true,
+                        "path": "/remote.php/dav/calendars/alice/team_shared_by_bob/"
+                    },
+                    "destination": null,
+                    "uid": null,
+                    "etag": null,
+                    "before": null,
+                    "after": {
+                        "summary": "Reunião",
+                        "location": "",
+                        "description": "",
+                        "start": "2026-10-02T09:00:00+00:00",
+                        "end": "2026-10-02T10:00:00+00:00",
+                        "allDay": false,
+                        "timeZone": null,
+                        "attendees": [],
+                        "organizer": null,
+                        "recurring": false
+                    },
+                    "participants": {
+                        "current": [],
+                        "proposed": [],
+                        "added": [],
+                        "removed": [],
+                        "names": []
+                    },
+                    "recoverable": false,
+                    "consequence": null,
+                    "scheduling": {
+                        "requested": false,
+                        "imipEnabled": true,
+                        "participantsNotified": false,
+                        "message": "No invitations or cancellations will be scheduled in this change.",
+                        "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                    },
+                    "timezone": "UTC",
+                    "shared": [
+                        {
+                            "requiresConfirmation": true,
+                            "scope": "shared",
+                            "owner": "bob",
+                            "ownerDisplayName": "Roberto Almeida",
+                            "resource": "Equipe (bob)",
+                            "message": "The calendar 'Equipe (bob)' belongs to Roberto Almeida and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true."
+                        }
+                    ],
+                    "warnings": [],
+                    "sharedCalendars": [],
+                    "suggestedCalendar": null
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_create_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "confirm": true,
+                "summary": "Reunião",
+                "start": "2026-10-02T09:00:00Z",
+                "end": "2026-10-02T10:00:00Z"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "The plan changes a shared calendar belonging to someone else. Execution also requires confirm_shared: true."
+                        }
+                    ],
+                    "isError": true
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_create_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "confirm": true,
+                "confirm_shared": true,
+                "summary": "Reunião",
+                "start": "2026-10-02T09:00:00Z",
+                "end": "2026-10-02T10:00:00Z"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"UUID-3\",\n    \"summary\": \"Reunião\",\n    \"start\": \"2026-10-02T09:00:00.000Z\",\n    \"end\": \"2026-10-02T10:00:00.000Z\",\n    \"location\": \"\",\n    \"allDay\": false,\n    \"calendar\": \"/remote.php/dav/calendars/alice/team_shared_by_bob/\",\n    \"etag\": \"\\\"MD5-3\\\"\",\n    \"scheduling\": {\n        \"requested\": false,\n        \"imipEnabled\": true,\n        \"message\": \"no invitations were scheduled\"\n    }\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                {
+                    "operation": "put",
+                    "calendar": "team_shared_by_bob",
+                    "object": "UUID-3.ics",
+                    "ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:UUID-3\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART:20261002T090000Z\r\nDTEND:20261002T100000Z\r\nSUMMARY:Reunião\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                    "scheduling": false
+                }
+            ]
+        },
+        {
+            "state": {
+                "objects": {
+                    "1": {
+                        "evt-a.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-a\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:A\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-g.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-g\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:G\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-r.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-r\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:R\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nRRULE:FREQ=WEEKLY;COUNT=3\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": {
+                        "evt-t.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-t\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:T\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "UUID-3.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:UUID-3\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART:20261002T090000Z\r\nDTEND:20261002T100000Z\r\nSUMMARY:Reunião\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "4": []
+                },
+                "trash": [],
+                "scheduled": []
+            }
+        }
+    ],
+    "update": [
+        {
+            "step": "preview calendar_update_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-a",
+                "summary": "A2"
+            },
+            "outcome": {
+                "result": {
+                    "requiresConfirmation": true,
+                    "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                    "action": "calendar_update_event",
+                    "calendar": {
+                        "id": 1,
+                        "uri": "personal",
+                        "name": "Pessoal",
+                        "ownerId": "alice",
+                        "ownerPrincipal": "principals/users/alice",
+                        "writable": true,
+                        "path": "/remote.php/dav/calendars/alice/personal/"
+                    },
+                    "destination": null,
+                    "uid": "evt-a",
+                    "etag": "\"MD5-4\"",
+                    "before": {
+                        "summary": "A",
+                        "location": "",
+                        "description": "",
+                        "start": "2026-10-01T12:00:00+00:00",
+                        "end": "2026-10-01T13:00:00+00:00",
+                        "allDay": false,
+                        "timeZone": null,
+                        "attendees": [],
+                        "organizer": null,
+                        "recurring": false
+                    },
+                    "after": {
+                        "summary": "A2",
+                        "location": "",
+                        "description": "",
+                        "start": "2026-10-01T12:00:00+00:00",
+                        "end": "2026-10-01T13:00:00+00:00",
+                        "allDay": false,
+                        "timeZone": null,
+                        "attendees": [],
+                        "organizer": null,
+                        "recurring": false
+                    },
+                    "participants": {
+                        "current": [],
+                        "proposed": [],
+                        "added": [],
+                        "removed": [],
+                        "names": []
+                    },
+                    "recoverable": false,
+                    "consequence": null,
+                    "scheduling": {
+                        "requested": false,
+                        "imipEnabled": true,
+                        "participantsNotified": false,
+                        "message": "No invitations or cancellations will be scheduled in this change.",
+                        "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                    },
+                    "timezone": "UTC",
+                    "shared": [],
+                    "warnings": [],
+                    "sharedCalendars": [],
+                    "suggestedCalendar": null
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_update_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-a",
+                "summary": "A2",
+                "confirm": true,
+                "etag": "\"stale\""
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Conflict: the event was changed by another person (etag diverged)."
+                        }
+                    ],
+                    "isError": true
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_update_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-a",
+                "summary": "A2",
+                "location": "Sala",
+                "confirm": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"evt-a\",\n    \"summary\": \"A2\",\n    \"start\": \"2026-10-01T12:00:00.000Z\",\n    \"end\": \"2026-10-01T13:00:00.000Z\",\n    \"location\": \"Sala\",\n    \"allDay\": false,\n    \"calendar\": \"/remote.php/dav/calendars/alice/personal/\",\n    \"etag\": \"\\\"MD5-5\\\"\",\n    \"scheduling\": {\n        \"requested\": false,\n        \"imipEnabled\": true,\n        \"message\": \"no invitations were scheduled\"\n    }\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                {
+                    "operation": "update",
+                    "calendar": "personal",
+                    "object": "evt-a.ics",
+                    "etag": "\"MD5-4\"",
+                    "ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-a\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSUMMARY:A2\r\nLOCATION:Sala\r\nSEQUENCE:1\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                    "scheduling": false
+                }
+            ]
+        },
+        {
+            "step": "call calendar_update_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/nope/",
+                "uid": "evt-a",
+                "confirm": true
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Modules\\Calendar\\Failures\\CalendarArgumentException",
+                        "message": "Provide at least one field to change.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_update_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-r",
+                "start": "2026-10-05T09:00:00Z",
+                "confirm": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Conflict: changing dates of a recurring series is not supported."
+                        }
+                    ],
+                    "isError": true
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_update_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-r",
+                "attendees": [
+                    "bob"
+                ],
+                "confirm": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "attendees cannot be changed in a recurring series."
+                        }
+                    ],
+                    "isError": true
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_update_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-a",
+                "allDay": true,
+                "confirm": true
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Modules\\Calendar\\Failures\\CalendarArgumentException",
+                        "message": "Provide start and end when changing allDay.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_update_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-g",
+                "attendees": [],
+                "send_invitations": true,
+                "confirm": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"evt-g\",\n    \"summary\": \"G\",\n    \"start\": \"2026-10-01T12:00:00.000Z\",\n    \"end\": \"2026-10-01T13:00:00.000Z\",\n    \"location\": \"\",\n    \"allDay\": false,\n    \"calendar\": \"/remote.php/dav/calendars/alice/personal/\",\n    \"etag\": \"\\\"MD5-6\\\"\",\n    \"scheduling\": {\n        \"requested\": true,\n        \"imipEnabled\": true,\n        \"message\": \"invitation delivered to Nextcloud scheduling\"\n    }\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                {
+                    "operation": "update",
+                    "calendar": "personal",
+                    "object": "evt-g.ics",
+                    "etag": "\"MD5-7\"",
+                    "ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-g\r\nSUMMARY:G\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nSEQUENCE:1\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                    "scheduling": true
+                }
+            ]
+        },
+        {
+            "state": {
+                "objects": {
+                    "1": {
+                        "evt-a.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-a\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSUMMARY:A2\r\nLOCATION:Sala\r\nSEQUENCE:1\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-g.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-g\r\nSUMMARY:G\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nSEQUENCE:1\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-r.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-r\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:R\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nRRULE:FREQ=WEEKLY;COUNT=3\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": {
+                        "evt-t.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-t\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:T\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "4": []
+                },
+                "trash": [],
+                "scheduled": [
+                    "PUT evt-g: "
+                ]
+            }
+        }
+    ],
+    "update shared": [
+        {
+            "step": "preview calendar_update_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "uid": "evt-t",
+                "summary": "T2"
+            },
+            "outcome": {
+                "result": {
+                    "requiresConfirmation": true,
+                    "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                    "action": "calendar_update_event",
+                    "calendar": {
+                        "id": 3,
+                        "uri": "team_shared_by_bob",
+                        "name": "Equipe (bob)",
+                        "ownerId": "bob",
+                        "ownerPrincipal": "principals/users/bob",
+                        "writable": true,
+                        "path": "/remote.php/dav/calendars/alice/team_shared_by_bob/"
+                    },
+                    "destination": null,
+                    "uid": "evt-t",
+                    "etag": "\"MD5-8\"",
+                    "before": {
+                        "summary": "T",
+                        "location": "",
+                        "description": "",
+                        "start": "2026-10-01T12:00:00+00:00",
+                        "end": "2026-10-01T13:00:00+00:00",
+                        "allDay": false,
+                        "timeZone": null,
+                        "attendees": [],
+                        "organizer": null,
+                        "recurring": false
+                    },
+                    "after": {
+                        "summary": "T2",
+                        "location": "",
+                        "description": "",
+                        "start": "2026-10-01T12:00:00+00:00",
+                        "end": "2026-10-01T13:00:00+00:00",
+                        "allDay": false,
+                        "timeZone": null,
+                        "attendees": [],
+                        "organizer": null,
+                        "recurring": false
+                    },
+                    "participants": {
+                        "current": [],
+                        "proposed": [],
+                        "added": [],
+                        "removed": [],
+                        "names": []
+                    },
+                    "recoverable": false,
+                    "consequence": null,
+                    "scheduling": {
+                        "requested": false,
+                        "imipEnabled": true,
+                        "participantsNotified": false,
+                        "message": "No invitations or cancellations will be scheduled in this change.",
+                        "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                    },
+                    "timezone": "UTC",
+                    "shared": [
+                        {
+                            "requiresConfirmation": true,
+                            "scope": "shared",
+                            "owner": "bob",
+                            "ownerDisplayName": "Roberto Almeida",
+                            "resource": "Equipe (bob)",
+                            "message": "The calendar 'Equipe (bob)' belongs to Roberto Almeida and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true."
+                        }
+                    ],
+                    "warnings": [],
+                    "sharedCalendars": [],
+                    "suggestedCalendar": null
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_update_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "uid": "evt-t",
+                "summary": "T2",
+                "confirm": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "The plan changes a shared calendar belonging to someone else. Execution also requires confirm_shared: true."
+                        }
+                    ],
+                    "isError": true
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_update_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "uid": "evt-t",
+                "summary": "T2",
+                "confirm": true,
+                "confirm_shared": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"evt-t\",\n    \"summary\": \"T2\",\n    \"start\": \"2026-10-01T12:00:00.000Z\",\n    \"end\": \"2026-10-01T13:00:00.000Z\",\n    \"location\": \"\",\n    \"allDay\": false,\n    \"calendar\": \"/remote.php/dav/calendars/alice/team_shared_by_bob/\",\n    \"etag\": \"\\\"MD5-9\\\"\",\n    \"scheduling\": {\n        \"requested\": false,\n        \"imipEnabled\": true,\n        \"message\": \"no invitations were scheduled\"\n    }\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                {
+                    "operation": "update",
+                    "calendar": "team_shared_by_bob",
+                    "object": "evt-t.ics",
+                    "etag": "\"MD5-8\"",
+                    "ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-t\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSUMMARY:T2\r\nSEQUENCE:1\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                    "scheduling": false
+                }
+            ]
+        },
+        {
+            "state": {
+                "objects": {
+                    "1": {
+                        "evt-a.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-a\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:A\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-g.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-g\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:G\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-r.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-r\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:R\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nRRULE:FREQ=WEEKLY;COUNT=3\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": {
+                        "evt-t.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-t\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSUMMARY:T2\r\nSEQUENCE:1\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "4": []
+                },
+                "trash": [],
+                "scheduled": []
+            }
+        }
+    ],
+    "move": [
+        {
+            "step": "preview calendar_move_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-a",
+                "targetCalendar": "/remote.php/dav/calendars/alice/work/"
+            },
+            "outcome": {
+                "result": {
+                    "requiresConfirmation": true,
+                    "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                    "action": "calendar_move_event",
+                    "calendar": {
+                        "id": 1,
+                        "uri": "personal",
+                        "name": "Pessoal",
+                        "ownerId": "alice",
+                        "ownerPrincipal": "principals/users/alice",
+                        "writable": true,
+                        "path": "/remote.php/dav/calendars/alice/personal/"
+                    },
+                    "destination": {
+                        "id": 2,
+                        "uri": "work",
+                        "name": "Trabalho",
+                        "ownerId": "alice",
+                        "ownerPrincipal": "principals/users/alice",
+                        "writable": true,
+                        "path": "/remote.php/dav/calendars/alice/work/"
+                    },
+                    "uid": "evt-a",
+                    "etag": "\"MD5-4\"",
+                    "before": {
+                        "summary": "A",
+                        "location": "",
+                        "description": "",
+                        "start": "2026-10-01T12:00:00+00:00",
+                        "end": "2026-10-01T13:00:00+00:00",
+                        "allDay": false,
+                        "timeZone": null,
+                        "attendees": [],
+                        "organizer": null,
+                        "recurring": false
+                    },
+                    "after": {
+                        "summary": "A",
+                        "location": "",
+                        "description": "",
+                        "start": "2026-10-01T12:00:00+00:00",
+                        "end": "2026-10-01T13:00:00+00:00",
+                        "allDay": false,
+                        "timeZone": null,
+                        "attendees": [],
+                        "organizer": null,
+                        "recurring": false
+                    },
+                    "participants": {
+                        "current": [],
+                        "proposed": [],
+                        "added": [],
+                        "removed": [],
+                        "names": []
+                    },
+                    "recoverable": false,
+                    "consequence": null,
+                    "scheduling": {
+                        "requested": false,
+                        "imipEnabled": true,
+                        "participantsNotified": false,
+                        "message": "Event attendees are not notified, just like when moving in the Calendar app.",
+                        "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                    },
+                    "timezone": "UTC",
+                    "shared": [],
+                    "warnings": [],
+                    "sharedCalendars": [],
+                    "suggestedCalendar": null
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_move_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-a",
+                "targetCalendar": "/remote.php/dav/calendars/alice/personal/",
+                "confirm": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Conflict: source and destination are the same calendar."
+                        }
+                    ],
+                    "isError": true
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_move_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-a",
+                "targetCalendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "confirm": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "The calendars have different owners; use calendar_transfer_event."
+                        }
+                    ],
+                    "isError": true
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_move_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-a",
+                "targetCalendar": "/remote.php/dav/calendars/alice/work/",
+                "etag": "\"stale\"",
+                "confirm": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Conflict: the event was changed by another person (etag diverged)."
+                        }
+                    ],
+                    "isError": true
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_move_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-a",
+                "targetCalendar": "/remote.php/dav/calendars/alice/work/",
+                "confirm": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"evt-a\",\n    \"etag\": \"\\\"MD5-4\\\"\",\n    \"from\": \"/remote.php/dav/calendars/alice/personal/\",\n    \"to\": \"/remote.php/dav/calendars/alice/work/\",\n    \"participantsNotified\": false,\n    \"note\": \"Event attendees are not notified, just like when moving in the Calendar app.\"\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                {
+                    "operation": "move",
+                    "calendar": "personal",
+                    "object": "evt-a.ics",
+                    "target": "work",
+                    "etag": "\"MD5-4\""
+                }
+            ]
+        },
+        {
+            "step": "call calendar_move_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/work/",
+                "uid": "evt-a",
+                "targetCalendar": "/remote.php/dav/calendars/alice/nope/",
+                "confirm": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Calendar or event not found."
+                        }
+                    ],
+                    "isError": true
+                }
+            },
+            "dav": []
+        },
+        {
+            "state": {
+                "objects": {
+                    "1": {
+                        "evt-g.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-g\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:G\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-r.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-r\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:R\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nRRULE:FREQ=WEEKLY;COUNT=3\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": {
+                        "evt-a.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-a\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:A\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "3": {
+                        "evt-t.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-t\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:T\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "4": []
+                },
+                "trash": [],
+                "scheduled": []
+            }
+        }
+    ],
+    "move between shared": [
+        {
+            "step": "preview calendar_move_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "uid": "evt-t",
+                "targetCalendar": "/remote.php/dav/calendars/alice/other_shared_by_bob/"
+            },
+            "outcome": {
+                "result": {
+                    "requiresConfirmation": true,
+                    "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                    "action": "calendar_move_event",
+                    "calendar": {
+                        "id": 3,
+                        "uri": "team_shared_by_bob",
+                        "name": "Equipe (bob)",
+                        "ownerId": "bob",
+                        "ownerPrincipal": "principals/users/bob",
+                        "writable": true,
+                        "path": "/remote.php/dav/calendars/alice/team_shared_by_bob/"
+                    },
+                    "destination": {
+                        "id": 4,
+                        "uri": "other_shared_by_bob",
+                        "name": "Outra (bob)",
+                        "ownerId": "bob",
+                        "ownerPrincipal": "principals/users/bob",
+                        "writable": true,
+                        "path": "/remote.php/dav/calendars/alice/other_shared_by_bob/"
+                    },
+                    "uid": "evt-t",
+                    "etag": "\"MD5-8\"",
+                    "before": {
+                        "summary": "T",
+                        "location": "",
+                        "description": "",
+                        "start": "2026-10-01T12:00:00+00:00",
+                        "end": "2026-10-01T13:00:00+00:00",
+                        "allDay": false,
+                        "timeZone": null,
+                        "attendees": [],
+                        "organizer": null,
+                        "recurring": false
+                    },
+                    "after": {
+                        "summary": "T",
+                        "location": "",
+                        "description": "",
+                        "start": "2026-10-01T12:00:00+00:00",
+                        "end": "2026-10-01T13:00:00+00:00",
+                        "allDay": false,
+                        "timeZone": null,
+                        "attendees": [],
+                        "organizer": null,
+                        "recurring": false
+                    },
+                    "participants": {
+                        "current": [],
+                        "proposed": [],
+                        "added": [],
+                        "removed": [],
+                        "names": []
+                    },
+                    "recoverable": false,
+                    "consequence": null,
+                    "scheduling": {
+                        "requested": false,
+                        "imipEnabled": true,
+                        "participantsNotified": false,
+                        "message": "Event attendees are not notified, just like when moving in the Calendar app.",
+                        "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                    },
+                    "timezone": "UTC",
+                    "shared": [
+                        {
+                            "requiresConfirmation": true,
+                            "scope": "shared",
+                            "owner": "bob",
+                            "ownerDisplayName": "Roberto Almeida",
+                            "resource": "Equipe (bob)",
+                            "message": "The calendar 'Equipe (bob)' belongs to Roberto Almeida and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true."
+                        },
+                        {
+                            "requiresConfirmation": true,
+                            "scope": "shared",
+                            "owner": "bob",
+                            "ownerDisplayName": "Roberto Almeida",
+                            "resource": "Outra (bob)",
+                            "message": "The calendar 'Outra (bob)' belongs to Roberto Almeida and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true."
+                        }
+                    ],
+                    "warnings": [],
+                    "sharedCalendars": [],
+                    "suggestedCalendar": null
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_move_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "uid": "evt-t",
+                "targetCalendar": "/remote.php/dav/calendars/alice/other_shared_by_bob/",
+                "confirm": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "The plan changes a shared calendar belonging to someone else. Execution also requires confirm_shared: true."
+                        }
+                    ],
+                    "isError": true
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_move_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "uid": "evt-t",
+                "targetCalendar": "/remote.php/dav/calendars/alice/other_shared_by_bob/",
+                "confirm": true,
+                "confirm_shared": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"evt-t\",\n    \"etag\": \"\\\"MD5-8\\\"\",\n    \"from\": \"/remote.php/dav/calendars/alice/team_shared_by_bob/\",\n    \"to\": \"/remote.php/dav/calendars/alice/other_shared_by_bob/\",\n    \"participantsNotified\": false,\n    \"note\": \"Event attendees are not notified, just like when moving in the Calendar app.\"\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                {
+                    "operation": "move",
+                    "calendar": "team_shared_by_bob",
+                    "object": "evt-t.ics",
+                    "target": "other_shared_by_bob",
+                    "etag": "\"MD5-8\""
+                }
+            ]
+        },
+        {
+            "state": {
+                "objects": {
+                    "1": {
+                        "evt-a.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-a\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:A\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-g.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-g\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:G\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-r.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-r\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:R\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nRRULE:FREQ=WEEKLY;COUNT=3\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": [],
+                    "4": {
+                        "evt-t.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-t\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:T\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    }
+                },
+                "trash": [],
+                "scheduled": []
+            }
+        }
+    ],
+    "transfer": [
+        {
+            "step": "preview calendar_transfer_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-a",
+                "targetCalendar": "/remote.php/dav/calendars/alice/other_shared_by_bob/"
+            },
+            "outcome": {
+                "result": {
+                    "requiresConfirmation": true,
+                    "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                    "action": "calendar_transfer_event",
+                    "calendar": {
+                        "id": 1,
+                        "uri": "personal",
+                        "name": "Pessoal",
+                        "ownerId": "alice",
+                        "ownerPrincipal": "principals/users/alice",
+                        "writable": true,
+                        "path": "/remote.php/dav/calendars/alice/personal/"
+                    },
+                    "destination": {
+                        "id": 4,
+                        "uri": "other_shared_by_bob",
+                        "name": "Outra (bob)",
+                        "ownerId": "bob",
+                        "ownerPrincipal": "principals/users/bob",
+                        "writable": true,
+                        "path": "/remote.php/dav/calendars/alice/other_shared_by_bob/"
+                    },
+                    "uid": "evt-a",
+                    "etag": "\"MD5-4\"",
+                    "before": {
+                        "summary": "A",
+                        "location": "",
+                        "description": "",
+                        "start": "2026-10-01T12:00:00+00:00",
+                        "end": "2026-10-01T13:00:00+00:00",
+                        "allDay": false,
+                        "timeZone": null,
+                        "attendees": [],
+                        "organizer": null,
+                        "recurring": false
+                    },
+                    "after": {
+                        "summary": "A",
+                        "location": "",
+                        "description": "",
+                        "start": "2026-10-01T12:00:00+00:00",
+                        "end": "2026-10-01T13:00:00+00:00",
+                        "allDay": false,
+                        "timeZone": null,
+                        "attendees": [],
+                        "organizer": null,
+                        "recurring": false
+                    },
+                    "participants": {
+                        "current": [],
+                        "proposed": [],
+                        "added": [],
+                        "removed": [],
+                        "names": []
+                    },
+                    "recoverable": false,
+                    "consequence": null,
+                    "scheduling": {
+                        "requested": false,
+                        "imipEnabled": true,
+                        "participantsNotified": false,
+                        "message": "Event attendees are not notified, just like when moving in the Calendar app.",
+                        "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                    },
+                    "timezone": "UTC",
+                    "shared": [
+                        {
+                            "requiresConfirmation": true,
+                            "scope": "shared",
+                            "owner": "bob",
+                            "ownerDisplayName": "Roberto Almeida",
+                            "resource": "Outra (bob)",
+                            "message": "The calendar 'Outra (bob)' belongs to Roberto Almeida and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true."
+                        }
+                    ],
+                    "warnings": [],
+                    "sharedCalendars": [],
+                    "suggestedCalendar": null
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_transfer_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-a",
+                "targetCalendar": "/remote.php/dav/calendars/alice/work/",
+                "confirm": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "The calendars have the same owner; use calendar_move_event."
+                        }
+                    ],
+                    "isError": true
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_transfer_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-g",
+                "targetCalendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "confirm": true,
+                "confirm_shared": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Cannot transfer an event with attendees to someone else's calendar: you remain the organizer and Nextcloud does not notify anyone in this operation. Move the event within your calendars or remove attendees first."
+                        }
+                    ],
+                    "isError": true
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_transfer_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-a",
+                "targetCalendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "confirm": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "The plan changes a shared calendar belonging to someone else. Execution also requires confirm_shared: true."
+                        }
+                    ],
+                    "isError": true
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_transfer_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-a",
+                "targetCalendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "confirm": true,
+                "confirm_shared": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"evt-a\",\n    \"etag\": \"\\\"MD5-4\\\"\",\n    \"from\": \"/remote.php/dav/calendars/alice/personal/\",\n    \"to\": \"/remote.php/dav/calendars/alice/team_shared_by_bob/\",\n    \"participantsNotified\": false,\n    \"note\": \"Event attendees are not notified, just like when moving in the Calendar app.\"\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                {
+                    "operation": "move",
+                    "calendar": "personal",
+                    "object": "evt-a.ics",
+                    "target": "team_shared_by_bob",
+                    "etag": "\"MD5-4\""
+                }
+            ]
+        },
+        {
+            "step": "preview calendar_transfer_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "uid": "evt-t",
+                "targetCalendar": "/remote.php/dav/calendars/alice/work/"
+            },
+            "outcome": {
+                "result": {
+                    "requiresConfirmation": true,
+                    "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                    "action": "calendar_transfer_event",
+                    "calendar": {
+                        "id": 3,
+                        "uri": "team_shared_by_bob",
+                        "name": "Equipe (bob)",
+                        "ownerId": "bob",
+                        "ownerPrincipal": "principals/users/bob",
+                        "writable": true,
+                        "path": "/remote.php/dav/calendars/alice/team_shared_by_bob/"
+                    },
+                    "destination": {
+                        "id": 2,
+                        "uri": "work",
+                        "name": "Trabalho",
+                        "ownerId": "alice",
+                        "ownerPrincipal": "principals/users/alice",
+                        "writable": true,
+                        "path": "/remote.php/dav/calendars/alice/work/"
+                    },
+                    "uid": "evt-t",
+                    "etag": "\"MD5-8\"",
+                    "before": {
+                        "summary": "T",
+                        "location": "",
+                        "description": "",
+                        "start": "2026-10-01T12:00:00+00:00",
+                        "end": "2026-10-01T13:00:00+00:00",
+                        "allDay": false,
+                        "timeZone": null,
+                        "attendees": [],
+                        "organizer": null,
+                        "recurring": false
+                    },
+                    "after": {
+                        "summary": "T",
+                        "location": "",
+                        "description": "",
+                        "start": "2026-10-01T12:00:00+00:00",
+                        "end": "2026-10-01T13:00:00+00:00",
+                        "allDay": false,
+                        "timeZone": null,
+                        "attendees": [],
+                        "organizer": null,
+                        "recurring": false
+                    },
+                    "participants": {
+                        "current": [],
+                        "proposed": [],
+                        "added": [],
+                        "removed": [],
+                        "names": []
+                    },
+                    "recoverable": false,
+                    "consequence": null,
+                    "scheduling": {
+                        "requested": false,
+                        "imipEnabled": true,
+                        "participantsNotified": false,
+                        "message": "Event attendees are not notified, just like when moving in the Calendar app.",
+                        "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                    },
+                    "timezone": "UTC",
+                    "shared": [
+                        {
+                            "requiresConfirmation": true,
+                            "scope": "shared",
+                            "owner": "bob",
+                            "ownerDisplayName": "Roberto Almeida",
+                            "resource": "Equipe (bob)",
+                            "message": "The calendar 'Equipe (bob)' belongs to Roberto Almeida and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true."
+                        }
+                    ],
+                    "warnings": [],
+                    "sharedCalendars": [],
+                    "suggestedCalendar": null
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_transfer_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "uid": "evt-t",
+                "targetCalendar": "/remote.php/dav/calendars/alice/personal/",
+                "confirm": true,
+                "confirm_shared": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"evt-t\",\n    \"etag\": \"\\\"MD5-8\\\"\",\n    \"from\": \"/remote.php/dav/calendars/alice/team_shared_by_bob/\",\n    \"to\": \"/remote.php/dav/calendars/alice/personal/\",\n    \"participantsNotified\": false,\n    \"note\": \"Event attendees are not notified, just like when moving in the Calendar app.\"\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                {
+                    "operation": "move",
+                    "calendar": "team_shared_by_bob",
+                    "object": "evt-t.ics",
+                    "target": "personal",
+                    "etag": "\"MD5-8\""
+                }
+            ]
+        },
+        {
+            "state": {
+                "objects": {
+                    "1": {
+                        "evt-g.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-g\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:G\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-r.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-r\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:R\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nRRULE:FREQ=WEEKLY;COUNT=3\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-t.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-t\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:T\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": {
+                        "evt-a.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-a\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:A\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "4": []
+                },
+                "trash": [],
+                "scheduled": []
+            }
+        }
+    ],
+    "delete": [
+        {
+            "step": "preview calendar_delete_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-a"
+            },
+            "outcome": {
+                "result": {
+                    "requiresConfirmation": true,
+                    "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                    "action": "calendar_delete_event",
+                    "calendar": {
+                        "id": 1,
+                        "uri": "personal",
+                        "name": "Pessoal",
+                        "ownerId": "alice",
+                        "ownerPrincipal": "principals/users/alice",
+                        "writable": true,
+                        "path": "/remote.php/dav/calendars/alice/personal/"
+                    },
+                    "destination": null,
+                    "uid": "evt-a",
+                    "etag": "\"MD5-4\"",
+                    "before": {
+                        "summary": "A",
+                        "location": "",
+                        "description": "",
+                        "start": "2026-10-01T12:00:00+00:00",
+                        "end": "2026-10-01T13:00:00+00:00",
+                        "allDay": false,
+                        "timeZone": null,
+                        "attendees": [],
+                        "organizer": null,
+                        "recurring": false
+                    },
+                    "after": null,
+                    "participants": {
+                        "current": [],
+                        "proposed": [],
+                        "added": [],
+                        "removed": [],
+                        "names": []
+                    },
+                    "recoverable": true,
+                    "consequence": "After approval, the event will go to the recoverable Calendar trash bin.",
+                    "scheduling": {
+                        "requested": false,
+                        "imipEnabled": true,
+                        "participantsNotified": false,
+                        "message": "No invitations or cancellations will be scheduled in this change.",
+                        "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                    },
+                    "timezone": "UTC",
+                    "shared": []
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_delete_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-a",
+                "etag": "\"stale\"",
+                "confirm": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Conflict: the event was changed by another person (etag diverged)."
+                        }
+                    ],
+                    "isError": true
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_delete_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-g",
+                "send_invitations": true,
+                "confirm": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"evt-g\",\n    \"calendar\": \"/remote.php/dav/calendars/alice/personal/\",\n    \"deleted\": true,\n    \"recoverable\": true,\n    \"scheduling\": {\n        \"requested\": true,\n        \"imipEnabled\": true,\n        \"message\": \"invitation delivered to Nextcloud scheduling\"\n    }\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                {
+                    "operation": "delete",
+                    "calendar": "personal",
+                    "object": "evt-g.ics",
+                    "etag": "\"MD5-7\"",
+                    "scheduling": true
+                }
+            ]
+        },
+        {
+            "step": "call calendar_delete_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-a",
+                "confirm": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"evt-a\",\n    \"calendar\": \"/remote.php/dav/calendars/alice/personal/\",\n    \"deleted\": true,\n    \"recoverable\": true,\n    \"scheduling\": {\n        \"requested\": false,\n        \"imipEnabled\": true,\n        \"message\": \"no invitations were scheduled\"\n    }\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                {
+                    "operation": "delete",
+                    "calendar": "personal",
+                    "object": "evt-a.ics",
+                    "etag": "\"MD5-4\"",
+                    "scheduling": false
+                }
+            ]
+        },
+        {
+            "step": "call calendar_delete_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "uid": "evt-t",
+                "confirm": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "The plan changes a shared calendar belonging to someone else. Execution also requires confirm_shared: true."
+                        }
+                    ],
+                    "isError": true
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_delete_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "uid": "evt-t",
+                "confirm": true,
+                "confirm_shared": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"evt-t\",\n    \"calendar\": \"/remote.php/dav/calendars/alice/team_shared_by_bob/\",\n    \"deleted\": true,\n    \"recoverable\": true,\n    \"scheduling\": {\n        \"requested\": false,\n        \"imipEnabled\": true,\n        \"message\": \"no invitations were scheduled\"\n    }\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                {
+                    "operation": "delete",
+                    "calendar": "team_shared_by_bob",
+                    "object": "evt-t.ics",
+                    "etag": "\"MD5-8\"",
+                    "scheduling": false
+                }
+            ]
+        },
+        {
+            "state": {
+                "objects": {
+                    "1": {
+                        "evt-r.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-r\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:R\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nRRULE:FREQ=WEEKLY;COUNT=3\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": [],
+                    "4": []
+                },
+                "trash": {
+                    "1": {
+                        "evt-g-deleted.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-g\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:G\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-a-deleted.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-a\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:A\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "3": {
+                        "evt-t-deleted.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-t\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:T\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    }
+                },
+                "scheduled": [
+                    "DELETE evt-g: mailto:bob@example.invalid"
+                ]
+            }
+        }
+    ],
+    "delete without trash": [
+        {
+            "step": "preview calendar_delete_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "missing"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Modules\\Calendar\\Failures\\CalendarException",
+                        "message": "Deletion blocked: the calendar trash bin is disabled and the event would not be recoverable.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_delete_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "missing",
+                "confirm": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Deletion blocked: the calendar trash bin is disabled and the event would not be recoverable."
+                        }
+                    ],
+                    "isError": true
+                }
+            },
+            "dav": []
+        },
+        {
+            "state": {
+                "objects": {
+                    "1": {
+                        "evt-a.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-a\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:A\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-g.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-g\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:G\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-r.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-r\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:R\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nRRULE:FREQ=WEEKLY;COUNT=3\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": {
+                        "evt-t.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-t\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:T\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "4": []
+                },
+                "trash": [],
+                "scheduled": []
+            }
+        }
+    ],
+    "library failure": [
+        {
+            "step": "preview calendar_update_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "uid": "evt-t",
+                "summary": "T2"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "InvalidArgumentException",
+                        "message": "library detail",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_update_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "uid": "evt-t",
+                "summary": "T2",
+                "confirm": true,
+                "confirm_shared": true
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "RuntimeException",
+                        "message": "Calendar backend failure",
+                        "code": 0
+                    },
+                    {
+                        "class": "InvalidArgumentException",
+                        "message": "library detail",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_list_calendars",
+            "arguments": [],
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "[\n    {\n        \"name\": \"Pessoal\",\n        \"path\": \"/remote.php/dav/calendars/alice/personal/\",\n        \"owner\": \"alice\",\n        \"writable\": true\n    },\n    {\n        \"name\": \"Trabalho\",\n        \"path\": \"/remote.php/dav/calendars/alice/work/\",\n        \"owner\": \"alice\",\n        \"writable\": true\n    },\n    {\n        \"name\": \"Equipe (bob)\",\n        \"path\": \"/remote.php/dav/calendars/alice/team_shared_by_bob/\",\n        \"owner\": \"bob\",\n        \"writable\": true\n    },\n    {\n        \"name\": \"Outra (bob)\",\n        \"path\": \"/remote.php/dav/calendars/alice/other_shared_by_bob/\",\n        \"owner\": \"bob\",\n        \"writable\": true\n    }\n]"
+                        }
+                    ]
+                }
+            },
+            "dav": []
+        },
+        {
+            "state": {
+                "objects": {
+                    "1": {
+                        "evt-a.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-a\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:A\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-g.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-g\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:G\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-r.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-r\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:R\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nRRULE:FREQ=WEEKLY;COUNT=3\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": {
+                        "evt-t.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-t\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:T\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "4": []
+                },
+                "trash": [],
+                "scheduled": []
+            }
+        }
+    ],
+    "dav failure": [
+        {
+            "step": "preview calendar_update_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-a",
+                "summary": "A2"
+            },
+            "outcome": {
+                "result": {
+                    "requiresConfirmation": true,
+                    "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                    "action": "calendar_update_event",
+                    "calendar": {
+                        "id": 1,
+                        "uri": "personal",
+                        "name": "Pessoal",
+                        "ownerId": "alice",
+                        "ownerPrincipal": "principals/users/alice",
+                        "writable": true,
+                        "path": "/remote.php/dav/calendars/alice/personal/"
+                    },
+                    "destination": null,
+                    "uid": "evt-a",
+                    "etag": "\"MD5-4\"",
+                    "before": {
+                        "summary": "A",
+                        "location": "",
+                        "description": "",
+                        "start": "2026-10-01T12:00:00+00:00",
+                        "end": "2026-10-01T13:00:00+00:00",
+                        "allDay": false,
+                        "timeZone": null,
+                        "attendees": [],
+                        "organizer": null,
+                        "recurring": false
+                    },
+                    "after": {
+                        "summary": "A2",
+                        "location": "",
+                        "description": "",
+                        "start": "2026-10-01T12:00:00+00:00",
+                        "end": "2026-10-01T13:00:00+00:00",
+                        "allDay": false,
+                        "timeZone": null,
+                        "attendees": [],
+                        "organizer": null,
+                        "recurring": false
+                    },
+                    "participants": {
+                        "current": [],
+                        "proposed": [],
+                        "added": [],
+                        "removed": [],
+                        "names": []
+                    },
+                    "recoverable": false,
+                    "consequence": null,
+                    "scheduling": {
+                        "requested": false,
+                        "imipEnabled": true,
+                        "participantsNotified": false,
+                        "message": "No invitations or cancellations will be scheduled in this change.",
+                        "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                    },
+                    "timezone": "UTC",
+                    "shared": [],
+                    "warnings": [],
+                    "sharedCalendars": [],
+                    "suggestedCalendar": null
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "call calendar_update_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-a",
+                "summary": "A2",
+                "confirm": true
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "RuntimeException",
+                        "message": "Calendar backend failure",
+                        "code": 0
+                    },
+                    {
+                        "class": "InvalidArgumentException",
+                        "message": "library detail",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [
+                {
+                    "operation": "update",
+                    "calendar": "personal",
+                    "object": "evt-a.ics",
+                    "etag": "\"MD5-4\"",
+                    "ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-a\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSUMMARY:A2\r\nSEQUENCE:1\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                    "scheduling": false
+                }
+            ]
+        },
+        {
+            "step": "call calendar_delete_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-a",
+                "confirm": true
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "RuntimeException",
+                        "message": "server detail",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [
+                {
+                    "operation": "delete",
+                    "calendar": "personal",
+                    "object": "evt-a.ics",
+                    "etag": "\"MD5-4\"",
+                    "scheduling": false
+                }
+            ]
+        },
+        {
+            "state": {
+                "objects": {
+                    "1": {
+                        "evt-a.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-a\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:A\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-g.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-g\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:G\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-r.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-r\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:R\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nRRULE:FREQ=WEEKLY;COUNT=3\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": {
+                        "evt-t.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-t\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:T\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "4": []
+                },
+                "trash": [],
+                "scheduled": []
+            }
+        }
+    ],
+    "direct writes": [
+        {
+            "step": "direct calendar_create_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "summary": "Reunião",
+                "start": "2026-10-02T09:00:00Z",
+                "end": "2026-10-02T10:00:00Z"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"requiresConfirmation\": true,\n    \"scope\": \"shared\",\n    \"owner\": \"bob\",\n    \"ownerDisplayName\": \"Roberto Almeida\",\n    \"resource\": \"Equipe (bob)\",\n    \"message\": \"The calendar 'Equipe (bob)' belongs to Roberto Almeida and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true.\"\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "direct calendar_create_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "confirm_shared": true,
+                "summary": "Reunião",
+                "start": "2026-10-02T09:00:00Z",
+                "end": "2026-10-02T10:00:00Z"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"UUID-4\",\n    \"summary\": \"Reunião\",\n    \"start\": \"2026-10-02T09:00:00.000Z\",\n    \"end\": \"2026-10-02T10:00:00.000Z\",\n    \"location\": \"\",\n    \"allDay\": false,\n    \"calendar\": \"/remote.php/dav/calendars/alice/team_shared_by_bob/\",\n    \"etag\": \"\\\"MD5-10\\\"\",\n    \"scheduling\": {\n        \"requested\": false,\n        \"imipEnabled\": true,\n        \"message\": \"no invitations were scheduled\"\n    }\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                {
+                    "operation": "put",
+                    "calendar": "team_shared_by_bob",
+                    "object": "UUID-4.ics",
+                    "ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:UUID-4\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART:20261002T090000Z\r\nDTEND:20261002T100000Z\r\nSUMMARY:Reunião\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                    "scheduling": false
+                }
+            ]
+        },
+        {
+            "step": "direct calendar_move_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "uid": "evt-t",
+                "targetCalendar": "/remote.php/dav/calendars/alice/other_shared_by_bob/"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"requiresConfirmation\": true,\n    \"scope\": \"shared\",\n    \"owner\": \"bob\",\n    \"ownerDisplayName\": \"Roberto Almeida\",\n    \"resource\": \"Equipe (bob)\",\n    \"message\": \"The calendar 'Equipe (bob)' belongs to Roberto Almeida and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true.\"\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "direct calendar_move_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "evt-a",
+                "targetCalendar": "/remote.php/dav/calendars/alice/work/"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"evt-a\",\n    \"etag\": \"\\\"MD5-4\\\"\",\n    \"from\": \"/remote.php/dav/calendars/alice/personal/\",\n    \"to\": \"/remote.php/dav/calendars/alice/work/\",\n    \"participantsNotified\": false,\n    \"note\": \"Event attendees are not notified, just like when moving in the Calendar app.\"\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                {
+                    "operation": "move",
+                    "calendar": "personal",
+                    "object": "evt-a.ics",
+                    "target": "work",
+                    "etag": "\"MD5-4\""
+                }
+            ]
+        },
+        {
+            "step": "direct calendar_transfer_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/work/",
+                "uid": "evt-a",
+                "targetCalendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "confirm": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"evt-a\",\n    \"etag\": \"\\\"MD5-4\\\"\",\n    \"from\": \"/remote.php/dav/calendars/alice/work/\",\n    \"to\": \"/remote.php/dav/calendars/alice/team_shared_by_bob/\",\n    \"participantsNotified\": false,\n    \"note\": \"Event attendees are not notified, just like when moving in the Calendar app.\"\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                {
+                    "operation": "move",
+                    "calendar": "work",
+                    "object": "evt-a.ics",
+                    "target": "team_shared_by_bob",
+                    "etag": "\"MD5-4\""
+                }
+            ]
+        },
+        {
+            "step": "direct calendar_delete_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "uid": "evt-t"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"requiresConfirmation\": true,\n    \"scope\": \"shared\",\n    \"owner\": \"bob\",\n    \"ownerDisplayName\": \"Roberto Almeida\",\n    \"resource\": \"Equipe (bob)\",\n    \"message\": \"The calendar 'Equipe (bob)' belongs to Roberto Almeida and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true.\"\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": []
+        },
+        {
+            "step": "direct calendar_delete_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "uid": "evt-t",
+                "confirm": true,
+                "confirm_shared": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"evt-t\",\n    \"calendar\": \"/remote.php/dav/calendars/alice/team_shared_by_bob/\",\n    \"deleted\": true,\n    \"recoverable\": true,\n    \"scheduling\": {\n        \"requested\": false,\n        \"imipEnabled\": true,\n        \"message\": \"no invitations were scheduled\"\n    }\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                {
+                    "operation": "delete",
+                    "calendar": "team_shared_by_bob",
+                    "object": "evt-t.ics",
+                    "etag": "\"MD5-8\"",
+                    "scheduling": false
+                }
+            ]
+        },
+        {
+            "step": "direct calendar_delete_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "missing"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Modules\\Calendar\\Failures\\CalendarException",
+                        "message": "Calendar or event not found.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": []
+        },
+        {
+            "step": "direct calendar_create_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "start": "x",
+                "summary": "Reunião",
+                "end": "2026-10-02T10:00:00Z"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Modules\\Calendar\\Failures\\CalendarArgumentException",
+                        "message": "Invalid ISO date in start.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": []
+        },
+        {
+            "step": "direct calendar_move_event",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "uid": "evt-a",
+                "targetCalendar": "/remote.php/dav/calendars/alice/other_shared_by_bob/",
+                "etag": "\"stale\""
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"requiresConfirmation\": true,\n    \"scope\": \"shared\",\n    \"owner\": \"bob\",\n    \"ownerDisplayName\": \"Roberto Almeida\",\n    \"resource\": \"Equipe (bob)\",\n    \"message\": \"The calendar 'Equipe (bob)' belongs to Roberto Almeida and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true.\"\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": []
+        },
+        {
+            "state": {
+                "objects": {
+                    "1": {
+                        "evt-g.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-g\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:G\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-r.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-r\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:R\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nRRULE:FREQ=WEEKLY;COUNT=3\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": {
+                        "UUID-4.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:UUID-4\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART:20261002T090000Z\r\nDTEND:20261002T100000Z\r\nSUMMARY:Reunião\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "evt-a.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-a\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:A\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "4": []
+                },
+                "trash": {
+                    "3": {
+                        "evt-t-deleted.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:evt-t\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:T\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    }
+                },
+                "scheduled": []
+            }
+        }
+    ]
+}

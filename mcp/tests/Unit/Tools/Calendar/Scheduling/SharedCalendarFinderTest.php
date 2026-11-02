@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Calendar\Scheduling;
 
 use OCA\Mcp\Tests\Unit\Tools\Calendar\FakeCalendarStore;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub;
-use OCA\Mcp\Tools\Calendar\Scheduling\SharedCalendarFinder;
+use OCA\Mcp\Modules\Calendar\Scheduling\SharedCalendarFinder;
 use OCP\IGroupManager;
 use OCP\IUser;
 use OCP\IUserManager;

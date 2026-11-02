@@ -20,8 +20,12 @@ use PHPUnit\Framework\TestCase;
 final class CalDavBackendContractTest extends TestCase {
 	private const CALDAV_CLASS = 'OCA\DAV\CalDAV\CalDavBackend';
 	private const CARDDAV_CLASS = 'OCA\DAV\CardDAV\CardDavBackend';
-	/** Directories under lib/ whose classes talk to the DAV backends. */
-	private const SCANNED = ['Tools/Calendar', 'Tools/Tasks', 'Tools/Contacts', 'Service/Calendar'];
+	/**
+	 * Directories under lib/ whose classes talk to the DAV backends. A module moves from Tools/ to Modules/ in its own
+	 * ticket, so a directory that no longer exists is skipped; testTheScannerSeesTheKnownAdapterCalls keeps a move
+	 * from silently dropping the adapters.
+	 */
+	private const SCANNED = ['Modules/Calendar', 'Tools/Tasks', 'Tools/Contacts'];
 
 	/**
 	 * Collects `backend()->method(` and `container->get(XxxBackend::class)->method(` calls per backend class.
@@ -32,6 +36,9 @@ final class CalDavBackendContractTest extends TestCase {
 		$calls = [];
 		$root = dirname(__DIR__, 4) . '/lib';
 		foreach (self::SCANNED as $dir) {
+			if (!is_dir("$root/$dir")) {
+				continue;
+			}
 			foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator("$root/$dir", \FilesystemIterator::SKIP_DOTS)) as $file) {
 				if ($file->getExtension() !== 'php') {
 					continue;

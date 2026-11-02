@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Tasks;
 
 use Closure;
-use OCA\Mcp\Tools\Calendar\CalendarDav;
-use OCA\Mcp\Tools\Calendar\DavResult;
+use OCA\Mcp\Modules\Calendar\Writing\CalendarDav;
+use OCA\Mcp\Modules\Calendar\Writing\DavResult;
 
 /**
  * The container's real CalDAV write port with one hook: the first update runs a closure just before it reaches

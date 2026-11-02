@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Tasks;
 
-use OCA\Mcp\Tools\Calendar\CalendarStore;
+use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;

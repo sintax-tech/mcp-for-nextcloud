@@ -6,12 +6,12 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Service\Calendar;
 
-use OCA\Mcp\Service\Calendar\CalendarSelftestService;
-use OCA\Mcp\Service\Calendar\CalendarSelftestReader;
+use OCA\Mcp\Modules\Calendar\Selftest\CalendarSelftestService;
+use OCA\Mcp\Modules\Calendar\Selftest\CalendarSelftestReader;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\CalendarTestCase;
-use OCA\Mcp\Tools\Calendar\Calendar;
-use OCA\Mcp\Tools\Calendar\CalendarAccess;
-use OCA\Mcp\Tools\Calendar\TrashPolicy;
+use OCA\Mcp\Modules\Calendar\Locating\Calendar;
+use OCA\Mcp\Modules\Calendar\Locating\CalendarAccess;
+use OCA\Mcp\Modules\Calendar\Writing\TrashPolicy;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IConfig;
@@ -157,11 +157,12 @@ final class CalendarSelftestServiceTest extends CalendarTestCase {
 			return ['syncToken' => (string)count($this->dav->calls), 'deleted' => $deleted];
 		});
 		$reader->method('schedulingObjects')->willReturnCallback(fn (string $uid): array => $this->inbox[$uid] ?? []);
-		return new CalendarSelftestService($this->dav,
-			$this->writeHandlers['calendar_create_event'], $this->writeHandlers['calendar_update_event'],
-			$this->writeHandlers['calendar_move_event'], $this->writeHandlers['calendar_delete_event'],
-			$this->writeHandlers['calendar_transfer_event'],
-			new CalendarAccess($this->store), $this->store, $time, $users, $session, $apps,
-			new TrashPolicy($config), $reader);
+		$access = new CalendarAccess($this->store);
+		$evidence = new \OCA\Mcp\Modules\Calendar\Selftest\SelftestEvidence($users, $apps, $this->store, $reader, $access);
+		$writes = new \OCA\Mcp\Modules\Calendar\Selftest\SelftestWrites($this->writeHandlers['calendar_create_event'],
+			$this->writeHandlers['calendar_delete_event'], $time, $session, $this->dav, $this->store, $evidence);
+		return new CalendarSelftestService($this->dav, $this->writeHandlers['calendar_update_event'],
+			$this->writeHandlers['calendar_move_event'], $this->writeHandlers['calendar_transfer_event'],
+			$access, $this->store, $time, $session, new TrashPolicy($config), $reader, $evidence, $writes);
 	}
 }

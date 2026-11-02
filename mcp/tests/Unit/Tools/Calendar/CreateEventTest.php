@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Calendar;
 
-use OCA\Mcp\Tools\Calendar\CalendarArgumentException;
+use OCA\Mcp\Modules\Calendar\Failures\CalendarArgumentException;
 use RuntimeException;
 use Sabre\VObject\Reader;
 
@@ -150,7 +150,7 @@ final class CreateEventTest extends CalendarTestCase {
 	}
 
 	public function testTheDescriptionTellsTheAgentThatTheCallCanInvitePeople(): void {
-		$definition = $this->writeHandlers['calendar_create_event']->definition();
+		$definition = \OCA\Mcp\Modules\Calendar\Tools\CreateEvent::definition()->toArray();
 
 		$this->assertTrue($definition['destructiveHint']);
 		$this->assertStringContainsString('This call may send invitations to other people', $definition['description']);

@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Calendar;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
-use OCA\Mcp\Tools\Calendar\CalendarPlanRenderer;
+use OCA\Mcp\Modules\Calendar\Presentation\CalendarPlanRenderer;
 use PHPUnit\Framework\TestCase;
 
 /**

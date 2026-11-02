@@ -10,7 +10,7 @@ use OCA\Mcp\AppInfo\Application;
 use OCA\Mcp\Platform\FileAccess\WriteVisibility;
 use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Access\ResourceScope\NativeCalendars;
-use OCA\Mcp\Service\Calendar\CalendarSelftestReader;
+use OCA\Mcp\Modules\Calendar\Selftest\CalendarSelftestReader;
 use OCA\Mcp\Tests\Architecture\Construction\{ConstructionGraph, Registrations, ServiceResolver};
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;

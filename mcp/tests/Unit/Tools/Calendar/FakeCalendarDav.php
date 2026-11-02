@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Calendar;
 
-use OCA\Mcp\Tools\Calendar\CalendarDav;
-use OCA\Mcp\Tools\Calendar\CalendarException;
-use OCA\Mcp\Tools\Calendar\DavResult;
+use OCA\Mcp\Modules\Calendar\Writing\CalendarDav;
+use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
+use OCA\Mcp\Modules\Calendar\Writing\DavResult;
 use Throwable;
 
 /**

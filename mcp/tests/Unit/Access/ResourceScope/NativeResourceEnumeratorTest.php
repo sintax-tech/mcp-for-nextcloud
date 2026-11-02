@@ -113,9 +113,9 @@ final class NativeResourceEnumeratorTest extends TestCase {
 			$this->fail('Unreadable tree answered as inaccessible');
 		} catch (PolicyUnavailable) {
 		}
-		$calendars = $this->createMock(\OCA\Mcp\Tools\Calendar\CalendarStore::class);
+		$calendars = $this->createMock(\OCA\Mcp\Modules\Calendar\Locating\CalendarStore::class);
 		$calendars->method('calendarsForPrincipal')->willThrowException(new \RuntimeException('CalDAV down'));
-		$enumerator = new NativeResourceEnumerator($this->createMock(\OCP\Files\IRootFolder::class), new \OCA\Mcp\Modules\Calendar\NativeCalendarsAdapter(new \OCA\Mcp\Tools\Calendar\CalendarAccess($calendars)), $this->fx->guard);
+		$enumerator = new NativeResourceEnumerator($this->createMock(\OCP\Files\IRootFolder::class), new \OCA\Mcp\Modules\Calendar\NativeCalendarsAdapter(new \OCA\Mcp\Modules\Calendar\Locating\CalendarAccess($calendars)), $this->fx->guard);
 		$this->expectException(PolicyUnavailable::class);
 		$enumerator->inaccessible('alice', 'calendar', ['11']);
 	}

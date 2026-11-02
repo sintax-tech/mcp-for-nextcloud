@@ -10,8 +10,8 @@ namespace OCA\Mcp\Tests\Unit\Tools\Calendar;
 
 use DateTimeImmutable;
 use DateTimeZone;
-use OCA\Mcp\Tools\Calendar\EventBuilder;
-use OCA\Mcp\Tools\Calendar\EventTiming;
+use OCA\Mcp\Modules\Calendar\Composing\EventBuilder;
+use OCA\Mcp\Modules\Calendar\Composing\EventTiming;
 use PHPUnit\Framework\TestCase;
 use Sabre\VObject\Component\VCalendar;
 

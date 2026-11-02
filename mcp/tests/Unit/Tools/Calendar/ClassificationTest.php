@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Calendar;
 
-use OCA\Mcp\Tools\Calendar\Calendar;
-use OCA\Mcp\Tools\Calendar\CalendarException;
-use OCA\Mcp\Tools\Calendar\Classification;
+use OCA\Mcp\Modules\Calendar\Locating\Calendar;
+use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
+use OCA\Mcp\Modules\Calendar\Locating\Classification;
 use PHPUnit\Framework\TestCase;
 use Sabre\VObject\Component\VCalendar;
 use Sabre\VObject\Reader;

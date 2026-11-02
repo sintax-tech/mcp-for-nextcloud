@@ -22,7 +22,7 @@ use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Tests\Unit\SqliteDatabase;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\FakeCalendarStore;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
-use OCA\Mcp\Tools\Calendar\CalendarAccess;
+use OCA\Mcp\Modules\Calendar\Locating\CalendarAccess;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Config\IUserConfig;
 use OCP\IAppConfig;

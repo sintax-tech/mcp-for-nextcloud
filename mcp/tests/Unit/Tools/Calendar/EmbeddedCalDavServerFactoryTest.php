@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Calendar;
 
-use OCA\Mcp\Tools\Calendar\CalendarMessages;
-use OCA\Mcp\Tools\Calendar\EmbeddedCalDavServerFactory;
+use OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages;
+use OCA\Mcp\Modules\Calendar\Integration\EmbeddedCalDavServerFactory;
 use OCP\IAppConfig;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;

@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Tasks\Handler;
 
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
-use OCA\Mcp\Tools\Calendar\CalendarException;
-use OCA\Mcp\Tools\Calendar\ScopedCalendarAccess;
+use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
+use OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess;
 use OCA\Mcp\Tools\Tasks\TaskObjects;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;

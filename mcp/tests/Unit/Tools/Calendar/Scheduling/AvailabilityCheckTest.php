@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Calendar\Scheduling;
 
 use DateTimeImmutable;
-use OCA\Mcp\Tools\Calendar\Scheduling\AvailabilityCheck;
+use OCA\Mcp\Modules\Calendar\Scheduling\AvailabilityCheck;
 use OCP\Calendar\IAvailabilityResult;
 use OCP\Calendar\IManager;
 use OCP\IUser;

@@ -14,19 +14,12 @@ use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Mcp\Resources\ResourceRegistry;
 use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
-use OCA\Mcp\Tools\Calendar\CalendarModule;
+use OCA\Mcp\Modules\Calendar\CalendarModule;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckServiceGateway;
 use OCA\Mcp\Tools\Deck\DeckToolModule;
 use OCA\Mcp\Tools\Talk\TalkModule;
-use OCA\Mcp\Tools\Calendar\CalendarStore;
-use OCA\Mcp\Tools\Calendar\CalendarDav;
-use OCA\Mcp\Service\Calendar\CalendarSelftestReader;
-use OCA\Mcp\Service\Calendar\DavCalendarSelftestReader;
-use OCA\Mcp\Tools\Calendar\DavCalendarStore;
-use OCA\Mcp\Tools\Calendar\EmbeddedCalDavServerFactory;
-use OCA\Mcp\Tools\Calendar\EmbeddedDavDispatcher;
-use OCA\Mcp\Tools\Calendar\Session;
+use OCA\Mcp\Modules\Calendar\Writing\Session;
 use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\TextExtractor;
 use OCA\Mcp\Modules\Notes\NotesModule;
@@ -94,9 +87,6 @@ class Application extends App implements IBootstrap {
 			require_once $autoload;
 		}
 		$context->registerService(\OCA\Mcp\Platform\FileAccess\WriteVisibility::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\FileAccess\WriteVisibility => $c->get(VisibilityGuard::class));
-		$context->registerService(\OCA\Mcp\Access\ResourceScope\NativeCalendars::class, static fn (ContainerInterface $c): \OCA\Mcp\Access\ResourceScope\NativeCalendars => $c->get(\OCA\Mcp\Modules\Calendar\NativeCalendarsAdapter::class));
-		$context->registerService(CalendarSelftestReader::class, static fn (ContainerInterface $c): CalendarSelftestReader => new DavCalendarSelftestReader($c));
-		$context->registerService(CalendarDav::class, static fn (ContainerInterface $c): CalendarDav => $c->get(EmbeddedDavDispatcher::class));
 		$context->registerService(\OCA\Mcp\Tools\Contacts\ContactStore::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Tools\Contacts\DavContactStore($c));
 		$context->registerService(\OCA\Mcp\Tools\Tasks\TaskStore::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Tools\Tasks\DavTaskStore($c));
 		$context->registerService(\OCA\Mcp\Platform\FileAccess\ActorRoot::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Platform\FileAccess\ActorRoot($c->get(\OCP\Files\IRootFolder::class), $c->get(IUserSession::class)));
@@ -107,18 +97,6 @@ class Application extends App implements IBootstrap {
 		$context->registerService(\OCA\Mcp\Tools\Contacts\ContactDav::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Tools\Contacts\EmbeddedCardDavDispatcher(
 			static fn (): \Sabre\DAV\Server => \OCA\Mcp\Tools\Contacts\EmbeddedCardDavServer::create(),
 			new Session($c->get(IUserSession::class)), $c->get(\OCP\IAppConfig::class), $c->get(LoggerInterface::class),
-		));
-		// DavCalendarStore resolves CalDavBackend lazily (the app container falls back to the server one) on first use.
-		$context->registerService(CalendarStore::class, static fn (ContainerInterface $c): CalendarStore => new DavCalendarStore($c));
-		// The dispatcher builds one embedded CalDAV server per operation, so building the module never
-		// loads the DAV app; a DAV app that fails to load only breaks the calendar writes.
-		$context->registerService(EmbeddedDavDispatcher::class, static fn (ContainerInterface $c): EmbeddedDavDispatcher => new EmbeddedDavDispatcher(
-			// The non-public embedded server, the one that takes a principal from CustomPrincipalPlugin instead of
-			// answering with principals/system/public; the factory knows the Nextcloud 31 class as well.
-			static fn (): \Sabre\DAV\Server => (new EmbeddedCalDavServerFactory($c))->create(),
-			new Session($c->get(IUserSession::class)),
-			$c->get(IConfig::class),
-			$c->get(LoggerInterface::class),
 		));
 		// The Talk references read Deck cards through the same gateway the Deck tools use; it resolves Deck lazily.
 		$context->registerService(DeckGatewayInterface::class, static fn (ContainerInterface $c): DeckGatewayInterface => new DeckServiceGateway(

@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit;
 
 use OCA\Mcp\AppInfo\Application;
-use OCA\Mcp\Tools\Calendar\CalendarStore;
-use OCA\Mcp\Tools\Calendar\DavCalendarStore;
+use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
+use OCA\Mcp\Modules\Calendar\Integration\DavCalendarStore;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckServiceContext;
 use OCA\Mcp\Tools\Deck\DeckServiceGateway;
@@ -104,14 +104,14 @@ final class ApplicationRegistrationTest extends TestCase {
 
 	public function testCalendarDavIsBoundToTheDispatcherAndReaderStaysLazy(): void {
 		$factories = $this->registeredFactories();
-		$dispatcher = new \OCA\Mcp\Tools\Calendar\EmbeddedDavDispatcher(
+		$dispatcher = new \OCA\Mcp\Modules\Calendar\Writing\EmbeddedDavDispatcher(
 			static fn () => throw new \RuntimeException('must stay lazy'),
-			new \OCA\Mcp\Tools\Calendar\Session($this->createMock(\OCP\IUserSession::class)),
+			new \OCA\Mcp\Modules\Calendar\Writing\Session($this->createMock(\OCP\IUserSession::class)),
 			$this->createMock(IConfig::class), new \Psr\Log\NullLogger());
 		$container = $this->createMock(ContainerInterface::class);
-		$container->expects($this->once())->method('get')->with(\OCA\Mcp\Tools\Calendar\EmbeddedDavDispatcher::class)->willReturn($dispatcher);
-		self::assertSame($dispatcher, $factories[\OCA\Mcp\Tools\Calendar\CalendarDav::class]($container));
-		self::assertInstanceOf(\OCA\Mcp\Service\Calendar\DavCalendarSelftestReader::class, $factories[\OCA\Mcp\Service\Calendar\CalendarSelftestReader::class]($container));
+		$container->expects($this->once())->method('get')->with(\OCA\Mcp\Modules\Calendar\Writing\EmbeddedDavDispatcher::class)->willReturn($dispatcher);
+		self::assertSame($dispatcher, $factories[\OCA\Mcp\Modules\Calendar\Writing\CalendarDav::class]($container));
+		self::assertInstanceOf(\OCA\Mcp\Modules\Calendar\Integration\DavCalendarSelftestReader::class, $factories[\OCA\Mcp\Modules\Calendar\Selftest\CalendarSelftestReader::class]($container));
 	}
 
 	/**
@@ -131,11 +131,11 @@ final class ApplicationRegistrationTest extends TestCase {
 			static fn (string $id): object => $services[$id] ?? throw new \RuntimeException('unexpected service ' . $id),
 		);
 
-		$dispatcher = $factories[\OCA\Mcp\Tools\Calendar\EmbeddedDavDispatcher::class]($container);
-		$serverFactory = (new \ReflectionProperty(\OCA\Mcp\Tools\Calendar\EmbeddedDavDispatcher::class, 'serverFactory'))->getValue($dispatcher);
+		$dispatcher = $factories[\OCA\Mcp\Modules\Calendar\Writing\EmbeddedDavDispatcher::class]($container);
+		$serverFactory = (new \ReflectionProperty(\OCA\Mcp\Modules\Calendar\Writing\EmbeddedDavDispatcher::class, 'serverFactory'))->getValue($dispatcher);
 
 		$this->expectException(\RuntimeException::class);
-		$this->expectExceptionMessage(\OCA\Mcp\Tools\Calendar\CalendarMessages::DAV_FAILURE);
+		$this->expectExceptionMessage(\OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages::DAV_FAILURE);
 		$serverFactory();
 	}
 

@@ -13,26 +13,26 @@ use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\FakeCalendarDav;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\FakeCalendarStore;
-use OCA\Mcp\Tools\Calendar\AttendeeResolver;
+use OCA\Mcp\Modules\Calendar\Composing\AttendeeResolver;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub;
-use OCA\Mcp\Tools\Calendar\CalendarModule;
-use OCA\Mcp\Tools\Calendar\Classification;
-use OCA\Mcp\Tools\Calendar\DateInput;
-use OCA\Mcp\Tools\Calendar\EventBuilder;
-use OCA\Mcp\Tools\Calendar\EventExpander;
-use OCA\Mcp\Tools\Calendar\EventMapper;
-use OCA\Mcp\Tools\Calendar\EventRelocator;
-use OCA\Mcp\Tools\Calendar\EventRepository;
-use OCA\Mcp\Tools\Calendar\Handler\CreateEvent;
-use OCA\Mcp\Tools\Calendar\Handler\DeleteEvent;
-use OCA\Mcp\Tools\Calendar\Handler\ListCalendars;
-use OCA\Mcp\Tools\Calendar\Handler\ListEvents;
-use OCA\Mcp\Tools\Calendar\Handler\MoveEvent;
-use OCA\Mcp\Tools\Calendar\Handler\TransferEvent;
-use OCA\Mcp\Tools\Calendar\Handler\UpdateEvent;
-use OCA\Mcp\Tools\Calendar\Scheduling;
-use OCA\Mcp\Tools\Calendar\SharedGuard;
-use OCA\Mcp\Tools\Calendar\TrashPolicy;
+use OCA\Mcp\Modules\Calendar\CalendarModule;
+use OCA\Mcp\Modules\Calendar\Locating\Classification;
+use OCA\Mcp\Modules\Calendar\Composing\DateInput;
+use OCA\Mcp\Modules\Calendar\Composing\EventBuilder;
+use OCA\Mcp\Modules\Calendar\Locating\EventExpander;
+use OCA\Mcp\Modules\Calendar\Presentation\EventMapper;
+use OCA\Mcp\Modules\Calendar\Moving\EventRelocator;
+use OCA\Mcp\Modules\Calendar\Locating\EventRepository;
+use OCA\Mcp\Modules\Calendar\Creation\CreateEventDraft;
+use OCA\Mcp\Modules\Calendar\Deletion\DeleteEventDraft;
+use OCA\Mcp\Modules\Calendar\Reading\ListCalendarsHandler;
+use OCA\Mcp\Modules\Calendar\Reading\ListEventsHandler;
+use OCA\Mcp\Modules\Calendar\Moving\MoveEventDraft;
+use OCA\Mcp\Modules\Calendar\Moving\TransferEventDraft;
+use OCA\Mcp\Modules\Calendar\Editing\UpdateEventDraft;
+use OCA\Mcp\Modules\Calendar\Scheduling\Scheduling;
+use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
+use OCA\Mcp\Modules\Calendar\Writing\TrashPolicy;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckToolModule;
 use OCA\Mcp\Modules\Notes\NotesModule;
@@ -236,8 +236,8 @@ final class ToolErrorsLanguagesTest extends TestCase {
 		$appConfig = $this->createMock(IAppConfig::class);
 		$appConfig->method('getValueString')->willReturn('');
 		$config = $this->createMock(IConfig::class);
-		$listCalendars = new ListCalendars($access);
-		$listEvents = new ListEvents($access, $store, $repository, $classification, new EventExpander(), $mapper, $dates, $time, $logger);
+		$listCalendars = new ListCalendarsHandler($access);
+		$listEvents = new ListEventsHandler($access, $store, $repository, $classification, new EventExpander(), $mapper, $dates, $time, $logger);
 		$users = $this->userManager();
 		$guard = new SharedGuard($users);
 		$dav = new FakeCalendarDav($store);
@@ -245,12 +245,12 @@ final class ToolErrorsLanguagesTest extends TestCase {
 		$attendees = new AttendeeResolver($users);
 		$scheduling = new Scheduling($appConfig);
 		$relocator = new EventRelocator($access, $store, $dav, $repository);
-		$createEvent = new CreateEvent($access, $guard, $dav, $store, $repository, $builder, $mapper, $dates, $attendees, $scheduling, $time);
-		$updateEvent = new UpdateEvent($access, $guard, $dav, $store, $repository, $builder, $mapper, $dates, $attendees, $scheduling, $time);
-		$moveEvent = new MoveEvent($access, $relocator, $guard);
-		$deleteEvent = new DeleteEvent($access, $guard, $dav, $store, $repository, new TrashPolicy($config), $scheduling);
-		$transferEvent = new TransferEvent($relocator);
-		return new CalendarModule(
+		$createEvent = new CreateEventDraft($access, $guard, $dav, $store, $repository, $builder, $mapper, $dates, $attendees, $scheduling, $time);
+		$updateEvent = new UpdateEventDraft($access, $guard, $dav, $store, $repository, $builder, $mapper, $dates, $attendees, $scheduling, $time);
+		$moveEvent = new MoveEventDraft($access, $relocator, $guard);
+		$deleteEvent = new DeleteEventDraft($access, $guard, $dav, $store, $repository, new TrashPolicy($config), $scheduling);
+		$transferEvent = new TransferEventDraft($relocator);
+		return \OCA\Mcp\Tests\Unit\Tools\Calendar\CalendarTestModule::build(
 			$listCalendars,
 			$listEvents,
 			$createEvent,
@@ -258,10 +258,10 @@ final class ToolErrorsLanguagesTest extends TestCase {
 			$moveEvent,
 			$deleteEvent,
 			$transferEvent,
-			new \OCA\Mcp\Tools\Calendar\CalendarDraftApproval($scheduling, $builder, $guard, new \OCA\Mcp\Tools\Calendar\Scheduling\PlanWarnings(
-				new \OCA\Mcp\Tools\Calendar\Scheduling\CollisionCheck($store, $repository, $classification, new EventExpander(), $logger),
-				new \OCA\Mcp\Tools\Calendar\Scheduling\AvailabilityCheck($this->createMock(\OCP\Calendar\IManager::class), $users, $logger),
-				new \OCA\Mcp\Tools\Calendar\Scheduling\SharedCalendarFinder($access, $store, $users, $this->createMock(\OCP\IGroupManager::class)),
+			new \OCA\Mcp\Modules\Calendar\Approval\CalendarDraftApproval($scheduling, $builder, $guard, new \OCA\Mcp\Modules\Calendar\Scheduling\PlanWarnings(
+				new \OCA\Mcp\Modules\Calendar\Scheduling\CollisionCheck($store, $repository, $classification, new EventExpander(), $logger),
+				new \OCA\Mcp\Modules\Calendar\Scheduling\AvailabilityCheck($this->createMock(\OCP\Calendar\IManager::class), $users, $logger),
+				new \OCA\Mcp\Modules\Calendar\Scheduling\SharedCalendarFinder($access, $store, $users, $this->createMock(\OCP\IGroupManager::class)),
 				$attendees,
 				$builder,
 				$users,

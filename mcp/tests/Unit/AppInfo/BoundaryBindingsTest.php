@@ -13,7 +13,7 @@ use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Modules\Calendar\NativeCalendarsAdapter;
 use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Platform\FileAccess\WriteVisibility;
-use OCA\Mcp\Tools\Calendar\CalendarAccess;
+use OCA\Mcp\Modules\Calendar\Locating\CalendarAccess;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 

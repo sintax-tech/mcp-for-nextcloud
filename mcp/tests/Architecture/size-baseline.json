@@ -57,16 +57,6 @@
 			]
 		},
 		{
-			"ceiling": 420,
-			"nameParts": [
-				"OCA",
-				"Mcp",
-				"Service",
-				"Calendar",
-				"CalendarSelftestService"
-			]
-		},
-		{
 			"ceiling": 484,
 			"nameParts": [
 				"OCA",

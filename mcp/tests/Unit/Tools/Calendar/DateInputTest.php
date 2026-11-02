@@ -8,9 +8,9 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Calendar;
 
 use DateTimeImmutable;
-use OCA\Mcp\Tools\Calendar\CalendarArgumentException;
-use OCA\Mcp\Tools\Calendar\CalendarException;
-use OCA\Mcp\Tools\Calendar\DateInput;
+use OCA\Mcp\Modules\Calendar\Failures\CalendarArgumentException;
+use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
+use OCA\Mcp\Modules\Calendar\Composing\DateInput;
 use PHPUnit\Framework\TestCase;
 
 final class DateInputTest extends TestCase {

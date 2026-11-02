@@ -8,29 +8,29 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Calendar;
 
 use DateTimeImmutable;
-use OCA\Mcp\Tools\Calendar\AttendeeResolver;
-use OCA\Mcp\Tools\Calendar\CalendarModule;
-use OCA\Mcp\Tools\Calendar\Classification;
-use OCA\Mcp\Tools\Calendar\DateInput;
-use OCA\Mcp\Tools\Calendar\EventBuilder;
-use OCA\Mcp\Tools\Calendar\EventExpander;
-use OCA\Mcp\Tools\Calendar\EventMapper;
-use OCA\Mcp\Tools\Calendar\EventRelocator;
-use OCA\Mcp\Tools\Calendar\EventRepository;
-use OCA\Mcp\Tools\Calendar\Handler\CreateEvent;
-use OCA\Mcp\Tools\Calendar\Handler\DeleteEvent;
-use OCA\Mcp\Tools\Calendar\Handler\ListCalendars;
-use OCA\Mcp\Tools\Calendar\Handler\ListEvents;
-use OCA\Mcp\Tools\Calendar\Handler\MoveEvent;
-use OCA\Mcp\Tools\Calendar\Handler\TransferEvent;
-use OCA\Mcp\Tools\Calendar\Handler\UpdateEvent;
-use OCA\Mcp\Tools\Calendar\Scheduling;
-use OCA\Mcp\Tools\Calendar\Scheduling\AvailabilityCheck;
-use OCA\Mcp\Tools\Calendar\Scheduling\CollisionCheck;
-use OCA\Mcp\Tools\Calendar\Scheduling\PlanWarnings;
-use OCA\Mcp\Tools\Calendar\Scheduling\SharedCalendarFinder;
-use OCA\Mcp\Tools\Calendar\SharedGuard;
-use OCA\Mcp\Tools\Calendar\TrashPolicy;
+use OCA\Mcp\Modules\Calendar\Composing\AttendeeResolver;
+use OCA\Mcp\Modules\Calendar\CalendarModule;
+use OCA\Mcp\Modules\Calendar\Locating\Classification;
+use OCA\Mcp\Modules\Calendar\Composing\DateInput;
+use OCA\Mcp\Modules\Calendar\Composing\EventBuilder;
+use OCA\Mcp\Modules\Calendar\Locating\EventExpander;
+use OCA\Mcp\Modules\Calendar\Presentation\EventMapper;
+use OCA\Mcp\Modules\Calendar\Moving\EventRelocator;
+use OCA\Mcp\Modules\Calendar\Locating\EventRepository;
+use OCA\Mcp\Modules\Calendar\Creation\CreateEventDraft;
+use OCA\Mcp\Modules\Calendar\Deletion\DeleteEventDraft;
+use OCA\Mcp\Modules\Calendar\Reading\ListCalendarsHandler;
+use OCA\Mcp\Modules\Calendar\Reading\ListEventsHandler;
+use OCA\Mcp\Modules\Calendar\Moving\MoveEventDraft;
+use OCA\Mcp\Modules\Calendar\Moving\TransferEventDraft;
+use OCA\Mcp\Modules\Calendar\Editing\UpdateEventDraft;
+use OCA\Mcp\Modules\Calendar\Scheduling\Scheduling;
+use OCA\Mcp\Modules\Calendar\Scheduling\AvailabilityCheck;
+use OCA\Mcp\Modules\Calendar\Scheduling\CollisionCheck;
+use OCA\Mcp\Modules\Calendar\Scheduling\PlanWarnings;
+use OCA\Mcp\Modules\Calendar\Scheduling\SharedCalendarFinder;
+use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
+use OCA\Mcp\Modules\Calendar\Writing\TrashPolicy;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IAppConfig;
 use OCP\Calendar\IAvailabilityResult;
@@ -65,7 +65,7 @@ abstract class CalendarTestCase extends TestCase {
 	protected FakeCalendarDav $dav;
 	protected CalendarModule $module;
 	protected \OCA\Mcp\Mcp\Tools\ToolRegistry $registry;
-	/** @var array<string, \OCA\Mcp\Tools\Calendar\CalendarTool> write handlers exercised directly by domain tests */
+	/** @var array<string, \OCA\Mcp\Modules\Calendar\Approval\CalendarDraft> write handlers exercised directly by domain tests */
 	protected array $writeHandlers = [];
 	/** Value returned by dav/calendarRetentionObligation. */
 	protected string $retention = '';
@@ -120,13 +120,13 @@ abstract class CalendarTestCase extends TestCase {
 		$guard = new SharedGuard($this->users());
 		$attendees = new AttendeeResolver($this->users());
 		$scheduling = new Scheduling($appConfig);
-		$listCalendars = new ListCalendars($access);
-		$listEvents = new ListEvents($access, $this->store, $repository, $classification, new EventExpander(), $mapper, $dates, $time, $logger);
-		$createEvent = new CreateEvent($access, $guard, $this->dav, $this->store, $repository, $builder, $mapper, $dates, $attendees, $scheduling, $time);
-		$updateEvent = new UpdateEvent($access, $guard, $this->dav, $this->store, $repository, $builder, $mapper, $dates, $attendees, $scheduling, $time);
-		$moveEvent = new MoveEvent($access, $relocator, $guard);
-		$deleteEvent = new DeleteEvent($access, $guard, $this->dav, $this->store, $repository, new TrashPolicy($config), $scheduling);
-		$transferEvent = new TransferEvent($relocator);
+		$listCalendars = new ListCalendarsHandler($access);
+		$listEvents = new ListEventsHandler($access, $this->store, $repository, $classification, new EventExpander(), $mapper, $dates, $time, $logger);
+		$createEvent = new CreateEventDraft($access, $guard, $this->dav, $this->store, $repository, $builder, $mapper, $dates, $attendees, $scheduling, $time);
+		$updateEvent = new UpdateEventDraft($access, $guard, $this->dav, $this->store, $repository, $builder, $mapper, $dates, $attendees, $scheduling, $time);
+		$moveEvent = new MoveEventDraft($access, $relocator, $guard);
+		$deleteEvent = new DeleteEventDraft($access, $guard, $this->dav, $this->store, $repository, new TrashPolicy($config), $scheduling);
+		$transferEvent = new TransferEventDraft($relocator);
 		$this->writeHandlers = [
 			'calendar_create_event' => $createEvent,
 			'calendar_update_event' => $updateEvent,
@@ -168,7 +168,7 @@ abstract class CalendarTestCase extends TestCase {
 			$logger,
 			$zones,
 		);
-		$this->module = new CalendarModule(
+		$this->module = CalendarTestModule::build(
 			$listCalendars,
 			$listEvents,
 			$createEvent,
@@ -176,7 +176,7 @@ abstract class CalendarTestCase extends TestCase {
 			$moveEvent,
 			$deleteEvent,
 			$transferEvent,
-			new \OCA\Mcp\Tools\Calendar\CalendarDraftApproval($scheduling, $builder, $guard, $warnings, $zones),
+			new \OCA\Mcp\Modules\Calendar\Approval\CalendarDraftApproval($scheduling, $builder, $guard, $warnings, $zones),
 		);
 		$policy = $this->createMock(\OCA\Mcp\Access\Grants\GrantPolicy::class);
 		$policy->method('granted')->willReturn(true);
@@ -256,8 +256,8 @@ abstract class CalendarTestCase extends TestCase {
 		if (isset($this->writeHandlers[$name])) {
 			try {
 				return $this->writeHandlers[$name]->execute($arguments, 'alice');
-			} catch (\OCA\Mcp\Tools\Calendar\CalendarException $exception) {
-				return \OCA\Mcp\Tools\Calendar\ToolSchema::error($exception->getMessage());
+			} catch (\OCA\Mcp\Modules\Calendar\Failures\CalendarException $exception) {
+				return \OCA\Mcp\Mcp\Tools\Schema\SchemaBuilder::error($exception->getMessage());
 			}
 		}
 		return $this->module->call($name, $arguments, 'alice');

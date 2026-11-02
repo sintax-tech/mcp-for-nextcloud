@@ -6,8 +6,8 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Service\Calendar;
 
-use OCA\Mcp\Service\Calendar\DavCalendarSelftestReader;
-use OCA\Mcp\Tools\Calendar\Calendar;
+use OCA\Mcp\Modules\Calendar\Integration\DavCalendarSelftestReader;
+use OCA\Mcp\Modules\Calendar\Locating\Calendar;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 

@@ -24,7 +24,7 @@ final class FormsSchema {
 		foreach ($rows as $row) {
 			if ($row['name'] !== $name) { continue; }
 			return new ToolDefinition($row['name'], 'forms', $row['operation'], $row['description'], $row['inputSchema'],
-				app: 'forms', grantAnyOf: $row['grantAnyOf'] ?? null, destructiveHint: $row['annotations']['destructiveHint'] ?? false);
+				app: 'forms', grantAnyOf: $row['grantAnyOf'] ?? null, destructiveHint: ($row['destructiveHint'] ?? false) === true);
 		}
 		throw new \InvalidArgumentException('Unknown tool');
 	}

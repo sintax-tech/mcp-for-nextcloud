@@ -15,6 +15,7 @@ use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\ToolPresentation;
 use PHPUnit\Framework\TestCase;
+use OCA\Mcp\Tests\Unit\Contract\Oracle\{DiscoveryHarness, DiscoveryScenario};
 
 require_once __DIR__ . '/FormsFixture.php';
 
@@ -23,7 +24,7 @@ final class FormsCharacterizationTest extends TestCase {
 	private array $events = [];
 
 	public function testTheMovedModuleKeepsEveryCallAndPlan(): void {
-		$actual = [];
+		$actual = ['published' => (new DiscoveryHarness($this, DiscoveryScenario::allOn()))->request('tools/list')['body']->result->tools];
 		foreach (['success', 'failure'] as $mode) {
 			$this->events = [];
 			$module = $this->module($mode);

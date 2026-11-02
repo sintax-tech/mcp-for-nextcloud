@@ -235,22 +235,6 @@
 		},
 		{
 			"rule": "module-isolation",
-			"source": "lib/Tools/Notes/NoteChange.php",
-			"target": "OCA\\Mcp\\Tools\\Files\\UniqueSnippet",
-			"line": 125,
-			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
-			"expires": "RE-13"
-		},
-		{
-			"rule": "module-isolation",
-			"source": "lib/Tools/Notes/NoteChangePlan.php",
-			"target": "OCA\\Mcp\\Tools\\Files\\UnifiedDiff",
-			"line": 60,
-			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
-			"expires": "RE-13"
-		},
-		{
-			"rule": "module-isolation",
 			"source": "lib/Tools/Talk/ReferenceLinker.php",
 			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarException",
 			"line": 154,

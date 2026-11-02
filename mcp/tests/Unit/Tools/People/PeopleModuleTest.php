@@ -13,7 +13,7 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
-use OCA\Mcp\Tools\People\PeopleModule;
+use OCA\Mcp\Modules\People\PeopleModule;
 use OCA\Mcp\Mcp\Tools\ToolPresentation;
 use OCP\Collaboration\Collaborators\ISearch;
 use OCP\Share\IShare;
@@ -41,7 +41,7 @@ final class PeopleModuleTest extends TestCase {
 			$captured = [$term, $types, $lookup, $limit, $offset];
 			return [$result, false];
 		});
-		return new PeopleModule($search, $this->createMock(LoggerInterface::class));
+		return PeopleTestModule::build($search, $this->createMock(LoggerInterface::class));
 	}
 
 	/** @return list<array<string, string>> */
@@ -51,7 +51,7 @@ final class PeopleModuleTest extends TestCase {
 	}
 
 	public function testDefinitionIsAnAppLessReadTool(): void {
-		$definitions = (new PeopleModule($this->createMock(ISearch::class), $this->createMock(LoggerInterface::class)))->definitions();
+		$definitions = (PeopleTestModule::build($this->createMock(ISearch::class), $this->createMock(LoggerInterface::class)))->definitions();
 		self::assertCount(1, $definitions);
 		self::assertSame('users_search', $definitions[0]['name']);
 		self::assertSame('people', $definitions[0]['module']);
@@ -70,7 +70,7 @@ final class PeopleModuleTest extends TestCase {
 	}
 
 	public function testIncludeGroupsIsValidatedAsABooleanByTheSchema(): void {
-		$schema = (new PeopleModule($this->createMock(ISearch::class), $this->createMock(LoggerInterface::class)))->definitions()[0]['inputSchema'];
+		$schema = (PeopleTestModule::build($this->createMock(ISearch::class), $this->createMock(LoggerInterface::class)))->definitions()[0]['inputSchema'];
 		self::assertFalse(ArgumentValidator::validate($schema, ['query' => 've'])['include_groups']);
 		self::assertTrue(ArgumentValidator::validate($schema, ['query' => 've', 'include_groups' => true])['include_groups']);
 		$this->expectException(InvalidArgumentException::class);
@@ -211,11 +211,11 @@ final class PeopleModuleTest extends TestCase {
 		self::assertStringContainsString('Never invent an ID', ToolPresentation::INSTRUCTIONS);
 		self::assertStringContainsString('Search people', ToolPresentation::INSTRUCTIONS);
 		self::assertSame('Search people', ToolPresentation::title('users_search'));
-		self::assertStringContainsString('users_search', implode(' ', (new PeopleModule($this->createMock(ISearch::class), $this->createMock(LoggerInterface::class)))->guideNotes()));
+		self::assertStringContainsString('users_search', implode(' ', (PeopleTestModule::build($this->createMock(ISearch::class), $this->createMock(LoggerInterface::class)))->guideNotes()));
 	}
 
 	public function testTheModelIsToldHowToShareWithAGroup(): void {
-		$module = new PeopleModule($this->createMock(ISearch::class), $this->createMock(LoggerInterface::class));
+		$module = PeopleTestModule::build($this->createMock(ISearch::class), $this->createMock(LoggerInterface::class));
 		$description = $module->definitions()[0]['description'];
 		self::assertStringContainsString('include_groups', $description);
 		self::assertStringContainsString('group:', $description);
@@ -239,7 +239,7 @@ final class PeopleModuleTest extends TestCase {
 				$logged[] = $args;
 			});
 		}
-		$module = new PeopleModule($search, $logger);
+		$module = PeopleTestModule::build($search, $logger);
 
 		try {
 			$module->call('users_search', ['query' => $term, 'limit' => 10], 'alice');

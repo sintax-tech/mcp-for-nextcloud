@@ -8,6 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Logs;
 
 use OCA\Mcp\Mcp\Tools\RestrictedModule;
+use OCA\Mcp\Modules\Logs\Presentation\LogRedactor;
+use OCA\Mcp\Modules\Logs\Reading\LogFilter;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Log\Audit\CriticalActionPerformedEvent;
 use Psr\Log\LoggerInterface;
@@ -22,8 +24,34 @@ class LogAudit {
 	public const READ = 'MCP logs read by %s: tool=%s filters=%s';
 	/** Message of a call that read nothing: denied, invalid or failed. */
 	public const REFUSED = 'MCP logs request %s for %s: tool=%s filters=%s';
+	/** Arguments recorded by the audit, in this order. */
+	private const AUDITED_ARGUMENTS = ['min_level', 'app', 'user', 'since', 'until', 'contains', 'req_id', 'offset', 'limit'];
 
 	public function __construct(private IEventDispatcher $dispatcher, private LoggerInterface $logger) {}
+
+	/**
+	 * Keeps the known filters of a call and records it. The arguments are untrusted: only the known filters, offset
+	 * and limit are kept, scalars only, each text cut. An integer is copied as an integer, including for contains.
+	 * The text of contains is never stored.
+	 *
+	 * @param string $tool technical name of the tool called
+	 * @param string $userId authenticated user
+	 * @param string $outcome one of the RestrictedModule outcomes
+	 * @param array<string, mixed> $arguments arguments of the call
+	 */
+	public function recordCall(string $tool, string $userId, string $outcome, array $arguments): void {
+		$filters = [];
+		foreach (self::AUDITED_ARGUMENTS as $key) {
+			$value = $arguments[$key] ?? null;
+			if (is_int($value)) {
+				$filters[$key] = $value;
+			} elseif (is_string($value)) {
+				// What the reader searched for may be a file name: the audit log never carries that text.
+				$filters[$key] = $key === 'contains' ? LogRedactor::HIDDEN : LogRedactor::text($value, LogFilter::MAX_CONTAINS);
+			}
+		}
+		$this->record($userId, LogRedactor::text($tool, 64), $outcome, $filters);
+	}
 
 	/**
 	 * @param string $userId account that called the tool

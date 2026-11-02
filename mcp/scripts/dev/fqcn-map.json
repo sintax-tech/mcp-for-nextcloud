@@ -2,6 +2,11 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Modules/Logs/Reading/LogsReadWindow.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\Reading\\LogsReadWindow","target":"stays","owner":"Modules\\Logs","ticket":null},
+		{"path":"lib/Modules/Logs/Reading/ListLogsHandler.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\Reading\\ListLogsHandler","target":"stays","owner":"Modules\\Logs","ticket":null},
+		{"path":"lib/Modules/Logs/Reading/AnalyzeLogsHandler.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\Reading\\AnalyzeLogsHandler","target":"stays","owner":"Modules\\Logs","ticket":null},
+		{"path":"lib/Modules/Logs/Presentation/LogsSchema.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\Presentation\\LogsSchema","target":"stays","owner":"Modules\\Logs","ticket":null},
+		{"path":"lib/Modules/Logs/Presentation/LogsGuideNotes.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\Presentation\\LogsGuideNotes","target":"stays","owner":"Modules\\Logs","ticket":null},
 		{"path":"lib/Modules/Logs/LogLevels.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\LogLevels","target":"stays","owner":"Modules\\Logs","ticket":null},
 		{"path":"lib/Modules/Logs/Presentation/LogTextRedactor.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\Presentation\\LogTextRedactor","target":"stays","owner":"Modules\\Logs","ticket":null},
 		{"path":"lib/Modules/Logs/Presentation/LogExceptionRedactor.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\Presentation\\LogExceptionRedactor","target":"stays","owner":"Modules\\Logs","ticket":null},

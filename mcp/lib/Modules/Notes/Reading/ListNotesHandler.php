@@ -36,12 +36,12 @@ final class ListNotesHandler {
 	/**
 	 * Lists the notes of the account.
 	 *
-	 * @param Folder|null $root Notes folder, null when it does not exist.
 	 * @param string $userId Authenticated user.
 	 * @return array{content: list<array{type:string, text:string}>} The list, with the missing-folder notice when it applies.
 	 * @throws \JsonException When the answer cannot be encoded.
 	 */
-	public function handle(?Folder $root, string $userId): array {
+	public function handle(string $userId): array {
+		$root = $this->notes->folder($userId, false);
 		return NotesFolderNotice::attach('notes_list', $root, ToolResult::json($this->notes($root, $userId)));
 	}
 

@@ -79,7 +79,6 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Modules/Notes/Moving/MoveNoteHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testMoveRefusesBeforeCreatingACategory',
 			'Modules/Notes/Editing/NoteContentSink.php#whole:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testWholeEditRefusesADeniedTitleBeforeWritingContent',
 			'Modules/Notes/Editing/NoteContentSink.php#partial:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testPartialWriterRefusesBeforePutContent',
-			'Modules/Notes/NotesModule.php#call:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testMoveDelegationIsGuarded',
 			'Tools/Files/FileBackup.php#copy:copy:1' => 'D3: delegates to the verified internal recovery copier; never reads file type policy',
 			'Tools/Files/FileBackup.php#prepare:copy:1' => 'D3: internal verified backup delegation; never reads policy',
 			'Tools/Files/FileBackupCopy.php#copy:newfile:1' => 'D3: mandatory internal backup creation; never reads policy',
@@ -109,7 +108,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 		$calls = FileWriteSinkInventory::calls(FileWriteSinkInventory::sources(__DIR__ . '/../../../lib'));
 		$literals = array_values(array_filter($calls, static fn (string $call): bool => str_contains($call, ':literal-')));
 		self::assertCount(21, $literals);
-		self::assertCount(46, array_diff($calls, $literals));
+		self::assertCount(45, array_diff($calls, $literals));
 		foreach ($calls as $call) {
 			self::assertDoesNotMatchRegularExpression('/:(?:literal-)?(?:writestream|fputs):/', $call);
 		}

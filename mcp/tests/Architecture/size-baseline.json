@@ -436,17 +436,6 @@
 			]
 		},
 		{
-			"ceiling": 627,
-			"expires": "RE-13",
-			"nameParts": [
-				"OCA",
-				"Mcp",
-				"Tools",
-				"Notes",
-				"NotesModule"
-			]
-		},
-		{
 			"ceiling": 547,
 			"expires": "RE-20",
 			"nameParts": [

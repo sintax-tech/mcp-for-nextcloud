@@ -8,49 +8,50 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Notes;
 
 use InvalidArgumentException;
-use OCA\Mcp\Access\Visibility\VisibilityGuard;
-use OCA\Mcp\Platform\FileAccess\NodeAccess;
-use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
-use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Access\FileTypes\FileTypeGuard;
-use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
-use OCA\Mcp\Platform\FileAccess\PathGuard;
-use OCA\Mcp\Modules\Notes\{Creation\CreateNoteHandler, Locating\NotesRepository, Moving\MoveNoteHandler, Writing\NoteWrite};
-use OCA\Mcp\Modules\Notes\Editing\{EditNoteHandler, NoteChange, NoteChangePreview, NoteChangeTitle};
-use OCA\Mcp\Modules\Notes\Presentation\{NotesMessages, NotesPlanRenderer};
-use OCA\Mcp\Modules\Notes\Reading\{ListNotesHandler, SearchNotesHandler};
-use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Mcp\Guide\ToolGuideNotes;
 use OCA\Mcp\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
-use OCA\Mcp\Mcp\Guide\ToolGuideNotes;
-use OCA\Mcp\Mcp\Tools\ToolModule;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
+use OCA\Mcp\Mcp\Tools\ToolModule;
+use OCA\Mcp\Modules\Notes\Creation\CreateNoteHandler;
+use OCA\Mcp\Modules\Notes\Creation\CreateNotePreview;
+use OCA\Mcp\Modules\Notes\Deletion\DeleteNoteHandler;
+use OCA\Mcp\Modules\Notes\Deletion\DeleteNotePreview;
+use OCA\Mcp\Modules\Notes\Editing\EditNoteHandler;
+use OCA\Mcp\Modules\Notes\Editing\EditNotePreview;
+use OCA\Mcp\Modules\Notes\Editing\NoteChange;
+use OCA\Mcp\Modules\Notes\Integration\NotesTrash;
+use OCA\Mcp\Modules\Notes\Locating\NoteCategories;
+use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
+use OCA\Mcp\Modules\Notes\Moving\MoveNoteHandler;
+use OCA\Mcp\Modules\Notes\Moving\MoveNotePreview;
+use OCA\Mcp\Modules\Notes\Presentation\NotesMessages;
+use OCA\Mcp\Modules\Notes\Presentation\NotesPlanRenderer;
+use OCA\Mcp\Modules\Notes\Reading\ListNotesHandler;
+use OCA\Mcp\Modules\Notes\Reading\ReadNoteHandler;
+use OCA\Mcp\Modules\Notes\Reading\SearchNotesHandler;
+use OCA\Mcp\Modules\Notes\Writing\NoteWrite;
+use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
+use OCA\Mcp\Platform\FileAccess\NodeAccess;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCP\App\IAppManager;
-use OCP\Files\File;
-use OCP\Files\Folder;
-use OCP\Files\Node;
 use OCP\IUserManager;
 
 /**
- * Notes tools: definitions and one short method per operation. File access, lookup and naming live in
- * NotesRepository; this class adds the operation rules (size, etag, ACL, confirmation, recoverability).
+ * Notes tools: the definitions and, for each call and plan, the one class that does the work (lookup in Locating,
+ * reads in Reading, each write and its plan in the folder of its verb). This class only wires them.
  *
- * The four writing tools also answer {@see self::preview()}, which the registry asks for whenever a write
- * arrives without `confirm: true`: the note as it is now, what the call would do to it, and whether the
- * trash bin would take it back. A preview creates no category folder and writes nothing.
- *
- * A note open in Text (or in Notes in rich mode) is locked by files_lock: the plan warns about it and the write is
- * refused, before anything changes, with the app and what to do ({@see LockAwareWrite}).
+ * The four writing tools also answer {@see self::preview()}, which the registry asks for whenever a write arrives
+ * without `confirm: true`. A note open in Text is refused before anything changes ({@see LockAwareWrite}).
  */
 class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, RendersPlans {
 	/** Maximum note size read or written, in bytes. */
 	public const MAX_BYTES = NotesRepository::MAX_BYTES;
-	/** Storage wrapper files_trashbin puts around storages whose deletions go to the trash bin. */
-	public const TRASH_STORAGE = 'OCA\\Files_Trashbin\\Storage';
-	/** Characters of the content a plan shows, so the user reads the note and not a wall of text. */
-	private const EXCERPT_CHARS = 400;
 
 	/**
 	 * @param NotesRepository $notes note lookup, reads and naming
@@ -149,157 +150,31 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
 	 * @throws ToolFailure for client-safe failures (not found, forbidden, conflict, precondition)
 	 */
 	public function call(string $name, array $arguments, string $userId): array {
-		return NodeAccess::run(function () use ($name, $arguments, $userId): array {
-			// A creation makes the notes folder itself, and only after the shared-write guard has looked at it.
-			$root = $name === 'notes_create' ? null : $this->notes->folder($userId, false);
-			return match ($name) {
-				'notes_list' => $this->lists()->handle($root, $userId),
-				'notes_search' => $this->searches()->handle($root, $userId, $arguments),
-				'notes_read' => ToolResult::json($this->read($root, $userId, $arguments['id'])),
-				'notes_create' => ToolResult::json($this->create($userId, $arguments)),
-				'notes_edit' => ToolResult::json($this->edit($root, $userId, $arguments)),
-				'notes_move' => ToolResult::json($this->move($root, $userId, $arguments)),
-				'notes_delete' => ToolResult::json($this->delete($root, $userId, $arguments)),
-				default => throw new InvalidArgumentException('Unknown tool'),
-			};
+		return NodeAccess::run(fn (): array => match ($name) {
+			'notes_list' => (new ListNotesHandler($this->notes, $this->accessInfo))->handle($userId),
+			'notes_search' => (new SearchNotesHandler($this->notes, $this->accessInfo, $this->visibilityGuard, $this->categories()))->handle($userId, $arguments),
+			'notes_read' => ToolResult::json((new ReadNoteHandler($this->notes, $this->accessInfo))->handle($userId, $arguments)),
+			'notes_create' => ToolResult::json($this->creates()->handle($userId, $arguments)),
+			'notes_edit' => ToolResult::json($this->edits()->handle($userId, $arguments)),
+			'notes_move' => ToolResult::json($this->moves()->handle($userId, $arguments)),
+			'notes_delete' => ToolResult::json($this->deletes()->handle($userId, $arguments)),
+			default => throw new InvalidArgumentException('Unknown tool'),
 		});
-	}
-
-	/**
-	 * @param Folder|null $root notes folder
-	 * @param string $userId authenticated user
-	 * @param int $id note id
-	 * @return array{id:int, title:string, category:string, modified:int, etag:string, path:string, content:string, access:array<string, mixed>}
-	 */
-	private function read(?Folder $root, string $userId, int $id): array {
-		$note = $this->notes->find($root, $id);
-		return $this->notes->info($note, $root) + [
-			'path' => $this->notes->path($note, $userId),
-			'content' => $this->notes->read($note),
-			'access' => $this->accessInfo->describe($note, $userId),
-		];
-	}
-
-	/**
-	 * @param array{title:string, content?:string, category?:string, confirm_shared?:bool} $arguments
-	 * @return array<string, mixed> the note, or the shared-write confirmation without creating anything
-	 */
-	private function create(string $userId, array $arguments): array {
-		return $this->creates()->handle($userId, $arguments);
-	}
-
-	/**
-	 * @param Folder|null $root notes folder
-	 * @param string $userId authenticated user
-	 * @param array{id:int, content?:string, append?:string, old?:string, new?:string, title?:string, etag?:string, plan_state?:string, confirm_shared?:bool} $arguments
-	 * @return array<string, mixed> the note, or the shared-write confirmation without writing
-	 */
-	private function edit(?Folder $root, string $userId, array $arguments): array {
-		return $this->edits()->handle($root, $userId, $arguments);
-	}
-
-	/**
-	 * @param array{id:int, category:string, etag?:string, confirm_shared?:bool} $arguments
-	 * @return array<string, mixed> the note, or the shared-write confirmation without moving
-	 */
-	private function move(?Folder $root, string $userId, array $arguments): array {
-		return $this->moves()->handle($root, $userId, $arguments);
-	}
-
-	/**
-	 * Wires notes_list. The handler owns the operation.
-	 *
-	 * @return ListNotesHandler Handler for this module.
-	 */
-	private function lists(): ListNotesHandler {
-		return new ListNotesHandler($this->notes, $this->accessInfo);
-	}
-
-	/**
-	 * Wires notes_search. The handler owns the operation; the category lookup stays shared with the plans.
-	 *
-	 * @return SearchNotesHandler Handler for this module.
-	 */
-	private function searches(): SearchNotesHandler {
-		return new SearchNotesHandler($this->notes, $this->accessInfo, $this->visibilityGuard, $this->existingCategory(...));
-	}
-
-	/**
-	 * Wires notes_create. The handler owns the operation.
-	 *
-	 * @return CreateNoteHandler Handler for this module.
-	 */
-	private function creates(): CreateNoteHandler {
-		return new CreateNoteHandler($this->notes, $this->guard, $this->visibilityGuard, $this->types);
-	}
-
-	/**
-	 * Wires notes_edit. The handler owns the operation.
-	 *
-	 * @return EditNoteHandler Handler for this module.
-	 */
-	private function edits(): EditNoteHandler {
-		return new EditNoteHandler($this->notes, $this->guard, $this->accessInfo, $this->visibilityGuard, $this->locks, $this->states, $this->types);
-	}
-
-	/**
-	 * Wires notes_move. The handler owns the operation.
-	 *
-	 * @return MoveNoteHandler Handler for this module.
-	 */
-	private function moves(): MoveNoteHandler {
-		return new MoveNoteHandler($this->notes, $this->guard, $this->accessInfo, $this->visibilityGuard, $this->locks, $this->types);
-	}
-
-	/**
-	 * Wires the shared write checks. The handler and delete paths call the same implementation.
-	 *
-	 * @return NoteWrite Checks and lock wrapping for this module.
-	 */
-	private function writes(): NoteWrite {
-		return new NoteWrite($this->notes, $this->accessInfo, $this->visibilityGuard, $this->locks);
-	}
-
-	/**
-	 * @param array{id:int, confirm?:bool, etag?:string, confirm_shared?:bool} $arguments
-	 * @return array<string, mixed> the deletion receipt, or the shared-write confirmation without deleting
-	 */
-	private function delete(?Folder $root, string $userId, array $arguments): array {
-		$this->assertRecoverable($userId);
-		if (($payload = $this->writable($root, $userId, $arguments)) !== null) {
-			return $payload;
-		}
-		$note = $this->notes->find($root, $arguments['id']);
-		if (!$note->isDeletable()) {
-			throw new ToolFailure(CommonMessages::forbidden());
-		}
-		// An enabled app does not cover every mount: external or excluded storages delete permanently.
-		if (!$note->getStorage()->instanceOfStorage(self::TRASH_STORAGE)) {
-			throw new ToolFailure(NotesMessages::notRecoverable());
-		}
-		$this->locked(fn () => $note->delete(), $note, $userId);
-		return ['id' => $arguments['id'], 'deleted' => true, 'trash' => true];
 	}
 
 	/**
 	 * {@inheritDoc}
 	 *
-	 * The plan says what the note looks like now and what the call does to it: the title and category it
-	 * would end up in, an excerpt of the content, and whether the trash bin would bring it back. A note
-	 * that would not be recoverable is refused here with the same message the write would give, so the
-	 * model never asks the user about a deletion the server will not perform. A lock is not refused here: the
-	 * plan carries it as a warning, so the person sees both the change and why it would not happen yet.
+	 * The plan says what the note looks like now and what the call does to it; each plan lives beside the write it
+	 * describes and refuses what that write would refuse.
 	 */
 	public function preview(string $name, array $arguments, string $userId): array {
-		return NodeAccess::run(function () use ($name, $arguments, $userId): array {
-			$root = $this->notes->folder($userId, false);
-			return match ($name) {
-				'notes_create' => $this->previewCreate($root, $userId, $arguments),
-				'notes_edit' => $this->previewEdit($root, $userId, $arguments),
-				'notes_move' => $this->previewMove($root, $userId, $arguments),
-				'notes_delete' => $this->previewDelete($root, $userId, $arguments),
-				default => throw new InvalidArgumentException('Unknown tool'),
-			};
+		return NodeAccess::run(fn (): array => match ($name) {
+			'notes_create' => (new CreateNotePreview($this->notes, $this->creates(), $this->categories(), $this->snapshots()))->plan($userId, $arguments),
+			'notes_edit' => (new EditNotePreview($this->notes, $this->edits(), $this->snapshots(), $this->accessInfo, $this->locks, $this->states, $this->types))->plan($userId, $arguments),
+			'notes_move' => (new MoveNotePreview($this->notes, $this->moves(), $this->categories(), $this->snapshots(), $this->accessInfo, $this->visibilityGuard, $this->locks))->plan($userId, $arguments),
+			'notes_delete' => (new DeleteNotePreview($this->notes, $this->trash(), $this->snapshots(), $this->accessInfo, $this->locks))->plan($userId, $arguments),
+			default => throw new InvalidArgumentException('Unknown tool'),
 		});
 	}
 
@@ -311,306 +186,52 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
 	}
 
 	/**
-	 * @param Folder|null $root notes folder
-	 * @param string $userId authenticated user
-	 * @param array{title:string, content?:string, category?:string} $arguments
-	 * @return array<string, mixed> the note the call would create
+	 * @return CreateNoteHandler the creation, with this module's guards
 	 */
-	private function previewCreate(?Folder $root, string $userId, array $arguments): array {
-		self::checkSize((string)($arguments['content'] ?? ''));
-		$this->creates()->assertPlanned($arguments);
-		$category = (string)($arguments['category'] ?? '');
-		$shared = $this->shared($this->notes->existingAncestor($userId, $category), $userId);
-		if ($root !== null) {
-			// A plan refuses what the write refuses: a new category below a hidden ancestor answers exactly
-			// like one that does not exist, before anything is created.
-			$this->notes->assertCategoryVisible($root, $category);
-		}
-		$folder = $this->existingCategory($root, $category);
-		if ($root === null || $folder === null) {
-			// The category folder itself does not exist yet: the write creates it, and the plan says so
-			// rather than creating anything now.
-			return [
-				'action' => 'notes_create',
-				'note' => ['title' => (string)$arguments['title'], 'category' => trim($category, '/'), 'categoryCreated' => $category !== ''],
-				'shared' => $shared,
-				'recoverable' => true,
-				'message' => NotesMessages::planCreate(),
-			];
-		}
-		return [
-			'action' => 'notes_create',
-			'note' => [
-				'title' => (string)$arguments['title'],
-				'fileName' => $this->notes->freeName($folder, (string)$arguments['title']),
-				'category' => $this->categoryName($root, $folder),
-				'categoryCreated' => false,
-				'content' => self::excerpt((string)($arguments['content'] ?? '')),
-				'bytes' => strlen((string)($arguments['content'] ?? '')),
-			],
-			'shared' => $shared,
-			'recoverable' => true,
-			'message' => NotesMessages::planCreate(),
-		];
+	private function creates(): CreateNoteHandler {
+		return new CreateNoteHandler($this->notes, $this->guard, $this->visibilityGuard, $this->types);
 	}
 
 	/**
-	 * @param Folder|null $root notes folder
-	 * @param string $userId authenticated user
-	 * @param array{id:int, content?:string, append?:string, old?:string, new?:string, title?:string, etag?:string, confirm_shared?:bool} $arguments
-	 * @return array<string, mixed> the note before and after the change, or the plan of an append or a replace
+	 * @return EditNoteHandler the edit, with this module's guards
 	 */
-	private function previewEdit(?Folder $root, string $userId, array $arguments): array {
-		$mode = NoteChange::mode($arguments);
-		if (NoteChange::isPartial($mode)) {
-			return (new NoteChangePreview($this->notes, $this->accessInfo, $this->states, $this->locks, $this->types))->plan($root, $userId, $arguments, $mode);
-		}
-		$note = $this->notes->find($root, $arguments['id']);
-		if (isset($arguments['content'])) {
-			self::checkSize($arguments['content']);
-		}
-		NodeAccess::checkEtag($note, $arguments['etag'] ?? null);
-		if (!$note->isUpdateable()) {
-			throw new ToolFailure(CommonMessages::forbidden());
-		}
-		// The same refusal the write gives, so the user is never asked to approve what would fail.
-		if (isset($arguments['title'])) {
-			(new NoteChangeTitle($this->notes))->target($note, $arguments['title']);
-		}
-		$this->edits()->assertPlanned($note, $arguments);
-		$before = $this->snapshot($root, $note);
-		$after = $before;
-		$after['title'] = isset($arguments['title'])
-			? pathinfo($this->notes->renamedName($note, $arguments['title']), PATHINFO_FILENAME)
-			: $before['title'];
-		// `changed` compares the whole content: the excerpts a plan shows are cut and can be equal for
-		// two different notes.
-		$contentChanged = false;
-		if (isset($arguments['content'])) {
-			$after['content'] = self::excerpt($arguments['content']);
-			$after['bytes'] = strlen($arguments['content']);
-			$contentChanged = $arguments['content'] !== (string)$note->getContent();
-		}
-		return [
-			'action' => 'notes_edit',
-			'note' => ['id' => (int)$note->getId(), 'before' => $before, 'after' => $after],
-			'changed' => array_values(array_filter(
-				['title', 'content'],
-				static fn (string $field): bool => $field === 'title' ? $before['title'] !== $after['title'] : $contentChanged,
-			)),
-			'access' => $this->accessInfo->describe($note, $userId),
-			'shared' => $this->shared($note, $userId),
-			'recoverable' => true,
-			'message' => NotesMessages::planEdit(),
-		] + ($this->locks?->planNotice($note, $userId) ?? []);
+	private function edits(): EditNoteHandler {
+		return new EditNoteHandler($this->notes, $this->guard, $this->accessInfo, $this->visibilityGuard, $this->locks, $this->states, $this->types);
 	}
 
 	/**
-	 * @param Folder|null $root notes folder
-	 * @param string $userId authenticated user
-	 * @param array{id:int, category:string, etag?:string, confirm_shared?:bool} $arguments
-	 * @return array<string, mixed> where the note goes
+	 * @return MoveNoteHandler the move, with this module's guards
 	 */
-	private function previewMove(?Folder $root, string $userId, array $arguments): array {
-		$note = $this->notes->find($root, $arguments['id']);
-		NodeAccess::checkEtag($note, $arguments['etag'] ?? null);
-		if (!$note->isUpdateable()) {
-			throw new ToolFailure(CommonMessages::forbidden());
-		}
-		$this->moves()->assertPlanned($note);
-		$category = (string)$arguments['category'];
-		if ($root !== null) {
-			// The same refusal the write gives: a target below a hidden ancestor is a target that does not
-			// exist, so the user is never asked to approve a move the server would not perform.
-			$this->notes->assertCategoryVisible($root, $category);
-		}
-		$folder = $this->existingCategory($root, $category);
-		return [
-			'action' => 'notes_move',
-			'note' => $this->snapshot($root, $note),
-			'from' => $this->snapshot($root, $note)['category'],
-			'to' => trim($category, '/'),
-			'categoryCreated' => $folder === null && trim($category, '/') !== '',
-			'titleTaken' => (function () use ($folder, $note): bool {
-				if ($folder === null || !$folder->nodeExists($note->getName())) {
-					return false;
-				}
-				$existing = $folder->get($note->getName());
-				return $this->visibilityGuard === null || $this->visibilityGuard->isVisible($existing);
-			})(),
-			'access' => $this->accessInfo->describe($note, $userId),
-			'shared' => $this->shared($note, $userId),
-			'recoverable' => true,
-			'message' => NotesMessages::planMove(),
-		] + ($this->locks?->planNotice($note, $userId) ?? []);
+	private function moves(): MoveNoteHandler {
+		return new MoveNoteHandler($this->notes, $this->guard, $this->accessInfo, $this->visibilityGuard, $this->locks, $this->types);
 	}
 
 	/**
-	 * @param Folder|null $root notes folder
-	 * @param string $userId authenticated user
-	 * @param array{id:int, etag?:string, confirm_shared?:bool} $arguments
-	 * @return array<string, mixed> the note that would go to the trash bin
+	 * @return DeleteNoteHandler the deletion, with this module's guards
 	 */
-	private function previewDelete(?Folder $root, string $userId, array $arguments): array {
-		$this->assertRecoverable($userId);
-		$note = $this->notes->find($root, $arguments['id']);
-		NodeAccess::checkEtag($note, $arguments['etag'] ?? null);
-		if (!$note->isDeletable()) {
-			throw new ToolFailure(CommonMessages::forbidden());
-		}
-		if (!$note->getStorage()->instanceOfStorage(self::TRASH_STORAGE)) {
-			throw new ToolFailure(NotesMessages::notRecoverable());
-		}
-		return [
-			'action' => 'notes_delete',
-			'note' => $this->snapshot($root, $note),
-			'access' => $this->accessInfo->describe($note, $userId),
-			'shared' => $this->shared($note, $userId),
-			'trash' => true,
-			'recoverable' => true,
-			'consequence' => NotesMessages::planDeleteConsequence(),
-			'message' => NotesMessages::planDelete(),
-		] + ($this->locks?->planNotice($note, $userId) ?? []);
+	private function deletes(): DeleteNoteHandler {
+		return new DeleteNoteHandler($this->notes, $this->trash(), new NoteWrite($this->notes, $this->accessInfo, $this->visibilityGuard, $this->locks), $this->guard, $this->locks);
 	}
 
 	/**
-	 * The note as a plan shows it: where it is and what it says, without reading it whole.
-	 *
-	 * @param Folder $root notes folder
-	 * @param File $note note to describe
-	 * @return array<string, mixed>
-	 * @throws ToolFailure when the note is over the read limit
+	 * @return NoteCategories the category lookup, with this module's exclusions
 	 */
-	private function snapshot(Folder $root, File $note): array {
-		$size = (int)$note->getSize();
-		if ($size > self::MAX_BYTES) {
-			throw new ToolFailure(NotesMessages::noteTooLargeForReading(self::MAX_BYTES));
-		}
-		return $this->notes->info($note, $root) + [
-			'content' => self::excerpt((string)$note->getContent()),
-			'bytes' => $size,
-		];
+	private function categories(): NoteCategories {
+		return new NoteCategories($this->visibilityGuard);
 	}
 
 	/**
-	 * The category folder as it is now, without creating it.
-	 *
-	 * @param Folder|null $root notes folder
-	 * @param string $category requested category
-	 * @return Folder|null the folder, or null when it does not exist yet
-	 * @throws InvalidArgumentException on traversal or control characters
+	 * @return NoteSnapshot the note as a plan shows it
 	 */
-	private function existingCategory(?Folder $root, string $category): ?Folder {
-		// Even the notes root goes through the guard: an empty category means writing at the root itself.
-		if ($root !== null && $this->visibilityGuard !== null && !$this->visibilityGuard->isVisible($root)) {
-			return null;
-		}
-		if ($root === null || trim($category, '/') === '') {
-			return $root;
-		}
-		try {
-			$relative = ltrim(PathGuard::normalize($category, 'category'), '/');
-		} catch (InvalidArgumentException) {
-			throw new InvalidArgumentException('Invalid argument: category');
-		}
-		$found = null;
-		if ($root->nodeExists($relative)) {
-			$node = $root->get($relative);
-			if ($this->visibilityGuard === null || $this->visibilityGuard->isVisible($node)) {
-				$found = $node;
-			}
-		}
-		return $found instanceof Folder ? $found : null;
+	private function snapshots(): NoteSnapshot {
+		return new NoteSnapshot($this->notes, $this->accessInfo);
 	}
 
 	/**
-	 * @param Folder $root notes folder
-	 * @param Folder $folder category folder below it
-	 * @return string the category as the other tools name it
+	 * @return NotesTrash the trash-bin checks for this module's accounts
 	 */
-	private function categoryName(Folder $root, Folder $folder): string {
-		return trim((string)$root->getRelativePath($folder->getPath()), '/');
-	}
-
-	/**
-	 * @param File $note note about to be changed
-	 * @param string $userId authenticated user
-	 * @return array<string, mixed> the ownership description when the note reaches other people
-	 */
-	private function shared(Node $note, string $userId): array {
-		$access = $this->accessInfo->describe($note, $userId);
-		return $access['scope'] === NodeAccessInfo::PERSONAL ? [] : [$access];
-	}
-
-	/**
-	 * A deletion only happens when the trash bin would take the note back.
-	 *
-	 * @param string $userId authenticated user
-	 * @throws ToolFailure when files_trashbin is off for this account
-	 */
-	private function assertRecoverable(string $userId): void {
-		$user = $this->userManager->get($userId);
-		if ($user === null || !$this->appManager->isEnabledForUser('files_trashbin', $user)) {
-			throw new ToolFailure(NotesMessages::notRecoverable());
-		}
-	}
-
-	/**
-	 * @param string $content full content of a note
-	 * @return string the beginning of it, marked when there is more
-	 */
-	private static function excerpt(string $content): string {
-		return mb_strlen($content) > self::EXCERPT_CHARS
-			? mb_substr($content, 0, self::EXCERPT_CHARS) . NotesMessages::excerptTruncated()
-			: $content;
-	}
-
-	/**
-	 * Resolves the note, checks the ETag and runs the shared-write guard.
-	 *
-	 * @param Folder|null $root notes folder
-	 * @param string $userId authenticated user
-	 * @param array{id:int, etag?:string, confirm_shared?:bool} $arguments validated tool arguments
-	 * @return array<string, mixed>|null the confirmation payload, or null when the change may proceed
-	 * @throws ToolFailure when the note is not there, not writable or the ETag diverged
-	 */
-	private function writable(?Folder $root, string $userId, array $arguments): ?array {
-		$note = $this->notes->find($root, $arguments['id']);
-		$this->assertWritable($note, $arguments);
-		// Before the shared-write confirmation, so nobody is asked to approve a write the lock refuses; and before a
-		// delete or a rename, whose hooks in Text could reset the document of the open editor.
-		$this->locks?->assertWritable($note, $userId);
-		return $this->guard->guard($note, $userId, (string)$arguments['id'], (bool)($arguments['confirm_shared'] ?? false));
-	}
-
-	/**
-	 * The checks every note write shares, before anything is asked of the user.
-	 *
-	 * @param File $note the note about to change
-	 * @param array{etag?:string} $arguments validated tool arguments
-	 * @throws ToolFailure when the note cannot be updated or changed since the caller read it
-	 */
-	private function assertWritable(File $note, array $arguments): void {
-		$this->writes()->assertWritable($note, $arguments);
-	}
-
-	/**
-	 * Runs a write on a note, explaining a lock refusal of the storage when the lock appeared after the check.
-	 *
-	 * @template T
-	 * @param callable():T $write the write
-	 * @param File $note the note it changes
-	 * @param string $userId authenticated user
-	 * @param bool $untouched false when an earlier write of the same call already changed the note
-	 * @return T what the write returned
-	 */
-	private function locked(callable $write, File $note, string $userId, bool $untouched = true): mixed {
-		return $this->writes()->locked($write, $note, $userId, $untouched);
-	}
-
-	/** @throws ToolFailure when the content is over MAX_BYTES */
-	private static function checkSize(string $content): void {
-		NoteWrite::checkSize($content);
+	private function trash(): NotesTrash {
+		return new NotesTrash($this->appManager, $this->userManager);
 	}
 
 	/**

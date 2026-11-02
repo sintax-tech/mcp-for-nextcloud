@@ -57,7 +57,6 @@ final class MoveNoteHandler {
 	/**
 	 * Moves one note into a category, or returns the shared-folder confirmation without moving.
 	 *
-	 * @param Folder|null $root Notes folder. Null when the user has none yet.
 	 * @param string $userId Authenticated user.
 	 * @param array{id:int, category:string, etag?:string, confirm_shared?:bool} $arguments Validated tool arguments.
 	 * @return array<string, mixed> The note after the move, or the shared-write confirmation.
@@ -65,7 +64,8 @@ final class MoveNoteHandler {
 	 * @throws FileWritePolicyUnavailable When the policy cannot be read. That is not treated as off.
 	 * @throws ToolFailure When the note is missing, not writable, or the title is taken in the target.
 	 */
-	public function handle(?Folder $root, string $userId, array $arguments): array {
+	public function handle(string $userId, array $arguments): array {
+		$root = $this->notes->folder($userId, false);
 		$note = $this->notes->find($root, $arguments['id']);
 		$write = $this->checks();
 		$write->assertWritable($note, $arguments);

@@ -1987,14 +1987,6 @@
 		},
 		{
 			"rule": "native-app",
-			"source": "lib/Modules/Notes/NotesModule.php",
-			"target": "OCA\\Files_Trashbin\\Storage",
-			"line": 51,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-13"
-		},
-		{
-			"rule": "native-app",
 			"source": "lib/Tools/Polls/Create/CreateSurface.php",
 			"target": "OCA\\Polls\\Db\\PollMapper",
 			"line": 20,

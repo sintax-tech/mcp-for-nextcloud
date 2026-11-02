@@ -59,7 +59,6 @@ final class EditNoteHandler {
 	/**
 	 * Applies one notes_edit, or returns the shared-folder confirmation without writing.
 	 *
-	 * @param Folder|null $root Notes folder. Null when the user has none yet.
 	 * @param string $userId Authenticated user.
 	 * @param array<string, mixed> $arguments Validated notes_edit arguments.
 	 * @return array<string, mixed> The note after the change, or the shared-write confirmation.
@@ -67,7 +66,8 @@ final class EditNoteHandler {
 	 * @throws FileWritePolicyUnavailable When the policy cannot be read. That is not treated as off.
 	 * @throws LogicException When an append or a replace has no plan state. Production always has one.
 	 */
-	public function handle(?Folder $root, string $userId, array $arguments): array {
+	public function handle(string $userId, array $arguments): array {
+		$root = $this->notes->folder($userId, false);
 		$mode = NoteChange::mode($arguments);
 		$note = $this->notes->find($root, $arguments['id']);
 		$partial = null;

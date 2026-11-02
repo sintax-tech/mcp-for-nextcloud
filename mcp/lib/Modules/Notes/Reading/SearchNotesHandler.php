@@ -8,9 +8,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Notes\Reading;
 
-use Closure;
 use InvalidArgumentException;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
+use OCA\Mcp\Modules\Notes\Locating\NoteCategories;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
@@ -37,28 +37,28 @@ final class SearchNotesHandler {
 	 * @param NotesRepository $notes Note lookup and reads.
 	 * @param NodeAccessInfo $accessInfo Who owns a note and who else it reaches.
 	 * @param VisibilityGuard|null $visibilityGuard Administrator exclusions, null when none apply.
-	 * @param Closure(?Folder, string): ?Folder $existingCategory The module's lookup of a visible, existing category.
+	 * @param NoteCategories $categories Lookup of a visible, existing category.
 	 * @return void
 	 */
 	public function __construct(
 		private NotesRepository $notes,
 		private NodeAccessInfo $accessInfo,
 		private ?VisibilityGuard $visibilityGuard,
-		private Closure $existingCategory,
+		private NoteCategories $categories,
 	) {
 	}
 
 	/**
 	 * Searches the notes of the account.
 	 *
-	 * @param Folder|null $root Notes folder, null when it does not exist.
 	 * @param string $userId Authenticated user.
 	 * @param array{query:string, limit:int, category?:string} $arguments Validated tool arguments.
 	 * @return array{content: list<array{type:string, text:string}>} The matches, with the missing-folder notice when it applies.
 	 * @throws InvalidArgumentException When the category is invalid.
 	 * @throws \JsonException When the answer cannot be encoded.
 	 */
-	public function handle(?Folder $root, string $userId, array $arguments): array {
+	public function handle(string $userId, array $arguments): array {
+		$root = $this->notes->folder($userId, false);
 		$matches = $this->matches($root, $userId, (string)$arguments['query'], (int)$arguments['limit'], (string)($arguments['category'] ?? ''));
 		return NotesFolderNotice::attach('notes_search', $root, ToolResult::json($matches));
 	}
@@ -78,7 +78,7 @@ final class SearchNotesHandler {
 		if ($root === null || $query === '') {
 			return [];
 		}
-		$folder = ($this->existingCategory)($root, $category);
+		$folder = $this->categories->existing($root, $category);
 		if ($folder === null) {
 			return [];
 		}

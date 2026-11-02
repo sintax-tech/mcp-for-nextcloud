@@ -42,6 +42,9 @@ final class CatalogContractTest extends ArchitectureCase {
 		self::assertNotSame([], ToolContracts::registration(null, [PortlessWork::class, PortWork::class], $here));
 		self::assertSame([], ToolContracts::registration(\OCA\Mcp\Modules\Notes\NotesRegistration::class, [PortWork::class], $here));
 		self::assertNotSame([], ToolContracts::registration(\stdClass::class, [], $here));
+		self::assertNull(RestrictedCatalogFixture::registration());
+		self::assertSame([], ToolContracts::registration(RestrictedCatalogFixture::registration(), [RestrictedCatalogFixture::class, PortlessWork::class], $here));
+		self::assertNotSame([], ToolContracts::registration(RestrictedCatalogFixture::registration(), [RestrictedCatalogFixture::class, PortWork::class], $here));
 	}
 	public function testCatalogMutantsAreRejectedAndCleanFixturePasses(): void {
 		$read = ['name' => 'notes_read_note', 'module' => 'notes', 'operation' => 'read'];
@@ -56,3 +59,8 @@ final class CatalogContractTest extends ArchitectureCase {
 
 final class PortlessWork { public function run(): string { return ''; } }
 final class PortWork implements \OCA\Mcp\Mcp\Resources\NoteResource { public function read(string $userId, int $id): string { return ''; } }
+final class RestrictedCatalogFixture extends \OCA\Mcp\Mcp\Tools\CatalogModule implements \OCA\Mcp\Mcp\Tools\RestrictedModule {
+	public static function catalog(): array { return []; }
+	public function permits(string $userId): bool { return true; }
+	public function audit(string $tool, string $userId, string $outcome, array $arguments): void {}
+}

@@ -99,8 +99,8 @@ final class ToolContracts {
 		return $errors;
 	}
 
-	/** Interfaces a module implements as a module or a tool, which never need a binding of their own. */
-	private const MODULE_INTERFACES = [Tool::class, WriteTool::class, \OCA\Mcp\Mcp\Tools\ToolModule::class, \OCA\Mcp\Mcp\Tools\PreviewsWrites::class, \OCA\Mcp\Mcp\Tools\RendersPlans::class, \OCA\Mcp\Mcp\Guide\ToolGuideNotes::class, \OCA\Mcp\Mcp\Tools\ModuleRegistration::class];
+	/** Every app interface a module or a tool implements as such (all of Mcp except the ports and CapabilityProbe); none needs a binding. */
+	private const MODULE_INTERFACES = [Tool::class, WriteTool::class, \OCA\Mcp\Mcp\Tools\ToolModule::class, \OCA\Mcp\Mcp\Tools\PreviewsWrites::class, \OCA\Mcp\Mcp\Tools\RendersPlans::class, \OCA\Mcp\Mcp\Tools\RestrictedModule::class, \OCA\Mcp\Mcp\Guide\ToolGuideNotes::class, \OCA\Mcp\Mcp\Tools\ModuleRegistration::class];
 
 	/**
 	 * A catalog module needs a registration exactly when one of its classes implements an app interface declared

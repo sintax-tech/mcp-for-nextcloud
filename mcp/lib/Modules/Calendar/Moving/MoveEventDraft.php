@@ -10,7 +10,7 @@ namespace OCA\Mcp\Modules\Calendar\Moving;
 use OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess;
 use OCA\Mcp\Modules\Calendar\Moving\EventRelocator;
 use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
-use OCA\Mcp\Tools\Calendar\ToolSchema;
+use OCA\Mcp\Mcp\Tools\Schema\SchemaBuilder;
 
 /**
  * calendar_move_event: moves an event between two writable calendars of the same owner.
@@ -35,7 +35,7 @@ final class MoveEventDraft implements \OCA\Mcp\Modules\Calendar\Approval\Calenda
 	 */
 	public function execute(array $arguments, string $userId): array {
 		$prepared = $this->prepare($arguments, $userId);
-		return is_array($prepared) ? $prepared : ToolSchema::result($prepared->dispatch());
+		return is_array($prepared) ? $prepared : SchemaBuilder::result($prepared->dispatch());
 	}
 
 	/**

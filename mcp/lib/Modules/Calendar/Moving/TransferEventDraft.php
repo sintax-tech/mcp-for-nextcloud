@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Calendar\Moving;
 
 use OCA\Mcp\Modules\Calendar\Moving\EventRelocator;
-use OCA\Mcp\Tools\Calendar\ToolSchema;
+use OCA\Mcp\Mcp\Tools\Schema\SchemaBuilder;
 
 /**
  * calendar_transfer_event: moves an event to a calendar of another owner that the user can write.
@@ -27,7 +27,7 @@ final class TransferEventDraft implements \OCA\Mcp\Modules\Calendar\Approval\Cal
 	 */
 	public function execute(array $arguments, string $userId): array {
 		$prepared = $this->prepare($arguments, $userId);
-		return is_array($prepared) ? $prepared : ToolSchema::result($prepared->dispatch());
+		return is_array($prepared) ? $prepared : SchemaBuilder::result($prepared->dispatch());
 	}
 
 	/**

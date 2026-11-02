@@ -15,8 +15,8 @@ use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
 use OCA\Mcp\Modules\Calendar\Locating\EventRepository;
 use OCA\Mcp\Modules\Calendar\Scheduling\Scheduling;
 use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
-use OCA\Mcp\Tools\Calendar\ToolSchema;
 use OCA\Mcp\Modules\Calendar\Writing\TrashPolicy;
+use OCA\Mcp\Mcp\Tools\Schema\SchemaBuilder;
 
 /**
  * calendar_delete_event: deletes a whole event series into the CalDAV trash, never permanently.
@@ -80,7 +80,7 @@ final class DeleteEventDraft implements \OCA\Mcp\Modules\Calendar\Approval\Calen
 				throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
 			}
 			// There is no object left to read a SCHEDULE-STATUS from, so only the request is reported.
-			return ToolSchema::result([
+			return SchemaBuilder::result([
 				'uid' => $arguments['uid'],
 				'calendar' => $calendar->path,
 				'deleted' => true,

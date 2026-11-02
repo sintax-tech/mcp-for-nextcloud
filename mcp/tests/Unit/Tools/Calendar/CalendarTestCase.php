@@ -257,7 +257,7 @@ abstract class CalendarTestCase extends TestCase {
 			try {
 				return $this->writeHandlers[$name]->execute($arguments, 'alice');
 			} catch (\OCA\Mcp\Modules\Calendar\Failures\CalendarException $exception) {
-				return \OCA\Mcp\Tools\Calendar\ToolSchema::error($exception->getMessage());
+				return \OCA\Mcp\Mcp\Tools\Schema\SchemaBuilder::error($exception->getMessage());
 			}
 		}
 		return $this->module->call($name, $arguments, 'alice');

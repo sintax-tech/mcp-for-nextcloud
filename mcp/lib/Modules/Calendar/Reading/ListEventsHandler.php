@@ -14,12 +14,12 @@ use OCA\Mcp\Modules\Calendar\Composing\DateInput;
 use OCA\Mcp\Modules\Calendar\Locating\EventExpander;
 use OCA\Mcp\Modules\Calendar\Presentation\EventMapper;
 use OCA\Mcp\Modules\Calendar\Locating\EventRepository;
-use OCA\Mcp\Tools\Calendar\ToolSchema;
 use OCP\AppFramework\Utility\ITimeFactory;
 use Psr\Log\LoggerInterface;
 use OCA\Mcp\Modules\Calendar\Failures\CalendarArgumentException;
 use OCA\Mcp\Modules\Calendar\Failures\CalendarFailures;
 use RuntimeException;
+use OCA\Mcp\Mcp\Tools\Schema\SchemaBuilder;
 
 /**
  * calendar_list_events: occurrences overlapping a window of at most 366 days, capped at 2 000 items.
@@ -79,13 +79,13 @@ final class ListEventsHandler {
 						continue;
 					}
 					if (count($items) >= self::MAX_ITEMS) {
-						return ToolSchema::result($items, ['truncated' => true, 'limit' => self::MAX_ITEMS]);
+						return SchemaBuilder::result($items, ['truncated' => true, 'limit' => self::MAX_ITEMS]);
 					}
 					$items[] = $this->mapper->toItem($occurrence['event'], $occurrence['start'], $occurrence['end'], $calendar, $visibility);
 				}
 			}
 		}
-		return ToolSchema::result($items);
+		return SchemaBuilder::result($items);
 	}
 
 	/**

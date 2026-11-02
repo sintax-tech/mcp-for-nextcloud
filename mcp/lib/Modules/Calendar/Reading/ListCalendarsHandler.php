@@ -8,10 +8,10 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Calendar\Reading;
 
 use OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess;
-use OCA\Mcp\Tools\Calendar\ToolSchema;
 use OCA\Mcp\Modules\Calendar\Failures\CalendarArgumentException;
 use OCA\Mcp\Modules\Calendar\Failures\CalendarFailures;
 use RuntimeException;
+use OCA\Mcp\Mcp\Tools\Schema\SchemaBuilder;
 
 /**
  * calendar_list_calendars: the event calendars the user owns or has been shared.
@@ -32,7 +32,7 @@ final class ListCalendarsHandler {
 		foreach ($this->access->visible($userId) as $calendar) {
 			$out[] = ['name' => $calendar->name, 'path' => $calendar->path, 'owner' => $calendar->ownerId, 'writable' => $calendar->writable];
 		}
-		return ToolSchema::result($out);
+		return SchemaBuilder::result($out);
 	}
 
 	/**

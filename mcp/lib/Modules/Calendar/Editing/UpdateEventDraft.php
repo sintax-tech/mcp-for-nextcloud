@@ -22,9 +22,9 @@ use OCA\Mcp\Modules\Calendar\Locating\EventRepository;
 use OCA\Mcp\Modules\Calendar\Composing\EventTiming;
 use OCA\Mcp\Modules\Calendar\Scheduling\Scheduling;
 use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
-use OCA\Mcp\Tools\Calendar\ToolSchema;
 use OCP\AppFramework\Utility\ITimeFactory;
 use Sabre\VObject\Component\VEvent;
+use OCA\Mcp\Mcp\Tools\Schema\SchemaBuilder;
 
 /**
  * calendar_update_event: changes text and, for non-recurring events, timing of the master VEVENT.
@@ -119,7 +119,7 @@ final class UpdateEventDraft implements \OCA\Mcp\Modules\Calendar\Approval\Calen
 			$written = $this->events->parse($row['data']) ?? throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
 			$timing = $this->builder->timing($written->VEVENT);
 			$item = $this->mapper->toItem($written->VEVENT, $timing['start'], $timing['end'], $calendar, Classification::FULL);
-			return ToolSchema::result($item + [
+			return SchemaBuilder::result($item + [
 				'etag' => $row['etag'],
 				'scheduling' => $this->scheduling->report($notify, $written),
 			]);

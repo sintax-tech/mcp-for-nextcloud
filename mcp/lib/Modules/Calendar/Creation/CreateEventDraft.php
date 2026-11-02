@@ -21,8 +21,8 @@ use OCA\Mcp\Modules\Calendar\Presentation\EventMapper;
 use OCA\Mcp\Modules\Calendar\Locating\EventRepository;
 use OCA\Mcp\Modules\Calendar\Scheduling\Scheduling;
 use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
-use OCA\Mcp\Tools\Calendar\ToolSchema;
 use OCP\AppFramework\Utility\ITimeFactory;
+use OCA\Mcp\Mcp\Tools\Schema\SchemaBuilder;
 
 /**
  * calendar_create_event: creates a single, non-recurring event in a writable calendar.
@@ -103,7 +103,7 @@ final class CreateEventDraft implements \OCA\Mcp\Modules\Calendar\Approval\Calen
 				?? throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
 			$written = $this->events->parse($row['data']) ?? throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
 			$item = $this->mapper->toItem($written->VEVENT, $timing->start, $timing->end, $calendar, Classification::FULL);
-			return ToolSchema::result($item + [
+			return SchemaBuilder::result($item + [
 				'etag' => $row['etag'],
 				'scheduling' => $this->scheduling->report($notify, $written),
 			]);

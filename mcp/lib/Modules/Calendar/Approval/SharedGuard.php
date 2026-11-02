@@ -10,7 +10,7 @@ namespace OCA\Mcp\Modules\Calendar\Approval;
 use OCP\IUserManager;
 use OCA\Mcp\Modules\Calendar\Locating\Calendar;
 use OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages;
-use OCA\Mcp\Tools\Calendar\ToolSchema;
+use OCA\Mcp\Mcp\Tools\Schema\SchemaBuilder;
 
 /**
  * Gate for writes on calendars owned by somebody else.
@@ -45,7 +45,7 @@ final class SharedGuard {
 			return null;
 		}
 		$displayName = $this->users->get($calendar->ownerId)?->getDisplayName() ?: $calendar->ownerId;
-		return ToolSchema::result([
+		return SchemaBuilder::result([
 			'requiresConfirmation' => true,
 			'scope' => 'shared',
 			'owner' => $calendar->ownerId,

@@ -15,7 +15,7 @@ use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
 use OCA\Mcp\Modules\Calendar\Locating\StoredEvent;
 use OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages;
 use OCA\Mcp\Modules\Calendar\Scheduling\Scheduling;
-use OCA\Mcp\Tools\Calendar\ToolSchema;
+use OCA\Mcp\Mcp\Tools\Schema\SchemaBuilder;
 
 /**
  * The plan of every public Calendar write, and the execution of the confirmed one.
@@ -68,7 +68,7 @@ final class CalendarDraftApproval {
 		[$prepared, $shared] = $this->prepare($tool, $arguments, $userId);
 		if ($shared !== [] && ($arguments['confirm_shared'] ?? false) !== true) { throw CalendarException::blocked(CalendarMessages::approvalShared()); }
 		$result = $prepared->dispatch();
-		return $prepared->target === null ? $result : ToolSchema::result($result);
+		return $prepared->target === null ? $result : SchemaBuilder::result($result);
 	}
 
 	/**

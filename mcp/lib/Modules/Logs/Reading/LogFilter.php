@@ -30,7 +30,7 @@ final class LogFilter {
 	private const ISO_8601 = '/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?)?$/D';
 
 	/**
-	 * Keeps one validated filter set and the text the audit will record.
+	 * Keeps one validated filter set and the filters the answer reports.
 	 *
 	 * @param LogTime $time how the entries write their time
 	 * @param int|null $minLevel minimum level, or null when every level passes
@@ -87,7 +87,7 @@ final class LogFilter {
 		return $this->described === [];
 	}
 
-	/** @return array<string, int|string> the filters set, as the caller wrote them, for the answer and the audit */
+	/** @return array<string, int|string> the filters the answer reports */
 	public function describe(): array {
 		return $this->described;
 	}

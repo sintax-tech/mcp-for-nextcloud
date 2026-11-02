@@ -63,7 +63,7 @@ final class MailMoveTools {
 	/**
 	 * The definition of the tool; static, so it never depends on the services of an instance.
 	 *
-	 * @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app:string}>
+	 * @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, grantAnyOf?:list<string>, app:string, requires?:list<string>}> published definitions in tools/list order
 	 */
 	public static function definitions(): array {
 		return [\OCA\Mcp\Modules\Mail\Tools\MoveMessage::definition()->toArray()];

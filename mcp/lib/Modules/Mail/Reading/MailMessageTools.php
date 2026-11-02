@@ -60,7 +60,7 @@ final class MailMessageTools {
 	/**
 	 * The definitions of the four tools; static, so they never depend on the services of an instance.
 	 *
-	 * @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, grantAnyOf:list<string>, app:string}>
+	 * @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, grantAnyOf?:list<string>, app:string, requires?:list<string>}> published definitions in tools/list order
 	 */
 	public static function definitions(): array {
 		return [\OCA\Mcp\Modules\Mail\Tools\ListMessages::definition()->toArray(), \OCA\Mcp\Modules\Mail\Tools\SearchMessages::definition()->toArray(), \OCA\Mcp\Modules\Mail\Tools\ReadMessage::definition()->toArray(), \OCA\Mcp\Modules\Mail\Tools\ReadThread::definition()->toArray()];

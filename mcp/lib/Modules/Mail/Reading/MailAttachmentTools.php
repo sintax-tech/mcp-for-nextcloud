@@ -59,7 +59,7 @@ final class MailAttachmentTools {
 	/**
 	 * The definition of the tool, when the installed Mail reads attachments without marking messages as read.
 	 *
-	 * @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, grantAnyOf:list<string>, app:string}>
+	 * @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, grantAnyOf?:list<string>, app:string, requires?:list<string>}> published definitions in tools/list order
 	 */
 	public function definitions(): array {
 		if (!MailAttachmentSupport::available($this->apps)) { return []; }

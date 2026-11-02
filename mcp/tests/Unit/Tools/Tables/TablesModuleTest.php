@@ -191,4 +191,18 @@ final class TablesModuleTest extends TestCase {
 		}
 		return new ToolRegistry([TablesHandlers::module($this, TablesScene::app())], $this->policy, $apps, $users, $this->createMock(LoggerInterface::class), $guests);
 	}
+	public function testTheTestContainerRefusesUnregisteredCollaborators(): void {
+		$module = TablesHandlers::module($this, TablesScene::app());
+		$container = (new \ReflectionProperty(\OCA\Mcp\Mcp\Tools\CatalogModule::class, 'container'))->getValue($module);
+		foreach ([\stdClass::class, \OCA\Mcp\Modules\Tables\Writing\TextCellValue::class] as $id) {
+			self::assertFalse($container->has($id));
+			try {
+				$container->get($id);
+				self::fail('An unregistered collaborator was silently constructed');
+			} catch (\LogicException $error) {
+				self::assertSame("no Tables test service $id", $error->getMessage());
+			}
+		}
+	}
+
 }

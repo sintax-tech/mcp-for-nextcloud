@@ -8,6 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Tables\Presentation;
 
 use OCA\Mcp\Mcp\Tools\ToolDefinition;
+use OCA\Mcp\Modules\Tables\TablesModule;
+use OCA\Mcp\Modules\Tables\Integration\TablesServices;
 use OCA\Mcp\Modules\Tables\Reading\TablesPage;
 use OCA\Mcp\Modules\Tables\Writing\RowWriteRequest;
 
@@ -27,8 +29,8 @@ final class TablesSchema {
 	 */
 	public static function definition(string $name, string $description, array $properties, string $operation = 'read', array $required = []): ToolDefinition {
 		$schema = ['type' => 'object', 'properties' => $properties === [] ? new \stdClass() : $properties, 'additionalProperties' => false];
-		return new ToolDefinition(name: $name, module: 'tables', operation: $operation, description: $description,
-			inputSchema: $schema + ($required === [] ? [] : ['required' => $required]), app: 'tables');
+		return new ToolDefinition(name: $name, module: TablesModule::MODULE, operation: $operation, description: $description,
+			inputSchema: $schema + ($required === [] ? [] : ['required' => $required]), app: TablesServices::APP_ID);
 	}
 
 	/**

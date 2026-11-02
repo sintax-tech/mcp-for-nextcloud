@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Tables\Presentation;
 
-
 /** The behavior notes published alongside the Tables tools. */
 final class TablesGuideNotes {
 	/** Prevents construction of the static guide. */

@@ -29,11 +29,14 @@ final class TablesTestModule {
 			public function __construct(private array $services) {
 			}
 			public function has(string $id): bool {
-				return isset($this->services[$id]) || class_exists($id);
+				return isset($this->services[$id]) || (str_starts_with($id, 'OCA\\Mcp\\Modules\\Tables\\Tools\\') && class_exists($id));
 			}
 			public function get(string $id): object {
 				if (isset($this->services[$id])) {
 					return $this->services[$id];
+				}
+				if (!$this->has($id)) {
+					throw new \LogicException("no Tables test service $id");
 				}
 				$class = new \ReflectionClass($id);
 				$args = array_map(fn (\ReflectionParameter $p): object => $this->get($p->getType()->getName()), $class->getConstructor()?->getParameters() ?? []);

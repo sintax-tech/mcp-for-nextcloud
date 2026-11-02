@@ -30,5 +30,4 @@ final class CreateRowPreview {
 	public function preview(array $arguments, string $userId): array {
 		return $this->flow->preview(CreateRowHandler::TOOL, $arguments, $userId, false);
 	}
-
 }

@@ -30,5 +30,4 @@ final class UpdateRowPreview {
 	public function preview(array $arguments, string $userId): array {
 		return $this->flow->preview(UpdateRowHandler::TOOL, $arguments, $userId, true);
 	}
-
 }

@@ -322,7 +322,10 @@
                 "4": {
                     "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
                 },
-                "5": []
+                "5": [],
+                "6": {
+                    "z1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:z1\r\nFN:Zeca\r\nNOTE:caderno da Zoe\r\nEND:VCARD\r\n"
+                }
             }
         }
     ],
@@ -335,7 +338,7 @@
                     "content": [
                         {
                             "type": "text",
-                            "text": "[\n    {\n        \"id\": 1,\n        \"uri\": \"personal\",\n        \"name\": \"Contatos\",\n        \"ownerId\": \"alice\",\n        \"ownerPrincipal\": \"principals/users/alice\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n    },\n    {\n        \"id\": 2,\n        \"uri\": \"team\",\n        \"name\": \"Equipe\",\n        \"ownerId\": \"bob\",\n        \"ownerPrincipal\": \"principals/users/bob\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/team/\"\n    },\n    {\n        \"id\": 3,\n        \"uri\": \"broken\",\n        \"name\": \"Caderno �(\",\n        \"ownerId\": \"bob\",\n        \"ownerPrincipal\": \"principals/users/bob\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/broken/\"\n    },\n    {\n        \"id\": 4,\n        \"uri\": \"ro\",\n        \"name\": \"Somente leitura\",\n        \"ownerId\": \"bob\",\n        \"ownerPrincipal\": \"principals/users/bob\",\n        \"writable\": false,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/ro/\"\n    },\n    {\n        \"id\": 0,\n        \"uri\": \"z-server-generated--system\",\n        \"name\": \"Contas\",\n        \"ownerId\": \"system\",\n        \"ownerPrincipal\": \"principals/system/system\",\n        \"writable\": false,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/z-server-generated--system/\",\n        \"system\": true,\n        \"readOnly\": true\n    }\n]"
+                            "text": "[\n    {\n        \"id\": 1,\n        \"uri\": \"personal\",\n        \"name\": \"Contatos\",\n        \"ownerId\": \"alice\",\n        \"ownerPrincipal\": \"principals/users/alice\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n    },\n    {\n        \"id\": 2,\n        \"uri\": \"team\",\n        \"name\": \"Equipe\",\n        \"ownerId\": \"bob\",\n        \"ownerPrincipal\": \"principals/users/bob\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/team/\"\n    },\n    {\n        \"id\": 3,\n        \"uri\": \"broken\",\n        \"name\": \"Caderno �(\",\n        \"ownerId\": \"bob\",\n        \"ownerPrincipal\": \"principals/users/bob\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/broken/\"\n    },\n    {\n        \"id\": 4,\n        \"uri\": \"ro\",\n        \"name\": \"Somente leitura\",\n        \"ownerId\": \"bob\",\n        \"ownerPrincipal\": \"principals/users/bob\",\n        \"writable\": false,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/ro/\"\n    },\n    {\n        \"id\": 6,\n        \"uri\": \"zoe\",\n        \"name\": \"Da Zoe\",\n        \"ownerId\": \"zoe\",\n        \"ownerPrincipal\": \"principals/users/zoe\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/zoe/\"\n    },\n    {\n        \"id\": 0,\n        \"uri\": \"z-server-generated--system\",\n        \"name\": \"Contas\",\n        \"ownerId\": \"system\",\n        \"ownerPrincipal\": \"principals/system/system\",\n        \"writable\": false,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/z-server-generated--system/\",\n        \"system\": true,\n        \"readOnly\": true\n    }\n]"
                         }
                     ]
                 }
@@ -352,7 +355,7 @@
                     "content": [
                         {
                             "type": "text",
-                            "text": "[\n    {\n        \"id\": 1,\n        \"uri\": \"personal\",\n        \"name\": \"Contatos\",\n        \"ownerId\": \"alice\",\n        \"ownerPrincipal\": \"principals/users/alice\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n    },\n    {\n        \"id\": 2,\n        \"uri\": \"team\",\n        \"name\": \"Equipe\",\n        \"ownerId\": \"bob\",\n        \"ownerPrincipal\": \"principals/users/bob\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/team/\"\n    },\n    {\n        \"id\": 3,\n        \"uri\": \"broken\",\n        \"name\": \"Caderno �(\",\n        \"ownerId\": \"bob\",\n        \"ownerPrincipal\": \"principals/users/bob\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/broken/\"\n    },\n    {\n        \"id\": 4,\n        \"uri\": \"ro\",\n        \"name\": \"Somente leitura\",\n        \"ownerId\": \"bob\",\n        \"ownerPrincipal\": \"principals/users/bob\",\n        \"writable\": false,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/ro/\"\n    }\n]"
+                            "text": "[\n    {\n        \"id\": 1,\n        \"uri\": \"personal\",\n        \"name\": \"Contatos\",\n        \"ownerId\": \"alice\",\n        \"ownerPrincipal\": \"principals/users/alice\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n    },\n    {\n        \"id\": 2,\n        \"uri\": \"team\",\n        \"name\": \"Equipe\",\n        \"ownerId\": \"bob\",\n        \"ownerPrincipal\": \"principals/users/bob\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/team/\"\n    },\n    {\n        \"id\": 3,\n        \"uri\": \"broken\",\n        \"name\": \"Caderno �(\",\n        \"ownerId\": \"bob\",\n        \"ownerPrincipal\": \"principals/users/bob\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/broken/\"\n    },\n    {\n        \"id\": 4,\n        \"uri\": \"ro\",\n        \"name\": \"Somente leitura\",\n        \"ownerId\": \"bob\",\n        \"ownerPrincipal\": \"principals/users/bob\",\n        \"writable\": false,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/ro/\"\n    },\n    {\n        \"id\": 6,\n        \"uri\": \"zoe\",\n        \"name\": \"Da Zoe\",\n        \"ownerId\": \"zoe\",\n        \"ownerPrincipal\": \"principals/users/zoe\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/zoe/\"\n    }\n]"
                         }
                     ]
                 }
@@ -377,7 +380,10 @@
                 "4": {
                     "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
                 },
-                "5": []
+                "5": [],
+                "6": {
+                    "z1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:z1\r\nFN:Zeca\r\nNOTE:caderno da Zoe\r\nEND:VCARD\r\n"
+                }
             }
         }
     ],
@@ -390,7 +396,7 @@
                     "content": [
                         {
                             "type": "text",
-                            "text": "{\n    \"contacts\": [\n        {\n            \"uid\": \"c1\",\n            \"name\": \"Maria Souza\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"\",\n            \"url\": \"\",\n            \"emails\": [\n                \"maria@example.invalid\"\n            ],\n            \"phones\": [],\n            \"uri\": \"c1.vcf\",\n            \"etag\": \"\\\"MD5-1\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n        },\n        {\n            \"uid\": \"c2\",\n            \"name\": \"Carla S.\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"\",\n            \"url\": \"\",\n            \"emails\": [\n                \"carla@example.invalid\"\n            ],\n            \"phones\": [],\n            \"uri\": \"c2.vcf\",\n            \"etag\": \"\\\"MD5-2\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n        },\n        {\n            \"uid\": \"t1\",\n            \"name\": \"Tiago Souza\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"\",\n            \"url\": \"\",\n            \"emails\": [],\n            \"phones\": [\n                \"+55 11 91111-1111\"\n            ],\n            \"uri\": \"t1.vcf\",\n            \"etag\": \"\\\"MD5-3\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/team/\"\n        },\n        {\n            \"uid\": \"b1\",\n            \"name\": \"Bruno\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"caderno quebrado\",\n            \"url\": \"\",\n            \"emails\": [],\n            \"phones\": [],\n            \"uri\": \"b1.vcf\",\n            \"etag\": \"\\\"MD5-4\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/broken/\"\n        },\n        {\n            \"uid\": \"r1\",\n            \"name\": \"Rita\",\n            \"organization\": \"Leitura\",\n            \"title\": \"\",\n            \"note\": \"\",\n            \"url\": \"\",\n            \"emails\": [],\n            \"phones\": [],\n            \"uri\": \"r1.vcf\",\n            \"etag\": \"\\\"MD5-5\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/ro/\"\n        }\n    ],\n    \"hasMore\": false,\n    \"nextOffset\": null\n}"
+                            "text": "{\n    \"contacts\": [\n        {\n            \"uid\": \"c1\",\n            \"name\": \"Maria Souza\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"\",\n            \"url\": \"\",\n            \"emails\": [\n                \"maria@example.invalid\"\n            ],\n            \"phones\": [],\n            \"uri\": \"c1.vcf\",\n            \"etag\": \"\\\"MD5-1\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n        },\n        {\n            \"uid\": \"c2\",\n            \"name\": \"Carla S.\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"\",\n            \"url\": \"\",\n            \"emails\": [\n                \"carla@example.invalid\"\n            ],\n            \"phones\": [],\n            \"uri\": \"c2.vcf\",\n            \"etag\": \"\\\"MD5-2\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n        },\n        {\n            \"uid\": \"t1\",\n            \"name\": \"Tiago Souza\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"\",\n            \"url\": \"\",\n            \"emails\": [],\n            \"phones\": [\n                \"+55 11 91111-1111\"\n            ],\n            \"uri\": \"t1.vcf\",\n            \"etag\": \"\\\"MD5-3\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/team/\"\n        },\n        {\n            \"uid\": \"b1\",\n            \"name\": \"Bruno\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"caderno quebrado\",\n            \"url\": \"\",\n            \"emails\": [],\n            \"phones\": [],\n            \"uri\": \"b1.vcf\",\n            \"etag\": \"\\\"MD5-4\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/broken/\"\n        },\n        {\n            \"uid\": \"r1\",\n            \"name\": \"Rita\",\n            \"organization\": \"Leitura\",\n            \"title\": \"\",\n            \"note\": \"\",\n            \"url\": \"\",\n            \"emails\": [],\n            \"phones\": [],\n            \"uri\": \"r1.vcf\",\n            \"etag\": \"\\\"MD5-5\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/ro/\"\n        },\n        {\n            \"uid\": \"z1\",\n            \"name\": \"Zeca\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"caderno da Zoe\",\n            \"url\": \"\",\n            \"emails\": [],\n            \"phones\": [],\n            \"uri\": \"z1.vcf\",\n            \"etag\": \"\\\"MD5-6\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/zoe/\"\n        }\n    ],\n    \"hasMore\": false,\n    \"nextOffset\": null\n}"
                         }
                     ]
                 }
@@ -744,7 +750,10 @@
                 "4": {
                     "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
                 },
-                "5": []
+                "5": [],
+                "6": {
+                    "z1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:z1\r\nFN:Zeca\r\nNOTE:caderno da Zoe\r\nEND:VCARD\r\n"
+                }
             }
         }
     ],
@@ -917,7 +926,10 @@
                 "4": {
                     "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
                 },
-                "5": []
+                "5": [],
+                "6": {
+                    "z1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:z1\r\nFN:Zeca\r\nNOTE:caderno da Zoe\r\nEND:VCARD\r\n"
+                }
             }
         }
     ],
@@ -1065,7 +1077,10 @@
                 "4": {
                     "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
                 },
-                "5": []
+                "5": [],
+                "6": {
+                    "z1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:z1\r\nFN:Zeca\r\nNOTE:caderno da Zoe\r\nEND:VCARD\r\n"
+                }
             }
         }
     ],
@@ -1286,7 +1301,10 @@
                 "4": {
                     "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
                 },
-                "5": []
+                "5": [],
+                "6": {
+                    "z1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:z1\r\nFN:Zeca\r\nNOTE:caderno da Zoe\r\nEND:VCARD\r\n"
+                }
             }
         }
     ],
@@ -1321,7 +1339,7 @@
                     "etag": null,
                     "before": null,
                     "after": {
-                        "uid": "MD5-6",
+                        "uid": "MD5-7",
                         "name": "Nova Pessoa",
                         "organization": "Firma",
                         "title": "",
@@ -1349,8 +1367,8 @@
                             {
                                 "name": "UID",
                                 "group": null,
-                                "value": "MD5-6",
-                                "serialized": "UID:MD5-6\r\n"
+                                "value": "MD5-7",
+                                "serialized": "UID:MD5-7\r\n"
                             },
                             {
                                 "name": "FN",
@@ -1377,12 +1395,12 @@
                                 "serialized": "TEL:+55 11 92222-2222\r\n"
                             }
                         ],
-                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:MD5-6\r\nFN:Nova Pessoa\r\nORG:Firma\r\nEMAIL:nova@example.invalid\r\nTEL:+55 11 92222-2222\r\nEND:VCARD\r\n"
+                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:MD5-7\r\nFN:Nova Pessoa\r\nORG:Firma\r\nEMAIL:nova@example.invalid\r\nTEL:+55 11 92222-2222\r\nEND:VCARD\r\n"
                     },
                     "shared": [],
                     "recoverable": false,
                     "consequence": "Contacts have no native trash or edit history; review the changes carefully.",
-                    "plan_state": "MD5-6.HMAC-1"
+                    "plan_state": "MD5-7.HMAC-1"
                 }
             },
             "dav": [],
@@ -1407,7 +1425,7 @@
                     "content": [
                         {
                             "type": "text",
-                            "text": "{\n    \"requiresConfirmation\": true,\n    \"message\": \"Nothing was changed. Show this plan and ask for explicit confirmation.\",\n    \"action\": \"contacts_create_contact\",\n    \"addressbook\": {\n        \"id\": 1,\n        \"uri\": \"personal\",\n        \"name\": \"Contatos\",\n        \"ownerId\": \"alice\",\n        \"ownerPrincipal\": \"principals/users/alice\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n    },\n    \"etag\": null,\n    \"before\": null,\n    \"after\": {\n        \"uid\": \"MD5-7\",\n        \"name\": \"Nova Pessoa\",\n        \"organization\": \"Firma\",\n        \"title\": \"\",\n        \"note\": \"\",\n        \"url\": \"\",\n        \"emails\": [\n            \"nova@example.invalid\"\n        ],\n        \"phones\": [\n            \"+55 11 92222-2222\"\n        ],\n        \"properties\": [\n            {\n                \"name\": \"VERSION\",\n                \"group\": null,\n                \"value\": \"3.0\",\n                \"serialized\": \"VERSION:3.0\\r\\n\"\n            },\n            {\n                \"name\": \"PRODID\",\n                \"group\": null,\n                \"value\": \"-//Sabre//Sabre VObject 4.5.6//EN\",\n                \"serialized\": \"PRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\n\"\n            },\n            {\n                \"name\": \"UID\",\n                \"group\": null,\n                \"value\": \"MD5-7\",\n                \"serialized\": \"UID:MD5-7\\r\\n\"\n            },\n            {\n                \"name\": \"FN\",\n                \"group\": null,\n                \"value\": \"Nova Pessoa\",\n                \"serialized\": \"FN:Nova Pessoa\\r\\n\"\n            },\n            {\n                \"name\": \"ORG\",\n                \"group\": null,\n                \"value\": \"Firma\",\n                \"serialized\": \"ORG:Firma\\r\\n\"\n            },\n            {\n                \"name\": \"EMAIL\",\n                \"group\": null,\n                \"value\": \"nova@example.invalid\",\n                \"serialized\": \"EMAIL:nova@example.invalid\\r\\n\"\n            },\n            {\n                \"name\": \"TEL\",\n                \"group\": null,\n                \"value\": \"+55 11 92222-2222\",\n                \"serialized\": \"TEL:+55 11 92222-2222\\r\\n\"\n            }\n        ],\n        \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\nUID:MD5-7\\r\\nFN:Nova Pessoa\\r\\nORG:Firma\\r\\nEMAIL:nova@example.invalid\\r\\nTEL:+55 11 92222-2222\\r\\nEND:VCARD\\r\\n\"\n    },\n    \"shared\": [],\n    \"recoverable\": false,\n    \"consequence\": \"Contacts have no native trash or edit history; review the changes carefully.\",\n    \"plan_state\": \"MD5-7.HMAC-2\"\n}"
+                            "text": "{\n    \"requiresConfirmation\": true,\n    \"message\": \"Nothing was changed. Show this plan and ask for explicit confirmation.\",\n    \"action\": \"contacts_create_contact\",\n    \"addressbook\": {\n        \"id\": 1,\n        \"uri\": \"personal\",\n        \"name\": \"Contatos\",\n        \"ownerId\": \"alice\",\n        \"ownerPrincipal\": \"principals/users/alice\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n    },\n    \"etag\": null,\n    \"before\": null,\n    \"after\": {\n        \"uid\": \"MD5-8\",\n        \"name\": \"Nova Pessoa\",\n        \"organization\": \"Firma\",\n        \"title\": \"\",\n        \"note\": \"\",\n        \"url\": \"\",\n        \"emails\": [\n            \"nova@example.invalid\"\n        ],\n        \"phones\": [\n            \"+55 11 92222-2222\"\n        ],\n        \"properties\": [\n            {\n                \"name\": \"VERSION\",\n                \"group\": null,\n                \"value\": \"3.0\",\n                \"serialized\": \"VERSION:3.0\\r\\n\"\n            },\n            {\n                \"name\": \"PRODID\",\n                \"group\": null,\n                \"value\": \"-//Sabre//Sabre VObject 4.5.6//EN\",\n                \"serialized\": \"PRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\n\"\n            },\n            {\n                \"name\": \"UID\",\n                \"group\": null,\n                \"value\": \"MD5-8\",\n                \"serialized\": \"UID:MD5-8\\r\\n\"\n            },\n            {\n                \"name\": \"FN\",\n                \"group\": null,\n                \"value\": \"Nova Pessoa\",\n                \"serialized\": \"FN:Nova Pessoa\\r\\n\"\n            },\n            {\n                \"name\": \"ORG\",\n                \"group\": null,\n                \"value\": \"Firma\",\n                \"serialized\": \"ORG:Firma\\r\\n\"\n            },\n            {\n                \"name\": \"EMAIL\",\n                \"group\": null,\n                \"value\": \"nova@example.invalid\",\n                \"serialized\": \"EMAIL:nova@example.invalid\\r\\n\"\n            },\n            {\n                \"name\": \"TEL\",\n                \"group\": null,\n                \"value\": \"+55 11 92222-2222\",\n                \"serialized\": \"TEL:+55 11 92222-2222\\r\\n\"\n            }\n        ],\n        \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\nUID:MD5-8\\r\\nFN:Nova Pessoa\\r\\nORG:Firma\\r\\nEMAIL:nova@example.invalid\\r\\nTEL:+55 11 92222-2222\\r\\nEND:VCARD\\r\\n\"\n    },\n    \"shared\": [],\n    \"recoverable\": false,\n    \"consequence\": \"Contacts have no native trash or edit history; review the changes carefully.\",\n    \"plan_state\": \"MD5-8.HMAC-2\"\n}"
                         }
                     ]
                 }
@@ -1456,7 +1474,7 @@
                     "+55 11 92222-2222"
                 ],
                 "organization": "Firma",
-                "plan_state": "MD5-6.HMAC-1"
+                "plan_state": "MD5-7.HMAC-1"
             },
             "outcome": {
                 "exception": [
@@ -1480,7 +1498,7 @@
                             "etag": null,
                             "before": null,
                             "after": {
-                                "uid": "MD5-6",
+                                "uid": "MD5-7",
                                 "name": "Outra Pessoa",
                                 "organization": "Firma",
                                 "title": "",
@@ -1508,8 +1526,8 @@
                                     {
                                         "name": "UID",
                                         "group": null,
-                                        "value": "MD5-6",
-                                        "serialized": "UID:MD5-6\r\n"
+                                        "value": "MD5-7",
+                                        "serialized": "UID:MD5-7\r\n"
                                     },
                                     {
                                         "name": "FN",
@@ -1536,12 +1554,12 @@
                                         "serialized": "TEL:+55 11 92222-2222\r\n"
                                     }
                                 ],
-                                "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:MD5-6\r\nFN:Outra Pessoa\r\nORG:Firma\r\nEMAIL:nova@example.invalid\r\nTEL:+55 11 92222-2222\r\nEND:VCARD\r\n"
+                                "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:MD5-7\r\nFN:Outra Pessoa\r\nORG:Firma\r\nEMAIL:nova@example.invalid\r\nTEL:+55 11 92222-2222\r\nEND:VCARD\r\n"
                             },
                             "shared": [],
                             "recoverable": false,
                             "consequence": "Contacts have no native trash or edit history; review the changes carefully.",
-                            "plan_state": "MD5-6.HMAC-3",
+                            "plan_state": "MD5-7.HMAC-3",
                             "warnings": [
                                 {
                                     "message": "The creation plan changed. Review the new plan before confirming."
@@ -1568,20 +1586,20 @@
                     "+55 11 92222-2222"
                 ],
                 "organization": "Firma",
-                "plan_state": "MD5-6.HMAC-1"
+                "plan_state": "MD5-7.HMAC-1"
             },
             "outcome": {
                 "result": {
                     "content": [
                         {
                             "type": "text",
-                            "text": "{\n    \"uid\": \"MD5-6\",\n    \"name\": \"Nova Pessoa\",\n    \"organization\": \"Firma\",\n    \"title\": \"\",\n    \"note\": \"\",\n    \"url\": \"\",\n    \"emails\": [\n        \"nova@example.invalid\"\n    ],\n    \"phones\": [\n        \"+55 11 92222-2222\"\n    ],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"PRODID\",\n            \"group\": null,\n            \"value\": \"-//Sabre//Sabre VObject 4.5.6//EN\",\n            \"serialized\": \"PRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"MD5-6\",\n            \"serialized\": \"UID:MD5-6\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Nova Pessoa\",\n            \"serialized\": \"FN:Nova Pessoa\\r\\n\"\n        },\n        {\n            \"name\": \"ORG\",\n            \"group\": null,\n            \"value\": \"Firma\",\n            \"serialized\": \"ORG:Firma\\r\\n\"\n        },\n        {\n            \"name\": \"EMAIL\",\n            \"group\": null,\n            \"value\": \"nova@example.invalid\",\n            \"serialized\": \"EMAIL:nova@example.invalid\\r\\n\"\n        },\n        {\n            \"name\": \"TEL\",\n            \"group\": null,\n            \"value\": \"+55 11 92222-2222\",\n            \"serialized\": \"TEL:+55 11 92222-2222\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\nUID:MD5-6\\r\\nFN:Nova Pessoa\\r\\nORG:Firma\\r\\nEMAIL:nova@example.invalid\\r\\nTEL:+55 11 92222-2222\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"MD5-6.vcf\",\n    \"etag\": \"\\\"MD5-8\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\",\n    \"status\": 201\n}"
+                            "text": "{\n    \"uid\": \"MD5-7\",\n    \"name\": \"Nova Pessoa\",\n    \"organization\": \"Firma\",\n    \"title\": \"\",\n    \"note\": \"\",\n    \"url\": \"\",\n    \"emails\": [\n        \"nova@example.invalid\"\n    ],\n    \"phones\": [\n        \"+55 11 92222-2222\"\n    ],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"PRODID\",\n            \"group\": null,\n            \"value\": \"-//Sabre//Sabre VObject 4.5.6//EN\",\n            \"serialized\": \"PRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"MD5-7\",\n            \"serialized\": \"UID:MD5-7\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Nova Pessoa\",\n            \"serialized\": \"FN:Nova Pessoa\\r\\n\"\n        },\n        {\n            \"name\": \"ORG\",\n            \"group\": null,\n            \"value\": \"Firma\",\n            \"serialized\": \"ORG:Firma\\r\\n\"\n        },\n        {\n            \"name\": \"EMAIL\",\n            \"group\": null,\n            \"value\": \"nova@example.invalid\",\n            \"serialized\": \"EMAIL:nova@example.invalid\\r\\n\"\n        },\n        {\n            \"name\": \"TEL\",\n            \"group\": null,\n            \"value\": \"+55 11 92222-2222\",\n            \"serialized\": \"TEL:+55 11 92222-2222\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\nUID:MD5-7\\r\\nFN:Nova Pessoa\\r\\nORG:Firma\\r\\nEMAIL:nova@example.invalid\\r\\nTEL:+55 11 92222-2222\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"MD5-7.vcf\",\n    \"etag\": \"\\\"MD5-9\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\",\n    \"status\": 201\n}"
                         }
                     ]
                 }
             },
             "dav": [
-                "put personal/MD5-6.vcf"
+                "put personal/MD5-7.vcf"
             ],
             "backups": [],
             "searches": []
@@ -1599,7 +1617,7 @@
                     "+55 11 92222-2222"
                 ],
                 "organization": "Firma",
-                "plan_state": "MD5-6.HMAC-1"
+                "plan_state": "MD5-7.HMAC-1"
             },
             "outcome": {
                 "exception": [
@@ -1611,7 +1629,7 @@
                 ]
             },
             "dav": [
-                "put personal/MD5-6.vcf"
+                "put personal/MD5-7.vcf"
             ],
             "backups": [],
             "searches": []
@@ -1621,7 +1639,7 @@
             "arguments": {
                 "addressbook": "/remote.php/dav/addressbooks/users/alice/z-server-generated--system/",
                 "confirm": true,
-                "plan_state": "MD5-9.HMAC-4",
+                "plan_state": "MD5-10.HMAC-4",
                 "name": "Nova Pessoa",
                 "emails": [
                     "nova@example.invalid"
@@ -1702,7 +1720,7 @@
                     "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n",
                     "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:Carla S.\r\nEMAIL:carla@example.invalid\r\nEND:VCARD\r\n",
                     "bad.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nEND:VCARD\r\n",
-                    "MD5-6.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:MD5-6\r\nFN:Nova Pessoa\r\nORG:Firma\r\nEMAIL:nova@example.invalid\r\nTEL:+55 11 92222-2222\r\nEND:VCARD\r\n"
+                    "MD5-7.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:MD5-7\r\nFN:Nova Pessoa\r\nORG:Firma\r\nEMAIL:nova@example.invalid\r\nTEL:+55 11 92222-2222\r\nEND:VCARD\r\n"
                 },
                 "2": {
                     "t1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n"
@@ -1713,7 +1731,10 @@
                 "4": {
                     "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
                 },
-                "5": []
+                "5": [],
+                "6": {
+                    "z1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:z1\r\nFN:Zeca\r\nNOTE:caderno da Zoe\r\nEND:VCARD\r\n"
+                }
             }
         }
     ],
@@ -1749,7 +1770,7 @@
                     "etag": null,
                     "before": null,
                     "after": {
-                        "uid": "MD5-10",
+                        "uid": "MD5-11",
                         "name": "Nova Pessoa",
                         "organization": "Firma",
                         "title": "",
@@ -1777,8 +1798,8 @@
                             {
                                 "name": "UID",
                                 "group": null,
-                                "value": "MD5-10",
-                                "serialized": "UID:MD5-10\r\n"
+                                "value": "MD5-11",
+                                "serialized": "UID:MD5-11\r\n"
                             },
                             {
                                 "name": "FN",
@@ -1805,7 +1826,7 @@
                                 "serialized": "TEL:+55 11 92222-2222\r\n"
                             }
                         ],
-                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:MD5-10\r\nFN:Nova Pessoa\r\nORG:Firma\r\nEMAIL:nova@example.invalid\r\nTEL:+55 11 92222-2222\r\nEND:VCARD\r\n"
+                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:MD5-11\r\nFN:Nova Pessoa\r\nORG:Firma\r\nEMAIL:nova@example.invalid\r\nTEL:+55 11 92222-2222\r\nEND:VCARD\r\n"
                     },
                     "shared": [
                         {
@@ -1819,7 +1840,7 @@
                     ],
                     "recoverable": false,
                     "consequence": "Contacts have no native trash or edit history; review the changes carefully.",
-                    "plan_state": "MD5-10.HMAC-5"
+                    "plan_state": "MD5-11.HMAC-5"
                 }
             },
             "dav": [],
@@ -1866,7 +1887,7 @@
                     "+55 11 92222-2222"
                 ],
                 "organization": "Firma",
-                "plan_state": "MD5-10.HMAC-5"
+                "plan_state": "MD5-11.HMAC-5"
             },
             "outcome": {
                 "exception": [
@@ -1895,20 +1916,20 @@
                     "+55 11 92222-2222"
                 ],
                 "organization": "Firma",
-                "plan_state": "MD5-10.HMAC-5"
+                "plan_state": "MD5-11.HMAC-5"
             },
             "outcome": {
                 "result": {
                     "content": [
                         {
                             "type": "text",
-                            "text": "{\n    \"uid\": \"MD5-10\",\n    \"name\": \"Nova Pessoa\",\n    \"organization\": \"Firma\",\n    \"title\": \"\",\n    \"note\": \"\",\n    \"url\": \"\",\n    \"emails\": [\n        \"nova@example.invalid\"\n    ],\n    \"phones\": [\n        \"+55 11 92222-2222\"\n    ],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"PRODID\",\n            \"group\": null,\n            \"value\": \"-//Sabre//Sabre VObject 4.5.6//EN\",\n            \"serialized\": \"PRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"MD5-10\",\n            \"serialized\": \"UID:MD5-10\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Nova Pessoa\",\n            \"serialized\": \"FN:Nova Pessoa\\r\\n\"\n        },\n        {\n            \"name\": \"ORG\",\n            \"group\": null,\n            \"value\": \"Firma\",\n            \"serialized\": \"ORG:Firma\\r\\n\"\n        },\n        {\n            \"name\": \"EMAIL\",\n            \"group\": null,\n            \"value\": \"nova@example.invalid\",\n            \"serialized\": \"EMAIL:nova@example.invalid\\r\\n\"\n        },\n        {\n            \"name\": \"TEL\",\n            \"group\": null,\n            \"value\": \"+55 11 92222-2222\",\n            \"serialized\": \"TEL:+55 11 92222-2222\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\nUID:MD5-10\\r\\nFN:Nova Pessoa\\r\\nORG:Firma\\r\\nEMAIL:nova@example.invalid\\r\\nTEL:+55 11 92222-2222\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"MD5-10.vcf\",\n    \"etag\": \"\\\"MD5-11\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/team/\",\n    \"status\": 201\n}"
+                            "text": "{\n    \"uid\": \"MD5-11\",\n    \"name\": \"Nova Pessoa\",\n    \"organization\": \"Firma\",\n    \"title\": \"\",\n    \"note\": \"\",\n    \"url\": \"\",\n    \"emails\": [\n        \"nova@example.invalid\"\n    ],\n    \"phones\": [\n        \"+55 11 92222-2222\"\n    ],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"PRODID\",\n            \"group\": null,\n            \"value\": \"-//Sabre//Sabre VObject 4.5.6//EN\",\n            \"serialized\": \"PRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"MD5-11\",\n            \"serialized\": \"UID:MD5-11\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Nova Pessoa\",\n            \"serialized\": \"FN:Nova Pessoa\\r\\n\"\n        },\n        {\n            \"name\": \"ORG\",\n            \"group\": null,\n            \"value\": \"Firma\",\n            \"serialized\": \"ORG:Firma\\r\\n\"\n        },\n        {\n            \"name\": \"EMAIL\",\n            \"group\": null,\n            \"value\": \"nova@example.invalid\",\n            \"serialized\": \"EMAIL:nova@example.invalid\\r\\n\"\n        },\n        {\n            \"name\": \"TEL\",\n            \"group\": null,\n            \"value\": \"+55 11 92222-2222\",\n            \"serialized\": \"TEL:+55 11 92222-2222\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\nUID:MD5-11\\r\\nFN:Nova Pessoa\\r\\nORG:Firma\\r\\nEMAIL:nova@example.invalid\\r\\nTEL:+55 11 92222-2222\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"MD5-11.vcf\",\n    \"etag\": \"\\\"MD5-12\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/team/\",\n    \"status\": 201\n}"
                         }
                     ]
                 }
             },
             "dav": [
-                "put team/MD5-10.vcf"
+                "put team/MD5-11.vcf"
             ],
             "backups": [],
             "searches": []
@@ -1922,7 +1943,7 @@
                 },
                 "2": {
                     "t1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n",
-                    "MD5-10.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:MD5-10\r\nFN:Nova Pessoa\r\nORG:Firma\r\nEMAIL:nova@example.invalid\r\nTEL:+55 11 92222-2222\r\nEND:VCARD\r\n"
+                    "MD5-11.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:MD5-11\r\nFN:Nova Pessoa\r\nORG:Firma\r\nEMAIL:nova@example.invalid\r\nTEL:+55 11 92222-2222\r\nEND:VCARD\r\n"
                 },
                 "3": {
                     "b1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
@@ -1930,7 +1951,10 @@
                 "4": {
                     "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
                 },
-                "5": []
+                "5": [],
+                "6": {
+                    "z1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:z1\r\nFN:Zeca\r\nNOTE:caderno da Zoe\r\nEND:VCARD\r\n"
+                }
             }
         }
     ],
@@ -1965,7 +1989,7 @@
                     "etag": null,
                     "before": null,
                     "after": {
-                        "uid": "MD5-12",
+                        "uid": "MD5-13",
                         "name": "Nova Pessoa",
                         "organization": "Firma",
                         "title": "",
@@ -1993,8 +2017,8 @@
                             {
                                 "name": "UID",
                                 "group": null,
-                                "value": "MD5-12",
-                                "serialized": "UID:MD5-12\r\n"
+                                "value": "MD5-13",
+                                "serialized": "UID:MD5-13\r\n"
                             },
                             {
                                 "name": "FN",
@@ -2021,7 +2045,7 @@
                                 "serialized": "TEL:+55 11 92222-2222\r\n"
                             }
                         ],
-                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:MD5-12\r\nFN:Nova Pessoa\r\nORG:Firma\r\nEMAIL:nova@example.invalid\r\nTEL:+55 11 92222-2222\r\nEND:VCARD\r\n"
+                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:MD5-13\r\nFN:Nova Pessoa\r\nORG:Firma\r\nEMAIL:nova@example.invalid\r\nTEL:+55 11 92222-2222\r\nEND:VCARD\r\n"
                     },
                     "shared": [
                         {
@@ -2035,7 +2059,7 @@
                     ],
                     "recoverable": false,
                     "consequence": "Contacts have no native trash or edit history; review the changes carefully.",
-                    "plan_state": "MD5-12.HMAC-6"
+                    "plan_state": "MD5-13.HMAC-6"
                 }
             },
             "dav": [],
@@ -2263,7 +2287,388 @@
                 "4": {
                     "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
                 },
-                "5": []
+                "5": [],
+                "6": {
+                    "z1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:z1\r\nFN:Zeca\r\nNOTE:caderno da Zoe\r\nEND:VCARD\r\n"
+                }
+            }
+        }
+    ],
+    "shared notice of an owner without account": [
+        {
+            "step": "preview contacts_create_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/zoe/",
+                "name": "Nova Pessoa",
+                "emails": [
+                    "nova@example.invalid"
+                ],
+                "phones": [
+                    "+55 11 92222-2222"
+                ],
+                "organization": "Firma"
+            },
+            "outcome": {
+                "result": {
+                    "requiresConfirmation": true,
+                    "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                    "action": "contacts_create_contact",
+                    "addressbook": {
+                        "id": 6,
+                        "uri": "zoe",
+                        "name": "Da Zoe",
+                        "ownerId": "zoe",
+                        "ownerPrincipal": "principals/users/zoe",
+                        "writable": true,
+                        "path": "/remote.php/dav/addressbooks/users/alice/zoe/"
+                    },
+                    "etag": null,
+                    "before": null,
+                    "after": {
+                        "uid": "MD5-14",
+                        "name": "Nova Pessoa",
+                        "organization": "Firma",
+                        "title": "",
+                        "note": "",
+                        "url": "",
+                        "emails": [
+                            "nova@example.invalid"
+                        ],
+                        "phones": [
+                            "+55 11 92222-2222"
+                        ],
+                        "properties": [
+                            {
+                                "name": "VERSION",
+                                "group": null,
+                                "value": "3.0",
+                                "serialized": "VERSION:3.0\r\n"
+                            },
+                            {
+                                "name": "PRODID",
+                                "group": null,
+                                "value": "-//Sabre//Sabre VObject 4.5.6//EN",
+                                "serialized": "PRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\n"
+                            },
+                            {
+                                "name": "UID",
+                                "group": null,
+                                "value": "MD5-14",
+                                "serialized": "UID:MD5-14\r\n"
+                            },
+                            {
+                                "name": "FN",
+                                "group": null,
+                                "value": "Nova Pessoa",
+                                "serialized": "FN:Nova Pessoa\r\n"
+                            },
+                            {
+                                "name": "ORG",
+                                "group": null,
+                                "value": "Firma",
+                                "serialized": "ORG:Firma\r\n"
+                            },
+                            {
+                                "name": "EMAIL",
+                                "group": null,
+                                "value": "nova@example.invalid",
+                                "serialized": "EMAIL:nova@example.invalid\r\n"
+                            },
+                            {
+                                "name": "TEL",
+                                "group": null,
+                                "value": "+55 11 92222-2222",
+                                "serialized": "TEL:+55 11 92222-2222\r\n"
+                            }
+                        ],
+                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:MD5-14\r\nFN:Nova Pessoa\r\nORG:Firma\r\nEMAIL:nova@example.invalid\r\nTEL:+55 11 92222-2222\r\nEND:VCARD\r\n"
+                    },
+                    "shared": [
+                        {
+                            "requiresConfirmation": true,
+                            "scope": "shared",
+                            "owner": "zoe",
+                            "ownerDisplayName": "zoe",
+                            "resource": "Da Zoe",
+                            "message": "The calendar 'Da Zoe' belongs to zoe and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true."
+                        }
+                    ],
+                    "recoverable": false,
+                    "consequence": "Contacts have no native trash or edit history; review the changes carefully.",
+                    "plan_state": "MD5-14.HMAC-7"
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "preview contacts_edit_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/zoe/",
+                "uri": "z1.vcf",
+                "title": "Chefe"
+            },
+            "outcome": {
+                "result": {
+                    "requiresConfirmation": true,
+                    "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                    "action": "contacts_edit_contact",
+                    "addressbook": {
+                        "id": 6,
+                        "uri": "zoe",
+                        "name": "Da Zoe",
+                        "ownerId": "zoe",
+                        "ownerPrincipal": "principals/users/zoe",
+                        "writable": true,
+                        "path": "/remote.php/dav/addressbooks/users/alice/zoe/"
+                    },
+                    "etag": "\"MD5-6\"",
+                    "before": {
+                        "uid": "z1",
+                        "name": "Zeca",
+                        "organization": "",
+                        "title": "",
+                        "note": "caderno da Zoe",
+                        "url": "",
+                        "emails": [],
+                        "phones": [],
+                        "properties": [
+                            {
+                                "name": "VERSION",
+                                "group": null,
+                                "value": "3.0",
+                                "serialized": "VERSION:3.0\r\n"
+                            },
+                            {
+                                "name": "UID",
+                                "group": null,
+                                "value": "z1",
+                                "serialized": "UID:z1\r\n"
+                            },
+                            {
+                                "name": "FN",
+                                "group": null,
+                                "value": "Zeca",
+                                "serialized": "FN:Zeca\r\n"
+                            },
+                            {
+                                "name": "NOTE",
+                                "group": null,
+                                "value": "caderno da Zoe",
+                                "serialized": "NOTE:caderno da Zoe\r\n"
+                            }
+                        ],
+                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:z1\r\nFN:Zeca\r\nNOTE:caderno da Zoe\r\nEND:VCARD\r\n"
+                    },
+                    "after": {
+                        "uid": "z1",
+                        "name": "Zeca",
+                        "organization": "",
+                        "title": "Chefe",
+                        "note": "caderno da Zoe",
+                        "url": "",
+                        "emails": [],
+                        "phones": [],
+                        "properties": [
+                            {
+                                "name": "VERSION",
+                                "group": null,
+                                "value": "3.0",
+                                "serialized": "VERSION:3.0\r\n"
+                            },
+                            {
+                                "name": "UID",
+                                "group": null,
+                                "value": "z1",
+                                "serialized": "UID:z1\r\n"
+                            },
+                            {
+                                "name": "FN",
+                                "group": null,
+                                "value": "Zeca",
+                                "serialized": "FN:Zeca\r\n"
+                            },
+                            {
+                                "name": "NOTE",
+                                "group": null,
+                                "value": "caderno da Zoe",
+                                "serialized": "NOTE:caderno da Zoe\r\n"
+                            },
+                            {
+                                "name": "TITLE",
+                                "group": null,
+                                "value": "Chefe",
+                                "serialized": "TITLE:Chefe\r\n"
+                            }
+                        ],
+                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:z1\r\nFN:Zeca\r\nNOTE:caderno da Zoe\r\nTITLE:Chefe\r\nEND:VCARD\r\n"
+                    },
+                    "shared": [
+                        {
+                            "requiresConfirmation": true,
+                            "scope": "shared",
+                            "owner": "zoe",
+                            "ownerDisplayName": "zoe",
+                            "resource": "Da Zoe",
+                            "message": "The calendar 'Da Zoe' belongs to zoe and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true."
+                        }
+                    ],
+                    "recoverable": false,
+                    "consequence": "Contacts have no native trash or edit history; review the changes carefully."
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "cards": {
+                "1": {
+                    "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n",
+                    "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:Carla S.\r\nEMAIL:carla@example.invalid\r\nEND:VCARD\r\n",
+                    "bad.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nEND:VCARD\r\n"
+                },
+                "2": {
+                    "t1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n"
+                },
+                "3": {
+                    "b1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
+                },
+                "4": {
+                    "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
+                },
+                "5": [],
+                "6": {
+                    "z1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:z1\r\nFN:Zeca\r\nNOTE:caderno da Zoe\r\nEND:VCARD\r\n"
+                }
+            }
+        }
+    ],
+    "create without plan state": [
+        {
+            "step": "call contacts_create_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/z-server-generated--system/",
+                "confirm": true,
+                "name": "Nova Pessoa",
+                "emails": [
+                    "nova@example.invalid"
+                ],
+                "phones": [
+                    "+55 11 92222-2222"
+                ],
+                "organization": "Firma"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "Account contacts are read-only; ask the administrator.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "preview contacts_create_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/z-server-generated--system/",
+                "name": "Nova Pessoa",
+                "emails": [
+                    "nova@example.invalid"
+                ],
+                "phones": [
+                    "+55 11 92222-2222"
+                ],
+                "organization": "Firma"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "Account contacts are read-only; ask the administrator.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "preview contacts_create_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "name": "Nova Pessoa",
+                "emails": [
+                    "nova@example.invalid"
+                ],
+                "phones": [
+                    "+55 11 92222-2222"
+                ],
+                "organization": "Firma"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "LogicException",
+                        "message": "Contact creation needs a plan state",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_edit_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "title": "Chefe",
+                "confirm": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"c1\",\n    \"name\": \"Maria Souza\",\n    \"organization\": \"\",\n    \"title\": \"Chefe\",\n    \"note\": \"\",\n    \"url\": \"\",\n    \"emails\": [\n        \"maria@example.invalid\"\n    ],\n    \"phones\": [],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"c1\",\n            \"serialized\": \"UID:c1\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Maria Souza\",\n            \"serialized\": \"FN:Maria Souza\\r\\n\"\n        },\n        {\n            \"name\": \"EMAIL\",\n            \"group\": null,\n            \"value\": \"maria@example.invalid\",\n            \"serialized\": \"EMAIL;TYPE=WORK:maria@example.invalid\\r\\n\"\n        },\n        {\n            \"name\": \"X-CUSTOM\",\n            \"group\": null,\n            \"value\": \"intocado\",\n            \"serialized\": \"X-CUSTOM;X-PARAM=keep:intocado\\r\\n\"\n        },\n        {\n            \"name\": \"TITLE\",\n            \"group\": null,\n            \"value\": \"Chefe\",\n            \"serialized\": \"TITLE:Chefe\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nUID:c1\\r\\nFN:Maria Souza\\r\\nEMAIL;TYPE=WORK:maria@example.invalid\\r\\nX-CUSTOM;X-PARAM=keep:intocado\\r\\nTITLE:Chefe\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"c1.vcf\",\n    \"etag\": \"\\\"MD5-15\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\",\n    \"status\": 204\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                "update personal/c1.vcf"
+            ],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "cards": {
+                "1": {
+                    "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nTITLE:Chefe\r\nEND:VCARD\r\n",
+                    "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:Carla S.\r\nEMAIL:carla@example.invalid\r\nEND:VCARD\r\n",
+                    "bad.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nEND:VCARD\r\n"
+                },
+                "2": {
+                    "t1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n"
+                },
+                "3": {
+                    "b1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
+                },
+                "4": {
+                    "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
+                },
+                "5": [],
+                "6": {
+                    "z1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:z1\r\nFN:Zeca\r\nNOTE:caderno da Zoe\r\nEND:VCARD\r\n"
+                }
             }
         }
     ],
@@ -2458,7 +2863,7 @@
                     "content": [
                         {
                             "type": "text",
-                            "text": "{\n    \"uid\": \"c1\",\n    \"name\": \"Maria Souza Lima\",\n    \"organization\": \"\",\n    \"title\": \"\",\n    \"note\": \"\",\n    \"url\": \"\",\n    \"emails\": [\n        \"maria@example.invalid\"\n    ],\n    \"phones\": [],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"c1\",\n            \"serialized\": \"UID:c1\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Maria Souza Lima\",\n            \"serialized\": \"FN:Maria Souza Lima\\r\\n\"\n        },\n        {\n            \"name\": \"EMAIL\",\n            \"group\": null,\n            \"value\": \"maria@example.invalid\",\n            \"serialized\": \"EMAIL;TYPE=WORK:maria@example.invalid\\r\\n\"\n        },\n        {\n            \"name\": \"X-CUSTOM\",\n            \"group\": null,\n            \"value\": \"intocado\",\n            \"serialized\": \"X-CUSTOM;X-PARAM=keep:intocado\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nUID:c1\\r\\nFN:Maria Souza Lima\\r\\nEMAIL;TYPE=WORK:maria@example.invalid\\r\\nX-CUSTOM;X-PARAM=keep:intocado\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"c1.vcf\",\n    \"etag\": \"\\\"MD5-13\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\",\n    \"status\": 204\n}"
+                            "text": "{\n    \"uid\": \"c1\",\n    \"name\": \"Maria Souza Lima\",\n    \"organization\": \"\",\n    \"title\": \"\",\n    \"note\": \"\",\n    \"url\": \"\",\n    \"emails\": [\n        \"maria@example.invalid\"\n    ],\n    \"phones\": [],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"c1\",\n            \"serialized\": \"UID:c1\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Maria Souza Lima\",\n            \"serialized\": \"FN:Maria Souza Lima\\r\\n\"\n        },\n        {\n            \"name\": \"EMAIL\",\n            \"group\": null,\n            \"value\": \"maria@example.invalid\",\n            \"serialized\": \"EMAIL;TYPE=WORK:maria@example.invalid\\r\\n\"\n        },\n        {\n            \"name\": \"X-CUSTOM\",\n            \"group\": null,\n            \"value\": \"intocado\",\n            \"serialized\": \"X-CUSTOM;X-PARAM=keep:intocado\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nUID:c1\\r\\nFN:Maria Souza Lima\\r\\nEMAIL;TYPE=WORK:maria@example.invalid\\r\\nX-CUSTOM;X-PARAM=keep:intocado\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"c1.vcf\",\n    \"etag\": \"\\\"MD5-16\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\",\n    \"status\": 204\n}"
                         }
                     ]
                 }
@@ -2485,7 +2890,7 @@
                     "content": [
                         {
                             "type": "text",
-                            "text": "{\n    \"uid\": \"c1\",\n    \"name\": \"Maria Souza Lima\",\n    \"organization\": \"\",\n    \"title\": \"\",\n    \"note\": \"Nota\",\n    \"url\": \"\",\n    \"emails\": [\n        \"maria@example.invalid\"\n    ],\n    \"phones\": [\n        \"+55 11 93333-3333\"\n    ],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"c1\",\n            \"serialized\": \"UID:c1\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Maria Souza Lima\",\n            \"serialized\": \"FN:Maria Souza Lima\\r\\n\"\n        },\n        {\n            \"name\": \"EMAIL\",\n            \"group\": null,\n            \"value\": \"maria@example.invalid\",\n            \"serialized\": \"EMAIL;TYPE=WORK:maria@example.invalid\\r\\n\"\n        },\n        {\n            \"name\": \"X-CUSTOM\",\n            \"group\": null,\n            \"value\": \"intocado\",\n            \"serialized\": \"X-CUSTOM;X-PARAM=keep:intocado\\r\\n\"\n        },\n        {\n            \"name\": \"NOTE\",\n            \"group\": null,\n            \"value\": \"Nota\",\n            \"serialized\": \"NOTE:Nota\\r\\n\"\n        },\n        {\n            \"name\": \"TEL\",\n            \"group\": null,\n            \"value\": \"+55 11 93333-3333\",\n            \"serialized\": \"TEL:+55 11 93333-3333\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nUID:c1\\r\\nFN:Maria Souza Lima\\r\\nEMAIL;TYPE=WORK:maria@example.invalid\\r\\nX-CUSTOM;X-PARAM=keep:intocado\\r\\nNOTE:Nota\\r\\nTEL:+55 11 93333-3333\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"c1.vcf\",\n    \"etag\": \"\\\"MD5-14\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\",\n    \"status\": 204\n}"
+                            "text": "{\n    \"uid\": \"c1\",\n    \"name\": \"Maria Souza Lima\",\n    \"organization\": \"\",\n    \"title\": \"\",\n    \"note\": \"Nota\",\n    \"url\": \"\",\n    \"emails\": [\n        \"maria@example.invalid\"\n    ],\n    \"phones\": [\n        \"+55 11 93333-3333\"\n    ],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"c1\",\n            \"serialized\": \"UID:c1\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Maria Souza Lima\",\n            \"serialized\": \"FN:Maria Souza Lima\\r\\n\"\n        },\n        {\n            \"name\": \"EMAIL\",\n            \"group\": null,\n            \"value\": \"maria@example.invalid\",\n            \"serialized\": \"EMAIL;TYPE=WORK:maria@example.invalid\\r\\n\"\n        },\n        {\n            \"name\": \"X-CUSTOM\",\n            \"group\": null,\n            \"value\": \"intocado\",\n            \"serialized\": \"X-CUSTOM;X-PARAM=keep:intocado\\r\\n\"\n        },\n        {\n            \"name\": \"NOTE\",\n            \"group\": null,\n            \"value\": \"Nota\",\n            \"serialized\": \"NOTE:Nota\\r\\n\"\n        },\n        {\n            \"name\": \"TEL\",\n            \"group\": null,\n            \"value\": \"+55 11 93333-3333\",\n            \"serialized\": \"TEL:+55 11 93333-3333\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nUID:c1\\r\\nFN:Maria Souza Lima\\r\\nEMAIL;TYPE=WORK:maria@example.invalid\\r\\nX-CUSTOM;X-PARAM=keep:intocado\\r\\nNOTE:Nota\\r\\nTEL:+55 11 93333-3333\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"c1.vcf\",\n    \"etag\": \"\\\"MD5-17\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\",\n    \"status\": 204\n}"
                         }
                     ]
                 }
@@ -2575,7 +2980,10 @@
                 "4": {
                     "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
                 },
-                "5": []
+                "5": [],
+                "6": {
+                    "z1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:z1\r\nFN:Zeca\r\nNOTE:caderno da Zoe\r\nEND:VCARD\r\n"
+                }
             }
         }
     ],
@@ -2740,7 +3148,7 @@
                     "content": [
                         {
                             "type": "text",
-                            "text": "{\n    \"uid\": \"t1\",\n    \"name\": \"Tiago Souza\",\n    \"organization\": \"\",\n    \"title\": \"Chefe\",\n    \"note\": \"\",\n    \"url\": \"\",\n    \"emails\": [],\n    \"phones\": [\n        \"+55 11 91111-1111\"\n    ],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"t1\",\n            \"serialized\": \"UID:t1\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Tiago Souza\",\n            \"serialized\": \"FN:Tiago Souza\\r\\n\"\n        },\n        {\n            \"name\": \"TEL\",\n            \"group\": null,\n            \"value\": \"+55 11 91111-1111\",\n            \"serialized\": \"TEL:+55 11 91111-1111\\r\\n\"\n        },\n        {\n            \"name\": \"TITLE\",\n            \"group\": null,\n            \"value\": \"Chefe\",\n            \"serialized\": \"TITLE:Chefe\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nUID:t1\\r\\nFN:Tiago Souza\\r\\nTEL:+55 11 91111-1111\\r\\nTITLE:Chefe\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"t1.vcf\",\n    \"etag\": \"\\\"MD5-15\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/team/\",\n    \"status\": 204\n}"
+                            "text": "{\n    \"uid\": \"t1\",\n    \"name\": \"Tiago Souza\",\n    \"organization\": \"\",\n    \"title\": \"Chefe\",\n    \"note\": \"\",\n    \"url\": \"\",\n    \"emails\": [],\n    \"phones\": [\n        \"+55 11 91111-1111\"\n    ],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"t1\",\n            \"serialized\": \"UID:t1\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Tiago Souza\",\n            \"serialized\": \"FN:Tiago Souza\\r\\n\"\n        },\n        {\n            \"name\": \"TEL\",\n            \"group\": null,\n            \"value\": \"+55 11 91111-1111\",\n            \"serialized\": \"TEL:+55 11 91111-1111\\r\\n\"\n        },\n        {\n            \"name\": \"TITLE\",\n            \"group\": null,\n            \"value\": \"Chefe\",\n            \"serialized\": \"TITLE:Chefe\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nUID:t1\\r\\nFN:Tiago Souza\\r\\nTEL:+55 11 91111-1111\\r\\nTITLE:Chefe\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"t1.vcf\",\n    \"etag\": \"\\\"MD5-18\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/team/\",\n    \"status\": 204\n}"
                         }
                     ]
                 }
@@ -2767,7 +3175,10 @@
                 "4": {
                     "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
                 },
-                "5": []
+                "5": [],
+                "6": {
+                    "z1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:z1\r\nFN:Zeca\r\nNOTE:caderno da Zoe\r\nEND:VCARD\r\n"
+                }
             }
         }
     ],
@@ -3013,7 +3424,10 @@
                 "4": {
                     "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
                 },
-                "5": []
+                "5": [],
+                "6": {
+                    "z1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:z1\r\nFN:Zeca\r\nNOTE:caderno da Zoe\r\nEND:VCARD\r\n"
+                }
             }
         }
     ],
@@ -3083,7 +3497,10 @@
                 "4": {
                     "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
                 },
-                "5": []
+                "5": [],
+                "6": {
+                    "z1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:z1\r\nFN:Zeca\r\nNOTE:caderno da Zoe\r\nEND:VCARD\r\n"
+                }
             }
         }
     ],
@@ -3131,7 +3548,10 @@
                 "4": {
                     "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
                 },
-                "5": []
+                "5": [],
+                "6": {
+                    "z1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:z1\r\nFN:Zeca\r\nNOTE:caderno da Zoe\r\nEND:VCARD\r\n"
+                }
             }
         }
     ],
@@ -3179,7 +3599,10 @@
                 "4": {
                     "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
                 },
-                "5": []
+                "5": [],
+                "6": {
+                    "z1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:z1\r\nFN:Zeca\r\nNOTE:caderno da Zoe\r\nEND:VCARD\r\n"
+                }
             }
         }
     ],
@@ -3227,7 +3650,10 @@
                 "4": {
                     "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
                 },
-                "5": []
+                "5": [],
+                "6": {
+                    "z1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:z1\r\nFN:Zeca\r\nNOTE:caderno da Zoe\r\nEND:VCARD\r\n"
+                }
             }
         }
     ],
@@ -3276,7 +3702,10 @@
                 "4": {
                     "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
                 },
-                "5": []
+                "5": [],
+                "6": {
+                    "z1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:z1\r\nFN:Zeca\r\nNOTE:caderno da Zoe\r\nEND:VCARD\r\n"
+                }
             }
         }
     ],
@@ -3324,7 +3753,10 @@
                 "4": {
                     "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
                 },
-                "5": []
+                "5": [],
+                "6": {
+                    "z1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:z1\r\nFN:Zeca\r\nNOTE:caderno da Zoe\r\nEND:VCARD\r\n"
+                }
             }
         }
     ]

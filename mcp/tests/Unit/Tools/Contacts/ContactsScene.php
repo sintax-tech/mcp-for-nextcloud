@@ -28,7 +28,8 @@ use PHPUnit\Framework\TestCase;
  * the module asked of it.
  *
  * alice owns "Contatos" (id 1). bob shares "Equipe" (id 2, writable), a book whose name is not valid UTF-8 (id 3) and
- * "Somente leitura" (id 4, read-only); a system principal owns id 5, which the module never lists. The catalog rows
+ * "Somente leitura" (id 4, read-only); a system principal owns id 5, which the module never lists; zoe, who has no
+ * account any more, shares "Da Zoe" (id 6). The catalog rows
  * cover a visible account, one whose e-mail a personal contact already has, guests by URI and by backend, a disabled
  * and a deleted account, a row of another address book and the user itself.
  */
@@ -72,6 +73,8 @@ final class ContactsScene {
 	public bool $backupFails = false;
 	/** @var (\Closure(): void)|null what happens to the books while a backup is being written */
 	public ?\Closure $duringBackup = null;
+	/** Whether the module receives the plan state a creation needs. */
+	public bool $planned = true;
 
 	/** @param TestCase $test test that builds the mocks */
 	public function __construct(private TestCase $test) {
@@ -79,7 +82,8 @@ final class ContactsScene {
 			->addBook(2, 'team', 'Equipe', 'principals/users/bob')
 			->addBook(3, 'broken', "Caderno \xC3\x28", 'principals/users/bob')
 			->addBook(4, 'ro', 'Somente leitura', 'principals/users/bob')
-			->addBook(5, 'system', 'Sistema', 'principals/system/system');
+			->addBook(5, 'system', 'Sistema', 'principals/system/system')
+			->addBook(6, 'zoe', 'Da Zoe', 'principals/users/zoe');
 		$this->contacts->books[3]['readOnly'] = true;
 		$this->contacts->plant(1, 'c1.vcf', self::card('c1', 'Maria Souza', "EMAIL;TYPE=WORK:maria@example.invalid\nX-CUSTOM;X-PARAM=keep:intocado"));
 		$this->contacts->plant(1, 'c2.vcf', self::card('c2', 'Carla S.', 'EMAIL:carla@example.invalid'));
@@ -87,6 +91,7 @@ final class ContactsScene {
 		$this->contacts->plant(2, 't1.vcf', self::card('t1', 'Tiago Souza', 'TEL:+55 11 91111-1111'));
 		$this->contacts->plant(3, 'b1.vcf', self::card('b1', 'Bruno', 'NOTE:caderno quebrado'));
 		$this->contacts->plant(4, 'r1.vcf', self::card('r1', 'Rita', 'ORG:Leitura'));
+		$this->contacts->plant(6, 'z1.vcf', self::card('z1', 'Zeca', 'NOTE:caderno da Zoe'));
 	}
 
 	/** @return ContactsModule the module of one request, every collaborator as the container builds it */
@@ -96,7 +101,7 @@ final class ContactsScene {
 		$secret->system['secret'] = 'characterization';
 		return ContactsTestModule::build(new ContactAccess($this->contacts), $this->contacts, $this->contacts, new ContactCard(),
 			new AddressBookShareNotice($users), $this->backup(),
-			ContactsTestModule::system($this->catalog(), $this->appConfig(), $this->groups(), $users), new PlanState($secret->mock($this->test)));
+			ContactsTestModule::system($this->catalog(), $this->appConfig(), $this->groups(), $users), $this->planned ? new PlanState($secret->mock($this->test)) : null);
 	}
 
 	/**

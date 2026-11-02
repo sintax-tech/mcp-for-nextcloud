@@ -221,7 +221,10 @@ final class NotesPlanRenderer {
 		return PlanText::inline($text, self::MAX_TEXT_LENGTH);
 	}
 
-	/** @param string $title note title typed by somebody else @return string inert text, or the placeholder when nothing is left */
+	/**
+	 * @param string $title note title typed by somebody else
+	 * @return string inert text, or the placeholder when nothing is left
+	 */
 	private function name(string $title): string {
 		$inline = PlanText::inline($title);
 		return $inline !== '' ? $inline : Translator::t('(no title)');

@@ -12,7 +12,11 @@ use OCA\Mcp\Access\Policy\{PolicyConflict, PolicyOutbox, PolicyUnavailable, Snap
 
 /** Public execution contract shared by the facade and its transaction entry points. */
 interface PolicyExecutionContract {
-	/** Read admission shares the abandoned-context gate. @throws PolicyUnavailable When the writer was abandoned. */
+	/**
+	 * Read admission shares the abandoned-context gate.
+	 *
+	 * @throws PolicyUnavailable When the writer was abandoned.
+	 */
 	public function assertUsable(): void;
 
 	/**

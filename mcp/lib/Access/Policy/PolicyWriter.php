@@ -61,6 +61,8 @@ class PolicyWriter implements PolicyExecutionContract {
 	private PolicyExecution $execution;
 
 	/**
+	 * Keeps the historical signature and assembles one execution over one shared context.
+	 *
 	 * @param IDBConnection $db Official shared connection.
 	 * @param PolicyStateMapper $state Mutex and revision store.
 	 * @param PolicyEventsMapper $events Transactional event mapper.
@@ -79,7 +81,6 @@ class PolicyWriter implements PolicyExecutionContract {
 	 * @param NativeResourceEnumerator|null $resources Official resource access enumerator.
 	 * @param ScopeActivation $activation Active resource families.
 	 */
-
 	public function __construct(
 		private IDBConnection $db,
 		private PolicyStateMapper $state,
@@ -567,7 +568,7 @@ class PolicyWriter implements PolicyExecutionContract {
 	 * @param string $actor uid of the administrator
 	 * @param string $gid the group, exact bytes
 	 * @param mixed $grants target set, module => list of operations (PolicyEventPayload::groupGrants())
-	 * @param Closure(array{gid:string, grants:array, current:array, withdraws:bool, holders:list<string>}): array {trusted:bool, members:list<string>, cuts:list<string>, sources?:list<array{groupId:string, state:?string, gen:?string}>} $admit
+	 * @param Closure(array{gid:string, grants:array, current:array, withdraws:bool, holders:list<string>}): array{trusted:bool, members:list<string>, cuts:list<string>, sources?:list<array{groupId:string, state:?string, gen:?string}>} $admit
 	 *     the external phase, without any transaction: the fresh source predicate, the member list and, when the
 	 *     set withdraws eligibility, which of the given holders lose their last source, with the lifecycle of every
 	 *     group those decisions read (GroupGrantsService::admit())
@@ -1197,7 +1198,9 @@ class PolicyWriter implements PolicyExecutionContract {
 		$local['outbox']->add(PolicyEventsMapper::KIND_CLEANUP, PolicyEventPayload::cleanupGlobal($epoch));
 	}
 
-	/** Delegates to the single active attempt.
+	/**
+	 * Delegates to the single active attempt.
+	 *
 	 * @return array{outbox:PolicyOutbox, state:array, cut:bool}
 	 * @throws \LogicException Outside the local phase of a command.
 	 */

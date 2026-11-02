@@ -17,7 +17,11 @@ final class PolicyContext {
 	/** @var PolicyAttempt|null The active local phase, cleared on success and failure. */
 	public ?PolicyAttempt $attempt = null;
 
-	/** Rejects every subsequent admission after abandonment. @throws PolicyUnavailable When unusable. */
+	/**
+	 * Rejects every subsequent admission after abandonment.
+	 *
+	 * @throws PolicyUnavailable When unusable.
+	 */
 	public function assertUsable(): void {
 		if (!$this->usable) {
 			throw new PolicyUnavailable('Policy context was abandoned');

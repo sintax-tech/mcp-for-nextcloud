@@ -5,7 +5,7 @@
 			"rule": "external-prefix",
 			"source": "lib/Access/Policy/Transactions/PolicyTransaction.php",
 			"target": "Doctrine\\DBAL\\Driver\\Exception",
-			"line": 164,
+			"line": 168,
 			"reason": "Legacy Doctrine catches move to Access/Policy/Transactions in RE-06; preserve RE-06d expiration on retarget. RE-06 may evaluate the public OCP\\DB\\Exception alternative without changing behavior here.",
 			"expires": "RE-06d"
 		},
@@ -21,7 +21,7 @@
 			"rule": "external-prefix",
 			"source": "lib/Access/Policy/Transactions/RetryPolicy.php",
 			"target": "Doctrine\\DBAL\\Driver\\Exception",
-			"line": 50,
+			"line": 52,
 			"reason": "Legacy Doctrine catches move to Access/Policy/Transactions in RE-06; preserve RE-06d expiration on retarget. RE-06 may evaluate the public OCP\\DB\\Exception alternative without changing behavior here.",
 			"expires": "RE-06d"
 		},
@@ -29,7 +29,7 @@
 			"rule": "external-prefix",
 			"source": "lib/Access/Policy/Transactions/PolicyTransaction.php",
 			"target": "Doctrine\\DBAL\\Exception",
-			"line": 164,
+			"line": 168,
 			"reason": "Legacy Doctrine catches move to Access/Policy/Transactions in RE-06; preserve RE-06d expiration on retarget. RE-06 may evaluate the public OCP\\DB\\Exception alternative without changing behavior here.",
 			"expires": "RE-06d"
 		},
@@ -45,7 +45,7 @@
 			"rule": "external-prefix",
 			"source": "lib/Access/Policy/Transactions/RetryPolicy.php",
 			"target": "Doctrine\\DBAL\\Exception",
-			"line": 53,
+			"line": 55,
 			"reason": "Legacy Doctrine catches move to Access/Policy/Transactions in RE-06; preserve RE-06d expiration on retarget. RE-06 may evaluate the public OCP\\DB\\Exception alternative without changing behavior here.",
 			"expires": "RE-06d"
 		},
@@ -61,7 +61,7 @@
 			"rule": "external-prefix",
 			"source": "lib/Access/Policy/Transactions/RetryPolicy.php",
 			"target": "Doctrine\\DBAL\\Exception\\DeadlockException",
-			"line": 47,
+			"line": 49,
 			"reason": "Legacy Doctrine catches move to Access/Policy/Transactions in RE-06; preserve RE-06d expiration on retarget. RE-06 may evaluate the public OCP\\DB\\Exception alternative without changing behavior here.",
 			"expires": "RE-06d"
 		},
@@ -77,7 +77,7 @@
 			"rule": "external-prefix",
 			"source": "lib/Access/Policy/Transactions/RetryPolicy.php",
 			"target": "Doctrine\\DBAL\\Exception\\LockWaitTimeoutException",
-			"line": 47,
+			"line": 49,
 			"reason": "Legacy Doctrine catches move to Access/Policy/Transactions in RE-06; preserve RE-06d expiration on retarget. RE-06 may evaluate the public OCP\\DB\\Exception alternative without changing behavior here.",
 			"expires": "RE-06d"
 		},
@@ -85,7 +85,7 @@
 			"rule": "layering",
 			"source": "lib/Access/Policy/PolicyWriter.php",
 			"target": "OCA\\Mcp\\OAuth\\Storage\\OAuthStore",
-			"line": 97,
+			"line": 98,
 			"reason": "Invert this legacy upward dependency through a lower-layer contract.",
 			"expires": "RE-06d"
 		},

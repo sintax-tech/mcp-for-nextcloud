@@ -40,7 +40,11 @@ final class PolicyTransaction {
 		private PolicyContext $context,
 	) {}
 
-	/** Read admission shares the abandoned-context gate. @throws PolicyUnavailable When unusable. */
+	/**
+	 * Read admission shares the abandoned-context gate.
+	 *
+	 * @throws PolicyUnavailable When unusable.
+	 */
 	public function assertUsable(): void {
 		$this->context->assertUsable();
 	}
@@ -199,7 +203,12 @@ final class PolicyTransaction {
 		}
 	}
 
-	/** Invalidates official caches. @param list<string> $uids Cache owners. @throws PolicyUnavailable Abandons context on failure. */
+	/**
+	 * Invalidates official caches.
+	 *
+	 * @param list<string> $uids Cache owners.
+	 * @throws PolicyUnavailable Abandons context on failure.
+	 */
 	private function clearCaches(array $uids): void {
 		try {
 			foreach ($uids as $uid) {

@@ -38,7 +38,9 @@ final class RetryPolicy {
 		return $error instanceof \Doctrine\DBAL\Exception && self::wrapsRetryable($error);
 	}
 
-	/** Follows only database exception chains, at most five links.
+	/**
+	 * Follows only database exception chains, at most five links.
+	 *
 	 * @param Throwable $error Database wrapper.
 	 * @return bool Whether a bounded driver cause permits replay.
 	 */

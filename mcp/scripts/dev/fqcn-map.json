@@ -2,6 +2,9 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Modules/Logs/LogsToolCatalog.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\LogsToolCatalog","target":"stays","owner":"Modules\\Logs","ticket":null},
+		{"path":"lib/Modules/Logs/Tools/ListLogs.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\Tools\\ListLogs","target":"stays","owner":"Modules\\Logs","ticket":null},
+		{"path":"lib/Modules/Logs/Tools/AnalyzeLogs.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\Tools\\AnalyzeLogs","target":"stays","owner":"Modules\\Logs","ticket":null},
 		{"path":"lib/Modules/Logs/Reading/LogsReadWindow.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\Reading\\LogsReadWindow","target":"stays","owner":"Modules\\Logs","ticket":null},
 		{"path":"lib/Modules/Logs/Reading/ListLogsHandler.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\Reading\\ListLogsHandler","target":"stays","owner":"Modules\\Logs","ticket":null},
 		{"path":"lib/Modules/Logs/Reading/AnalyzeLogsHandler.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\Reading\\AnalyzeLogsHandler","target":"stays","owner":"Modules\\Logs","ticket":null},

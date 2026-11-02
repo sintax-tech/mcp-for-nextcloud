@@ -41,7 +41,7 @@ final class LayeringTest extends ArchitectureCase {
 	}
 	public function testLedgerIsExactConsumedAndMonotonic(): void {
 		$edge = self::fixture('lib/Mcp/X.php', 'use OCA~Mcp~Tools~Notes~NotesModule;')[0];
-		$entry = $edge + ['reason' => 'Replace the legacy edge.', 'expires' => 'RE-13'];
+		$entry = $edge + ['reason' => 'Replace the legacy edge.', 'expires' => 'RE-21'];
 		self::assertSame([], BoundaryLedger::problems([$edge], [$entry], self::tickets()));
 		$extra = self::fixture('lib/Mcp/X.php', 'use OCA~Mcp~Tools~Files~FilesModule;')[0];
 		self::assertNotSame([], BoundaryLedger::problems([$edge, $extra], [$entry], self::tickets()));

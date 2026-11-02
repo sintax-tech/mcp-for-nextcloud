@@ -7,12 +7,12 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\OAuth;
 
 use OCA\Mcp\Controller\OAuthController;
-use OCA\Mcp\OAuth\AuthorizationValidator;
-use OCA\Mcp\OAuth\ClientMetadata;
-use OCA\Mcp\OAuth\ClientResolver;
-use OCA\Mcp\OAuth\OAuthException;
-use OCA\Mcp\OAuth\ResourceUrl;
-use OCA\Mcp\OAuth\TokenService;
+use OCA\Mcp\OAuth\Authorization\AuthorizationValidator;
+use OCA\Mcp\OAuth\Clients\ClientMetadata;
+use OCA\Mcp\OAuth\Clients\ClientResolver;
+use OCA\Mcp\OAuth\Authorization\OAuthException;
+use OCA\Mcp\OAuth\Tokens\ResourceUrl;
+use OCA\Mcp\OAuth\Tokens\TokenService;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http\TemplateResponse;

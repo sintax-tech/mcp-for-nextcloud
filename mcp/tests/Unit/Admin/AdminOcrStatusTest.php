@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Admin;
 
-use OCA\Mcp\Service\ConnectionList;
+use OCA\Mcp\OAuth\Connections\ConnectionList;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Settings\AdminSettings;
 use OCA\Mcp\Tools\Files\OcrSupport;

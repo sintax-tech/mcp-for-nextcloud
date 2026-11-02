@@ -5,7 +5,9 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\OAuth;
+namespace OCA\Mcp\OAuth\Clients;
+
+use OCA\Mcp\OAuth\Authorization\RedirectUriMatcher;
 
 /**
  * The optional built-in public client for local programs (for example Gemini CLI) that cannot publish a Client

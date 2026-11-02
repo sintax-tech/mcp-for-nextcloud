@@ -26,7 +26,7 @@
 <?php if ($_['error'] !== null): ?>
     <h2><?php p($l->t('Connection not possible')); ?></h2>
     <p class="mcp-error"><?php p($l->t('The authorization request is invalid.')); ?></p>
-    <?php if ($_['error'] === \OCA\Mcp\OAuth\ClientMetadataDownloader::TIMEOUT_MESSAGE): ?>
+    <?php if ($_['error'] === \OCA\Mcp\OAuth\Clients\ClientMetadataDownloader::TIMEOUT_MESSAGE): ?>
         <p class="mcp-hosts"><?php p($l->t('The client did not send its metadata document in time. Try connecting again shortly.')); ?></p>
     <?php else: ?>
         <p class="mcp-hosts"><?php p($_['error']); ?></p>

@@ -5,13 +5,13 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Service;
+namespace OCA\Mcp\OAuth\Connections;
 
 use InvalidArgumentException;
-use OCA\Mcp\OAuth\CustomClient;
-use OCA\Mcp\OAuth\NativeClient;
+use OCA\Mcp\OAuth\Clients\CustomClient;
+use OCA\Mcp\OAuth\Clients\NativeClient;
 use OCA\Mcp\OAuth\Storage\OAuthStore;
-use OCA\Mcp\OAuth\TokenService;
+use OCA\Mcp\OAuth\Tokens\TokenService;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCA\Mcp\Db\OAuthClientsMapper;
 use OCP\IUserManager;

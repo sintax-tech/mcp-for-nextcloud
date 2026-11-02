@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\OAuth;
+namespace OCA\Mcp\OAuth\Authorization;
 
 /**
  * Exact redirect_uri matching against the client's registered list. Loopback URIs (127.0.0.1, [::1], localhost over

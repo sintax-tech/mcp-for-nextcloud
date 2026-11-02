@@ -5,7 +5,12 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\OAuth;
+namespace OCA\Mcp\OAuth\Authorization;
+
+use OCA\Mcp\OAuth\Clients\ClientResolver;
+use OCA\Mcp\OAuth\Clients\CustomClient;
+use OCA\Mcp\OAuth\Clients\NativeClient;
+use OCA\Mcp\OAuth\Tokens\ResourceUrl;
 
 /**
  * Validates an authorization request (OAuth 2.1 + PKCE S256 + RFC 8707 resource). Client and redirect_uri are

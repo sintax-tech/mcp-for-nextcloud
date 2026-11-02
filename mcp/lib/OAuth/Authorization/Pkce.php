@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\OAuth;
+namespace OCA\Mcp\OAuth\Authorization;
 
 /** PKCE (RFC 7636), S256 only: plain and absent challenges are refused. */
 class Pkce {

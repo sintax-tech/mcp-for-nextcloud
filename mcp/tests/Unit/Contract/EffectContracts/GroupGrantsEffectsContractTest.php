@@ -11,7 +11,7 @@ use OCA\Mcp\Controller\GrantsController;
 use OCA\Mcp\Access\Grants\GrantMatrix;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Logs\LogsAccess;
-use OCA\Mcp\OAuth\OAuthClientsService;
+use OCA\Mcp\OAuth\Clients\OAuthClientsService;
 use OCA\Mcp\Access\Policy\GroupGrantsService;
 use OCA\Mcp\Access\Policy\GroupSourceClassifier;
 use OCA\Mcp\Access\Policy\PolicyOperationContext;

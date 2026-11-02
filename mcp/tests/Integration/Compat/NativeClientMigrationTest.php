@@ -7,8 +7,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Compat;
 
 use OCA\Mcp\Db\OAuthClientsMapper;
-use OCA\Mcp\OAuth\ClientResolver;
-use OCA\Mcp\OAuth\NativeClient;
+use OCA\Mcp\OAuth\Clients\ClientResolver;
+use OCA\Mcp\OAuth\Clients\NativeClient;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCP\IConfig;
 use OCP\Server;

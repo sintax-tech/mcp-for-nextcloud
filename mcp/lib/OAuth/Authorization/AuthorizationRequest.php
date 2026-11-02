@@ -5,7 +5,9 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\OAuth;
+namespace OCA\Mcp\OAuth\Authorization;
+
+use OCA\Mcp\OAuth\Clients\ClientMetadata;
 
 /** A validated authorization request, kept in the session between the consent page and the consent POST. */
 class AuthorizationRequest {

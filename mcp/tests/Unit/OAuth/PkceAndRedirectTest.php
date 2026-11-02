@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\OAuth;
 
-use OCA\Mcp\OAuth\Pkce;
-use OCA\Mcp\OAuth\RedirectUriMatcher;
-use OCA\Mcp\OAuth\ResourceUrl;
+use OCA\Mcp\OAuth\Authorization\Pkce;
+use OCA\Mcp\OAuth\Authorization\RedirectUriMatcher;
+use OCA\Mcp\OAuth\Tokens\ResourceUrl;
 use PHPUnit\Framework\TestCase;
 
 final class PkceAndRedirectTest extends TestCase {

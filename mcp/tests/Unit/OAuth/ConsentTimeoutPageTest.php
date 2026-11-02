@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\OAuth;
 
-use OCA\Mcp\OAuth\ClientMetadataDownloader;
+use OCA\Mcp\OAuth\Clients\ClientMetadataDownloader;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use PHPUnit\Framework\TestCase;
 

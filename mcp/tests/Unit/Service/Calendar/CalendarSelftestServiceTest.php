@@ -157,11 +157,12 @@ final class CalendarSelftestServiceTest extends CalendarTestCase {
 			return ['syncToken' => (string)count($this->dav->calls), 'deleted' => $deleted];
 		});
 		$reader->method('schedulingObjects')->willReturnCallback(fn (string $uid): array => $this->inbox[$uid] ?? []);
-		return new CalendarSelftestService($this->dav,
-			$this->writeHandlers['calendar_create_event'], $this->writeHandlers['calendar_update_event'],
-			$this->writeHandlers['calendar_move_event'], $this->writeHandlers['calendar_delete_event'],
-			$this->writeHandlers['calendar_transfer_event'],
-			new CalendarAccess($this->store), $this->store, $time, $users, $session, $apps,
-			new TrashPolicy($config), $reader);
+		$access = new CalendarAccess($this->store);
+		$evidence = new \OCA\Mcp\Modules\Calendar\Selftest\SelftestEvidence($users, $apps, $this->store, $reader, $access);
+		$writes = new \OCA\Mcp\Modules\Calendar\Selftest\SelftestWrites($this->writeHandlers['calendar_create_event'],
+			$this->writeHandlers['calendar_delete_event'], $time, $session, $this->dav, $this->store, $evidence);
+		return new CalendarSelftestService($this->dav, $this->writeHandlers['calendar_update_event'],
+			$this->writeHandlers['calendar_move_event'], $this->writeHandlers['calendar_transfer_event'],
+			$access, $this->store, $time, $session, new TrashPolicy($config), $reader, $evidence, $writes);
 	}
 }

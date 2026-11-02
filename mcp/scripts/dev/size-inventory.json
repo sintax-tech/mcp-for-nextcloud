@@ -8,7 +8,6 @@
 		{"fqcn":"OCA\\Mcp\\Listener\\GroupLifecycleListener","ceiling":384},
 		{"fqcn":"OCA\\Mcp\\OAuth\\OAuthStore","ceiling":377},
 		{"fqcn":"OCA\\Mcp\\OAuth\\TokenService","ceiling":354},
-		{"fqcn":"OCA\\Mcp\\Service\\Calendar\\CalendarSelftestService","ceiling":420},
 		{"fqcn":"OCA\\Mcp\\Service\\GrantPolicy","ceiling":484},
 		{"fqcn":"OCA\\Mcp\\Service\\McpProtocol","ceiling":547},
 		{"fqcn":"OCA\\Mcp\\Service\\Policy\\PolicyEventPayload","ceiling":451},

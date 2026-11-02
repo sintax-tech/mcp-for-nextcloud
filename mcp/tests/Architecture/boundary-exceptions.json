@@ -124,7 +124,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Contacts/ContactAccess.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\Calendar",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\Calendar",
 			"line": 90,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15"
@@ -140,7 +140,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Contacts/ContactDav.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\DavResult",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Writing\\DavResult",
 			"line": 54,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15"
@@ -148,7 +148,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Contacts/ContactsModule.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\Calendar",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\Calendar",
 			"line": 397,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15"
@@ -156,7 +156,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Contacts/ContactsModule.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\SharedGuard",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Approval\\SharedGuard",
 			"line": 47,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15"
@@ -164,7 +164,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Contacts/EmbeddedCardDavDispatcher.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\CapturingSapi",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Writing\\CapturingSapi",
 			"line": 179,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15"
@@ -172,7 +172,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Contacts/EmbeddedCardDavDispatcher.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\DavResult",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Writing\\DavResult",
 			"line": 183,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15"
@@ -180,7 +180,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Contacts/EmbeddedCardDavDispatcher.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\Session",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Writing\\Session",
 			"line": 43,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15"
@@ -188,7 +188,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Contacts/Handler/CreateContactHandler.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\Calendar",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\Calendar",
 			"line": 105,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15"
@@ -196,7 +196,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Contacts/Handler/CreateContactHandler.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\SharedGuard",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Approval\\SharedGuard",
 			"line": 48,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15"
@@ -212,7 +212,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Talk/ReferenceLinker.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarException",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Failures\\CalendarException",
 			"line": 154,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-20"
@@ -220,7 +220,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Talk/ReferenceLinker.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarStore",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\CalendarStore",
 			"line": 54,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-20"
@@ -228,7 +228,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Talk/ReferenceLinker.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\Classification",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\Classification",
 			"line": 172,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-20"
@@ -236,7 +236,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Talk/ReferenceLinker.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\EventMapper",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Presentation\\EventMapper",
 			"line": 172,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-20"
@@ -244,7 +244,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Talk/ReferenceLinker.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\EventRepository",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\EventRepository",
 			"line": 55,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-20"
@@ -252,7 +252,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Talk/ReferenceLinker.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\ScopedCalendarAccess",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\ScopedCalendarAccess",
 			"line": 53,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-20"
@@ -276,7 +276,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/Handler/ListTasksHandler.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarException",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Failures\\CalendarException",
 			"line": 59,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -284,7 +284,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/Handler/ListTasksHandler.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarStore",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\CalendarStore",
 			"line": 51,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -292,7 +292,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/Handler/ListTasksHandler.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\ScopedCalendarAccess",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\ScopedCalendarAccess",
 			"line": 50,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -300,7 +300,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/Handler/ReadTaskHandler.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarException",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Failures\\CalendarException",
 			"line": 38,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -308,7 +308,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/Handler/ReadTaskHandler.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\ScopedCalendarAccess",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\ScopedCalendarAccess",
 			"line": 33,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -316,7 +316,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/ParentTitles.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\Calendar",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\Calendar",
 			"line": 41,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -324,7 +324,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/ParentTitles.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarStore",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\CalendarStore",
 			"line": 28,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -332,7 +332,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/TaskData.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\DateInput",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Composing\\DateInput",
 			"line": 175,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -340,7 +340,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/TaskHierarchy.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\Calendar",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\Calendar",
 			"line": 129,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -348,7 +348,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/TaskHierarchy.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarStore",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\CalendarStore",
 			"line": 45,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -356,7 +356,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/TaskObjects.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarStore",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\CalendarStore",
 			"line": 30,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -364,7 +364,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/TaskParentStep.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\Calendar",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\Calendar",
 			"line": 97,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -372,7 +372,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/TaskWriteFlow.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\Calendar",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\Calendar",
 			"line": 157,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -380,7 +380,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/TaskWriteFlow.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarDav",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Writing\\CalendarDav",
 			"line": 53,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -388,7 +388,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/TaskWriteFlow.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarStore",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\CalendarStore",
 			"line": 52,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -396,7 +396,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/TaskWriteFlow.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\ScopedCalendarAccess",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\ScopedCalendarAccess",
 			"line": 51,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -404,7 +404,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/TaskWriteFlow.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\SharedGuard",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Approval\\SharedGuard",
 			"line": 56,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -412,7 +412,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/TaskWriteFlow.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\TrashPolicy",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Writing\\TrashPolicy",
 			"line": 57,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -420,7 +420,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/TaskWriteFlow.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\TrashedObject",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Writing\\TrashedObject",
 			"line": 180,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -428,7 +428,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/TasksModule.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarDav",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Writing\\CalendarDav",
 			"line": 57,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -436,7 +436,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/TasksModule.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarStore",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\CalendarStore",
 			"line": 55,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -444,7 +444,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/TasksModule.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\ScopedCalendarAccess",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\ScopedCalendarAccess",
 			"line": 54,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -452,7 +452,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/TasksModule.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\SharedGuard",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Approval\\SharedGuard",
 			"line": 59,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -460,7 +460,7 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/TasksModule.php",
-			"target": "OCA\\Mcp\\Tools\\Calendar\\TrashPolicy",
+			"target": "OCA\\Mcp\\Modules\\Calendar\\Writing\\TrashPolicy",
 			"line": 60,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
@@ -496,46 +496,6 @@
 			"line": 95,
 			"reason": "Move this native-app reference behind the owning module Integration boundary.",
 			"expires": "RE-28"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Service/Calendar/DavCalendarSelftestReader.php",
-			"target": "OCA\\DAV\\CalDAV\\CalDavBackend",
-			"line": 31,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-16"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Calendar/DavCalendarStore.php",
-			"target": "OCA\\DAV\\CalDAV\\CalDavBackend",
-			"line": 48,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-16"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Calendar/EmbeddedCalDavServerFactory.php",
-			"target": "OCA\\DAV\\CalDAV\\EmbeddedCalDavServer",
-			"line": 29,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-16"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Calendar/EmbeddedCalDavServerFactory.php",
-			"target": "OCA\\DAV\\CalDAV\\InvitationResponse\\InvitationResponseServer",
-			"line": 31,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-16"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Calendar/EmbeddedCalDavServerFactory.php",
-			"target": "OCA\\DAV\\CalDAV\\Schedule\\IMipPlugin",
-			"line": 33,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-16"
 		},
 		{
 			"rule": "native-app",

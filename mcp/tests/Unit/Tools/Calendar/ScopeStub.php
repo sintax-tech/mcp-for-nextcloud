@@ -9,9 +9,9 @@ namespace OCA\Mcp\Tests\Unit\Tools\Calendar;
 
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Access\ResourceScope\ScopeReader;
-use OCA\Mcp\Tools\Calendar\CalendarAccess;
-use OCA\Mcp\Tools\Calendar\CalendarStore;
-use OCA\Mcp\Tools\Calendar\ScopedCalendarAccess;
+use OCA\Mcp\Modules\Calendar\Locating\CalendarAccess;
+use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
+use OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess;
 
 /**
  * The resource scope a calendar or task tool reads, held in memory: unrestricted unless a module is restricted, and

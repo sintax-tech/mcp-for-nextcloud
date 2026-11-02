@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Calendar;
 
+use OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages;
+
 /**
  * Shared JSON Schema fragments, definition envelope and result encoding of the calendar tools.
  */

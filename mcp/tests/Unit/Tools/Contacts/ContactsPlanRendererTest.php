@@ -11,7 +11,7 @@ use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
-use OCA\Mcp\Tools\Calendar\SharedGuard;
+use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
 use OCA\Mcp\Tools\Contacts\ContactAccess;
 use OCA\Mcp\Tools\Contacts\ContactBackup;
 use OCA\Mcp\Tools\Contacts\ContactCard;

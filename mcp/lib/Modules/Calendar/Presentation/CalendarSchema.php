@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Calendar\Presentation;
 
-use OCA\Mcp\Tools\Calendar\AttendeeResolver;
-use OCA\Mcp\Tools\Calendar\CalendarMessages;
+use OCA\Mcp\Modules\Calendar\Composing\AttendeeResolver;
+use OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages;
 
 /** Calendar-specific schema fragments; shared DAV properties live in the protocol layer. */
 final class CalendarSchema {

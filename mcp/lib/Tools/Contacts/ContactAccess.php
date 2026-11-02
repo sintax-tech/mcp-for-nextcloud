@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Contacts;
 
-use OCA\Mcp\Tools\Calendar\Calendar;
+use OCA\Mcp\Modules\Calendar\Locating\Calendar;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 

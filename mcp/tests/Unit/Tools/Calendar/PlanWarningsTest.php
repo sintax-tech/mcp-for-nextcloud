@@ -486,8 +486,8 @@ final class PlanWarningsTest extends CalendarTestCase {
 	public function testWarningMessagesFlattenAndBoundTheNamesTheyQuote(): void {
 		$title = "Dentista\n### Forged " . str_repeat('x', 400);
 
-		$overlap = \OCA\Mcp\Tools\Calendar\CalendarMessages::collisionWith($title, 'qui, 14:00');
-		$busy = \OCA\Mcp\Tools\Calendar\CalendarMessages::attendeeBusy("Roberto\r\n# x");
+		$overlap = \OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages::collisionWith($title, 'qui, 14:00');
+		$busy = \OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages::attendeeBusy("Roberto\r\n# x");
 
 		self::assertStringNotContainsString("\n", $overlap);
 		self::assertLessThan(200, mb_strlen($overlap));

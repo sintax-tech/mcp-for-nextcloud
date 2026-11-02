@@ -186,7 +186,7 @@ final class McpProtocolTest extends TestCase {
 					'inputSchema' => ['properties' => ['start' => ['type' => 'string']]]]];
 			}
 			public function call(string $name, array $arguments, string $userId): array {
-				(new \OCA\Mcp\Tools\Calendar\DateInput())->parse($arguments['start'], 'start');
+				(new \OCA\Mcp\Modules\Calendar\Composing\DateInput())->parse($arguments['start'], 'start');
 				return [];
 			}
 		};

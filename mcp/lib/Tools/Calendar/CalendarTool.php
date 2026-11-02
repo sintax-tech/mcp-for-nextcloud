@@ -7,6 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Calendar;
 
+use OCA\Mcp\Modules\Calendar\Failures\CalendarArgumentException;
+use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
+
 /**
  * One calendar tool: its registry definition and its handler.
  */

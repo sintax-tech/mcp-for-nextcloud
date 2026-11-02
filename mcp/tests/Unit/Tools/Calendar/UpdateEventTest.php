@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Calendar;
 
-use OCA\Mcp\Tools\Calendar\CalendarArgumentException;
+use OCA\Mcp\Modules\Calendar\Failures\CalendarArgumentException;
 use RuntimeException;
 use Sabre\VObject\Reader;
 
@@ -63,7 +63,7 @@ final class UpdateEventTest extends CalendarTestCase {
 		try {
 			$prepared->dispatch();
 			self::fail('the write overwrote a concurrent change');
-		} catch (\OCA\Mcp\Tools\Calendar\CalendarException $e) {
+		} catch (\OCA\Mcp\Modules\Calendar\Failures\CalendarException $e) {
 			self::assertSame(412, $e->getCode());
 		}
 		self::assertStringContainsString('Texto de outra pessoa', $this->store->objects[1]['e.ics']['data']);

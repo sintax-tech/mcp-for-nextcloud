@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Tasks;
 
 use InvalidArgumentException;
 use OCA\Mcp\Tests\Unit\Tools\Tasks\Handler\TaskListingCase;
-use OCA\Mcp\Tools\Calendar\DavResult;
+use OCA\Mcp\Modules\Calendar\Writing\DavResult;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\Attributes\DataProvider;
 

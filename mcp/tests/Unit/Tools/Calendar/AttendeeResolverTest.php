@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Calendar;
 
-use OCA\Mcp\Tools\Calendar\AttendeeResolver;
-use OCA\Mcp\Tools\Calendar\CalendarArgumentException;
+use OCA\Mcp\Modules\Calendar\Composing\AttendeeResolver;
+use OCA\Mcp\Modules\Calendar\Failures\CalendarArgumentException;
 use OCP\IUser;
 use OCP\IUserManager;
 use PHPUnit\Framework\TestCase;

@@ -6,12 +6,12 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Service\Calendar;
 
-use OCA\Mcp\Service\Calendar\CalendarSelftestService;
-use OCA\Mcp\Service\Calendar\CalendarSelftestReader;
+use OCA\Mcp\Modules\Calendar\Selftest\CalendarSelftestService;
+use OCA\Mcp\Modules\Calendar\Selftest\CalendarSelftestReader;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\CalendarTestCase;
-use OCA\Mcp\Tools\Calendar\Calendar;
-use OCA\Mcp\Tools\Calendar\CalendarAccess;
-use OCA\Mcp\Tools\Calendar\TrashPolicy;
+use OCA\Mcp\Modules\Calendar\Locating\Calendar;
+use OCA\Mcp\Modules\Calendar\Locating\CalendarAccess;
+use OCA\Mcp\Modules\Calendar\Writing\TrashPolicy;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IConfig;

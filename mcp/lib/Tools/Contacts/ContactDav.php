@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Contacts;
 
-use OCA\Mcp\Tools\Calendar\DavResult;
+use OCA\Mcp\Modules\Calendar\Writing\DavResult;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use RuntimeException;
 

@@ -13,7 +13,7 @@ use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Access\Inspection\CalendarAccessExplainer;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\Access\ResourceScope\ScopeFixture;
-use OCA\Mcp\Tools\Calendar\CalendarAccess;
+use OCA\Mcp\Modules\Calendar\Locating\CalendarAccess;
 use OCP\Files\IRootFolder;
 use OCP\Files\NotFoundException;
 use PHPUnit\Framework\Attributes\DataProvider;

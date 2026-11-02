@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Tasks;
 
 use DateTimeImmutable;
-use OCA\Mcp\Tools\Calendar\CalendarStore;
+use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
 use OCA\Mcp\Tools\Tasks\TaskStore;
 
 /**

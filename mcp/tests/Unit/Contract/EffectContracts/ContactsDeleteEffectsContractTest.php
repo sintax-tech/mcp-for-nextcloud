@@ -16,7 +16,7 @@ use OCA\Mcp\Tests\Unit\Service\BackupDocumentFixture;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Tests\Unit\Tools\Tasks\IneffectiveLocks;
-use OCA\Mcp\Tools\Calendar\SharedGuard;
+use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
 use OCA\Mcp\Tools\Contacts\ContactAccess;
 use OCA\Mcp\Tools\Contacts\ContactBackup;
 use OCA\Mcp\Tools\Contacts\ContactCard;

@@ -12,7 +12,7 @@ use DateTimeInterface;
 use DateTimeZone;
 use InvalidArgumentException;
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\Calendar\DateInput;
+use OCA\Mcp\Modules\Calendar\Composing\DateInput;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use Sabre\VObject\Component\VCalendar;

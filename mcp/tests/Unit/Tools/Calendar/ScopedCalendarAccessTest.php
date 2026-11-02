@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Calendar;
 
-use OCA\Mcp\Tools\Calendar\CalendarAccess;
-use OCA\Mcp\Tools\Calendar\CalendarException;
-use OCA\Mcp\Tools\Calendar\ScopedCalendarAccess;
-use OCA\Mcp\Tools\Calendar\Scheduling\SharedCalendarFinder;
+use OCA\Mcp\Modules\Calendar\Locating\CalendarAccess;
+use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
+use OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess;
+use OCA\Mcp\Modules\Calendar\Scheduling\SharedCalendarFinder;
 use OCP\IGroupManager;
 use OCP\IUser;
 use OCP\IUserManager;

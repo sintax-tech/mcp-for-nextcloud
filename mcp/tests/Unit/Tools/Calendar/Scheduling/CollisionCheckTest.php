@@ -10,11 +10,11 @@ namespace OCA\Mcp\Tests\Unit\Tools\Calendar\Scheduling;
 use DateTimeImmutable;
 use DateTimeZone;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\CalendarTestCase;
-use OCA\Mcp\Tools\Calendar\Calendar;
-use OCA\Mcp\Tools\Calendar\Classification;
-use OCA\Mcp\Tools\Calendar\EventExpander;
-use OCA\Mcp\Tools\Calendar\EventRepository;
-use OCA\Mcp\Tools\Calendar\Scheduling\CollisionCheck;
+use OCA\Mcp\Modules\Calendar\Locating\Calendar;
+use OCA\Mcp\Modules\Calendar\Locating\Classification;
+use OCA\Mcp\Modules\Calendar\Locating\EventExpander;
+use OCA\Mcp\Modules\Calendar\Locating\EventRepository;
+use OCA\Mcp\Modules\Calendar\Scheduling\CollisionCheck;
 use Psr\Log\LoggerInterface;
 
 final class CollisionCheckTest extends CalendarTestCase {

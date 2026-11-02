@@ -42,7 +42,7 @@ final class NextcloudApiUsage {
 	/**
 	 * Classes the fixtures carry although lib/ never names them: objects the app only receives (a Talk participant,
 	 * a metadata set, the log writer ILogFactory::get() returns) and the Nextcloud plugin whose listener
-	 * {@see \OCA\Mcp\Tools\Calendar\EmbeddedDavDispatcher} detaches.
+	 * {@see \OCA\Mcp\Modules\Calendar\Writing\EmbeddedDavDispatcher} detaches.
 	 */
 	public const EXTRA_CLASSES = [
 		'OCA\\Circles\\Model\\Circle',
@@ -505,7 +505,7 @@ final class NextcloudApiUsage {
 		'OCA\\DAV\\CalDAV\\EmbeddedCalDavServer' => [
 			'missing' => ['31'],
 			'fallback' => 'OCA\\DAV\\CalDAV\\InvitationResponse\\InvitationResponseServer',
-			'by' => \OCA\Mcp\Tools\Calendar\EmbeddedCalDavServerFactory::class,
+			'by' => \OCA\Mcp\Modules\Calendar\Integration\EmbeddedCalDavServerFactory::class,
 		],
 		'OCP\\App\\IAppManager::isEnabledForAnyone' => [
 			'missing' => ['31'],

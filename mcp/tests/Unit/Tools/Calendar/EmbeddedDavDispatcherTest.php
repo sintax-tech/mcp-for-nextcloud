@@ -7,11 +7,11 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Calendar;
 
-use OCA\Mcp\Tools\Calendar\CalendarException;
-use OCA\Mcp\Tools\Calendar\CapturingSapi;
-use OCA\Mcp\Tools\Calendar\DavPathBuilder;
-use OCA\Mcp\Tools\Calendar\EmbeddedDavDispatcher;
-use OCA\Mcp\Tools\Calendar\Session;
+use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
+use OCA\Mcp\Modules\Calendar\Writing\CapturingSapi;
+use OCA\Mcp\Modules\Calendar\Writing\DavPathBuilder;
+use OCA\Mcp\Modules\Calendar\Writing\EmbeddedDavDispatcher;
+use OCA\Mcp\Modules\Calendar\Writing\Session;
 use OCP\IConfig;
 use OCP\IUser;
 use OCP\IUserSession;

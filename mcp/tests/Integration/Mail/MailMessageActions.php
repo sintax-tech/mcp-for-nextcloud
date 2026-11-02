@@ -41,7 +41,7 @@ final class MailMessageActions {
 	public static function run(string $action, string $uid, IAppManager $apps, array $in): array {
 		$policy = Server::get(GrantPolicy::class);
 		$registry = new ToolRegistry([Server::get(MailModule::class)], $policy, $apps, Server::get(IUserManager::class),
-			Server::get(LoggerInterface::class));
+			Server::get(LoggerInterface::class), null, Server::get(\OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry::class));
 		return match ($action) {
 			'tools' => self::tools($registry, $policy, $uid),
 			'calls' => self::calls($registry, $policy, $uid, $in['calls']),

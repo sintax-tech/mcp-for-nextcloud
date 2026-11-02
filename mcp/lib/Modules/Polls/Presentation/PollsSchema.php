@@ -54,6 +54,13 @@ final class PollsSchema {
 	}
 
 	/**
+	 * @return array<string, mixed> the poll id property every read of one poll requires
+	 */
+	public static function pollId(): array {
+		return ['type' => 'integer', 'minimum' => 1];
+	}
+
+	/**
 	 * @param string $limit name of the page size property
 	 * @param string $cursor name of the cursor property
 	 * @param int $default page size when the property is omitted
@@ -74,7 +81,7 @@ final class PollsSchema {
 	 * @return ToolDefinition a protected read of votes, results or links of one poll
 	 */
 	public static function content(string $name, string $grant, string $description, bool $votes): ToolDefinition {
-		$properties = ['poll_id' => ['type' => 'integer', 'minimum' => 1],
+		$properties = ['poll_id' => self::pollId(),
 			'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 100, 'default' => 50],
 			'cursor' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 512]];
 		if ($votes) {

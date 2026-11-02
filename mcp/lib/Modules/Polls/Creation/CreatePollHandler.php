@@ -19,15 +19,6 @@ final class CreatePollHandler {
 	public function __construct(private CreateFlow $flow) {
 	}
 	/**
-	 * Describes without writing.
-	 * @param array<string,mixed> $arguments input
-	 * @param string $userId authenticated actor
-	 * @return array<string,mixed> structured plan
-	 */
-	public function preview(array $arguments, string $userId): array {
-		return $this->flow->run($arguments,$userId,true);
-	}
-	/**
 	 * Executes only an explicitly confirmed matching plan; never retries.
 	 * @param array<string,mixed> $arguments input with confirm/plan_state
 	 * @param string $userId authenticated actor

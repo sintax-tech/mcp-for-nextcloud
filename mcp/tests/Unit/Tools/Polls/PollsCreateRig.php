@@ -13,6 +13,8 @@ use OCA\Mcp\Modules\Polls\Creation\CreateNative;
 use OCA\Mcp\Modules\Polls\Creation\CreateNormalizer;
 use OCA\Mcp\Modules\Polls\Creation\CreatePlan;
 use OCA\Mcp\Modules\Polls\Creation\CreatePollHandler;
+use OCA\Mcp\Modules\Polls\Creation\CreatePollPreview;
+use OCA\Mcp\Modules\Polls\Tools\CreatePoll;
 use OCA\Mcp\Modules\Polls\Creation\CreateWriter;
 use OCA\Mcp\Modules\Polls\Integration\CreateSurface;
 use OCA\Mcp\Modules\Polls\Integration\PollsSessionGuard;
@@ -26,8 +28,8 @@ use PHPUnit\Framework\TestCase;
 final class PollsCreateRig {
 	/** @var PollsTestRig existing read fixture/policy, unchanged predicates */
 	public PollsTestRig $base;
-	/** @var CreatePollHandler actual handler */
-	public CreatePollHandler $handler;
+	/** @var PollsCreateCalls actual plan and creation */
+	public PollsCreateCalls $handler;
 	/** @var CreateNormalizer actual disposable native normalization */
 	public CreateNormalizer $normalizer;
 	/**
@@ -53,8 +55,9 @@ final class PollsCreateRig {
 		$this->normalizer = new CreateNormalizer();
 		$logger = $test->getMockBuilder(\Psr\Log\LoggerInterface::class)->getMock();
 		$logger->method('error')->willReturnCallback(function($message,array $context):void {$this->base->logs[]=$context;});
-		$this->handler = new CreatePollHandler(new CreateFlow($native,$this->normalizer,new CreatePlan(new PlanState($config)),new CreateWriter($native,$this->normalizer),$logger));
-		(new \ReflectionProperty($this->base->module,'create'))->setValue($this->base->module,$this->handler);
+		$flow = new CreateFlow($native,$this->normalizer,new CreatePlan(new PlanState($config)),new CreateWriter($native,$this->normalizer),$logger);
+		$this->handler = new PollsCreateCalls(new CreatePollHandler($flow), new CreatePollPreview($flow));
+		$this->base->tools[CreatePoll::class] = new CreatePoll($this->handler->creates, $this->handler->plans);
 	}
 	/**
 	 * Preview and confirmation through actual handlers, never bypassing the MAC.

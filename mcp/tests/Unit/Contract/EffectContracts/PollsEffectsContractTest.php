@@ -16,6 +16,7 @@ use OCA\Mcp\Tests\Unit\Tools\Polls\NativeCreateScene;
 use OCA\Mcp\Tests\Unit\Tools\Polls\NativeCreateTestFactory;
 use OCA\Mcp\Tests\Unit\Tools\Polls\NativeScene;
 use OCA\Mcp\Tests\Unit\Tools\Polls\PollsContentTestFactory;
+use OCA\Mcp\Tests\Unit\Tools\Polls\PollsTestModule;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Modules\Polls\Admission\CreateAdmission;
 use OCA\Mcp\Modules\Polls\Creation\CreateFlow;
@@ -23,6 +24,7 @@ use OCA\Mcp\Modules\Polls\Creation\CreateNative;
 use OCA\Mcp\Modules\Polls\Creation\CreateNormalizer;
 use OCA\Mcp\Modules\Polls\Creation\CreatePlan;
 use OCA\Mcp\Modules\Polls\Creation\CreatePollHandler;
+use OCA\Mcp\Modules\Polls\Creation\CreatePollPreview;
 use OCA\Mcp\Modules\Polls\Creation\CreateWriter;
 use OCA\Mcp\Modules\Polls\Integration\CreateSurface;
 use OCA\Mcp\Modules\Polls\Integration\PollsServices;
@@ -91,9 +93,9 @@ final class PollsEffectsContractTest extends TestCase {
 		$native = new CreateNative($services, $guard, new CreateAdmission($apps, $users, $policy, new PollsSurface()), new CreateSurface());
 		$normalizer = new CreateNormalizer();
 		$create = new CreateFlow($native, $normalizer, new CreatePlan(new PlanState($this->gate->config())), new CreateWriter($native, $normalizer), $logger);
-		return new PollsModule(new ListPollsHandler($context, new PollsListing($services, $guard, $shapes, $cursor)),
+		return PollsTestModule::build(new \ArrayObject(), new ListPollsHandler($context, new PollsListing($services, $guard, $shapes, $cursor)),
 			new ReadPollHandler($context, new PollsReading($services, $guard, $shapes, $cursor)),
-			...[...PollsContentTestFactory::handlers($this, $context, $services, $guard, $cursor), new CreatePollHandler($create)]);
+			PollsContentTestFactory::handlers($this, $context, $services, $guard, $cursor), new CreatePollHandler($create), new CreatePollPreview($create));
 	}
 
 	/** @return void polls_create_poll with two options: plan, strict confirm, PlanChanged, effect and every refusal */

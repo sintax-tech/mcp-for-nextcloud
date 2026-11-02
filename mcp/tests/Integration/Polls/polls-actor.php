@@ -18,6 +18,8 @@ use OCA\Mcp\Modules\Polls\Reading\PollsCursor;
 use OCA\Mcp\Modules\Polls\Reading\PollsListing;
 use OCA\Mcp\Modules\Polls\Reading\PollsReading;
 use OCA\Mcp\Modules\Polls\Reading\ReadPollHandler;
+use OCA\Mcp\Modules\Polls\Tools\ListPolls;
+use OCA\Mcp\Modules\Polls\Tools\ReadPoll;
 use OCP\Server;
 
 require dirname(__DIR__).'/bootstrap.php';
@@ -61,12 +63,15 @@ final class PollsNativeProbe {
 		$services=new PollsServices(Server::get(\OCP\App\IAppManager::class),$users,new PollsProbeContainer($counter),
 			Server::get(\OCA\Mcp\Access\Grants\GrantPolicy::class),new PollsSurface());
 		$cursor=new PollsCursor(Server::get(\OCA\Mcp\Mcp\Confirmation\PlanState::class));$shapes=new PollsShapes();$context=new PollsContext($services,$guard,Server::get(\Psr\Log\LoggerInterface::class));
-		$module=new PollsModule(new ListPollsHandler($context,new PollsListing($services,$guard,$shapes,$cursor)),
-			new ReadPollHandler($context,new PollsReading($services,$guard,$shapes,$cursor)),
-			Server::get(\OCA\Mcp\Modules\Polls\Reading\ListVotesHandler::class),
-			Server::get(\OCA\Mcp\Modules\Polls\Reading\ReadResultsHandler::class),
-			Server::get(\OCA\Mcp\Modules\Polls\Reading\ListLinksHandler::class),
-			Server::get(\OCA\Mcp\Modules\Polls\Creation\CreatePollHandler::class));
+		// The two instrumented reads; the other tools come from the app container, as the module resolves them there.
+		$module=new PollsModule(new class([
+			ListPolls::class=>new ListPolls(new ListPollsHandler($context,new PollsListing($services,$guard,$shapes,$cursor))),
+			ReadPoll::class=>new ReadPoll(new ReadPollHandler($context,new PollsReading($services,$guard,$shapes,$cursor))),
+		]) implements \Psr\Container\ContainerInterface {
+			public function __construct(private array $tools) {}
+			public function get(string $id): mixed {return $this->tools[$id] ?? Server::get($id);}
+			public function has(string $id): bool {return true;}
+		});
 		if ($action==='native') {
 			$native->cleanSession();$guard->native($native,$uid);
 			$polls=Server::get(\OCA\Polls\Service\PollService::class)->listPolls();$ids=[];

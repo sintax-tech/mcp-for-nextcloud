@@ -7,8 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Forms\Reading;
 
-use OCA\Forms\Constants;
-use OCA\Forms\Db\Form;
+use OCA\Mcp\Modules\Forms\Integration\NativeFormReader;
 use OCA\Mcp\Modules\Forms\Integration\FormsServices;
 use OCA\Mcp\Modules\Forms\Integration\FormsCalls;
 use OCA\Mcp\Modules\Forms\Presentation\FormsResponseBudget;
@@ -32,8 +31,7 @@ final class ReadFormHandler {
 	public function handle(array $arguments, string $uid): array {
 		return FormsCalls::run(function () use ($arguments, $uid): array {
 			$context = $this->forms->open($uid);
-			$form = $context['service']->getFormIfAllowed($arguments['form_id'], Constants::PERMISSION_SUBMIT);
-			if (!$form instanceof Form) { throw new \UnexpectedValueException('Expected native Form'); }
+			$form = NativeFormReader::read($context['service'], $arguments['form_id']);
 			return ToolResult::json(FormsResponseBudget::envelope(['form' => $this->shape->of($form, $context['service'], true)]));
 		});
 	}

@@ -21,7 +21,7 @@ final class CreateFormHandler {
 	 * @param string $uid Authenticated actor.
 	 * @return array<string,mixed> Full plan.
 	 */
-	public function preview(array $arguments, string $uid): array { return $this->flow->preview($arguments, $uid); }
+	public function preview(array $arguments, string $uid): array { return (new CreateFormPreview($this->flow))->plan($arguments, $uid); }
 	/** Delegates a confirmed creation without accepting existing IDs.
 	 * @param array<string,mixed> $arguments Complete creation request with confirmation.
 	 * @param string $uid Authenticated actor.

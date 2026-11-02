@@ -20,7 +20,7 @@ final class EditOptionHandler {
 	 * @param string $uid Actor.
 	 * @return array<string,mixed> Complete plan.
 	 */
-	public function preview(array $args, string $uid): array { return $this->flow->preview($args, $uid, true); }
+	public function preview(array $args, string $uid): array { return (new UpdateOptionPreview($this->flow))->plan($args, $uid); }
 	/** Delegates one confirmed edit.
 	 * @param array<string,mixed> $args Closed request and confirmation.
 	 * @param string $uid Actor.

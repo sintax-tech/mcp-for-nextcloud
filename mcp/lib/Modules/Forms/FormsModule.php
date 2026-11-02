@@ -48,7 +48,7 @@ final class FormsModule implements ToolModule, ToolGuideNotes, \OCA\Mcp\Mcp\Tool
 	/** Publishes the scope and native-dispatcher limitations.
 	 * @return list<string> Fixed English model-facing notes.
 	 */
-	public function guideNotes(): array { return [FormsMessages::GUIDE, \OCA\Mcp\Modules\Forms\Presentation\ResultsTools::GUIDE, \OCA\Mcp\Modules\Forms\Presentation\CreateFormMessages::GUIDE, \OCA\Mcp\Modules\Forms\Presentation\EditMessages::GUIDE]; }
+	public function guideNotes(): array { return \OCA\Mcp\Modules\Forms\Presentation\FormsGuideNotes::notes(); }
 
 	/** Delegates a validated request without native logic in the module.
 	 * @param string $name Registered tool name.
@@ -89,9 +89,6 @@ final class FormsModule implements ToolModule, ToolGuideNotes, \OCA\Mcp\Mcp\Tool
 	 * @return string|null Readable inert body.
 	 */
 	public function renderPlan(string $tool, array $plan): ?string {
-		return match ($tool) {
-			'forms_update_question', 'forms_update_option' => (new \OCA\Mcp\Modules\Forms\Presentation\EditPlanRenderer())->render($plan),
-			default => (new \OCA\Mcp\Modules\Forms\Presentation\CreateFormPlanRenderer())->render($plan),
-		};
+		return (new \OCA\Mcp\Modules\Forms\Presentation\FormsPlanRenderer())->render($tool, $plan);
 	}
 }

@@ -1451,22 +1451,6 @@
 		},
 		{
 			"rule": "native-app",
-			"source": "lib/Modules/Forms/Reading/ReadFormHandler.php",
-			"target": "OCA\\Forms\\Constants",
-			"line": 35,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-18"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Modules/Forms/Reading/ReadFormHandler.php",
-			"target": "OCA\\Forms\\Db\\Form",
-			"line": 36,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-18"
-		},
-		{
-			"rule": "native-app",
 			"source": "lib/Tools/Mail/MailServices.php",
 			"target": "OCA\\Mail\\AddressList",
 			"line": 66,

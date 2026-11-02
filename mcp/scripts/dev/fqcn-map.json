@@ -2,6 +2,12 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Modules/Forms/Presentation/FormsPlanRenderer.php","fqcn":"OCA\\Mcp\\Modules\\Forms\\Presentation\\FormsPlanRenderer","target":"stays","owner":"Modules\\Forms","ticket":null},
+		{"path":"lib/Modules/Forms/Presentation/FormsGuideNotes.php","fqcn":"OCA\\Mcp\\Modules\\Forms\\Presentation\\FormsGuideNotes","target":"stays","owner":"Modules\\Forms","ticket":null},
+		{"path":"lib/Modules/Forms/Integration/NativeFormReader.php","fqcn":"OCA\\Mcp\\Modules\\Forms\\Integration\\NativeFormReader","target":"stays","owner":"Modules\\Forms","ticket":null},
+		{"path":"lib/Modules/Forms/Editing/UpdateQuestionPreview.php","fqcn":"OCA\\Mcp\\Modules\\Forms\\Editing\\UpdateQuestionPreview","target":"stays","owner":"Modules\\Forms","ticket":null},
+		{"path":"lib/Modules/Forms/Editing/UpdateOptionPreview.php","fqcn":"OCA\\Mcp\\Modules\\Forms\\Editing\\UpdateOptionPreview","target":"stays","owner":"Modules\\Forms","ticket":null},
+		{"path":"lib/Modules/Forms/Creation/CreateFormPreview.php","fqcn":"OCA\\Mcp\\Modules\\Forms\\Creation\\CreateFormPreview","target":"stays","owner":"Modules\\Forms","ticket":null},
 		{"path":"lib/Modules/Logs/LogsToolCatalog.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\LogsToolCatalog","target":"stays","owner":"Modules\\Logs","ticket":null},
 		{"path":"lib/Modules/Logs/Tools/ListLogs.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\Tools\\ListLogs","target":"stays","owner":"Modules\\Logs","ticket":null},
 		{"path":"lib/Modules/Logs/Tools/AnalyzeLogs.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\Tools\\AnalyzeLogs","target":"stays","owner":"Modules\\Logs","ticket":null},

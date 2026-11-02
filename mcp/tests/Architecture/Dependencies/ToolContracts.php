@@ -91,20 +91,45 @@ final class ToolContracts {
 			if ($type instanceof \ReflectionNamedType && !$type->isBuiltin()) { $types[$parameter->getName()] = $type->getName(); }
 		}
 		if ($write && count($types) === 2 && count(array_unique($types)) !== 2) { $errors[] = 'Plan and effect must be different classes: ' . $class->getName(); }
-		$lines = file((string)$class->getFileName()) ?: [];
+		$tokens = \PhpToken::tokenize((string)file_get_contents((string)$class->getFileName()));
 		$called = [];
 		foreach ($write ? ['execute', 'preview'] : ['execute'] as $name) {
 			if (!$class->hasMethod($name)) { $errors[] = 'Tool method missing: ' . $class->getName() . '::' . $name; continue; }
 			$method = $class->getMethod($name);
-			$body = implode('', array_slice($lines, $method->getStartLine() - 1, $method->getEndLine() - $method->getStartLine() + 1));
-			preg_match_all('/\$this\??->\s*(\w+)\s*\??->\s*\w+\s*\(/', $body, $calls);
-			preg_match_all('/\$this\??->\s*(\w+)/', $body, $reads);
-			$called[$name] = array_values(array_unique(array_intersect($calls[1], array_keys($types))));
-			$touched = array_values(array_unique(array_intersect($reads[1], array_keys($types))));
+			$body = array_values(array_filter($tokens, static fn (\PhpToken $token): bool => $token->line >= $method->getStartLine() && $token->line <= $method->getEndLine()));
+			[$calls, $reads] = self::dependencyUses($body);
+			$called[$name] = array_values(array_unique(array_intersect($calls, array_keys($types))));
+			$touched = array_values(array_unique(array_intersect($reads, array_keys($types))));
 			if (count($called[$name]) !== 1 || $touched !== $called[$name]) { $errors[] = 'Tool method must call one work dependency: ' . $class->getName() . '::' . $name; }
 		}
 		if (isset($called['execute'], $called['preview']) && $called['execute'] === $called['preview']) { $errors[] = 'Plan and effect must be different dependencies: ' . $class->getName(); }
 		return $errors;
+	}
+
+	/**
+	 * Reads the executable code of a method body token by token: comments, quoted strings, heredoc and nowdoc never
+	 * count. A call is `$this->dep->method(` (null-safe operators included); a read is any other `$this->dep`.
+	 *
+	 * @param list<\PhpToken> $tokens Tokens of the method lines. @return array{0: list<string>, 1: list<string>} Dependencies called, dependencies read.
+	 */
+	public static function dependencyUses(array $tokens): array {
+		$code = []; $quoted = false; $heredoc = false;
+		foreach ($tokens as $token) {
+			if ($token->text === '"' && !$heredoc) { $quoted = !$quoted; continue; }
+			if ($token->is(T_START_HEREDOC)) { $heredoc = true; continue; }
+			if ($token->is(T_END_HEREDOC)) { $heredoc = false; continue; }
+			if ($quoted || $heredoc || $token->is([T_WHITESPACE, T_COMMENT, T_DOC_COMMENT, T_CONSTANT_ENCAPSED_STRING, T_ENCAPSED_AND_WHITESPACE, T_INLINE_HTML])) { continue; }
+			$code[] = $token;
+		}
+		$arrow = static fn (?\PhpToken $token): bool => $token !== null && $token->is([T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR]);
+		$calls = []; $reads = [];
+		foreach ($code as $i => $token) {
+			if (!$token->is(T_VARIABLE) || $token->text !== '$this' || !$arrow($code[$i + 1] ?? null) || !($code[$i + 2] ?? null)?->is(T_STRING)) { continue; }
+			$dependency = $code[$i + 2]->text;
+			$reads[] = $dependency;
+			if ($arrow($code[$i + 3] ?? null) && ($code[$i + 4] ?? null)?->is(T_STRING) && ($code[$i + 5] ?? null)?->text === '(') { $calls[] = $dependency; }
+		}
+		return [$calls, $reads];
 	}
 
 	/** Every app interface a module or a tool implements as such (all of Mcp except the ports and CapabilityProbe); none needs a binding. */

@@ -41,7 +41,7 @@ final class ThinToolsTest extends ArchitectureCase {
 		foreach (\OCA\Mcp\Modules\Notes\NotesToolCatalog::TOOLS as $tool) {
 			self::assertSame([], ToolContracts::delegation(new \ReflectionClass($tool), $tool::definition()->operation !== 'read'), $tool);
 		}
-		foreach ([[TwoWorkTool::class, false], [OneWorkTool::class, true], [ThreeWorkWriteTool::class, true], [PreviewCallsEffectTool::class, true], [SamePlanAndEffectMutant::class, true], [UnusedReadMutant::class, false]] as [$class, $write]) {
+		foreach ([[TwoWorkTool::class, false], [OneWorkTool::class, true], [ThreeWorkWriteTool::class, true], [PreviewCallsEffectTool::class, true], [SamePlanAndEffectMutant::class, true], [UnusedReadMutant::class, false], [LineCommentReadMutant::class, false], [BlockCommentReadMutant::class, false], [StringReadMutant::class, false], [HeredocReadMutant::class, false]] as [$class, $write]) {
 			self::assertNotSame([], ToolContracts::delegation(new \ReflectionClass($class), $write), $class);
 		}
 	}
@@ -76,4 +76,38 @@ final class SamePlanAndEffectMutant {
 final class UnusedReadMutant {
 	public function __construct(private \OCA\Mcp\Modules\Notes\Reading\ReadNoteHandler $reads) {}
 	public function execute(): array { $unused = $this->reads; return []; }
+}
+/** Review mutant M5 of RE-13: the only delegation is a line comment. */
+final class LineCommentReadMutant {
+	public function __construct(private \OCA\Mcp\Modules\Notes\Reading\ReadNoteHandler $reads) {}
+	public function execute(array $arguments, string $userId): array {
+		// return NodeAccess::run(fn (): array => ToolResult::json($this->reads->handle($userId, $arguments)));
+		return [];
+	}
+}
+/** M5 variant: the only delegation is inside a block comment. */
+final class BlockCommentReadMutant {
+	public function __construct(private \OCA\Mcp\Modules\Notes\Reading\ReadNoteHandler $reads) {}
+	public function execute(array $arguments, string $userId): array {
+		/* return $this->reads->handle($userId, $arguments); */
+		return [];
+	}
+}
+/** M5 variant: the only delegation is the text of quoted strings. */
+final class StringReadMutant {
+	public function __construct(private \OCA\Mcp\Modules\Notes\Reading\ReadNoteHandler $reads) {}
+	public function execute(array $arguments, string $userId): array {
+		return ['$this->reads->handle($userId, $arguments)', "call \$this->reads->handle(\$userId)"];
+	}
+}
+/** M5 variant: the only delegation is the text of a heredoc and a nowdoc. */
+final class HeredocReadMutant {
+	public function __construct(private \OCA\Mcp\Modules\Notes\Reading\ReadNoteHandler $reads) {}
+	public function execute(array $arguments, string $userId): array {
+		return [<<<TEXT
+			\$this->reads->handle(\$userId)
+			TEXT, <<<'TEXT'
+			$this->reads->handle($userId)
+			TEXT];
+	}
 }

@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Group policy rendering operations.
+/** Register the groups rendering unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,16 +10,15 @@
 	'use strict'
 
 	admin.modules.groups = admin.modules.groups || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach group policy rendering with level, operation and preview controls.
+	 * @param {object} context group directory controls, live policy draft and attached editor operations
+	 * @return {void}
 	 */
 	admin.modules.groups.rendering = function (context) {
 		/**
 		 * Draws the open group and focuses the control drawn under focusKey, so a change redraws without losing the place.
-		 *
-		 * @param {string|null} focusKey key of the control to focus, or null to leave the focus alone
-		 * @return {*} operation result
+		 * @param {string|null} [focusKey=null] key of the control to focus, or null to leave the focus alone
+		 * @return {void}
 		 */
 		function render(focusKey = null) {
 			const controls = new Map()

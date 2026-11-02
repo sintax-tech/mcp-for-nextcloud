@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Group policy session operations.
+/** Register the groups session unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,9 +10,9 @@
 	'use strict'
 
 	admin.modules.groups = admin.modules.groups || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Expose group controls, live directory and draft state, JSON requests and status feedback.
+	 * @param {object} context group directory controls, live policy draft and attached editor operations
+	 * @return {void}
 	 */
 	admin.modules.groups.session = function (context) {
 		const root = context.root
@@ -56,11 +56,11 @@
 		const count = (value) => value === null || value === undefined ? unknown() : String(value)
 		const untrusted = () => t('mcp', 'This group comes from a source that cannot guarantee group identity (for example LDAP). Grant MCP access to its members individually.')
 
-		/**
-		 * @param {*} tag operation input
-		 * @param {*} props operation input
-		 * @param {*} children operation input
-		 * @return {*} operation result
+		/** Create a DOM element, apply its properties and append its child nodes or text.
+		 * @param {string} tag HTML element tag name
+		 * @param {object} [props] DOM properties assigned to the element
+		 * @param {Array<Node|string>} [children] child nodes and text appended in order
+		 * @return {HTMLElement}
 		 */
 		function el(tag, props = {}, children = []) {
 			const node = document.createElement(tag)
@@ -73,9 +73,9 @@
 		 * Writes into the fixed live regions. Both are cleared at once and the message is written shortly after, in
 		 * another task, so the same error twice in a row is announced again, and a message that was replaced or cleared
 		 * in the meantime never appears.
-		 * @param {*} message operation input
-		 * @param {boolean} error operation input
-		 * @return {*} operation result
+		 * @param {string} message feedback text; an empty string clears the message
+		 * @param {boolean} [error=false] announce through the alert region instead of the status region
+		 * @return {void}
 		 */
 		function say(message, error = false) {
 			clearTimeout(sayTimer)
@@ -86,11 +86,11 @@
 			sayTimer = setTimeout(() => { region.textContent = message }, SAY_DELAY)
 		}
 
-		/**
-		 * @param {*} method operation input
-		 * @param {*} path operation input
-		 * @param {*} body operation input
-		 * @return {Promise<*>} operation result
+		/** Fetch a JSON API response and reject unsuccessful requests with their response details.
+		 * @param {string} method HTTP request method
+		 * @param {string} path API path below /apps/mcp
+		 * @param {object|undefined} body JSON request body when present
+		 * @return {Promise<object>}
 		 */
 		async function api(method, path, body) {
 			const response = await fetch(OC.generateUrl('/apps/mcp' + path), {
@@ -107,47 +107,47 @@
 			return data
 		}
 
-		/**
-		 * @param {*} module operation input
-		 * @return {*} operation result
+		/** Resolve the translated module label, falling back to its catalog ID.
+		 * @param {string} module catalog module ID
+		 * @return {string}
 		 */
 		function moduleName(module) {
 			return { files: t('mcp', 'Files'), notes: t('mcp', 'Notes'), deck: t('mcp', 'Deck'), calendar: t('mcp', 'Calendar'), contacts: t('mcp', 'Contacts'), tasks: t('mcp', 'Tasks'), talk: t('mcp', 'Talk'), people: t('mcp', 'People'), logs: t('mcp', 'Server log'), mail: t('mcp', 'Mail'), tables: t('mcp', 'Tables'), forms: t('mcp', 'Forms'), polls: t('mcp', 'Polls') }[module] || module
 		}
 
-		/**
-		 * @param {*} operation operation input
-		 * @return {*} operation result
+		/** Resolve the translated operation label, falling back to its catalog ID.
+		 * @param {string} operation catalog operation ID
+		 * @return {string}
 		 */
 		function operationName(operation) {
 			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
 		}
 
-		/**
-		 * @param {*} grants operation input
-		 * @return {*} operation result
+		/** Flatten and sort granted module and operation pairs for stable draft comparison.
+		 * @param {Object<string, string[]>} grants granted operations indexed by module
+		 * @return {string[]}
 		 */
 		function grantKeys(grants) {
 			return Object.entries(grants).flatMap(([module, operations]) => operations.map((operation) => module + ':' + operation)).sort()
 		}
 
-		/**
-		 * @return {*} operation result
+		/** Compare the current group draft with its saved grants; return null before a group is open.
+		 * @return {boolean|null}
 		 */
 		function dirty() {
 			return current && JSON.stringify(context.grantKeys(draft)) !== JSON.stringify(context.grantKeys(current.grants))
 		}
 
-		/**
-		 * @return {*} operation result
+		/** Ask before discarding unsaved group changes and report whether replacement may proceed.
+		 * @return {boolean}
 		 */
 		function discardDraft() {
 			return !context.dirty() || window.confirm(t('mcp', 'Discard the unsaved group changes?'))
 		}
 
-		/**
-		 * @param {*} group operation input
-		 * @return {*} operation result
+		/** Describe why a group cannot currently grant access or needs administrator confirmation.
+		 * @param {object} group directory group with identity, grants and policy diagnosis
+		 * @return {string}
 		 */
 		function diagnosis(group) {
 			if (group.invalidId) return t('mcp', 'The directory returned an invalid group ID. This group cannot be edited.')

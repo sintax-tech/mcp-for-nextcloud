@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Resource scope session operations.
+/** Register the scope session unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,9 +10,9 @@
 	'use strict'
 
 	admin.modules.scope = admin.modules.scope || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Expose scope controls, live user and module state, JSON requests and feedback formatting.
+	 * @param {object} context scope drawer controls, live module drafts and attached resource operations
+	 * @return {void}
 	 */
 	admin.modules.scope.session = function (context) {
 		const MODULES = ['files', 'calendar', 'tasks']
@@ -41,11 +41,11 @@
 		/** Page event of a write this page committed: detail {from, to}; src/admin/matrix/start.js sends and follows it too. */
 		const REVISION_MOVED = 'mcp-revision-moved'
 
-		/**
-		 * @param {*} tag operation input
-		 * @param {*} props operation input
-		 * @param {*} children operation input
-		 * @return {*} operation result
+		/** Create a DOM element, apply its properties and append its child nodes or text.
+		 * @param {string} tag HTML element tag name
+		 * @param {object} [props] DOM properties assigned to the element
+		 * @param {Array<Node|string>} [children] child nodes and text appended in order
+		 * @return {HTMLElement}
 		 */
 		function el(tag, props = {}, children = []) {
 			const node = document.createElement(tag)
@@ -54,10 +54,10 @@
 			return node
 		}
 
-		/**
-		 * @param {*} message operation input
-		 * @param {boolean} error operation input
-		 * @return {*} operation result
+		/** Replace the status or alert message used to announce the current editor outcome.
+		 * @param {string} message feedback text; an empty string clears the message
+		 * @param {boolean} [error=false] announce through the alert region instead of the status region
+		 * @return {void}
 		 */
 		function say(message, error = false) {
 			clearTimeout(sayTimer)
@@ -68,12 +68,12 @@
 			sayTimer = setTimeout(() => { region.textContent = message }, SAY_DELAY)
 		}
 
-		/**
-		 * @param {*} method operation input
-		 * @param {*} path operation input
-		 * @param {*} query operation input
-		 * @param {*} body operation input
-		 * @return {Promise<*>} operation result
+		/** Fetch a JSON API response and reject unsuccessful requests with their response details.
+		 * @param {string} method HTTP request method
+		 * @param {string} path API path below /apps/mcp
+		 * @param {Object<string, string>|null|undefined} query URL query parameters when present
+		 * @param {object|undefined} body JSON request body when present
+		 * @return {Promise<object>}
 		 */
 		async function api(method, path, query, body) {
 			const url = OC.generateUrl('/apps/mcp' + path) + (query ? '?' + new URLSearchParams(query) : '')
@@ -91,26 +91,26 @@
 			return data
 		}
 
-		/**
-		 * @param {*} module operation input
-		 * @param {*} suffix operation input
-		 * @return {*} operation result
+		/** Build a scope API path for the currently open user and module.
+		 * @param {string} module catalog module ID
+		 * @param {string} [suffix=""] suffix appended to the module API path
+		 * @return {string}
 		 */
 		function scopePath(module, suffix = '') {
 			return '/api/scope/' + encodeURIComponent(uid) + '/' + module + suffix
 		}
 
-		/**
-		 * @param {*} module operation input
-		 * @return {*} operation result
+		/** Resolve the scope drawer heading for a supported resource module.
+		 * @param {string} module catalog module ID
+		 * @return {string|undefined}
 		 */
 		function title(module) {
 			return { files: t('mcp', 'Files: folders'), calendar: t('mcp', 'Calendar: calendars'), tasks: t('mcp', 'Tasks: task lists') }[module]
 		}
 
-		/**
-		 * @param {*} module operation input
-		 * @return {*} operation result
+		/** Describe the effect of an empty selected scope for the given resource module.
+		 * @param {string} module catalog module ID
+		 * @return {string|undefined}
 		 */
 		function emptyText(module) {
 			return {
@@ -120,9 +120,9 @@
 			}[module]
 		}
 
-		/**
-		 * @param {*} error operation input
-		 * @return {*} operation result
+		/** Translate a failed resource request into an administrator-facing explanation.
+		 * @param {Error & {status?: number, data?: object}} error request failure with optional HTTP status and response details
+		 * @return {string}
 		 */
 		function failure(error) {
 			if (error.status === 403) return t('mcp', 'Only administrators can change the resource scope.')
@@ -132,17 +132,17 @@
 		}
 
 		/** What a saved or selected item is called on screen: its path for a folder, its name otherwise.
-		 * @param {*} item operation input
-		 * @return {*} operation result
+		 * @param {object} item resource ID, label or path and availability flags
+		 * @return {string}
 		 */
 		function label(item) {
 			if (item.found === false) return t('mcp', 'Resource no longer found ({id})', { id: item.id }, undefined, { escape: false })
 			return item.path || item.name
 		}
 
-		/**
-		 * @param {*} item operation input
-		 * @return {*} operation result
+		/** Create visible badges for missing, excluded or inaccessible resources.
+		 * @param {object} item resource ID, label or path and availability flags
+		 * @return {HTMLElement[]}
 		 */
 		function badges(item) {
 			const out = []
@@ -155,18 +155,19 @@
 		/**
 		 * A message of one module: shown under it and announced through the page's live regions, which exist from the
 		 * start (a region created with its text already in it is not reliably announced).
-		 * @param {*} state operation input
-		 * @param {*} message operation input
-		 * @param {boolean} error operation input
-		 * @return {*} operation result
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @param {string} message feedback text; an empty string clears the message
+		 * @param {boolean} [error=false] announce through the alert region instead of the status region
+		 * @return {void}
 		 */
 		function note(state, message, error = false) {
 			state.line = message
 			if (message !== '') context.say(context.title(state.module) + ': ' + message, error)
 		}
 
-		/** @return {boolean} whether the draft differs from what is saved
-		 * @param {*} state operation input
+		/** Compare the module draft mode and selected IDs with the saved scope.
+		 * @return {boolean} whether the draft differs from what is saved
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
 		 */
 		function dirty(state) {
 			const ids = (items) => items.map((item) => item.id).sort().join(',')

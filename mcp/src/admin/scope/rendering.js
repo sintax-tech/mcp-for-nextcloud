@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Resource scope rendering operations.
+/** Register the scope rendering unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,15 +10,15 @@
 	'use strict'
 
 	admin.modules.scope = admin.modules.scope || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach scope sections, selected resources and save, discard and undo controls.
+	 * @param {object} context scope drawer controls, live module drafts and attached resource operations
+	 * @return {void}
 	 */
 	admin.modules.scope.rendering = function (context) {
-		/**
-		 * @param {*} state operation input
-		 * @param {*} focusId operation input
-		 * @return {*} operation result
+		/** Replace a module section, update its tab and optionally restore focus to a named control.
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @param {string|undefined} focusId DOM ID to focus after the module is redrawn
+		 * @return {void}
 		 */
 		function rerender(state, focusId) {
 			const old = document.getElementById('mcp-scope-module-' + state.module)
@@ -28,9 +28,9 @@
 			if (focusId) document.getElementById(focusId)?.focus?.()
 		}
 
-		/**
-		 * @param {*} state operation input
-		 * @return {*} operation result
+		/** Build one scope module section with mode choices, resource selection and persistence controls.
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @return {HTMLElement}
 		 */
 		function renderModule(state) {
 			const module = state.module
@@ -94,9 +94,9 @@
 			return section
 		}
 
-		/**
-		 * @param {*} state operation input
-		 * @return {*} operation result
+		/** Build the selected resource list with removal controls and accessible draft feedback.
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @return {HTMLElement}
 		 */
 		function renderSelection(state) {
 			const module = state.module

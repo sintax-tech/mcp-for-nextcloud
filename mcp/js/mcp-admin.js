@@ -6195,29 +6195,32 @@
 	'use strict'
 
 	admin.modules.groups = admin.modules.groups || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Expose unknown grant diagnosis, row refresh and explicit audited cleanup.
+	 * @param {object} context group directory controls, live policy draft and attached editor operations
+	 * @return {void}
 	 */
 	admin.modules.groups.unknownGrants = function (context) {
 		const UnknownGroupGrants = class UnknownGroupGrants {
-			/** @returns {object|null} Textual warning for a directory row.
-			 * @param {*} group operation input
+			/** Describe unknown grants in a group directory row, or return null when none exist.
+			 * @returns {object|null} Textual warning for a directory row.
+			 * @param {object} group directory group with identity, grants and policy diagnosis
 			 */
 			static warning(group) {
 				return group.unknownGrants?.length ? { symbol: '?', text: t('mcp', 'Unknown grants: denied'), warning: true } : null
 			}
-			/** @returns {object[]} Fresh diagnosis replaces the open group's directory entry after readback.
-			 * @param {*} rows operation input
-			 * @param {*} group operation input
+			/** Merge freshly read policy diagnosis into the matching directory row.
+			 * @returns {object[]} Fresh diagnosis replaces the open group's directory entry after readback.
+			 * @param {object[]} rows directory or access rows in display order
+			 * @param {object} group directory group with identity, grants and policy diagnosis
 			 */
 			static refreshRow(rows, group) {
 				return rows.map((row) => row.groupId === group.groupId ? { ...row, ...group, unknownGrants: group.unknownGrants || [] } : row)
 			}
-			/** @returns {HTMLElement[]} Accessible diagnostics with one explicit cleanup action per opaque row.
-			 * @param {*} group operation input
-			 * @param {*} busy operation input
-			 * @param {*} clean operation input
+			/** Build unknown grant diagnostics with an explicit cleanup button for each opaque row.
+			 * @returns {HTMLElement[]} Accessible diagnostics with one explicit cleanup action per opaque row.
+			 * @param {object} group directory group with identity, grants and policy diagnosis
+			 * @param {boolean} busy whether a policy change currently locks the controls
+			 * @param {function(object): Promise<void>} clean callback that clears the chosen unknown grant
 			 */
 			static render(group, busy, clean) {
 				if (!group.unknownGrants?.length) return []
@@ -6232,10 +6235,11 @@
 				return [section]
 			}
 			/** Confirms the exact row and snapshot, never replays writes, and reloads after every attempt.
-			 * @param {*} group operation input
-			 * @param {*} row operation input
-			 * @param {object} options operation input
-			 * @return {Promise<*>} operation result
+			 * @param {object} group directory group with identity, grants and policy diagnosis
+			 * @param {object} row grant row returned by the API
+			 * @param {{api: function(string, string, object): Promise<object>, setBusy: function(boolean): void,
+			 *     refresh: function(string): Promise<void>, say: function(string, boolean=): void, saved: function(): void}} options cleanup dependencies
+			 * @return {Promise<void>}
 			 */
 			static async clean(group, row, { api, setBusy, refresh, say, saved }) {
 				if (!window.confirm(t('mcp', 'Clear 1 unknown grant from group {group}? Key: {key}. Stored value: Allow. This cleanup will be recorded.',
@@ -6268,7 +6272,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Group policy session operations.
+/** Register the groups session unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -6276,9 +6280,9 @@
 	'use strict'
 
 	admin.modules.groups = admin.modules.groups || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Expose group controls, live directory and draft state, JSON requests and status feedback.
+	 * @param {object} context group directory controls, live policy draft and attached editor operations
+	 * @return {void}
 	 */
 	admin.modules.groups.session = function (context) {
 		const root = context.root
@@ -6322,11 +6326,11 @@
 		const count = (value) => value === null || value === undefined ? unknown() : String(value)
 		const untrusted = () => t('mcp', 'This group comes from a source that cannot guarantee group identity (for example LDAP). Grant MCP access to its members individually.')
 
-		/**
-		 * @param {*} tag operation input
-		 * @param {*} props operation input
-		 * @param {*} children operation input
-		 * @return {*} operation result
+		/** Create a DOM element, apply its properties and append its child nodes or text.
+		 * @param {string} tag HTML element tag name
+		 * @param {object} [props] DOM properties assigned to the element
+		 * @param {Array<Node|string>} [children] child nodes and text appended in order
+		 * @return {HTMLElement}
 		 */
 		function el(tag, props = {}, children = []) {
 			const node = document.createElement(tag)
@@ -6339,9 +6343,9 @@
 		 * Writes into the fixed live regions. Both are cleared at once and the message is written shortly after, in
 		 * another task, so the same error twice in a row is announced again, and a message that was replaced or cleared
 		 * in the meantime never appears.
-		 * @param {*} message operation input
-		 * @param {boolean} error operation input
-		 * @return {*} operation result
+		 * @param {string} message feedback text; an empty string clears the message
+		 * @param {boolean} [error=false] announce through the alert region instead of the status region
+		 * @return {void}
 		 */
 		function say(message, error = false) {
 			clearTimeout(sayTimer)
@@ -6352,11 +6356,11 @@
 			sayTimer = setTimeout(() => { region.textContent = message }, SAY_DELAY)
 		}
 
-		/**
-		 * @param {*} method operation input
-		 * @param {*} path operation input
-		 * @param {*} body operation input
-		 * @return {Promise<*>} operation result
+		/** Fetch a JSON API response and reject unsuccessful requests with their response details.
+		 * @param {string} method HTTP request method
+		 * @param {string} path API path below /apps/mcp
+		 * @param {object|undefined} body JSON request body when present
+		 * @return {Promise<object>}
 		 */
 		async function api(method, path, body) {
 			const response = await fetch(OC.generateUrl('/apps/mcp' + path), {
@@ -6373,47 +6377,47 @@
 			return data
 		}
 
-		/**
-		 * @param {*} module operation input
-		 * @return {*} operation result
+		/** Resolve the translated module label, falling back to its catalog ID.
+		 * @param {string} module catalog module ID
+		 * @return {string}
 		 */
 		function moduleName(module) {
 			return { files: t('mcp', 'Files'), notes: t('mcp', 'Notes'), deck: t('mcp', 'Deck'), calendar: t('mcp', 'Calendar'), contacts: t('mcp', 'Contacts'), tasks: t('mcp', 'Tasks'), talk: t('mcp', 'Talk'), people: t('mcp', 'People'), logs: t('mcp', 'Server log'), mail: t('mcp', 'Mail'), tables: t('mcp', 'Tables'), forms: t('mcp', 'Forms'), polls: t('mcp', 'Polls') }[module] || module
 		}
 
-		/**
-		 * @param {*} operation operation input
-		 * @return {*} operation result
+		/** Resolve the translated operation label, falling back to its catalog ID.
+		 * @param {string} operation catalog operation ID
+		 * @return {string}
 		 */
 		function operationName(operation) {
 			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
 		}
 
-		/**
-		 * @param {*} grants operation input
-		 * @return {*} operation result
+		/** Flatten and sort granted module and operation pairs for stable draft comparison.
+		 * @param {Object<string, string[]>} grants granted operations indexed by module
+		 * @return {string[]}
 		 */
 		function grantKeys(grants) {
 			return Object.entries(grants).flatMap(([module, operations]) => operations.map((operation) => module + ':' + operation)).sort()
 		}
 
-		/**
-		 * @return {*} operation result
+		/** Compare the current group draft with its saved grants; return null before a group is open.
+		 * @return {boolean|null}
 		 */
 		function dirty() {
 			return current && JSON.stringify(context.grantKeys(draft)) !== JSON.stringify(context.grantKeys(current.grants))
 		}
 
-		/**
-		 * @return {*} operation result
+		/** Ask before discarding unsaved group changes and report whether replacement may proceed.
+		 * @return {boolean}
 		 */
 		function discardDraft() {
 			return !context.dirty() || window.confirm(t('mcp', 'Discard the unsaved group changes?'))
 		}
 
-		/**
-		 * @param {*} group operation input
-		 * @return {*} operation result
+		/** Describe why a group cannot currently grant access or needs administrator confirmation.
+		 * @param {object} group directory group with identity, grants and policy diagnosis
+		 * @return {string}
 		 */
 		function diagnosis(group) {
 			if (group.invalidId) return t('mcp', 'The directory returned an invalid group ID. This group cannot be edited.')
@@ -6469,7 +6473,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Group policy directory operations.
+/** Register the groups directory unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -6477,9 +6481,9 @@
 	'use strict'
 
 	admin.modules.groups = admin.modules.groups || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach paged group browsing, filters, keyboard navigation and policy detail loading.
+	 * @param {object} context group directory controls, live policy draft and attached editor operations
+	 * @return {void}
 	 */
 	admin.modules.groups.directory = function (context) {
 		/** Material Design Icons "lock-outline", in the text colour, so it follows the theme; decoration, hidden from assistive technology. */
@@ -6487,9 +6491,8 @@
 		/**
 		 * The state of a group in one short phrase, for its row in the list; '' when the group can grant normally. The
 		 * phrase always carries the state in words, next to a symbol, so it never depends on colour.
-		 *
 		 * @return {{symbol: string, lock?: boolean, text: string, warning: boolean}|null} a lock is drawn as an icon, not as a symbol
-		 * @param {*} group operation input
+		 * @param {object} group directory group with identity, grants and policy diagnosis
 		 */
 		function rowState(group) {
 			if (group.invalidId) return { symbol: '⊘', text: t('mcp', 'Cannot be edited: invalid group ID'), warning: false }
@@ -6500,16 +6503,18 @@
 			if (group.state === 'pending_delete') return { symbol: '⚠', text: t('mcp', 'Deletion pending'), warning: true }
 			return context.UnknownGroupGrants.warning(group)
 		}
-		/** @return {string} what a group grants, in words, for the accessible name and the tooltip of its row
-		 * @param {*} group operation input
+		/** Describe every granted module for the directory row's accessible name and tooltip.
+		 * @return {string} what a group grants, in words, for the accessible name and the tooltip of its row
+		 * @param {object} group directory group with identity, grants and policy diagnosis
 		 */
 		function grantSummary(group) {
 			const granted = Object.entries(group.grants || {}).filter(([, operations]) => operations.length > 0).map(([module]) => module)
 			if (granted.length === 0) return t('mcp', 'Grants nothing')
 			return t('mcp', 'Grants: {permissions}', { permissions: granted.map((module) => module === '_system' ? t('mcp', 'Can connect') : context.moduleName(module)).join(', ') }, undefined, context.RAW)
 		}
-		/** @return {string} what a group grants in one or two words, for the end of its row: "—", "Can connect" or "N modules"
-		 * @param {*} group operation input
+		/** Summarize the granted module count or connection eligibility at the end of a group row.
+		 * @return {string} what a group grants in one or two words, for the end of its row: "—", "Can connect" or "N modules"
+		 * @param {object} group directory group with identity, grants and policy diagnosis
 		 */
 		function grantShort(group) {
 			const granted = Object.entries(group.grants || {}).filter(([, operations]) => operations.length > 0).map(([module]) => module)
@@ -6521,9 +6526,8 @@
 		 * One line per group: the name, cut with an ellipsis; the ID, quietly, only when it differs from the name; and at the
 		 * end what it grants in short or the symbol of its state. The full name, the ID and the state or grants in words are
 		 * the row's accessible name and tooltip, so nothing is told by the symbol or a colour alone.
-		 *
 		 * @return {HTMLButtonElement} the row's button; drawList() puts each in its list item
-		 * @param {*} group operation input
+		 * @param {object} group directory group with identity, grants and policy diagnosis
 		 */
 		function groupRow(group) {
 			const differs = group.groupId !== null && group.groupId !== group.displayName
@@ -6551,15 +6555,15 @@
 		/** The rows that can take the focus, in order. */
 		const items = () => buttons.filter((button) => !button.disabled)
 		/** One stop in the tab order for the whole list (the open group, else the first); the arrows move inside it.
-		 * @param {*} target operation input
-		 * @return {*} operation result
+		 * @param {HTMLElement|null|undefined} target control to receive focus
+		 * @return {void}
 		 */
 		function rove(target) {
 			for (const button of items()) button.tabIndex = button === target ? 0 : -1
 		}
 		/** Scrolls the list, and only the list, so that a row is in view.
-		 * @param {*} button operation input
-		 * @return {*} operation result
+		 * @param {HTMLButtonElement} button directory row whose visibility is restored
+		 * @return {void}
 		 */
 		function keepVisible(button) {
 			if (typeof button.offsetTop !== 'number' || typeof context.list.clientHeight !== 'number') return
@@ -6567,8 +6571,8 @@
 			if (top < context.list.scrollTop) context.list.scrollTop = top
 			else if (top + button.offsetHeight > context.list.scrollTop + context.list.clientHeight) context.list.scrollTop = top + button.offsetHeight - context.list.clientHeight
 		}
-		/**
-		 * @return {*} operation result
+		/** Replace the directory rows and restore the open group's tab stop and visibility.
+		 * @return {void}
 		 */
 		function drawList() {
 			buttons = context.rows.map(context.groupRow)
@@ -6591,8 +6595,8 @@
 			target.focus()
 		})
 		/** The filter buttons say how many groups each shows, when the server knows it without extra work.
-		 * @param {*} counts operation input
-		 * @return {*} operation result
+		 * @param {Object<string, number>|null|undefined} counts server-provided totals by directory filter
+		 * @return {void}
 		 */
 		function drawFilters(counts) {
 			const names = { all: t('mcp', 'All'), granted: t('mcp', 'With grants'), blocked: t('mcp', 'Blocked groups') }
@@ -6614,8 +6618,8 @@
 			})
 		}
 		/** On a narrow screen the list folds into the picker above the editor; on a wide one both columns stay.
-		 * @param {*} isOpen operation input
-		 * @return {*} operation result
+		 * @param {boolean} isOpen whether the directory should be expanded
+		 * @return {void}
 		 */
 		function setListOpen(isOpen) {
 			if (!context.columns || !context.picker) return
@@ -6628,8 +6632,8 @@
 			context.setListOpen(isOpen)
 			if (isOpen) context.search.focus()
 		})
-		/**
-		 * @return {Promise<*>} operation result
+		/** Load the current group search page, discard superseded responses and update paging controls.
+		 * @return {Promise<void>}
 		 */
 		async function loadList() {
 			const seq = ++context.listSeq
@@ -6660,19 +6664,19 @@
 				if (seq === context.listSeq) context.list.setAttribute('aria-busy', 'false')
 			}
 		}
-		/**
-		 * @param {*} action operation input
-		 * @return {*} operation result
+		/** Create a retry button that invokes the supplied load action.
+		 * @param {function(): Promise<void>} action load action invoked by the retry button
+		 * @return {HTMLButtonElement}
 		 */
 		function retry(action) {
 			return context.el('button', { type: 'button', textContent: t('mcp', 'Retry'), onclick: action })
 		}
-		/**
-		 * @param {*} gid operation input
-		 * @param {boolean} preserve operation input
-		 * @param {boolean} keepMessage operation input
-		 * @param {*} displayName operation input
-		 * @return {Promise<*>} operation result
+		/** Read the selected group policy while respecting the save lock and draft replacement confirmation.
+		 * @param {string} gid native Nextcloud group ID
+		 * @param {boolean} [preserve=false] retain the current draft when policy details are refreshed
+		 * @param {boolean} [keepMessage=false] retain the current status announcement after loading
+		 * @param {string|null} [displayName=null] directory name to show for the open group
+		 * @return {Promise<void>}
 		 */
 		async function open(gid, preserve = false, keepMessage = false, displayName = null) {
 			if (context.busy || (!preserve && !context.discardDraft())) return
@@ -6713,7 +6717,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Group policy drafts operations.
+/** Register the groups drafts unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -6721,9 +6725,9 @@
 	'use strict'
 
 	admin.modules.groups = admin.modules.groups || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach group level calculations, change summaries and draft operation editing.
+	 * @param {object} context group directory controls, live policy draft and attached editor operations
+	 * @return {void}
 	 */
 	admin.modules.groups.drafts = function (context) {
 		/** Operations of a module in a grants object, whether it came as an object or as PHP's empty array. */
@@ -6733,9 +6737,9 @@
 		/**
 		 * The level a set of granted operations makes, with the matrix's tiers (src/admin/admin-levels.js). A group only grants, so an
 		 * operation outside the set is "not granted", never denied.
-		 * @param {*} grants operation input
-		 * @param {*} module operation input
-		 * @return {*} operation result
+		 * @param {Object<string, string[]>} grants granted operations indexed by module
+		 * @param {string} module catalog module ID
+		 * @return {string}
 		 */
 		function levelIn(grants, module) {
 			const operations = context.current.catalog[module]
@@ -6743,24 +6747,24 @@
 			return window.OCA.Mcp.Admin.levels.levelOf(module, operations, Object.fromEntries(operations.map((operation) => [operation, granted.includes(operation)])))
 		}
 		/** What a member gets without any grant: GrantPolicy::defaultGranted(), reading except the server log.
-		 * @param {*} module operation input
-		 * @return {*} operation result
+		 * @param {string} module catalog module ID
+		 * @return {string}
 		 */
 		function defaultLevel(module) {
 			const operations = context.current.catalog[module]
 			return window.OCA.Mcp.Admin.levels.levelOf(module, operations, Object.fromEntries(operations.map((operation) => [operation, operation === 'read' && module !== 'logs'])))
 		}
 		/** For a group the lowest level is "Not granted": the members keep what they have from elsewhere.
-		 * @param {*} level operation input
-		 * @return {*} operation result
+		 * @param {string} level permission level ID
+		 * @return {string}
 		 */
 		function levelName(level) {
 			return { ...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), none: t('mcp', 'Not granted'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom') }[level] || level
 		}
 		/** A level in words, a custom one with its operations, since "Custom → Custom" would say nothing.
-		 * @param {*} grants operation input
-		 * @param {*} module operation input
-		 * @return {*} operation result
+		 * @param {Object<string, string[]>} grants granted operations indexed by module
+		 * @param {string} module catalog module ID
+		 * @return {string}
 		 */
 		function levelText(grants, module) {
 			const level = context.levelIn(grants, module)
@@ -6768,9 +6772,9 @@
 			return t('mcp', 'Custom ({operations})', { operations: context.current.catalog[module].filter((operation) => operationsIn(grants, module).includes(operation)).map(context.operationName).join(', ') }, undefined, context.RAW)
 		}
 		/** One line per changed module, "Files: Read → Edit", and one for "Can connect".
-		 * @param {*} before operation input
-		 * @param {*} after operation input
-		 * @return {*} operation result
+		 * @param {Object<string, string[]>} before previous module grants
+		 * @param {Object<string, string[]>} after replacement module grants
+		 * @return {string[]}
 		 */
 		function changes(before, after) {
 			const lines = []
@@ -6785,11 +6789,11 @@
 			}
 			return lines
 		}
-		/**
-		 * @param {*} module operation input
-		 * @param {*} operations operation input
-		 * @param {*} focusKey operation input
-		 * @return {*} operation result
+		/** Replace a module's draft operations, invalidate its preview and redraw the editor.
+		 * @param {string} module catalog module ID
+		 * @param {string[]} operations catalog operation IDs
+		 * @param {string|null|undefined} focusKey logical editor control to focus after redraw
+		 * @return {void}
 		 */
 		function setOperations(module, operations, focusKey) {
 			if (operations.length) context.draft[module] = [...operations].sort()
@@ -6802,9 +6806,9 @@
 		 * The matrix's group filter lists the groups it can filter by; a group it does not list (an external group, or one that
 		 * no longer exists) is said so here, and the page does not move. The focus goes to the exceptions filter, a real
 		 * control, which also tells a screen reader where it landed.
-		 * @param {*} gid operation input
-		 * @param {*} name operation input
-		 * @return {*} operation result
+		 * @param {string} gid native Nextcloud group ID
+		 * @param {string} name displayed group name
+		 * @return {void}
 		 */
 		function viewInMatrix(gid, name) {
 			const select = document.getElementById('mcp-group')
@@ -6820,11 +6824,11 @@
 			exceptionsOnly?.focus()
 		}
 		/** A pressed level carries a check mark besides aria-pressed, as in the matrix popover, so it never depends on colour.
-		 * @param {*} module operation input
-		 * @param {*} level operation input
-		 * @param {*} pressed operation input
-		 * @param {*} onclick operation input
-		 * @return {*} operation result
+		 * @param {string} module catalog module ID
+		 * @param {string} level permission level ID
+		 * @param {boolean} pressed whether this choice is currently selected
+		 * @param {function(MouseEvent): void} onclick handler invoked when the control is clicked
+		 * @return {HTMLButtonElement}
 		 */
 		function levelButton(module, level, pressed, onclick) {
 			const children = []
@@ -6853,7 +6857,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Group policy rendering operations.
+/** Register the groups rendering unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -6861,16 +6865,15 @@
 	'use strict'
 
 	admin.modules.groups = admin.modules.groups || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach group policy rendering with level, operation and preview controls.
+	 * @param {object} context group directory controls, live policy draft and attached editor operations
+	 * @return {void}
 	 */
 	admin.modules.groups.rendering = function (context) {
 		/**
 		 * Draws the open group and focuses the control drawn under focusKey, so a change redraws without losing the place.
-		 *
-		 * @param {string|null} focusKey key of the control to focus, or null to leave the focus alone
-		 * @return {*} operation result
+		 * @param {string|null} [focusKey=null] key of the control to focus, or null to leave the focus alone
+		 * @return {void}
 		 */
 		function render(focusKey = null) {
 			const controls = new Map()
@@ -6994,7 +6997,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Group policy saving operations.
+/** Register the groups saving unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -7002,14 +7005,14 @@
 	'use strict'
 
 	admin.modules.groups = admin.modules.groups || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach group policy preview and save requests with draft-preserving recovery.
+	 * @param {object} context group directory controls, live policy draft and attached editor operations
+	 * @return {void}
 	 */
 	admin.modules.groups.saving = function (context) {
-		/**
-		 * @param {*} action operation input
-		 * @return {Promise<*>} operation result
+		/** Preview or save the group draft and refresh conflicting or uncertain state without replaying writes.
+		 * @param {"preview"|"save"} action whether to calculate impact or commit the reviewed group draft
+		 * @return {Promise<void>}
 		 */
 		async function run(action) {
 			if (context.busy || !context.current || (action === 'save' && !context.preview)) return
@@ -7069,8 +7072,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Compose the groups editor and start its original effects once.
- * @param {object} admin operation input
- * @return {void} operation result
+ * @param {object} admin shared OCA.Mcp.Admin registry and public surfaces
+ * @return {void}
  */
 (function (admin) {
 	'use strict'
@@ -7099,7 +7102,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Resource scope session operations.
+/** Register the scope session unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -7107,9 +7110,9 @@
 	'use strict'
 
 	admin.modules.scope = admin.modules.scope || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Expose scope controls, live user and module state, JSON requests and feedback formatting.
+	 * @param {object} context scope drawer controls, live module drafts and attached resource operations
+	 * @return {void}
 	 */
 	admin.modules.scope.session = function (context) {
 		const MODULES = ['files', 'calendar', 'tasks']
@@ -7138,11 +7141,11 @@
 		/** Page event of a write this page committed: detail {from, to}; src/admin/matrix/start.js sends and follows it too. */
 		const REVISION_MOVED = 'mcp-revision-moved'
 
-		/**
-		 * @param {*} tag operation input
-		 * @param {*} props operation input
-		 * @param {*} children operation input
-		 * @return {*} operation result
+		/** Create a DOM element, apply its properties and append its child nodes or text.
+		 * @param {string} tag HTML element tag name
+		 * @param {object} [props] DOM properties assigned to the element
+		 * @param {Array<Node|string>} [children] child nodes and text appended in order
+		 * @return {HTMLElement}
 		 */
 		function el(tag, props = {}, children = []) {
 			const node = document.createElement(tag)
@@ -7151,10 +7154,10 @@
 			return node
 		}
 
-		/**
-		 * @param {*} message operation input
-		 * @param {boolean} error operation input
-		 * @return {*} operation result
+		/** Replace the status or alert message used to announce the current editor outcome.
+		 * @param {string} message feedback text; an empty string clears the message
+		 * @param {boolean} [error=false] announce through the alert region instead of the status region
+		 * @return {void}
 		 */
 		function say(message, error = false) {
 			clearTimeout(sayTimer)
@@ -7165,12 +7168,12 @@
 			sayTimer = setTimeout(() => { region.textContent = message }, SAY_DELAY)
 		}
 
-		/**
-		 * @param {*} method operation input
-		 * @param {*} path operation input
-		 * @param {*} query operation input
-		 * @param {*} body operation input
-		 * @return {Promise<*>} operation result
+		/** Fetch a JSON API response and reject unsuccessful requests with their response details.
+		 * @param {string} method HTTP request method
+		 * @param {string} path API path below /apps/mcp
+		 * @param {Object<string, string>|null|undefined} query URL query parameters when present
+		 * @param {object|undefined} body JSON request body when present
+		 * @return {Promise<object>}
 		 */
 		async function api(method, path, query, body) {
 			const url = OC.generateUrl('/apps/mcp' + path) + (query ? '?' + new URLSearchParams(query) : '')
@@ -7188,26 +7191,26 @@
 			return data
 		}
 
-		/**
-		 * @param {*} module operation input
-		 * @param {*} suffix operation input
-		 * @return {*} operation result
+		/** Build a scope API path for the currently open user and module.
+		 * @param {string} module catalog module ID
+		 * @param {string} [suffix=""] suffix appended to the module API path
+		 * @return {string}
 		 */
 		function scopePath(module, suffix = '') {
 			return '/api/scope/' + encodeURIComponent(uid) + '/' + module + suffix
 		}
 
-		/**
-		 * @param {*} module operation input
-		 * @return {*} operation result
+		/** Resolve the scope drawer heading for a supported resource module.
+		 * @param {string} module catalog module ID
+		 * @return {string|undefined}
 		 */
 		function title(module) {
 			return { files: t('mcp', 'Files: folders'), calendar: t('mcp', 'Calendar: calendars'), tasks: t('mcp', 'Tasks: task lists') }[module]
 		}
 
-		/**
-		 * @param {*} module operation input
-		 * @return {*} operation result
+		/** Describe the effect of an empty selected scope for the given resource module.
+		 * @param {string} module catalog module ID
+		 * @return {string|undefined}
 		 */
 		function emptyText(module) {
 			return {
@@ -7217,9 +7220,9 @@
 			}[module]
 		}
 
-		/**
-		 * @param {*} error operation input
-		 * @return {*} operation result
+		/** Translate a failed resource request into an administrator-facing explanation.
+		 * @param {Error & {status?: number, data?: object}} error request failure with optional HTTP status and response details
+		 * @return {string}
 		 */
 		function failure(error) {
 			if (error.status === 403) return t('mcp', 'Only administrators can change the resource scope.')
@@ -7229,17 +7232,17 @@
 		}
 
 		/** What a saved or selected item is called on screen: its path for a folder, its name otherwise.
-		 * @param {*} item operation input
-		 * @return {*} operation result
+		 * @param {object} item resource ID, label or path and availability flags
+		 * @return {string}
 		 */
 		function label(item) {
 			if (item.found === false) return t('mcp', 'Resource no longer found ({id})', { id: item.id }, undefined, { escape: false })
 			return item.path || item.name
 		}
 
-		/**
-		 * @param {*} item operation input
-		 * @return {*} operation result
+		/** Create visible badges for missing, excluded or inaccessible resources.
+		 * @param {object} item resource ID, label or path and availability flags
+		 * @return {HTMLElement[]}
 		 */
 		function badges(item) {
 			const out = []
@@ -7252,18 +7255,19 @@
 		/**
 		 * A message of one module: shown under it and announced through the page's live regions, which exist from the
 		 * start (a region created with its text already in it is not reliably announced).
-		 * @param {*} state operation input
-		 * @param {*} message operation input
-		 * @param {boolean} error operation input
-		 * @return {*} operation result
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @param {string} message feedback text; an empty string clears the message
+		 * @param {boolean} [error=false] announce through the alert region instead of the status region
+		 * @return {void}
 		 */
 		function note(state, message, error = false) {
 			state.line = message
 			if (message !== '') context.say(context.title(state.module) + ': ' + message, error)
 		}
 
-		/** @return {boolean} whether the draft differs from what is saved
-		 * @param {*} state operation input
+		/** Compare the module draft mode and selected IDs with the saved scope.
+		 * @return {boolean} whether the draft differs from what is saved
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
 		 */
 		function dirty(state) {
 			const ids = (items) => items.map((item) => item.id).sort().join(',')
@@ -7303,7 +7307,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Resource scope loading operations.
+/** Register the scope loading unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -7311,15 +7315,15 @@
 	'use strict'
 
 	admin.modules.scope = admin.modules.scope || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach scope reads and revision-aware reloads that retain unrelated unsaved drafts.
+	 * @param {object} context scope drawer controls, live module drafts and attached resource operations
+	 * @return {void}
 	 */
 	admin.modules.scope.loading = function (context) {
-		/**
-		 * @param {*} target operation input
-		 * @param {*} focusModule operation input
-		 * @return {Promise<*>} operation result
+		/** Load every scope module for a user and discard answers superseded by another user selection.
+		 * @param {string} target Nextcloud user ID whose scope is read
+		 * @param {string|null|undefined} focusModule resource module whose heading should receive focus
+		 * @return {Promise<void>}
 		 */
 		async function openUser(target, focusModule) {
 			const mine = ++context.seq
@@ -7358,8 +7362,8 @@
 		}
 
 		/** Reads one module again from the server; its draft is replaced by the saved scope and its revision.
-		 * @param {*} state operation input
-		 * @return {Promise<*>} operation result
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @return {Promise<void>}
 		 */
 		async function reload(state) {
 			const data = await context.api('GET', context.scopePath(state.module))
@@ -7373,10 +7377,9 @@
 		 * unsaved draft keeps it. When it already took the revision this page's own write made (`current`), the draft is
 		 * still valid and stays as it is. Otherwise it keeps the revision it was read at, and says so: saving it is refused
 		 * by the server (409) rather than accepted against a scope it never saw, and discarding it loads the saved scope.
-		 *
 		 * @param {object} origin the module that saved, undid or was refused
 		 * @param {string} [current] revision made by this page's own write, when it committed
-		 * @return {Promise<*>} operation result
+		 * @return {Promise<void>}
 		 */
 		async function reloadAll(origin, current) {
 			for (const module of context.MODULES) {
@@ -7400,7 +7403,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Resource scope drawer operations.
+/** Register the scope drawer unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -7408,13 +7411,14 @@
 	'use strict'
 
 	admin.modules.scope = admin.modules.scope || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach drawer placement, module tabs, draft confirmation and focus restoration.
+	 * @param {object} context scope drawer controls, live module drafts and attached resource operations
+	 * @return {void}
 	 */
 	admin.modules.scope.drawer = function (context) {
-		/** @return {string} the tab of a module: its saved state, and whether a draft is not saved
-		 * @param {*} state operation input
+		/** Describe a module's saved scope and indicate whether its draft is unsaved.
+		 * @return {string} the tab of a module: its saved state, and whether a draft is not saved
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
 		 */
 		function tabLabel(state) {
 			const name = { files: t('mcp', 'Files'), calendar: t('mcp', 'Calendar'), tasks: t('mcp', 'Tasks') }[state.module]
@@ -7425,7 +7429,7 @@
 		}
 
 		/** The module tabs of the drawer (WAI-ARIA tabs: the arrow keys, Home and End move between them).
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function renderTabs() {
 			if (!context.tabs) return
@@ -7448,9 +7452,9 @@
 		}
 
 		/** Shows one module's section and marks its tab.
-		 * @param {*} module operation input
-		 * @param {*} focus operation input
-		 * @return {*} operation result
+		 * @param {string} module catalog module ID
+		 * @param {boolean} focus whether to focus the selected module tab
+		 * @return {void}
 		 */
 		function selectTab(module, focus) {
 			context.currentTab = module
@@ -7467,7 +7471,7 @@
 		 * behind it (backdrop-filter on #content-vue), which makes that box, not the window, the one it is placed in: its top
 		 * would then be counted from the box, one header too low. The offset is measured, not assumed, since a theme may turn
 		 * the blur off.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function placeDrawer() {
 			context.root.style?.removeProperty?.('top')
@@ -7479,8 +7483,8 @@
 		}
 
 		/** Opens the drawer; the focus goes back to `trigger` when it closes.
-		 * @param {*} trigger operation input
-		 * @return {*} operation result
+		 * @param {HTMLElement|null|undefined} trigger control that opened the drawer or popover and may receive focus again
+		 * @return {void}
 		 */
 		function openDrawer(trigger) {
 			// Only one drawer is open at a time: the inspector closes when the scope opens.
@@ -7494,13 +7498,14 @@
 			context.placeDrawer()
 		}
 
-		/** @return {boolean} whether a module has a draft that is not saved */
+		/** Whether a module has a draft that is not saved.
+		 * @return {boolean} whether a module has a draft that is not saved */
 		function hasDraft() {
 			return Object.values(context.modules).some(context.dirty)
 		}
 
 		/** Drops the drafts the administrator agreed to lose, so they never come back when the drawer opens again.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function forget() {
 			context.seq++
@@ -7512,7 +7517,6 @@
 
 		/**
 		 * Closes the drawer, asking first when a draft of a module would be lost.
-		 *
 		 * @return {boolean} whether the drawer is closed now: false when the administrator kept the draft
 		 */
 		function closeDrawer() {
@@ -7534,7 +7538,6 @@
 		/**
 		 * Whether the drafts of the open user may be lost to open another one (or the same one read again): asked, never
 		 * assumed.
-		 *
 		 * @return {boolean}
 		 */
 		function mayReplace() {
@@ -7544,8 +7547,8 @@
 		/**
 		 * Gives the focus back to the control that opened the drawer, or, when the table was drawn again and that control is
 		 * gone, to the same row's "…" button, then to the drawer's own button on the Access tab: never to the page.
-		 * @param {*} target operation input
-		 * @return {*} operation result
+		 * @param {HTMLElement|null|undefined} target control to receive focus
+		 * @return {void}
 		 */
 		function focusBack(target) {
 			if (target && target.isConnected !== false) {
@@ -7566,7 +7569,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Resource scope rendering operations.
+/** Register the scope rendering unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -7574,15 +7577,15 @@
 	'use strict'
 
 	admin.modules.scope = admin.modules.scope || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach scope sections, selected resources and save, discard and undo controls.
+	 * @param {object} context scope drawer controls, live module drafts and attached resource operations
+	 * @return {void}
 	 */
 	admin.modules.scope.rendering = function (context) {
-		/**
-		 * @param {*} state operation input
-		 * @param {*} focusId operation input
-		 * @return {*} operation result
+		/** Replace a module section, update its tab and optionally restore focus to a named control.
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @param {string|undefined} focusId DOM ID to focus after the module is redrawn
+		 * @return {void}
 		 */
 		function rerender(state, focusId) {
 			const old = document.getElementById('mcp-scope-module-' + state.module)
@@ -7592,9 +7595,9 @@
 			if (focusId) document.getElementById(focusId)?.focus?.()
 		}
 
-		/**
-		 * @param {*} state operation input
-		 * @return {*} operation result
+		/** Build one scope module section with mode choices, resource selection and persistence controls.
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @return {HTMLElement}
 		 */
 		function renderModule(state) {
 			const module = state.module
@@ -7658,9 +7661,9 @@
 			return section
 		}
 
-		/**
-		 * @param {*} state operation input
-		 * @return {*} operation result
+		/** Build the selected resource list with removal controls and accessible draft feedback.
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @return {HTMLElement}
 		 */
 		function renderSelection(state) {
 			const module = state.module
@@ -7694,7 +7697,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Resource scope browsing operations.
+/** Register the scope browsing unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -7702,14 +7705,14 @@
 	'use strict'
 
 	admin.modules.scope = admin.modules.scope || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach candidate browsing, folder navigation and draft resource selection.
+	 * @param {object} context scope drawer controls, live module drafts and attached resource operations
+	 * @return {void}
 	 */
 	admin.modules.scope.browsing = function (context) {
-		/**
-		 * @param {*} state operation input
-		 * @return {*} operation result
+		/** Build resource search, folder navigation, candidate results and paging controls.
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @return {HTMLElement}
 		 */
 		function renderPicker(state) {
 			const module = state.module
@@ -7759,11 +7762,11 @@
 			return picker
 		}
 
-		/**
-		 * @param {*} state operation input
-		 * @param {*} item operation input
-		 * @param {*} text operation input
-		 * @return {*} operation result
+		/** Create a resource selection button that enforces the module limit and redraws the draft.
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @param {object} item resource ID, label or path and availability flags
+		 * @param {string} [text] button label instead of the default selection text
+		 * @return {HTMLButtonElement}
 		 */
 		function addButton(state, item, text) {
 			const chosen = state.items.some((other) => other.id === item.id)
@@ -7782,11 +7785,11 @@
 			return add
 		}
 
-		/**
-		 * @param {*} state operation input
-		 * @param {*} focusId operation input
-		 * @param {boolean} append operation input
-		 * @return {Promise<*>} operation result
+		/** Fetch resource candidates, optionally append another page and redraw with the requested focus.
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @param {string|undefined} focusId DOM ID to focus after the module is redrawn
+		 * @param {boolean} [append=false] append this candidate page to the already displayed results
+		 * @return {Promise<void>}
 		 */
 		async function browse(state, focusId, append = false) {
 			const query = { search: state.search, page: String(state.page) }
@@ -7812,7 +7815,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Resource scope saving operations.
+/** Register the scope saving unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -7820,14 +7823,14 @@
 	'use strict'
 
 	admin.modules.scope = admin.modules.scope || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach scope persistence, error recovery, undo offers and revision announcements.
+	 * @param {object} context scope drawer controls, live module drafts and attached resource operations
+	 * @return {void}
 	 */
 	admin.modules.scope.saving = function (context) {
-		/**
-		 * @param {*} state operation input
-		 * @return {Promise<*>} operation result
+		/** Save one scope draft against its read revision and refresh modules after a confirmed change.
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @return {Promise<void>}
 		 */
 		async function saveModule(state) {
 			if (state.saving) return
@@ -7853,10 +7856,10 @@
 			}
 		}
 
-		/**
-		 * @param {*} state operation input
-		 * @param {*} error operation input
-		 * @return {Promise<*>} operation result
+		/** Explain a refused or uncertain scope save and refresh only the state needed for recovery.
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @param {Error & {status?: number, data?: object}} error request failure with optional HTTP status and response details
+		 * @return {Promise<void>}
 		 */
 		async function saveFailed(state, error) {
 			const data = error.data || {}
@@ -7891,11 +7894,11 @@
 			context.rerender(state, 'mcp-scope-line-' + state.module)
 		}
 
-		/**
-		 * @param {*} state operation input
-		 * @param {*} receiptId operation input
-		 * @param {*} savedRevision operation input
-		 * @return {*} operation result
+		/** Record a scope undo receipt and start its expiry timer without stealing focus.
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @param {string} receiptId server receipt identifying the committed change
+		 * @param {string} savedRevision revision returned for the committed change
+		 * @return {void}
 		 */
 		function offerUndo(state, receiptId, savedRevision) {
 			const offer = { receiptId, savedRevision, hover: false, focus: false, expired: false }
@@ -7907,9 +7910,9 @@
 		}
 
 		/** Removes an expired undo once neither the pointer nor the focus holds it; the focus never falls to the page.
-		 * @param {*} state operation input
-		 * @param {*} offer operation input
-		 * @return {*} operation result
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @param {{receiptId: string, savedRevision: string, hover: boolean, focus: boolean, expired: boolean}} offer the exact undo offer whose expiry is being checked
+		 * @return {void}
 		 */
 		function expireUndo(state, offer) {
 			if (state.undo !== offer || !offer.expired || offer.hover || offer.focus) return
@@ -7918,9 +7921,9 @@
 			context.rerender(state, focused ? 'mcp-scope-line-' + state.module : undefined)
 		}
 
-		/**
-		 * @param {*} state operation input
-		 * @return {Promise<*>} operation result
+		/** Undo a scope receipt once, announce its revision and reload saved scopes after the attempt.
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @return {Promise<void>}
 		 */
 		async function undoModule(state) {
 			if (state.saving) return
@@ -7952,10 +7955,9 @@
 
 		/**
 		 * Tells the other blocks of the page that a write of this panel moved the revision from `from` to `to`.
-		 *
 		 * @param {string} from revision the write was sent with
 		 * @param {string} to revision the server answered with
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function announce(from, to) {
 			if (typeof from === 'string' && typeof to === 'string' && from !== to) {
@@ -7980,15 +7982,14 @@
 	'use strict'
 
 	admin.modules.scope = admin.modules.scope || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Publish scope entry points and register revision and drawer interaction handlers.
+	 * @param {object} context scope drawer controls, live module drafts and attached resource operations
+	 * @return {void}
 	 */
 	admin.modules.scope.entry = function (context) {
 		/**
 		 * The matrix cell mark of a module that is restricted, or whose scope cannot be read: visible text, no colour or
 		 * icon alone, and a way into the panel. An unrestricted module gets no mark.
-		 *
 		 * @param {string} target uid of the row
 		 * @param {string} module scope module
 		 * @param {{mode: string, count: ?number}} scope the cell's scope from the matrix
@@ -8009,11 +8010,10 @@
 
 		/**
 		 * Opens the drawer on one user, at one module when given.
-		 *
 		 * @param {string} target user ID
 		 * @param {string} [module] module whose tab opens
 		 * @param {HTMLElement} [trigger] control the focus goes back to when the drawer closes
-		 * @return {*} operation result
+		 * @return {boolean}
 		 */
 		function open(target, module, trigger) {
 			if (!context.root) return false
@@ -8076,8 +8076,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Compose the scope editor and start its original effects once.
- * @param {object} admin operation input
- * @return {void} operation result
+ * @param {object} admin shared OCA.Mcp.Admin registry and public surfaces
+ * @return {void}
  */
 (function (admin) {
 	'use strict'

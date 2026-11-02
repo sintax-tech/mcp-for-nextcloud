@@ -10,29 +10,32 @@
 	'use strict'
 
 	admin.modules.groups = admin.modules.groups || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Expose unknown grant diagnosis, row refresh and explicit audited cleanup.
+	 * @param {object} context group directory controls, live policy draft and attached editor operations
+	 * @return {void}
 	 */
 	admin.modules.groups.unknownGrants = function (context) {
 		const UnknownGroupGrants = class UnknownGroupGrants {
-			/** @returns {object|null} Textual warning for a directory row.
-			 * @param {*} group operation input
+			/** Describe unknown grants in a group directory row, or return null when none exist.
+			 * @returns {object|null} Textual warning for a directory row.
+			 * @param {object} group directory group with identity, grants and policy diagnosis
 			 */
 			static warning(group) {
 				return group.unknownGrants?.length ? { symbol: '?', text: t('mcp', 'Unknown grants: denied'), warning: true } : null
 			}
-			/** @returns {object[]} Fresh diagnosis replaces the open group's directory entry after readback.
-			 * @param {*} rows operation input
-			 * @param {*} group operation input
+			/** Merge freshly read policy diagnosis into the matching directory row.
+			 * @returns {object[]} Fresh diagnosis replaces the open group's directory entry after readback.
+			 * @param {object[]} rows directory or access rows in display order
+			 * @param {object} group directory group with identity, grants and policy diagnosis
 			 */
 			static refreshRow(rows, group) {
 				return rows.map((row) => row.groupId === group.groupId ? { ...row, ...group, unknownGrants: group.unknownGrants || [] } : row)
 			}
-			/** @returns {HTMLElement[]} Accessible diagnostics with one explicit cleanup action per opaque row.
-			 * @param {*} group operation input
-			 * @param {*} busy operation input
-			 * @param {*} clean operation input
+			/** Build unknown grant diagnostics with an explicit cleanup button for each opaque row.
+			 * @returns {HTMLElement[]} Accessible diagnostics with one explicit cleanup action per opaque row.
+			 * @param {object} group directory group with identity, grants and policy diagnosis
+			 * @param {boolean} busy whether a policy change currently locks the controls
+			 * @param {function(object): Promise<void>} clean callback that clears the chosen unknown grant
 			 */
 			static render(group, busy, clean) {
 				if (!group.unknownGrants?.length) return []
@@ -47,10 +50,11 @@
 				return [section]
 			}
 			/** Confirms the exact row and snapshot, never replays writes, and reloads after every attempt.
-			 * @param {*} group operation input
-			 * @param {*} row operation input
-			 * @param {object} options operation input
-			 * @return {Promise<*>} operation result
+			 * @param {object} group directory group with identity, grants and policy diagnosis
+			 * @param {object} row grant row returned by the API
+			 * @param {{api: function(string, string, object): Promise<object>, setBusy: function(boolean): void,
+			 *     refresh: function(string): Promise<void>, say: function(string, boolean=): void, saved: function(): void}} options cleanup dependencies
+			 * @return {Promise<void>}
 			 */
 			static async clean(group, row, { api, setBusy, refresh, say, saved }) {
 				if (!window.confirm(t('mcp', 'Clear 1 unknown grant from group {group}? Key: {key}. Stored value: Allow. This cleanup will be recorded.',

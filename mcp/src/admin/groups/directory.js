@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Group policy directory operations.
+/** Register the groups directory unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,9 +10,9 @@
 	'use strict'
 
 	admin.modules.groups = admin.modules.groups || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach paged group browsing, filters, keyboard navigation and policy detail loading.
+	 * @param {object} context group directory controls, live policy draft and attached editor operations
+	 * @return {void}
 	 */
 	admin.modules.groups.directory = function (context) {
 		/** Material Design Icons "lock-outline", in the text colour, so it follows the theme; decoration, hidden from assistive technology. */
@@ -20,9 +20,8 @@
 		/**
 		 * The state of a group in one short phrase, for its row in the list; '' when the group can grant normally. The
 		 * phrase always carries the state in words, next to a symbol, so it never depends on colour.
-		 *
 		 * @return {{symbol: string, lock?: boolean, text: string, warning: boolean}|null} a lock is drawn as an icon, not as a symbol
-		 * @param {*} group operation input
+		 * @param {object} group directory group with identity, grants and policy diagnosis
 		 */
 		function rowState(group) {
 			if (group.invalidId) return { symbol: '⊘', text: t('mcp', 'Cannot be edited: invalid group ID'), warning: false }
@@ -33,16 +32,18 @@
 			if (group.state === 'pending_delete') return { symbol: '⚠', text: t('mcp', 'Deletion pending'), warning: true }
 			return context.UnknownGroupGrants.warning(group)
 		}
-		/** @return {string} what a group grants, in words, for the accessible name and the tooltip of its row
-		 * @param {*} group operation input
+		/** Describe every granted module for the directory row's accessible name and tooltip.
+		 * @return {string} what a group grants, in words, for the accessible name and the tooltip of its row
+		 * @param {object} group directory group with identity, grants and policy diagnosis
 		 */
 		function grantSummary(group) {
 			const granted = Object.entries(group.grants || {}).filter(([, operations]) => operations.length > 0).map(([module]) => module)
 			if (granted.length === 0) return t('mcp', 'Grants nothing')
 			return t('mcp', 'Grants: {permissions}', { permissions: granted.map((module) => module === '_system' ? t('mcp', 'Can connect') : context.moduleName(module)).join(', ') }, undefined, context.RAW)
 		}
-		/** @return {string} what a group grants in one or two words, for the end of its row: "—", "Can connect" or "N modules"
-		 * @param {*} group operation input
+		/** Summarize the granted module count or connection eligibility at the end of a group row.
+		 * @return {string} what a group grants in one or two words, for the end of its row: "—", "Can connect" or "N modules"
+		 * @param {object} group directory group with identity, grants and policy diagnosis
 		 */
 		function grantShort(group) {
 			const granted = Object.entries(group.grants || {}).filter(([, operations]) => operations.length > 0).map(([module]) => module)
@@ -54,9 +55,8 @@
 		 * One line per group: the name, cut with an ellipsis; the ID, quietly, only when it differs from the name; and at the
 		 * end what it grants in short or the symbol of its state. The full name, the ID and the state or grants in words are
 		 * the row's accessible name and tooltip, so nothing is told by the symbol or a colour alone.
-		 *
 		 * @return {HTMLButtonElement} the row's button; drawList() puts each in its list item
-		 * @param {*} group operation input
+		 * @param {object} group directory group with identity, grants and policy diagnosis
 		 */
 		function groupRow(group) {
 			const differs = group.groupId !== null && group.groupId !== group.displayName
@@ -84,15 +84,15 @@
 		/** The rows that can take the focus, in order. */
 		const items = () => buttons.filter((button) => !button.disabled)
 		/** One stop in the tab order for the whole list (the open group, else the first); the arrows move inside it.
-		 * @param {*} target operation input
-		 * @return {*} operation result
+		 * @param {HTMLElement|null|undefined} target control to receive focus
+		 * @return {void}
 		 */
 		function rove(target) {
 			for (const button of items()) button.tabIndex = button === target ? 0 : -1
 		}
 		/** Scrolls the list, and only the list, so that a row is in view.
-		 * @param {*} button operation input
-		 * @return {*} operation result
+		 * @param {HTMLButtonElement} button directory row whose visibility is restored
+		 * @return {void}
 		 */
 		function keepVisible(button) {
 			if (typeof button.offsetTop !== 'number' || typeof context.list.clientHeight !== 'number') return
@@ -100,8 +100,8 @@
 			if (top < context.list.scrollTop) context.list.scrollTop = top
 			else if (top + button.offsetHeight > context.list.scrollTop + context.list.clientHeight) context.list.scrollTop = top + button.offsetHeight - context.list.clientHeight
 		}
-		/**
-		 * @return {*} operation result
+		/** Replace the directory rows and restore the open group's tab stop and visibility.
+		 * @return {void}
 		 */
 		function drawList() {
 			buttons = context.rows.map(context.groupRow)
@@ -124,8 +124,8 @@
 			target.focus()
 		})
 		/** The filter buttons say how many groups each shows, when the server knows it without extra work.
-		 * @param {*} counts operation input
-		 * @return {*} operation result
+		 * @param {Object<string, number>|null|undefined} counts server-provided totals by directory filter
+		 * @return {void}
 		 */
 		function drawFilters(counts) {
 			const names = { all: t('mcp', 'All'), granted: t('mcp', 'With grants'), blocked: t('mcp', 'Blocked groups') }
@@ -147,8 +147,8 @@
 			})
 		}
 		/** On a narrow screen the list folds into the picker above the editor; on a wide one both columns stay.
-		 * @param {*} isOpen operation input
-		 * @return {*} operation result
+		 * @param {boolean} isOpen whether the directory should be expanded
+		 * @return {void}
 		 */
 		function setListOpen(isOpen) {
 			if (!context.columns || !context.picker) return
@@ -161,8 +161,8 @@
 			context.setListOpen(isOpen)
 			if (isOpen) context.search.focus()
 		})
-		/**
-		 * @return {Promise<*>} operation result
+		/** Load the current group search page, discard superseded responses and update paging controls.
+		 * @return {Promise<void>}
 		 */
 		async function loadList() {
 			const seq = ++context.listSeq
@@ -193,19 +193,19 @@
 				if (seq === context.listSeq) context.list.setAttribute('aria-busy', 'false')
 			}
 		}
-		/**
-		 * @param {*} action operation input
-		 * @return {*} operation result
+		/** Create a retry button that invokes the supplied load action.
+		 * @param {function(): Promise<void>} action load action invoked by the retry button
+		 * @return {HTMLButtonElement}
 		 */
 		function retry(action) {
 			return context.el('button', { type: 'button', textContent: t('mcp', 'Retry'), onclick: action })
 		}
-		/**
-		 * @param {*} gid operation input
-		 * @param {boolean} preserve operation input
-		 * @param {boolean} keepMessage operation input
-		 * @param {*} displayName operation input
-		 * @return {Promise<*>} operation result
+		/** Read the selected group policy while respecting the save lock and draft replacement confirmation.
+		 * @param {string} gid native Nextcloud group ID
+		 * @param {boolean} [preserve=false] retain the current draft when policy details are refreshed
+		 * @param {boolean} [keepMessage=false] retain the current status announcement after loading
+		 * @param {string|null} [displayName=null] directory name to show for the open group
+		 * @return {Promise<void>}
 		 */
 		async function open(gid, preserve = false, keepMessage = false, displayName = null) {
 			if (context.busy || (!preserve && !context.discardDraft())) return

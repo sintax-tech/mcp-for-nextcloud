@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Resource scope browsing operations.
+/** Register the scope browsing unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,14 +10,14 @@
 	'use strict'
 
 	admin.modules.scope = admin.modules.scope || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach candidate browsing, folder navigation and draft resource selection.
+	 * @param {object} context scope drawer controls, live module drafts and attached resource operations
+	 * @return {void}
 	 */
 	admin.modules.scope.browsing = function (context) {
-		/**
-		 * @param {*} state operation input
-		 * @return {*} operation result
+		/** Build resource search, folder navigation, candidate results and paging controls.
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @return {HTMLElement}
 		 */
 		function renderPicker(state) {
 			const module = state.module
@@ -67,11 +67,11 @@
 			return picker
 		}
 
-		/**
-		 * @param {*} state operation input
-		 * @param {*} item operation input
-		 * @param {*} text operation input
-		 * @return {*} operation result
+		/** Create a resource selection button that enforces the module limit and redraws the draft.
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @param {object} item resource ID, label or path and availability flags
+		 * @param {string} [text] button label instead of the default selection text
+		 * @return {HTMLButtonElement}
 		 */
 		function addButton(state, item, text) {
 			const chosen = state.items.some((other) => other.id === item.id)
@@ -90,11 +90,11 @@
 			return add
 		}
 
-		/**
-		 * @param {*} state operation input
-		 * @param {*} focusId operation input
-		 * @param {boolean} append operation input
-		 * @return {Promise<*>} operation result
+		/** Fetch resource candidates, optionally append another page and redraw with the requested focus.
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @param {string|undefined} focusId DOM ID to focus after the module is redrawn
+		 * @param {boolean} [append=false] append this candidate page to the already displayed results
+		 * @return {Promise<void>}
 		 */
 		async function browse(state, focusId, append = false) {
 			const query = { search: state.search, page: String(state.page) }

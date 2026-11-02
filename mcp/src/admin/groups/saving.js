@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Group policy saving operations.
+/** Register the groups saving unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,14 +10,14 @@
 	'use strict'
 
 	admin.modules.groups = admin.modules.groups || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach group policy preview and save requests with draft-preserving recovery.
+	 * @param {object} context group directory controls, live policy draft and attached editor operations
+	 * @return {void}
 	 */
 	admin.modules.groups.saving = function (context) {
-		/**
-		 * @param {*} action operation input
-		 * @return {Promise<*>} operation result
+		/** Preview or save the group draft and refresh conflicting or uncertain state without replaying writes.
+		 * @param {"preview"|"save"} action whether to calculate impact or commit the reviewed group draft
+		 * @return {Promise<void>}
 		 */
 		async function run(action) {
 			if (context.busy || !context.current || (action === 'save' && !context.preview)) return

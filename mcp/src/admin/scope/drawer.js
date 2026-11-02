@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Resource scope drawer operations.
+/** Register the scope drawer unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,13 +10,14 @@
 	'use strict'
 
 	admin.modules.scope = admin.modules.scope || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach drawer placement, module tabs, draft confirmation and focus restoration.
+	 * @param {object} context scope drawer controls, live module drafts and attached resource operations
+	 * @return {void}
 	 */
 	admin.modules.scope.drawer = function (context) {
-		/** @return {string} the tab of a module: its saved state, and whether a draft is not saved
-		 * @param {*} state operation input
+		/** Describe a module's saved scope and indicate whether its draft is unsaved.
+		 * @return {string} the tab of a module: its saved state, and whether a draft is not saved
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
 		 */
 		function tabLabel(state) {
 			const name = { files: t('mcp', 'Files'), calendar: t('mcp', 'Calendar'), tasks: t('mcp', 'Tasks') }[state.module]
@@ -27,7 +28,7 @@
 		}
 
 		/** The module tabs of the drawer (WAI-ARIA tabs: the arrow keys, Home and End move between them).
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function renderTabs() {
 			if (!context.tabs) return
@@ -50,9 +51,9 @@
 		}
 
 		/** Shows one module's section and marks its tab.
-		 * @param {*} module operation input
-		 * @param {*} focus operation input
-		 * @return {*} operation result
+		 * @param {string} module catalog module ID
+		 * @param {boolean} focus whether to focus the selected module tab
+		 * @return {void}
 		 */
 		function selectTab(module, focus) {
 			context.currentTab = module
@@ -69,7 +70,7 @@
 		 * behind it (backdrop-filter on #content-vue), which makes that box, not the window, the one it is placed in: its top
 		 * would then be counted from the box, one header too low. The offset is measured, not assumed, since a theme may turn
 		 * the blur off.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function placeDrawer() {
 			context.root.style?.removeProperty?.('top')
@@ -81,8 +82,8 @@
 		}
 
 		/** Opens the drawer; the focus goes back to `trigger` when it closes.
-		 * @param {*} trigger operation input
-		 * @return {*} operation result
+		 * @param {HTMLElement|null|undefined} trigger control that opened the drawer or popover and may receive focus again
+		 * @return {void}
 		 */
 		function openDrawer(trigger) {
 			// Only one drawer is open at a time: the inspector closes when the scope opens.
@@ -96,13 +97,14 @@
 			context.placeDrawer()
 		}
 
-		/** @return {boolean} whether a module has a draft that is not saved */
+		/** Whether a module has a draft that is not saved.
+		 * @return {boolean} whether a module has a draft that is not saved */
 		function hasDraft() {
 			return Object.values(context.modules).some(context.dirty)
 		}
 
 		/** Drops the drafts the administrator agreed to lose, so they never come back when the drawer opens again.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function forget() {
 			context.seq++
@@ -114,7 +116,6 @@
 
 		/**
 		 * Closes the drawer, asking first when a draft of a module would be lost.
-		 *
 		 * @return {boolean} whether the drawer is closed now: false when the administrator kept the draft
 		 */
 		function closeDrawer() {
@@ -136,7 +137,6 @@
 		/**
 		 * Whether the drafts of the open user may be lost to open another one (or the same one read again): asked, never
 		 * assumed.
-		 *
 		 * @return {boolean}
 		 */
 		function mayReplace() {
@@ -146,8 +146,8 @@
 		/**
 		 * Gives the focus back to the control that opened the drawer, or, when the table was drawn again and that control is
 		 * gone, to the same row's "…" button, then to the drawer's own button on the Access tab: never to the page.
-		 * @param {*} target operation input
-		 * @return {*} operation result
+		 * @param {HTMLElement|null|undefined} target control to receive focus
+		 * @return {void}
 		 */
 		function focusBack(target) {
 			if (target && target.isConnected !== false) {

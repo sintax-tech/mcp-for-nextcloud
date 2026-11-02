@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Resource scope saving operations.
+/** Register the scope saving unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,14 +10,14 @@
 	'use strict'
 
 	admin.modules.scope = admin.modules.scope || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach scope persistence, error recovery, undo offers and revision announcements.
+	 * @param {object} context scope drawer controls, live module drafts and attached resource operations
+	 * @return {void}
 	 */
 	admin.modules.scope.saving = function (context) {
-		/**
-		 * @param {*} state operation input
-		 * @return {Promise<*>} operation result
+		/** Save one scope draft against its read revision and refresh modules after a confirmed change.
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @return {Promise<void>}
 		 */
 		async function saveModule(state) {
 			if (state.saving) return
@@ -43,10 +43,10 @@
 			}
 		}
 
-		/**
-		 * @param {*} state operation input
-		 * @param {*} error operation input
-		 * @return {Promise<*>} operation result
+		/** Explain a refused or uncertain scope save and refresh only the state needed for recovery.
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @param {Error & {status?: number, data?: object}} error request failure with optional HTTP status and response details
+		 * @return {Promise<void>}
 		 */
 		async function saveFailed(state, error) {
 			const data = error.data || {}
@@ -81,11 +81,11 @@
 			context.rerender(state, 'mcp-scope-line-' + state.module)
 		}
 
-		/**
-		 * @param {*} state operation input
-		 * @param {*} receiptId operation input
-		 * @param {*} savedRevision operation input
-		 * @return {*} operation result
+		/** Record a scope undo receipt and start its expiry timer without stealing focus.
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @param {string} receiptId server receipt identifying the committed change
+		 * @param {string} savedRevision revision returned for the committed change
+		 * @return {void}
 		 */
 		function offerUndo(state, receiptId, savedRevision) {
 			const offer = { receiptId, savedRevision, hover: false, focus: false, expired: false }
@@ -97,9 +97,9 @@
 		}
 
 		/** Removes an expired undo once neither the pointer nor the focus holds it; the focus never falls to the page.
-		 * @param {*} state operation input
-		 * @param {*} offer operation input
-		 * @return {*} operation result
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @param {{receiptId: string, savedRevision: string, hover: boolean, focus: boolean, expired: boolean}} offer the exact undo offer whose expiry is being checked
+		 * @return {void}
 		 */
 		function expireUndo(state, offer) {
 			if (state.undo !== offer || !offer.expired || offer.hover || offer.focus) return
@@ -108,9 +108,9 @@
 			context.rerender(state, focused ? 'mcp-scope-line-' + state.module : undefined)
 		}
 
-		/**
-		 * @param {*} state operation input
-		 * @return {Promise<*>} operation result
+		/** Undo a scope receipt once, announce its revision and reload saved scopes after the attempt.
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @return {Promise<void>}
 		 */
 		async function undoModule(state) {
 			if (state.saving) return
@@ -142,10 +142,9 @@
 
 		/**
 		 * Tells the other blocks of the page that a write of this panel moved the revision from `from` to `to`.
-		 *
 		 * @param {string} from revision the write was sent with
 		 * @param {string} to revision the server answered with
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function announce(from, to) {
 			if (typeof from === 'string' && typeof to === 'string' && from !== to) {

@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Resource scope loading operations.
+/** Register the scope loading unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,15 +10,15 @@
 	'use strict'
 
 	admin.modules.scope = admin.modules.scope || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach scope reads and revision-aware reloads that retain unrelated unsaved drafts.
+	 * @param {object} context scope drawer controls, live module drafts and attached resource operations
+	 * @return {void}
 	 */
 	admin.modules.scope.loading = function (context) {
-		/**
-		 * @param {*} target operation input
-		 * @param {*} focusModule operation input
-		 * @return {Promise<*>} operation result
+		/** Load every scope module for a user and discard answers superseded by another user selection.
+		 * @param {string} target Nextcloud user ID whose scope is read
+		 * @param {string|null|undefined} focusModule resource module whose heading should receive focus
+		 * @return {Promise<void>}
 		 */
 		async function openUser(target, focusModule) {
 			const mine = ++context.seq
@@ -57,8 +57,8 @@
 		}
 
 		/** Reads one module again from the server; its draft is replaced by the saved scope and its revision.
-		 * @param {*} state operation input
-		 * @return {Promise<*>} operation result
+		 * @param {object} state live scope module draft, saved values, revision and persistence state
+		 * @return {Promise<void>}
 		 */
 		async function reload(state) {
 			const data = await context.api('GET', context.scopePath(state.module))
@@ -72,10 +72,9 @@
 		 * unsaved draft keeps it. When it already took the revision this page's own write made (`current`), the draft is
 		 * still valid and stays as it is. Otherwise it keeps the revision it was read at, and says so: saving it is refused
 		 * by the server (409) rather than accepted against a scope it never saw, and discarding it loads the saved scope.
-		 *
 		 * @param {object} origin the module that saved, undid or was refused
 		 * @param {string} [current] revision made by this page's own write, when it committed
-		 * @return {Promise<*>} operation result
+		 * @return {Promise<void>}
 		 */
 		async function reloadAll(origin, current) {
 			for (const module of context.MODULES) {

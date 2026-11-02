@@ -10,15 +10,14 @@
 	'use strict'
 
 	admin.modules.scope = admin.modules.scope || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Publish scope entry points and register revision and drawer interaction handlers.
+	 * @param {object} context scope drawer controls, live module drafts and attached resource operations
+	 * @return {void}
 	 */
 	admin.modules.scope.entry = function (context) {
 		/**
 		 * The matrix cell mark of a module that is restricted, or whose scope cannot be read: visible text, no colour or
 		 * icon alone, and a way into the panel. An unrestricted module gets no mark.
-		 *
 		 * @param {string} target uid of the row
 		 * @param {string} module scope module
 		 * @param {{mode: string, count: ?number}} scope the cell's scope from the matrix
@@ -39,11 +38,10 @@
 
 		/**
 		 * Opens the drawer on one user, at one module when given.
-		 *
 		 * @param {string} target user ID
 		 * @param {string} [module] module whose tab opens
 		 * @param {HTMLElement} [trigger] control the focus goes back to when the drawer closes
-		 * @return {*} operation result
+		 * @return {boolean}
 		 */
 		function open(target, module, trigger) {
 			if (!context.root) return false

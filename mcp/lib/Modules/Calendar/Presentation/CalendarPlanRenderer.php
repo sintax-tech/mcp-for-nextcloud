@@ -30,7 +30,6 @@ final class CalendarPlanRenderer implements RendersPlans {
 
 	/**
 	 * Renders a write plan as Markdown body.
-	 *
 	 * @param string $tool tool name
 	 * @param array<string, mixed> $plan plan array from preview()
 	 * @return string|null Markdown body (no title, no warnings, no footer), or null to use generic body
@@ -52,7 +51,8 @@ final class CalendarPlanRenderer implements RendersPlans {
 	}
 
 	/**
-	 * @param array<string, mixed> $plan
+	 * @param array<string, mixed> $plan the plan of a new event, from preview()
+	 * @return string|null the Markdown body, or null when the plan lacks what it needs
 	 */
 	private function renderCreate(array $plan): ?string {
 		$calendarName = $this->calendarName($plan['calendar'] ?? null);
@@ -60,7 +60,6 @@ final class CalendarPlanRenderer implements RendersPlans {
 		if (!is_array($after)) {
 			return null;
 		}
-
 		$summary = $this->summary($after);
 		$header = Translator::t('Create event in *%s*: **%s**', [$calendarName, $summary]);
 		$lines = [$header];
@@ -81,28 +80,25 @@ final class CalendarPlanRenderer implements RendersPlans {
 		if ($location !== '') {
 			$lines[] = Translator::t('- Location: %s', [$location]);
 		}
-
 		$description = PlanText::inline($this->text($after['description'] ?? null), self::LONG_TEXT);
 		if ($description !== '') {
 			$lines[] = Translator::t('- Description: %s', [$description]);
 		}
-
 		$participants = $this->participants($plan, $after);
 		if ($participants !== '') {
 			$lines[] = Translator::t('- Participants: %s', [$participants]);
 		}
-
 		$invitations = PlanText::inline($this->text($plan['scheduling']['message'] ?? null), self::LONG_TEXT);
 		if ($invitations !== '') {
 			$lines[] = Translator::t('- Invitations: %s', [$invitations]);
 		}
-
 		array_push($lines, ...$this->sharedLines($plan));
 		return implode("\n", $lines);
 	}
 
 	/**
-	 * @param array<string, mixed> $plan
+	 * @param array<string, mixed> $plan the plan of a change to an event, from preview()
+	 * @return string|null the Markdown body, or null when the plan lacks what it needs
 	 */
 	private function renderUpdate(array $plan): ?string {
 		$calendarName = $this->calendarName($plan['calendar'] ?? null);
@@ -111,7 +107,6 @@ final class CalendarPlanRenderer implements RendersPlans {
 		if (!is_array($before) || !is_array($after)) {
 			return null;
 		}
-
 		$summary = $this->summary($after !== [] ? $after : $before);
 		$header = Translator::t('Update event in *%s*: **%s**', [$calendarName, $summary]);
 		$lines = [$header];
@@ -124,7 +119,6 @@ final class CalendarPlanRenderer implements RendersPlans {
 			$to = $afterSummary !== '' ? PlanText::inline($afterSummary) : Translator::t('(no title)');
 			$lines[] = Translator::t('- Title: %s → %s', [$from, $to]);
 		}
-
 		// 2. Timing change
 		$timingChanged = ($before['start'] ?? null) !== ($after['start'] ?? null)
 			|| ($before['end'] ?? null) !== ($after['end'] ?? null)
@@ -151,7 +145,6 @@ final class CalendarPlanRenderer implements RendersPlans {
 			}
 			$lines[] = Translator::t('- When: %s → %s', [$beforeTiming, $afterTiming]);
 		}
-
 		// 3. Location change
 		$beforeLoc = $this->text($before['location'] ?? null);
 		$afterLoc = $this->text($after['location'] ?? null);
@@ -160,7 +153,6 @@ final class CalendarPlanRenderer implements RendersPlans {
 			$to = $afterLoc !== '' ? PlanText::inline($afterLoc) : Translator::t('(none)');
 			$lines[] = Translator::t('- Location: %s → %s', [$from, $to]);
 		}
-
 		// 4. Description change
 		$beforeDesc = $this->text($before['description'] ?? null);
 		$afterDesc = $this->text($after['description'] ?? null);
@@ -169,7 +161,6 @@ final class CalendarPlanRenderer implements RendersPlans {
 			$to = $afterDesc !== '' ? PlanText::inline($afterDesc, self::LONG_TEXT) : Translator::t('(none)');
 			$lines[] = Translator::t('- Description: %s → %s', [$from, $to]);
 		}
-
 		// 5. Participants change
 		$beforeParts = $this->rawParticipants($plan['participants']['current'] ?? $before['attendees'] ?? [], $this->names($plan));
 		$afterParts = $this->rawParticipants($plan['participants']['proposed'] ?? $after['attendees'] ?? [], $this->names($plan));
@@ -178,23 +169,21 @@ final class CalendarPlanRenderer implements RendersPlans {
 			$to = !empty($afterParts) ? PlanText::inline(implode(', ', $afterParts), self::LONG_TEXT) : Translator::t('(none)');
 			$lines[] = Translator::t('- Participants: %s → %s', [$from, $to]);
 		}
-
 		// 6. Scheduling message
 		$invitations = PlanText::inline($this->text($plan['scheduling']['message'] ?? null), self::LONG_TEXT);
 		if ($invitations !== '') {
 			$lines[] = Translator::t('- Invitations: %s', [$invitations]);
 		}
-
 		if (count($lines) === 1) {
 			$lines[] = Translator::t('- No changes');
 		}
-
 		array_push($lines, ...$this->sharedLines($plan));
 		return implode("\n", $lines);
 	}
 
 	/**
-	 * @param array<string, mixed> $plan
+	 * @param array<string, mixed> $plan the plan of a move between calendars of the same owner, from preview()
+	 * @return string|null the Markdown body, or null when the plan lacks what it needs
 	 */
 	private function renderMove(array $plan): ?string {
 		$sourceName = $this->calendarName($plan['calendar'] ?? null);
@@ -240,7 +229,8 @@ final class CalendarPlanRenderer implements RendersPlans {
 	}
 
 	/**
-	 * @param array<string, mixed> $plan
+	 * @param array<string, mixed> $plan the plan of a transfer to a calendar of another owner, from preview()
+	 * @return string|null the Markdown body, or null when the plan lacks what it needs
 	 */
 	private function renderTransfer(array $plan): ?string {
 		$sourceName = $this->calendarName($plan['calendar'] ?? null);
@@ -286,7 +276,8 @@ final class CalendarPlanRenderer implements RendersPlans {
 	}
 
 	/**
-	 * @param array<string, mixed> $plan
+	 * @param array<string, mixed> $plan the plan of a deletion into the trash bin, from preview()
+	 * @return string|null the Markdown body, or null when the plan lacks what it needs
 	 */
 	private function renderDelete(array $plan): ?string {
 		$calendarName = $this->calendarName($plan['calendar'] ?? null);
@@ -327,7 +318,6 @@ final class CalendarPlanRenderer implements RendersPlans {
 
 	/**
 	 * The calendars of somebody else the write reaches, named with their owner, so the person approving it reads whose they are.
-	 *
 	 * @param array<string, mixed> $plan plan from preview()
 	 * @return list<string> one line per shared calendar of the plan, or nothing
 	 */
@@ -350,9 +340,12 @@ final class CalendarPlanRenderer implements RendersPlans {
 
 	/**
 	 * Formats start and end into a localized string with weekday, date, time and, when it is not the account's, the timezone.
-	 *
+	 * @param mixed $startVal start as the plan carries it, a date or an ISO timestamp
+	 * @param mixed $endVal exclusive end as the plan carries it
+	 * @param bool $allDay whether the event spans civil days
 	 * @param string|null $tzStr zone of the event itself, null when it was written with an offset only
 	 * @param string|null $accountTz zone the plan names for the account: the zone of an event without its own, and the one that needs no label
+	 * @return string|null the readable timing, or null when a bound is missing
 	 */
 	private function formatTiming(mixed $startVal, mixed $endVal, bool $allDay, ?string $tzStr, ?string $accountTz = null): ?string {
 		if (!is_string($startVal) || !is_string($endVal) || $startVal === '' || $endVal === '') {
@@ -440,7 +433,7 @@ final class CalendarPlanRenderer implements RendersPlans {
 	}
 
 	/**
-	 * @param array<string, mixed> $plan
+	 * @param array<string, mixed> $plan plan from preview()
 	 * @return string|null the account's timezone as the plan carries it, null when it is absent or not a zone
 	 */
 	private function accountZone(array $plan): ?string {
@@ -457,7 +450,8 @@ final class CalendarPlanRenderer implements RendersPlans {
 	}
 
 	/**
-	 * @param array<string, mixed> $plan
+	 * @param array<string, mixed> $plan plan from preview()
+	 * @return string|null the zone of the event after the change, else before it, null when neither has one
 	 */
 	private function eventTimezone(array $plan): ?string {
 		$tz = $plan['after']['timeZone'] ?? $plan['before']['timeZone'] ?? null;
@@ -465,7 +459,8 @@ final class CalendarPlanRenderer implements RendersPlans {
 	}
 
 	/**
-	 * @param mixed $calendar
+	 * @param mixed $calendar calendar entry of the plan
+	 * @return string the display name of the calendar, or a generic label
 	 */
 	private function calendarName(mixed $calendar): string {
 		// Never the uri or the path: an internal id is not something the person recognizes.
@@ -474,21 +469,26 @@ final class CalendarPlanRenderer implements RendersPlans {
 	}
 
 	/**
-	 * @param array<string, mixed> $event
+	 * @param array<string, mixed> $event event snapshot of the plan
+	 * @return string the title of the event, or a placeholder when it has none
 	 */
 	private function summary(array $event): string {
 		$summary = PlanText::inline($this->text($event['summary'] ?? null));
 		return $summary !== '' ? $summary : Translator::t('(no title)');
 	}
 
-	/** @param mixed $value plan value @return string the trimmed text of a scalar, empty for anything else */
+	/**
+	 * @param mixed $value plan value
+	 * @return string the trimmed text of a scalar, empty for anything else
+	 */
 	private function text(mixed $value): string {
 		return is_scalar($value) ? trim((string)$value) : '';
 	}
 
 	/**
-	 * @param array<string, mixed> $plan
-	 * @param array<string, mixed> $event
+	 * @param array<string, mixed> $plan plan from preview()
+	 * @param array<string, mixed> $event event snapshot whose attendees stand in when the plan has none
+	 * @return string the participants, by name when the plan carries one
 	 */
 	private function participants(array $plan, array $event): string {
 		$raw = $plan['participants']['proposed'] ?? $event['attendees'] ?? [];
@@ -497,7 +497,7 @@ final class CalendarPlanRenderer implements RendersPlans {
 	}
 
 	/**
-	 * @param array<string, mixed> $plan
+	 * @param array<string, mixed> $plan plan from preview()
 	 * @return array<string, string> display name by lower-case address, as the plan carries them
 	 */
 	private function names(array $plan): array {

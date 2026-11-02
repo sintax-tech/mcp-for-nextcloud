@@ -34,7 +34,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Polls {
 		 * @return \OCA\Polls\UserSession native test session
 		 */
 		public static function session(): \OCA\Polls\UserSession {
-			return self::$services[\OCA\Mcp\Tools\Polls\PollsSurface::SESSION];
+			return self::$services[\OCA\Mcp\Modules\Polls\Integration\PollsSurface::SESSION];
 		}
 	}
 }

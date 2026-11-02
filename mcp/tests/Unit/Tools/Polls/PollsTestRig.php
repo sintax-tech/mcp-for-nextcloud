@@ -10,8 +10,17 @@ namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
-use OCA\Mcp\Tools\Polls\{PollsContext,PollsCursor,PollsListing,PollsReading,PollsServices,PollsSessionGuard,PollsShapes,PollsSurface,PollsModule};
-use OCA\Mcp\Tools\Polls\Handler\{ListPollsHandler,ReadPollHandler};
+use OCA\Mcp\Modules\Polls\Integration\PollsServices;
+use OCA\Mcp\Modules\Polls\Integration\PollsSessionGuard;
+use OCA\Mcp\Modules\Polls\Integration\PollsSurface;
+use OCA\Mcp\Modules\Polls\PollsModule;
+use OCA\Mcp\Modules\Polls\Presentation\PollsShapes;
+use OCA\Mcp\Modules\Polls\Reading\ListPollsHandler;
+use OCA\Mcp\Modules\Polls\Reading\PollsContext;
+use OCA\Mcp\Modules\Polls\Reading\PollsCursor;
+use OCA\Mcp\Modules\Polls\Reading\PollsListing;
+use OCA\Mcp\Modules\Polls\Reading\PollsReading;
+use OCA\Mcp\Modules\Polls\Reading\ReadPollHandler;
 use OCP\{IUser,IUserManager,IUserSession};
 use OCP\App\IAppManager;
 use PHPUnit\Framework\TestCase;
@@ -27,6 +36,8 @@ final class PollsTestRig {
 	public \OCA\Mcp\Access\Grants\GrantPolicy $policy;
 	/** @var PollsModule actual module */
 	public PollsModule $module;
+	/** @var \ArrayObject<string, object> tool instances the module resolves */
+	public \ArrayObject $tools;
 	/** @var PollsServices actual resolver */
 	public PollsServices $services;
 	/** @var bool app enablement */
@@ -42,6 +53,7 @@ final class PollsTestRig {
 	 * @return void
 	 */
 	public function __construct(TestCase $test) {
+		$this->tools = new \ArrayObject();
 		require_once __DIR__ . '/NativePollsDouble.php';
 		NativeScene::reset();
 		$users = [];
@@ -76,10 +88,11 @@ final class PollsTestRig {
 		$context = new PollsContext($this->services, $guard, $logger);
 		$shapes = new PollsShapes();
 		$cursor = new PollsCursor(new PlanState($config));
-		$this->module = new PollsModule(new ListPollsHandler($context, new PollsListing($this->services,$guard,$shapes,$cursor)),
+		$flow = $test->getMockBuilder(\OCA\Mcp\Modules\Polls\Creation\CreateFlow::class)->disableOriginalConstructor()->getMock();
+		$this->module = PollsTestModule::build($this->tools, new ListPollsHandler($context, new PollsListing($this->services,$guard,$shapes,$cursor)),
 			new ReadPollHandler($context,new PollsReading($this->services,$guard,$shapes,$cursor)),
-			...array_merge(PollsContentTestFactory::handlers($test, $context, $this->services, $guard, $cursor),
-			[new \OCA\Mcp\Tools\Polls\Handler\CreatePollHandler($test->getMockBuilder(\OCA\Mcp\Tools\Polls\Create\CreateFlow::class)->disableOriginalConstructor()->getMock())]));
+			PollsContentTestFactory::handlers($test, $context, $this->services, $guard, $cursor),
+			new \OCA\Mcp\Modules\Polls\Creation\CreatePollHandler($flow), new \OCA\Mcp\Modules\Polls\Creation\CreatePollPreview($flow));
 	}
 
 	/**

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 
-use OCA\Mcp\Tools\Polls\PollsSurface;
+use OCA\Mcp\Modules\Polls\Integration\PollsSurface;
 use PHPUnit\Framework\TestCase;
 
 /** Exact declared native dependencies, now including the creation service constructor. */

@@ -25,8 +25,8 @@ final class PollsCreateActorProcess {
 		$native=\OCP\Server::get(\OCA\Polls\UserSession::class);$native->getCurrentUser();$native->getCurrentUserId();
 		$session->setUser(!empty($in['noLogin'])?null:$users->get($in['session']??$uid));
 		if($action==='native'){
-			$native->cleanSession();\OCP\Server::get(\OCA\Mcp\Tools\Polls\PollsSessionGuard::class)->native($native,$uid);
-			$services=\OCP\Server::get(\OCA\Mcp\Tools\Polls\Create\CreateNative::class);
+			$native->cleanSession();\OCP\Server::get(\OCA\Mcp\Modules\Polls\Integration\PollsSessionGuard::class)->native($native,$uid);
+			$services=\OCP\Server::get(\OCA\Mcp\Modules\Polls\Creation\CreateNative::class);
 			$poll=$services->polls($native)->get($in['poll_id']);
 			if($poll->getOwner()!==$uid||!$poll->getIsAllowed(\OCA\Polls\Db\Poll::PERMISSION_POLL_EDIT)){throw new RuntimeException('Not fixture owner');}
 			$nine=(new ReflectionMethod(\OCA\Polls\Service\PollService::class,'add'))->getNumberOfParameters()===4;
@@ -34,19 +34,19 @@ final class PollsCreateActorProcess {
 			$db=\OCP\Server::get(\OCP\IDBConnection::class);$qb=$db->getQueryBuilder();
 			$qb->select('*')->from('polls_polls')->where($qb->expr()->eq('id',$qb->createNamedParameter($in['poll_id'],\OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
 			$result=$qb->executeQuery();$raw=$result->fetch();$result->closeCursor();
-			$out=['owner'=>$poll->getOwner(),'type'=>$poll->getType(),'title'=>$poll->getTitle(),'observable'=>\OCA\Mcp\Tools\Polls\Create\CreateDefaults::read($poll,$nine),
+			$out=['owner'=>$poll->getOwner(),'type'=>$poll->getType(),'title'=>$poll->getTitle(),'observable'=>\OCA\Mcp\Modules\Polls\Creation\CreateDefaults::read($poll,$nine),
 				'raw'=>array_intersect_key($raw,array_flip(['description','allow_maybe','allow_comment','hide_booked_up','use_no','misc_settings','timezone_name'])), 'options'=>$options];
 			$native->cleanSession();return $out;
 		}
 		$store=\OCP\Server::get(\OCP\ISession::class);$store->set('ncPollsPublicToken','synthetic-po3-old-token');
 		if(defined(\OCA\Polls\UserSession::class.'::SESSION_KEY_USER_ID')){$store->set('ncPollsUserId',\OCA\Mcp\Tests\Integration\Polls\PollsScene::OUTSIDER);$store->set('ncPollsShareType','public');}
-		$module=\OCP\Server::get(\OCA\Mcp\Tools\Polls\PollsModule::class);$out=[];
+		$module=\OCP\Server::get(\OCA\Mcp\Modules\Polls\PollsModule::class);$out=[];
 		if(in_array($action,['event','drift'],true)){
 			$native->cleanSession();$plan=$module->preview('polls_create_poll',$in['arguments'],$uid);
 			$eventClass=($in['event']??'poll')==='poll'?\OCA\Polls\Event\PollCreatedEvent::class:\OCA\Polls\Event\OptionCreatedEvent::class;
 			$observed=[];\OCP\Server::get(\OCP\EventDispatcher\IEventDispatcher::class)->addListener($eventClass,static function($event)use(&$observed,$action,$native):void {
 				$observed[]=$event->getPollId();
-				if($action==='drift'){\OCP\Server::get(\OCA\Mcp\Tools\Polls\Create\CreateNative::class)->polls($native)->update($event->getPollId(),['allowMaybe'=>0]);}
+				if($action==='drift'){\OCP\Server::get(\OCA\Mcp\Modules\Polls\Creation\CreateNative::class)->polls($native)->update($event->getPollId(),['allowMaybe'=>0]);}
 				else{throw new RuntimeException('Synthetic post-insert listener');}
 			});
 			$in['arguments']+=['confirm'=>true,'plan_state'=>$plan['plan_state']];

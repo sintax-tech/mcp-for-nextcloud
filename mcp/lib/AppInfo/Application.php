@@ -59,7 +59,7 @@ class Application extends App implements IBootstrap {
 		\OCA\Mcp\Tools\Mail\MailModule::class,
 		\OCA\Mcp\Tools\Tables\TablesModule::class,
 		\OCA\Mcp\Tools\Forms\FormsModule::class,
-		\OCA\Mcp\Tools\Polls\PollsModule::class,
+		\OCA\Mcp\Modules\Polls\PollsModule::class,
 	];
 
 	public function __construct() {

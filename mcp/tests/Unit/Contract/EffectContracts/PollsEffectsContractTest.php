@@ -16,26 +16,28 @@ use OCA\Mcp\Tests\Unit\Tools\Polls\NativeCreateScene;
 use OCA\Mcp\Tests\Unit\Tools\Polls\NativeCreateTestFactory;
 use OCA\Mcp\Tests\Unit\Tools\Polls\NativeScene;
 use OCA\Mcp\Tests\Unit\Tools\Polls\PollsContentTestFactory;
+use OCA\Mcp\Tests\Unit\Tools\Polls\PollsTestModule;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
-use OCA\Mcp\Tools\Polls\Create\CreateAdmission;
-use OCA\Mcp\Tools\Polls\Create\CreateFlow;
-use OCA\Mcp\Tools\Polls\Create\CreateNative;
-use OCA\Mcp\Tools\Polls\Create\CreateNormalizer;
-use OCA\Mcp\Tools\Polls\Create\CreatePlan;
-use OCA\Mcp\Tools\Polls\Create\CreateSurface;
-use OCA\Mcp\Tools\Polls\Create\CreateWriter;
-use OCA\Mcp\Tools\Polls\Handler\CreatePollHandler;
-use OCA\Mcp\Tools\Polls\Handler\ListPollsHandler;
-use OCA\Mcp\Tools\Polls\Handler\ReadPollHandler;
-use OCA\Mcp\Tools\Polls\PollsContext;
-use OCA\Mcp\Tools\Polls\PollsCursor;
-use OCA\Mcp\Tools\Polls\PollsListing;
-use OCA\Mcp\Tools\Polls\PollsModule;
-use OCA\Mcp\Tools\Polls\PollsReading;
-use OCA\Mcp\Tools\Polls\PollsServices;
-use OCA\Mcp\Tools\Polls\PollsSessionGuard;
-use OCA\Mcp\Tools\Polls\PollsShapes;
-use OCA\Mcp\Tools\Polls\PollsSurface;
+use OCA\Mcp\Modules\Polls\Admission\CreateAdmission;
+use OCA\Mcp\Modules\Polls\Creation\CreateFlow;
+use OCA\Mcp\Modules\Polls\Creation\CreateNative;
+use OCA\Mcp\Modules\Polls\Creation\CreateNormalizer;
+use OCA\Mcp\Modules\Polls\Creation\CreatePlan;
+use OCA\Mcp\Modules\Polls\Creation\CreatePollHandler;
+use OCA\Mcp\Modules\Polls\Creation\CreatePollPreview;
+use OCA\Mcp\Modules\Polls\Creation\CreateWriter;
+use OCA\Mcp\Modules\Polls\Integration\CreateSurface;
+use OCA\Mcp\Modules\Polls\Integration\PollsServices;
+use OCA\Mcp\Modules\Polls\Integration\PollsSessionGuard;
+use OCA\Mcp\Modules\Polls\Integration\PollsSurface;
+use OCA\Mcp\Modules\Polls\PollsModule;
+use OCA\Mcp\Modules\Polls\Presentation\PollsShapes;
+use OCA\Mcp\Modules\Polls\Reading\ListPollsHandler;
+use OCA\Mcp\Modules\Polls\Reading\PollsContext;
+use OCA\Mcp\Modules\Polls\Reading\PollsCursor;
+use OCA\Mcp\Modules\Polls\Reading\PollsListing;
+use OCA\Mcp\Modules\Polls\Reading\PollsReading;
+use OCA\Mcp\Modules\Polls\Reading\ReadPollHandler;
 use OCP\App\IAppManager;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -91,9 +93,9 @@ final class PollsEffectsContractTest extends TestCase {
 		$native = new CreateNative($services, $guard, new CreateAdmission($apps, $users, $policy, new PollsSurface()), new CreateSurface());
 		$normalizer = new CreateNormalizer();
 		$create = new CreateFlow($native, $normalizer, new CreatePlan(new PlanState($this->gate->config())), new CreateWriter($native, $normalizer), $logger);
-		return new PollsModule(new ListPollsHandler($context, new PollsListing($services, $guard, $shapes, $cursor)),
+		return PollsTestModule::build(new \ArrayObject(), new ListPollsHandler($context, new PollsListing($services, $guard, $shapes, $cursor)),
 			new ReadPollHandler($context, new PollsReading($services, $guard, $shapes, $cursor)),
-			...[...PollsContentTestFactory::handlers($this, $context, $services, $guard, $cursor), new CreatePollHandler($create)]);
+			PollsContentTestFactory::handlers($this, $context, $services, $guard, $cursor), new CreatePollHandler($create), new CreatePollPreview($create));
 	}
 
 	/** @return void polls_create_poll with two options: plan, strict confirm, PlanChanged, effect and every refusal */

@@ -78,7 +78,7 @@
             "OCA\\Mcp\\Tools\\Mail\\MailModule",
             "OCA\\Mcp\\Tools\\Tables\\TablesModule",
             "OCA\\Mcp\\Tools\\Forms\\FormsModule",
-            "OCA\\Mcp\\Tools\\Polls\\PollsModule"
+            "OCA\\Mcp\\Modules\\Polls\\PollsModule"
         ]
     }
 }

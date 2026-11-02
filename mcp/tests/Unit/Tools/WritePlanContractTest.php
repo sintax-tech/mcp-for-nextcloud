@@ -37,7 +37,7 @@ final class WritePlanContractTest extends TestCase {
 	/** @return array<class-string, class-string> test class of each writing module, which runs the contract with that module's fakes */
 	private static function contractTests(): array {
 		return [
-			\OCA\Mcp\Tools\Polls\PollsModule::class => \OCA\Mcp\Tests\Unit\Tools\Polls\PollsCreatePlanRendererTest::class,
+			\OCA\Mcp\Modules\Polls\PollsModule::class => \OCA\Mcp\Tests\Unit\Tools\Polls\PollsCreatePlanRendererTest::class,
 			\OCA\Mcp\Tools\Files\FilesModule::class => FilesPlanRendererTest::class,
 			\OCA\Mcp\Modules\Notes\NotesModule::class => NotesPlanRendererTest::class,
 			\OCA\Mcp\Tools\Deck\DeckToolModule::class => DeckPlanRendererTest::class,

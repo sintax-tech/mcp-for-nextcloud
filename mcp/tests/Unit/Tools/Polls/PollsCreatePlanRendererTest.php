@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 
 use OCA\Mcp\Tests\Unit\Tools\AssertsReadablePlans;
-use OCA\Mcp\Tools\Polls\Create\CreatePlan;
+use OCA\Mcp\Modules\Polls\Creation\CreatePlan;
 use PHPUnit\Framework\TestCase;
 
 /** Original global readability checks, with the actual writing module and actual preview graph. */

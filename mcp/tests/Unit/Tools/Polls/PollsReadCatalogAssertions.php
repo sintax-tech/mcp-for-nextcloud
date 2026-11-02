@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 
 use OCA\Mcp\Access\Grants\GrantPolicy;
-use OCA\Mcp\Tools\Polls\PollsModule;
+use OCA\Mcp\Modules\Polls\PollsModule;
 use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use PHPUnit\Framework\TestCase;
 

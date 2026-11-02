@@ -446,12 +446,12 @@ final class FilesMessages {
 
 	/** @return string the snippet given to files_replace does not occur */
 	public static function snippetMissing(): string {
-		return Translator::t('The specified snippet does not appear in the file.');
+		return \OCA\Mcp\Platform\Text\SnippetMessages::missing();
 	}
 
 	/** @return string the snippet given to files_replace is not text we can locate in the file */
 	public static function snippetNotUtf8(): string {
-		return Translator::t('The specified snippet is not valid UTF-8; send it exactly as it appears in the file.');
+		return \OCA\Mcp\Platform\Text\SnippetMessages::notUtf8();
 	}
 
 	/** @return string something already sits where a folder would go */
@@ -499,7 +499,7 @@ final class FilesMessages {
 	 * @return string the snippet given to files_replace or notes_edit is ambiguous
 	 */
 	public static function snippetAmbiguous(): string {
-		return Translator::t('The specified snippet appears more than once in the file; provide a longer, unique snippet.');
+		return \OCA\Mcp\Platform\Text\SnippetMessages::ambiguous();
 	}
 
 	/** @return string the file could not be opened */

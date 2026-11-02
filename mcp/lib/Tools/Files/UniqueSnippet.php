@@ -9,6 +9,7 @@ namespace OCA\Mcp\Tools\Files;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Platform\Text\SnippetMessages;
 
 /**
  * The single-occurrence replacement that files_replace and notes_edit share: the snippet is located byte for byte
@@ -42,7 +43,7 @@ final class UniqueSnippet {
 	 */
 	public static function assertText(string $old): void {
 		if (!mb_check_encoding($old, 'UTF-8')) {
-			throw new ToolFailure(FilesMessages::snippetNotUtf8());
+			throw new ToolFailure(SnippetMessages::notUtf8());
 		}
 		if (strlen($old) > self::MAX_BYTES) {
 			throw new ToolFailure(Translator::t('The specified snippet is longer than %d bytes; send a shorter, unique snippet.', [self::MAX_BYTES]));
@@ -61,10 +62,10 @@ final class UniqueSnippet {
 		self::assertText($old);
 		$matches = self::firstTwo($content, $old);
 		if ($matches === []) {
-			throw new ToolFailure(FilesMessages::snippetMissing());
+			throw new ToolFailure(SnippetMessages::missing());
 		}
 		if (count($matches) > 1) {
-			throw new ToolFailure(FilesMessages::snippetAmbiguous());
+			throw new ToolFailure(SnippetMessages::ambiguous());
 		}
 		// Only the offset just proven unique is replaced.
 		return substr_replace($content, $new, $matches[0], strlen($old));

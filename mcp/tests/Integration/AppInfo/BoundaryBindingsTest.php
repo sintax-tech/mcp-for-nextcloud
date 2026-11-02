@@ -36,6 +36,7 @@ final class BoundaryBindingsTest extends TestCase {
 		self::assertSame($visibility, (new ReflectionProperty($locks, 'visibility'))->getValue($locks));
 		self::assertInstanceOf(NativeCalendarsAdapter::class, Server::get(NativeCalendars::class));
 		self::initialize(Server::get(CalendarAccessExplainer::class));
+		self::assertInstanceOf(\OCA\Mcp\Modules\Notes\Reading\NoteResourceReader::class, Server::get(\OCA\Mcp\Mcp\Resources\NoteResource::class));
 	}
 
 	/** @return void A fresh native app container without either registration fails at the interface, never with null. */

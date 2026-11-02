@@ -54,7 +54,7 @@ class DavCalendarStore implements CalendarStore {
 	 * and shared calendars; shared rows carry the "_shared_by_<owner>" URI and the read-only flag.
 	 *
 	 * @param string $principalUri e.g. "principals/users/alice"
-	 * @return list<array{id:int, uri:string, displayName:string, ownerPrincipal:string, readOnly:bool, components:list<string>, deleted:bool}>
+	 * @return list<array{id:int, uri:string, displayName:string, ownerPrincipal:string, readOnly:bool, components:list<string>, deleted:bool}> the calendars of the principal, owned and shared, as backend rows
 	 */
 	public function calendarsForPrincipal(string $principalUri): array {
 		$out = [];
@@ -80,7 +80,7 @@ class DavCalendarStore implements CalendarStore {
 	 * @param int $calendarId backend calendar id
 	 * @param DateTimeImmutable $from inclusive start
 	 * @param DateTimeImmutable $to exclusive end
-	 * @return list<string>
+	 * @return list<string> URIs of the event objects that overlap the window
 	 */
 	public function eventUrisInRange(int $calendarId, DateTimeImmutable $from, DateTimeImmutable $to): array {
 		$filters = [
@@ -105,7 +105,7 @@ class DavCalendarStore implements CalendarStore {
 	 *
 	 * @param int $calendarId backend calendar id
 	 * @param list<string> $uris object URIs
-	 * @return list<array{id:int, uri:string, etag:string, data:string, deleted:bool}>
+	 * @return list<array{id:int, uri:string, etag:string, data:string, deleted:bool}> the rows of those URIs that still exist
 	 */
 	public function objects(int $calendarId, array $uris): array {
 		if ($uris === []) {
@@ -122,7 +122,7 @@ class DavCalendarStore implements CalendarStore {
 	 *
 	 * @param int $calendarId backend calendar id
 	 * @param string $uri object URI
-	 * @return array{id:int, uri:string, etag:string, data:string, deleted:bool}|null
+	 * @return array{id:int, uri:string, etag:string, data:string, deleted:bool}|null the row, or null when no live object has that URI
 	 * @throws \Psr\Container\ContainerExceptionInterface when the database cannot be resolved
 	 */
 	public function object(int $calendarId, string $uri): ?array {
@@ -136,7 +136,7 @@ class DavCalendarStore implements CalendarStore {
 	 * @param int $calendarId backend calendar id
 	 * @param string $uid iCalendar UID
 	 * @param string $component VEVENT or VTODO, matched against `calendarobjects.componenttype`
-	 * @return array{id:int, uri:string, etag:string, data:string, deleted:bool}|null
+	 * @return array{id:int, uri:string, etag:string, data:string, deleted:bool}|null the row of that UID, or null when the calendar has none
 	 * @throws \Psr\Container\ContainerExceptionInterface when the DAV app or the database cannot be resolved
 	 */
 	public function objectByUid(int $calendarId, string $uid, string $component): ?array {
@@ -149,7 +149,7 @@ class DavCalendarStore implements CalendarStore {
 	 * @param string $value value the column must equal
 	 * @param bool $liveOnly whether trashed rows are excluded
 	 * @param string|null $component component type the row must have; null for any
-	 * @return array{id:int, uri:string, etag:string, data:string, deleted:bool}|null
+	 * @return array{id:int, uri:string, etag:string, data:string, deleted:bool}|null the row read again from the backend, or null when it is gone
 	 * @throws \Psr\Container\ContainerExceptionInterface when the database cannot be resolved
 	 */
 	private function freshRow(int $calendarId, string $column, string $value, bool $liveOnly, ?string $component): ?array {
@@ -187,7 +187,7 @@ class DavCalendarStore implements CalendarStore {
 	 * ("principal:principals/users/<uid>" or ".../groups/<gid>") and `readOnly`.
 	 *
 	 * @param int $calendarId backend calendar id
-	 * @return list<array{principal:string, readOnly:bool}>
+	 * @return list<array{principal:string, readOnly:bool}> the sharees of the calendar, with their access
 	 */
 	public function sharesOf(int $calendarId): array {
 		$out = [];
@@ -203,7 +203,7 @@ class DavCalendarStore implements CalendarStore {
 
 	/**
 	 * @param array<string, mixed> $row backend calendar object row
-	 * @return array{id:int, uri:string, etag:string, data:string, deleted:bool}
+	 * @return array{id:int, uri:string, etag:string, data:string, deleted:bool} the row in the shape the store answers with
 	 */
 	private function objectRow(array $row): array {
 		return [

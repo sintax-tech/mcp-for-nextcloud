@@ -73,7 +73,7 @@ class EmbeddedDavDispatcher implements CalendarDav {
 	) {}
 
 	/**
-	 * @inheritDoc
+	 * {@inheritDoc}
 	 */
 	public function put(string $userId, string $calendarUri, string $objectUri, string $ics, bool $scheduling = false, ?int $sizeLimit = null, array $acceptedStatuses = [201]): DavResult {
 		$path = DavPathBuilder::objectPath($userId, $calendarUri, $objectUri);
@@ -85,7 +85,7 @@ class EmbeddedDavDispatcher implements CalendarDav {
 	}
 
 	/**
-	 * @inheritDoc
+	 * {@inheritDoc}
 	 */
 	public function update(string $userId, string $calendarUri, string $objectUri, string $etag, string $ics, bool $scheduling = false, ?int $sizeLimit = null, array $acceptedStatuses = [204]): DavResult {
 		$path = DavPathBuilder::objectPath($userId, $calendarUri, $objectUri);
@@ -97,7 +97,7 @@ class EmbeddedDavDispatcher implements CalendarDav {
 	}
 
 	/**
-	 * @inheritDoc
+	 * {@inheritDoc}
 	 */
 	public function delete(string $userId, string $calendarUri, string $objectUri, ?string $etag = null, bool $scheduling = false, array $acceptedStatuses = [204]): DavResult {
 		$path = DavPathBuilder::objectPath($userId, $calendarUri, $objectUri);
@@ -106,7 +106,7 @@ class EmbeddedDavDispatcher implements CalendarDav {
 	}
 
 	/**
-	 * @inheritDoc
+	 * {@inheritDoc}
 	 */
 	public function move(string $userId, string $fromCalendarUri, string $objectUri, string $toCalendarUri, ?string $etag = null, array $acceptedStatuses = [201]): DavResult {
 		$source = DavPathBuilder::objectPath($userId, $fromCalendarUri, $objectUri);
@@ -120,7 +120,7 @@ class EmbeddedDavDispatcher implements CalendarDav {
 	}
 
 	/**
-	 * @inheritDoc
+	 * {@inheritDoc}
 	 */
 	public function mkcalendar(string $userId, string $calendarUri, string $displayName): DavResult {
 		$path = DavPathBuilder::calendarPath($userId, $calendarUri);
@@ -132,14 +132,14 @@ class EmbeddedDavDispatcher implements CalendarDav {
 	}
 
 	/**
-	 * @inheritDoc
+	 * {@inheritDoc}
 	 */
 	public function deleteCalendar(string $userId, string $calendarUri): DavResult {
 		$path = DavPathBuilder::calendarPath($userId, $calendarUri);
 		return $this->dispatch('DELETE', $path, $userId, $this->schedulingHeaders(false), null, [204]);
 	}
 
-	/** @inheritDoc */
+	/** {@inheritDoc} */
 	public function probeWrite(string $actorUid, string $ownerUid, string $calendarUri, string $objectUri, string $ics): DavResult {
 		$this->assertWithinSizeLimit($ics, null);
 		return $this->dispatch('PUT', DavPathBuilder::objectPath($ownerUid, $calendarUri, $objectUri), $actorUid,
@@ -157,7 +157,7 @@ class EmbeddedDavDispatcher implements CalendarDav {
 	/**
 	 * @param string $ics serialized iCalendar
 	 * @param int|null $sizeLimit explicit limit, or null to read dav/event_size_limit
-	 * @return void
+	 * @return void nothing when the ICS fits
 	 * @throws CalendarException when the ICS is larger than the server accepts
 	 */
 	private function assertWithinSizeLimit(string $ics, ?int $sizeLimit): void {
@@ -178,7 +178,7 @@ class EmbeddedDavDispatcher implements CalendarDav {
 	 * @param string|null $body request body
 	 * @param list<int> $acceptedStatuses statuses that count as success
 	 * @param string|null $destination absolute path for the MOVE Destination header
-	 * @return DavResult
+	 * @return DavResult the status, and the ETag when the response carried one
 	 * @throws CalendarException on any pipeline refusal, mapped to a user-facing message
 	 */
 	private function dispatch(string $method, string $path, string $userId, array $headers, ?string $body, array $acceptedStatuses, ?string $destination = null): DavResult {
@@ -224,7 +224,7 @@ class EmbeddedDavDispatcher implements CalendarDav {
 	 * leaves every other listener and plugin as they are.
 	 *
 	 * @param Server $server fresh embedded server of this DELETE
-	 * @return void
+	 * @return void the server keeps scheduling only for the methods that need it
 	 */
 	private function detachUnbindScheduling(Server $server): void {
 		$schedule = $server->getPlugin(self::SCHEDULE_PLUGIN);
@@ -235,7 +235,7 @@ class EmbeddedDavDispatcher implements CalendarDav {
 
 	/**
 	 * @param string $userId authenticated UID the caller claims to act as
-	 * @return void
+	 * @return void nothing when the session belongs to the user
 	 * @throws CalendarException when the server session is a different user, or has none
 	 */
 	private function assertSessionMatches(string $userId): void {
@@ -256,7 +256,7 @@ class EmbeddedDavDispatcher implements CalendarDav {
 	 *
 	 * @param Server $server fresh embedded server
 	 * @param string $userId authenticated UID
-	 * @return void
+	 * @return void the server answers for that principal from now on
 	 * @throws \RuntimeException when the server cannot take a pinned principal
 	 */
 	private function pinPrincipal(Server $server, string $userId): void {
@@ -276,7 +276,7 @@ class EmbeddedDavDispatcher implements CalendarDav {
 	 * @param Response $response response Sabre produced
 	 * @param list<int> $acceptedStatuses statuses that count as success
 	 * @param string $method HTTP method, for the log only
-	 * @return DavResult
+	 * @return DavResult the status, and the ETag when the response carried one
 	 * @throws \RuntimeException when the status is not one the caller expected
 	 */
 	private function result(Response $response, array $acceptedStatuses, string $method): DavResult {

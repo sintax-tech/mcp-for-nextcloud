@@ -45,7 +45,7 @@ final class DeleteEventDraft implements \OCA\Mcp\Modules\Calendar\Approval\Calen
 	) {}
 
 	/**
-	 * @param array{calendar: string, uid: string, etag?: string, send_invitations?: bool, confirm_shared?: bool} $arguments
+	 * @param array{calendar: string, uid: string, etag?: string, send_invitations?: bool, confirm_shared?: bool} $arguments tool arguments, already validated against the schema
 	 * @param string $userId authenticated UID
 	 * @return array{content: list<array{type:string, text:string}>} {uid, calendar, deleted, recoverable, scheduling}
 	 * @throws CalendarException when not writable, protected, changed meanwhile or the trash is disabled

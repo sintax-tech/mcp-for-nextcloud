@@ -27,7 +27,7 @@ final class EventMapper {
 	 * @param DateTimeImmutable $end occurrence end (exclusive)
 	 * @param Calendar $calendar calendar holding the event
 	 * @param string $visibility Classification::FULL or Classification::BUSY
-	 * @return array{uid:string, summary:string, start:string, end:string, location:string, allDay:bool, timeZone?:string, calendar:string}
+	 * @return array{uid:string, summary:string, start:string, end:string, location:string, allDay:bool, timeZone?:string, calendar:string} the item the calendar tools return for this occurrence
 	 */
 	public function toItem(VEvent $event, DateTimeImmutable $start, DateTimeImmutable $end, Calendar $calendar, string $visibility): array {
 		$allDay = $this->isAllDay($event);

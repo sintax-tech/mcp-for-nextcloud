@@ -52,7 +52,7 @@ final class ListEventsHandler {
 	) {}
 
 	/**
-	 * @param array{calendar?: string, from?: string, to?: string} $arguments
+	 * @param array{calendar?: string, from?: string, to?: string} $arguments tool arguments, already validated against the schema
 	 * @param string $userId authenticated UID
 	 * @return array{content: list<array{type:string, text:string}>} items, plus {truncated, limit} when cut
 	 * @throws \OCA\Mcp\Modules\Calendar\Failures\CalendarException when the calendar is not visible or a limit is exceeded

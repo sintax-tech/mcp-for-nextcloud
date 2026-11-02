@@ -93,7 +93,11 @@ class ScopedCalendarAccess {
 		return $calendar;
 	}
 
-	/** @throws LogicException for a component no tool reads: no module, so no scope could ever apply */
+	/**
+	 * @param string $component VEVENT or VTODO
+	 * @return string the scope module of that component
+	 * @throws LogicException for a component no tool reads: no module, so no scope could ever apply
+	 */
 	private static function module(string $component): string {
 		return self::MODULES[$component] ?? throw new LogicException('Unscoped calendar component');
 	}

@@ -19,7 +19,6 @@ use OCA\Mcp\Mcp\Confirmation\PlanText;
  */
 final class CalendarMessages {
 	// ---- Approval and draft messages ----
-
 	public const APPROVAL_PROMPT = 'Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).';
 	public const APPROVAL_SHARED = 'The plan changes a shared calendar belonging to someone else. Execution also requires confirm_shared: true.';
 	public const PREVIEW_SUPPRESSED = 'No invitations or cancellations will be scheduled in this change.';
@@ -29,7 +28,6 @@ final class CalendarMessages {
 	public const PREVIEW_INVITATION_PROOF = 'Server proof covers internal delivery and suppression by the DAV pipeline; it does not prove receipt of external email.';
 
 	// ---- Tool descriptions shown in tools/list (fixed English) ----
-
 	public const TOOL_LIST_CALENDARS = 'Lists calendars visible to the user.';
 	public const TOOL_LIST_EVENTS = 'Lists events in a time range (default: next 7 days).';
 	public const TOOL_CREATE_EVENT = 'Creates a simple event (no recurrence) in a writable calendar. Attendees are Nextcloud account IDs; call users_search first if you are not sure of someone\'s ID.';
@@ -63,14 +61,12 @@ final class CalendarMessages {
 	];
 
 	// ---- Fixed property descriptions of the schema helpers ----
-
 	public const PROP_UID = \OCA\Mcp\Mcp\Tools\Schema\DavCollectionSchema::PROP_UID;
 	public const PROP_ETAG = \OCA\Mcp\Mcp\Tools\Schema\DavCollectionSchema::PROP_ETAG;
 	public const PROP_ATTENDEES = 'Nextcloud account IDs (not emails); if you are not sure of someone\'s ID, call users_search first. Replaces the attendee list.';
 	public const PROP_SEND_INVITATIONS = 'true delivers the invitation to Nextcloud scheduling; email depends on server settings and does not confirm receipt';
 
 	// ---- Path building ----
-
 	/** Object URI segment. */
 	public const PATH_OBJECT = 'object';
 	/** Calendar URI segment. */
@@ -79,7 +75,6 @@ final class CalendarMessages {
 	public const PATH_USER = 'user';
 
 	// ---- Fragments shared by tool descriptions ----
-
 	public const INVITES_OTHERS = ' This call may send invitations to other people.';
 	public const SEND_INVITATIONS_NOTE = ' Attendees are only notified with send_invitations: true, depending on server configuration; sending does not confirm receipt.';
 	public const PARTICIPANTS_NOT_NOTIFIED = ' Event attendees are not notified, just like when moving in the Calendar app.';
@@ -88,7 +83,6 @@ final class CalendarMessages {
 	public const DAV_FAILURE = 'Calendar DAV failure';
 
 	// ---- Backward-compatible English constants for messages ----
-
 	public const CONFLICT_ETAG = 'the event was changed by another person (etag diverged).';
 	public const CONFLICT_UID = 'an event with the same UID already exists in the destination calendar.';
 	public const CONFLICT_NAME = 'an event with the same name already exists in the destination calendar.';
@@ -122,15 +116,22 @@ final class CalendarMessages {
 	public const SCHEDULING_HANDED_OVER = 'invitation delivered to Nextcloud scheduling';
 	public const SCHEDULING_SUPPRESSED = 'no invitations were scheduled';
 
+	/** Constant and message holder only; never instantiated. */
 	private function __construct() {
 	}
 
-	/** @return string schema property text */
+	/**
+	 * @param string $key key of the fixed property descriptions
+	 * @return string schema property text
+	 */
 	public static function propertyDescription(string $key): string {
 		return self::PROPERTY_DESCRIPTIONS[$key];
 	}
 
-	/** @return string safe conflict message */
+	/**
+	 * @param string $reason what conflicted, already safe to show
+	 * @return string safe conflict message
+	 */
 	public static function conflict(string $reason): string {
 		return Translator::t('Conflict: %s', [$reason]);
 	}
@@ -299,7 +300,6 @@ final class CalendarMessages {
 	}
 
 	// ---- Scheduling warnings shown in the plan ----
-
 	/**
 	 * @param string $summary title of the overlapping event
 	 * @param string $when its time, already formatted for the person

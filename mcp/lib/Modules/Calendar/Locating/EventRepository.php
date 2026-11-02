@@ -33,7 +33,7 @@ class EventRepository {
 	 * @param string $uid event UID
 	 * @param string $userId acting user
 	 * @param string|null $etag expected ETag, when the client sent one
-	 * @return StoredEvent
+	 * @return StoredEvent the event as stored, checked against classification and the expected ETag
 	 * @throws CalendarException when missing, hidden, confidential, unreadable or changed meanwhile
 	 */
 	public function forChange(Calendar $calendar, string $uid, string $userId, ?string $etag): StoredEvent {

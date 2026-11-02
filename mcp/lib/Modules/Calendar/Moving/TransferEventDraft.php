@@ -20,7 +20,7 @@ final class TransferEventDraft implements \OCA\Mcp\Modules\Calendar\Approval\Cal
 	public function __construct(private EventRelocator $relocator) {}
 
 	/**
-	 * @param array{calendar: string, uid: string, targetCalendar: string, etag?: string} $arguments
+	 * @param array{calendar: string, uid: string, targetCalendar: string, etag?: string} $arguments tool arguments, already validated against the schema
 	 * @param string $userId authenticated UID
 	 * @return array{content: list<array{type:string, text:string}>} {uid, etag, from, to}
 	 * @throws \OCA\Mcp\Modules\Calendar\Failures\CalendarException when the transfer is not allowed or conflicts

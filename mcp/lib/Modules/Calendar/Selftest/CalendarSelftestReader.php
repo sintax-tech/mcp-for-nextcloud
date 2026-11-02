@@ -10,9 +10,15 @@ use OCA\Mcp\Modules\Calendar\Locating\Calendar;
 
 /** Read-only evidence that ordinary tool results do not expose. */
 interface CalendarSelftestReader {
-	/** @return array{syncToken:string, deleted:bool}|null fresh backend state, including trash */
+	/**
+	 * @param Calendar $calendar calendar the selftest created
+	 * @return array{syncToken:string, deleted:bool}|null fresh backend state, including trash
+	 */
 	public function calendarState(Calendar $calendar): ?array;
 
-	/** @return list<array{uri:string, data:string, etag:string}> the user's CalDAV inbox */
+	/**
+	 * @param string $uid account whose CalDAV inbox is read
+	 * @return list<array{uri:string, data:string, etag:string}> the user's CalDAV inbox
+	 */
 	public function schedulingObjects(string $uid): array;
 }

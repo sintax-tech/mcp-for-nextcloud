@@ -80,7 +80,7 @@ final class DateInput {
 	 * @param string|null $from inclusive start
 	 * @param string|null $to exclusive end
 	 * @param DateTimeImmutable $now current time
-	 * @return array{0: DateTimeImmutable, 1: DateTimeImmutable}
+	 * @return array{0: DateTimeImmutable, 1: DateTimeImmutable} the start and the exclusive end of the window
 	 * @throws CalendarArgumentException when a date is invalid or from is not before to
 	 * @throws CalendarException when the window exceeds 366 days
 	 */
@@ -103,7 +103,7 @@ final class DateInput {
 	 * @param string $end exclusive end date or timestamp
 	 * @param bool $allDay whether both must be "YYYY-MM-DD" civil days
 	 * @param string|null $timeZone IANA zone for timed events; ignored when all-day
-	 * @return EventTiming
+	 * @return EventTiming the validated start, end, all-day flag and zone
 	 * @throws CalendarArgumentException when a value is invalid or end is not after start
 	 */
 	public function timing(string $start, string $end, bool $allDay, ?string $timeZone): EventTiming {
@@ -116,7 +116,7 @@ final class DateInput {
 
 	/**
 	 * @param string $name IANA time zone id
-	 * @return DateTimeZone
+	 * @return DateTimeZone the zone of that id
 	 * @throws CalendarArgumentException when the id is unknown
 	 */
 	public function timeZone(string $name): DateTimeZone {

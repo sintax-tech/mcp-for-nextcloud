@@ -16,7 +16,7 @@ final class DavCalendarSelftestReader implements CalendarSelftestReader {
 	/** @param ContainerInterface $container resolves DAV lazily, without starting a server */
 	public function __construct(private ContainerInterface $container) {}
 
-	/** @inheritDoc */
+	/** {@inheritDoc} */
 	public function calendarState(Calendar $calendar): ?array {
 		$row = $this->container->get(CalDavBackend::class)->getCalendarById($calendar->id);
 		return $row === null ? null : [
@@ -25,7 +25,7 @@ final class DavCalendarSelftestReader implements CalendarSelftestReader {
 		];
 	}
 
-	/** @inheritDoc */
+	/** {@inheritDoc} */
 	public function schedulingObjects(string $uid): array {
 		return array_map(static fn (array $row): array => [
 			'uri' => (string)$row['uri'], 'data' => (string)$row['calendardata'], 'etag' => (string)$row['etag'],

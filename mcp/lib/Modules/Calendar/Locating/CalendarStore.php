@@ -20,7 +20,7 @@ interface CalendarStore {
 	 * Lists the calendars owned by or shared with a principal.
 	 *
 	 * @param string $principalUri e.g. "principals/users/alice"
-	 * @return list<array{id:int, uri:string, displayName:string, ownerPrincipal:string, readOnly:bool, components:list<string>, deleted:bool}>
+	 * @return list<array{id:int, uri:string, displayName:string, ownerPrincipal:string, readOnly:bool, components:list<string>, deleted:bool}> the calendars of the principal, owned and shared, as backend rows
 	 */
 	public function calendarsForPrincipal(string $principalUri): array;
 
@@ -30,7 +30,7 @@ interface CalendarStore {
 	 * @param int $calendarId backend calendar id
 	 * @param DateTimeImmutable $from inclusive start
 	 * @param DateTimeImmutable $to exclusive end
-	 * @return list<string>
+	 * @return list<string> URIs of the event objects that overlap the window
 	 */
 	public function eventUrisInRange(int $calendarId, DateTimeImmutable $from, DateTimeImmutable $to): array;
 
@@ -39,7 +39,7 @@ interface CalendarStore {
 	 *
 	 * @param int $calendarId backend calendar id
 	 * @param list<string> $uris object URIs
-	 * @return list<array{id:int, uri:string, etag:string, data:string, deleted:bool}>
+	 * @return list<array{id:int, uri:string, etag:string, data:string, deleted:bool}> the rows of those URIs that still exist
 	 */
 	public function objects(int $calendarId, array $uris): array;
 
@@ -48,7 +48,7 @@ interface CalendarStore {
 	 *
 	 * @param int $calendarId backend calendar id
 	 * @param string $uri object URI
-	 * @return array{id:int, uri:string, etag:string, data:string, deleted:bool}|null
+	 * @return array{id:int, uri:string, etag:string, data:string, deleted:bool}|null the row, or null when no live object has that URI
 	 */
 	public function object(int $calendarId, string $uri): ?array;
 

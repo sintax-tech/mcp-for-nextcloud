@@ -48,7 +48,7 @@ final class CollisionCheck {
 	 * @param bool $allDay whether the window represents full civil day(s)
 	 * @param string|null $excludeUri object URI to exclude (e.g. self when editing or moving)
 	 * @param int $limit maximum number of colliding items to return
-	 * @return array{items: list<array{uri:string, summary:?string, start:string, end:string, allDay:bool, busyOnly:bool}>, more:int}
+	 * @return array{items: list<array{uri:string, summary:?string, start:string, end:string, allDay:bool, busyOnly:bool}>, more:int} the colliding occurrences, at most the shown limit, and how many more there are
 	 *   items: up to $limit occurrences overlapping [start, end) in the calendar, ordered by start time;
 	 *   summary is null when busyOnly; start/end are ISO 8601 UTC; more: count of collisions beyond limit.
 	 */

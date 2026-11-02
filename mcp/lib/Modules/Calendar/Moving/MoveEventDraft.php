@@ -28,7 +28,7 @@ final class MoveEventDraft implements \OCA\Mcp\Modules\Calendar\Approval\Calenda
 	) {}
 
 	/**
-	 * @param array{calendar: string, uid: string, targetCalendar: string, etag?: string, confirm_shared?: bool} $arguments
+	 * @param array{calendar: string, uid: string, targetCalendar: string, etag?: string, confirm_shared?: bool} $arguments tool arguments, already validated against the schema
 	 * @param string $userId authenticated UID
 	 * @return array{content: list<array{type:string, text:string}>} {uid, etag, from, to}
 	 * @throws \OCA\Mcp\Modules\Calendar\Failures\CalendarException when the move is not allowed or conflicts

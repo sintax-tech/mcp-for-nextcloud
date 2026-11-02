@@ -28,6 +28,10 @@ use OCA\Mcp\Mcp\Tools\Schema\SchemaBuilder;
  */
 final class CalendarDraftApproval {
 	/**
+	 * @param Scheduling $scheduling the invitation switch of the server, which the plan reports as imipEnabled
+	 * @param EventBuilder $builder reads the timing of the event before and after the change
+	 * @param SharedGuard $sharedGuard finds the calendars of somebody else the write touches
+	 * @param PlanWarnings $warnings the collision, availability and sharing warnings of the plan
 	 * @param UserTimezone|null $zones timezone of the account: the plan names it, so every time of it reads in the zone the user lives in
 	 */
 	public function __construct(private Scheduling $scheduling, private EventBuilder $builder, private SharedGuard $sharedGuard, private PlanWarnings $warnings, private ?UserTimezone $zones = null) {}

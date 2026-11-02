@@ -36,7 +36,7 @@ final class AvailabilityCheck {
 	 * @param DateTimeImmutable $start start of the range
 	 * @param DateTimeImmutable $end end of the range
 	 * @param list<array{uid:string, email:string, displayName:string}> $attendees as returned by AttendeeResolver::resolve()
-	 * @return array{busy: list<array{uid:string, displayName:string}>, unverifiable: list<array{uid:string, displayName:string}>, failed: bool}
+	 * @return array{busy: list<array{uid:string, displayName:string}>, unverifiable: list<array{uid:string, displayName:string}>, failed: bool} the busy and unverifiable attendees, and whether the check itself failed
 	 *   failed is true when the API threw or the organizer does not exist; busy and unverifiable are then empty
 	 */
 	public function check(string $organizerUid, DateTimeImmutable $start, DateTimeImmutable $end, array $attendees): array {

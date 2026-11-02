@@ -23,7 +23,7 @@ final class CapturingSapi extends \Sabre\HTTP\Sapi {
 
 	/**
 	 * @param \Sabre\HTTP\ResponseInterface $response response Sabre would otherwise emit
-	 * @return void
+	 * @return void only the status is kept
 	 */
 	public static function sendResponse(\Sabre\HTTP\ResponseInterface $response): void {
 		self::$sendCount++;

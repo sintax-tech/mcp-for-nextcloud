@@ -89,7 +89,7 @@ final class EventBuilder {
 	 * @param list<array{uid:string, email:string, displayName:string}> $attendees guests, in order
 	 * @param string $organizerEmail e-mail of the acting user
 	 * @param string $organizerDisplayName display name of the acting user
-	 * @return void
+	 * @return void the event is changed in place
 	 */
 	public function setAttendees(VEvent $event, array $attendees, string $organizerEmail, string $organizerDisplayName): void {
 		$previous = $this->partStats($event);

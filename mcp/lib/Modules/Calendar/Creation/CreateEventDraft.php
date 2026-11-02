@@ -60,7 +60,7 @@ final class CreateEventDraft implements \OCA\Mcp\Modules\Calendar\Approval\Calen
 	) {}
 
 	/**
-	 * @param array{calendar: string, summary: string, start: string, end: string, allDay?: bool, timeZone?: string, location?: string, description?: string, attendees?: list<string>, send_invitations?: bool, confirm_shared?: bool} $arguments
+	 * @param array{calendar: string, summary: string, start: string, end: string, allDay?: bool, timeZone?: string, location?: string, description?: string, attendees?: list<string>, send_invitations?: bool, confirm_shared?: bool} $arguments tool arguments, already validated against the schema
 	 * @param string $userId authenticated UID
 	 * @return array{content: list<array{type:string, text:string}>} created event item plus etag and scheduling
 	 * @throws CalendarException when the calendar is not visible, not writable, the UID is taken or the pipeline refuses

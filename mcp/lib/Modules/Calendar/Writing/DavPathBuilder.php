@@ -25,6 +25,7 @@ final class DavPathBuilder {
 	/** @var list<string> segments refused in any position */
 	private const REFUSED = ['.', '..'];
 
+	/** Static helper only; never instantiated. */
 	private function __construct() {
 	}
 

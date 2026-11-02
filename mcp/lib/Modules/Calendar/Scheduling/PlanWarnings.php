@@ -74,7 +74,7 @@ final class PlanWarnings {
 	 * @param PreparedCalendarWrite $prepared proposed write
 	 * @param array<string, mixed> $arguments tool arguments, as validated
 	 * @param string $userId acting user
-	 * @return array{warnings: list<array{type:string, message:string}>, sharedCalendars: list<array{path:string, name:string, owner?:string}>, suggestedCalendar: array{path:string, name:string}|null}
+	 * @return array{warnings: list<array{type:string, message:string}>, sharedCalendars: list<array{path:string, name:string, owner?:string}>, suggestedCalendar: array{path:string, name:string}|null} the warnings of the plan and the calendars the participants share
 	 */
 	public function forWrite(string $tool, PreparedCalendarWrite $prepared, array $arguments, string $userId): array {
 		$none = ['warnings' => [], 'sharedCalendars' => [], 'suggestedCalendar' => null];
@@ -374,7 +374,7 @@ final class PlanWarnings {
 
 	/**
 	 * @param Throwable $e failure of a warning source
-	 * @return void
+	 * @return void only the log line is written
 	 */
 	private function failed(Throwable $e): void {
 		$this->logger?->warning('MCP calendar: scheduling warning skipped', ['app' => 'mcp', 'exception_class' => $e::class]);

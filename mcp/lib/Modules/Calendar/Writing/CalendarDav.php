@@ -27,7 +27,7 @@ interface CalendarDav {
 	 * @param bool $scheduling false sends `x-nc-scheduling: false`, so nothing is scheduled
 	 * @param int|null $sizeLimit maximum ICS size in bytes, read from dav/event_size_limit when null
 	 * @param list<int> $acceptedStatuses HTTP statuses that count as success
-	 * @return DavResult
+	 * @return DavResult the status, and the ETag when the pipeline reported one
 	 * @throws CalendarException when the pipeline refuses the write
 	 */
 	public function put(string $userId, string $calendarUri, string $objectUri, string $ics, bool $scheduling = false, ?int $sizeLimit = null, array $acceptedStatuses = [201]): DavResult;
@@ -43,7 +43,7 @@ interface CalendarDav {
 	 * @param bool $scheduling false sends `x-nc-scheduling: false`, so nothing is scheduled
 	 * @param int|null $sizeLimit maximum ICS size in bytes, read from dav/event_size_limit when null
 	 * @param list<int> $acceptedStatuses HTTP statuses that count as success
-	 * @return DavResult
+	 * @return DavResult the status, and the ETag when the pipeline reported one
 	 * @throws CalendarException when the pipeline refuses the write
 	 */
 	public function update(string $userId, string $calendarUri, string $objectUri, string $etag, string $ics, bool $scheduling = false, ?int $sizeLimit = null, array $acceptedStatuses = [204]): DavResult;
@@ -57,7 +57,7 @@ interface CalendarDav {
 	 * @param string|null $etag ETag sent as If-Match, or null to skip the guard
 	 * @param bool $scheduling false sends `x-nc-scheduling: false`, so no CANCEL is scheduled
 	 * @param list<int> $acceptedStatuses HTTP statuses that count as success
-	 * @return DavResult
+	 * @return DavResult the status of the deletion
 	 * @throws CalendarException when the pipeline refuses the deletion
 	 */
 	public function delete(string $userId, string $calendarUri, string $objectUri, ?string $etag = null, bool $scheduling = false, array $acceptedStatuses = [204]): DavResult;
@@ -71,7 +71,7 @@ interface CalendarDav {
 	 * @param string $toCalendarUri destination calendar URI
 	 * @param string|null $etag ETag sent as If-Match, or null to skip the guard
 	 * @param list<int> $acceptedStatuses HTTP statuses that count as success
-	 * @return DavResult
+	 * @return DavResult the status, and the ETag the object has in the target calendar when reported
 	 * @throws CalendarException when the pipeline refuses the move
 	 */
 	public function move(string $userId, string $fromCalendarUri, string $objectUri, string $toCalendarUri, ?string $etag = null, array $acceptedStatuses = [201]): DavResult;
@@ -82,7 +82,7 @@ interface CalendarDav {
 	 * @param string $userId authenticated UID
 	 * @param string $calendarUri new calendar URI
 	 * @param string $displayName calendar display name
-	 * @return DavResult
+	 * @return DavResult the status of the creation
 	 * @throws CalendarException when the pipeline refuses the calendar
 	 */
 	public function mkcalendar(string $userId, string $calendarUri, string $displayName): DavResult;
@@ -92,13 +92,19 @@ interface CalendarDav {
 	 *
 	 * @param string $userId authenticated UID
 	 * @param string $calendarUri calendar URI
-	 * @return DavResult
+	 * @return DavResult the status of the deletion
 	 * @throws CalendarException when the pipeline refuses the deletion
 	 */
 	public function deleteCalendar(string $userId, string $calendarUri): DavResult;
 	/**
 	 * Selftest only: tries to create its generated object as another internal account in the
 	 * organizer's newly created calendar. No MCP handler exposes the owner/actor pair.
+	 *
+	 * @param string $actorUid internal account that tries the write
+	 * @param string $ownerUid organizer who owns the calendar
+	 * @param string $calendarUri URI of the calendar of the organizer
+	 * @param string $objectUri URI of the object the probe would create
+	 * @param string $ics serialized iCalendar of that object
 	 * @return DavResult success is an ACL proof failure; callers expect 403 or 404
 	 */
 	public function probeWrite(string $actorUid, string $ownerUid, string $calendarUri, string $objectUri, string $ics): DavResult;

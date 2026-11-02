@@ -66,7 +66,7 @@ final class UpdateEventDraft implements \OCA\Mcp\Modules\Calendar\Approval\Calen
 	) {}
 
 	/**
-	 * @param array{calendar: string, uid: string, summary?: string, start?: string, end?: string, allDay?: bool, timeZone?: string, location?: string, description?: string, attendees?: list<string>, send_invitations?: bool, etag?: string, confirm_shared?: bool} $arguments
+	 * @param array{calendar: string, uid: string, summary?: string, start?: string, end?: string, allDay?: bool, timeZone?: string, location?: string, description?: string, attendees?: list<string>, send_invitations?: bool, etag?: string, confirm_shared?: bool} $arguments tool arguments, already validated against the schema
 	 * @param string $userId authenticated UID
 	 * @return array{content: list<array{type:string, text:string}>} updated event item plus etag and scheduling
 	 * @throws CalendarException when not visible, not writable, changed meanwhile or a recurring timing change
@@ -133,7 +133,7 @@ final class UpdateEventDraft implements \OCA\Mcp\Modules\Calendar\Approval\Calen
 	 * @param \OCA\Mcp\Modules\Calendar\Locating\StoredEvent $stored event as read from the store
 	 * @param list<string> $uids internal account ids sent by the caller; an empty list removes every guest
 	 * @param string $userId acting user
-	 * @return void
+	 * @return void the event is changed in place
 	 * @throws CalendarArgumentException when a UID cannot be invited
 	 * @throws CalendarException when the guest list may not be changed here
 	 */

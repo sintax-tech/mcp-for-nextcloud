@@ -122,7 +122,10 @@ final class CalendarSelftestMessages {
 		};
 	}
 
-	/** @return string human-readable assertion that failed, without backend event content */
+	/**
+	 * @param string $check key of the effect the selftest could not confirm
+	 * @return string human-readable assertion that failed, without backend event content
+	 */
 	public static function assertion(string $check): string {
 		return Translator::t('Unconfirmed effect: %s.', [self::checkLabel($check)]);
 	}

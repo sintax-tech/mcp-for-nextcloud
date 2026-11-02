@@ -29,7 +29,8 @@ class CalendarAccess {
 	 * Lists the user's visible event calendars: owned or shared, not trashed, supporting VEVENT.
 	 *
 	 * @param string $userId authenticated UID
-	 * @return list<Calendar>
+	 * @param string $component VEVENT for event calendars, VTODO for task lists
+	 * @return list<Calendar> the calendars the user may see, re-read from the backend
 	 */
 	public function visible(string $userId, string $component = 'VEVENT'): array {
 		$out = [];
@@ -58,7 +59,8 @@ class CalendarAccess {
 	 *
 	 * @param string $userId authenticated UID
 	 * @param string $path "/remote.php/dav/calendars/<uid>/<uri>/", trailing slash optional
-	 * @return Calendar
+	 * @param string $component VEVENT for event calendars, VTODO for task lists
+	 * @return Calendar the visible calendar at that path
 	 * @throws CalendarException when the path is foreign, malformed or not visible
 	 */
 	public function resolve(string $userId, string $path, string $component = 'VEVENT'): Calendar {
@@ -76,7 +78,8 @@ class CalendarAccess {
 	 *
 	 * @param string $userId authenticated UID
 	 * @param string $path calendar path
-	 * @return Calendar
+	 * @param string $component VEVENT for event calendars, VTODO for task lists
+	 * @return Calendar the visible calendar at that path, which the user may write
 	 * @throws CalendarException when not visible or not writable
 	 */
 	public function resolveWritable(string $userId, string $path, string $component = 'VEVENT'): Calendar {

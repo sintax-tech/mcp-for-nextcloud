@@ -13,6 +13,13 @@ use OCA\Mcp\Modules\Calendar\Locating\StoredEvent;
 
 /** Request-local proposed write; no ICS or closure is persisted in the approval store. */
 final class PreparedCalendarWrite {
+	/**
+	 * @param Calendar $source calendar the write starts from
+	 * @param Calendar|null $target calendar the event goes to, for a move or a transfer; null for any other write
+	 * @param StoredEvent|null $before the event as stored now; null when the write creates it
+	 * @param VCalendar|null $after the event as the write would leave it; null when the write deletes it
+	 * @param Closure(): array<string, mixed> $write the dispatch itself, run only by dispatch()
+	 */
 	public function __construct(
 		public readonly Calendar $source,
 		public readonly ?Calendar $target,

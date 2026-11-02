@@ -34,7 +34,7 @@ final class EventExpander {
 	 * @param VCalendar $vcalendar parsed calendar object
 	 * @param DateTimeImmutable $from inclusive window start
 	 * @param DateTimeImmutable $to exclusive window end
-	 * @return list<array{event: VEvent, start: DateTimeImmutable, end: DateTimeImmutable}>
+	 * @return list<array{event: VEvent, start: DateTimeImmutable, end: DateTimeImmutable}> the occurrences overlapping the window, cancelled overrides left out
 	 * @throws CalendarException when a series exceeds the occurrence or iteration limit
 	 */
 	public function occurrences(VCalendar $vcalendar, DateTimeImmutable $from, DateTimeImmutable $to): array {
@@ -63,7 +63,7 @@ final class EventExpander {
 	 * @param string $uid series UID
 	 * @param DateTimeImmutable $from inclusive window start
 	 * @param DateTimeImmutable $to exclusive window end
-	 * @return list<array{event: VEvent, start: DateTimeImmutable, end: DateTimeImmutable}>
+	 * @return list<array{event: VEvent, start: DateTimeImmutable, end: DateTimeImmutable}> the occurrences of one series overlapping the window
 	 * @throws CalendarException when the series exceeds a limit
 	 */
 	private function series(VCalendar $vcalendar, string $uid, DateTimeImmutable $from, DateTimeImmutable $to): array {

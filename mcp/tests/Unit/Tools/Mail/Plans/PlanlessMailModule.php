@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Mail\Plans;
 
-use OCA\Mcp\Tools\Mail\MailModule;
+use OCA\Mcp\Modules\Mail\MailModule;
 use OCA\Mcp\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Mcp\Tools\ToolModule;

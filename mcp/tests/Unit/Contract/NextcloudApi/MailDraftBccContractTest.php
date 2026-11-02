@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi;
 
-use OCA\Mcp\Tools\Mail\Draft\MailDraftBcc;
+use OCA\Mcp\Modules\Mail\Creation\MailDraftBcc;
 use PHPUnit\Framework\TestCase;
 
 /**

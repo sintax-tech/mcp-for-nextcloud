@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 
-use OCA\Mcp\Tools\Mail\MailAttachmentMessages;
-use OCA\Mcp\Tools\Mail\MailAttachmentPdf;
-use OCA\Mcp\Tools\Mail\MailPdfPreflight;
+use OCA\Mcp\Modules\Mail\Presentation\MailAttachmentMessages;
+use OCA\Mcp\Modules\Mail\Extraction\MailAttachmentPdf;
+use OCA\Mcp\Modules\Mail\Extraction\MailPdfPreflight;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 

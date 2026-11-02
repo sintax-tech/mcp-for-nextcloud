@@ -9,8 +9,8 @@ namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 
 use OCA\Mail\Events\MessageFlaggedEvent;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
-use OCA\Mcp\Tools\Mail\Flag\MailFlagEvent;
-use OCA\Mcp\Tools\Mail\Flag\MailFlagRequest;
+use OCA\Mcp\Modules\Mail\Integration\MailFlagEvent;
+use OCA\Mcp\Modules\Mail\Editing\MailFlagRequest;
 use OCP\EventDispatcher\IEventDispatcher;
 use PHPUnit\Framework\TestCase;
 

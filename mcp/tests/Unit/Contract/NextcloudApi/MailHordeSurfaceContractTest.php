@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi;
 
-use OCA\Mcp\Tools\Mail\MailCacheGeneration;
+use OCA\Mcp\Modules\Mail\Locating\MailCacheGeneration;
 use PHPUnit\Framework\TestCase;
 
 /**

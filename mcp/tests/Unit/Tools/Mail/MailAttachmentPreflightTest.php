@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 
-use OCA\Mcp\Tools\Mail\MailAttachmentMessages;
-use OCA\Mcp\Tools\Mail\MailAttachmentPreflight;
-use OCA\Mcp\Tools\Mail\MailBodyPreflight;
-use OCA\Mcp\Tools\Mail\MailMessages;
+use OCA\Mcp\Modules\Mail\Presentation\MailAttachmentMessages;
+use OCA\Mcp\Modules\Mail\Reading\MailAttachmentPreflight;
+use OCA\Mcp\Modules\Mail\Reading\MailBodyPreflight;
+use OCA\Mcp\Modules\Mail\Presentation\MailMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 

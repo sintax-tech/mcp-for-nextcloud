@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Integration\Mail;
 
 use InvalidArgumentException;
 use OCA\Mcp\Access\Grants\GrantPolicy;
-use OCA\Mcp\Tools\Mail\MailModule;
+use OCA\Mcp\Modules\Mail\MailModule;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\IUserManager;

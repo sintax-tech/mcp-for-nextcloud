@@ -37,8 +37,8 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Modules/Logs/Presentation/LogRedactor.php#<global>:literal-move:1' => 'label: allowed HTTP verb for redacted log rendering',
 			'Tools/Deck/DeckToolModule.php#definitions:literal-move:1' => 'label: move-card operation metadata',
 			'Tools/Calendar/Handler/MoveEvent.php#definition:literal-move:1' => 'label: calendar_move_event operation metadata',
-			'Tools/Mail/Move/MailMoveTools.php#<global>:literal-move:1' => 'label: mail_move_message operation metadata',
-			'Tools/Mail/Move/MailMoveCapability.php#assertMoveTouchesOnlyTheMessage:literal-move:1' => 'label: IMAP capability name queried, no write',
+			'Modules/Mail/Moving/MailMoveTools.php#<global>:literal-move:1' => 'label: mail_move_message operation metadata',
+			'Modules/Mail/Moving/MailMoveCapability.php#assertMoveTouchesOnlyTheMessage:literal-move:1' => 'label: IMAP capability name queried, no write',
 			'Tools/Calendar/EmbeddedDavDispatcher.php#move:literal-move:1' => 'label: DAV HTTP verb; actual dispatcher is classified separately',
 
 			'Controller/CheckoutController.php#send:fopen:1' => 'read: existing file download stream',
@@ -52,9 +52,9 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Tools/Files/VersionRestore.php#writeVersion:fopen:1' => 'temporary: php temp stream buffer, not a Files node',
 			'Tools/Files/TextExtractor.php#read:fopen:1' => 'read: bounded file content, read-only mode',
 			'Tools/Files/TextExtractor.php#zipXml:file_put_contents:1' => 'temporary: ITempManager local zip, not a Files node',
-			'Tools/Mail/MailAttachmentDocument.php#text:file_put_contents:1' => 'temporary: ITempManager local zip of a mail attachment, not a Files node',
-			'Tools/Mail/Move/MailMoveStore.php#move:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Mail\\MailMoveToolsTest::testAnotherGenerationNeverMovesAMessage',
-			'Tools/Mail/Handler/MoveMessageHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Mail\\MailMoveToolsTest::testAConfirmedCallMovesOnTheCheckedSelection',
+			'Modules/Mail/Extraction/MailAttachmentDocument.php#text:file_put_contents:1' => 'temporary: ITempManager local zip of a mail attachment, not a Files node',
+			'Modules/Mail/Integration/MailMoveStore.php#move:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Mail\\MailMoveToolsTest::testAnotherGenerationNeverMovesAMessage',
+			'Modules/Mail/Moving/MoveMessageHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Mail\\MailMoveToolsTest::testAConfirmedCallMovesOnTheCheckedSelection',
 			'Tools/Calendar/Handler/UpdateEvent.php#prepare:touch:1' => 'DAV: update an in-memory event timestamp, not Files touch',
 			'Access/FileTypes/FileWritePolicy.php#recoverStringType:rollback:1' => 'database: rollback owned configuration repair, not Files',
 

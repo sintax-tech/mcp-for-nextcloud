@@ -113,9 +113,9 @@ final class TablesApiUsage {
 			'fallback' => 'OCA\\Tables\\Db\\Row2Mapper::findAll',
 			'by' => \OCA\Mcp\Modules\Tables\Reading\RowReader::class,
 			'elsewhere' => [
-				'Tools/Tables/Write/RelationWriteGate.php' => 'OCA\\Tables\\Db\\View::getSort',
-				'Tools/Tables/Write/RowWriteState.php' => 'OCA\\Tables\\Db\\View::getSort',
-				'Tools/Tables/Write/ViewDefaultsGate.php' => 'OCA\\Tables\\Db\\View::getSort',
+				'Modules/Tables/Writing/RelationWriteGate.php' => 'OCA\\Tables\\Db\\View::getSort',
+				'Modules/Tables/Writing/RowWriteState.php' => 'OCA\\Tables\\Db\\View::getSort',
+				'Modules/Tables/Writing/ViewDefaultsGate.php' => 'OCA\\Tables\\Db\\View::getSort',
 			],
 		],
 		'OCA\\Tables\\Db\\Table::getSortArray' => [
@@ -123,8 +123,8 @@ final class TablesApiUsage {
 			'fallback' => 'OCA\\Tables\\Db\\Row2Mapper::findAll',
 			'by' => \OCA\Mcp\Modules\Tables\Reading\RowReader::class,
 			'elsewhere' => [
-				'Tools/Tables/Write/RelationWriteGate.php' => 'OCA\\Tables\\Db\\View::getSortArray',
-				'Tools/Tables/Write/ViewDefaultsGate.php' => 'OCA\\Tables\\Db\\View::getSortArray',
+				'Modules/Tables/Writing/RelationWriteGate.php' => 'OCA\\Tables\\Db\\View::getSortArray',
+				'Modules/Tables/Writing/ViewDefaultsGate.php' => 'OCA\\Tables\\Db\\View::getSortArray',
 			],
 		],
 		// Federated tables and views exist from Tables 2.3, after every pin; before, the node TableMapper::find() or

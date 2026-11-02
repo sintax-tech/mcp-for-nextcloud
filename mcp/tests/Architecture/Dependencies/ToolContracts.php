@@ -111,14 +111,17 @@ final class ToolContracts {
 	private const MODULE_INTERFACES = [Tool::class, WriteTool::class, \OCA\Mcp\Mcp\Tools\ToolModule::class, \OCA\Mcp\Mcp\Tools\PreviewsWrites::class, \OCA\Mcp\Mcp\Tools\RendersPlans::class, \OCA\Mcp\Mcp\Tools\RestrictedModule::class, \OCA\Mcp\Mcp\Guide\ToolGuideNotes::class, \OCA\Mcp\Mcp\Tools\ModuleRegistration::class];
 
 	/**
-	 * A catalog module needs a registration exactly when one of its classes implements an app interface declared
-	 * outside the module (a port another layer resolves, or a capability probe); otherwise `null` is its registration.
+	 * A catalog module has a registration when it binds something (a port, or a class the autowire cannot build) or has
+	 * a capability probe, and answers `null` otherwise. Implementing an app interface declared outside the module (a
+	 * port another layer resolves, or a probe) requires a registration; a registration that binds nothing and has no
+	 * probe is refused. A class that needs special construction is proven by DiAcyclicTest, which builds every tool.
 	 *
-	 * @param string|null $registration What the module's registration() answers. @param list<class-string> $classes Classes of the module. @param string $namespace Namespace of the module. @return list<string> Registration violations.
+	 * @param string|null $registration What the module's registration() answers. @param list<class-string> $classes Classes of the module. @param string $namespace Namespace of the module. @param int $bindings Services the registration registers. @return list<string> Registration violations.
 	 */
-	public static function registration(?string $registration, array $classes, string $namespace): array {
+	public static function registration(?string $registration, array $classes, string $namespace, int $bindings = 0): array {
 		if ($registration !== null) {
-			return is_subclass_of($registration, \OCA\Mcp\Mcp\Tools\ModuleRegistration::class) ? [] : ['Registration is not a ModuleRegistration: ' . $registration];
+			if (!is_subclass_of($registration, \OCA\Mcp\Mcp\Tools\ModuleRegistration::class)) { return ['Registration is not a ModuleRegistration: ' . $registration]; }
+			return $bindings === 0 && (new $registration())->probes() === [] ? ['Registration binds nothing and has no probe; answer null: ' . $registration] : [];
 		}
 		$errors = [];
 		foreach ($classes as $class) {

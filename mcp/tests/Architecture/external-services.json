@@ -25,5 +25,6 @@
 	"OCP\\Log\\ILogFactory",
 	"OCP\\EventDispatcher\\IEventDispatcher",
 	"OCP\\IRequest",
-	"OCP\\Security\\Bruteforce\\IThrottler"
+	"OCP\\Security\\Bruteforce\\IThrottler",
+	"OCP\\Files\\Lock\\ILockManager"
 ]

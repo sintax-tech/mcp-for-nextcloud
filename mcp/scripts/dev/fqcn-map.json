@@ -2,6 +2,8 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Modules/Mail/Integration/MailNativeMessages.php","fqcn":"OCA\\Mcp\\Modules\\Mail\\Integration\\MailNativeMessages","target":"stays","owner":"Modules\\Mail","ticket":null},
+		{"path":"lib/Modules/Mail/Integration/MailSearchValues.php","fqcn":"OCA\\Mcp\\Modules\\Mail\\Integration\\MailSearchValues","target":"stays","owner":"Modules\\Mail","ticket":null},
 		{"path":"lib/Modules/Logs/LogsToolCatalog.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\LogsToolCatalog","target":"stays","owner":"Modules\\Logs","ticket":null},
 		{"path":"lib/Modules/Logs/Tools/ListLogs.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\Tools\\ListLogs","target":"stays","owner":"Modules\\Logs","ticket":null},
 		{"path":"lib/Modules/Logs/Tools/AnalyzeLogs.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\Tools\\AnalyzeLogs","target":"stays","owner":"Modules\\Logs","ticket":null},

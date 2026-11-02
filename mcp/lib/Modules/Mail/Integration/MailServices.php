@@ -4,17 +4,15 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 declare(strict_types=1);
-
 namespace OCA\Mcp\Modules\Mail\Integration;
 use OCA\Mcp\Modules\Mail\MailUnavailableException;
 use OCA\Mcp\Platform\Compat\AppEnablement;
 use OCP\App\IAppManager;
 use OCP\IUserManager;
 use Psr\Container\ContainerInterface;
-
 /**
- * Single place that knows the optional Nextcloud Mail classes by name, so the module compiles and the suite passes
- * with the mail app absent. Only read-side Mail classes are reachable from here: the account service (accounts stored
+ * Resolves optional Nextcloud Mail services by name and delegates native values to focused constructors, so the module compiles
+ * with the mail app absent. The boundary reaches the account service (accounts stored
  * in Nextcloud), the mailbox and message mappers (the folder and message cache of the Mail app), the mail manager
  * (one owned message, its folder, its thread and its body), the IMAP client factory of the Mail app (its own login,
  * cache and rate limit), its IMAP message mapper (one attachment, on a client already checked) and its body-search
@@ -25,54 +23,31 @@ use Psr\Container\ContainerInterface;
 class MailServices {
 	/** App id of Nextcloud Mail. */
 	public const APP_ID = 'mail';
-
 	/** OCA\Mail\Service\AccountService: the accounts of a user, as the Mail app stores them. */
 	private const ACCOUNT_SERVICE_CLASS = 'OCA\\Mail\\Service\\AccountService';
-
 	/** OCA\Mail\Db\MailboxMapper: the folder cache of the Mail app. */
 	private const MAILBOX_MAPPER_CLASS = 'OCA\\Mail\\Db\\MailboxMapper';
-
 	/** OCA\Mail\Db\MessageMapper: the message cache of the Mail app, searched without the preview enhancer. */
 	private const MESSAGE_MAPPER_CLASS = 'OCA\\Mail\\Db\\MessageMapper';
-
 	/** OCA\Mail\Service\MailManager: one owned message, its folder, its thread and its body (behind IMailManager). */
 	private const MAIL_MANAGER_CLASS = 'OCA\\Mail\\Service\\MailManager';
-
 	/** OCA\Mail\IMAP\IMAPClientFactory: the IMAP client of the Mail app, with its own login, cache and rate limit. */
 	private const CLIENT_FACTORY_CLASS = 'OCA\\Mail\\IMAP\\IMAPClientFactory';
-
 	/** OCA\Mail\IMAP\MessageMapper: the IMAP side of the Mail app, used only to read one attachment on a given client. */
 	private const IMAP_MESSAGE_MAPPER_CLASS = 'OCA\\Mail\\IMAP\\MessageMapper';
-
 	/** OCA\Mail\Events\MessageFlaggedEvent: the event the Mail app dispatches after a flag change on the server. */
 	private const FLAG_EVENT_CLASS = 'OCA\\Mail\\Events\\MessageFlaggedEvent';
-
 	/** OCA\Mail\Events\MessageDeletedEvent: the event the Mail app dispatches for the source of a move. */
 	private const DELETE_EVENT_CLASS = 'OCA\\Mail\\Events\\MessageDeletedEvent';
-
 	/** OCA\Mail\Service\MailTransmission: the draft save (the class behind IMailTransmission). */
 	private const TRANSMISSION_CLASS = 'OCA\\Mail\\Service\\MailTransmission';
-
-	/** OCA\Mail\Model\NewMessageData: the message a draft save takes. */
-	private const NEW_MESSAGE_DATA_CLASS = 'OCA\\Mail\\Model\\NewMessageData';
-
 	/** OCA\Mail\Service\OutboxService: the Outbox and the send chain behind the Mail app's own send. */
 	private const OUTBOX_SERVICE_CLASS = 'OCA\\Mail\\Service\\OutboxService';
-
-	/** OCA\Mail\Db\LocalMessage: a message of the Outbox, and its status values. */
-	private const LOCAL_MESSAGE_CLASS = 'OCA\\Mail\\Db\\LocalMessage';
-
-	/** OCA\Mail\AddressList: recipients parsed as the Mail app parses them. */
-	private const ADDRESS_LIST_CLASS = 'OCA\\Mail\\AddressList';
 
 	/** OCA\Mail\IMAP\Search\Provider: the body search of the Mail app, an IMAP SEARCH that changes no flag. */
 	private const SEARCH_PROVIDER_CLASS = 'OCA\\Mail\\IMAP\\Search\\Provider';
 
-	/** OCA\Mail\Service\Search\SearchQuery: the filter value object the Mail mappers take. */
-	private const SEARCH_QUERY_CLASS = 'OCA\\Mail\\Service\\Search\\SearchQuery';
 
-	/** OCA\Mail\Service\Search\Flag: a flag condition of a search query. */
-	private const FLAG_CLASS = 'OCA\\Mail\\Service\\Search\\Flag';
 
 	/** OCA\Mail\Exception\ClientException: what AccountService::find() throws for an account the user does not own. */
 	public const CLIENT_EXCEPTION_CLASS = 'OCA\\Mail\\Exception\\ClientException';
@@ -224,12 +199,7 @@ class MailServices {
 	 * @throws MailUnavailableException when Mail is disabled for the user or a class is not loaded
 	 */
 	public function newMessageData(string $userId, object $account, string $to, string $cc, string $bcc, string $subject, string $body): object {
-		$data = self::NEW_MESSAGE_DATA_CLASS;
-		$list = self::ADDRESS_LIST_CLASS;
-		if (!$this->isEnabledFor($userId) || !class_exists($data) || !class_exists($list)) {
-			throw new MailUnavailableException();
-		}
-		return new $data($account, $list::parse($to), $list::parse($cc), $list::parse($bcc), $subject, $body, [], false);
+		return MailNativeMessages::newMessageData($this->isEnabledFor($userId), $account, $to, $cc, $bcc, $subject, $body);
 	}
 
 	/**
@@ -255,19 +225,7 @@ class MailServices {
 	 * @throws MailUnavailableException when Mail is disabled for the user or the class is not loaded
 	 */
 	public function newOutgoingMessage(string $userId, int $accountId, string $subject, string $body): object {
-		$class = self::LOCAL_MESSAGE_CLASS;
-		if (!$this->isEnabledFor($userId) || !class_exists($class)) {
-			throw new MailUnavailableException();
-		}
-		$message = new $class();
-		$message->setType(constant($class . '::TYPE_OUTGOING'));
-		$message->setAccountId($accountId);
-		$message->setSubject($subject);
-		$message->setBodyPlain($body);
-		$message->setBodyHtml(null);
-		$message->setHtml(false);
-		$message->setSendAt(null);
-		return $message;
+		return MailNativeMessages::newOutgoingMessage($this->isEnabledFor($userId), $accountId, $subject, $body);
 	}
 
 	/**
@@ -279,17 +237,7 @@ class MailServices {
 	 * @throws MailUnavailableException when Mail is disabled for the user or the class is not loaded
 	 */
 	public function localMessageStatuses(string $userId, array $names): array {
-		$class = self::LOCAL_MESSAGE_CLASS;
-		if (!$this->isEnabledFor($userId) || !class_exists($class)) {
-			throw new MailUnavailableException();
-		}
-		$values = [];
-		foreach ($names as $name) {
-			if (defined($class . '::' . $name)) {
-				$values[$name] = (int)constant($class . '::' . $name);
-			}
-		}
-		return $values;
+		return MailNativeMessages::localMessageStatuses($this->isEnabledFor($userId), $names);
 	}
 
 	/**
@@ -311,11 +259,7 @@ class MailServices {
 	 * @throws MailUnavailableException when Mail is disabled for the user or the class is not loaded
 	 */
 	public function newSearchQuery(string $userId): object {
-		$class = self::SEARCH_QUERY_CLASS;
-		if (!$this->isEnabledFor($userId) || !class_exists($class)) {
-			throw new MailUnavailableException();
-		}
-		return new $class();
+		return MailSearchValues::newSearchQuery($this->isEnabledFor($userId));
 	}
 
 	/**
@@ -328,12 +272,7 @@ class MailServices {
 	 * @throws MailUnavailableException when Mail is disabled for the user or the class is not loaded
 	 */
 	public function flag(string $userId, string $constant, bool $isSet): object {
-		$class = self::FLAG_CLASS;
-		if (!$this->isEnabledFor($userId) || !class_exists($class) || !defined($class . '::' . $constant)) {
-			throw new MailUnavailableException();
-		}
-		$value = constant($class . '::' . $constant);
-		return $isSet ? $class::is($value) : $class::not($value);
+		return MailSearchValues::flag($this->isEnabledFor($userId), $constant, $isSet);
 	}
 
 	/**

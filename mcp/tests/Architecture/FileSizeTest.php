@@ -16,7 +16,7 @@ final class FileSizeTest extends ArchitectureCase {
 	}
 	public function testAppSourceHasNoNewOversizedFileOrRaisedCeiling(): void {
 		self::assertCount(27, self::json('size-baseline')['final']);
-		self::assertCount(18, self::json('size-baseline')['transitional']);
+		self::assertCount(17, self::json('size-baseline')['transitional']);
 		self::assertSame([], $this->problems());
 		self::assertSame('lib/OAuth/Storage/OAuthStore.php', self::tree()->present('OCA\\Mcp\\OAuth\\OAuthStore'));
 	}

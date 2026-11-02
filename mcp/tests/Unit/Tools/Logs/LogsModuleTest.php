@@ -10,11 +10,11 @@ namespace OCA\Mcp\Tests\Unit\Tools\Logs;
 use InvalidArgumentException;
 use OCA\Mcp\Access\Logs\LogsAccess;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tools\Logs\LogAudit;
-use OCA\Mcp\Tools\Logs\LogEnvelope;
-use OCA\Mcp\Tools\Logs\LogReader;
-use OCA\Mcp\Tools\Logs\LogScanner;
-use OCA\Mcp\Tools\Logs\LogsModule;
+use OCA\Mcp\Modules\Logs\LogAudit;
+use OCA\Mcp\Modules\Logs\Presentation\LogEnvelope;
+use OCA\Mcp\Modules\Logs\LogsModule;
+use OCA\Mcp\Modules\Logs\Reading\LogReader;
+use OCA\Mcp\Modules\Logs\Reading\LogScanner;
 use OCA\Mcp\Mcp\Tools\RestrictedModule;
 use OCA\Mcp\Mcp\Guide\ToolGuideNotes;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
@@ -83,7 +83,7 @@ final class LogsModuleTest extends TestCase {
 		$access = \OCA\Mcp\Tests\Unit\InMemoryConfig::logsAccess($this, $config, $groups, $mapper, new \OCA\Mcp\Tests\Unit\InMemoryLocks());
 		$guard = new \OCA\Mcp\Access\Visibility\VisibilityGuard($config, $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class));
 		$fileNames = new \OCA\Mcp\Access\Logs\LogFileNames($this->appConfig->worker($this), $guard);
-		return new LogsModule($access, new LogScanner(new LogReader($factory)), new LogAudit($dispatcher, $logger), $config, $fileNames);
+		return LogsTestModule::build($access, new LogScanner(new LogReader($factory)), new LogAudit($dispatcher, $logger), $config, $fileNames);
 	}
 
 	/** @return array{0: string, 1: array<string, mixed>} the text and the structured content of a call */

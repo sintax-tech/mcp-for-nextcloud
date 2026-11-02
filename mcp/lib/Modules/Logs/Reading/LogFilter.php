@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Logs;
+namespace OCA\Mcp\Modules\Logs\Reading;
 
 use InvalidArgumentException;
 
@@ -30,6 +30,16 @@ final class LogFilter {
 	private const ISO_8601 = '/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?)?$/D';
 
 	/**
+	 * Keeps one validated filter set and the filters the answer reports.
+	 *
+	 * @param LogTime $time how the entries write their time
+	 * @param int|null $minLevel minimum level, or null when every level passes
+	 * @param string|null $app exact app, or null when every app passes
+	 * @param string|null $user exact user, or null when every user passes
+	 * @param \DateTimeImmutable|null $since earliest instant, or null when unset
+	 * @param \DateTimeImmutable|null $until latest instant, or null when unset
+	 * @param string|null $contains substring of the message, or null when unset
+	 * @param string|null $reqId exact request id, or null when unset
 	 * @param array<string, int|string> $described the filters as the caller wrote them, in a fixed order
 	 */
 	private function __construct(
@@ -77,7 +87,7 @@ final class LogFilter {
 		return $this->described === [];
 	}
 
-	/** @return array<string, int|string> the filters set, as the caller wrote them, for the answer and the audit */
+	/** @return array<string, int|string> the filters the answer reports */
 	public function describe(): array {
 		return $this->described;
 	}

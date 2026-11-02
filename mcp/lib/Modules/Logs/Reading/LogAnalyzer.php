@@ -5,7 +5,10 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Logs;
+namespace OCA\Mcp\Modules\Logs\Reading;
+
+use OCA\Mcp\Modules\Logs\LogLevels;
+use OCA\Mcp\Modules\Logs\Presentation\LogRedactor;
 
 /**
  * The summary of logs_analyze over the entries of one window that passed the filters: totals by level, app and user,
@@ -26,7 +29,7 @@ final class LogAnalyzer {
 	/** Longest signature, in characters. */
 	public const SIGNATURE_LIMIT = 200;
 	/** Level names, highest first, by the number the core writes. */
-	public const LEVELS = [4 => 'fatal', 3 => 'error', 2 => 'warning', 1 => 'info', 0 => 'debug'];
+	public const LEVELS = LogLevels::NAMES;
 	/**
 	 * Paths that name a file of somebody, under any webroot ("/nextcloud/remote.php/…"); what is kept before the fold:
 	 * - the account of a WebDAV path (files, uploads, trashbin, versions, comments, systemtags-relations);
@@ -165,7 +168,14 @@ final class LogAnalyzer {
 		return mb_substr(preg_replace(['/\d+/', '/#+/'], '#', $path) ?? '', 0, self::SIGNATURE_LIMIT);
 	}
 
-	/** @return string a text field of the entry, redacted; '' when it is missing */
+	/**
+	 * A text field of the entry, redacted, or '' when it is missing.
+	 *
+	 * @param \stdClass $entry one decoded log entry
+	 * @param string $name field read from the entry
+	 * @param int $limit longest result in characters
+	 * @return string the redacted field, or '' when it is missing
+	 */
 	private static function field(\stdClass $entry, string $name, int $limit): string {
 		$value = $entry->{$name} ?? '';
 		// The user agent keeps the versions after a slash, as in logs_list.

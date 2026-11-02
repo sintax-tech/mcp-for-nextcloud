@@ -5,8 +5,9 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Logs;
+namespace OCA\Mcp\Modules\Logs\Reading;
 
+use OCA\Mcp\Modules\Logs\Presentation\LogRedactor;
 use InvalidArgumentException;
 
 /**
@@ -36,6 +37,11 @@ class LogScanner {
 	/** Largest offset a call may start from; at the budget itself nothing is left to read. */
 	public const MAX_OFFSET = self::READ_BUDGET;
 
+	/**
+	 * Reads one window through the module's only reader.
+	 *
+	 * @param LogReader $reader the one reader of the module
+	 */
 	public function __construct(private LogReader $reader) {}
 
 	/**

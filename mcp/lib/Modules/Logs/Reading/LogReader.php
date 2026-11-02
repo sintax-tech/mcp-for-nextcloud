@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Logs;
+namespace OCA\Mcp\Modules\Logs\Reading;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
@@ -20,6 +20,11 @@ use OCP\Log\ILogFactory;
  * each line with json_decode(), so a malformed line comes back as null. The rotated file (nextcloud.log.1) is not read.
  */
 class LogReader {
+	/**
+	 * Reads through the core's file writer.
+	 *
+	 * @param ILogFactory $factory core factory the file writer is taken from
+	 */
 	public function __construct(private ILogFactory $factory) {}
 
 	/**

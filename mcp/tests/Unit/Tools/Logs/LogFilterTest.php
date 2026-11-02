@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Logs;
 
 use InvalidArgumentException;
-use OCA\Mcp\Tools\Logs\LogFilter;
-use OCA\Mcp\Tools\Logs\LogTime;
+use OCA\Mcp\Modules\Logs\Reading\LogFilter;
+use OCA\Mcp\Modules\Logs\Reading\LogTime;
 use PHPUnit\Framework\TestCase;
 
 final class LogFilterTest extends TestCase {

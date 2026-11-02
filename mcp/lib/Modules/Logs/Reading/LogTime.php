@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Logs;
+namespace OCA\Mcp\Modules\Logs\Reading;
 
 /**
  * Reads the `time` of a log entry the way the core wrote it: in the `logdateformat` system setting (ISO 8601 by

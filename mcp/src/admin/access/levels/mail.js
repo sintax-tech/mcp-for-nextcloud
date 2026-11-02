@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * What the Mail operations let the AI do, for the column tooltips of src/admin/admin-grants.js: `read` lists accounts and
+ * What the Mail operations let the AI do, for the column tooltips of src/admin/matrix/labels.js: `read` lists accounts and
  * folders, `messages` (off by default) lists, searches and reads the messages themselves, `attachments` (off by default)
  * reads the text of an attachment, and the Mail writes, off by default: `flags` marks a message read or unread and
  * flagged, `move` moves it to another folder of its account, `draft` saves a new draft, never sent, `send` sends a new message. Granting a Mail write, in the matrix, its popover, a bulk
@@ -59,11 +59,11 @@
 	/*
 	 * The Mail tiers for src/admin/admin-levels.js. Mail only reads at first: its first tier lists accounts and folders,
 	 * its second opens the messages, its third adds the text of attachments, and the next ones add the Mail writes, so
-	 * none of its levels is called Full. src/admin/admin-grants.js translates the names.
+	 * none of its levels is called Full. src/admin/matrix/labels.js translates the names.
 	 */
-	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 	catalog.tiers.mail = [['read'], ['messages'], ['attachments'], ['flags'], ['move'], ['draft'], ['send']]
 	catalog.tierNames.mail = ['folders', 'messages', 'attachments', 'flags', 'move', 'draft', 'send']
 
-	root.McpAdminMailGrants = { WRITE_OPERATIONS, operationHint, writeWarning, confirmWrites }
+	root.OCA.Mcp.Admin.mailGrants = { WRITE_OPERATIONS, operationHint, writeWarning, confirmWrites }
 })(typeof window !== 'undefined' ? window : globalThis)

@@ -35,7 +35,7 @@ final class AdminAssetsTest extends TestCase {
 
 	public function testScriptsAndTemplatesUseNoFrontEndGlobalRemovedUpToNextcloud35(): void {
 		$app = dirname(__DIR__, 3);
-		$files = [...glob($app . '/js/*.js') ?: [], ...glob($app . '/src/*/*.js') ?: [], ...glob($app . '/src/*/*/*/*.js') ?: [], ...glob($app . '/templates/*.php') ?: []];
+		$files = [...glob($app . '/js/*.js') ?: [], ...glob($app . '/src/*/*.js') ?: [], ...glob($app . '/src/*/*/*.js') ?: [], ...glob($app . '/src/*/*/*/*.js') ?: [], ...glob($app . '/templates/*.php') ?: []];
 		$this->assertNotEmpty($files);
 		foreach ($files as $file) {
 			$source = (string)file_get_contents($file);
@@ -52,7 +52,7 @@ final class AdminAssetsTest extends TestCase {
 	public function testErrorsReachTheUserEvenWithoutTheToastGlobal(): void {
 		$app = dirname(__DIR__, 3);
 		foreach (['src/shared/connections', 'src/admin/admin-grants'] as $script) {
-			$source = (string)file_get_contents("$app/$script.js");
+			$source = (string)AdminSources::readPath("$app/$script.js");
 			$this->assertSame(1, preg_match('/function notifyError\(message\) \{(.*?)\n\t\}/s', $source, $body), $script);
 			$this->assertStringContainsString('OCP.Toast.error(message)', $body[1], $script);
 			$this->assertMatchesRegularExpression('/\} else \{/', $body[1], "$script: no unconditional fallback after OCP.Toast");
@@ -70,8 +70,8 @@ final class AdminAssetsTest extends TestCase {
 	 */
 	public function testAdminTemplateHasUniqueIdsAndBalancedDivs(): void {
 		$app = dirname(__DIR__, 3);
-		$template = (string)file_get_contents($app . '/templates/admin.php');
-		$script = (string)file_get_contents($app . '/src/admin/admin-grants.js') . file_get_contents($app . '/src/shared/connections.js') . file_get_contents($app . '/src/admin/admin-tabs.js') . file_get_contents($app . '/src/admin/admin-picker.js') . file_get_contents($app . '/src/admin/admin-groups.js');
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
+		$script = (string)AdminSources::readPath($app . '/src/admin/admin-grants.js') . file_get_contents($app . '/src/shared/connections.js') . file_get_contents($app . '/src/admin/admin-tabs.js') . AdminSources::readPath($app . '/src/admin/admin-picker.js') . AdminSources::readPath($app . '/src/admin/admin-groups.js');
 		preg_match_all("/getElementById\\('([^']+)'\\)/", $script, $used);
 		$this->assertNotEmpty($used[1]);
 		// The personal resource scope (src/settings/my-scope.js) is not in the admin bundle; its ids exist only on the personal page.
@@ -88,7 +88,7 @@ final class AdminAssetsTest extends TestCase {
 	 */
 	public function testOauthClientsSectionIsPlacedAndTranslated(): void {
 		$app = dirname(__DIR__, 3);
-		$template = (string)file_get_contents($app . '/templates/admin.php');
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
 		$start = strpos($template, 'id="mcp-block-oauth"');
 		$end = strpos($template, 'id="mcp-connections"');
 		$this->assertIsInt($start, 'the OAuth clients block');
@@ -101,8 +101,8 @@ final class AdminAssetsTest extends TestCase {
 		$this->assertStringContainsString('data-copy="mcp-native-client-id"', $template);
 		$section = substr($template, $start, $end - $start);
 		preg_match_all("/\\\$l->t\\('([^']+)'\\)/", $section, $fromTemplate);
-		$script = (string)file_get_contents($app . '/src/admin/admin-grants.js');
-		$oauthScript = substr($script, (int)strpos($script, 'async function initOauthClients'));
+		$script = (string)AdminSources::readPath($app . '/src/admin/admin-grants.js');
+		$oauthScript = AdminSources::readGroups(['oauth-clients', 'checkout', 'logs']);
 		preg_match_all("/t\\('mcp', '([^']+)'/", $oauthScript, $fromScript);
 		$strings = array_unique(array_merge($fromTemplate[1], $fromScript[1]));
 		$this->assertGreaterThan(8, count($strings));
@@ -122,7 +122,7 @@ final class AdminAssetsTest extends TestCase {
 	 */
 	public function testAdminPageHasAccessibleTabsMappedToUrlHashes(): void {
 		$app = dirname(__DIR__, 3);
-		$template = (string)file_get_contents($app . '/templates/admin.php');
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
 
 		$this->assertStringContainsString("Util::addScript('mcp', 'mcp-admin')", $template);
 		$this->assertContains('admin/admin-tabs.js', file($app . '/src/admin.manifest', FILE_IGNORE_NEW_LINES));
@@ -172,13 +172,13 @@ final class AdminAssetsTest extends TestCase {
 	/** Ten blocks, each a core settings section with its own heading, in the tab order. */
 	/** The matrix draws "Restricted to N" through src/admin/admin-scope.js and reloads after a scope is saved (B7). */
 	public function testTheMatrixShowsTheResourceScopeOfARestrictedModule(): void {
-		$script = (string)file_get_contents(dirname(__DIR__, 3) . '/src/admin/admin-grants.js');
-		$this->assertStringContainsString("window.McpScopeUi.indicator(user.uid, module, user.scope[module])", $script);
-		$this->assertStringContainsString("window.addEventListener('mcp-scope-saved', reloadLocked)", $script);
+		$script = (string)AdminSources::readPath(dirname(__DIR__, 3) . '/src/admin/admin-grants.js');
+		$this->assertStringContainsString("window.OCA.Mcp.Admin.scope.indicator(user.uid, module, user.scope[module])", $script);
+		$this->assertStringContainsString("window.addEventListener('mcp-scope-saved', context.reloadLocked)", $script);
 	}
 
 	public function testAdminPageHasTenSectionBlocks(): void {
-		$template = (string)file_get_contents(dirname(__DIR__, 3) . '/templates/admin.php');
+		$template = (string)AdminSources::readPath(dirname(__DIR__, 3) . '/templates/admin.php');
 		// A block may be a drawer (S9), whose heading sits in the drawer head next to its close button, or the matrix,
 		// whose bands above the table are compact (S12).
 		preg_match_all('/<div class="section mcp-block(?: mcp-drawer| mcp-matrix-block)?" id="([^"]+)"[^>]*>\s*(?:<div class="mcp-drawer-head">\s*)?<h2(?: id="[a-z-]+" tabindex="-1")?><\?php p\(\$l->t\(\'([^\']+)\'\)\); \?><\/h2>/', $template, $blocks);
@@ -190,15 +190,15 @@ final class AdminAssetsTest extends TestCase {
 	/** The catalog-driven app selector is labelled and does not alter server-side user filters. */
 	public function testMatrixAppFilterIsLabelledAndOnlyFiltersColumns(): void {
 		$app = dirname(__DIR__, 3);
-		$template = (string)file_get_contents($app . '/templates/admin.php');
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
 		$this->assertStringContainsString('<label for="mcp-app">', $template);
 		$this->assertStringContainsString('<select id="mcp-app" disabled>', $template);
-		$script = (string)file_get_contents($app . '/src/admin/admin-grants.js');
-		$this->assertStringContainsString('Object.keys(state.data.catalog)', $script);
+		$script = (string)AdminSources::readPath($app . '/src/admin/admin-grants.js');
+		$this->assertStringContainsString('Object.keys(context.state.data.catalog)', $script);
 		$this->assertStringContainsString('header.dataset.module = module', $script);
 		$this->assertStringContainsString('cell.dataset.module = module', $script);
-		$this->assertStringContainsString("params.set('app', state.app)", $script);
-		$this->assertStringContainsString("new URLSearchParams({ search: state.search, group: state.group, filter: state.filter, page: String(state.page) })", $script);
+		$this->assertStringContainsString("params.set('app', context.state.app)", $script);
+		$this->assertStringContainsString("new URLSearchParams({ search: context.state.search, group: context.state.group, filter: context.state.filter, page: String(context.state.page) })", $script);
 		$this->assertStringContainsString("{ module, operation, granted: null }", $script);
 		$tabs = (string)file_get_contents($app . '/src/admin/admin-tabs.js');
 		$this->assertStringContainsString("const hash = fragment.split('?')[0]", $tabs);
@@ -208,7 +208,7 @@ final class AdminAssetsTest extends TestCase {
 	/** The three permission states are drawn in one place and the bulk actions confirm, report and undo with the same endpoint. */
 	public function testMatrixStatesAndBulkUndoStayInTheExistingEndpoints(): void {
 		$app = dirname(__DIR__, 3);
-		$script = (string)file_get_contents($app . '/src/admin/admin-grants.js');
+		$script = (string)AdminSources::readPath($app . '/src/admin/admin-grants.js');
 		$this->assertStringContainsString('const PERMISSION_STATES = {', $script);
 		foreach (['allowed', 'denied', 'unavailable'] as $state) {
 			$this->assertStringContainsString("$state: { className: 'mcp-state-$state'", $script);
@@ -217,11 +217,11 @@ final class AdminAssetsTest extends TestCase {
 		$this->assertStringContainsString("mark.setAttribute('aria-hidden', 'true')", $script);
 		// None of the three states is told by colour alone: allowed is a checked box, denied an empty box, and an
 		// unavailable cell has no box at all but the ⊘ mark, with the state named in its title and for screen readers.
-		$this->assertStringContainsString("const box = el('input', { type: 'checkbox', checked })", $script);
+		$this->assertStringContainsString("const box = context.el('input', { type: 'checkbox', checked })", $script);
 		$this->assertStringContainsString("paintState(cell, checked ? 'allowed' : 'denied')", $script);
 		$this->assertStringContainsString("cell.title = detail ? PERMISSION_STATES[key].name() + ': ' + detail : PERMISSION_STATES[key].name()", $script);
-		$this->assertStringContainsString("cell.append(mark, el('span', { className: 'mcp-sr-only'", $script);
-		$legend = (string)file_get_contents($app . '/templates/admin.php');
+		$this->assertStringContainsString("cell.append(mark, context.el('span', { className: 'mcp-sr-only'", $script);
+		$legend = (string)AdminSources::readPath($app . '/templates/admin.php');
 		$this->assertStringContainsString('<input type="checkbox" checked disabled aria-hidden="true" tabindex="-1"> <?php p($l->t(\'Allowed\')); ?>', $legend);
 		$this->assertStringContainsString('<input type="checkbox" disabled aria-hidden="true" tabindex="-1"> <?php p($l->t(\'Denied\')); ?>', $legend);
 		$this->assertStringContainsString('<span class="mcp-state-mark" aria-hidden="true">⊘</span> <?php p($l->t(\'Unavailable\')); ?>', $legend);
@@ -236,7 +236,7 @@ final class AdminAssetsTest extends TestCase {
 		$this->assertStringContainsString("return origin.source === 'group' || origin.source === 'unknown' ? 'icon-group' : null", $script);
 		$this->assertStringContainsString("glyph.setAttribute('aria-hidden', 'true')", $script);
 		$this->assertStringContainsString("textContent: unknown ? t('mcp', 'Unknown') : t('mcp', 'Unavailable')", $script);
-		$this->assertStringContainsString("cell.append(mark, ' ', word, el('span', { className: 'mcp-sr-only'", $script);
+		$this->assertStringContainsString("cell.append(mark, ' ', word, context.el('span', { className: 'mcp-sr-only'", $script);
 		$this->assertStringContainsString('<span class="mcp-origin-icon icon-user" aria-hidden="true"></span> <?php p($l->t(\'Exception: differs from what the person inherits\')); ?>', $legend);
 		$this->assertStringContainsString('<span class="mcp-origin-icon icon-group" aria-hidden="true"></span> <?php p($l->t(\'From a group\')); ?>', $legend);
 		// A bulk change is one all-or-nothing command, undone by its server receipt, never by replaying old values.
@@ -253,9 +253,9 @@ final class AdminAssetsTest extends TestCase {
 		$this->assertStringContainsString('function setBulkBusy(on)', $script);
 		$this->assertStringContainsString('if (!bulkBusy && !notice.matches(\':hover\')', $script, 'the undo countdown waits for the lock');
 		$this->assertSame(2, preg_match_all('/setBulkBusy\(true\)\s+try \{/', $script), 'bulk and undo both run under the lock');
-		$this->assertSame(2, preg_match_all('/\} finally \{\s+setBulkBusy\(false\)/', $script), 'the lock is released on failure too');
-		$this->assertStringContainsString('id="mcp-bulk-notice-text" tabindex="-1"', (string)file_get_contents($app . '/templates/admin.php'));
-		$template = (string)file_get_contents($app . '/templates/admin.php');
+		$this->assertSame(2, preg_match_all('/\} finally \{\s+context\.setBulkBusy\(false\)/', $script), 'the lock is released on failure too');
+		$this->assertStringContainsString('id="mcp-bulk-notice-text" tabindex="-1"', (string)AdminSources::readPath($app . '/templates/admin.php'));
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
 		$this->assertGreaterThan(strpos($template, 'class="mcp-matrix-wrap"'), strpos($template, 'class="mcp-legend"'), 'the legend sits under the table');
 		$this->assertGreaterThan(strpos($template, 'class="mcp-matrix-wrap"'), strpos($template, 'id="mcp-bulk-notice"'), 'the notice sits under the table');
 		$this->assertStringContainsString('<option value="eligible" selected>', $template);
@@ -266,7 +266,7 @@ final class AdminAssetsTest extends TestCase {
 		$this->assertStringContainsString("freshCell.querySelector('input')?.focus()", $script);
 		$css = (string)file_get_contents($app . '/css/admin.css');
 		$this->assertDoesNotMatchRegularExpression('/\\.mcp-bulk-notice \\{[^}]*position: sticky/s', $css, 'the undo notice never covers a row');
-		$template = (string)file_get_contents($app . '/templates/admin.php');
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
 		$this->assertStringContainsString('id="mcp-bulk-notice" role="status" aria-live="polite"', $template);
 		$this->assertStringContainsString('id="mcp-bulk-undo" hidden', $template);
 		$css = (string)file_get_contents($app . '/css/admin.css');
@@ -305,13 +305,13 @@ final class AdminAssetsTest extends TestCase {
 	 */
 	public function testCanConnectIsNeverTakenAwayWithoutConfirmation(): void {
 		$app = dirname(__DIR__, 3);
-		$grants = (string)file_get_contents($app . '/src/admin/admin-grants.js');
+		$grants = (string)AdminSources::readPath($app . '/src/admin/admin-grants.js');
 		$this->assertMatchesRegularExpression("/if \(module === null && !value && !window\.confirm\(t\('mcp', 'Turn off “Can connect” for \{user\}\?'.*?\)\) \{\s*box\.checked = true\s*return\s*\}/s", $grants);
 		$this->assertLessThan(strpos($grants, "api('PUT', '/api/grants/' + encodeURIComponent(user.uid)"), strpos($grants, "Turn off “Can connect” for {user}?"), 'asked before the save');
-		$popover = (string)file_get_contents($app . '/src/admin/admin-level-popover.js');
-		$this->assertMatchesRegularExpression("/if \(losesEligibility\(.*?&& !window\.confirm\(.*?\) \{\s*render\(\)\s*return\s*\}/s", $popover);
-		$this->assertLessThan(strpos($popover, "matrix.api('POST', '/api/grants/commands'"), strpos($popover, 'if (losesEligibility('), 'asked before the command');
-		$template = (string)file_get_contents($app . '/templates/admin.php');
+		$popover = (string)AdminSources::readPath($app . '/src/admin/admin-level-popover.js');
+		$this->assertMatchesRegularExpression("/if \(context\.losesEligibility\(.*?&& !window\.confirm\(.*?\) \{\s*context\.render\(\)\s*return\s*\}/s", $popover);
+		$this->assertLessThan(strpos($popover, "matrix.api('POST', '/api/grants/commands'"), strpos($popover, 'if (context.losesEligibility('), 'asked before the command');
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
 		$this->assertStringContainsString('<div id="mcp-level-popover" class="mcp-popover" role="dialog" aria-labelledby="mcp-level-popover-title" hidden></div>', $template);
 	}
 
@@ -321,7 +321,7 @@ final class AdminAssetsTest extends TestCase {
 	 */
 	public function testMatrixRowsCarryOneMenuAndNoRepeatedControls(): void {
 		$app = dirname(__DIR__, 3);
-		$template = (string)file_get_contents($app . '/templates/admin.php');
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
 		foreach (['Compact rows', 'Users need “Can connect”', 'id="mcp-prev"', 'id="mcp-next"', 'id="mcp-page-info"'] as $gone) {
 			$this->assertStringNotContainsString($gone, $template);
 		}
@@ -329,15 +329,15 @@ final class AdminAssetsTest extends TestCase {
 		$this->assertStringContainsString('id="mcp-only-exceptions" aria-pressed="false"', $template);
 		$this->assertStringContainsString('id="mcp-prev-bottom"', $template);
 		$this->assertGreaterThan(strpos($template, 'id="mcp-legend-levels"'), strpos($template, "Reading starts allowed, writing denied. Nextcloud permissions still apply."), 'the short help is in the legend');
-		$overrides = (string)file_get_contents($app . '/src/admin/admin-overrides.js');
+		$overrides = (string)AdminSources::readPath($app . '/src/admin/admin-overrides.js');
 		foreach (['mcp-reset-row', 'mcp-reset-cell', 'mcp-reset-help'] as $gone) {
 			$this->assertStringNotContainsString($gone, $overrides);
 		}
-		$grants = (string)file_get_contents($app . '/src/admin/admin-grants.js');
+		$grants = (string)AdminSources::readPath($app . '/src/admin/admin-grants.js');
 		$this->assertStringNotContainsString('mcp-badge-connected', $grants);
 		$this->assertStringNotContainsString("className: 'mcp-connected'", $grants);
-		$this->assertStringContainsString("row.append(el('td', { className: 'mcp-select-col' }))", $grants);
-		$this->assertStringContainsString('row.append(actionsCell(user))', $grants);
+		$this->assertStringContainsString("row.append(context.el('td', { className: 'mcp-select-col' }))", $grants);
+		$this->assertStringContainsString('row.append(context.actionsCell(user))', $grants);
 		// S6: the "All" menus of the column headers gave way to the selection bar, whose bulk change keeps the explicit
 		// confirmation of 331bdede (who changes, who is left out and why, who already has it) and the receipt undo.
 		$this->assertStringNotContainsString('function bulkMenu(', $grants);
@@ -346,7 +346,7 @@ final class AdminAssetsTest extends TestCase {
 		$this->assertStringContainsString("'%n selected person is left out: this permission is unavailable or unknown for them.'", $grants);
 		$this->assertStringContainsString("'%n selected person already has it.'", $grants);
 		$this->assertStringContainsString("matrix.bulk(moduleChoice.value || null, levelChoice.value, uids)", $overrides);
-		$this->assertStringContainsString('window.McpAdminOverrides?.decorateHeader?.(selectHeader)', $grants);
+		$this->assertStringContainsString('window.OCA.Mcp.Admin.overrides?.decorateHeader?.(selectHeader)', $grants);
 	}
 
 	/**
@@ -402,7 +402,7 @@ final class AdminAssetsTest extends TestCase {
 		foreach (array_diff(array_unique($used[1]), ['mcp-connections-search', 'mcp-count-connections']) as $id) {
 			$this->assertSame(1, substr_count($template, 'id="' . $id . '"'), "id $id must appear exactly once");
 		}
-		$admin = (string)file_get_contents($app . '/templates/admin.php');
+		$admin = (string)AdminSources::readPath($app . '/templates/admin.php');
 		$this->assertSame(1, substr_count($admin, 'id="mcp-count-connections"'), 'the admin Status card the script refreshes');
 		$this->assertStringNotContainsString('mcp-count-connections', $template, 'the personal page has no Status card');
 		$this->assertStringNotContainsString('mcp-connections-search', $template, 'the personal list has no user search');
@@ -427,11 +427,11 @@ final class AdminAssetsTest extends TestCase {
 	/** The checkout limit field repeats the controller's ceiling in its max attribute; the two must not drift apart. */
 	public function testCheckoutLimitFieldMaxMatchesTheController(): void {
 		$app = dirname(__DIR__, 3);
-		$template = (string)file_get_contents($app . '/templates/admin.php');
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
 		$this->assertSame(1, preg_match('/<input[^>]*id="mcp-checkout-limit"[^>]*>/', $template, $input));
 		$this->assertSame(1, preg_match('/\bmax="(\d+)"/', $input[0], $max));
 		$this->assertSame(\OCA\Mcp\Controller\CheckoutLimitController::MAX_MIB, (int)$max[1]);
-		$this->assertStringContainsString('Math.max(1, Math.ceil(data.configuredBytes / 1048576))', (string)file_get_contents($app . '/src/admin/admin-grants.js'));
+		$this->assertStringContainsString('Math.max(1, Math.ceil(data.configuredBytes / 1048576))', (string)AdminSources::readPath($app . '/src/admin/admin-grants.js'));
 	}
 
 	public function testRoutesDropTheOldAdminFormsAndKeepOAuth(): void {
@@ -465,7 +465,7 @@ final class AdminAssetsTest extends TestCase {
 	 * uncertain 503 reloads the saved state instead of repeating the write (contracts §2.3, minimal page change).
 	 */
 	public function testEverySaveCarriesTheRevisionAndAConflictReloadsInsteadOfRetrying(): void {
-		$script = (string)file_get_contents(dirname(__DIR__, 3) . '/src/admin/admin-grants.js');
+		$script = (string)AdminSources::readPath(dirname(__DIR__, 3) . '/src/admin/admin-grants.js');
 		$this->assertDoesNotMatchRegularExpression('/(Number|parseInt|parseFloat|BigInt)\([^)]*[rR]evision/', $script, 'kept as the server\'s string');
 		foreach ([
 			"{ ...payload, expectedRevision: sent }",
@@ -477,9 +477,9 @@ final class AdminAssetsTest extends TestCase {
 			$this->assertStringContainsString($body, $script);
 		}
 		// The revision sent is the one on screen (T14 D1: kept apart only to announce the move the save made).
-		$this->assertSame(3, substr_count($script, 'const sent = state.data.revision'), 'cell, bulk command and service');
+		$this->assertSame(3, substr_count($script, 'const sent = context.state.data.revision'), 'cell, bulk command and service');
 		$this->assertStringContainsString('const sent = logsRevision', $script);
-		$this->assertStringContainsString('const sent = oauthRevision', $script);
+		$this->assertStringContainsString('const sent = context.oauthRevision', $script);
 		$this->assertStringContainsString("if (e.message === '409' || e.message === '428') {", $script);
 		$this->assertStringContainsString("e.message === '503' && e.data && e.data.uncertain", $script);
 	}
@@ -490,12 +490,12 @@ final class AdminAssetsTest extends TestCase {
 	 * with the rendered page or by a matrix save that committed from it; the log block keeps its own.
 	 */
 	public function testTheMatrixRevisionComesOnlyFromTheMatrixOnScreen(): void {
-		$script = (string)file_get_contents(dirname(__DIR__, 3) . '/src/admin/admin-grants.js');
+		$script = (string)AdminSources::readPath(dirname(__DIR__, 3) . '/src/admin/admin-grants.js');
 		$api = substr($script, (int)strpos($script, 'async function api('), 700);
 		$this->assertStringNotContainsString('revision', $api, 'api() never adopts a revision, from success or error');
 		$this->assertDoesNotMatchRegularExpression('/(?<![.\w])revision\s*=/', $script, 'no module-wide revision variable');
 		$this->assertSame(1, preg_match_all('/state\.data = data\b/', $script), 'the page and its revision are set together, once');
-		$this->assertMatchesRegularExpression('/if \(seq !== loadSeq\) \{\s+return\s+\}\s+state\.data = data/', $script, 'an older load is dropped');
+		$this->assertMatchesRegularExpression('/if \(seq !== loadSeq\) \{\s+return\s+\}\s+context\.state\.data = data/', $script, 'an older load is dropped');
 		$this->assertSame(['state.data.revision = updated.revision', 'state.data.revision = result.revision'],
 			array_values(array_unique(preg_match_all('/state\.data\.revision = \w+\.revision/', $script, $m) ? $m[0] : [])),
 			'only a committed matrix save advances it');
@@ -510,25 +510,25 @@ final class AdminAssetsTest extends TestCase {
 	 * on the table on screen only.
 	 */
 	public function testAConflictBlocksMatrixWritesUntilTheReloadedPageIsOnScreen(): void {
-		$script = (string)file_get_contents(dirname(__DIR__, 3) . '/src/admin/admin-grants.js');
-		$this->assertMatchesRegularExpression('/async function reloadLocked\(\) \{\s+matrixLocked = true\s+try \{\s+await load\(\)\s+\} finally \{\s+matrixLocked = false/', $script);
-		$policyError = substr($script, (int)strpos($script, 'async function policyError(e)'), 900);
-		$this->assertStringContainsString('await reloadLocked()', $policyError);
+		$script = (string)AdminSources::readPath(dirname(__DIR__, 3) . '/src/admin/admin-grants.js');
+		$this->assertMatchesRegularExpression('/async function reloadLocked\(\) \{\s+matrixLocked = true\s+try \{\s+await context\.load\(\)\s+\} finally \{\s+matrixLocked = false/', $script);
+		$policyError = AdminSources::operation($script, 'policyError');
+		$this->assertStringContainsString('await context.reloadLocked()', $policyError);
 		$this->assertStringNotContainsString("\t\tload()", $policyError);
-		$this->assertSame(3, substr_count($script, 'await policyError(e)'), 'cell, All menu and service wait for the reload');
-		$undo = substr($script, (int)strpos($script, 'async function undoBulk('), 2000);
-		$this->assertStringContainsString('await reloadLocked()', $undo, 'an undo, refused or not, reloads with writes blocked');
+		$this->assertSame(3, substr_count($script, 'await context.policyError(e)'), 'cell, All menu and service wait for the reload');
+		$undo = AdminSources::operation($script, 'undoBulk');
+		$this->assertStringContainsString('await context.reloadLocked()', $undo, 'an undo, refused or not, reloads with writes blocked');
 		$cell = substr($script, (int)strpos($script, "box.addEventListener('change'"), 600);
-		$this->assertMatchesRegularExpression('/if \(matrixLocked\) \{\s+\/\/[^\n]*\n\s+box\.checked = !value\s+return/', $cell);
+		$this->assertMatchesRegularExpression('/if \(context\.matrixLocked\) \{\s+\/\/[^\n]*\n\s+box\.checked = !value\s+return/', $cell);
 		$service = substr($script, (int)strpos($script, "serviceBox.addEventListener('change'"), 300);
-		$this->assertStringContainsString('if (matrixLocked || state.data === null) {', $service);
+		$this->assertStringContainsString('if (context.matrixLocked || context.state.data === null) {', $service);
 		$bulk = substr($script, (int)strpos($script, 'async function bulk('));
-		$this->assertLessThan(strpos($bulk, 'bulkPlan('), strpos($bulk, 'if (bulkBusy || matrixLocked) {'), 'the plan is made after the lock check');
+		$this->assertLessThan(strpos($bulk, 'bulkPlan('), strpos($bulk, 'if (context.bulkBusy || context.matrixLocked) {'), 'the plan is made after the lock check');
 	}
 
 	public function testTheLogGroupsAreSavedOneAtATimeWithTheListTheyChanged(): void {
 		$app = dirname(__DIR__, 3);
-		$script = (string)file_get_contents($app . '/src/admin/admin-grants.js');
+		$script = (string)AdminSources::readPath($app . '/src/admin/admin-grants.js');
 		$logs = substr($script, (int)strpos($script, 'async function initLogsAccess'));
 		$this->assertStringContainsString('groups: nextIds, previous: previousIds, version: version, expectedRevision: sent', $logs);
 		$this->assertStringContainsString("version = data.version", $logs);
@@ -536,8 +536,8 @@ final class AdminAssetsTest extends TestCase {
 		$this->assertStringContainsString("t('mcp', 'The groups were changed in another window or by another administrator; the current list was loaded.')", $logs);
 		$this->assertStringContainsString("t('mcp', '{group} (group removed)'", $logs);
 		// One save at a time, with the control locked, is the picker's contract.
-		$picker = (string)file_get_contents($app . '/src/admin/admin-picker.js');
-		$this->assertMatchesRegularExpression('/if \(busy \|\| \(fallbackText !== null && !force\)\) \{\s*return/', $picker);
+		$picker = (string)AdminSources::readPath($app . '/src/admin/admin-picker.js');
+		$this->assertMatchesRegularExpression('/if \(context\.busy \|\| \(context\.fallbackText !== null && !force\)\) \{\s*return/', $picker);
 		$this->assertStringContainsString("setAttribute('aria-busy', locked ? 'true' : 'false')", $picker);
 	}
 
@@ -547,13 +547,13 @@ final class AdminAssetsTest extends TestCase {
 	 */
 	public function testLogPrivacyHasItsOwnBlockWithAWiredSwitchAndLearnMore(): void {
 		$app = dirname(__DIR__, 3);
-		$template = (string)file_get_contents($app . '/templates/admin.php');
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
 		$this->assertSame(1, substr_count($template, 'id="mcp-block-logs-privacy"'));
 		$this->assertSame(1, substr_count($template, 'class="checkbox" id="mcp-logs-hide-file-names"'), 'the native Nextcloud checkbox');
 		$this->assertSame(1, preg_match('/<button type="button" class="mcp-learn-more" id="mcp-logs-privacy-more" aria-expanded="false" aria-controls="mcp-logs-privacy-detail" hidden>/', $template));
 		$this->assertSame(1, substr_count($template, 'id="mcp-logs-privacy-detail" class="mcp-learn-more-box"'), 'the detail ships visible for the no-JS page');
 		$this->assertSame(1, substr_count($template, 'class="mcp-picker-summary mcp-hint" id="mcp-logs-summary"'));
-		$script = (string)file_get_contents($app . '/src/admin/admin-grants.js');
+		$script = (string)AdminSources::readPath($app . '/src/admin/admin-grants.js');
 		$this->assertStringContainsString("more.hidden = false", $script);
 		$this->assertStringContainsString("more.setAttribute('aria-expanded', detail.hidden ? 'false' : 'true')", $script);
 	}
@@ -561,15 +561,15 @@ final class AdminAssetsTest extends TestCase {
 	/** The empty-tags repair bypasses only fallback, retaining confirmation, locking and saving. */
 	public function testUnreadableTagsCanBeRepairedWithoutAnySystemTags(): void {
 		$app = dirname(__DIR__, 3);
-		$script = (string)file_get_contents($app . '/src/admin/admin-grants.js');
-		$picker = (string)file_get_contents($app . '/src/admin/admin-picker.js');
+		$script = (string)AdminSources::readPath($app . '/src/admin/admin-grants.js');
+		$picker = (string)AdminSources::readPath($app . '/src/admin/admin-picker.js');
 		$this->assertStringContainsString('await picker.commit({ force: true })', $script);
 		$this->assertStringContainsString('commit({ force = false } = {})', $picker);
-		$this->assertStringContainsString('return commit(new Set(selected), force)', $picker);
-		$this->assertStringContainsString('if (busy || (fallbackText !== null && !force))', $picker);
-		$this->assertMatchesRegularExpression('/if \(spec.confirmSave && !\(await spec.confirmSave\(Array.from\(next\)\)\)\) \{\s*return/', $picker);
+		$this->assertStringContainsString('return context.commit(new Set(context.selected), force)', $picker);
+		$this->assertStringContainsString('if (context.busy || (context.fallbackText !== null && !force))', $picker);
+		$this->assertMatchesRegularExpression('/if \(context.spec.confirmSave && !\(await context.spec.confirmSave\(Array.from\(next\)\)\)\) \{\s*return/', $picker);
 		$this->assertStringContainsString("confirmSave: (nextIds) => nextIds.length > 0", $script);
-		$this->assertStringContainsString("await api('PUT', '/api/admin/tags', { tagIds })", $script);
+		$this->assertStringContainsString("await context.api('PUT', '/api/admin/tags', { tagIds })", $script);
 		$this->assertStringContainsString('setInvalidState(false)', $script);
 	}
 
@@ -578,7 +578,7 @@ final class AdminAssetsTest extends TestCase {
 	 * of its tab, so a block can never leak out of its tab and show on every one.
 	 */
 	public function testEveryBlockLivesInsideItsOwnTabPanel(): void {
-		$template = (string)file_get_contents(dirname(__DIR__, 3) . '/templates/admin.php');
+		$template = (string)AdminSources::readPath(dirname(__DIR__, 3) . '/templates/admin.php');
 		// The panel/block structure is plain HTML; the PHP in the template only echoes texts.
 		$html = preg_replace('/<\?php.*?\?>/s', '', $template);
 		$previous = libxml_use_internal_errors(true);
@@ -617,13 +617,13 @@ final class AdminAssetsTest extends TestCase {
 	 */
 	public function testUnreadableTagsSettingIsSignalledInOverviewAndOnTheTab(): void {
 		$app = dirname(__DIR__, 3);
-		$template = (string)file_get_contents($app . '/templates/admin.php');
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
 		$this->assertSame(1, preg_match('/<div id="mcp-tags-invalid-overview" class="mcp-tags-warning" role="alert" hidden>/', $template), 'the Overview alert starts hidden and is announced when shown');
 		$this->assertSame(1, substr_count($template, '<a href="#protection">'), 'the alert links to the Data protection tab');
 		$this->assertSame(1, substr_count($template, '<span id="mcp-tab-protection-alert" class="mcp-tab-alert" hidden>'), 'the tab marker');
 		// The Overview alert repeats the repair sentence of the protection block.
 		$this->assertSame(2, substr_count($template, "t('The saved exclusion tags setting cannot be read"), 'the same text on both alerts');
-		$script = (string)file_get_contents($app . '/src/admin/admin-grants.js');
+		$script = (string)AdminSources::readPath($app . '/src/admin/admin-grants.js');
 		$this->assertStringContainsString("document.getElementById('mcp-tags-invalid-overview')", $script);
 		$this->assertStringContainsString("document.getElementById('mcp-tab-protection-alert')", $script);
 		$this->assertStringContainsString('overviewAlert.hidden = !isInvalid', $script);

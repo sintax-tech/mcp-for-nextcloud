@@ -5,16 +5,16 @@
 /**
  * The actions of one row of the permission matrix, in a "…" menu at the end of the row, so the row does not repeat a
  * button on every line: inspect the user's access, restrict their resources, give every individual value back to
- * inheritance (the reset preview of src/admin/admin-overrides.js, nothing is removed without it) and copy the user ID.
+ * inheritance (the reset preview of src/admin/overrides/preview.js, nothing is removed without it) and copy the user ID.
  *
  * A menu button with role="menu" items: Enter, Space or the arrow keys open it, the arrow keys move between the items,
- * Escape and Tab close it, and the focus goes back to the button. Plain browser JavaScript, no build step; src/admin/admin-grants.js
+ * Escape and Tab close it, and the focus goes back to the button. Plain browser JavaScript, concatenated by the PHP asset builder; src/admin/matrix/rows.js
  * asks button() for every row it draws, and this file never touches the matrix state.
  */
 (function () {
 	'use strict'
 
-	const matrix = window.McpAdminMatrix
+	const matrix = window.OCA.Mcp.Admin.matrix
 	const menu = document.getElementById('mcp-row-menu')
 	if (!matrix || !menu) {
 		return
@@ -39,19 +39,19 @@
 
 	/** @return {Array<{label: string, run: Function, disabled: boolean}>} the actions of a user, in menu order */
 	function actions(user, trigger) {
-		const overrides = window.McpAdminOverrides
+		const overrides = window.OCA.Mcp.Admin.overrides
 		return [
 			{
 				label: t('mcp', 'Inspect access'),
-				disabled: !window.McpInspectorUi,
+				disabled: !window.OCA.Mcp.Admin.inspector,
 				// The inspector opens as a drawer that takes the focus and gives it back to this button.
-				run: () => window.McpInspectorUi.open(user.uid, trigger),
+				run: () => window.OCA.Mcp.Admin.inspector.open(user.uid, trigger),
 			},
 			{
 				label: t('mcp', 'Restrict resources'),
-				disabled: !window.McpScopeUi,
+				disabled: !window.OCA.Mcp.Admin.scope,
 				// The resource scope opens as a drawer that takes the focus and gives it back to this button.
-				run: () => window.McpScopeUi.open(user.uid, undefined, trigger),
+				run: () => window.OCA.Mcp.Admin.scope.open(user.uid, undefined, trigger),
 			},
 			{
 				label: t('mcp', 'Give everything back to inheritance…'),
@@ -180,5 +180,5 @@
 	// A table drawn again replaces the button the menu belongs to.
 	window.addEventListener('mcp-matrix-rendered', () => close(false))
 
-	window.McpRowActions = { button, open, close }
+	window.OCA.Mcp.Admin.rowActions = { button, open, close }
 })()

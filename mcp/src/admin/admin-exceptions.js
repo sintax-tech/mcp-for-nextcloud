@@ -17,13 +17,13 @@
  * stored value is always an exception. Removing a redundant value changes nothing now, but it changes what happens when
  * the person leaves a group, so it is only ever done through the reset preview, never by itself.
  *
- * Plain browser JavaScript, no build step. src/admin/admin-grants.js asks kindOf() while it draws a level cell, and the access
+ * Plain browser JavaScript, concatenated by the PHP asset builder. src/admin/matrix/level-cells.js asks kindOf() while it draws a level cell, and the access
  * inspector asks classifyPerson() for the person it shows; this file never writes anything.
  */
 (function () {
 	'use strict'
 
-	const matrix = window.McpAdminMatrix
+	const matrix = window.OCA.Mcp.Admin.matrix
 	if (!matrix) {
 		return
 	}
@@ -255,12 +255,12 @@
 	reviewButton?.addEventListener('click', () => {
 		const cells = redundantCells()
 		if (cells.length > 0) {
-			window.McpAdminOverrides?.reviewCells(cells, reviewButton)
+			window.OCA.Mcp.Admin.overrides?.reviewCells(cells, reviewButton)
 		}
 	})
 
 	/**
-	 * How src/admin/admin-grants.js marks an individual value: exception (the person icon), redundant (drawn like what it repeats,
+	 * How src/admin/matrix/level-cells.js marks an individual value: exception (the person icon), redundant (drawn like what it repeats,
 	 * with that origin), or pending (no mark yet).
 	 *
 	 * @param {string} uid user
@@ -291,5 +291,5 @@
 		}, 0))
 	}
 
-	window.McpAdminExceptions = { kindOf, redundantCells, kindOfAnswer, chunks, classifyPerson, status: () => result.status }
+	window.OCA.Mcp.Admin.exceptions = { kindOf, redundantCells, kindOfAnswer, chunks, classifyPerson, status: () => result.status }
 })()

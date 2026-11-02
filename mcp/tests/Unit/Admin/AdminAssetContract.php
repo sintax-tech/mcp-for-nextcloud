@@ -19,7 +19,7 @@ final class AdminAssetContract extends Assert {
 	 */
 	public static function verify(): void {
 		$app = dirname(__DIR__, 3);
-		$template = (string)file_get_contents($app . '/templates/admin.php');
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
 		preg_match_all("/Util::add(Script|Style)\\(\\s*'mcp'\\s*,\\s*'([^']+)'/", $template, $matches, PREG_SET_ORDER);
 		self::assertSame([['Script', 'mcp-admin'], ['Style', 'admin']], array_map(static fn (array $match): array => [$match[1], $match[2]], $matches));
 		// Issue #21: a hosting layer never answered a small deferred script, and the page waited until it timed out.
@@ -72,9 +72,9 @@ final class AdminAssetContract extends Assert {
 			self::assertIsInt($index, "$path is in src/admin.manifest");
 			return $index;
 		};
-		$grants = $at('admin/admin-grants.js');
+		$grants = $at('admin/matrix/start.js');
 		self::assertLessThan($grants, $at('admin/admin-levels.js'));
-		foreach (['admin/admin-level-popover.js', 'admin/admin-exceptions.js', 'admin/admin-row-actions.js'] as $after) {
+		foreach (['admin/level-popover/start.js', 'admin/admin-exceptions.js', 'admin/admin-row-actions.js'] as $after) {
 			self::assertGreaterThan($grants, $at($after), $after);
 		}
 	}

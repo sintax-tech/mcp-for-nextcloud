@@ -8,7 +8,7 @@
  */
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const fs = require('node:fs')
 const path = require('node:path')
 
@@ -499,7 +499,7 @@ test('O1: undoing a 503 without uncertainty keeps the table, offers the same und
 		reloadLocked: async () => { reloads++ },
 		announce: () => {},
 	}
-	vm.runInNewContext(source.slice(start, end) + '\nthis.undoBulk = undoBulk', context)
+	vm.runInNewContext(require('./AdminManifest.cjs').operation('async function undoBulk('), context)
 	await context.undoBulk('receipt-1', '7')
 	assert.equal(reloads, 0)
 	assert.equal(notices.length, 1)
@@ -574,7 +574,7 @@ test('S5: in the operations view only a real exception is outlined; a repeated v
 	assert.ok(!repeated.cell.classes.has('mcp-override-exception'))
 	assert.match(repeated.box.getAttribute('aria-label'), /Individual override: denied — the same as inherited$/)
 	assert.ok(!decorate('pending').cell.classes.has('mcp-override-exception'), 'nothing is outlined before the answer')
-	delete ui.window.McpAdminExceptions
+	delete ui.window.OCA.Mcp.Admin.exceptions
 	const without = new Element('td', ui.document)
 	ui.window.McpAdminOverrides.decorateCell(without, new Element('input', ui.document), alice(), 'notes', 'edit')
 	assert.ok(without.classes.has('mcp-override-exception'), 'without the classification every individual value is outlined')
@@ -861,7 +861,7 @@ test('issue #11 matrix: an unreadable reset response uses real api uncertainty r
 			return { ok: true, status: 200, json: async () => { if (data instanceof Error) throw data; return data } }
 		},
 	}
-	vm.runInNewContext(matrixSource.slice(start, end) + '\nthis.api = api', context)
+	vm.runInNewContext(require('./AdminManifest.cjs').operation('async function api('), context)
 	matrix.api = context.api
 	await ui.rowButton('alice').click()
 	await ui.panelButton('confirm').click()

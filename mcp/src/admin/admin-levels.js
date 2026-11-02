@@ -11,16 +11,16 @@
  * by operation. The tiers follow GrantPolicy::CATALOG; an operation the tiers do not name (a newer catalog) falls into
  * the last tier, so it is never hidden and never granted by a lower level.
  *
- * The level functions are pure, with no DOM and no strings: src/admin/admin-grants.js draws the cells and names the levels.
+ * The level functions are pure, with no DOM and no strings: src/admin/matrix/level-cells.js draws the cells and src/admin/matrix/labels.js names the levels.
  * The tiers of each module live in its own file, src/admin/access/levels/<app>.js, which registers them in
- * window.McpAdminLevelCatalog before this file runs (src/admin.manifest lists them first). Polls has named presets
- * instead of tiers (src/admin/access/levels/polls.js, window.McpAdminPollsGrants) and Mail adds its write warnings
- * (src/admin/access/levels/mail.js, window.McpAdminMailGrants); the other admin scripts read both.
+ * window.OCA.Mcp.Admin.levelCatalog before this file runs (src/admin.manifest lists them first). Polls has named presets
+ * instead of tiers (src/admin/access/levels/polls.js, window.OCA.Mcp.Admin.pollsGrants) and Mail adds its write warnings
+ * (src/admin/access/levels/mail.js, window.OCA.Mcp.Admin.mailGrants); the other admin scripts read both.
  */
 (function (root) {
 	'use strict'
 
-	const catalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	const catalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 
 	/** Cumulative tiers per module, from src/admin/access/levels/<app>.js: [Read, Edit, Full]. Modules with one operation have only Read. */
 	const TIERS = catalog.tiers
@@ -30,7 +30,7 @@
 
 	/**
 	 * Names of the tiers of the modules whose tiers are not Read, Edit and Full, in tier order (Forms and Mail, from
-	 * their files). src/admin/admin-grants.js translates them.
+	 * their files). src/admin/matrix/labels.js translates them.
 	 */
 	const MODULE_TIER_NAMES = catalog.tierNames
 
@@ -53,7 +53,7 @@
 	 * @return {Array<{level: string, operations: string[]}>} one entry per tier, cumulative in this order
 	 */
 	function tiers(module, operations) {
-		if (module === 'polls') return root.McpAdminPollsGrants?.tiers(operations) || []
+		if (module === 'polls') return root.OCA.Mcp.Admin.pollsGrants?.tiers(operations) || []
 		const known = TIERS[module] || [operations.filter((operation) => operation === 'read'), operations.filter((operation) => operation !== 'read')]
 		const listed = known.map((tier) => tier.filter((operation) => operations.includes(operation)))
 		const rest = operations.filter((operation) => !listed.some((tier) => tier.includes(operation)))
@@ -82,7 +82,7 @@
 	 * @return {string[]} the operations that level allows, in catalog order
 	 */
 	function operationsFor(module, operations, level) {
-		if (module === 'polls') return root.McpAdminPollsGrants?.operationsFor(operations, level) || []
+		if (module === 'polls') return root.OCA.Mcp.Admin.pollsGrants?.operationsFor(operations, level) || []
 		const all = tiers(module, operations)
 		const upTo = all.findIndex((tier) => tier.level === level)
 		if (level !== 'none' && upTo < 0) {
@@ -133,5 +133,5 @@
 		return { source: 'default', groupIds: [] }
 	}
 
-	root.McpAdminLevels = { TIERS, MODULE_TIER_NAMES, tierNames, tiers, levels, operationsFor, levelOf, originOf }
+	root.OCA.Mcp.Admin.levels = { TIERS, MODULE_TIER_NAMES, tierNames, tiers, levels, operationsFor, levelOf, originOf }
 })(typeof window !== 'undefined' ? window : globalThis)

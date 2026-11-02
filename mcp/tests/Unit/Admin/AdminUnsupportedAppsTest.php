@@ -35,7 +35,7 @@ final class AdminUnsupportedAppsTest extends TestCase {
 		$urls = $this->createMock(IURLGenerator::class);
 		$urls->method('linkToRouteAbsolute')->willReturn('https://cloud.test/mcp');
 		$connections = $this->createMock(ConnectionList::class);
-		return (new AdminSettings($this->createMock(GrantPolicy::class), $urls, new OcrSupport($apps), $apps, $connections, $this->createMock(\OCA\Mcp\Access\Logs\LogsAccess::class)))->getForm()->getParams();
+		return (new AdminSettings($this->createMock(GrantPolicy::class), $urls, new OcrSupport($apps), $apps, $connections, $this->createMock(\OCA\Mcp\Access\Logs\LogsAccess::class), new \OCA\Mcp\Settings\AdminPanels($this->createMock(\OCP\Template\ITemplateManager::class))))->getForm()->getParams();
 	}
 
 	public function testAnOldTalkIsListedWithItsProductNameAndBothVersions(): void {
@@ -56,7 +56,7 @@ final class AdminUnsupportedAppsTest extends TestCase {
 	}
 
 	public function testTheTemplateShowsTheNoticeInThePermissionsBlock(): void {
-		$template = (string)file_get_contents(dirname(__DIR__, 3) . '/templates/admin.php');
+		$template = (string)AdminSources::readPath(dirname(__DIR__, 3) . '/templates/admin.php');
 		$this->assertStringContainsString("\$_['unsupportedApps']", $template);
 		$this->assertStringContainsString(self::NOTICE, $template);
 		$this->assertLessThan(strpos($template, self::NOTICE), strpos($template, 'id="mcp-block-matrix"'));

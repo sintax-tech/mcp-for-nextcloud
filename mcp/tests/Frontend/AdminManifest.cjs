@@ -36,8 +36,10 @@ class AdminManifest {
 	 */
 	static loadsBefore(first, second) {
 		const fragments = AdminManifest.fragments()
-		const a = fragments.indexOf(first)
-		const b = fragments.indexOf(second)
+		const starts = { 'admin/admin-grants.js':'admin/matrix/start.js', 'admin/admin-overrides.js':'admin/overrides/start.js', 'admin/admin-groups.js':'admin/groups/start.js', 'admin/admin-scope.js':'admin/scope/start.js', 'admin/admin-inspector.js':'admin/inspector/start.js', 'admin/admin-picker.js':'admin/picker/start.js', 'admin/admin-level-popover.js':'admin/level-popover/start.js' }
+		const actual = p => fragments.includes(starts[p]) ? starts[p] : p
+		const a = fragments.indexOf(actual(first))
+		const b = fragments.indexOf(actual(second))
 		return a >= 0 && b >= 0 && a < b
 	}
 
@@ -63,7 +65,7 @@ class AdminManifest {
 	 */
 	static levelsSource() {
 		return AdminManifest.fragments()
-			.filter((fragment) => fragment.startsWith('admin/access/levels/') || fragment === 'admin/admin-levels.js')
+			.filter((fragment) => fragment === 'admin/registration.js' || fragment.startsWith('admin/access/levels/') || fragment === 'admin/admin-levels.js')
 			.map((fragment) => AdminManifest.fragment(fragment))
 			.join(';\n')
 	}
@@ -76,8 +78,54 @@ class AdminManifest {
 	 * @return {string} the source the page runs for it
 	 */
 	static script(name) {
-		return name === 'admin-levels.js' ? AdminManifest.levelsSource() : AdminManifest.fragment('admin/' + name)
+		if (name === 'admin-levels.js') return AdminManifest.levelsSource()
+		const groups = {
+			'admin-grants.js': ['matrix','oauth-clients','protection','checkout','logs'],
+			'admin-overrides.js': ['overrides'],
+			'admin-groups.js': ['groups'],
+			'admin-scope.js': ['scope'],
+			'admin-inspector.js': ['inspector'],
+			'admin-file-write-policy.js': ['file-write-policy','backups'],
+			'admin-picker.js': ['picker'],
+			'admin-level-popover.js': ['level-popover'],
+		}[name]
+		const fragments = AdminManifest.fragments()
+		if (groups && fragments.some(p => p.startsWith('admin/' + groups[0] + '/'))) {
+			return fragments.filter(p => groups.some(group => p.startsWith('admin/' + group + '/')))
+				.map(p => AdminManifest.fragment(p)).join(';\n')
+		}
+		return AdminManifest.fragment('admin/' + name)
 	}
+
+	/**
+	 * Load an actual registered unit and expose one declared operation to the existing fixture.
+	 * Other operations of that unit remain the fixture dependencies when the case supplies them.
+	 * @param {string} declaration original function or constant name
+	 * @return {string} executable unit and fixture binding
+	 */
+	static operation(declaration) {
+		const name = declaration.match(/(?:function|const) (\w+)/)?.[1]
+		const entry = AdminManifest.fragments().find(p => {
+			if (!['matrix','oauth-clients','protection','checkout','logs'].some(group => p.startsWith('admin/' + group + '/'))) return false
+			return new RegExp('(?:function|const) ' + name + '(?:\\(| )').test(AdminManifest.fragment(p))
+		})
+		if (!entry) throw Error('Missing declared operation: ' + declaration)
+		const source = AdminManifest.fragment(entry)
+		const dependencies = entry.startsWith('admin/oauth-clients/') ? AdminManifest.fragments().filter(p => p.startsWith('admin/oauth-clients/') && p !== entry).map(p => AdminManifest.fragment(p)).join(';\n') + ';\n' : ''
+		const address = [entry.split('/')[1], path.basename(entry, '.js')].map(part => part.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())).join('.')
+		const operations = [...source.matchAll(/^\t\t(?:async )?function (\w+)\(/gm)].map(m => m[1])
+		return ';\n' + AdminManifest.fragment('admin/registration.js') + ';\n' + dependencies + source + `;\n(function () {
+			const target = globalThis
+			const before = Object.getOwnPropertyDescriptors(target)
+			;(globalThis.window || globalThis).OCA.Mcp.Admin.modules.${address}(target)
+			for (const key of ${JSON.stringify(operations)}) {
+				if (key === ${JSON.stringify(name)}) continue
+				if (before[key]) Object.defineProperty(target, key, before[key])
+				else delete target[key]
+			}
+		})();\n`
+	}
+
 }
 
 module.exports = AdminManifest

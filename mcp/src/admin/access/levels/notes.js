@@ -4,11 +4,11 @@
  */
 /**
  * Access levels of Notes: Read, then Edit adds creating, editing and moving, then Full adds deleting.
- * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ * Registered in window.OCA.Mcp.Admin.levelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
  */
 (function (root) {
 	'use strict'
 
-	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 	catalog.tiers.notes = [['read'], ['create', 'edit', 'move'], ['delete']]
 })(typeof window !== 'undefined' ? window : globalThis)

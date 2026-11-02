@@ -11,7 +11,7 @@
  * lives in the URL hash, so a reload, the history back/forward buttons and a copied link reopen the
  * same tab; an unknown hash opens the first tab. Without JavaScript the panels carry no `hidden`
  * attribute and stay visible, and the tab bar stays display:none — the page degrades to the old
- * single-page layout. Plain browser JavaScript, no build step.
+ * single-page layout. Plain browser JavaScript, concatenated by the PHP asset builder.
  */
 (function () {
 	'use strict'

@@ -10,7 +10,7 @@
  */
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const fs = require('node:fs')
 const path = require('node:path')
 
@@ -18,9 +18,7 @@ const root = path.join(__dirname, '../..')
 const source = require('./AdminManifest.cjs').script('admin-grants.js')
 
 function cut(declaration) {
-	const start = source.indexOf('\t' + declaration)
-	assert.ok(start > 0, declaration + ' was found in src/admin/admin-grants.js')
-	return source.slice(start, source.indexOf('\n\t}\n', start) + 4)
+	return require('./AdminManifest.cjs').operation(declaration)
 }
 
 /**
@@ -89,7 +87,7 @@ test('a control wider than the room left keeps its start in view', () => {
 })
 
 test('the matrix block listens for the focus', () => {
-	assert.match(source, /table\.parentElement\?\.addEventListener\('focusin', revealFocus\)/)
+	assert.match(source, /table\.parentElement\?\.addEventListener\('focusin', context.revealFocus\)/)
 })
 
 test('right to left, the start columns are on the right: a cell under them is scrolled out to the left', () => {

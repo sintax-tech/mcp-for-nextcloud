@@ -13,7 +13,7 @@
  */
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const fs = require('node:fs')
 const path = require('node:path')
 
@@ -58,12 +58,8 @@ class Element {
 }
 
 const source = require('./AdminManifest.cjs').script('admin-grants.js')
-const start = source.indexOf('\tasync function initOauthClients() {')
-const block = source.slice(start, source.indexOf('\n\t}\n', start) + 4)
-assert.ok(start > 0 && block.length > 500, 'the OAuth clients block was found in src/admin/admin-grants.js')
-const helpersStart = source.indexOf('\t/** Page event of a write this page committed')
-const helpers = source.slice(helpersStart, source.indexOf('\t/**\n\t * @param {HTMLElement} cell cell that shows the save result', helpersStart))
-assert.ok(helpersStart > 0 && helpers.includes('function followRevision('), 'the revision helpers were found in src/admin/admin-grants.js')
+const block = require('./AdminManifest.cjs').operation('async function initOauthClients(')
+const helpers = ['announce', 'oneStep', 'phpTrim', 'followRevision'].map(name => require('./AdminManifest.cjs').operation('function ' + name + '(')).join('\n')
 
 const REDIRECT = 'https://harness.example.com/oauth/callback'
 const client = (id, name, enabled = true) => ({ id, clientId: 'nextcloud-mcp-custom-' + id, name, enabled, redirectUris: [REDIRECT] })

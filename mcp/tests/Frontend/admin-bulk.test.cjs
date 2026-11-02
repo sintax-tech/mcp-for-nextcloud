@@ -11,7 +11,7 @@
  */
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const fs = require('node:fs')
 const path = require('node:path')
 
@@ -22,9 +22,7 @@ const plain = (value) => JSON.parse(JSON.stringify(value))
 const REVISION = '9007199254740993'
 
 function cut(declaration) {
-	const start = source.indexOf('\t' + declaration)
-	assert.ok(start > 0, declaration + ' was found in src/admin/admin-grants.js')
-	return source.slice(start, source.indexOf('\n\t}\n', start) + 4)
+	return require('./AdminManifest.cjs').operation(declaration)
 }
 
 const files = ['read', 'edit', 'create', 'move', 'restore', 'share', 'link']

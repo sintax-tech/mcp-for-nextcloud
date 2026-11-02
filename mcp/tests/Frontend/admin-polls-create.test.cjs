@@ -5,7 +5,7 @@
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
 const fs = require('node:fs')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const path = require('node:path')
 const Context = require('./PollsCreateContext.cjs')
 /** Exercises the real named preset policy and its existing consumers, never writing a stored policy. */
@@ -28,12 +28,12 @@ test('Polls creation is an explicit independent preset, protected reads do not a
 	assert.equal(levels.levelOf('polls', ops, { read: true, create: true, results: false, links: false }), 'polls_read_create')
 })
 test('the actual admin loads the presets with the levels, before the grants, and all four consumers use the helper', () => {
-	const template = fs.readFileSync(path.join(__dirname, '../../templates/admin.php'), 'utf8')
+	const template = require('./AdminTemplates.cjs').read(path.join(__dirname, '../../templates/admin.php'), 'utf8')
 	assert.equal(template.indexOf("'admin-polls-grants'"), -1)
 	assert.ok(require('./AdminManifest.cjs').loadsBefore('admin/admin-levels.js', 'admin/admin-grants.js'))
 	for (const name of ['admin-grants.js','admin-groups.js','admin-inspector.js','admin-level-popover.js']) {
 		const source = require('./AdminManifest.cjs').script(name)
-		assert.match(source, /McpAdminPollsGrants/)
+		assert.match(source, /pollsGrants/)
 	}
 	const helper = Context.load().McpAdminPollsGrants
 	assert.match(helper.operationHint('polls', 'create'), /starts off/)
@@ -53,7 +53,7 @@ test('real inspector DOM retains create as an independent custom combination wit
 test('missing Polls helper offers no preset and cannot grant an accumulated fallback', () => {
 	const root = { t: (_, text) => text }
 	vm.runInNewContext(require('./AdminManifest.cjs').levelsSource(), root)
-	delete root.McpAdminPollsGrants
+	delete root.OCA.Mcp.Admin.pollsGrants
 	const levels = root.McpAdminLevels
 	const operations = ['read', 'results', 'links', 'create']
 	assert.deepEqual([...levels.levels('polls', operations)], ['none'])
@@ -84,9 +84,9 @@ test('partial creation message is translated consistently and differs from uncer
 	const partial = 'Poll creation stopped after partial progress. Confirmed items are shown only while authorized. No automatic retry or rollback. Check Polls before repeating.'
 	const uncertain = 'Poll creation is uncertain; do not repeat automatically. Check Polls before trying again.'
 	for (const lang of ['pt_BR', 'es', 'de']) {
-		const json = JSON.parse(fs.readFileSync(path.join(__dirname, '../../l10n', lang + '.json'), 'utf8')).translations
+		const json = JSON.parse(require('./AdminTemplates.cjs').read(path.join(__dirname, '../../l10n', lang + '.json'), 'utf8')).translations
 		let js
-		vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../l10n', lang + '.js'), 'utf8'), { OC: { L10N: { register: (_, map) => { js = map } } } })
+		vm.runInNewContext(require('./AdminTemplates.cjs').read(path.join(__dirname, '../../l10n', lang + '.js'), 'utf8'), { OC: { L10N: { register: (_, map) => { js = map } } } })
 		assert.ok(json[partial], lang)
 		assert.equal(js[partial], json[partial], lang)
 		assert.notEqual(json[partial], partial, lang)

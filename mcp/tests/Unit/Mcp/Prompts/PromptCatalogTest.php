@@ -162,7 +162,7 @@ final class PromptCatalogTest extends TestCase {
 	public function testTheCreateGrantIsDescribedAsNewFilesToo(): void {
 		$policy = (string)file_get_contents(dirname(__DIR__, 4) . '/lib/Access/Grants/GrantCatalog.php');
 		$this->assertStringContainsString("'create' adds a folder, a copy or a new file", $policy);
-		$admin = (string)file_get_contents(dirname(__DIR__, 4) . '/src/admin/admin-grants.js');
+		$admin = (string)\OCA\Mcp\Tests\Unit\Admin\AdminSources::readPath(dirname(__DIR__, 4) . '/src/admin/admin-grants.js');
 		$this->assertStringContainsString("t('mcp', 'Create folders, copies and new files')", $admin);
 	}
 

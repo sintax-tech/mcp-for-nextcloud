@@ -5,7 +5,7 @@
 /** Behavioral tests of src/admin/admin-scope.js and src/settings/my-scope.js (issue #4, B7: S13 display, S14), with Node's test runner and a minimal DOM. */
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const fs = require('node:fs')
 const path = require('node:path')
 

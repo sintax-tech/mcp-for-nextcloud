@@ -5,7 +5,7 @@
 /** Behavioral tests of the shipped script, using only Node's built-in test runner and a minimal DOM. */
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const fs = require('node:fs')
 const path = require('node:path')
 
@@ -47,7 +47,7 @@ const stored = (extra = {}) => ({
 async function app(handler, group = stored()) {
 	const document = { activeElement: null }
 	const ids = Object.fromEntries(['editor', 'search', 'count', 'list', 'detail', 'status', 'alert', 'prev', 'next', 'picker', 'filter-all', 'filter-granted', 'filter-blocked'].map((id) => ['mcp-group-' + id, new Element('div', document)]))
-	const template = fs.readFileSync(path.join(__dirname, '../../templates/admin.php'), 'utf8')
+	const template = require('./AdminTemplates.cjs').read(path.join(__dirname, '../../templates/admin.php'), 'utf8')
 	for (const id of ['status', 'alert']) {
 		const markup = template.match(new RegExp('<p id="mcp-group-' + id + '"[^>]+>'))[0]
 		for (const name of ['role', 'aria-live']) ids['mcp-group-' + id].attributes[name] = markup.match(new RegExp(name + '="([^"]+)"'))[1]
@@ -192,9 +192,7 @@ function matrixFunctions() {
 		state: { data: { users: [] } },
 	}
 	for (const name of ['rowUnavailableReason', 'unavailableReason', 'permissionCell', 'bulkPlan']) {
-		const start = source.indexOf('\tfunction ' + name + '(')
-		const end = source.indexOf('\n\t}', start) + 3
-		vm.runInNewContext(source.slice(start, end), context)
+		vm.runInNewContext(require('./AdminManifest.cjs').operation('function ' + name + '('), context)
 	}
 	return context
 }
@@ -520,7 +518,7 @@ test('S8: one sentence tells who wins over the group, unknown stays apart from z
 	assert.equal(none.button('View in the matrix'), undefined)
 })
 test('S8: "Not granted" pressed stays neutral, and only focus and selection take the theme colour', () => {
-	const css = fs.readFileSync(path.join(__dirname, '../../css/admin.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
+	const css = require('./AdminTemplates.cjs').read(path.join(__dirname, '../../css/admin.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
 	const rule = (selector) => [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter(([, sel]) => sel.includes(selector))
 	const none = rule('.mcp-group-level-none[aria-pressed="true"]')
 	assert.ok(none.length > 0)

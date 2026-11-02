@@ -96,6 +96,8 @@
 		{"path":"lib/OAuth/Storage/TokenLifetime.php","fqcn":"OCA\\Mcp\\OAuth\\Storage\\TokenLifetime","target":"stays","owner":"OAuth","ticket":null},
 		{"path":"lib/Modules/Calendar/Presentation/CalendarSchema.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Presentation\\CalendarSchema","target":"stays","owner":"Modules\\Calendar","ticket":null},
 		{"path":"lib/Modules/Calendar/NativeCalendarsAdapter.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\NativeCalendarsAdapter","target":"stays","owner":"Modules\\Calendar","ticket":null},
+		{"path":"lib/Modules/Contacts/Accounts/AccountEntry.php","fqcn":"OCA\\Mcp\\Modules\\Contacts\\Accounts\\AccountEntry","target":"stays","owner":"Modules\\Contacts","ticket":null},
+		{"path":"lib/Modules/Contacts/Accounts/AccountVisibility.php","fqcn":"OCA\\Mcp\\Modules\\Contacts\\Accounts\\AccountVisibility","target":"stays","owner":"Modules\\Contacts","ticket":null},
 		{"path":"lib/Mcp/Tools/Schema/SchemaBuilder.php","fqcn":"OCA\\Mcp\\Mcp\\Tools\\Schema\\SchemaBuilder","target":"stays","owner":"Mcp","ticket":null},
 		{"path":"lib/Access/ResourceScope/NativeCalendars.php","fqcn":"OCA\\Mcp\\Access\\ResourceScope\\NativeCalendars","target":"stays","owner":"Access","ticket":null},
 		{"path":"lib/Access/ResourceScope/NativeCalendar.php","fqcn":"OCA\\Mcp\\Access\\ResourceScope\\NativeCalendar","target":"stays","owner":"Access","ticket":null},

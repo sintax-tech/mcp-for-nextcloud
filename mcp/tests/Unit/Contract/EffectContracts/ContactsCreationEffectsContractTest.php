@@ -14,12 +14,12 @@ use OCA\Mcp\Tests\Unit\Contract\Oracle\FlowRunner;
 use OCA\Mcp\Tests\Unit\Service\BackupDocumentFixture;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Tests\Unit\Tools\Tasks\IneffectiveLocks;
+use OCA\Mcp\Tests\Unit\Tools\Contacts\ContactsTestModule;
 use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
 use OCA\Mcp\Modules\Contacts\Locating\ContactAccess;
 use OCA\Mcp\Modules\Contacts\Backup\ContactBackup;
 use OCA\Mcp\Modules\Contacts\Cards\ContactCard;
 use OCA\Mcp\Modules\Contacts\ContactsModule;
-use OCA\Mcp\Modules\Contacts\Accounts\SystemContacts;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Contacts\IManager;
@@ -53,7 +53,7 @@ final class ContactsCreationEffectsContractTest extends TestCase {
 			new SharedGuard($users),
 			new ContactBackup($this->createMock(IRootFolder::class), $this->createMock(ITimeFactory::class), $this->gate->config(),
 				new IneffectiveLocks(), $location),
-			new SystemContacts($catalog, $this->createMock(IAppConfig::class), $this->createMock(IGroupManager::class), $users), new PlanState($this->gate->config()));
+			ContactsTestModule::system($catalog, $this->createMock(IAppConfig::class), $this->createMock(IGroupManager::class), $users), new PlanState($this->gate->config()));
 	}
 
 	/** @return void strict confirmation, changed fields, real creation, no grant and Guest refusals */

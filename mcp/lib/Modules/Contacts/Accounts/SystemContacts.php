@@ -9,10 +9,6 @@ namespace OCA\Mcp\Modules\Contacts\Accounts;
 
 use OCP\Contacts\IManager;
 use OCP\IAddressBook;
-use OCP\IAppConfig;
-use OCP\IGroupManager;
-use OCP\IUser;
-use OCP\IUserManager;
 
 /**
  * Read-only view of the system address book ("Accounts") through the official OCP contacts API.
@@ -20,8 +16,8 @@ use OCP\IUserManager;
  * Source of the enumeration rule (Nextcloud 33.0.2): {@see IManager::search()} only turns the admin settings into
  * matching behaviour (`enumeration` off means exact matches, no `enumeration` and no `fullmatch` skips the
  * catalog). The group and phone restrictions are NOT applied by the manager: the core applies them in the sharee
- * plugins and in the DAV system address book, so this class applies the same rule from the same `core` settings.
- * Only a fixed set of public fields leaves this class, and the catalog is never listed without a search term.
+ * plugins and in the DAV system address book, so {@see AccountVisibility} applies the same rule from the same `core`
+ * settings. Only the fields of {@see AccountEntry} leave this class, and the catalog is never listed without a search term.
  */
 class SystemContacts {
 	/** Shortest search term that reaches the catalog. */
@@ -30,23 +26,18 @@ class SystemContacts {
 	/** Most rows asked from the manager for one search. */
 	public const CAP = 200;
 
-	/** Backend class name of guest accounts, which are never shown in the catalog. */
-	private const GUESTS = 'Guests';
-
 	/**
-	 * Receives the core services that expose the catalog and the admin settings.
+	 * Receives the core service that exposes the catalog, the admin settings and the public entry.
 	 *
 	 * @param IManager $contacts official contacts manager holding the registered address books
-	 * @param IAppConfig $config reads the admin sharing settings of the core app
-	 * @param IGroupManager $groups group membership used by the group restriction
-	 * @param IUserManager $users resolves the account behind each catalog entry
+	 * @param AccountVisibility $visibility the admin enumeration settings and restrictions
+	 * @param AccountEntry $entries the public entry of one catalog row
 	 * @return void
 	 */
 	public function __construct(
 		private IManager $contacts,
-		private IAppConfig $config,
-		private IGroupManager $groups,
-		private IUserManager $users,
+		private AccountVisibility $visibility,
+		private AccountEntry $entries,
 	) {}
 
 	/**
@@ -57,7 +48,7 @@ class SystemContacts {
 	 */
 	public function bookName(string $userId): ?string {
 		$book = $this->book();
-		if ($book === null || !$this->enumeration() && !$this->fullMatch()) {
+		if ($book === null || !$this->visibility->enumeration() && !$this->visibility->fullMatch()) {
 			return null;
 		}
 		return (string) $book->getDisplayName();
@@ -76,15 +67,15 @@ class SystemContacts {
 		if ($name === null || mb_strlen($query) < self::MIN_QUERY) {
 			return [];
 		}
-		$enumeration = $this->enumeration();
+		$enumeration = $this->visibility->enumeration();
 		$properties = ['FN', 'EMAIL', 'NICKNAME', 'ORG'];
 		if (!$enumeration) {
 			// Core allows exact matches on the display name, the user ID and the e-mail, each by its own setting.
 			$properties = ['FN'];
-			if ($this->flag('shareapi_restrict_user_enumeration_full_match_email', true)) {
+			if ($this->visibility->flag('shareapi_restrict_user_enumeration_full_match_email', true)) {
 				$properties[] = 'EMAIL';
 			}
-			if ($this->flag('shareapi_restrict_user_enumeration_full_match_userid', true)) {
+			if ($this->visibility->flag('shareapi_restrict_user_enumeration_full_match_userid', true)) {
 				$properties[] = 'UID';
 			}
 		}
@@ -93,15 +84,15 @@ class SystemContacts {
 			$properties,
 			[
 				'enumeration' => $enumeration,
-				'fullmatch' => $this->fullMatch(),
+				'fullmatch' => $this->visibility->fullMatch(),
 				'strict_search' => !$enumeration,
 				'limit' => self::CAP,
 			]
 		);
 		$items = [];
 		foreach ($this->fromSystemBook($rows) as $row) {
-			$item = $this->item($userId, $name, $row);
-			if ($item !== null && $this->visible($userId, $item['accountId'])) {
+			$item = $this->entries->item($userId, $name, $row);
+			if ($item !== null && $this->visibility->visible($userId, $item['accountId'])) {
 				$items[$item['accountId']] = $item;
 			}
 		}
@@ -130,8 +121,8 @@ class SystemContacts {
 		if ($name === null || $name === '') {
 			return null;
 		}
-		$enumeration = $this->enumeration();
-		if (!$own && !$enumeration && !$this->flag('shareapi_restrict_user_enumeration_full_match_userid', true)) {
+		$enumeration = $this->visibility->enumeration();
+		if (!$own && !$enumeration && !$this->visibility->flag('shareapi_restrict_user_enumeration_full_match_userid', true)) {
 			return null;
 		}
 		$rows = $this->contacts->search(
@@ -139,14 +130,14 @@ class SystemContacts {
 			['UID'],
 			[
 				'enumeration' => $own ? true : $enumeration,
-				'fullmatch' => $own ? true : $this->fullMatch(),
+				'fullmatch' => $own ? true : $this->visibility->fullMatch(),
 				'strict_search' => true,
 				'limit' => self::CAP,
 			]
 		);
 		foreach ($this->fromSystemBook($rows) as $row) {
-			$item = $this->item($userId, $name, $row);
-			if ($item !== null && $item['uri'] === $uri && $item['accountId'] === $uid && $this->visible($userId, $uid)) {
+			$item = $this->entries->item($userId, $name, $row);
+			if ($item !== null && $item['uri'] === $uri && $item['accountId'] === $uid && $this->visibility->visible($userId, $uid)) {
 				return $item;
 			}
 		}
@@ -174,82 +165,6 @@ class SystemContacts {
 		);
 	}
 
-	/**
-	 * Converts a manager row into the public entry; every field is an explicit copy, nothing else leaves.
-	 *
-	 * @param string $userId authenticated user UID
-	 * @param string $bookName display name of the catalog
-	 * @param array<string, mixed> $row raw manager row
-	 * @return array<string, mixed>|null null for guests, unusable rows and accounts that no longer exist or are disabled
-	 */
-	private function item(string $userId, string $bookName, array $row): ?array {
-		$uid = isset($row['UID']) && is_string($row['UID']) ? $row['UID'] : '';
-		$uri = isset($row['URI']) && is_string($row['URI']) ? $row['URI'] : '';
-		if ($uid === '' || $uri === '' || str_starts_with($uri, self::GUESTS . ':')) {
-			return null;
-		}
-		$account = $this->users->get($uid);
-		if ($account === null || !$account->isEnabled() || $account->getBackendClassName() === self::GUESTS) {
-			return null;
-		}
-		$organization = $this->text($row['ORG'] ?? '');
-		return [
-			'uid' => $uid,
-			'accountId' => $uid,
-			'name' => $this->text($row['FN'] ?? ''),
-			'organization' => explode(';', $organization)[0],
-			'title' => $this->text($row['TITLE'] ?? ''),
-			'nickname' => $this->text($row['NICKNAME'] ?? ''),
-			'emails' => $this->emails($row['EMAIL'] ?? []),
-			'uri' => $uri,
-			'addressbook' => \OCA\Mcp\Modules\Contacts\Locating\ContactAccess::systemPath($userId),
-			'addressBook' => ['name' => $bookName, 'system' => true],
-			'readOnly' => true,
-		];
-	}
-
-	/**
-	 * Applies the admin group and phone restrictions, which the manager leaves to its callers.
-	 *
-	 * @param string $userId authenticated user UID
-	 * @param string $accountId UID of the account behind a catalog entry
-	 * @return bool whether the user may see that account
-	 */
-	private function visible(string $userId, string $accountId): bool {
-		if ($accountId === $userId) {
-			return true;
-		}
-		$viewer = $this->users->get($userId);
-		if ($viewer === null || $viewer->getBackendClassName() === self::GUESTS) {
-			return false;
-		}
-		if (!$this->enumeration()) {
-			// Only exact full matches reach this point; the core allows them regardless of groups.
-			return true;
-		}
-		if ($this->flag('shareapi_restrict_user_enumeration_to_group', false)) {
-			return $this->sharesGroup($viewer, $accountId);
-		}
-		// Phone-book enumeration relies on a core service that is not public API: show only the user itself.
-		return !$this->flag('shareapi_restrict_user_enumeration_to_phone', false);
-	}
-
-	/**
-	 * Whether the account belongs to at least one group of the viewer.
-	 *
-	 * @param IUser $viewer authenticated user
-	 * @param string $accountId UID of the other account
-	 * @return bool
-	 */
-	private function sharesGroup(IUser $viewer, string $accountId): bool {
-		foreach ($this->groups->getUserGroupIds($viewer) as $groupId) {
-			if ($this->groups->isInGroup($accountId, $groupId)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	/** @return IAddressBook|null the registered system address book */
 	private function book(): ?IAddressBook {
 		foreach ($this->contacts->getUserAddressBooks() as $book) {
@@ -258,55 +173,5 @@ class SystemContacts {
 			}
 		}
 		return null;
-	}
-
-	/** @return bool whether the admin allows user name autocompletion (enumeration) */
-	private function enumeration(): bool {
-		return $this->flag('shareapi_allow_share_dialog_user_enumeration', true);
-	}
-
-	/** @return bool whether the admin allows exact matches while enumeration is off */
-	private function fullMatch(): bool {
-		return $this->flag('shareapi_restrict_user_enumeration_full_match', true);
-	}
-
-	/**
-	 * Reads a core yes/no setting the way the core does.
-	 *
-	 * @param string $key setting key of the core app
-	 * @param bool $default value when the admin never changed it
-	 * @return bool
-	 */
-	private function flag(string $key, bool $default): bool {
-		return $this->config->getValueString('core', $key, $default ? 'yes' : 'no') === 'yes';
-	}
-
-	/**
-	 * @param mixed $value raw property value, a string or a list
-	 * @return string first string value, empty when none
-	 */
-	private function text(mixed $value): string {
-		if (is_array($value)) {
-			$value = $value[0] ?? '';
-			if (is_array($value)) {
-				$value = $value['value'] ?? '';
-			}
-		}
-		return is_string($value) ? $value : '';
-	}
-
-	/**
-	 * @param mixed $value EMAIL property, a string, a list of strings or a list of typed values
-	 * @return list<string>
-	 */
-	private function emails(mixed $value): array {
-		$emails = [];
-		foreach (is_array($value) ? $value : [$value] as $entry) {
-			$email = is_array($entry) ? ($entry['value'] ?? '') : $entry;
-			if (is_string($email) && $email !== '') {
-				$emails[] = $email;
-			}
-		}
-		return $emails;
 	}
 }

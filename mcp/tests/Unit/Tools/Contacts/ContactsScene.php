@@ -9,7 +9,6 @@ namespace OCA\Mcp\Tests\Unit\Tools\Contacts;
 
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
-use OCA\Mcp\Modules\Contacts\Accounts\SystemContacts;
 use OCA\Mcp\Modules\Contacts\Backup\ContactBackup;
 use OCA\Mcp\Modules\Contacts\Cards\ContactCard;
 use OCA\Mcp\Modules\Contacts\ContactsModule;
@@ -97,7 +96,7 @@ final class ContactsScene {
 		$secret->system['secret'] = 'characterization';
 		return new ContactsModule(new ContactAccess($this->contacts), $this->contacts, $this->contacts, new ContactCard(),
 			new SharedGuard($users), $this->backup(),
-			new SystemContacts($this->catalog(), $this->appConfig(), $this->groups(), $users), new PlanState($secret->mock($this->test)));
+			ContactsTestModule::system($this->catalog(), $this->appConfig(), $this->groups(), $users), new PlanState($secret->mock($this->test)));
 	}
 
 	/**

@@ -17,7 +17,6 @@
 		{"fqcn":"OCA\\Mcp\\Tools\\Calendar\\Scheduling\\PlanWarnings","ceiling":382},
 		{"fqcn":"OCA\\Mcp\\Tools\\Common\\LockAwareWrite","ceiling":436},
 		{"fqcn":"OCA\\Mcp\\Tools\\Common\\OutputReferenceFilter","ceiling":441},
-		{"fqcn":"OCA\\Mcp\\Tools\\Contacts\\SystemContacts","ceiling":312},
 		{"fqcn":"OCA\\Mcp\\Tools\\Deck\\DeckGatewayInterface","ceiling":483},
 		{"fqcn":"OCA\\Mcp\\Tools\\Deck\\DeckMessages","ceiling":550},
 		{"fqcn":"OCA\\Mcp\\Tools\\Deck\\DeckPlanRenderer","ceiling":572},

@@ -76,9 +76,15 @@ final class TaskStatusTest extends TaskListingCase {
         self::assertSame(['IN-PROCESS', 30], [$after['status'], $after['percentComplete']]);
     }
 
-    public function testProgressAloneDoesNotReopenACancelledTask(): void {
+    public function testProgressAloneStillReopensACancelledTaskAsBefore(): void {
         $this->plant("STATUS:CANCELLED\r\nPERCENT-COMPLETE:30\r\n");
         $after = $this->edit(['percentComplete' => 50]);
+        self::assertSame(['IN-PROCESS', 50], [$after['status'], $after['percentComplete']]);
+    }
+
+    public function testProgressWithTheCancelledStatusKeepsTheTaskCancelled(): void {
+        $this->plant("STATUS:CANCELLED\r\nPERCENT-COMPLETE:30\r\n");
+        $after = $this->edit(['status' => 'CANCELLED', 'percentComplete' => 50]);
         self::assertSame(['CANCELLED', 50], [$after['status'], $after['percentComplete']]);
     }
 

@@ -248,14 +248,12 @@ class TaskData {
         } elseif (isset($arguments['percentComplete'])) {
             $percent = $this->validPercent($arguments['percentComplete']);
             $task->{'PERCENT-COMPLETE'} = $percent;
-            // A cancelled task stays cancelled when only its progress is noted; a status reopens it.
-            if (strtoupper((string) $task->STATUS) !== 'CANCELLED') {
-                $task->STATUS = $percent === 100 ? 'COMPLETED' : ($percent === 0 ? 'NEEDS-ACTION' : 'IN-PROCESS');
-                if ($percent === 100) {
-                    $task->COMPLETED = $stamp;
-                } else {
-                    unset($task->COMPLETED);
-                }
+            // Progress alone decides the status, as it always has; status=CANCELLED with it keeps a task cancelled.
+            $task->STATUS = $percent === 100 ? 'COMPLETED' : ($percent === 0 ? 'NEEDS-ACTION' : 'IN-PROCESS');
+            if ($percent === 100) {
+                $task->COMPLETED = $stamp;
+            } else {
+                unset($task->COMPLETED);
             }
         }
         $task->DTSTAMP = $stamp;

@@ -95,7 +95,7 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
                 'minimum' => 0,
                 'maximum' => 100,
                 'description' => 'Progress percentage. Alone, 100 completes the task and a lower value reopens it, '
-                    . 'except that a cancelled task stays cancelled. With status, it must agree with it: 100 for COMPLETED, '
+                    . 'even a cancelled one. With status, it must agree with it: 100 for COMPLETED, '
                     . 'below 100 for NEEDS-ACTION and IN-PROCESS, any value for CANCELLED.',
             ],
             'status' => [
@@ -209,7 +209,8 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
                 . 'refused to protect their series and scheduling.',
             'Task status (NEEDS-ACTION, IN-PROCESS, COMPLETED, CANCELLED) can be set on create and edit, '
                 . 'together with percentComplete or alone. COMPLETED means 100 percent with a completion time; '
-                . 'CANCELLED keeps the progress reached and is still listed. Progress alone does not reopen a cancelled task.',
+                . 'CANCELLED keeps the progress reached and is still listed. Progress alone sets the status from the percentage, '
+                . 'reopening a cancelled task; send status=CANCELLED with percentComplete to keep it cancelled.',
             'Task categories are free text, as in the Tasks app. On create and edit, a categories list '
                 . 'replaces all existing categories, [] clears them and omitting the field preserves them. '
                 . 'tasks_list_tasks can filter by one category, ignoring case.',

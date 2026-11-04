@@ -29,6 +29,13 @@ class TaskData {
     public const MAX_CATEGORY_LENGTH = 255;
 
     /**
+     * Task statuses a write accepts, as iCalendar names them for a VTODO.
+     *
+     * @var list<string>
+     */
+    public const STATUSES = ['NEEDS-ACTION', 'IN-PROCESS', 'COMPLETED', 'CANCELLED'];
+
+    /**
      * Reads a calendar containing tasks and rejects mixed event/task objects.
      *
      * @param string $data complete serialized DAV object
@@ -236,23 +243,86 @@ class TaskData {
             $task->STATUS = 'COMPLETED';
             $task->{'PERCENT-COMPLETE'} = 100;
             $task->COMPLETED = $stamp;
+        } elseif (array_key_exists('status', $arguments)) {
+            $this->applyStatus($task, $arguments['status'], $arguments['percentComplete'] ?? null, $stamp);
         } elseif (isset($arguments['percentComplete'])) {
-            $percent = $arguments['percentComplete'];
-            if ($percent < 0 || $percent > 100) {
-                throw new InvalidArgumentException(Translator::t('Task progress must be between 0 and 100.'));
-            }
+            $percent = $this->validPercent($arguments['percentComplete']);
             $task->{'PERCENT-COMPLETE'} = $percent;
-            $task->STATUS = $percent === 100 ? 'COMPLETED' : ($percent === 0 ? 'NEEDS-ACTION' : 'IN-PROCESS');
-            if ($percent === 100) {
-                $task->COMPLETED = $stamp;
-            } else {
-                unset($task->COMPLETED);
+            // A cancelled task stays cancelled when only its progress is noted; a status reopens it.
+            if (strtoupper((string) $task->STATUS) !== 'CANCELLED') {
+                $task->STATUS = $percent === 100 ? 'COMPLETED' : ($percent === 0 ? 'NEEDS-ACTION' : 'IN-PROCESS');
+                if ($percent === 100) {
+                    $task->COMPLETED = $stamp;
+                } else {
+                    unset($task->COMPLETED);
+                }
             }
         }
         $task->DTSTAMP = $stamp;
         $task->{'LAST-MODIFIED'} = $stamp;
         $task->SEQUENCE = (int) (string) $task->SEQUENCE + 1;
         return $calendar;
+    }
+
+    /**
+     * Sets the status of the task, keeping its progress and completion time consistent with it.
+     *
+     * COMPLETED reaches 100 percent with a completion time; NEEDS-ACTION and IN-PROCESS stay below 100 percent;
+     * CANCELLED keeps the progress reached unless one is supplied. Only COMPLETED keeps a completion time.
+     *
+     * @param VTodo $task task master
+     * @param mixed $status supplied status, one of self::STATUSES
+     * @param mixed $percent supplied progress, or null to derive it from the status
+     * @param string $stamp UTC timestamp of the write
+     * @return void
+     * @throws InvalidArgumentException when the status is unknown or contradicts the supplied progress
+     */
+    private function applyStatus(VTodo $task, mixed $status, mixed $percent, string $stamp): void {
+        if (!is_string($status) || !in_array($status, self::STATUSES, true)) {
+            throw new InvalidArgumentException(
+                Translator::t('Task status must be one of %s.', [implode(', ', self::STATUSES)])
+            );
+        }
+        $percent = $percent === null ? null : $this->validPercent($percent);
+        $current = (int) (string) $task->{'PERCENT-COMPLETE'};
+        if ($status === 'COMPLETED') {
+            if ($percent !== null && $percent !== 100) {
+                throw new InvalidArgumentException(Translator::t('A completed task must have 100 percent progress.'));
+            }
+            // Completing an already completed task keeps the moment it was really done.
+            if (strtoupper((string) $task->STATUS) !== 'COMPLETED' || !isset($task->COMPLETED)) {
+                $task->COMPLETED = $stamp;
+            }
+            $percent = 100;
+        } else {
+            unset($task->COMPLETED);
+            if ($status !== 'CANCELLED') {
+                if ($percent === 100) {
+                    throw new InvalidArgumentException(
+                        Translator::t('Only a completed or cancelled task can have 100 percent progress.')
+                    );
+                }
+                // Reopening a task done at 100 percent starts it again from zero.
+                $percent ??= $current < 100 ? $current : 0;
+            }
+        }
+        $task->STATUS = $status;
+        // Zero is the default progress: a task that never had one does not gain a line for it.
+        if ($percent !== null && ($percent !== 0 || isset($task->{'PERCENT-COMPLETE'}))) {
+            $task->{'PERCENT-COMPLETE'} = $percent;
+        }
+    }
+
+    /**
+     * @param mixed $percent supplied progress
+     * @return int progress between 0 and 100
+     * @throws InvalidArgumentException when the progress is not an integer between 0 and 100
+     */
+    private function validPercent(mixed $percent): int {
+        if (!is_int($percent) || $percent < 0 || $percent > 100) {
+            throw new InvalidArgumentException(Translator::t('Task progress must be between 0 and 100.'));
+        }
+        return $percent;
     }
 
     /**

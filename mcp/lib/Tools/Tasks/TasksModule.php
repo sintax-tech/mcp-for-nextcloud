@@ -94,7 +94,16 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
                 'type' => 'integer',
                 'minimum' => 0,
                 'maximum' => 100,
-                'description' => 'Progress percentage. 100 completes the task; a lower value reopens it.',
+                'description' => 'Progress percentage. Alone, 100 completes the task and a lower value reopens it, '
+                    . 'except that a cancelled task stays cancelled. With status, it must agree with it: 100 for COMPLETED, '
+                    . 'below 100 for NEEDS-ACTION and IN-PROCESS, any value for CANCELLED.',
+            ],
+            'status' => [
+                'type' => 'string',
+                'enum' => TaskData::STATUSES,
+                'description' => 'Task status, as in the Tasks app. COMPLETED sets 100 percent progress and the completion time; '
+                    . 'NEEDS-ACTION and IN-PROCESS reopen the task, keeping progress below 100 (a task at 100 restarts at 0); '
+                    . 'CANCELLED keeps the progress reached unless percentComplete is supplied. Omit to preserve it.',
             ],
             'categories' => [
                 'type' => 'array',
@@ -198,6 +207,9 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
             'Undated tasks are included. Completed tasks are hidden by default in listings. '
                 . 'Recurring tasks can be read; changing recurring tasks or tasks with participants is '
                 . 'refused to protect their series and scheduling.',
+            'Task status (NEEDS-ACTION, IN-PROCESS, COMPLETED, CANCELLED) can be set on create and edit, '
+                . 'together with percentComplete or alone. COMPLETED means 100 percent with a completion time; '
+                . 'CANCELLED keeps the progress reached and is still listed. Progress alone does not reopen a cancelled task.',
             'Task categories are free text, as in the Tasks app. On create and edit, a categories list '
                 . 'replaces all existing categories, [] clears them and omitting the field preserves them. '
                 . 'tasks_list_tasks can filter by one category, ignoring case.',

@@ -107,7 +107,7 @@ final class TaskWriteFlow {
 		}
 		if ($name === 'tasks_edit_task' && array_intersect(
 			array_keys($arguments),
-			['summary', 'description', 'priority', 'start', 'due', 'percentComplete', 'categories', 'parent']
+			['summary', 'description', 'priority', 'start', 'due', 'percentComplete', 'status', 'categories', 'parent']
 		) === []) {
 			throw new InvalidArgumentException(Translator::t('Provide at least one field to change.'));
 		}

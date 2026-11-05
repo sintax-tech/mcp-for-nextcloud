@@ -7,25 +7,24 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Tasks;
 
+use OC\AppFramework\DependencyInjection\DIContainer;
+use OC\ServerContainer;
 use OCA\DAV\CalDAV\CalDavBackend;
+use OCA\Mcp\Access\ResourceScope\ScopedCalendarLookup;
+use OCA\Mcp\Platform\Dav\CalDavObjects;
+use OCA\Mcp\Platform\Dav\CalDavWrite;
+use OCA\Mcp\Modules\Tasks\Hierarchy\TaskHierarchyLock;
 use OCA\Mcp\Access\Grants\GrantPolicy;
-use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\Http;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
 use OCA\Mcp\Tests\Integration\Support\McpClient;
 use OCA\Mcp\Modules\Calendar\Writing\CalendarDav;
-use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
-use OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess;
-use OCA\Mcp\Modules\Tasks\Writing\TaskSharedNotice as SharedGuard;
-use OCA\Mcp\Modules\Tasks\Writing\TaskTrashPolicy as TrashPolicy;
 use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
-use OCA\Mcp\Modules\Tasks\Composing\TaskData;
 use OCA\Mcp\Modules\Tasks\Presentation\TaskHierarchyMessages;
 use OCA\Mcp\Modules\Tasks\TasksModule;
 use OCA\Mcp\Modules\Tasks\Locating\TaskStore;
-use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Config\IUserConfig;
 use OCP\IAppConfig;
 use OCP\IConfig;
@@ -338,19 +337,23 @@ final class McpSubtasksTest extends IntegrationTestCase {
 	 * @return TasksModule the module
 	 */
 	private function module(CalendarDav $dav, bool $withLock, ?ILockingProvider $locks = null): TasksModule {
-		return \OCA\Mcp\Tests\Unit\Tools\Tasks\TasksTestModule::build(
-			Server::get(ScopedCalendarAccess::class),
-			Server::get(CalendarStore::class),
-			Server::get(TaskStore::class),
-			$dav,
-			Server::get(TaskData::class),
-			Server::get(SharedGuard::class),
-			Server::get(TrashPolicy::class),
-			Server::get(ITimeFactory::class),
-			Server::get(OutputReferenceFilter::class),
-			Server::get(UserTimezone::class),
-			$locks ?? ($withLock ? Server::get(ILockingProvider::class) : null),
-		);
+		// A fresh native app container keeps the intercepted write/lock local to this scenario.
+		// The proxy retains the running server's core services without replacing its app container.
+		$server = $this->createMock(ServerContainer::class);
+		$server->method('get')->with(\OCP\App\IAppManager::class)->willReturn(Server::get(\OCP\App\IAppManager::class));
+		$server->method('query')->willReturnCallback(static fn (string $id): mixed => Server::get($id));
+		$container = new DIContainer('mcp', [], $server);
+		foreach ([ScopedCalendarLookup::class, CalDavObjects::class, TaskStore::class, OutputReferenceFilter::class] as $id) {
+			$container->registerService($id, static fn (): object => Server::get($id));
+		}
+		$container->registerService(CalDavWrite::class, static fn (): CalDavWrite => $dav);
+		$provider = $locks ?? ($withLock ? Server::get(ILockingProvider::class) : null);
+		if ($provider === null) {
+			$container->registerService(TaskHierarchyLock::class, static fn (): null => null);
+		} else {
+			$container->registerService(ILockingProvider::class, static fn (): ILockingProvider => $provider);
+		}
+		return $container->get(TasksModule::class);
 	}
 
 	/**

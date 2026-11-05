@@ -34,6 +34,15 @@ final class CatalogContractTest extends ArchitectureCase {
 		self::assertSame([], ToolContracts::catalog($definitions, $capabilities));
 		$golden = json_decode((string)file_get_contents(dirname(__DIR__) . '/Unit/Contract/golden/discovery.all-on.json'), true, 512, JSON_THROW_ON_ERROR);
 		$names = array_column($golden['tools/list']['body']['result']['tools'], 'name');
+		// The legacy golden has no Mail version; its conditional attachment read is absent there.
+		$position = array_search('mail_set_flags', $names, true);
+		self::assertNotFalse($position);
+		array_splice($names, $position, 0, ['mail_read_attachment']);
+		$attachment = array_values(array_filter($definitions, static fn (array $row): bool => $row['name'] === 'mail_read_attachment'));
+		self::assertCount(1, $attachment);
+		self::assertSame(['mail.attachments'], $attachment[0]['requires']);
+		self::assertSame('read', $attachment[0]['operation']);
+		self::assertSame(['attachments'], $attachment[0]['grantAnyOf']);
 		self::assertSame(array_values(array_diff($names, ['mcp_status', 'mcp_guide', 'search', 'fetch'])), array_column($definitions, 'name'));
 	}
 	public function testARegistrationExistsExactlyWhenTheModuleBindsSomethingOrHasAProbe(): void {

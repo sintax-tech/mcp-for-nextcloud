@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 
-use OCA\Mcp\Tools\Mail\Link\MailLinks;
+use OCA\Mcp\Modules\Mail\MailLinks;
 use OCP\IURLGenerator;
 use PHPUnit\Framework\TestCase;
 

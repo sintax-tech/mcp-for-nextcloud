@@ -8,9 +8,9 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Mail\Handler;
 
 use OCA\Mcp\Tests\Unit\Tools\Mail\FakeMailApp;
-use OCA\Mcp\Tools\Mail\Handler\ListAccountsHandler;
-use OCA\Mcp\Tools\Mail\MailGateway;
-use OCA\Mcp\Tools\Mail\MailUnavailableException;
+use OCA\Mcp\Modules\Mail\Reading\ListAccountsHandler;
+use OCA\Mcp\Modules\Mail\Integration\MailGateway;
+use OCA\Mcp\Modules\Mail\MailUnavailableException;
 use PHPUnit\Framework\TestCase;
 
 /**

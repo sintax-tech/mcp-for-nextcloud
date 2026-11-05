@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 
-use OCA\Mcp\Tools\Mail\MailBodyText;
+use OCA\Mcp\Modules\Mail\Presentation\MailBodyText;
 use PHPUnit\Framework\TestCase;
 
 /**

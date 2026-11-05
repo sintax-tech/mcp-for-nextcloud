@@ -8,9 +8,9 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 
 use OCA\Mcp\Tests\Unit\Tools\BrokenTextSamples;
-use OCA\Mcp\Tools\Mail\MailAttachmentDocument;
-use OCA\Mcp\Tools\Mail\MailAttachmentPart;
-use OCA\Mcp\Tools\Mail\MailAttachmentText;
+use OCA\Mcp\Modules\Mail\Extraction\MailAttachmentDocument;
+use OCA\Mcp\Modules\Mail\Extraction\MailAttachmentPart;
+use OCA\Mcp\Modules\Mail\Extraction\MailAttachmentText;
 use OCP\ITempManager;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\TestCase;

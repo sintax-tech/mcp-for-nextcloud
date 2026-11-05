@@ -13,14 +13,14 @@ use OCA\Mcp\Tests\Unit\Contract\Oracle\EffectsGate;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\FlowRunner;
 use OCA\Mcp\Tests\Unit\Tools\Mail\FakeMailLinks;
 use OCA\Mcp\Tests\Unit\Tools\Mail\FakeMailMessageApp;
-use OCA\Mcp\Tools\Mail\Draft\MailDraftTools;
-use OCA\Mcp\Tools\Mail\Flag\MailFlagTools;
-use OCA\Mcp\Tools\Mail\MailAttachmentTools;
-use OCA\Mcp\Tools\Mail\MailGateway;
-use OCA\Mcp\Tools\Mail\MailMessageTools;
-use OCA\Mcp\Tools\Mail\MailModule;
-use OCA\Mcp\Tools\Mail\Move\MailMoveTools;
-use OCA\Mcp\Tools\Mail\Send\MailSendTools;
+use OCA\Mcp\Modules\Mail\Creation\MailDraftTools;
+use OCA\Mcp\Modules\Mail\Editing\MailFlagTools;
+use OCA\Mcp\Modules\Mail\Reading\MailAttachmentTools;
+use OCA\Mcp\Modules\Mail\Integration\MailGateway;
+use OCA\Mcp\Modules\Mail\Reading\MailMessageTools;
+use OCA\Mcp\Modules\Mail\MailModule;
+use OCA\Mcp\Modules\Mail\Moving\MailMoveTools;
+use OCA\Mcp\Modules\Mail\Sending\MailSendTools;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\App\IAppManager;
 use OCP\EventDispatcher\IEventDispatcher;
@@ -79,25 +79,18 @@ final class MailWritesEffectsContractTest extends TestCase {
 		$this->app->deleteEvent = \OCA\Mail\Events\MessageDeletedEvent::class;
 		$this->gate = new EffectsGate($this);
 		$this->gate->data()->user[EffectsGate::USER]['core']['timezone'] = 'UTC';
-		$this->gate->serve(fn (): array => [$this->module()]);
+		$this->gate->serve(fn (): array => [$this->module()], fn () => \OCA\Mcp\Tests\Unit\Tools\Mail\MailTestModule::capabilities($this->mailApps()));
 	}
 
 	/** @return MailModule the module of one request, every tool wired as the container autowires it */
 	private function module(): MailModule {
 		$config = $this->gate->config();
 		$policy = $this->gate->policy();
-		$apps = $this->createMock(IAppManager::class);
-		$apps->method('getAppVersion')->willReturnCallback(fn (): string => $this->version);
+		$apps = $this->mailApps();
 		$links = FakeMailLinks::create($this);
 		$events = $this->createMock(IEventDispatcher::class);
 		$timezone = new UserTimezone($config);
-		return new MailModule(new MailGateway($this->app),
-			new MailMessageTools($this->app, new MailGateway($this->app), $timezone, $links),
-			new MailAttachmentTools($this->app, new MailGateway($this->app), $apps, $this->createMock(ITempManager::class)), $links,
-			new MailFlagTools($this->app, new MailGateway($this->app), $timezone, $links, new PlanState($config), $policy, $events),
-			new MailMoveTools($this->app, new MailGateway($this->app), $timezone, $links, new PlanState($config), $policy, $events),
-			new MailDraftTools($this->app, new MailGateway($this->app), $links, new PlanState($config), $policy, $apps),
-			new MailSendTools($this->app, new MailGateway($this->app), new PlanState($config), $policy, $apps));
+		return \OCA\Mcp\Tests\Unit\Tools\Mail\MailTestModule::build($this->app, $timezone, $links, new PlanState($config), $policy, $apps, $this->createMock(ITempManager::class), $events);
 	}
 
 	/** @return void mail_send_message with To, Cc and Bcc: plan, strict confirm, PlanChanged, the Outbox send, every refusal */
@@ -206,4 +199,10 @@ final class MailWritesEffectsContractTest extends TestCase {
 		}
 		throw new \LogicException('INBOX is empty on the server');
 	}
+	private function mailApps(): IAppManager {
+		$apps = $this->createMock(IAppManager::class);
+		$apps->method('getAppVersion')->willReturnCallback(fn (): string => $this->version);
+		return $apps;
+	}
+
 }

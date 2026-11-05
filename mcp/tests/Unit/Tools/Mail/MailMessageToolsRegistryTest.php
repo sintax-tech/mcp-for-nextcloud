@@ -12,14 +12,14 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
-use OCA\Mcp\Tools\Mail\Flag\MailFlagTools;
-use OCA\Mcp\Tools\Mail\Draft\MailDraftTools;
-use OCA\Mcp\Tools\Mail\Move\MailMoveTools;
-use OCA\Mcp\Tools\Mail\Send\MailSendTools;
-use OCA\Mcp\Tools\Mail\MailAttachmentTools;
-use OCA\Mcp\Tools\Mail\MailGateway;
-use OCA\Mcp\Tools\Mail\MailMessageTools;
-use OCA\Mcp\Tools\Mail\MailModule;
+use OCA\Mcp\Modules\Mail\Editing\MailFlagTools;
+use OCA\Mcp\Modules\Mail\Creation\MailDraftTools;
+use OCA\Mcp\Modules\Mail\Moving\MailMoveTools;
+use OCA\Mcp\Modules\Mail\Sending\MailSendTools;
+use OCA\Mcp\Modules\Mail\Reading\MailAttachmentTools;
+use OCA\Mcp\Modules\Mail\Integration\MailGateway;
+use OCA\Mcp\Modules\Mail\Reading\MailMessageTools;
+use OCA\Mcp\Modules\Mail\MailModule;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCA\Mcp\Mcp\Confirmation\WriteGate;
@@ -63,12 +63,7 @@ final class MailMessageToolsRegistryTest extends TestCase {
 		$apps->method('getAppVersion')->willReturn($mailVersion);
 		$links = FakeMailLinks::create($test);
 		$policy ??= InMemoryConfig::policy((new InMemoryConfig())->mock($test), new InMemoryOAuthStore());
-		$flags = new MailFlagTools($app, new MailGateway($app), new UserTimezone($config), $links, new PlanState($config), $policy, $stub(IEventDispatcher::class));
-		return new MailModule(new MailGateway($app), new MailMessageTools($app, new MailGateway($app), new UserTimezone($config), $links),
-			new MailAttachmentTools($app, new MailGateway($app), $apps, $stub(ITempManager::class)), $links, $flags,
-			new MailMoveTools($app, new MailGateway($app), new UserTimezone($config), $links, new PlanState($config), $policy, $stub(IEventDispatcher::class)),
-			new MailDraftTools($app, new MailGateway($app), $links, new PlanState($config), $policy, $apps),
-			new MailSendTools($app, new MailGateway($app), new PlanState($config), $policy, $apps));
+		return MailTestModule::build($app, new UserTimezone($config), $links, new PlanState($config), $policy, $apps, $stub(ITempManager::class), $stub(IEventDispatcher::class));
 	}
 
 	/**

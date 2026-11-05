@@ -16,7 +16,7 @@ declare(strict_types=1);
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Mail\MailActor;
 use OCA\Mcp\Tests\Integration\Mail\MailMessageActions;
-use OCA\Mcp\Tools\Mail\MailModule;
+use OCA\Mcp\Modules\Mail\MailModule;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\IUserManager;
@@ -64,7 +64,7 @@ switch ($action) {
 	case 'observe':
 		$policy = Server::get(GrantPolicy::class);
 		$registry = new ToolRegistry([Server::get(MailModule::class)], $policy, $apps, Server::get(IUserManager::class),
-			Server::get(LoggerInterface::class));
+			Server::get(LoggerInterface::class), null, Server::get(\OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry::class));
 		$out = [
 			'tools' => $policy->within($uid, static fn (): array => array_column($registry->list($uid), 'name')),
 			'accounts' => callTool($registry, $policy, $uid, 'mail_list_accounts', []),

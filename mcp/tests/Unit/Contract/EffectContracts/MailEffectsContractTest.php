@@ -15,14 +15,14 @@ use OCA\Mcp\Tests\Unit\Tools\BrokenTextSamples;
 use OCA\Mcp\Tests\Unit\Tools\Mail\FakeMailLinks;
 use OCA\Mcp\Tests\Unit\Tools\Mail\FakeMailMessageApp;
 use OCA\Mcp\Tests\Unit\Tools\Mail\FakeMimePart;
-use OCA\Mcp\Tools\Mail\Draft\MailDraftTools;
-use OCA\Mcp\Tools\Mail\Flag\MailFlagTools;
-use OCA\Mcp\Tools\Mail\MailAttachmentTools;
-use OCA\Mcp\Tools\Mail\MailGateway;
-use OCA\Mcp\Tools\Mail\MailMessageTools;
-use OCA\Mcp\Tools\Mail\MailModule;
-use OCA\Mcp\Tools\Mail\Move\MailMoveTools;
-use OCA\Mcp\Tools\Mail\Send\MailSendTools;
+use OCA\Mcp\Modules\Mail\Creation\MailDraftTools;
+use OCA\Mcp\Modules\Mail\Editing\MailFlagTools;
+use OCA\Mcp\Modules\Mail\Reading\MailAttachmentTools;
+use OCA\Mcp\Modules\Mail\Integration\MailGateway;
+use OCA\Mcp\Modules\Mail\Reading\MailMessageTools;
+use OCA\Mcp\Modules\Mail\MailModule;
+use OCA\Mcp\Modules\Mail\Moving\MailMoveTools;
+use OCA\Mcp\Modules\Mail\Sending\MailSendTools;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\App\IAppManager;
 use OCP\EventDispatcher\IEventDispatcher;
@@ -56,25 +56,18 @@ final class MailEffectsContractTest extends TestCase {
 		$this->app->flagEvent = \OCA\Mail\Events\MessageFlaggedEvent::class;
 		$this->gate = new EffectsGate($this);
 		$this->gate->data()->user[EffectsGate::USER]['core']['timezone'] = 'UTC';
-		$this->gate->serve(fn (): array => [$this->module()]);
+		$this->gate->serve(fn (): array => [$this->module()], fn () => \OCA\Mcp\Tests\Unit\Tools\Mail\MailTestModule::capabilities($this->mailApps()));
 	}
 
 	/** @return MailModule the module of one request, every tool wired as the container autowires it */
 	private function module(): MailModule {
 		$config = $this->gate->config();
 		$policy = $this->gate->policy();
-		$apps = $this->createMock(IAppManager::class);
-		$apps->method('getAppVersion')->willReturn(self::VERSION);
+		$apps = $this->mailApps();
 		$links = FakeMailLinks::create($this);
 		$events = $this->createMock(IEventDispatcher::class);
 		$timezone = new UserTimezone($config);
-		return new MailModule(new MailGateway($this->app),
-			new MailMessageTools($this->app, new MailGateway($this->app), $timezone, $links),
-			new MailAttachmentTools($this->app, new MailGateway($this->app), $apps, $this->createMock(ITempManager::class)), $links,
-			new MailFlagTools($this->app, new MailGateway($this->app), $timezone, $links, new PlanState($config), $policy, $events),
-			new MailMoveTools($this->app, new MailGateway($this->app), $timezone, $links, new PlanState($config), $policy, $events),
-			new MailDraftTools($this->app, new MailGateway($this->app), $links, new PlanState($config), $policy, $apps),
-			new MailSendTools($this->app, new MailGateway($this->app), new PlanState($config), $policy, $apps));
+		return \OCA\Mcp\Tests\Unit\Tools\Mail\MailTestModule::build($this->app, $timezone, $links, new PlanState($config), $policy, $apps, $this->createMock(ITempManager::class), $events);
 	}
 
 	/** @return void mail_set_flags marking a message read: plan, strict confirm, PlanChanged, effect and every refusal */
@@ -119,4 +112,10 @@ final class MailEffectsContractTest extends TestCase {
 	private function state(): array {
 		return ['serverFlags' => $this->app->messages[self::MESSAGE]['serverFlags'], 'imap' => $this->app->imapCommands()];
 	}
+	private function mailApps(): IAppManager {
+		$apps = $this->createMock(IAppManager::class);
+		$apps->method('getAppVersion')->willReturn(self::VERSION);
+		return $apps;
+	}
+
 }

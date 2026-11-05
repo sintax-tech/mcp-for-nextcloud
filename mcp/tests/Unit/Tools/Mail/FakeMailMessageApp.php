@@ -511,7 +511,7 @@ final class FakeMailMessageApp extends FakeMailApp {
 	 */
 	private function assertOn(): void {
 		if (!$this->enabled) {
-			throw new \OCA\Mcp\Tools\Mail\MailUnavailableException();
+			throw new \OCA\Mcp\Modules\Mail\MailUnavailableException();
 		}
 	}
 

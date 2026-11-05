@@ -9,9 +9,9 @@ namespace OCA\Mcp\Tests\Unit\Tools\Mail\Handler;
 
 use OCA\Mcp\Tests\Unit\Tools\Mail\FakeMailApp;
 use OCA\Mcp\Tests\Unit\Tools\Mail\FakeMailLinks;
-use OCA\Mcp\Tools\Mail\Handler\ListMailboxesHandler;
-use OCA\Mcp\Tools\Mail\MailGateway;
-use OCA\Mcp\Tools\Mail\MailUnavailableException;
+use OCA\Mcp\Modules\Mail\Reading\ListMailboxesHandler;
+use OCA\Mcp\Modules\Mail\Integration\MailGateway;
+use OCA\Mcp\Modules\Mail\MailUnavailableException;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 

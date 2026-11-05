@@ -57,7 +57,7 @@ final class MailFlagEventContractTest extends TestCase {
 			$this->assertSame(['Account $account', 'Mailbox $mailbox', $third, 'string $flag', 'bool $set'], $release['constructor'], "Mail $version");
 			$this->assertSame($argument, $release['flagMessageThirdArgument'], "Mail $version");
 		}
-		$source = (string)file_get_contents(__DIR__ . '/../../../../lib/Tools/Mail/Flag/MailFlagEvent.php');
+		$source = (string)file_get_contents((new \ReflectionClass(\OCA\Mcp\Modules\Mail\Integration\MailFlagEvent::class))->getFileName());
 		$this->assertStringContainsString("\$type->getName() === 'int'", $source);
 		$this->assertStringContainsString('self::takesUid($eventClass) ? (int)$message->getUid() : $message', $source);
 	}

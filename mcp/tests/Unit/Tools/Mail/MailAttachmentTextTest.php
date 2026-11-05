@@ -7,11 +7,11 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 
-use OCA\Mcp\Tools\Mail\MailAttachmentDocument;
-use OCA\Mcp\Tools\Mail\MailAttachmentMessages;
-use OCA\Mcp\Tools\Mail\MailAttachmentPart;
-use OCA\Mcp\Tools\Mail\MailAttachmentText;
-use OCA\Mcp\Tools\Mail\MailPdfPreflight;
+use OCA\Mcp\Modules\Mail\Extraction\MailAttachmentDocument;
+use OCA\Mcp\Modules\Mail\Presentation\MailAttachmentMessages;
+use OCA\Mcp\Modules\Mail\Extraction\MailAttachmentPart;
+use OCA\Mcp\Modules\Mail\Extraction\MailAttachmentText;
+use OCA\Mcp\Modules\Mail\Extraction\MailPdfPreflight;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\ITempManager;
 use PHPUnit\Framework\TestCase;

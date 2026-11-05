@@ -41,6 +41,8 @@ final class EffectsGate {
 	private ?array $guestApps = null;
 	/** @var (\Closure(): list<ToolModule>)|null builds the modules of one request */
 	private ?\Closure $modules = null;
+	/** @var (\Closure(): \OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry)|null probes of one request */
+	private ?\Closure $capabilities = null;
 	/** @var list<array{message:string, context:array<string, mixed>}> errors the endpoint logged, for failure messages */
 	private array $logged = [];
 
@@ -78,8 +80,9 @@ final class EffectsGate {
 	 * @param \Closure(): list<ToolModule> $modules builds the modules under test, in tools/list order
 	 * @return void
 	 */
-	public function serve(\Closure $modules): void {
+	public function serve(\Closure $modules, ?\Closure $capabilities = null): void {
 		$this->modules = $modules;
+		$this->capabilities = $capabilities;
 	}
 
 	/** @return McpProtocol the endpoint of one request over freshly built modules */
@@ -100,7 +103,7 @@ final class EffectsGate {
 		$logger->method('error')->willReturnCallback(function (string|\Stringable $message, array $context = []): void {
 			$this->logged[] = ['message' => (string)$message, 'context' => $context];
 		});
-		$registry = new ToolRegistry(($this->modules)(), $this->policy, $apps, $users, $logger, $guests);
+		$registry = new ToolRegistry(($this->modules)(), $this->policy, $apps, $users, $logger, $guests, $this->capabilities === null ? null : ($this->capabilities)());
 		$installed = $this->mock(IAppManager::class);
 		InstalledApp::mock($installed);
 		return new McpProtocol($registry, new PromptCatalog(), $this->policy, $logger, $installed);

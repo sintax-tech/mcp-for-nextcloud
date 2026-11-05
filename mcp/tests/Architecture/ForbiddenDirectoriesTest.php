@@ -19,7 +19,7 @@ final class ForbiddenDirectoriesTest extends ArchitectureCase {
 	}
 	public function testForbiddenSegmentsAndSingleWorkFolderFail(): void {
 		foreach (['Services', 'Helpers', 'Utils'] as $directory) { self::assertNotSame([], DirectoryRules::problems(['lib/Modules/Notes/' . $directory . '/X.php'])); }
-		self::assertSame([], DirectoryRules::problems(['lib/Modules/Mail/MailServices.php']));
+		self::assertSame([], DirectoryRules::problems(['lib/Modules/Example/Example.php']));
 		self::assertNotSame([], DirectoryRules::problems(['lib/Modules/Notes/Reading/X.php']));
 		self::assertSame([], DirectoryRules::problems(['lib/Modules/Notes/Reading/X.php', 'lib/Modules/Notes/Reading/Y.php']));
 	}

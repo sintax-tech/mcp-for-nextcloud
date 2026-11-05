@@ -50,6 +50,8 @@ require_once __DIR__ . '/TalkFakes.php';
 /** Talk's real module over native room creation, participants, messages and shares with observable state. */
 final class TalkWritesWiring {
 	public TalkChat $chat;
+	/** @var list<array{level:string,message:string,context:array}> observed module logs */
+	public array $logged = [];
 	public HiddenTagFiles $files;
 	public RecordingShares $shares;
 	public TalkCreationNative $creation;
@@ -103,6 +105,11 @@ final class TalkWritesWiring {
 		$resolver = new ConversationResolver($talk);
 		$names = new ActorNames($this->users);
 		$logger = $this->mock(LoggerInterface::class);
+		foreach (['error', 'warning'] as $level) {
+			$logger->method($level)->willReturnCallback(function (string|\Stringable $message, array $context = []) use ($level): void {
+				$this->logged[] = ['level' => $level, 'message' => (string)$message, 'context' => $context];
+			});
+		}
 		$userConversations = new UserConversationResolver($talk, $this->users, $this->shareManager);
 		$store = $this->mock(CalendarStore::class);
 		$classification = new Classification();

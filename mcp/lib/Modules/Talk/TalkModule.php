@@ -64,7 +64,7 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 		return [
 			[
 				'name' => self::TOOL_LIST,
-				'description' => Messages::TOOL_LIST_CONVERSATIONS,
+				'description' => \OCA\Mcp\Modules\Talk\Presentation\TalkDescriptions::TOOL_LIST_CONVERSATIONS,
 				'inputSchema' => $this->emptySchema(),
 				'module' => self::MODULE,
 				'operation' => 'read',
@@ -72,7 +72,7 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 			],
 			[
 				'name' => self::TOOL_READ,
-				'description' => Messages::TOOL_READ_MESSAGES,
+				'description' => \OCA\Mcp\Modules\Talk\Presentation\TalkDescriptions::TOOL_READ_MESSAGES,
 				'inputSchema' => [
 					'type' => 'object',
 					'properties' => [
@@ -93,7 +93,7 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 			],
 			[
 				'name' => self::TOOL_REPLY,
-				'description' => Messages::TOOL_REPLY,
+				'description' => \OCA\Mcp\Modules\Talk\Presentation\TalkDescriptions::TOOL_REPLY,
 				'inputSchema' => [
 					'type' => 'object',
 					'properties' => [
@@ -137,7 +137,7 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 			],
 			[
 				'name' => self::TOOL_ATTACH,
-				'description' => Messages::TOOL_ATTACH_FILE,
+				'description' => \OCA\Mcp\Modules\Talk\Presentation\TalkDescriptions::TOOL_ATTACH_FILE,
 				'inputSchema' => [
 					'type' => 'object',
 					'properties' => [
@@ -158,7 +158,7 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 			],
 			[
 				'name' => self::TOOL_QUOTE,
-				'description' => Messages::TOOL_QUOTE_FILE,
+				'description' => \OCA\Mcp\Modules\Talk\Presentation\TalkDescriptions::TOOL_QUOTE_FILE,
 				'inputSchema' => [
 					'type' => 'object',
 					'properties' => [
@@ -179,7 +179,7 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 			],
 			[
 				'name' => self::TOOL_MESSAGE_USER,
-				'description' => Messages::TOOL_MESSAGE_USER,
+				'description' => \OCA\Mcp\Modules\Talk\Presentation\TalkDescriptions::TOOL_MESSAGE_USER,
 				'inputSchema' => [
 					'type' => 'object',
 					'properties' => [
@@ -203,7 +203,7 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 			],
 			[
 				'name' => self::TOOL_SEND_BATCH,
-				'description' => Messages::TOOL_SEND_BATCH,
+				'description' => \OCA\Mcp\Modules\Talk\Presentation\TalkDescriptions::TOOL_SEND_BATCH,
 				'inputSchema' => [
 					'type' => 'object',
 					'properties' => [
@@ -239,7 +239,7 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 			],
 			[
 				'name' => self::TOOL_CREATE_GROUP,
-				'description' => Messages::TOOL_CREATE_GROUP,
+				'description' => \OCA\Mcp\Modules\Talk\Presentation\TalkDescriptions::TOOL_CREATE_GROUP,
 				'inputSchema' => [
 					'type' => 'object',
 					'properties' => [

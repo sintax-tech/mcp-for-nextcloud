@@ -72,28 +72,28 @@ final class TalkTranslationTest extends TestCase {
 	public function testPortugueseUserGetsTheSameTextsAsBefore(): void {
 		Translator::use(new JsonL10n('pt_BR'));
 		foreach (self::PORTUGUESE as $method => $text) {
-			self::assertSame($text, [Messages::class, $method](), $method);
+			self::assertSame($text, [self::messageClass($method), $method](), $method);
 		}
 		self::assertSame(
 			'Vou criar no Talk o grupo \'Projeto X\' com você como dono e como convidados Bob Souza, Carol Lima.'
 			. ' Mostre este plano ao usuário e só repita a mesma chamada com confirm: true depois que ele disser'
 			. ' sim de forma explícita; se ele pedir mudanças, ajuste o plano e chame a tool de novo.'
 			. ' Sem essa confirmação o servidor não cria nada.',
-			Messages::confirmationInstructionGroup('Projeto X', Messages::invitedGuests(['Bob Souza', 'Carol Lima'])),
+			\OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::confirmationInstructionGroup('Projeto X', \OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::invitedGuests(['Bob Souza', 'Carol Lima'])),
 		);
 		self::assertSame(
 			'Mostre este plano ao usuário exatamente como será enviado para a conversa \'Comercial\', pergunte se ele'
 			. ' realmente quer isso e só repita a mesma chamada com confirm: true depois que ele disser sim de forma'
 			. ' explícita. Se ele pedir mudanças, ajuste o texto, chame a tool de novo e mostre o novo plano. Sem essa'
 			. ' confirmação o servidor não publica nada.',
-			Messages::confirmationInstruction('Comercial'),
+			\OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::confirmationInstruction('Comercial'),
 		);
 		self::assertSame(
 			'Mostre este plano ao usuário exatamente como será enviado em uma conversa direta com \'Bob Souza\','
 			. ' pergunte se ele realmente quer isso e só repita a mesma chamada com confirm: true depois que ele disser'
 			. ' sim de forma explícita. Se ele pedir mudanças, ajuste o texto, chame a tool de novo e mostre o novo'
 			. ' plano. Sem essa confirmação o servidor não publica nada e a conversa direta não é criada.',
-			Messages::confirmationInstructionTarget('Bob Souza'),
+			\OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::confirmationInstructionTarget('Bob Souza'),
 		);
 		self::assertSame(
 			'participante \'ghost\' não encontrado ou sem permissão para falar com ele',
@@ -106,11 +106,11 @@ final class TalkTranslationTest extends TestCase {
 	public function testSpanishUserGetsSpanishTexts(): void {
 		$english = [];
 		foreach (array_keys(self::PORTUGUESE) as $method) {
-			$english[$method] = [Messages::class, $method]();
+			$english[$method] = [self::messageClass($method), $method]();
 		}
 		Translator::use(new JsonL10n('es'));
 		foreach ($english as $method => $source) {
-			$translated = [Messages::class, $method]();
+			$translated = [self::messageClass($method), $method]();
 			self::assertNotSame($source, $translated, $method . ' has no Spanish text');
 			self::assertNotSame('', $translated);
 		}
@@ -151,7 +151,15 @@ final class TalkTranslationTest extends TestCase {
 		foreach ($texts as $text) {
 			self::assertDoesNotMatchRegularExpression('/[À-ÿ]/u', $text);
 		}
-		self::assertSame(Messages::TOOL_REPLY, $definitions[2]['description']);
+		self::assertSame(\OCA\Mcp\Modules\Talk\Presentation\TalkDescriptions::TOOL_REPLY, $definitions[2]['description']);
+	}
+
+	/** Resolves the same translation assertion across the extracted presentation classes. */
+	private static function messageClass(string $method): string {
+		foreach ([Messages::class, \OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::class, \OCA\Mcp\Modules\Talk\Presentation\TalkReferenceLabels::class] as $class) {
+			if (method_exists($class, $method)) { return $class; }
+		}
+		throw new \LogicException('Unmapped Talk translation method: ' . $method);
 	}
 
 	private function module(): TalkModule {

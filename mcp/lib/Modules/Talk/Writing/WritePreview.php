@@ -157,7 +157,7 @@ class WritePreview {
 			'action' => 'talk_message_user',
 			'target' => $target->describe(),
 			'draft' => ['message' => $text],
-			'message' => Messages::confirmationInstructionTarget($target->displayName),
+			'message' => \OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::confirmationInstructionTarget($target->displayName),
 		];
 	}
 
@@ -179,9 +179,9 @@ class WritePreview {
 			'requiresConfirmation' => true,
 			'action' => 'talk_create_group',
 			'draft' => ['name' => $title, 'participants' => $invited],
-			'message' => Messages::confirmationInstructionGroup(
+			'message' => \OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::confirmationInstructionGroup(
 				$title,
-				Messages::invitedGuests(array_column($invited, 'displayName')),
+				\OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::invitedGuests(array_column($invited, 'displayName')),
 			),
 		];
 	}
@@ -233,7 +233,7 @@ class WritePreview {
 				'displayName' => $displayName,
 			],
 			'draft' => $draft,
-			'message' => Messages::confirmationInstruction($displayName),
+			'message' => \OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::confirmationInstruction($displayName),
 		];
 	}
 

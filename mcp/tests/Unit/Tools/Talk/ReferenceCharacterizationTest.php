@@ -79,7 +79,7 @@ final class ReferenceCharacterizationTest extends TestCase {
 				} else {
 					$item = $read->item;
 					$title = $item['title'];
-					if ($args['type'] === 'calendar_event' && $title === '') { $title = \OCA\Mcp\Modules\Talk\Presentation\Messages::referenceUntitled(); }
+					if ($args['type'] === 'calendar_event' && $title === '') { $title = \OCA\Mcp\Modules\Talk\Presentation\TalkReferenceLabels::referenceUntitled(); }
 					$url = $args['type'] === 'deck_card'
 						? $urls->linkToRouteAbsolute('deck.page.indexCard', ['boardId' => $item['boardId'], 'cardId' => $args['card_id']])
 						: $urls->getAbsoluteURL($urls->linkToRoute('calendar.view.index') . 'edit/' . base64_encode($urls->getWebroot() . $item['path'] . rawurlencode($item['uri'])));

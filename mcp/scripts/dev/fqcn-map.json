@@ -2,6 +2,9 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Modules/Talk/Presentation/TalkDescriptions.php","fqcn":"OCA\\Mcp\\Modules\\Talk\\Presentation\\TalkDescriptions","target":"stays","owner":"Modules\\Talk","ticket":null},
+		{"path":"lib/Modules/Talk/Presentation/TalkPlanMessages.php","fqcn":"OCA\\Mcp\\Modules\\Talk\\Presentation\\TalkPlanMessages","target":"stays","owner":"Modules\\Talk","ticket":null},
+		{"path":"lib/Modules/Talk/Presentation/TalkReferenceLabels.php","fqcn":"OCA\\Mcp\\Modules\\Talk\\Presentation\\TalkReferenceLabels","target":"stays","owner":"Modules\\Talk","ticket":null},
 		{"path":"lib/Access/References/ReadableCalendarEvent.php","fqcn":"OCA\\Mcp\\Access\\References\\ReadableCalendarEvent","target":"stays","owner":"Access","ticket":null},
 		{"path":"lib/Access/References/ReadableDeckCard.php","fqcn":"OCA\\Mcp\\Access\\References\\ReadableDeckCard","target":"stays","owner":"Access","ticket":null},
 		{"path":"lib/Modules/Calendar/CalendarEventReference.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\CalendarEventReference","target":"stays","owner":"Modules\\Calendar","ticket":null},

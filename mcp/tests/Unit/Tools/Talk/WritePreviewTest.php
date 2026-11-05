@@ -175,7 +175,7 @@ class WritePreviewTest extends TestCase {
 	public function testTheDirectMessageDraftNamesThePersonInTheInstruction(): void {
 		$draft = $this->previews->directMessage(new DirectContact('bob', 'Bob Souza'), 'alice', 'oi');
 
-		$this->assertSame(Messages::confirmationInstructionTarget('Bob Souza'), $draft['message']);
+		$this->assertSame(\OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::confirmationInstructionTarget('Bob Souza'), $draft['message']);
 		$this->assertStringContainsString('confirm: true', $draft['message']);
 	}
 
@@ -183,7 +183,7 @@ class WritePreviewTest extends TestCase {
 		$draft = $this->previews->reply($this->givenConversation(), 'alice', 'bom dia', null);
 
 		$this->assertSame(
-			Messages::confirmationInstruction('Comercial'),
+			\OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::confirmationInstruction('Comercial'),
 			$draft['message'],
 		);
 		$this->assertStringContainsString("'Comercial'", $draft['message']);

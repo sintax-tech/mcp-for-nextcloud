@@ -81,7 +81,7 @@ final class TalkPlanRendererTest extends TestCase {
 		);
 
 		// The text is cut, not hidden: the user has to know they are approving a beginning of a long message.
-		$this->assertStringContainsString(Messages::contentTruncated(), (string)$body);
+		$this->assertStringContainsString(\OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::contentTruncated(), (string)$body);
 		$this->assertStringContainsString(str_repeat('a', TalkPlanRenderer::EXCERPT_MAX_LENGTH), (string)$body);
 		$this->assertLessThan(400, mb_strlen((string)$body));
 	}
@@ -159,7 +159,7 @@ final class TalkPlanRendererTest extends TestCase {
 			[['message' => 'única']],
 		));
 
-		$this->assertStringContainsString(Messages::planOneMessage('Comercial'), (string)$body);
+		$this->assertStringContainsString(\OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::planOneMessage('Comercial'), (string)$body);
 	}
 
 	public function testAnAttachmentIsNamedByItsFileNameAndCarriesTheCaption(): void {
@@ -247,7 +247,7 @@ final class TalkPlanRendererTest extends TestCase {
 		);
 
 		$this->assertStringContainsString('**Projeto X**', (string)$body);
-		$this->assertStringContainsString(Messages::planNoGuests(), (string)$body);
+		$this->assertStringContainsString(\OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::planNoGuests(), (string)$body);
 	}
 
 	public function testAnUnknownToolOrAnEmptyPlanAnswersNullSoTheGenericBodySpeaks(): void {

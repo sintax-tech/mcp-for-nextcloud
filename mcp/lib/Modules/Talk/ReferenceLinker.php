@@ -86,7 +86,7 @@ class ReferenceLinker {
 	 * @throws InvalidArgumentException When the message is blank or the whole text passes the message limit
 	 */
 	public static function append(string $message, array $item): string {
-		$label = $item['type'] === self::TYPE_DECK_CARD ? Messages::referenceLabelDeck() : Messages::referenceLabelCalendar();
+		$label = $item['type'] === self::TYPE_DECK_CARD ? \OCA\Mcp\Modules\Talk\Presentation\TalkReferenceLabels::referenceLabelDeck() : \OCA\Mcp\Modules\Talk\Presentation\TalkReferenceLabels::referenceLabelCalendar();
 		// The body is normalized on its own first, so a blank message is still a blank message with a link.
 		$body = ConversationWriter::normalizeMessage($message);
 
@@ -150,7 +150,7 @@ class ReferenceLinker {
 
 		return [
 			'type' => self::TYPE_CALENDAR_EVENT,
-			'title' => self::oneLine($title === '' ? Messages::referenceUntitled() : $title),
+			'title' => self::oneLine($title === '' ? \OCA\Mcp\Modules\Talk\Presentation\TalkReferenceLabels::referenceUntitled() : $title),
 			'url' => $this->urlGenerator->getAbsoluteURL(
 				$this->urlGenerator->linkToRoute('calendar.view.index') . 'edit/' . base64_encode($davUrl),
 			),

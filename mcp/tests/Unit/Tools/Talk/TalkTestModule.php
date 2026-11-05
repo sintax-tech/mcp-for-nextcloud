@@ -44,6 +44,14 @@ final class TalkTestModule {
 			new \OCA\Mcp\Modules\Talk\Attaching\AttachFilePreview($arguments, $resolver, $preview, $errors),
 			new \OCA\Mcp\Modules\Talk\Quoting\QuoteFileHandler($arguments, $resolver, $writer, $errors),
 			new \OCA\Mcp\Modules\Talk\Quoting\QuoteFilePreview($arguments, $resolver, $preview, $errors),
+			new \OCA\Mcp\Modules\Talk\Messaging\MessageUserHandler($arguments, $userConversations, $writer, $errors),
+			new \OCA\Mcp\Modules\Talk\Messaging\MessageUserPreview($arguments, $userConversations, $preview, $errors),
+			new \OCA\Mcp\Modules\Talk\Batching\SendBatchHandler($arguments, $resolver, $writer, $logger, $errors),
+			new \OCA\Mcp\Modules\Talk\Batching\SendBatchPreview($arguments, $resolver, $preview, $errors),
+			new \OCA\Mcp\Modules\Talk\Groups\CreateGroupHandler($arguments, $groups, $errors),
+			new \OCA\Mcp\Modules\Talk\Groups\CreateGroupPreview($arguments, $userConversations, $preview, $errors),
+			new \OCA\Mcp\Modules\Talk\Reading\ListConversationsHandler($reader, $errors),
+			new \OCA\Mcp\Modules\Talk\Reading\ReadMessagesHandler($reader, $arguments, $errors),
 		);
 	}
 }

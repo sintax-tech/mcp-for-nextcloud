@@ -62,6 +62,14 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 	 * @param \OCA\Mcp\Modules\Talk\Attaching\AttachFilePreview $attachFilePlans existing Talk operation collaborator
 	 * @param \OCA\Mcp\Modules\Talk\Quoting\QuoteFileHandler $quoteFileHandler existing Talk operation collaborator
 	 * @param \OCA\Mcp\Modules\Talk\Quoting\QuoteFilePreview $quoteFilePlans existing Talk operation collaborator
+	 * @param \OCA\Mcp\Modules\Talk\Messaging\MessageUserHandler $messageUserHandler existing Talk operation collaborator
+	 * @param \OCA\Mcp\Modules\Talk\Messaging\MessageUserPreview $messageUserPlans existing Talk operation collaborator
+	 * @param \OCA\Mcp\Modules\Talk\Batching\SendBatchHandler $sendBatchHandler existing Talk operation collaborator
+	 * @param \OCA\Mcp\Modules\Talk\Batching\SendBatchPreview $sendBatchPlans existing Talk operation collaborator
+	 * @param \OCA\Mcp\Modules\Talk\Groups\CreateGroupHandler $createGroupHandler existing Talk operation collaborator
+	 * @param \OCA\Mcp\Modules\Talk\Groups\CreateGroupPreview $createGroupPlans existing Talk operation collaborator
+	 * @param \OCA\Mcp\Modules\Talk\Reading\ListConversationsHandler $listConversationsHandler existing Talk operation collaborator
+	 * @param \OCA\Mcp\Modules\Talk\Reading\ReadMessagesHandler $readMessagesHandler existing Talk operation collaborator
 	 */
 	public function __construct(
 		private TalkServices $talkServices,
@@ -81,6 +89,14 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 		private \OCA\Mcp\Modules\Talk\Attaching\AttachFilePreview $attachFilePlans,
 		private \OCA\Mcp\Modules\Talk\Quoting\QuoteFileHandler $quoteFileHandler,
 		private \OCA\Mcp\Modules\Talk\Quoting\QuoteFilePreview $quoteFilePlans,
+		private \OCA\Mcp\Modules\Talk\Messaging\MessageUserHandler $messageUserHandler,
+		private \OCA\Mcp\Modules\Talk\Messaging\MessageUserPreview $messageUserPlans,
+		private \OCA\Mcp\Modules\Talk\Batching\SendBatchHandler $sendBatchHandler,
+		private \OCA\Mcp\Modules\Talk\Batching\SendBatchPreview $sendBatchPlans,
+		private \OCA\Mcp\Modules\Talk\Groups\CreateGroupHandler $createGroupHandler,
+		private \OCA\Mcp\Modules\Talk\Groups\CreateGroupPreview $createGroupPlans,
+		private \OCA\Mcp\Modules\Talk\Reading\ListConversationsHandler $listConversationsHandler,
+		private \OCA\Mcp\Modules\Talk\Reading\ReadMessagesHandler $readMessagesHandler,
 	) {
 	}
 
@@ -351,124 +367,6 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 	}
 
 	/**
-	 * A direct message to an account. The plan resolves the target and stops there, so a user who says no is not
-	 * left with an empty conversation; the room is created by the confirmed call, and only through the same call
-	 * the Talk UI uses, which keeps the product's own rule about who may talk to whom.
-	 *
-	 * @param string $userId Authenticated user
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return array<string, mixed> Result data of talk_message_user
-	 * @throws InvalidArgumentException When the account id or the message is missing
-	 * @throws ConversationAccessException When the target is out of reach or the conversation cannot be written in
-	 * @throws TalkUnavailableException When spreed is unavailable
-	 */
-	private function messageUserCall(string $userId, array $arguments): array {
-		$targetId = $this->arguments->targetUser($arguments);
-		$message = $this->arguments->message($arguments);
-
-		$conversation = $this->userConversations->conversation($userId, $targetId);
-		$result = $this->writer->reply($conversation, $userId, $message, null);
-
-		return $result + ['user' => ['id' => $targetId, 'displayName' => $conversation->displayName($userId)]];
-	}
-
-	/**
-	 * @param string $userId Authenticated user
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return array<string, mixed> The plan of talk_message_user
-	 * @throws InvalidArgumentException When the account id or the message is missing
-	 * @throws ConversationAccessException When the target is out of reach
-	 */
-	private function messageUserPreview(string $userId, array $arguments): array {
-		return $this->preview->directMessage(
-			$this->userConversations->target($userId, $this->arguments->targetUser($arguments)),
-			$userId,
-			$this->arguments->message($arguments),
-		);
-	}
-
-	/**
-	 * A batch of messages in one conversation. The plan carries the whole list, because a batch is approved
-	 * as a list: a tool that let the agent send that list with one item changed would be sending something
-	 * else. Every quoted id is resolved while the plan is built, so a wrong citation fails before anything is
-	 * published rather than halfway through.
-	 *
-	 * @param string $userId Authenticated user
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return array<string, mixed> Result data of talk_send_batch
-	 * @throws InvalidArgumentException When the batch is empty, too long, or an item is malformed
-	 * @throws ConversationAccessException When the conversation cannot be written in or a citation does not exist
-	 * @throws TalkUnavailableException When spreed is unavailable
-	 */
-	private function sendBatchCall(string $userId, array $arguments): array {
-		// The shape of the list is a client mistake, so it is checked before any conversation is looked up.
-		$items = $this->arguments->batchItems($arguments);
-		$conversation = $this->resolver->resolveForWriting($userId, $this->arguments->token($arguments));
-
-		$result = $this->writer->replyMany($conversation, $userId, $items);
-
-		if ($result['failed'] !== []) {
-			// Part of the batch is in the room now, so the result has to tell which: a generic failure would invite
-			// a retry that republishes what already went out.
-			$this->logger->warning('Talk sent only part of the batch in conversation {token}', [
-				'token' => $conversation->token(),
-				'sent' => count($result['sent']),
-				'failed' => count($result['failed']),
-			]);
-		}
-
-		return $result;
-	}
-
-	/**
-	 * @param string $userId Authenticated user
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return array<string, mixed> The plan of talk_send_batch
-	 * @throws InvalidArgumentException When the batch is empty, too long, or an item is malformed
-	 * @throws ConversationAccessException When the conversation cannot be written in or a citation does not exist
-	 */
-	private function sendBatchPreview(string $userId, array $arguments): array {
-		return $this->preview->batch(
-			$this->resolver->resolveForWriting($userId, $this->arguments->token($arguments)),
-			$userId,
-			$this->arguments->batchItems($arguments),
-		);
-	}
-
-	/**
-	 * A new group. Both steps of the product's API happen only here, in the confirmed call: the plan resolves the
-	 * people who would be invited and stops, so an abandoned preview leaves no room behind.
-	 *
-	 * @param string $userId Authenticated user
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return array<string, mixed> Result data of talk_create_group
-	 * @throws InvalidArgumentException When the name or the participant list is not usable
-	 * @throws ConversationAccessException When an account is out of reach or the product refuses the creation
-	 * @throws TalkUnavailableException When spreed is unavailable
-	 */
-	private function createGroupCall(string $userId, array $arguments): array {
-		$name = GroupCreator::normalizeName((string)($arguments['name'] ?? ''));
-		$participants = $this->arguments->participantIds($arguments);
-
-		return $this->groups->create($userId, $name, $participants);
-	}
-
-	/**
-	 * @param string $userId Authenticated user
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return array<string, mixed> The plan of talk_create_group
-	 * @throws InvalidArgumentException When the name or the participant list is not usable
-	 * @throws ConversationAccessException When an account is out of reach
-	 */
-	private function createGroupPreview(string $userId, array $arguments): array {
-		return $this->preview->group(
-			$userId,
-			GroupCreator::normalizeName((string)($arguments['name'] ?? '')),
-			$this->userConversations->contacts($userId, $this->arguments->participantIds($arguments), true),
-		);
-	}
-
-	/**
 	 * @param string $userId Authenticated user
 	 * @param array<string, mixed> $arguments Validated arguments
 	 * @return Conversation The conversation, already checked for writing
@@ -511,13 +409,23 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 		if ($name === 'talk_quote_file') {
 			return $this->quoteFileHandler->handle($arguments, $userId);
 		}
+		if ($name === 'talk_message_user') {
+			return $this->messageUserHandler->handle($arguments, $userId);
+		}
+		if ($name === 'talk_send_batch') {
+			return $this->sendBatchHandler->handle($arguments, $userId);
+		}
+		if ($name === 'talk_create_group') {
+			return $this->createGroupHandler->handle($arguments, $userId);
+		}
+		if ($name === 'talk_list_conversations') {
+			return $this->listConversationsHandler->handle($arguments, $userId);
+		}
+		if ($name === 'talk_read_messages') {
+			return $this->readMessagesHandler->handle($arguments, $userId);
+		}
 		try {
 			return match ($name) {
-				self::TOOL_LIST => ToolResult::success(['conversations' => $this->reader->listConversations($userId)]),
-				self::TOOL_READ => ToolResult::success(['messages' => $this->reader->readMessages($userId, $this->arguments->token($arguments), $this->arguments->limit($arguments))]),
-				'talk_message_user' => ToolResult::success($this->messageUserCall($userId, $arguments)),
-				'talk_send_batch' => ToolResult::success($this->sendBatchCall($userId, $arguments)),
-				'talk_create_group' => ToolResult::success($this->createGroupCall($userId, $arguments)),
 				default => throw new InvalidArgumentException(Messages::unknownTool()),
 			};
 		} catch (InvalidArgumentException $e) {
@@ -561,11 +469,17 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 		if ($name === 'talk_quote_file') {
 			return $this->quoteFilePlans->plan($arguments, $userId);
 		}
+		if ($name === 'talk_message_user') {
+			return $this->messageUserPlans->plan($arguments, $userId);
+		}
+		if ($name === 'talk_send_batch') {
+			return $this->sendBatchPlans->plan($arguments, $userId);
+		}
+		if ($name === 'talk_create_group') {
+			return $this->createGroupPlans->plan($arguments, $userId);
+		}
 		try {
 			return match ($name) {
-				'talk_message_user' => $this->messageUserPreview($userId, $arguments),
-				'talk_send_batch' => $this->sendBatchPreview($userId, $arguments),
-				'talk_create_group' => $this->createGroupPreview($userId, $arguments),
 				default => throw new InvalidArgumentException(Messages::unknownTool()),
 			};
 		} catch (InvalidArgumentException $e) {

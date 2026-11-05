@@ -128,7 +128,7 @@ final class NextcloudApiUsage {
 		'OCA\\Talk\\Model\\Attendee::getParticipantType' => [],
 		'OCA\\Talk\\Model\\Attendee::getUnreadMessages' => [],
 		'OCA\\Talk\\Model\\Attendee::isArchived' => [],
-		// Deck, resolved by class name in OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway.
+		// Deck, resolved by class name in the Deck area classes.
 		'OCA\\Deck\\Service\\AssignmentService::assignUser' => ['cardId', 'userId'],
 		'OCA\\Deck\\Service\\AssignmentService::unassignUser' => ['cardId', 'userId'],
 		'OCA\\Deck\\Service\\BoardService::create' => ['title', 'userId', 'color'],
@@ -363,8 +363,8 @@ final class NextcloudApiUsage {
 			'color' => 'null (Deck 1.18+): a new card has no colour',
 		],
 		'OCA\\Deck\\Service\\CardService::update' => [
-			'startdate' => 'not left to its default: DeckServiceGateway::fieldsAfterDone() sends the current value back (Deck 1.18+ clears it otherwise)',
-			'color' => 'not left to its default: DeckServiceGateway::fieldsAfterDone() sends the current value back, typed per release',
+			'startdate' => 'not left to its default: DeckCardChanges::fieldsAfterDone() sends the current value back (Deck 1.18+ clears it otherwise)',
+			'color' => 'not left to its default: DeckCardChanges::fieldsAfterDone() sends the current value back, typed per release',
 		],
 		'OCA\\Deck\\Service\\PermissionService::checkPermission' => [
 			'allowDeletedBoard' => 'false (Deck 1.17+): a deleted board refuses, as the module wants',
@@ -420,7 +420,7 @@ final class NextcloudApiUsage {
 	 */
 	public const REVIEWED_TYPE_CHANGES = [
 		'OCA\\Deck\\Service\\CardService::update' => [
-			'color' => '?string in Deck 1.18, ?OptionalNullableValue in 1.19: DeckServiceGateway::fieldsAfterDone() reads the type and wraps the colour when asked',
+			'color' => '?string in Deck 1.18, ?OptionalNullableValue in 1.19: DeckCardChanges::fieldsAfterDone() reads the type and wraps the colour when asked',
 		],
 	];
 
@@ -515,7 +515,7 @@ final class NextcloudApiUsage {
 		'OCA\\Deck\\Db\\CardMapper::findAllForStacks' => [
 			'missing' => ['31', '32'],
 			'fallback' => 'OCA\\Deck\\Db\\CardMapper::findAll',
-			'by' => \OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway::class,
+			'by' => \OCA\Mcp\Modules\Deck\Integration\DeckFollowup::class,
 		],
 		// Deck 1.18 (Nextcloud 34) gave cards a start date and a colour, and CardService::update() clears both when they
 		// are left out. Up to 1.17 the update ends at `done`, so there is nothing to send back.
@@ -548,12 +548,12 @@ final class NextcloudApiUsage {
 		'OCA\\Deck\\Db\\Card::getStartdate' => [
 			'missing' => ['31', '32', '33'],
 			'fallback' => 'OCA\\Deck\\Service\\CardService::update',
-			'by' => \OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway::class,
+			'by' => \OCA\Mcp\Modules\Deck\Integration\DeckCardChanges::class,
 		],
 		'OCA\\Deck\\Db\\Card::getColor' => [
 			'missing' => ['31', '32', '33'],
 			'fallback' => 'OCA\\Deck\\Service\\CardService::update',
-			'by' => \OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway::class,
+			'by' => \OCA\Mcp\Modules\Deck\Integration\DeckCardChanges::class,
 			'elsewhere' => [
 				'Tools/Deck/CardFormatter.php' => 'OCA\\Deck\\Db\\Board::getColor',
 				'Tools/Deck/Handler/ListLabelsHandler.php' => 'OCA\\Deck\\Db\\Label::getColor',
@@ -589,7 +589,7 @@ final class NextcloudApiUsage {
 		'OCA\\Talk\\Chat\\ChatManager::setLogger' => 'Sabre\\DAV\\Server::setLogger, in Tools/Contacts/EmbeddedCardDavServer',
 		'OCA\\Talk\\Service\\RoomService::setLogger' => 'Sabre\\DAV\\Server::setLogger, in Tools/Contacts/EmbeddedCardDavServer',
 		'OCA\\Deck\\Db\\Acl::getToken' => 'OCP\\Share\\IShare::getToken and OCA\\Talk\\Room::getToken, in Tools/Files/Sharing and Tools/Talk',
-		'OCA\\Deck\\Db\\Acl::getCreatedAt' => 'OCA\\Deck\\Db\\Card::getCreatedAt, in Tools/Deck/DeckServiceGateway',
+		'OCA\\Deck\\Db\\Acl::getCreatedAt' => 'OCA\\Deck\\Db\\Card::getCreatedAt, in Modules/Deck/Integration/DeckCardQuery',
 		'OCP\\Files\\IRootFolder::removeListener' => 'Sabre\\DAV\\Server::removeListener, in Tools/Calendar/EmbeddedDavDispatcher',
 		'OCP\\DB\\QueryBuilder\\IQueryBuilder::execute' => 'the app\'s own tools, in Tools/Calendar/CalendarModule and Service/Calendar/CalendarSelftestService',
 		'OCP\\BackgroundJob\\TimedJob::execute' => 'the app\'s own tools, in Tools/Calendar/CalendarModule and Service/Calendar/CalendarSelftestService',

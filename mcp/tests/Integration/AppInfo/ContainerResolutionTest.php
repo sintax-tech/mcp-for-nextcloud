@@ -48,4 +48,31 @@ final class ContainerResolutionTest extends TestCase {
 		$reflection = new ReflectionClass($service);
 		if (method_exists($reflection, 'initializeLazyObject')) { $reflection->initializeLazyObject($service); }
 	}
+
+	/** The explicit Talk factory has the same native dependencies as the previous automatic construction. @return void */
+	public function testTalkServicesFactoryMatchesTheNativeAutowire(): void {
+		$server = $this->createMock(\OC\ServerContainer::class);
+		$server->method('get')->with(\OCP\App\IAppManager::class)->willReturn(Server::get(\OCP\App\IAppManager::class));
+		$server->method('query')->willReturnCallback(static function (string $name): mixed {
+			if (str_starts_with($name, 'OCA\\Mcp\\')) {
+				throw new \OCP\AppFramework\QueryException('No app binding in the isolated server: ' . $name);
+			}
+			return Server::get($name);
+		});
+		$container = new \OC\AppFramework\DependencyInjection\DIContainer('mcp', [], $server);
+		$class = \OCA\Mcp\Modules\Talk\Integration\TalkServices::class;
+		$automatic = $container->get($class);
+		self::initialize($automatic);
+		$factories = [];
+		$context = $this->createMock(IRegistrationContext::class);
+		$context->method('registerService')->willReturnCallback(static function (string $id, callable $factory) use (&$factories): void { $factories[$id] = $factory; });
+		(new \OCA\Mcp\Modules\Talk\TalkRegistration())->register($context);
+		$explicit = $factories[$class]($container);
+		foreach (['appManager', 'container', 'userManager'] as $field) {
+			$property = new \ReflectionProperty($class, $field);
+			self::assertSame($property->getValue($automatic), $property->getValue($explicit), 'Talk automatic versus explicit: ' . $field);
+		}
+		self::assertSame($container, (new \ReflectionProperty($class, 'container'))->getValue($explicit));
+		self::assertSame(Server::get(\OCP\IUserManager::class), (new \ReflectionProperty($class, 'userManager'))->getValue($explicit));
+	}
 }

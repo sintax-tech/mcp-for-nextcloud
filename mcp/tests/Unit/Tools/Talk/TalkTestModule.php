@@ -39,32 +39,35 @@ final class TalkTestModule {
 		$arguments = new TalkArguments();
 		$errors = new TalkErrors($logger);
 		$draft = new ReplyDraft($arguments, $resolver, $references);
-		return new TalkModule(
-			$talkServices,
-			$reader,
-			$resolver,
-			$writer,
-			$sharer,
-			$preview,
-			$userConversations,
-			$groups,
-			$references,
-			$logger,
-			$arguments,
-			new \OCA\Mcp\Modules\Talk\Replying\ReplyHandler($draft, $writer, $errors),
-			new \OCA\Mcp\Modules\Talk\Replying\ReplyPreview($draft, $preview, $errors),
-			new \OCA\Mcp\Modules\Talk\Attaching\AttachFileHandler($arguments, $resolver, $sharer, $logger, $errors),
-			new \OCA\Mcp\Modules\Talk\Attaching\AttachFilePreview($arguments, $resolver, $preview, $errors),
-			new \OCA\Mcp\Modules\Talk\Quoting\QuoteFileHandler($arguments, $resolver, $writer, $errors),
-			new \OCA\Mcp\Modules\Talk\Quoting\QuoteFilePreview($arguments, $resolver, $preview, $errors),
-			new \OCA\Mcp\Modules\Talk\Messaging\MessageUserHandler($arguments, $userConversations, $writer, $errors),
-			new \OCA\Mcp\Modules\Talk\Messaging\MessageUserPreview($arguments, $userConversations, $preview, $errors),
-			new \OCA\Mcp\Modules\Talk\Batching\SendBatchHandler($arguments, $resolver, $writer, $logger, $errors),
-			new \OCA\Mcp\Modules\Talk\Batching\SendBatchPreview($arguments, $resolver, $preview, $errors),
-			new \OCA\Mcp\Modules\Talk\Groups\CreateGroupHandler($arguments, $groups, $errors),
-			new \OCA\Mcp\Modules\Talk\Groups\CreateGroupPreview($arguments, $userConversations, $preview, $errors),
-			new \OCA\Mcp\Modules\Talk\Reading\ListConversationsHandler($reader, $errors),
-			new \OCA\Mcp\Modules\Talk\Reading\ReadMessagesHandler($reader, $arguments, $errors),
-		);
+		$tools = [
+			\OCA\Mcp\Modules\Talk\Tools\ListConversations::class => new \OCA\Mcp\Modules\Talk\Tools\ListConversations(new \OCA\Mcp\Modules\Talk\Reading\ListConversationsHandler($reader, $errors)),
+			\OCA\Mcp\Modules\Talk\Tools\ReadMessages::class => new \OCA\Mcp\Modules\Talk\Tools\ReadMessages(new \OCA\Mcp\Modules\Talk\Reading\ReadMessagesHandler($reader, $arguments, $errors)),
+			\OCA\Mcp\Modules\Talk\Tools\Reply::class => new \OCA\Mcp\Modules\Talk\Tools\Reply(new \OCA\Mcp\Modules\Talk\Replying\ReplyHandler($draft, $writer, $errors), new \OCA\Mcp\Modules\Talk\Replying\ReplyPreview($draft, $preview, $errors)),
+			\OCA\Mcp\Modules\Talk\Tools\AttachFile::class => new \OCA\Mcp\Modules\Talk\Tools\AttachFile(new \OCA\Mcp\Modules\Talk\Attaching\AttachFileHandler($arguments, $resolver, $sharer, $logger, $errors), new \OCA\Mcp\Modules\Talk\Attaching\AttachFilePreview($arguments, $resolver, $preview, $errors)),
+			\OCA\Mcp\Modules\Talk\Tools\QuoteFile::class => new \OCA\Mcp\Modules\Talk\Tools\QuoteFile(new \OCA\Mcp\Modules\Talk\Quoting\QuoteFileHandler($arguments, $resolver, $writer, $errors), new \OCA\Mcp\Modules\Talk\Quoting\QuoteFilePreview($arguments, $resolver, $preview, $errors)),
+			\OCA\Mcp\Modules\Talk\Tools\MessageUser::class => new \OCA\Mcp\Modules\Talk\Tools\MessageUser(new \OCA\Mcp\Modules\Talk\Messaging\MessageUserHandler($arguments, $userConversations, $writer, $errors), new \OCA\Mcp\Modules\Talk\Messaging\MessageUserPreview($arguments, $userConversations, $preview, $errors)),
+			\OCA\Mcp\Modules\Talk\Tools\SendBatch::class => new \OCA\Mcp\Modules\Talk\Tools\SendBatch(new \OCA\Mcp\Modules\Talk\Batching\SendBatchHandler($arguments, $resolver, $writer, $logger, $errors), new \OCA\Mcp\Modules\Talk\Batching\SendBatchPreview($arguments, $resolver, $preview, $errors)),
+			\OCA\Mcp\Modules\Talk\Tools\CreateGroup::class => new \OCA\Mcp\Modules\Talk\Tools\CreateGroup(new \OCA\Mcp\Modules\Talk\Groups\CreateGroupHandler($arguments, $groups, $errors), new \OCA\Mcp\Modules\Talk\Groups\CreateGroupPreview($arguments, $userConversations, $preview, $errors)),
+		];
+		return new TalkModule(new class($tools) implements \Psr\Container\ContainerInterface {
+			/** @param array<class-string, \OCA\Mcp\Mcp\Tools\Tool> $tools prebuilt real tools with original test collaborators */
+			public function __construct(private array $tools) {
+			}
+			/**
+			 * @param string $id requested tool class
+			 * @return mixed existing real tool, preserving the PSR container signature
+			 * @throws \LogicException when a test asks for an unbuilt service
+			 */
+			public function get(string $id): mixed {
+				return $this->tools[$id] ?? throw new \LogicException('Missing Talk test service: ' . $id);
+			}
+			/**
+			 * @param string $id requested tool class
+			 * @return bool whether that real tool was built for this test
+			 */
+			public function has(string $id): bool {
+				return isset($this->tools[$id]);
+			}
+		});
 	}
 }

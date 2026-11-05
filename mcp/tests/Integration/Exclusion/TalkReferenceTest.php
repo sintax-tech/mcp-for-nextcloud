@@ -220,4 +220,76 @@ final class TalkReferenceTest extends ExclusionTestCase {
 			$this->assertSame(503, $reply->status, "$step: an unreadable scope is the endpoint's 503: " . $reply->describe());
 		}
 	}
+
+	/** Preview names the relative path, attach posts one card, and quote posts no additional share. @return void */
+	public function testTheUidPathAndSingleCardSurviveTheCatalogComposition(): void {
+		$alice = $this->mcp();
+		[$token] = $this->conversationWithAttachment($alice);
+		$relative = $this->path('home', self::ALICE, 'folder', 'report.txt');
+		$this->makeFile('home', self::ALICE . '/folder/report.txt', 'UID appears only in a legitimate relative folder');
+		$args = ['conversation_token' => $token, 'path' => $relative, 'message' => 'Caption ' . $this->run];
+		$before = count($this->messages($alice, $token));
+		$preview = $alice->tool('talk_attach_file', $args);
+		$this->assertTrue($preview->ok(), $preview->describe());
+		$this->assertSame($relative, $preview->structured()['draft']['file']['path']);
+		$this->assertCount($before, $this->messages($alice, $token), 'attach preview has no effect');
+		$attached = $alice->write('talk_attach_file', $args);
+		$this->assertTrue($attached->ok(), $attached->describe());
+		$data = $attached->json();
+		$this->assertSame($relative, $data['file']['path']);
+		$this->assertStringNotContainsString('/' . self::ALICE . '/files/', $data['file']['path']);
+		$id = $data['attachmentId'];
+		$ids = $this->attachmentIds($this->messages($alice, $token));
+		$this->assertSame(1, count(array_filter($ids, static fn ($value): bool => $value === $id)), 'one native listener card, not two');
+		$node = $this->node(self::ALICE, $relative);
+		$manager = Server::get(IShareManager::class);
+		$shares = count($manager->getSharesBy(self::ALICE, \OCP\Share\IShare::TYPE_ROOM, $node, false, -1, 0));
+		$quoteArgs = ['conversation_token' => $token, 'attachment_id' => $id, 'message' => 'Quote ' . $this->run];
+		$beforeQuote = count($this->messages($alice, $token));
+		$this->assertTrue($alice->tool('talk_quote_file', $quoteArgs)->ok());
+		$this->assertCount($beforeQuote, $this->messages($alice, $token), 'quote preview has no effect');
+		$quoted = $alice->write('talk_quote_file', $quoteArgs);
+		$this->assertTrue($quoted->ok(), $quoted->describe());
+		$this->assertCount($shares, $manager->getSharesBy(self::ALICE, \OCP\Share\IShare::TYPE_ROOM, $node, false, -1, 0));
+		$ids = $this->attachmentIds($this->messages($alice, $token));
+		$this->assertSame(2, count(array_filter($ids, static fn ($value): bool => $value === $id)), 'quote adds one citation card and no share');
+	}
+
+	/** Both owning-module reference adapters are reached through the real HTTP plan and confirmed reply. @return void */
+	public function testDeckAndCalendarReferencesUseTheirRealOwnersWithoutPreviewEffects(): void {
+		$alice = $this->mcp();
+		[$token] = $this->conversationWithAttachment($alice);
+		$policy = Server::get(\OCA\Mcp\Access\Grants\GrantPolicy::class);
+		$beforeGrant = $policy->granted(self::ALICE, 'deck', 'create');
+		$policy->setGrant(self::ALICE, 'deck', 'create', true);
+		$this->later(fn () => $policy->setGrant(self::ALICE, 'deck', 'create', $beforeGrant));
+		$title = 'Talk card ' . $this->run;
+		$created = $alice->write('deck_create_board', ['title' => 'Talk reference ' . $this->run, 'stacks' => [['title' => 'Work', 'cards' => [['title' => $title]]]]]);
+		$this->assertTrue($created->ok(), $created->describe());
+		$board = $created->json();
+		$this->assertTrue($board['complete']);
+		$boardId = $board['created']['board']['id'];
+		$cardId = $board['created']['stacks'][0]['cards'][0]['id'];
+		$backend = Server::get(\OCA\DAV\CalDAV\CalDavBackend::class);
+		$uri = 'talk-ref-' . $this->run;
+		$calendarId = $backend->createCalendar('principals/users/' . self::ALICE, $uri, ['{DAV:}displayname' => $uri,
+			'{urn:ietf:params:xml:ns:caldav}supported-calendar-component-set' => new \Sabre\CalDAV\Xml\Property\SupportedCalendarComponentSet(['VEVENT'])]);
+		$this->later(fn () => $backend->deleteCalendar($calendarId));
+		$uid = 'event-' . $this->run;
+		$eventTitle = 'Talk event ' . $this->run;
+		$backend->createCalendarObject($calendarId, 'event.ics', "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP Integration//EN\r\nBEGIN:VEVENT\r\nUID:$uid\r\nDTSTAMP:20261001T100000Z\r\nDTSTART:20301001T100000Z\r\nDTEND:20301001T110000Z\r\nSUMMARY:$eventTitle\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n");
+		foreach ([[$title, ['type' => 'deck_card', 'card_id' => (int)$cardId, 'board_id' => (int)$boardId]],
+			[$eventTitle, ['type' => 'calendar_event', 'calendar' => '/remote.php/dav/calendars/' . self::ALICE . '/' . $uri . '/', 'uid' => $uid]]] as [$expectedTitle, $reference]) {
+			$args = ['conversation_token' => $token, 'message' => 'Reference ' . $this->run, 'reference' => $reference];
+			$before = count($this->messages($alice, $token));
+			$preview = $alice->tool('talk_reply', $args);
+			$this->assertTrue($preview->ok(), $preview->describe());
+			$this->assertSame($expectedTitle, $preview->structured()['reference']['title']);
+			$this->assertStringContainsString($expectedTitle, $preview->structured()['draft']['message']);
+			$this->assertCount($before, $this->messages($alice, $token), 'reference resolution in preview is read-only');
+			$sent = $alice->write('talk_reply', $args);
+			$this->assertTrue($sent->ok(), $sent->describe());
+			$this->assertCount($before + 1, $this->messages($alice, $token), 'one confirmed reference message');
+		}
+	}
 }

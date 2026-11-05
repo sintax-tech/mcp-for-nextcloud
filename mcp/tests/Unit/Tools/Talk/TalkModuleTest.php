@@ -644,11 +644,12 @@ class TalkModuleTest extends TestCase {
 
 	/** A read tool has no plan to build: preview() says so instead of inventing one. */
 	public function testPreviewRefusesAReadToolAndKnowsWhichToolsWrite(): void {
-		$this->assertFalse(TalkModule::writesSomething(TalkModule::TOOL_LIST));
-		$this->assertFalse(TalkModule::writesSomething(TalkModule::TOOL_READ));
+		$definitions = array_column($this->module->definitions(), null, 'name');
+		$this->assertFalse(\OCA\Mcp\Mcp\Confirmation\WriteGate::isWrite($definitions[TalkModule::TOOL_LIST]));
+		$this->assertFalse(\OCA\Mcp\Mcp\Confirmation\WriteGate::isWrite($definitions[TalkModule::TOOL_READ]));
 
-		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(Messages::unknownTool());
+		$this->expectException(\LogicException::class);
+		$this->expectExceptionMessage('talk_read_messages is not a WriteTool');
 		$this->module->preview(TalkModule::TOOL_READ, ['conversation_token' => 'abcd'], 'alice');
 	}
 
@@ -656,7 +657,7 @@ class TalkModuleTest extends TestCase {
 	public function testEveryWritingToolIsReportedAsWriting(): void {
 		foreach ($this->module->definitions() as $definition) {
 			$expected = $definition['operation'] !== 'read';
-			$this->assertSame($expected, TalkModule::writesSomething($definition['name']), $definition['name']);
+			$this->assertSame($expected, \OCA\Mcp\Mcp\Confirmation\WriteGate::isWrite($definition), $definition['name']);
 		}
 	}
 
@@ -784,9 +785,14 @@ class TalkModuleTest extends TestCase {
 	}
 
 	public function testUnknownToolNameIsAClientMistake(): void {
-		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(Messages::unknownTool());
-		$this->module->call('talk_delete_conversation', ['conversation_token' => 'abcd'], 'alice');
+		try {
+			$this->module->call('talk_delete_conversation', ['conversation_token' => 'abcd'], 'alice');
+			$this->fail('An unknown tool must be refused as a client mistake');
+		} catch (\OCA\Mcp\Mcp\Tools\UnknownToolException $e) {
+			$this->assertInstanceOf(\OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException::class, $e);
+			$this->assertInstanceOf(InvalidArgumentException::class, $e);
+			$this->assertSame('Unknown tool', $e->getMessage());
+		}
 	}
 
 	public function testPayloadIsIndentedJsonInASingleTextBlock(): void {

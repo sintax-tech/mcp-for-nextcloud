@@ -72,4 +72,31 @@ final class BoundaryBindingsTest extends TestCase {
 			$reflection->initializeLazyObject($service);
 		}
 	}
+
+	/** @return void Each reference port requires its owning module binding in a fresh native app container. */
+	public function testMissingReferencePortsFailInAFreshNativeContainer(): void {
+		$ports = [\OCA\Mcp\Access\References\ReadableDeckCard::class, \OCA\Mcp\Access\References\ReadableCalendarEvent::class];
+		$server = $this->createMock(ServerContainer::class);
+		$server->method('get')->with(IAppManager::class)->willReturn(Server::get(IAppManager::class));
+		$server->method('query')->willReturnCallback(static function (string $name): mixed {
+			if (str_starts_with($name, 'OCA\\Mcp\\')) {
+				throw new QueryException('No app binding in the isolated server: ' . $name);
+			}
+			return Server::get($name);
+		});
+		foreach ($ports as $missing) {
+			$container = new DIContainer('mcp', [], $server);
+			foreach ($ports as $present) {
+				if ($present !== $missing) {
+					$container->registerService($present, static fn (): object => Server::get($present));
+				}
+			}
+			try {
+				self::initialize($container->get(\OCA\Mcp\Modules\Talk\ReferenceLinker::class));
+				self::fail('Missing reference port accepted: ' . $missing);
+			} catch (ContainerExceptionInterface $error) {
+				self::assertStringContainsString($missing, $error->getMessage());
+			}
+		}
+	}
 }

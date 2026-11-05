@@ -109,7 +109,7 @@ final class TalkEffectsContractTest extends TestCase {
 		$linker = \OCA\Mcp\Tests\Unit\Tools\Talk\ReferenceLinkers::build($this->createMock(DeckGatewayInterface::class),
 			new ScopedCalendarAccess($this->createMock(CalendarAccess::class), $this->gate->policy()), $store,
 			new EventRepository($store, $classification), $classification, $apps, $this->users, $this->gate->policy(), $urls);
-		return new TalkModule($talk, new ConversationReader($talk, $resolver, $names, $references), $resolver, $writer, $sharer,
+		return \OCA\Mcp\Tests\Unit\Tools\Talk\TalkTestModule::build($talk, new ConversationReader($talk, $resolver, $names, $references), $resolver, $writer, $sharer,
 			new WritePreview($writer, $sharer, $attachments, $names), $userConversations,
 			new GroupCreator($talk, $this->users, $userConversations, $logger), $linker, $logger);
 	}

@@ -44,6 +44,21 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 	/** Public conversation token; Talk tokens are 30 characters at most, so this only bounds the payload. */
 	private const TOKEN_SCHEMA = ['type' => 'string', 'minLength' => 1, 'maxLength' => 30];
 
+	/**
+	 * @param TalkServices $talkServices existing Talk operation collaborator
+	 * @param ConversationReader $reader existing Talk operation collaborator
+	 * @param ConversationResolver $resolver existing Talk operation collaborator
+	 * @param ConversationWriter $writer existing Talk operation collaborator
+	 * @param FileSharer $sharer existing Talk operation collaborator
+	 * @param WritePreview $preview existing Talk operation collaborator
+	 * @param UserConversationResolver $userConversations existing Talk operation collaborator
+	 * @param GroupCreator $groups existing Talk operation collaborator
+	 * @param ReferenceLinker $references existing Talk operation collaborator
+	 * @param LoggerInterface $logger existing Talk operation collaborator
+	 * @param TalkArguments $arguments existing Talk operation collaborator
+	 * @param \OCA\Mcp\Modules\Talk\Replying\ReplyHandler $replyHandler existing Talk operation collaborator
+	 * @param \OCA\Mcp\Modules\Talk\Replying\ReplyPreview $replyPlans existing Talk operation collaborator
+	 */
 	public function __construct(
 		private TalkServices $talkServices,
 		private ConversationReader $reader,
@@ -55,7 +70,11 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 		private GroupCreator $groups,
 		private ReferenceLinker $references,
 		private LoggerInterface $logger,
-	) {}
+		private TalkArguments $arguments,
+		private \OCA\Mcp\Modules\Talk\Replying\ReplyHandler $replyHandler,
+		private \OCA\Mcp\Modules\Talk\Replying\ReplyPreview $replyPlans,
+	) {
+	}
 
 	/**
 	 * @return list<array{name:string, description:string, inputSchema:array, module:string, operation:string, app:string}>
@@ -269,51 +288,6 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 	}
 
 	/**
-	 * Builds the plan of a writing tool without executing anything, for whoever enforces the confirmation.
-	 *
-	 * This is the only entry point a central gate needs: the plan comes from the same resolution the call does,
-	 * so a gate that refuses a write without confirm: true can show the very plan the confirmed call would act on
-	 * instead of a second, weaker description of it.
-	 *
-	 * @param string $name Name of a writing tool of this module
-	 * @param array<string, mixed> $arguments Validated arguments, without confirm
-	 * @param string $userId Authenticated user
-	 * @return array<string, mixed> The plan, ready to be shown to the user
-	 * @throws InvalidArgumentException For an unknown tool name or a malformed argument
-	 * @throws ToolFailure For a conversation, file or Talk failure, with the message the confirmed call would give
-	 */
-	public function preview(string $name, array $arguments, string $userId): array {
-		try {
-			return match ($name) {
-				self::TOOL_REPLY => $this->replyPreview($userId, $arguments),
-				self::TOOL_ATTACH => $this->attachPreview($userId, $arguments),
-				self::TOOL_QUOTE => $this->quotePreview($userId, $arguments),
-				self::TOOL_MESSAGE_USER => $this->messageUserPreview($userId, $arguments),
-				self::TOOL_SEND_BATCH => $this->sendBatchPreview($userId, $arguments),
-				self::TOOL_CREATE_GROUP => $this->createGroupPreview($userId, $arguments),
-				default => throw new InvalidArgumentException(Messages::unknownTool()),
-			};
-		} catch (InvalidArgumentException $e) {
-			throw $e;
-		} catch (PolicyUnavailable $e) {
-			// A policy that cannot be read now (the Files scope of an attachment) is the endpoint's 503, never a
-			// Talk failure whose message could differ between an existing and a missing file.
-			throw $e;
-		} catch (Throwable $e) {
-			// The plan says what the confirmed call would say: a missing conversation or file is reported as
-			// such, not as the registry's generic failure.
-			$this->logger->error('Talk tool failed', [
-				'app' => 'mcp',
-				'tool' => $name,
-				'exception' => $e::class,
-				'exception_message' => self::loggable($e),
-			]);
-
-			throw new ToolFailure($this->messageFor($e));
-		}
-	}
-
-	/**
 	 * The plan of this module's write tools in the words of the person approving it, so the confirmation shows a
 	 * conversation, a person and a text instead of a payload. A plan this module cannot name returns null and the
 	 * envelope falls back to its generic body; the module itself decides nothing about how a plan is presented.
@@ -339,54 +313,6 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 			self::TOOL_SEND_BATCH,
 			self::TOOL_CREATE_GROUP,
 		], true);
-	}
-
-	/**
-	 * Routes one tool call. Arguments arrive already validated against the schema, so only the rules a schema cannot
-	 * express are checked here, further down: a blank message, a malformed token or a path with a relative segment.
-	 *
-	 * @param string $name Tool name
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @param string $userId Authenticated user
-	 * @return array{content:list<array{type:string, text:string}>, isError?:bool}
-	 * @throws InvalidArgumentException For a malformed argument or an unknown tool name
-	 */
-	public function call(string $name, array $arguments, string $userId): array {
-		try {
-			return match ($name) {
-				self::TOOL_LIST => ToolResult::success([
-					'conversations' => $this->reader->listConversations($userId),
-				]),
-				self::TOOL_READ => ToolResult::success([
-					'messages' => $this->reader->readMessages(
-						$userId,
-						$this->token($arguments),
-						$this->limit($arguments),
-					),
-				]),
-				self::TOOL_REPLY => ToolResult::success($this->replyCall($userId, $arguments)),
-				self::TOOL_ATTACH => ToolResult::success($this->attachCall($userId, $arguments)),
-				self::TOOL_QUOTE => ToolResult::success($this->quoteCall($userId, $arguments)),
-				self::TOOL_MESSAGE_USER => ToolResult::success($this->messageUserCall($userId, $arguments)),
-				self::TOOL_SEND_BATCH => ToolResult::success($this->sendBatchCall($userId, $arguments)),
-				self::TOOL_CREATE_GROUP => ToolResult::success($this->createGroupCall($userId, $arguments)),
-				default => throw new InvalidArgumentException(Messages::unknownTool()),
-			};
-		} catch (InvalidArgumentException $e) {
-			// The registry turns this into -32602, and it is a client mistake, not an error worth logging.
-			throw $e;
-		} catch (PolicyUnavailable $e) {
-			throw $e; // the endpoint's 503, as in preview()
-		} catch (Throwable $e) {
-			$this->logger->error('Talk tool failed', [
-				'app' => 'mcp',
-				'tool' => $name,
-				'exception' => $e::class,
-				'exception_message' => self::loggable($e),
-			]);
-
-			return ToolResult::error($this->messageFor($e));
-		}
 	}
 
 	/**
@@ -417,137 +343,6 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 	}
 
 	/**
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return string The conversation token
-	 * @throws InvalidArgumentException When the token is missing
-	 */
-	private function token(array $arguments): string {
-		return (string)($arguments['conversation_token'] ?? throw new InvalidArgumentException(Messages::invalidToken()));
-	}
-
-	/**
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return int How many messages to read
-	 */
-	private function limit(array $arguments): int {
-		return (int)($arguments['limit'] ?? ConversationReader::DEFAULT_MESSAGES);
-	}
-
-	/**
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return string The message body
-	 * @throws InvalidArgumentException When the message is missing
-	 */
-	private function message(array $arguments): string {
-		return (string)($arguments['message'] ?? throw new InvalidArgumentException(Messages::emptyMessage()));
-	}
-
-	/**
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return string|null The optional caption, or null when the tool was called without one
-	 */
-	private function optionalMessage(array $arguments): ?string {
-		return isset($arguments['message']) ? (string)$arguments['message'] : null;
-	}
-
-	/**
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return string The file path
-	 * @throws InvalidArgumentException When the path is missing
-	 */
-	private function path(array $arguments): string {
-		return (string)($arguments['path'] ?? throw new InvalidArgumentException(Messages::invalidPath()));
-	}
-
-	/**
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return int|null The quoted message id, when the reply quotes one
-	 */
-	private function replyTo(array $arguments): ?int {
-		return isset($arguments['reply_to']) ? (int)$arguments['reply_to'] : null;
-	}
-
-	/**
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return int The room share id of the attachment
-	 * @throws InvalidArgumentException When the id is missing
-	 */
-	private function attachmentId(array $arguments): int {
-		if (!isset($arguments['attachment_id'])) {
-			throw new InvalidArgumentException(Messages::invalidIdentifier());
-		}
-
-		return (int)$arguments['attachment_id'];
-	}
-
-	/**
-	 * Every writing tool reads and checks its arguments before anything is resolved, so a malformed call is
-	 * reported as the client mistake it is instead of reaching a lookup it should never have started.
-	 *
-	 * @param string $userId Authenticated user
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return array<string, mixed> Result data of talk_reply
-	 * @throws InvalidArgumentException When an argument is missing
-	 * @throws ConversationAccessException When the conversation is missing, not writable, or the quoted message is not there
-	 * @throws TalkUnavailableException When spreed is unavailable
-	 */
-	private function replyCall(string $userId, array $arguments): array {
-
-		$resolved = $this->resolveReply($userId, $arguments);
-
-		return $this->writer->reply($resolved['conversation'], $userId, $resolved['message'], $resolved['replyTo']);
-	}
-
-	/**
-	 * The plan of a reply, including the final text: the reference is resolved here too, so what the user reads
-	 * is the text with the title and the link that will actually be published.
-	 *
-	 * @param string $userId Authenticated user
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return array<string, mixed> The plan
-	 */
-	private function replyPreview(string $userId, array $arguments): array {
-		$resolved = $this->resolveReply($userId, $arguments);
-		$plan = $this->preview->reply(
-			$resolved['conversation'],
-			$userId,
-			$resolved['message'],
-			$resolved['replyTo'],
-		);
-
-		return $resolved['item'] === null ? $plan : $plan + ['reference' => $resolved['item']];
-	}
-
-	/**
-	 * Everything a reply needs, resolved the same way on the plan and on the confirmed call.
-	 *
-	 * The reference is resolved again on the confirmed call instead of trusted from the plan: access is checked
-	 * at the moment of sending, and a title that changed since the plan changes the text, so the plan the user
-	 * saw is no longer the text that would go out.
-	 *
-	 * @param string $userId Authenticated user
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return array{conversation:Conversation, message:string, replyTo:int|null, item:array<string, mixed>|null}
-	 */
-	private function resolveReply(string $userId, array $arguments): array {
-		$message = $this->message($arguments);
-		$reference = $this->reference($arguments);
-		$conversation = $this->writable($userId, $arguments);
-
-		$item = $reference === null ? null : $this->references->resolve($userId, $reference);
-		if ($item !== null) {
-			$message = ReferenceLinker::append($message, $item);
-		}
-
-		return [
-			'conversation' => $conversation,
-			'message' => $message,
-			'replyTo' => $this->replyTo($arguments),
-			'item' => $item,
-		];
-	}
-
-	/**
 	 * @param string $userId Authenticated user
 	 * @param array<string, mixed> $arguments Validated arguments
 	 * @return array<string, mixed> Result data of talk_attach_file
@@ -557,8 +352,8 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 	 * @throws TalkUnavailableException When spreed is unavailable
 	 */
 	private function attachCall(string $userId, array $arguments): array {
-		$path = $this->path($arguments);
-		$caption = $this->optionalMessage($arguments);
+		$path = $this->arguments->path($arguments);
+		$caption = $this->arguments->optionalMessage($arguments);
 		$conversation = $this->writable($userId, $arguments);
 
 		$attached = $this->sharer->attach($conversation, $userId, $path, $caption);
@@ -588,8 +383,8 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 		return $this->preview->attach(
 			$this->writable($userId, $arguments),
 			$userId,
-			$this->path($arguments),
-			$this->optionalMessage($arguments),
+			$this->arguments->path($arguments),
+			$this->arguments->optionalMessage($arguments),
 		);
 	}
 
@@ -602,8 +397,8 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 	 * @throws TalkUnavailableException When spreed is unavailable
 	 */
 	private function quoteCall(string $userId, array $arguments): array {
-		$attachmentId = $this->attachmentId($arguments);
-		$caption = $this->optionalMessage($arguments);
+		$attachmentId = $this->arguments->attachmentId($arguments);
+		$caption = $this->arguments->optionalMessage($arguments);
 		$conversation = $this->writable($userId, $arguments);
 
 		return $this->writer->quoteAttachment($conversation, $userId, $attachmentId, $caption);
@@ -620,8 +415,8 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 		return $this->preview->quote(
 			$this->writable($userId, $arguments),
 			$userId,
-			$this->attachmentId($arguments),
-			$this->optionalMessage($arguments),
+			$this->arguments->attachmentId($arguments),
+			$this->arguments->optionalMessage($arguments),
 		);
 	}
 
@@ -638,9 +433,8 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 	 * @throws TalkUnavailableException When spreed is unavailable
 	 */
 	private function messageUserCall(string $userId, array $arguments): array {
-		$targetId = $this->targetUser($arguments);
-		$message = $this->message($arguments);
-
+		$targetId = $this->arguments->targetUser($arguments);
+		$message = $this->arguments->message($arguments);
 
 		$conversation = $this->userConversations->conversation($userId, $targetId);
 		$result = $this->writer->reply($conversation, $userId, $message, null);
@@ -657,9 +451,9 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 	 */
 	private function messageUserPreview(string $userId, array $arguments): array {
 		return $this->preview->directMessage(
-			$this->userConversations->target($userId, $this->targetUser($arguments)),
+			$this->userConversations->target($userId, $this->arguments->targetUser($arguments)),
 			$userId,
-			$this->message($arguments),
+			$this->arguments->message($arguments),
 		);
 	}
 
@@ -678,9 +472,8 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 	 */
 	private function sendBatchCall(string $userId, array $arguments): array {
 		// The shape of the list is a client mistake, so it is checked before any conversation is looked up.
-		$items = $this->batchItems($arguments);
-		$conversation = $this->resolver->resolveForWriting($userId, $this->token($arguments));
-
+		$items = $this->arguments->batchItems($arguments);
+		$conversation = $this->resolver->resolveForWriting($userId, $this->arguments->token($arguments));
 
 		$result = $this->writer->replyMany($conversation, $userId, $items);
 
@@ -706,9 +499,9 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 	 */
 	private function sendBatchPreview(string $userId, array $arguments): array {
 		return $this->preview->batch(
-			$this->resolver->resolveForWriting($userId, $this->token($arguments)),
+			$this->resolver->resolveForWriting($userId, $this->arguments->token($arguments)),
 			$userId,
-			$this->batchItems($arguments),
+			$this->arguments->batchItems($arguments),
 		);
 	}
 
@@ -725,8 +518,7 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 	 */
 	private function createGroupCall(string $userId, array $arguments): array {
 		$name = GroupCreator::normalizeName((string)($arguments['name'] ?? ''));
-		$participants = $this->participantIds($arguments);
-
+		$participants = $this->arguments->participantIds($arguments);
 
 		return $this->groups->create($userId, $name, $participants);
 	}
@@ -742,81 +534,8 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 		return $this->preview->group(
 			$userId,
 			GroupCreator::normalizeName((string)($arguments['name'] ?? '')),
-			$this->userConversations->contacts($userId, $this->participantIds($arguments), true),
+			$this->userConversations->contacts($userId, $this->arguments->participantIds($arguments), true),
 		);
-	}
-
-	/**
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return array<string, mixed>|null Reference object of talk_reply, or null when absent
-	 * @throws InvalidArgumentException When reference is not an object
-	 */
-	private function reference(array $arguments): ?array {
-		$reference = $arguments['reference'] ?? null;
-		if ($reference !== null && !is_array($reference)) {
-			throw new InvalidArgumentException(Messages::invalidReference());
-		}
-
-		return $reference;
-	}
-
-	/**
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return list<string> Accounts the call would invite, in the order received
-	 * @throws InvalidArgumentException When participants is not a list of account ids
-	 */
-	private function participantIds(array $arguments): array {
-		$participants = $arguments['participants'] ?? [];
-		if (!is_array($participants) || !array_is_list($participants)) {
-			throw new InvalidArgumentException(Messages::invalidUser());
-		}
-
-		$ids = [];
-		foreach ($participants as $participantId) {
-			if (!is_string($participantId)) {
-				throw new InvalidArgumentException(Messages::invalidUser());
-			}
-			$ids[] = $participantId;
-		}
-
-		return $ids;
-	}
-
-	/**
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return list<array{message:string, replyTo?:int|null>} Messages of the batch, in the order received
-	 * @throws InvalidArgumentException When messages is not a list of items with a message
-	 */
-	private function batchItems(array $arguments): array {
-		$messages = $arguments['messages'] ?? throw new InvalidArgumentException(Messages::emptyBatch());
-		if (!is_array($messages) || !array_is_list($messages) || $messages === []) {
-			throw new InvalidArgumentException(Messages::emptyBatch());
-		}
-		// A list longer than a user can read is a mistake in the call, and it is refused here so that neither
-		// the plan nor the conversation behind it is built for something nobody could have approved.
-		if (count($messages) > WritePreview::MAX_BATCH) {
-			throw new InvalidArgumentException(Messages::tooManyMessages(WritePreview::MAX_BATCH));
-		}
-
-		$items = [];
-		foreach ($messages as $item) {
-			if (!is_array($item) || !isset($item['message']) || !is_string($item['message'])) {
-				throw new InvalidArgumentException(Messages::emptyMessage());
-			}
-			$replyTo = $item['reply_to'] ?? null;
-			$items[] = ['message' => $item['message'], 'replyTo' => $replyTo === null ? null : (int)$replyTo];
-		}
-
-		return $items;
-	}
-
-	/**
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return string Account id of the message target
-	 * @throws InvalidArgumentException When the account is missing
-	 */
-	private function targetUser(array $arguments): string {
-		return (string)($arguments['user'] ?? throw new InvalidArgumentException(Messages::invalidUser()));
 	}
 
 	/**
@@ -828,7 +547,7 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 	 * @throws TalkUnavailableException When spreed is unavailable
 	 */
 	private function writable(string $userId, array $arguments): Conversation {
-		return $this->resolver->resolveForWriting($userId, $this->token($arguments));
+		return $this->resolver->resolveForWriting($userId, $this->arguments->token($arguments));
 	}
 
 	/**
@@ -840,5 +559,94 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 	 */
 	private static function loggable(Throwable $e): string {
 		return \OCA\Mcp\Mcp\Tools\ToolRegistry::loggable($e->getPrevious() ?? $e);
+	}
+
+	/**
+	 * Routes one tool call. Arguments arrive already validated against the schema, so only the rules a schema cannot
+	 * express are checked here, further down: a blank message, a malformed token or a path with a relative segment.
+	 *
+	 * @param string $name Tool name
+	 * @param array<string, mixed> $arguments Validated arguments
+	 * @param string $userId Authenticated user
+	 * @return array{content:list<array{type:string, text:string}>, isError?:bool}
+	 * @throws InvalidArgumentException For a malformed argument or an unknown tool name
+	 */
+	public function call(string $name, array $arguments, string $userId): array {
+		if ($name === 'talk_reply') {
+			return $this->replyHandler->handle($arguments, $userId);
+		}
+		try {
+			return match ($name) {
+				self::TOOL_LIST => ToolResult::success(['conversations' => $this->reader->listConversations($userId)]),
+				self::TOOL_READ => ToolResult::success(['messages' => $this->reader->readMessages($userId, $this->arguments->token($arguments), $this->arguments->limit($arguments))]),
+				'talk_attach_file' => ToolResult::success($this->attachCall($userId, $arguments)),
+				'talk_quote_file' => ToolResult::success($this->quoteCall($userId, $arguments)),
+				'talk_message_user' => ToolResult::success($this->messageUserCall($userId, $arguments)),
+				'talk_send_batch' => ToolResult::success($this->sendBatchCall($userId, $arguments)),
+				'talk_create_group' => ToolResult::success($this->createGroupCall($userId, $arguments)),
+				default => throw new InvalidArgumentException(Messages::unknownTool()),
+			};
+		} catch (InvalidArgumentException $e) {
+			// The registry turns this into -32602, and it is a client mistake, not an error worth logging.
+			throw $e;
+		} catch (PolicyUnavailable $e) {
+			throw $e; // the endpoint's 503, as in preview()
+		} catch (Throwable $e) {
+			$this->logger->error('Talk tool failed', [
+				'app' => 'mcp',
+				'tool' => $name,
+				'exception' => $e::class,
+				'exception_message' => self::loggable($e),
+			]);
+
+			return ToolResult::error($this->messageFor($e));
+		}
+	}
+
+	/**
+	 * Builds the plan of a writing tool without executing anything, for whoever enforces the confirmation.
+	 *
+	 * This is the only entry point a central gate needs: the plan comes from the same resolution the call does,
+	 * so a gate that refuses a write without confirm: true can show the very plan the confirmed call would act on
+	 * instead of a second, weaker description of it.
+	 *
+	 * @param string $name Name of a writing tool of this module
+	 * @param array<string, mixed> $arguments Validated arguments, without confirm
+	 * @param string $userId Authenticated user
+	 * @return array<string, mixed> The plan, ready to be shown to the user
+	 * @throws InvalidArgumentException For an unknown tool name or a malformed argument
+	 * @throws ToolFailure For a conversation, file or Talk failure, with the message the confirmed call would give
+	 */
+	public function preview(string $name, array $arguments, string $userId): array {
+		if ($name === 'talk_reply') {
+			return $this->replyPlans->plan($arguments, $userId);
+		}
+		try {
+			return match ($name) {
+				'talk_attach_file' => $this->attachPreview($userId, $arguments),
+				'talk_quote_file' => $this->quotePreview($userId, $arguments),
+				'talk_message_user' => $this->messageUserPreview($userId, $arguments),
+				'talk_send_batch' => $this->sendBatchPreview($userId, $arguments),
+				'talk_create_group' => $this->createGroupPreview($userId, $arguments),
+				default => throw new InvalidArgumentException(Messages::unknownTool()),
+			};
+		} catch (InvalidArgumentException $e) {
+			throw $e;
+		} catch (PolicyUnavailable $e) {
+			// A policy that cannot be read now (the Files scope of an attachment) is the endpoint's 503, never a
+			// Talk failure whose message could differ between an existing and a missing file.
+			throw $e;
+		} catch (Throwable $e) {
+			// The plan says what the confirmed call would say: a missing conversation or file is reported as
+			// such, not as the registry's generic failure.
+			$this->logger->error('Talk tool failed', [
+				'app' => 'mcp',
+				'tool' => $name,
+				'exception' => $e::class,
+				'exception_message' => self::loggable($e),
+			]);
+
+			throw new ToolFailure($this->messageFor($e));
+		}
 	}
 }

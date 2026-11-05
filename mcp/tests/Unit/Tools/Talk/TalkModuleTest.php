@@ -61,7 +61,7 @@ class TalkModuleTest extends TestCase {
 		$this->groups = $this->createMock(GroupCreator::class);
 		$this->references = $this->createMock(ReferenceLinker::class);
 		$this->logger = $this->createMock(LoggerInterface::class);
-		$this->module = new TalkModule(
+		$this->module = \OCA\Mcp\Tests\Unit\Tools\Talk\TalkTestModule::build(
 			$this->createMock(TalkServices::class),
 			$this->reader,
 			$this->resolver,

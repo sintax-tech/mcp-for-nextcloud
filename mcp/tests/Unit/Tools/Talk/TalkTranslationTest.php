@@ -163,7 +163,7 @@ final class TalkTranslationTest extends TestCase {
 	}
 
 	private function module(): TalkModule {
-		return new TalkModule(
+		return \OCA\Mcp\Tests\Unit\Tools\Talk\TalkTestModule::build(
 			$this->createMock(TalkServices::class),
 			$this->createMock(ConversationReader::class),
 			$this->createMock(ConversationResolver::class),

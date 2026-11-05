@@ -82,7 +82,7 @@ final class CommandRollbackTest extends OAuthAccountTestCase {
 		$this->assertGreaterThan(0, $withdrawal['revokes']);
 		// The preview commits on its own. The snapshot is the state the withdrawal has to restore.
 		$before = $this->observe($gid);
-		$this->assertRolledBack($gid, $before, function (PolicyEventsMapper $events) use ($withdrawal, $admit): void {
+		$this->assertRolledBack($gid, $before, function (PolicyEventsMapper $events) use ($gid, $withdrawal, $admit): void {
 			$this->writer($events)->setGroupGrants($withdrawal['revision'], self::ACTOR, $gid, $withdrawal['grants'], $withdrawal['previewId'], $admit);
 		}, function (array $open) use ($before): void {
 			$this->assertNotSame($before['grants'], $open['grants']);
@@ -188,7 +188,10 @@ final class CommandRollbackTest extends OAuthAccountTestCase {
 			}));
 			$this->fail('The command committed');
 		} catch (RuntimeException $error) {
-			$this->assertSame('injected before commit', $error->getMessage());
+			// PHPUnit's assertion failure is a RuntimeException. It has to leave this catch with its diff intact.
+			if ($error->getMessage() !== 'injected before commit') {
+				throw $error;
+			}
 		}
 		$this->assertFalse($this->official()->inTransaction());
 		$this->assertSame($before, $this->observe($gid));
@@ -229,7 +232,8 @@ final class CommandRollbackTest extends OAuthAccountTestCase {
 		$users->clearCache($this->uid, false);
 		$apps->clearCache(false);
 		$values = [];
-		foreach (Server::get(IConfig::class)->getUserKeys($this->uid, 'mcp') as $key) {
+		// Keys come from this connection. The server IConfig is the writer, and its view would leak an open transaction.
+		foreach ($users->getKeys($this->uid, 'mcp') as $key) {
 			$values[$key] = $users->getValueString($this->uid, 'mcp', $key);
 		}
 		ksort($values, SORT_STRING);

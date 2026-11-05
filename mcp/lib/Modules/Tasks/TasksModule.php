@@ -34,35 +34,36 @@ use RuntimeException;
 /** VTODO tools independent of the optional Tasks UI app. */
 final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, RendersPlans {
 	/**
-	 * Receives VTODO queries, calendar access, native CalDAV writes and retention policy.
+	 * Receives the work classes while the legacy schemas remain unchanged.
 	 *
-	 * @param ScopedCalendarAccess $access the calendars the tools may reach: native visibility and ACL, narrowed by the resource scope
-	 * @param CalendarStore $store read-only storage port
-	 * @param \OCA\Mcp\Modules\Tasks\Locating\TaskStore $tasks live VTODO query port
-	 * @param CalendarDav $dav native DAV write port
-	 * @param \OCA\Mcp\Modules\Tasks\Composing\TaskData $data complete serialized DAV object
-	 * @param SharedGuard $guard shared-owner confirmation policy
-	 * @param TrashPolicy $trash calendar retention policy
-	 * @param ITimeFactory $time clock for timestamps
-	 * @param OutputReferenceFilter $references output rule for ATTACH references to Files nodes
-	 * @param UserTimezone|null $zones timezone of the account, so a plan shows the dates the user reads
-	 * @param ILockingProvider|null $locks serializes confirmed MCP writes that set a parent (\OCA\Mcp\Modules\Tasks\Hierarchy\TaskHierarchyLock); without
-	 *     a provider that excludes, those writes are refused
-	 * @return void
+	 * @param \OCA\Mcp\Modules\Tasks\Reading\ListTaskCalendarsHandler $listCalendars existing task work
+	 * @param \OCA\Mcp\Modules\Tasks\Reading\ListTasksHandler $listTasks existing task work
+	 * @param \OCA\Mcp\Modules\Tasks\Reading\ReadTaskHandler $readTask existing task work
+	 * @param \OCA\Mcp\Modules\Tasks\Creation\CreateTaskHandler $createTask existing task work
+	 * @param \OCA\Mcp\Modules\Tasks\Editing\EditTaskHandler $editTask existing task work
+	 * @param \OCA\Mcp\Modules\Tasks\Completion\CompleteTaskHandler $completeTask existing task work
+	 * @param \OCA\Mcp\Modules\Tasks\Deletion\DeleteTaskHandler $deleteTask existing task work
+	 * @param \OCA\Mcp\Modules\Tasks\Creation\CreateTaskPreview $createPlans existing task work
+	 * @param \OCA\Mcp\Modules\Tasks\Editing\EditTaskPreview $editPlans existing task work
+	 * @param \OCA\Mcp\Modules\Tasks\Completion\CompleteTaskPreview $completePlans existing task work
+	 * @param \OCA\Mcp\Modules\Tasks\Deletion\DeleteTaskPreview $deletePlans existing task work
+	 * @param OutputReferenceFilter $references Files reference availability gate
 	 */
 	public function __construct(
-		private ScopedCalendarAccess $access,
-		private CalendarStore $store,
-		private \OCA\Mcp\Modules\Tasks\Locating\TaskStore $tasks,
-		private CalendarDav $dav,
-		private \OCA\Mcp\Modules\Tasks\Composing\TaskData $data,
-		private SharedGuard $guard,
-		private TrashPolicy $trash,
-		private ITimeFactory $time,
+		private \OCA\Mcp\Modules\Tasks\Reading\ListTaskCalendarsHandler $listCalendars,
+		private \OCA\Mcp\Modules\Tasks\Reading\ListTasksHandler $listTasks,
+		private \OCA\Mcp\Modules\Tasks\Reading\ReadTaskHandler $readTask,
+		private \OCA\Mcp\Modules\Tasks\Creation\CreateTaskHandler $createTask,
+		private \OCA\Mcp\Modules\Tasks\Editing\EditTaskHandler $editTask,
+		private \OCA\Mcp\Modules\Tasks\Completion\CompleteTaskHandler $completeTask,
+		private \OCA\Mcp\Modules\Tasks\Deletion\DeleteTaskHandler $deleteTask,
+		private \OCA\Mcp\Modules\Tasks\Creation\CreateTaskPreview $createPlans,
+		private \OCA\Mcp\Modules\Tasks\Editing\EditTaskPreview $editPlans,
+		private \OCA\Mcp\Modules\Tasks\Completion\CompleteTaskPreview $completePlans,
+		private \OCA\Mcp\Modules\Tasks\Deletion\DeleteTaskPreview $deletePlans,
 		private OutputReferenceFilter $references,
-		private ?UserTimezone $zones = null,
-		private ?ILockingProvider $locks = null,
-	) {}
+	) {
+	}
 
 	/**
 	 * Declares the tool schemas and their operations for the central write gate.
@@ -235,9 +236,11 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
 		// any task is looked up, whether it exists or not.
 		$this->references->assertAvailable($userId);
 		return match ($name) {
-			CreateTaskHandler::TOOL => (new CreateTaskHandler($this->parentWrite()))->preview($arguments, $userId),
-			EditTaskHandler::TOOL => (new EditTaskHandler($this->parentWrite()))->preview($arguments, $userId),
-			default => $this->flow()->prepare($name, $arguments, $userId)['plan'],
+			'tasks_create_task' => $this->createPlans->plan($arguments, $userId),
+			'tasks_edit_task' => $this->editPlans->plan($arguments, $userId),
+			'tasks_complete_task' => $this->completePlans->plan($arguments, $userId),
+			'tasks_delete_task' => $this->deletePlans->plan($arguments, $userId),
+			default => throw new InvalidArgumentException('Unknown tool'),
 		};
 	}
 
@@ -268,38 +271,16 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
 	 */
 	public function call(string $name, array $arguments, string $userId): array {
 		$this->references->assertAvailable($userId);
-		if ($name === 'tasks_list_calendars') {
-			return ToolResult::json(
-				array_map(static fn ($calendar) => (array) $calendar, $this->access->visible($userId, 'VTODO'))
-			);
-		}
 		return match ($name) {
-			'tasks_list_tasks' => (new ListTasksHandler($this->access, $this->store, $this->tasks, $this->data, new \OCA\Mcp\Modules\Tasks\Locating\TaskRowReader($this->data)))->handle($arguments, $userId),
-			ReadTaskHandler::TOOL => (new ReadTaskHandler($this->access, $this->objects()))->handle($arguments, $userId),
-			CreateTaskHandler::TOOL => (new CreateTaskHandler($this->parentWrite()))->handle($arguments, $userId),
-			EditTaskHandler::TOOL => (new EditTaskHandler($this->parentWrite()))->handle($arguments, $userId),
-			default => $this->flow()->run($name, $arguments, $userId),
+			'tasks_list_calendars' => $this->listCalendars->handle($arguments, $userId),
+			'tasks_list_tasks' => $this->listTasks->handle($arguments, $userId),
+			'tasks_read_task' => $this->readTask->handle($arguments, $userId),
+			'tasks_create_task' => $this->createTask->handle($arguments, $userId),
+			'tasks_edit_task' => $this->editTask->handle($arguments, $userId),
+			'tasks_complete_task' => $this->completeTask->handle($arguments, $userId),
+			'tasks_delete_task' => $this->deleteTask->handle($arguments, $userId),
+			default => throw new InvalidArgumentException('Unknown tool'),
 		};
 	}
 
-	/** @return \OCA\Mcp\Modules\Tasks\Locating\TaskObjects lookup, classification and output of task objects */
-	private function objects(): \OCA\Mcp\Modules\Tasks\Locating\TaskObjects {
-		return new \OCA\Mcp\Modules\Tasks\Locating\TaskObjects($this->store, $this->data, $this->references);
-	}
-
-	/** @return \OCA\Mcp\Modules\Tasks\Writing\TaskWriteFlow plan and native write of the task writes */
-	private function flow(): \OCA\Mcp\Modules\Tasks\Writing\TaskWriteFlow {
-		return new \OCA\Mcp\Modules\Tasks\Writing\TaskWriteFlow($this->access, $this->store, $this->dav, $this->data, $this->objects(), $this->guard, $this->trash, $this->time, $this->zones);
-	}
-
-	/** @return ParentTaskWrite create and edit with the parent check, lock and warning */
-	private function parentWrite(): ParentTaskWrite {
-		return new ParentTaskWrite($this->flow(), new \OCA\Mcp\Modules\Tasks\Hierarchy\TaskParentStep(
-			new \OCA\Mcp\Modules\Tasks\Hierarchy\TaskHierarchy($this->store, $this->tasks, $this->data),
-			new \OCA\Mcp\Modules\Tasks\Hierarchy\ParentTitles($this->store, $this->data),
-			new \OCA\Mcp\Modules\Tasks\Hierarchy\TaskRelations(),
-			$this->data,
-			$this->locks === null ? null : new \OCA\Mcp\Modules\Tasks\Hierarchy\TaskHierarchyLock($this->locks),
-		));
-	}
 }

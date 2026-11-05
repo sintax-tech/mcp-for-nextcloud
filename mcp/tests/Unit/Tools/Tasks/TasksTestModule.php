@@ -47,6 +47,27 @@ final class TasksTestModule {
 		?UserTimezone $zones = null,
 		?ILockingProvider $locks = null,
 	): TasksModule {
-		return new TasksModule($access, $store, $tasks, $dav, $data, $guard, $trash, $time, $references, $zones, $locks);
+		$objects = new \OCA\Mcp\Modules\Tasks\Locating\TaskObjects($store, $data, $references);
+		$flow = new \OCA\Mcp\Modules\Tasks\Writing\TaskWriteFlow($access, $store, $dav, $data, $objects, $guard, $trash, $time, $zones);
+		$parent = new \OCA\Mcp\Modules\Tasks\Writing\ParentTaskWrite($flow, new \OCA\Mcp\Modules\Tasks\Hierarchy\TaskParentStep(
+			new \OCA\Mcp\Modules\Tasks\Hierarchy\TaskHierarchy($store, $tasks, $data),
+			new \OCA\Mcp\Modules\Tasks\Hierarchy\ParentTitles($store, $data),
+			new \OCA\Mcp\Modules\Tasks\Hierarchy\TaskRelations(), $data,
+			$locks === null ? null : new \OCA\Mcp\Modules\Tasks\Hierarchy\TaskHierarchyLock($locks),
+		));
+		return new TasksModule(
+			new \OCA\Mcp\Modules\Tasks\Reading\ListTaskCalendarsHandler($access),
+			new \OCA\Mcp\Modules\Tasks\Reading\ListTasksHandler($access, $store, $tasks, $data, new \OCA\Mcp\Modules\Tasks\Locating\TaskRowReader($data)),
+			new \OCA\Mcp\Modules\Tasks\Reading\ReadTaskHandler($access, $objects),
+			new \OCA\Mcp\Modules\Tasks\Creation\CreateTaskHandler($parent),
+			new \OCA\Mcp\Modules\Tasks\Editing\EditTaskHandler($parent),
+			new \OCA\Mcp\Modules\Tasks\Completion\CompleteTaskHandler($flow),
+			new \OCA\Mcp\Modules\Tasks\Deletion\DeleteTaskHandler($flow),
+			new \OCA\Mcp\Modules\Tasks\Creation\CreateTaskPreview($parent),
+			new \OCA\Mcp\Modules\Tasks\Editing\EditTaskPreview($parent),
+			new \OCA\Mcp\Modules\Tasks\Completion\CompleteTaskPreview($flow),
+			new \OCA\Mcp\Modules\Tasks\Deletion\DeleteTaskPreview($flow),
+			$references,
+		);
 	}
 }

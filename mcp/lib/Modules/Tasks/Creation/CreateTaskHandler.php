@@ -31,19 +31,6 @@ final class CreateTaskHandler {
 	}
 
 	/**
-	 * The plan of the write.
-	 *
-	 * @param array<string, mixed> $arguments validated tool arguments
-	 * @param string $userId authenticated user UID
-	 * @return array<string, mixed> the plan
-	 * @throws ToolFailure when access, concurrency, recovery or parent checks refuse the operation
-	 * @throws InvalidArgumentException when the supplied fields are invalid
-	 */
-	public function preview(array $arguments, string $userId): array {
-		return $this->write->preview(self::TOOL, $arguments, $userId, false);
-	}
-
-	/**
 	 * The plan without confirm; with confirm, the checked write.
 	 *
 	 * @param array<string, mixed> $arguments validated tool arguments

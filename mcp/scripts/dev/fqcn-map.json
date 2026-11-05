@@ -2,6 +2,13 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Modules/Tasks/Creation/CreateTaskPreview.php","fqcn":"OCA\\Mcp\\Modules\\Tasks\\Creation\\CreateTaskPreview","target":"stays","owner":"Modules\\Tasks","ticket":null},
+		{"path":"lib/Modules/Tasks/Editing/EditTaskPreview.php","fqcn":"OCA\\Mcp\\Modules\\Tasks\\Editing\\EditTaskPreview","target":"stays","owner":"Modules\\Tasks","ticket":null},
+		{"path":"lib/Modules/Tasks/Completion/CompleteTaskHandler.php","fqcn":"OCA\\Mcp\\Modules\\Tasks\\Completion\\CompleteTaskHandler","target":"stays","owner":"Modules\\Tasks","ticket":null},
+		{"path":"lib/Modules/Tasks/Completion/CompleteTaskPreview.php","fqcn":"OCA\\Mcp\\Modules\\Tasks\\Completion\\CompleteTaskPreview","target":"stays","owner":"Modules\\Tasks","ticket":null},
+		{"path":"lib/Modules/Tasks/Deletion/DeleteTaskHandler.php","fqcn":"OCA\\Mcp\\Modules\\Tasks\\Deletion\\DeleteTaskHandler","target":"stays","owner":"Modules\\Tasks","ticket":null},
+		{"path":"lib/Modules/Tasks/Deletion/DeleteTaskPreview.php","fqcn":"OCA\\Mcp\\Modules\\Tasks\\Deletion\\DeleteTaskPreview","target":"stays","owner":"Modules\\Tasks","ticket":null},
+		{"path":"lib/Modules/Tasks/Reading/ListTaskCalendarsHandler.php","fqcn":"OCA\\Mcp\\Modules\\Tasks\\Reading\\ListTaskCalendarsHandler","target":"stays","owner":"Modules\\Tasks","ticket":null},
 		{"path":"lib/Modules/Tasks/Presentation/TaskPlanValues.php","fqcn":"OCA\\Mcp\\Modules\\Tasks\\Presentation\\TaskPlanValues","target":"stays","owner":"Modules\\Tasks","ticket":null},
 		{"path":"lib/Modules/Tasks/Composing/TaskPatch.php","fqcn":"OCA\\Mcp\\Modules\\Tasks\\Composing\\TaskPatch","target":"stays","owner":"Modules\\Tasks","ticket":null},
 		{"path":"lib/Modules/Tasks/Composing/TaskDateInput.php","fqcn":"OCA\\Mcp\\Modules\\Tasks\\Composing\\TaskDateInput","target":"stays","owner":"Modules\\Tasks","ticket":null},

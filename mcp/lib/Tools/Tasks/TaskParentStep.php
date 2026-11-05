@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Tasks;
 
 use Closure;
-use OCA\Mcp\Modules\Calendar\Locating\Calendar;
+use OCA\Mcp\Platform\Dav\Calendar;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Confirmation\WriteGate;
 

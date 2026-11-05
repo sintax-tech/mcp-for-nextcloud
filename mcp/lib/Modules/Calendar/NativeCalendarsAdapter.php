@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Calendar;
 
 use OCA\Mcp\Access\ResourceScope\NativeCalendar;
 use OCA\Mcp\Access\ResourceScope\NativeCalendars;
-use OCA\Mcp\Modules\Calendar\Locating\Calendar;
+use OCA\Mcp\Platform\Dav\Calendar;
 use OCA\Mcp\Modules\Calendar\Locating\CalendarAccess;
 
 /** Adapts the native Calendar reader to the Access-owned resource enumeration contract. */

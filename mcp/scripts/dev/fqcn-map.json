@@ -316,7 +316,7 @@
 		{"path":"lib/Tools/ArgumentValidationException.php","fqcn":"OCA\\Mcp\\Tools\\ArgumentValidationException","target":"OCA\\Mcp\\Mcp\\Tools\\Validation\\ArgumentValidationException","owner":"Mcp","ticket":"RE-03"},
 		{"path":"lib/Tools/ArgumentValidator.php","fqcn":"OCA\\Mcp\\Tools\\ArgumentValidator","target":"OCA\\Mcp\\Mcp\\Tools\\Validation\\ArgumentValidator","owner":"Mcp","ticket":"RE-03"},
 		{"path":"lib/Tools/Calendar/AttendeeResolver.php","fqcn":"OCA\\Mcp\\Tools\\Calendar\\AttendeeResolver","target":"OCA\\Mcp\\Modules\\Calendar\\Composing\\AttendeeResolver","owner":"Modules\\Calendar","ticket":"RE-16"},
-		{"path":"lib/Tools/Calendar/Calendar.php","fqcn":"OCA\\Mcp\\Tools\\Calendar\\Calendar","target":"OCA\\Mcp\\Modules\\Calendar\\Locating\\Calendar","owner":"Modules\\Calendar","ticket":"RE-16"},
+		{"path":"lib/Tools/Calendar/Calendar.php","fqcn":"OCA\\Mcp\\Tools\\Calendar\\Calendar","target":"OCA\\Mcp\\Platform\\Dav\\Calendar","owner":"Platform","ticket":"RE-15b","via":["OCA\\Mcp\\Modules\\Calendar\\Locating\\Calendar"]},
 		{"path":"lib/Tools/Calendar/CalendarAccess.php","fqcn":"OCA\\Mcp\\Tools\\Calendar\\CalendarAccess","target":"OCA\\Mcp\\Modules\\Calendar\\Locating\\CalendarAccess","owner":"Modules\\Calendar","ticket":"RE-16"},
 		{"path":"lib/Tools/Calendar/CalendarArgumentException.php","fqcn":"OCA\\Mcp\\Tools\\Calendar\\CalendarArgumentException","target":"OCA\\Mcp\\Modules\\Calendar\\Failures\\CalendarArgumentException","owner":"Modules\\Calendar","ticket":"RE-16"},
 		{"path":"lib/Tools/Calendar/CalendarDav.php","fqcn":"OCA\\Mcp\\Tools\\Calendar\\CalendarDav","target":"OCA\\Mcp\\Modules\\Calendar\\Writing\\CalendarDav","owner":"Modules\\Calendar","ticket":"RE-16"},

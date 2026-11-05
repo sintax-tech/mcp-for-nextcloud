@@ -10,7 +10,7 @@ namespace OCA\Mcp\Modules\Calendar\Selftest;
 use OCA\Mcp\Modules\Calendar\Creation\CreateEventDraft;
 use OCA\Mcp\Modules\Calendar\Deletion\DeleteEventDraft;
 use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
-use OCA\Mcp\Modules\Calendar\Locating\Calendar;
+use OCA\Mcp\Platform\Dav\Calendar;
 use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
 use OCA\Mcp\Modules\Calendar\Writing\CalendarDav;
 use OCP\AppFramework\Utility\ITimeFactory;

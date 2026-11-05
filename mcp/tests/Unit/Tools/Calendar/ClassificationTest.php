@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Calendar;
 
-use OCA\Mcp\Modules\Calendar\Locating\Calendar;
+use OCA\Mcp\Platform\Dav\Calendar;
 use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
 use OCA\Mcp\Modules\Calendar\Locating\Classification;
 use PHPUnit\Framework\TestCase;

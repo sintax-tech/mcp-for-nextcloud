@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Tasks;
 
-use OCA\Mcp\Modules\Calendar\Locating\Calendar;
+use OCA\Mcp\Platform\Dav\Calendar;
 use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use Sabre\VObject\Component\VCalendar;

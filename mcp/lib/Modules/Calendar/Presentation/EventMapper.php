@@ -11,7 +11,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Sabre\VObject\Component\VEvent;
 use Sabre\VObject\Property\ICalendar\DateTime as DateTimeProperty;
-use OCA\Mcp\Modules\Calendar\Locating\Calendar;
+use OCA\Mcp\Platform\Dav\Calendar;
 use OCA\Mcp\Modules\Calendar\Locating\Classification;
 
 /**

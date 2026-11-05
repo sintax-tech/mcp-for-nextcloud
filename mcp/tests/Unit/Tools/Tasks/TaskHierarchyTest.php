@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Tasks;
 
-use OCA\Mcp\Modules\Calendar\Locating\Calendar;
+use OCA\Mcp\Platform\Dav\Calendar;
 use OCA\Mcp\Tools\Tasks\TaskData;
 use OCA\Mcp\Tools\Tasks\TaskHierarchy;
 use OCA\Mcp\Tools\Tasks\TaskHierarchyMessages;

@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Calendar\Locating;
+namespace OCA\Mcp\Platform\Dav;
 
 /**
  * A calendar as seen by one user: backend identity, owner and effective write access.

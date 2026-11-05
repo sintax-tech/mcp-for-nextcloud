@@ -236,14 +236,6 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/ParentTitles.php",
-			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\Calendar",
-			"line": 41,
-			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
-			"expires": "RE-15b"
-		},
-		{
-			"rule": "module-isolation",
-			"source": "lib/Tools/Tasks/ParentTitles.php",
 			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\CalendarStore",
 			"line": 28,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
@@ -260,14 +252,6 @@
 		{
 			"rule": "module-isolation",
 			"source": "lib/Tools/Tasks/TaskHierarchy.php",
-			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\Calendar",
-			"line": 129,
-			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
-			"expires": "RE-15b"
-		},
-		{
-			"rule": "module-isolation",
-			"source": "lib/Tools/Tasks/TaskHierarchy.php",
 			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\CalendarStore",
 			"line": 45,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
@@ -278,22 +262,6 @@
 			"source": "lib/Tools/Tasks/TaskObjects.php",
 			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\CalendarStore",
 			"line": 30,
-			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
-			"expires": "RE-15b"
-		},
-		{
-			"rule": "module-isolation",
-			"source": "lib/Tools/Tasks/TaskParentStep.php",
-			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\Calendar",
-			"line": 97,
-			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
-			"expires": "RE-15b"
-		},
-		{
-			"rule": "module-isolation",
-			"source": "lib/Tools/Tasks/TaskWriteFlow.php",
-			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\Calendar",
-			"line": 157,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15b"
 		},

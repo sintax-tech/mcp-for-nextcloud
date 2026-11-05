@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Calendar\Locating;
 
+use OCA\Mcp\Platform\Dav\Calendar;
+
 use Sabre\VObject\Component\VCalendar;
 use Sabre\VObject\Component\VEvent;
 use OCA\Mcp\Modules\Calendar\Failures\CalendarException;

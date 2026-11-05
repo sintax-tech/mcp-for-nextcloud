@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tools\Tasks;
 use InvalidArgumentException;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Platform\Time\UserTimezone;
-use OCA\Mcp\Modules\Calendar\Locating\Calendar;
+use OCA\Mcp\Platform\Dav\Calendar;
 use OCA\Mcp\Modules\Calendar\Writing\CalendarDav;
 use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
 use OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess;

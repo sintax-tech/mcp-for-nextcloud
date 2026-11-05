@@ -5,7 +5,8 @@
  */
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Forms\Creation;
-use OCA\Mcp\Tools\Forms\Creation\{CreateFormContext,UploadFolderPrecheck};
+use OCA\Mcp\Modules\Forms\Creation\CreateFormContext;
+use OCA\Mcp\Modules\Forms\Creation\UploadFolderPrecheck;
 use OCP\Server;
 
 /** Deterministic test barrier models a competing writer after the actual empty precheck, not a frequency claim. */

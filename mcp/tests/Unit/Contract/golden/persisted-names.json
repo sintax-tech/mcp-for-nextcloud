@@ -80,7 +80,7 @@
             "OCA\\Mcp\\Modules\\Logs\\LogsModule",
             "OCA\\Mcp\\Tools\\Mail\\MailModule",
             "OCA\\Mcp\\Modules\\Tables\\TablesModule",
-            "OCA\\Mcp\\Tools\\Forms\\FormsModule",
+            "OCA\\Mcp\\Modules\\Forms\\FormsModule",
             "OCA\\Mcp\\Modules\\Polls\\PollsModule"
         ]
     }

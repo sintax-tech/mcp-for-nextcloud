@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Forms\Editing;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
-use OCA\Mcp\Tools\Forms\FormsModule;
+use OCA\Mcp\Modules\Forms\FormsModule;
 use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
@@ -25,6 +25,7 @@ final class EditCatalogContract {
 		$module = (new \ReflectionClass(FormsModule::class))->newInstanceWithoutConstructor();
 		Assert::assertSame(['forms_list_forms', 'forms_read_form', 'forms_list_submissions', 'forms_read_submission', 'forms_create_form', 'forms_update_question', 'forms_update_option'], array_column($module->definitions(), 'name'));
 		foreach ($module->definitions() as $definition) {
+			$definition['annotations'] = \OCA\Mcp\Mcp\Tools\ToolPresentation::annotations($definition['name'], $definition['operation'], $definition['destructiveHint'] ?? false);
 			$create = $definition['name'] === 'forms_create_form';
 			$edit = str_starts_with($definition['name'], 'forms_update_');
 			Assert::assertStringContainsString('Links are credentials.', $definition['description']);

@@ -15,28 +15,28 @@ use OCA\Mcp\Tests\Unit\Contract\Oracle\EffectsGate;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\FlowRunner;
 use OCA\Mcp\Tests\Unit\Tools\Forms\Creation\CreateNativeState;
 use OCA\Mcp\Tests\Unit\Tools\Forms\Editing\EditingFixture;
-use OCA\Mcp\Tools\Forms\Creation\CreateFormContext;
-use OCA\Mcp\Tools\Forms\Creation\CreateFormFlow;
-use OCA\Mcp\Tools\Forms\Creation\CreateFormPlan;
-use OCA\Mcp\Tools\Forms\Creation\CreateFormReadback;
-use OCA\Mcp\Tools\Forms\Creation\CreateFormWriter;
-use OCA\Mcp\Tools\Forms\Creation\CreateNativeThrottle;
-use OCA\Mcp\Tools\Forms\Creation\FormsCreateNativeFactory;
-use OCA\Mcp\Tools\Forms\Creation\UploadFolderPrecheck;
-use OCA\Mcp\Tools\Forms\Editing\EditContext;
-use OCA\Mcp\Tools\Forms\Editing\EditFlow;
-use OCA\Mcp\Tools\Forms\Editing\EditNativeFactory;
-use OCA\Mcp\Tools\Forms\Editing\EditPlan;
-use OCA\Mcp\Tools\Forms\Editing\EditState;
-use OCA\Mcp\Tools\Forms\Editing\EditWriter;
-use OCA\Mcp\Tools\Forms\FormsModule;
-use OCA\Mcp\Tools\Forms\Handler\CreateFormHandler;
-use OCA\Mcp\Tools\Forms\Handler\EditOptionHandler;
-use OCA\Mcp\Tools\Forms\Handler\EditQuestionHandler;
-use OCA\Mcp\Tools\Forms\Handler\ListFormsHandler;
-use OCA\Mcp\Tools\Forms\Handler\ListSubmissionsHandler;
-use OCA\Mcp\Tools\Forms\Handler\ReadFormHandler;
-use OCA\Mcp\Tools\Forms\Handler\ReadSubmissionHandler;
+use OCA\Mcp\Modules\Forms\Creation\CreateFormContext;
+use OCA\Mcp\Modules\Forms\Creation\CreateFormFlow;
+use OCA\Mcp\Modules\Forms\Creation\CreateFormPlan;
+use OCA\Mcp\Modules\Forms\Integration\CreateFormReadback;
+use OCA\Mcp\Modules\Forms\Creation\CreateFormWriter;
+use OCA\Mcp\Modules\Forms\Integration\CreateNativeThrottle;
+use OCA\Mcp\Modules\Forms\Integration\FormsCreateNativeFactory;
+use OCA\Mcp\Modules\Forms\Creation\UploadFolderPrecheck;
+use OCA\Mcp\Modules\Forms\Editing\EditContext;
+use OCA\Mcp\Modules\Forms\Editing\EditFlow;
+use OCA\Mcp\Modules\Forms\Integration\EditNativeFactory;
+use OCA\Mcp\Modules\Forms\Editing\EditPlan;
+use OCA\Mcp\Modules\Forms\Integration\EditState;
+use OCA\Mcp\Modules\Forms\Editing\EditWriter;
+use OCA\Mcp\Modules\Forms\FormsModule;
+use OCA\Mcp\Modules\Forms\Creation\CreateFormHandler;
+use OCA\Mcp\Modules\Forms\Editing\EditOptionHandler;
+use OCA\Mcp\Modules\Forms\Editing\EditQuestionHandler;
+use OCA\Mcp\Modules\Forms\Reading\ListFormsHandler;
+use OCA\Mcp\Modules\Forms\Reading\ListSubmissionsHandler;
+use OCA\Mcp\Modules\Forms\Reading\ReadFormHandler;
+use OCA\Mcp\Modules\Forms\Reading\ReadSubmissionHandler;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\IRequest;
 use OCP\IURLGenerator;
@@ -80,7 +80,7 @@ final class FormsEffectsContractTest extends TestCase {
 		$flow = new CreateFormFlow($factory, new CreateFormPlan(new PlanState($this->gate->config())), $writer);
 		$unused = static fn (string $class): object => (new \ReflectionClass($class))->newInstanceWithoutConstructor();
 		$edits = $this->getMockBuilder(EditFlow::class)->disableOriginalConstructor()->getMock();
-		return new FormsModule($unused(ListFormsHandler::class), $unused(ReadFormHandler::class), $unused(ListSubmissionsHandler::class),
+		return \OCA\Mcp\Tests\Unit\Tools\Forms\FormsTestModule::build($unused(ListFormsHandler::class), $unused(ReadFormHandler::class), $unused(ListSubmissionsHandler::class),
 			$unused(ReadSubmissionHandler::class), new CreateFormHandler($flow), new EditQuestionHandler($edits), new EditOptionHandler($edits));
 	}
 
@@ -171,7 +171,7 @@ final class FormsEffectsContractTest extends TestCase {
 		$edits = new EditFlow($factory, $states, $plans, new EditWriter($factory, $states, $plans, $throttle));
 		$unused = static fn (string $class): object => (new \ReflectionClass($class))->newInstanceWithoutConstructor();
 		$create = $this->getMockBuilder(CreateFormFlow::class)->disableOriginalConstructor()->getMock();
-		return new FormsModule($unused(ListFormsHandler::class), $unused(ReadFormHandler::class), $unused(ListSubmissionsHandler::class),
+		return \OCA\Mcp\Tests\Unit\Tools\Forms\FormsTestModule::build($unused(ListFormsHandler::class), $unused(ReadFormHandler::class), $unused(ListSubmissionsHandler::class),
 			$unused(ReadSubmissionHandler::class), new CreateFormHandler($create), new EditQuestionHandler($edits), new EditOptionHandler($edits));
 	}
 

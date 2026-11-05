@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Forms\Creation;
 
 use OCA\Mcp\Tests\Integration\Forms\FormsScene;
-use OCA\Mcp\Tools\Forms\Creation\CreateFormFlow;
+use OCA\Mcp\Modules\Forms\Creation\CreateFormFlow;
 use OCP\Server;
 
 /** Deliberate fixture-only session transitions discriminate cached native graphs, never repair production identity. */
@@ -58,11 +58,11 @@ final class CreationContextProbe {
 			$cachedSubmission = Server::get(\OCA\Forms\Service\SubmissionService::class);
 			$flow = Server::get(CreateFormFlow::class); $args = ['title' => 'Context ' . $scenario, 'questions' => [['type' => 'short', 'text' => 'Name']]];
 			try {
-				$graph = Server::get(\OCA\Mcp\Tools\Forms\Creation\FormsCreateNativeFactory::class)->open(FormsScene::READER);
+				$graph = Server::get(\OCA\Mcp\Modules\Forms\Integration\FormsCreateNativeFactory::class)->open(FormsScene::READER);
 				if ($graph->controller === $cached || $graph->config === $cachedConfig || $graph->submission === $cachedSubmission || $graph->submission === null) { throw new \RuntimeException('Captured collaborators were not constructed fresh'); }
 				if ($scenario === 'native-edit') {
-					$writer = new \OCA\Mcp\Tools\Forms\Creation\CreateFormWriter(new CreationAdmissionChange(Server::get(\OCA\Mcp\Tools\Forms\Creation\FormsCreateNativeFactory::class), $graph), Server::get(\OCA\Mcp\Tools\Forms\Creation\CreateFormReadback::class), new \OCA\Mcp\Tools\Forms\Creation\UploadFolderPrecheck(), Server::get(\OCA\Mcp\Tools\Forms\Creation\CreateNativeThrottle::class));
-					$data = $writer->write($graph, \OCA\Mcp\Tools\Forms\Creation\CreateFormRequest::of($args), FormsScene::READER);
+					$writer = new \OCA\Mcp\Modules\Forms\Creation\CreateFormWriter(new CreationAdmissionChange(Server::get(\OCA\Mcp\Modules\Forms\Integration\FormsCreateNativeFactory::class), $graph), Server::get(\OCA\Mcp\Modules\Forms\Integration\CreateFormReadback::class), new \OCA\Mcp\Modules\Forms\Creation\UploadFolderPrecheck(), Server::get(\OCA\Mcp\Modules\Forms\Integration\CreateNativeThrottle::class));
+					$data = $writer->write($graph, \OCA\Mcp\Modules\Forms\Creation\CreateFormRequest::of($args), FormsScene::READER);
 					$id = $data['applied']['formId'] ?? 0;
 					if ($data['status'] !== 'partial' || $data['nativeCallAttempted'] !== false || $data['interruptedStage'] !== 'questions.0.create'
 						|| $graph->questions->findByForm($id) !== [] || $graph->forms->findById($id)->getTitle() !== 'Changed by native edit fixture'
@@ -74,8 +74,8 @@ final class CreationContextProbe {
 					try {
 						return $policy->within(FormsScene::READER, function () use ($policy, $graph, $args): array {
 							if (!$policy->granted(FormsScene::READER, 'forms', 'create')) { throw new \RuntimeException('Outer snapshot must begin granted'); }
-							$writer = new \OCA\Mcp\Tools\Forms\Creation\CreateFormWriter(new CreationAdmissionChange(Server::get(\OCA\Mcp\Tools\Forms\Creation\FormsCreateNativeFactory::class)), Server::get(\OCA\Mcp\Tools\Forms\Creation\CreateFormReadback::class), new \OCA\Mcp\Tools\Forms\Creation\UploadFolderPrecheck(), Server::get(\OCA\Mcp\Tools\Forms\Creation\CreateNativeThrottle::class));
-							$data = $writer->write($graph, \OCA\Mcp\Tools\Forms\Creation\CreateFormRequest::of($args), FormsScene::READER);
+							$writer = new \OCA\Mcp\Modules\Forms\Creation\CreateFormWriter(new CreationAdmissionChange(Server::get(\OCA\Mcp\Modules\Forms\Integration\FormsCreateNativeFactory::class)), Server::get(\OCA\Mcp\Modules\Forms\Integration\CreateFormReadback::class), new \OCA\Mcp\Modules\Forms\Creation\UploadFolderPrecheck(), Server::get(\OCA\Mcp\Modules\Forms\Integration\CreateNativeThrottle::class));
+							$data = $writer->write($graph, \OCA\Mcp\Modules\Forms\Creation\CreateFormRequest::of($args), FormsScene::READER);
 							$id = $data['applied']['formId'] ?? 0;
 							if ($data['status'] !== 'partial' || $data['nativeCallAttempted'] !== false || $data['interruptedStage'] !== 'questions.0.create'
 								|| $graph->questions->findByForm($id) !== [] || !$policy->granted(FormsScene::READER, 'forms', 'create')) { throw new \RuntimeException('External revocation boundary proof failed'); }
@@ -86,8 +86,8 @@ final class CreationContextProbe {
 				if ($scenario === 'title-race') {
 					if ($graph->version !== '5.4.1') { return ['scenario' => $scenario, 'accepted' => true, 'notApplicableToPin' => true]; }
 					$guard = new CreationRacePrecheck();
-					$writer = new \OCA\Mcp\Tools\Forms\Creation\CreateFormWriter(Server::get(\OCA\Mcp\Tools\Forms\Creation\FormsCreateNativeFactory::class), Server::get(\OCA\Mcp\Tools\Forms\Creation\CreateFormReadback::class), $guard, Server::get(\OCA\Mcp\Tools\Forms\Creation\CreateNativeThrottle::class));
-					$data = $writer->write($graph, \OCA\Mcp\Tools\Forms\Creation\CreateFormRequest::of($args), FormsScene::READER);
+					$writer = new \OCA\Mcp\Modules\Forms\Creation\CreateFormWriter(Server::get(\OCA\Mcp\Modules\Forms\Integration\FormsCreateNativeFactory::class), Server::get(\OCA\Mcp\Modules\Forms\Integration\CreateFormReadback::class), $guard, Server::get(\OCA\Mcp\Modules\Forms\Integration\CreateNativeThrottle::class));
+					$data = $writer->write($graph, \OCA\Mcp\Modules\Forms\Creation\CreateFormRequest::of($args), FormsScene::READER);
 					$id = $data['applied']['formId'] ?? 0;
 					$root = Server::get(\OCP\Files\IRootFolder::class)->getUserFolder(FormsScene::READER);
 					$file = $root->get('Forms/' . $id . ' - Context title-race/synthetic.txt');
@@ -98,8 +98,8 @@ final class CreationContextProbe {
 				if ($scenario === 'collision') {
 					if ($graph->version !== '5.4.1') { return ['scenario' => $scenario, 'accepted' => true, 'notApplicableToPin' => true]; }
 					$guard = new CreationCollisionPrecheck();
-					$writer = new \OCA\Mcp\Tools\Forms\Creation\CreateFormWriter(Server::get(\OCA\Mcp\Tools\Forms\Creation\FormsCreateNativeFactory::class), Server::get(\OCA\Mcp\Tools\Forms\Creation\CreateFormReadback::class), $guard, Server::get(\OCA\Mcp\Tools\Forms\Creation\CreateNativeThrottle::class));
-					$data = $writer->write($graph, \OCA\Mcp\Tools\Forms\Creation\CreateFormRequest::of($args), FormsScene::READER);
+					$writer = new \OCA\Mcp\Modules\Forms\Creation\CreateFormWriter(Server::get(\OCA\Mcp\Modules\Forms\Integration\FormsCreateNativeFactory::class), Server::get(\OCA\Mcp\Modules\Forms\Integration\CreateFormReadback::class), $guard, Server::get(\OCA\Mcp\Modules\Forms\Integration\CreateNativeThrottle::class));
+					$data = $writer->write($graph, \OCA\Mcp\Modules\Forms\Creation\CreateFormRequest::of($args), FormsScene::READER);
 					$id = $data['applied']['formId'] ?? 0; $form = $graph->forms->findById($id);
 					if ($data['status'] !== 'partial' || $data['nativeCallAttempted'] !== false || $data['interruptedStage'] !== 'title-check'
 						|| $form->getTitle() !== '' || $graph->questions->findByForm($id) !== [] || $guard->before !== CreationCollisionPrecheck::snapshot(FormsScene::READER)

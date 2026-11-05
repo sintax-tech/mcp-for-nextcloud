@@ -6,8 +6,14 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Forms\Editing;
 
-use OCA\Mcp\Tools\Forms\Editing\{EditNativeFactory,EditContext,EditState,EditPlan,EditRequest,EditWriter};
-use OCA\Mcp\Tools\Forms\Creation\{CreateNativeArguments,CreateNativeThrottle};
+use OCA\Mcp\Modules\Forms\Integration\EditNativeFactory;
+use OCA\Mcp\Modules\Forms\Editing\EditContext;
+use OCA\Mcp\Modules\Forms\Integration\EditState;
+use OCA\Mcp\Modules\Forms\Editing\EditPlan;
+use OCA\Mcp\Modules\Forms\Editing\EditRequest;
+use OCA\Mcp\Modules\Forms\Editing\EditWriter;
+use OCA\Mcp\Modules\Forms\Integration\CreateNativeArguments;
+use OCA\Mcp\Modules\Forms\Integration\CreateNativeThrottle;
 use OCA\Mcp\Tests\Integration\Forms\FormsScene;
 use OCP\Server;
 

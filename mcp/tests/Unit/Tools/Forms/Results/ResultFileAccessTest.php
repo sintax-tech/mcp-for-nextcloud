@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Forms\Results;
 
-use OCA\Mcp\Tools\Forms\Attachments\ResultFileAccess;
+use OCA\Mcp\Modules\Forms\ResultFileAccess;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;

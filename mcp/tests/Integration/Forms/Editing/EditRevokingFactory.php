@@ -6,7 +6,8 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Forms\Editing;
 
-use OCA\Mcp\Tools\Forms\Editing\{EditNativeFactory,EditContext};
+use OCA\Mcp\Modules\Forms\Integration\EditNativeFactory;
+use OCA\Mcp\Modules\Forms\Editing\EditContext;
 
 /** Test-only renewed-policy boundary revokes a disposable grant externally without invalidating the outer local snapshot. */
 final class EditRevokingFactory extends EditNativeFactory {

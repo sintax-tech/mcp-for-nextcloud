@@ -9,8 +9,12 @@ namespace OCA\Mcp\Tests\Unit\Tools\Forms\Editing;
 
 require_once __DIR__ . '/EditingFixture.php';
 require_once dirname(__DIR__) . '/Creation/NativeNoSuchFormException.php';
-use OCA\Mcp\Tools\Forms\Editing\{EditWriter, EditNativeFactory, EditState, EditPlan, EditRequest};
-use OCA\Mcp\Tools\Forms\Creation\CreateNativeThrottle;
+use OCA\Mcp\Modules\Forms\Editing\EditWriter;
+use OCA\Mcp\Modules\Forms\Integration\EditNativeFactory;
+use OCA\Mcp\Modules\Forms\Integration\EditState;
+use OCA\Mcp\Modules\Forms\Editing\EditPlan;
+use OCA\Mcp\Modules\Forms\Editing\EditRequest;
+use OCA\Mcp\Modules\Forms\Integration\CreateNativeThrottle;
 use OCA\Mcp\Mcp\{Confirmation\PlanState, Tools\Results\ToolFailure};
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use PHPUnit\Framework\TestCase;
@@ -47,7 +51,7 @@ final class EditWriterThrottleTest extends TestCase
 			$request = $this->createMock(\OCP\IRequest::class);
 			$request->method('getRemoteAddress')->willReturn('127.0.0.1');
 			$controller = new EditMissingFormController($events);
-			$context = new \OCA\Mcp\Tools\Forms\Editing\EditContext($c->version, $controller, $c->config, $c->service, $c->questions, $c->options, $c->shares);
+			$context = new \OCA\Mcp\Modules\Forms\Editing\EditContext($c->version, $controller, $c->config, $c->service, $c->questions, $c->options, $c->shares);
 			$writer = new EditWriter($this->createMock(EditNativeFactory::class), $state, $plans, new CreateNativeThrottle($t, $request));
 			try {
 				$receipt = $writer->write($context, $r, $s, $e, $plan, 'alice');

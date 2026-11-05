@@ -5,7 +5,8 @@
  */
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Forms\Creation;
-use OCA\Mcp\Tools\Forms\Creation\{CreateFormContext,FormsCreateNativeFactory};
+use OCA\Mcp\Modules\Forms\Creation\CreateFormContext;
+use OCA\Mcp\Modules\Forms\Integration\FormsCreateNativeFactory;
 
 /** Test-only barrier calls a second real PHP process to change the synthetic actor's policy. */
 final class CreationAdmissionChange extends FormsCreateNativeFactory {

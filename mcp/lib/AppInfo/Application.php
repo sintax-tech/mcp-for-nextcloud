@@ -58,7 +58,7 @@ class Application extends App implements IBootstrap {
 		\OCA\Mcp\Modules\Logs\LogsModule::class,
 		\OCA\Mcp\Tools\Mail\MailModule::class,
 		\OCA\Mcp\Modules\Tables\TablesModule::class,
-		\OCA\Mcp\Tools\Forms\FormsModule::class,
+		\OCA\Mcp\Modules\Forms\FormsModule::class,
 		\OCA\Mcp\Modules\Polls\PollsModule::class,
 	];
 

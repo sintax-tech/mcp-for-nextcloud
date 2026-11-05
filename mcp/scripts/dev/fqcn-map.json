@@ -2,6 +2,9 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Platform/Dav/CalDavObjects.php","fqcn":"OCA\\Mcp\\Platform\\Dav\\CalDavObjects","target":"stays","owner":"Platform","ticket":null},
+		{"path":"lib/Platform/Dav/CalDavWrite.php","fqcn":"OCA\\Mcp\\Platform\\Dav\\CalDavWrite","target":"stays","owner":"Platform","ticket":null},
+		{"path":"lib/Access/ResourceScope/ScopedCalendarLookup.php","fqcn":"OCA\\Mcp\\Access\\ResourceScope\\ScopedCalendarLookup","target":"stays","owner":"Access","ticket":null},
 		{"path":"lib/Modules/Polls/PollsToolCatalog.php","fqcn":"OCA\\Mcp\\Modules\\Polls\\PollsToolCatalog","target":"stays","owner":"Modules\\Polls","ticket":null},
 		{"path":"lib/Modules/Polls/Tools/ListPolls.php","fqcn":"OCA\\Mcp\\Modules\\Polls\\Tools\\ListPolls","target":"stays","owner":"Modules\\Polls","ticket":null},
 		{"path":"lib/Modules/Polls/Tools/ReadPoll.php","fqcn":"OCA\\Mcp\\Modules\\Polls\\Tools\\ReadPoll","target":"stays","owner":"Modules\\Polls","ticket":null},

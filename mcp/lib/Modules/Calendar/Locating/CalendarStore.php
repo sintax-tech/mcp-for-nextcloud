@@ -15,7 +15,7 @@ use DateTimeImmutable;
  * Implementations translate 1:1 to the Nextcloud CalDAV backend and hold no business rules:
  * visibility, ACL, classification, trash and conflict handling live in the tested classes.
  */
-interface CalendarStore {
+interface CalendarStore extends \OCA\Mcp\Platform\Dav\CalDavObjects {
 	/**
 	 * Lists the calendars owned by or shared with a principal.
 	 *

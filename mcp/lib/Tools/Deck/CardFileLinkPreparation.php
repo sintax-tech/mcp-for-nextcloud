@@ -10,6 +10,8 @@ namespace OCA\Mcp\Tools\Deck;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Integration\NativeCardFileLink;
 
 /**
  * Read-only authorization and state preparation, ordered before native Circles expansion.

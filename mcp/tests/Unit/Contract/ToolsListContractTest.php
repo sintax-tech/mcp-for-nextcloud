@@ -34,11 +34,11 @@ final class ToolsListContractTest extends TestCase {
 
 	/** Builds a concrete app class with real app collaborators and mocks for everything else. */
 	private function build(string $class): object {
-		if ($class === \OCA\Mcp\Tools\Deck\DeckCapabilities::class) {
+		if ($class === \OCA\Mcp\Modules\Deck\Integration\DeckCapabilities::class) {
 			$apps = $this->createMock(\OCP\App\IAppManager::class);
 			$apps->method('getAppVersion')->willReturn('1.19.0');
 			$apps->method('isEnabledForAnyone')->willReturn(true);
-			return new \OCA\Mcp\Tools\Deck\DeckCapabilities($apps, 35, static fn (): bool => true);
+			return new \OCA\Mcp\Modules\Deck\Integration\DeckCapabilities($apps, 35, static fn (): bool => true);
 		}
 		$constructor = (new \ReflectionClass($class))->getConstructor();
 		$args = [];

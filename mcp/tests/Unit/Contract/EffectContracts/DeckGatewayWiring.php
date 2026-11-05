@@ -36,7 +36,7 @@ require_once __DIR__ . '/../../Tools/Deck/Stubs/deck_stubs.php';
 
 /**
  * The Deck module of one request over the REAL gateway, with every service the file-link tool resolves: the module
- * builds its own {@see \OCA\Mcp\Tools\Deck\DeckServiceGateway} as the container registers it, and the container
+ * builds its own {@see \OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway} as the container registers it, and the container
  * hands out the native Deck services over {@see NativeDeck}, the real Files gate over a tree with a hidden system tag
  * ({@see HiddenTagFiles}) and a share manager whose Deck shares are a ledger ({@see RecordingShares}).
  */
@@ -79,7 +79,7 @@ final class DeckGatewayWiring {
 		$session = $this->mock(ISession::class);
 		$session->method('get')->willReturnCallback(static fn (string $key): ?string => $key === 'user_id' ? EffectsGate::USER : null);
 		return new DeckToolModule($this->container($apps, $session), $apps, $this->mock(LoggerInterface::class), $urls, $time,
-			$this->users, $this->gate->config(), $session, $this->dependencies ? new \OCA\Mcp\Tools\Deck\DeckCapabilities($apps, 35) : null);
+			$this->users, $this->gate->config(), $session, $this->dependencies ? new \OCA\Mcp\Modules\Deck\Integration\DeckCapabilities($apps, 35) : null);
 	}
 
 	/**

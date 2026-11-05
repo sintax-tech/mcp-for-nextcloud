@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
-use OCA\Mcp\Tools\Deck\DeckCapabilities;
+use OCA\Mcp\Modules\Deck\Integration\DeckCapabilities;
 use OCA\Mcp\Tools\Deck\DeckToolModule;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;

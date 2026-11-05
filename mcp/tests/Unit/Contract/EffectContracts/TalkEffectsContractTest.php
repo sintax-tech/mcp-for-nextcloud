@@ -17,7 +17,7 @@ use OCA\Mcp\Modules\Calendar\Locating\Classification;
 use OCA\Mcp\Modules\Calendar\Locating\EventRepository;
 use OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess;
 use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use OCA\Mcp\Tools\Talk\ActorNames;
 use OCA\Mcp\Tools\Talk\AttachmentAccess;
 use OCA\Mcp\Tools\Talk\AttachmentMessage;

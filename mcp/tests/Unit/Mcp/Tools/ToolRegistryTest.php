@@ -114,7 +114,7 @@ final class ToolRegistryTest extends TestCase {
 			$instance = (new \ReflectionClass($class))->newInstanceWithoutConstructor();
 			if ($instance instanceof \OCA\Mcp\Tools\Deck\DeckToolModule) {
 				(new \ReflectionProperty($instance, 'capabilities'))->setValue($instance,
-					new \OCA\Mcp\Tools\Deck\DeckCapabilities($this->nativeDeckApps(), $dependencies ? 35 : 32, static fn (): bool => true));
+					new \OCA\Mcp\Modules\Deck\Integration\DeckCapabilities($this->nativeDeckApps(), $dependencies ? 35 : 32, static fn (): bool => true));
 			}
 			$definitions = $instance->definitions();
 			$module = new class($definitions) implements ToolModule {

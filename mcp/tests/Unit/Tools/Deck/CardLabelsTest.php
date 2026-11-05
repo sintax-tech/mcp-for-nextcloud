@@ -6,7 +6,8 @@
 declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Deck;
-use OCA\Mcp\Tools\Deck\{CardLabelChanges, DeckGatewayInterface, DeckConflictException, DeckPlanRenderer};
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
+use OCA\Mcp\Tools\Deck\{CardLabelChanges, DeckConflictException, DeckPlanRenderer};
 use OCA\Mcp\Tools\Deck\Handler\EditCardLabelsHandler;
 use OCA\Mcp\Mcp\{Confirmation\PlanState, Confirmation\PlanChanged, Tools\Validation\ArgumentValidationException};
 use PHPUnit\Framework\TestCase;

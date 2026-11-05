@@ -18,7 +18,7 @@ use OCA\Mcp\Modules\Calendar\Locating\Classification;
 use OCA\Mcp\Modules\Calendar\Presentation\EventMapper;
 use OCA\Mcp\Modules\Calendar\Locating\EventRepository;
 use OCA\Mcp\Access\Grants\GrantMatrix;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckToolModule;
 use OCP\App\IAppManager;
 use OCP\IURLGenerator;

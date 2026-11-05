@@ -14,7 +14,7 @@ use OCA\Mcp\Tests\Integration\Support\DavClient;
 use OCA\Mcp\Tests\Integration\Support\Http;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
 use OCA\Mcp\Tests\Integration\Support\McpClient;
-use OCA\Mcp\Tools\Deck\DeckCapabilities;
+use OCA\Mcp\Modules\Deck\Integration\DeckCapabilities;
 use OCP\App\IAppManager;
 use OCP\Server;
 use OCP\Share\IShare;

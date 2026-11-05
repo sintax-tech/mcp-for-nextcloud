@@ -23,6 +23,9 @@ use OCP\IUserSession;
 use OCP\Share\IManager;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Integration\DeckServiceContext;
+use OCA\Mcp\Modules\Deck\Integration\NativeCardFileLink;
 
 /**
  * Focused schema and lazy composition for the file-link tool; the large Deck module only delegates.

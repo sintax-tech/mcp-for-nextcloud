@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Deck;
+namespace OCA\Mcp\Modules\Deck\Integration;
 
 use OCA\Deck\Db\Acl;
 use OCA\Deck\Db\Assignment;
@@ -203,7 +203,7 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 			$matching = [];
 			foreach ($this->cardsOfStacks($cardMapper, $stackIds) as $cardsOfStack) {
 				foreach ($cardsOfStack ?? [] as $card) {
-					if (CardCriteria::matches($card, $status, $dueBefore, $now, $zone)) {
+					if (\OCA\Mcp\Tools\Deck\CardCriteria::matches($card, $status, $dueBefore, $now, $zone)) {
 						$matching[] = $card;
 					}
 				}
@@ -215,7 +215,7 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 			$this->attachAssignments($matching);
 
 			foreach ($matching as $card) {
-				if ($assignee !== null && !in_array($assignee, CardCriteria::assignedUids($card), true)) {
+				if ($assignee !== null && !in_array($assignee, \OCA\Mcp\Tools\Deck\CardCriteria::assignedUids($card), true)) {
 					continue;
 				}
 
@@ -256,7 +256,7 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 		/** @var IUserManager $users */
 		$users = $this->services->get(IUserManager::class);
 		$out = [];
-		foreach (CardInput::assignees($assignees) as $uid) {
+		foreach (\OCA\Mcp\Tools\Deck\CardInput::assignees($assignees) as $uid) {
 			$user = $users->get($uid);
 			// Deck evaluates owner, direct ACL, group and circle membership for this account.
 			if ($user === null || !($permissions->getPermissions($boardId, $uid)[Acl::PERMISSION_READ] ?? false)) {
@@ -567,7 +567,7 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 		// The count runs the manage check and binds the caller; it is taken again here and not trusted from the plan.
 		$cards = $this->stackCardCount($userId, $stackId);
 		if ($cards > 0) {
-			throw DeckRefusalException::stackNotEmpty($cards);
+			throw \OCA\Mcp\Tools\Deck\DeckRefusalException::stackNotEmpty($cards);
 		}
 
 		/** @var StackService $stackService */
@@ -594,11 +594,11 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 	public function deleteEmptyBoard(string $userId, int $boardId): Board {
 		// Owner first: somebody who merely manages the board is refused before a single card is counted.
 		if ($this->boardOwnership($userId, $boardId)['owner'] !== $userId) {
-			throw DeckRefusalException::boardNotOwned();
+			throw \OCA\Mcp\Tools\Deck\DeckRefusalException::boardNotOwned();
 		}
 		$cards = $this->cardsInBoard($boardId);
 		if ($cards > 0) {
-			throw DeckRefusalException::boardNotEmpty($cards);
+			throw \OCA\Mcp\Tools\Deck\DeckRefusalException::boardNotEmpty($cards);
 		}
 
 		/** @var BoardService $boardService */
@@ -636,13 +636,13 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 			try {
 				$stillDeleted = $this->deletedStack($userId, (int)$deleted->getId()) !== null;
 			} catch (\Throwable) {
-				throw new DeckUnconfirmedException('deck_list_stacks', $e);
+				throw new \OCA\Mcp\Tools\Deck\DeckUnconfirmedException('deck_list_stacks', $e);
 			}
 
-			throw DeckRefusalException::stackReceivedCards(!$stillDeleted);
+			throw \OCA\Mcp\Tools\Deck\DeckRefusalException::stackReceivedCards(!$stillDeleted);
 		}
 
-		throw DeckRefusalException::stackReceivedCards(true);
+		throw \OCA\Mcp\Tools\Deck\DeckRefusalException::stackReceivedCards(true);
 	}
 
 	/**
@@ -674,13 +674,13 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 					throw new \RuntimeException('The board is not among the boards of the caller');
 				}
 			} catch (\Throwable) {
-				throw new DeckUnconfirmedException('deck_list_boards', $e);
+				throw new \OCA\Mcp\Tools\Deck\DeckUnconfirmedException('deck_list_boards', $e);
 			}
 
-			throw DeckRefusalException::boardReceivedCards(!$stillDeleted);
+			throw \OCA\Mcp\Tools\Deck\DeckRefusalException::boardReceivedCards(!$stillDeleted);
 		}
 
-		throw DeckRefusalException::boardReceivedCards(true);
+		throw \OCA\Mcp\Tools\Deck\DeckRefusalException::boardReceivedCards(true);
 	}
 
 	/**
@@ -907,7 +907,7 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 	 * @return string|null UTC with Z for every supported deadline or preserved native instant, or null.
 	 */
 	private function instant(string $userId, ?string $duedate): ?string {
-		return CardDueDate::forDeck($duedate, $this->zone($userId));
+		return \OCA\Mcp\Tools\Deck\CardDueDate::forDeck($duedate, $this->zone($userId));
 	}
 
 	/**

@@ -24,7 +24,7 @@ use OCA\Deck\Service\StackService;
 use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tools\Deck\CardCriteria;
 use OCA\Mcp\Tools\Deck\CardDueDate;
-use OCA\Mcp\Tools\Deck\DeckServiceGateway;
+use OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway;
 use OCA\Mcp\Tools\Deck\DeckSessionException;
 use OCA\Deck\Service\AssignmentService;
 use OCP\AppFramework\Utility\ITimeFactory;

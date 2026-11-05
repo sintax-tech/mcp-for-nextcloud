@@ -13,7 +13,7 @@ use OCA\Mcp\Tools\Deck\CardFileNodeAccess;
 use OCA\Mcp\Tools\Deck\CardLinkMessages;
 use OCA\Mcp\Tools\Deck\CardLinkPlan;
 use OCA\Mcp\Tools\Deck\CardLinkTool;
-use OCA\Mcp\Tools\Deck\DeckCapabilities;
+use OCA\Mcp\Modules\Deck\Integration\DeckCapabilities;
 use OCA\Mcp\Tools\Deck\DeckMessages;
 use OCA\Mcp\Tools\Deck\DeckPlanRenderer;
 use OCA\Mcp\Tools\Deck\DeckRefusalException;

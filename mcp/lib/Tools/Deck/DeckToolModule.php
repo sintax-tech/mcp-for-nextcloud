@@ -73,7 +73,7 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	/** Default page size of `deck_list_cards`. */
 	private const DEFAULT_LIMIT = 50;
 
-	private ?DeckGatewayInterface $gateway = null;
+	private ?\OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface $gateway = null;
 	private ?CardFiles $cardFiles = null;
 
 	/**
@@ -85,7 +85,7 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	 * @param IUserManager|null $userManager Resolves the UID to the IUser that IAppManager::isEnabledForUser() expects.
 	 * @param IConfig|null $config Reads the caller's timezone, so due dates speak the day they see.
 	 * @param \OCP\ISession|null $session Caller binding used by the native Deck services.
-	 * @param DeckCapabilities|null $capabilities Optional native capability probe; default reads current installation.
+	 * @param \OCA\Mcp\Modules\Deck\Integration\DeckCapabilities|null $capabilities Optional native capability probe; default reads current installation.
 	 */
 	public function __construct(
 		private ContainerInterface $container,
@@ -96,7 +96,7 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 		private ?IUserManager $userManager = null,
 		private ?IConfig $config = null,
 		private ?\OCP\ISession $session = null,
-		private ?DeckCapabilities $capabilities = null,
+		private ?\OCA\Mcp\Modules\Deck\Integration\DeckCapabilities $capabilities = null,
 	) {
 	}
 
@@ -964,18 +964,18 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 		return new CardFormatter($this->urlGenerator, $this->timeFactory, $this->userManager, $this->zones()?->forUser($userId));
 	}
 
-	/** @return DeckCapabilities Fresh version/native-shape gate, with no Deck DI resolution. */
-	private function dependencyCapabilities(): DeckCapabilities {
-		return $this->capabilities ??= new DeckCapabilities($this->appManager);
+	/** @return \OCA\Mcp\Modules\Deck\Integration\DeckCapabilities Fresh version/native-shape gate, with no Deck DI resolution. */
+	private function dependencyCapabilities(): \OCA\Mcp\Modules\Deck\Integration\DeckCapabilities {
+		return $this->capabilities ??= new \OCA\Mcp\Modules\Deck\Integration\DeckCapabilities($this->appManager);
 	}
 
 	/**
 	 * Deck gateway of this request, created on first use.
 	 *
-	 * @return DeckGatewayInterface Gateway that resolves Deck services through the container.
+	 * @return \OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface Gateway that resolves Deck services through the container.
 	 */
-	private function gateway(): DeckGatewayInterface {
-		return $this->gateway ??= new DeckServiceGateway($this->container, $this->timeFactory, $this->zones(), $this->session);
+	private function gateway(): \OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface {
+		return $this->gateway ??= new \OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway($this->container, $this->timeFactory, $this->zones(), $this->session);
 	}
 
 	/**

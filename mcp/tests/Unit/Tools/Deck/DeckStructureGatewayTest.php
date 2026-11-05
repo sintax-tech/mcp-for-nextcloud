@@ -21,7 +21,7 @@ use OCA\Deck\Service\CardService;
 use OCA\Deck\Service\PermissionService;
 use OCA\Deck\Service\StackService;
 use OCA\Mcp\Tools\Deck\DeckRefusalException;
-use OCA\Mcp\Tools\Deck\DeckServiceGateway;
+use OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway;
 use OCA\Mcp\Tools\Deck\DeckSessionException;
 use OCA\Mcp\Tools\Deck\DeckUnconfirmedException;
 use OCP\AppFramework\Utility\ITimeFactory;

@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Deck;
+namespace OCA\Mcp\Modules\Deck\Integration;
 
 use Closure;
 use OCA\Deck\Db\Card;

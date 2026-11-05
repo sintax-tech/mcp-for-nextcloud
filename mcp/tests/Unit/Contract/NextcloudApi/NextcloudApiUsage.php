@@ -128,7 +128,7 @@ final class NextcloudApiUsage {
 		'OCA\\Talk\\Model\\Attendee::getParticipantType' => [],
 		'OCA\\Talk\\Model\\Attendee::getUnreadMessages' => [],
 		'OCA\\Talk\\Model\\Attendee::isArchived' => [],
-		// Deck, resolved by class name in OCA\Mcp\Tools\Deck\DeckServiceGateway.
+		// Deck, resolved by class name in OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway.
 		'OCA\\Deck\\Service\\AssignmentService::assignUser' => ['cardId', 'userId'],
 		'OCA\\Deck\\Service\\AssignmentService::unassignUser' => ['cardId', 'userId'],
 		'OCA\\Deck\\Service\\BoardService::create' => ['title', 'userId', 'color'],
@@ -515,7 +515,7 @@ final class NextcloudApiUsage {
 		'OCA\\Deck\\Db\\CardMapper::findAllForStacks' => [
 			'missing' => ['31', '32'],
 			'fallback' => 'OCA\\Deck\\Db\\CardMapper::findAll',
-			'by' => \OCA\Mcp\Tools\Deck\DeckServiceGateway::class,
+			'by' => \OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway::class,
 		],
 		// Deck 1.18 (Nextcloud 34) gave cards a start date and a colour, and CardService::update() clears both when they
 		// are left out. Up to 1.17 the update ends at `done`, so there is nothing to send back.
@@ -523,41 +523,41 @@ final class NextcloudApiUsage {
 		'OCA\\Deck\\Db\\CardMapper::findDependenciesForCards' => [
 			'missing' => ['31', '32', '33'],
 			'fallback' => 'OCA\\Deck\\Db\\Card::getId',
-			'by' => \OCA\Mcp\Tools\Deck\DeckDependencyGateway::class,
+			'by' => \OCA\Mcp\Modules\Deck\Integration\DeckDependencyGateway::class,
 		],
 		'OCA\\Deck\\Service\\CardService::assignDependentCard' => [
 			'missing' => ['31', '32', '33'],
 			'fallback' => 'OCA\\Deck\\Db\\Card::getId',
-			'by' => \OCA\Mcp\Tools\Deck\DeckDependencyGateway::class,
+			'by' => \OCA\Mcp\Modules\Deck\Integration\DeckDependencyGateway::class,
 		],
 		'OCA\\Deck\\Service\\CardService::removeDependentCard' => [
 			'missing' => ['31', '32', '33'],
 			'fallback' => 'OCA\\Deck\\Db\\Card::getId',
-			'by' => \OCA\Mcp\Tools\Deck\DeckDependencyGateway::class,
+			'by' => \OCA\Mcp\Modules\Deck\Integration\DeckDependencyGateway::class,
 		],
 		'OCA\\Deck\\Db\\Card::getDependentCards' => [
 			'missing' => ['31', '32', '33'],
 			'fallback' => 'OCA\\Deck\\Db\\Card::getId',
-			'by' => \OCA\Mcp\Tools\Deck\CardReferenceFilter::class,
+			'by' => \OCA\Mcp\Modules\Deck\Integration\CardReferenceFilter::class,
 		],
 		'OCA\\Deck\\Db\\Card::setDependentCards' => [
 			'missing' => ['31', '32', '33'],
 			'fallback' => 'OCA\\Deck\\Db\\Card::getId',
-			'by' => \OCA\Mcp\Tools\Deck\CardReferenceFilter::class,
+			'by' => \OCA\Mcp\Modules\Deck\Integration\CardReferenceFilter::class,
 		],
 		'OCA\\Deck\\Db\\Card::getStartdate' => [
 			'missing' => ['31', '32', '33'],
 			'fallback' => 'OCA\\Deck\\Service\\CardService::update',
-			'by' => \OCA\Mcp\Tools\Deck\DeckServiceGateway::class,
+			'by' => \OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway::class,
 		],
 		'OCA\\Deck\\Db\\Card::getColor' => [
 			'missing' => ['31', '32', '33'],
 			'fallback' => 'OCA\\Deck\\Service\\CardService::update',
-			'by' => \OCA\Mcp\Tools\Deck\DeckServiceGateway::class,
+			'by' => \OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway::class,
 			'elsewhere' => [
 				'Tools/Deck/CardFormatter.php' => 'OCA\\Deck\\Db\\Board::getColor',
 				'Tools/Deck/Handler/ListLabelsHandler.php' => 'OCA\\Deck\\Db\\Label::getColor',
-				'Tools/Deck/DeckLabelGateway.php' => 'OCA\\Deck\\Db\\Label::getColor',
+				'Modules/Deck/Integration/DeckLabelGateway.php' => 'OCA\\Deck\\Db\\Label::getColor',
 			],
 		],
 		// Up to Talk 23 Room::getLobbyState() opens a lobby whose timer has passed by itself.

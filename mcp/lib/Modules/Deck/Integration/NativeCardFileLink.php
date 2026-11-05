@@ -5,13 +5,14 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Deck;
+namespace OCA\Mcp\Modules\Deck\Integration;
 
 use OCA\Deck\Sharing\DeckShareProvider;
 use OCP\Constants;
 use OCP\Files\File;
 use OCP\Share\IManager;
 use OCP\Share\IShare;
+use OCA\Mcp\Tools\Deck\CardFiles;
 
 /**
  * Narrow native type-12 creation and canonical node/card observation, with no file mutations.

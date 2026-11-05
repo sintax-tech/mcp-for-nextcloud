@@ -13,6 +13,7 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use Psr\Log\LoggerInterface;
 use Throwable;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 
 /**
  * Internal complete board recipients after grants and fresh active source READ/EDIT; never creates a share.

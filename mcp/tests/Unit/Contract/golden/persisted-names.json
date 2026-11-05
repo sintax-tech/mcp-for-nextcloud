@@ -36,7 +36,7 @@
             "OCA\\Mcp\\Platform\\FileAccess\\ActorRoot",
             "OCA\\Mcp\\Access\\ResourceScope\\ScopeReader",
             "OCA\\Mcp\\Access\\ResourceScope\\FileReferenceScope",
-            "OCA\\Mcp\\Tools\\Deck\\DeckGatewayInterface",
+            "OCA\\Mcp\\Modules\\Deck\\Integration\\DeckGatewayInterface",
             "OCA\\Mcp\\Mcp\\Resources\\NoteResource",
             "OCA\\Mcp\\Access\\ResourceScope\\NativeCalendars",
             "OCA\\Mcp\\Modules\\Calendar\\Selftest\\CalendarSelftestReader",

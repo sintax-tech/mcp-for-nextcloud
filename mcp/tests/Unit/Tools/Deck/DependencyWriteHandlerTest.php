@@ -8,7 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use OCA\Deck\NoPermissionException;
-use OCA\Mcp\Tools\Deck\{DeckGatewayInterface, DeckConflictException, DeckPlanRenderer};
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
+use OCA\Mcp\Tools\Deck\{DeckConflictException, DeckPlanRenderer};
 use OCA\Mcp\Tools\Deck\Handler\ChangeCardDependencyHandler;
 use OCA\Mcp\Mcp\{Confirmation\PlanState, Confirmation\PlanChanged, Tools\Validation\ArgumentValidationException};
 use PHPUnit\Framework\TestCase;

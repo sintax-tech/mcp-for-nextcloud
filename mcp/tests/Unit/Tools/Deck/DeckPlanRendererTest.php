@@ -11,7 +11,7 @@ use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Stack;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckPlanRenderer;
 use OCA\Mcp\Tools\Deck\DeckToolModule;
 use OCP\App\IAppManager;

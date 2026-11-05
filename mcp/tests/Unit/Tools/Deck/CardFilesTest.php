@@ -9,7 +9,8 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
-use OCA\Mcp\Tools\Deck\{CardFiles, DeckGatewayInterface, DeckRefusalException};
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
+use OCA\Mcp\Tools\Deck\{CardFiles, DeckRefusalException};
 use OCA\Mcp\Tools\Deck\Handler\CardFileHandler;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\Files\{File, Folder, IRootFolder};

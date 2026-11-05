@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tools\Deck\Handler;
 use Closure;
 use OCA\Mcp\Tools\Deck\CardFormatter;
 use OCA\Mcp\Tools\Deck\DeckConflictException;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckMessages;
 use OCA\Mcp\Tools\Deck\DependencyChange;
 use OCA\Mcp\Mcp\Confirmation\PlanChanged;

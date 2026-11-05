@@ -19,7 +19,7 @@ use OCA\Deck\Db\StackMapper;
 use OCA\Deck\NoPermissionException;
 use OCA\Deck\Service\BoardService;
 use OCA\Deck\Service\PermissionService;
-use OCA\Mcp\Tools\Deck\DeckServiceGateway;
+use OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway;
 use OCA\Mcp\Tools\Deck\DeckSessionException;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\ISession;

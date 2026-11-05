@@ -16,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * Effect contract of the Deck label change, file link and board deletion over the REAL gateway (RE-01), the
  * counterpart of {@see DeckEffectsContractTest}, whose label and link effects are observed on a gateway double: here
- * the module builds {@see \OCA\Mcp\Tools\Deck\DeckServiceGateway} itself ({@see DeckGatewayWiring}) and the effect is
+ * the module builds {@see \OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway} itself ({@see DeckGatewayWiring}) and the effect is
  * read on the native side, the label links and every native write of {@see NativeDeck}, and the Deck shares of
  * {@see RecordingShares}.
  */

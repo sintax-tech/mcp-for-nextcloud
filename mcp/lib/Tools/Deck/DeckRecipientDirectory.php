@@ -15,6 +15,7 @@ use OCP\App\IAppManager;
 use OCP\IGroupManager;
 use OCP\IUser;
 use OCP\IUserManager;
+use OCA\Mcp\Modules\Deck\Integration\DeckServiceContext;
 
 /**
  * The same native directories and inherited membership used by Deck, with strict completeness checks.

@@ -25,7 +25,7 @@ final class CalDavBackendContractTest extends TestCase {
 	 * ticket, so a directory that no longer exists is skipped; testTheScannerSeesTheKnownAdapterCalls keeps a move
 	 * from silently dropping the adapters.
 	 */
-	private const SCANNED = ['Modules/Calendar', 'Tools/Tasks', 'Modules/Tasks', 'Modules/Contacts'];
+	private const SCANNED = ['Modules/Calendar', 'Modules/Tasks', 'Modules/Contacts'];
 
 	/**
 	 * Collects `backend()->method(` and `container->get(XxxBackend::class)->method(` calls per backend class.

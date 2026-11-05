@@ -21,14 +21,15 @@ final class PlanFieldCompatibilityTest extends TestCase {
 	}
 
 	#[DataProvider('writes')]
-	public function testCreateAndEditKeepTheirExistingCompletionDatePresentation(string $tool): void {
+	public function testCreateAndEditNowShowTheirCompletionDate(string $tool): void {
 		$plan = ['calendar' => ['name' => 'Tasks'], 'before' => ['summary' => 'Work', 'percentComplete' => 0],
 			'after' => ['summary' => 'Work', 'percentComplete' => 100], 'timezone' => 'UTC'];
 		$renderer = new TasksPlanRenderer();
 		$withoutDate = $renderer->render($tool, $plan);
 		self::assertNotNull($withoutDate);
-		$plan['after']['completed'] = '2026-10-01T12:00:00+00:00';
-		self::assertSame($withoutDate, $renderer->render($tool, $plan));
+		$plan['after']['completed'] = '2026-10-01';
+		self::assertStringNotContainsString('Completed at', $withoutDate);
+		self::assertStringContainsString('Completed at', (string) $renderer->render($tool, $plan));
 	}
 	public function testAProgressEditKeepsItsExistingConfirmationText(): void {
 		$plan = ['calendar' => ['name' => 'Tasks'], 'before' => ['summary' => 'Work', 'percentComplete' => 0],

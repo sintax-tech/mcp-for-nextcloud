@@ -96,7 +96,7 @@ final class TasksPlanRenderer {
 			}
 		}
 
-		return implode("\n", $lines);
+		return implode("\n", (new TaskStatusPlanText())->create($lines, $after, $zone));
 	}
 
 	/**
@@ -208,7 +208,7 @@ final class TasksPlanRenderer {
 				. ' → ' . ($to ?? Translator::t('empty'));
 		}
 
-		return implode("\n", $lines);
+		return implode("\n", (new TaskStatusPlanText())->edit($lines, $before, $after, $zone));
 	}
 
 	/**

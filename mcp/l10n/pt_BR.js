@@ -1,6 +1,13 @@
 OC.L10N.register(
     "mcp",
     {
+    "needs action" : "pendente",
+    "in progress" : "em andamento",
+    "completed" : "concluída",
+    "cancelled" : "cancelada",
+    "Task status must be one of %s." : "O status da tarefa deve ser um destes: %s.",
+    "A completed task must have 100 percent progress." : "Uma tarefa concluída deve ter 100 por cento de progresso.",
+    "Only a completed or cancelled task can have 100 percent progress." : "Somente uma tarefa concluída ou cancelada pode ter 100 por cento de progresso.",
     "Unknown grants: denied" : "Permissões desconhecidas: negadas",
     "Unknown group grants" : "Permissões de grupo desconhecidas",
     "These saved grants are unknown to this version and grant no access. Other permissions continue to apply. Cleanup is optional and is recorded." : "Esta versão não reconhece estas permissões salvas e elas não concedem acesso. As outras permissões continuam valendo. A limpeza é opcional e fica registrada.",

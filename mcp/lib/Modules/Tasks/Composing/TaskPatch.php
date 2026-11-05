@@ -17,7 +17,7 @@ use Throwable;
 /** Applies the existing task fields to a cloned master, preserving unrelated iCalendar properties. */
 final class TaskPatch {
 	/**
-	 * Applies normalized categories, fields, dates, progress and write metadata.
+	 * Applies normalized categories, fields, dates, status, progress and write metadata.
 	 *
 	 * @param VTodo $task master of the cloned calendar
 	 * @param array<string, mixed> $arguments validated write arguments
@@ -113,6 +113,8 @@ final class TaskPatch {
 			$task->STATUS = 'COMPLETED';
 			$task->{'PERCENT-COMPLETE'} = 100;
 			$task->COMPLETED = $stamp;
+		} elseif (array_key_exists('status', $arguments)) {
+			(new TaskStatus())->apply($task, $arguments['status'], $arguments['percentComplete'] ?? null, $stamp);
 		} elseif (isset($arguments['percentComplete'])) {
 			$percent = $arguments['percentComplete'];
 			if ($percent < 0 || $percent > 100) {

@@ -2,6 +2,12 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## Unreleased — 1.3.0
+
+### Added
+
+- **Task status on create and edit:** `status` accepts NEEDS-ACTION, IN-PROCESS, COMPLETED and CANCELLED, following the Tasks app. Status alone completes at 100% with a timestamp (preserving an existing time when already completed), reopens 100% at 99%, and starts IN-PROCESS at 1% from zero or absent progress. CANCELLED preserves progress and the completion date and remains listed. Explicit progress takes precedence when consistent; contradictory pairs are refused before writing. Progress alone retains its previous behavior, including reopening cancelled tasks. Confirmation plans show status and completion-date changes in the plan timezone. Status/progress based on PR #29 by Marc-Olivier Turgeon-Ferland (@mturgeonferland), [contribution #29](https://github.com/sintax-tech/mcp-for-nextcloud/pull/29).
+
 ## 1.2.5 — 2026-10-31
 
 Fix release on top of 1.2.4. No database change and no permission change; updating from 1.2.4 needs no step.

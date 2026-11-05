@@ -21,6 +21,13 @@ final class TasksGuideNotes {
 			'Undated tasks are included. Completed tasks are hidden by default in listings. '
 				. 'Recurring tasks can be read; changing recurring tasks or tasks with participants is '
 				. 'refused to protect their series and scheduling.',
+			'Task status (NEEDS-ACTION, IN-PROCESS, COMPLETED, CANCELLED) can be set on create and edit, as in the Tasks app. '
+				. 'Status alone: COMPLETED sets 100 percent and the completion time (preserving an existing time if already completed); '
+				. 'IN-PROCESS clears the time and changes 100 to 99 or 0 to 1; NEEDS-ACTION clears the time and changes 100 to 99; '
+				. 'CANCELLED keeps progress and the completion time and is still listed. Explicit percentComplete wins when consistent: '
+				. 'COMPLETED requires 100, NEEDS-ACTION and IN-PROCESS reject 100, and CANCELLED accepts 0-100. '
+				. 'Progress alone still derives status and reopens a cancelled task. Omitting both preserves them. '
+				. 'Create/edit plans show status changes and the addition, removal or change of the completion date in the plan timezone.',
 			'Task categories are free text, as in the Tasks app. On create and edit, a categories list '
 				. 'replaces all existing categories, [] clears them and omitting the field preserves them. '
 				. 'tasks_list_tasks can filter by one category, ignoring case.',

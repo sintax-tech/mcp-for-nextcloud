@@ -74,7 +74,17 @@ final class TasksSchema {
 				'type' => 'integer',
 				'minimum' => 0,
 				'maximum' => 100,
-				'description' => 'Progress percentage. 100 completes the task; a lower value reopens it.',
+				'description' => 'Progress percentage. Alone, 100 completes the task and a lower value reopens it, even if cancelled. '
+					. 'With status, COMPLETED requires 100, NEEDS-ACTION and IN-PROCESS require less than 100, '
+					. 'and CANCELLED accepts 0-100 while preserving the completion date.',
+			],
+			'status' => [
+				'type' => 'string',
+				'enum' => \OCA\Mcp\Modules\Tasks\Composing\TaskStatus::VALUES,
+				'description' => 'Task status, as in the Tasks app. Alone, COMPLETED sets 100 percent and a completion time '
+					. '(keeping an existing time if already completed); IN-PROCESS removes the time, changes 100 to 99 and 0 to 1; '
+					. 'NEEDS-ACTION removes the time and changes 100 to 99; CANCELLED preserves progress and completion time. '
+					. 'An explicit percentComplete takes precedence when consistent. Omit status to preserve it unless progress is supplied.',
 			],
 			'categories' => [
 				'type' => 'array',

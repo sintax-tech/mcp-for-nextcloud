@@ -48,9 +48,13 @@ final class TaskStatusPlanText {
 		// Compare the stored moments, so even a change within the formatter's displayed minute gets a line.
 		if (($before['completed'] ?? null) !== ($after['completed'] ?? null)) {
 			$values = new TaskPlanValues();
-			$lines[] = $this->change($values->label('completed'),
-				$this->date($before['completed'] ?? null, $zone),
-				$this->date($after['completed'] ?? null, $zone));
+			$fromDate = $this->date($before['completed'] ?? null, $zone);
+			$toDate = $this->date($after['completed'] ?? null, $zone);
+			if ($fromDate !== null && $fromDate === $toDate) {
+				$fromDate = $this->seconds($before['completed'], $zone);
+				$toDate = $this->seconds($after['completed'], $zone);
+			}
+			$lines[] = $this->change($values->label('completed'), $fromDate, $toDate);
 		}
 		return $lines;
 	}
@@ -67,6 +71,19 @@ final class TaskStatusPlanText {
 		} catch (\Error $error) {
 			if (class_exists(\IntlDateFormatter::class)) { throw $error; }
 			return (new \DateTimeImmutable((string) $value))->setTimezone($zone)->format('Y-m-d H:i');
+		}
+	}
+
+	/**
+	 * @param mixed $value raw completion timestamp whose usual display conceals a change
+	 * @param DateTimeZone $zone the same timezone used for the ordinary date text
+	 * @return string|null date including seconds, or the ordinary escaped text for an invalid timestamp
+	 */
+	private function seconds(mixed $value, DateTimeZone $zone): ?string {
+		try {
+			return (new \DateTimeImmutable((string) $value))->setTimezone($zone)->format('Y-m-d H:i:s');
+		} catch (\Exception) {
+			return $this->date($value, $zone);
 		}
 	}
 

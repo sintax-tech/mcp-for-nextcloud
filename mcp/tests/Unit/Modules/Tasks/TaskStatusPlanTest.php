@@ -26,10 +26,27 @@ final class TaskStatusPlanTest extends TestCase {
 		self::assertContains('- Completed at: empty → ' . $date, $helper->edit([], $before, $after, $zone));
 		self::assertContains('- Completed at: ' . $date . ' → empty', $helper->edit([], $after, $before, $zone));
 		$changed = $after; $changed['completed'] = '2026-10-01T12:00:30Z';
-		self::assertCount(1, $helper->edit([], $after, $changed, $zone), 'even a change within the displayed minute is reported');
+		self::assertSame(['- Completed at: 2026-10-01 09:00:00 → 2026-10-01 09:00:30'],
+			$helper->edit([], $after, $changed, $zone), 'both sides must show the actual change in the plan timezone');
 		$cancelled = $after; $cancelled['status'] = 'CANCELLED';
 		self::assertSame(['- Status: completed → cancelled'], $helper->edit([], $after, $cancelled, $zone));
 		self::assertSame([], $helper->edit([], $after, ['status' => 'completed', 'completed' => $after['completed']], $zone));
+	}
+
+	public function testSecondsDoNotChangeTheTimezoneOrCreateFalseChanges(): void {
+		$helper = new TaskStatusPlanText();
+		foreach (['UTC' => '12:00', 'Asia/Tokyo' => '21:00', 'America/Sao_Paulo' => '09:00'] as $name => $time) {
+			$zone = new DateTimeZone($name);
+			$before = ['completed' => '2026-10-01T12:00:01Z'];
+			$after = ['completed' => '2026-10-01T12:00:59Z'];
+			self::assertSame(["- Completed at: 2026-10-01 $time:01 → 2026-10-01 $time:59"], $helper->edit([], $before, $after, $zone));
+			self::assertSame([], $helper->edit([], $before, $before, $zone));
+			$after['completed'] = '2026-10-01T12:05:00Z';
+			$values = new TaskPlanValues();
+			$from = class_exists(\IntlDateFormatter::class) ? $values->value($before['completed'], 'completed', $zone) : '2026-10-01 ' . $time;
+			$to = class_exists(\IntlDateFormatter::class) ? $values->value($after['completed'], 'completed', $zone) : '2026-10-01 ' . substr($time, 0, 3) . '05';
+			self::assertSame(['- Completed at: ' . $from . ' → ' . $to], $helper->edit([], $before, $after, $zone));
+		}
 	}
 
 	public function testDefaultCreateStatusIsOmittedAndOtherStatusesAreTranslated(): void {

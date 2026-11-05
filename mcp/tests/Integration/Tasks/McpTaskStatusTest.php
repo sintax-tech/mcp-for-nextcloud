@@ -78,7 +78,7 @@ final class McpTaskStatusTest extends IntegrationTestCase {
 		foreach ($this->created as $id) {
 			try {
 				Server::get(CalDavBackend::class)->deleteCalendar($id, true);
-			} catch (Throwable) {
+			} catch (\Throwable) {
 				// Already gone.
 			}
 		}

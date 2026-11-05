@@ -82,9 +82,10 @@ final class TasksSchema {
 				'type' => 'string',
 				'enum' => \OCA\Mcp\Modules\Tasks\Composing\TaskStatus::VALUES,
 				'description' => 'Task status, as in the Tasks app. Alone, COMPLETED sets 100 percent and a completion time '
-					. '(keeping an existing time if already completed); IN-PROCESS removes the time, changes 100 to 99 and 0 to 1; '
+					. '(keeping an existing time if already completed); IN-PROCESS removes the time, changes 100 to 99 and zero or absent progress to 1; '
 					. 'NEEDS-ACTION removes the time and changes 100 to 99; CANCELLED preserves progress and completion time. '
-					. 'An explicit percentComplete takes precedence when consistent. Omit status to preserve it unless progress is supplied.',
+					. 'An explicit percentComplete takes precedence when consistent. With explicit status, zero progress does not add '
+					. 'PERCENT-COMPLETE where absent. Omit status to preserve it unless progress is supplied.',
 			],
 			'categories' => [
 				'type' => 'array',

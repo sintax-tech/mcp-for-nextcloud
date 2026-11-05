@@ -300,15 +300,58 @@ final class GroupScopeReceiptScenario extends TestCase {
 			'oneCommandId' => $ids === [] ? null : count(array_unique($ids)) === 1,
 			'freshOutbox' => $outboxes === [] ? null : count($outboxes) === count(array_unique(array_map(spl_object_id(...), $outboxes))),
 		];
+		return self::normalize($record);
+	}
+
+	/**
+	 * Maps only the ids this run created: commandId, a non-uniform gen, and the command prefix of an outbox id.
+	 * An input generation, a member hash and any other literal stay as they were written.
+	 *
+	 * @param array<string, mixed> $record
+	 * @return array<string, mixed>
+	 */
+	public static function normalize(array $record): array {
+		$created = [];
+		$remember = static function (mixed $value) use (&$created): void {
+			if (!is_string($value) || preg_match('/^[a-f0-9]{32}$/D', $value) !== 1 || preg_match('/^(.)\1{31}$/D', $value) === 1) {
+				return;
+			}
+			$created[$value] = true;
+		};
+		$walk = static function (mixed $node) use (&$walk, $remember): void {
+			if (!is_array($node)) {
+				return;
+			}
+			foreach ($node as $key => $value) {
+				if ($key === 'commandId' || $key === 'gen') {
+					$remember($value);
+				}
+				if (in_array($key, ['receiptId', 'undoOf', 'previewId'], true) && is_string($value)
+					&& preg_match('/^([a-f0-9]{32})-\d+$/D', $value, $prefix) === 1) {
+					$remember($prefix[1]);
+				}
+				if ($key === 'payload' && is_string($value)) {
+					$decoded = json_decode($value, true);
+					if (is_array($decoded)) {
+						$walk($decoded);
+					}
+					continue;
+				}
+				if (is_array($value)) {
+					$walk($value);
+				}
+			}
+		};
+		$walk($record);
 		$encoded = json_encode($record, JSON_THROW_ON_ERROR);
-		$seen = [];
-		$encoded = preg_replace_callback('/\b[a-f0-9]{32}\b/', static function (array $match) use (&$seen): string {
-			if (preg_match('/^(.)\1{31}$/D', $match[0]) === 1) {
+		$map = [];
+		$encoded = preg_replace_callback('/\b[a-f0-9]{32}\b/', static function (array $match) use ($created, &$map): string {
+			if (!isset($created[$match[0]])) {
 				return $match[0];
 			}
-			return $seen[$match[0]] ??= 'id-' . (count($seen) + 1);
+			return $map[$match[0]] ??= 'id-' . (count($map) + 1);
 		}, $encoded);
-		return json_decode($encoded, true, 512, JSON_THROW_ON_ERROR);
+		return json_decode((string)$encoded, true, 512, JSON_THROW_ON_ERROR);
 	}
 
 	private static function error(\Throwable $e): array {

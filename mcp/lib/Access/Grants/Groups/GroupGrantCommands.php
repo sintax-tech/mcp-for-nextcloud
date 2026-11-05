@@ -64,10 +64,17 @@ final class GroupGrantCommands implements GroupGrantCommandsContract {
 	}
 
 	/**
-	 * One group preview ($preview null) or save, as one admin command.
+	 * One group preview, when $preview is null, or one group save, as one admin command.
 	 *
+	 * @param string $expected the revision the command was read at
+	 * @param string $actor the administrator running the command
+	 * @param string $gid the group the grants belong to
 	 * @param array<string, list<string>> $grants canonical target set
-	 * @param array{gid:string, grants:array, memberHash:string, life:?array}|null $preview the save's preview
+	 * @param array{gid:string, grants:array, memberHash:string, life:?array}|null $preview the save's preview, or null when this call is the preview
+	 * @param Closure $admit reads membership and holders outside the transaction
+	 * @return array<string, mixed> the preview result, or the save's revision, changed flag, lifecycle state and revoked count
+	 * @throws \InvalidArgumentException when the actor or the group is not a uid
+	 * @throws PolicyConflict|PolicyUnavailable|SnapshotInvalidated|ReceiptNotFound|ReceiptExpired|GroupSourceUntrusted when the command cannot commit
 	 */
 	private function groupCommand(string $expected, string $actor, string $gid, array $grants, ?array $preview, Closure $admit): array {
 		if (!PolicyEventPayload::validUid($actor) || !PolicyEventPayload::validUid($gid)) {

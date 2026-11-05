@@ -112,6 +112,8 @@ final class ReceiptRestorer implements ReceiptRestorerContract {
 	 * Loads a receipt for its own administrator, checking ownership before expiry so another administrator's
 	 * receipt is indistinguishable from an unknown one.
 	 *
+	 * @param string $receiptId the stored receipt event
+	 * @param string $actor the administrator who must own it
 	 * @param bool $live whether an expired receipt is refused (false only to describe it)
 	 * @return array{revision:string, changes:list<array{uid:string, key:string, before:?string, after:?string}>}
 	 * @throws ReceiptNotFound|ReceiptExpired|PolicyUnavailable

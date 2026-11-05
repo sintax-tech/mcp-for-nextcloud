@@ -28,6 +28,8 @@ final class CredentialHolders {
 	 * highest generation among those rows and the owner's issue_seq and revoked_below, sorted by a digest of the uid.
 	 * Read before the external phase and again under the mutex: any difference is an issuance (or a cut) in between.
 	 *
+	 * @param int $now unix time used to decide which credentials are still live
+	 * @param string $epoch the auth epoch the holders are read in
 	 * @return array<string, array{uid:string, gen:string, issue_seq:string, revoked_below:string}>
 	 * @throws PolicyUnavailable when a holder's generations cannot be read
 	 */

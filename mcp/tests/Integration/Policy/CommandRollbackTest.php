@@ -82,27 +82,23 @@ final class CommandRollbackTest extends OAuthAccountTestCase {
 		$this->assertGreaterThan(0, $withdrawal['revokes']);
 		// The preview commits on its own. The snapshot is the state the withdrawal has to restore.
 		$before = $this->observe($gid);
-		try {
-			$this->writer($this->failingEvents())->setGroupGrants($withdrawal['revision'], self::ACTOR, $gid, $withdrawal['grants'], $withdrawal['previewId'], $admit);
-			$this->fail('The withdrawal committed');
-		} catch (RuntimeException $error) {
-			$this->assertSame('injected before commit', $error->getMessage());
-		}
-		$this->assertFalse($this->official()->inTransaction());
-		$this->assertSame($before, $this->observe($gid));
+		$this->assertRolledBack($gid, $before, function (PolicyEventsMapper $events) use ($withdrawal, $admit): void {
+			$this->writer($events)->setGroupGrants($withdrawal['revision'], self::ACTOR, $gid, $withdrawal['grants'], $withdrawal['previewId'], $admit);
+		}, function (array $open) use ($before): void {
+			$this->assertNotSame($before['grants'], $open['grants']);
+			$this->assertNotSame($before['events'], $open['events']);
+		});
 	}
 
 	public function testScopeSaveRollsBackAfterTheAuditWrite(): void {
 		$before = $this->observe('');
 		$revision = Server::get(PolicyStateMapper::class)->state()['revision'];
-		try {
-			$this->writer($this->failingEvents(), $this->resources())->setResourceScope($revision, self::ACTOR, $this->uid, 'calendar', ['4', '2']);
-			$this->fail('The scope save committed');
-		} catch (RuntimeException $error) {
-			$this->assertSame('injected before commit', $error->getMessage());
-		}
-		$this->assertFalse($this->official()->inTransaction());
-		$this->assertSame($before, $this->observe(''));
+		$this->assertRolledBack('', $before, function (PolicyEventsMapper $events) use ($revision): void {
+			$this->writer($events, $this->resources())->setResourceScope($revision, self::ACTOR, $this->uid, 'calendar', ['4', '2']);
+		}, function (array $open) use ($before): void {
+			$this->assertNotSame($before['scope'], $open['scope']);
+			$this->assertNotSame($before['events'], $open['events']);
+		});
 	}
 
 	public function testUndoRollsBackAfterTheAuditWrite(): void {
@@ -111,14 +107,29 @@ final class CommandRollbackTest extends OAuthAccountTestCase {
 		$saved = $this->writer(null, $resources)->setResourceScope($revision, self::ACTOR, $this->uid, 'calendar', ['9']);
 		$this->assertTrue($saved['changed']);
 		$before = $this->observe('');
-		try {
-			$this->writer($this->failingEvents(), $resources)->restoreReceipt((string)$saved['receiptId'], $saved['revision'], self::ACTOR);
-			$this->fail('The undo committed');
-		} catch (RuntimeException $error) {
-			$this->assertSame('injected before commit', $error->getMessage());
-		}
-		$this->assertFalse($this->official()->inTransaction());
-		$this->assertSame($before, $this->observe(''));
+		$this->assertRolledBack('', $before, function (PolicyEventsMapper $events) use ($resources, $saved): void {
+			$this->writer($events, $resources)->restoreReceipt((string)$saved['receiptId'], $saved['revision'], self::ACTOR);
+		}, function (array $open) use ($before): void {
+			$this->assertNotSame($before['scope'], $open['scope']);
+			$this->assertNotSame($before['events'], $open['events']);
+		});
+	}
+
+	public function testGrantUndoRollsBackAfterTheAuditWrite(): void {
+		$revision = Server::get(PolicyStateMapper::class)->state()['revision'];
+		$saved = $this->writer()->applyCells($revision, self::ACTOR, 'grants.commands', [
+			['uid' => $this->uid, 'key' => 'grant_notes_edit', 'value' => '1'],
+		]);
+		$this->assertSame(1, $saved['changed']);
+		$this->assertIsString($saved['receiptId']);
+		$before = $this->observe('');
+		$this->assertSame('1', $before['config']['grant_notes_edit'] ?? null);
+		$this->assertRolledBack('', $before, function (PolicyEventsMapper $events) use ($saved): void {
+			$this->writer($events)->restoreReceipt((string)$saved['receiptId'], $saved['revision'], self::ACTOR);
+		}, function (array $open) use ($before): void {
+			$this->assertNotSame($before['config'], $open['config']);
+			$this->assertNotSame($before['events'], $open['events']);
+		});
 	}
 
 	private function group(): string {
@@ -146,15 +157,41 @@ final class CommandRollbackTest extends OAuthAccountTestCase {
 		return $resources;
 	}
 
-	private function failingEvents(): PolicyEventsMapper {
-		return new class($this->official(), Server::get(ITimeFactory::class)) extends PolicyEventsMapper {
+	private function failingEvents(\Closure $probe): PolicyEventsMapper {
+		return new class($this->official(), Server::get(ITimeFactory::class), $probe) extends PolicyEventsMapper {
+			public function __construct(IDBConnection $db, ITimeFactory $time, private \Closure $probe) {
+				parent::__construct($db, $time);
+			}
+
 			public function append(string $id, string $kind, array $payload): void {
 				parent::append($id, $kind, $payload);
 				if ($kind === self::KIND_AUDIT) {
+					($this->probe)();
 					throw new RuntimeException('injected before commit');
 				}
 			}
 		};
+	}
+
+	/**
+	 * @param array<string, mixed> $before
+	 * @param \Closure(PolicyEventsMapper): void $command
+	 * @param \Closure(array<string, mixed>): void $written
+	 */
+	private function assertRolledBack(string $gid, array $before, \Closure $command, \Closure $written): void {
+		try {
+			$command($this->failingEvents(function () use ($gid, $before, $written): void {
+				$this->assertTrue($this->official()->inTransaction());
+				$open = $this->observeOn($this->official(), $gid);
+				$written($open);
+				$this->assertSame($before, $this->observe($gid));
+			}));
+			$this->fail('The command committed');
+		} catch (RuntimeException $error) {
+			$this->assertSame('injected before commit', $error->getMessage());
+		}
+		$this->assertFalse($this->official()->inTransaction());
+		$this->assertSame($before, $this->observe($gid));
 	}
 
 	private function writer(?PolicyEventsMapper $events = null, ?NativeResourceEnumerator $resources = null): PolicyWriter {
@@ -180,7 +217,11 @@ final class CommandRollbackTest extends OAuthAccountTestCase {
 
 	/** @return array<string, mixed> */
 	private function observe(string $gid): array {
-		$second = $this->openIndependentConnection();
+		return $this->observeOn($this->openIndependentConnection(), $gid);
+	}
+
+	/** @return array<string, mixed> */
+	private function observeOn(IDBConnection $second, string $gid): array {
 		$users = clone Server::get(IUserConfig::class);
 		(new \ReflectionProperty($users, 'connection'))->setValue($users, $second);
 		$apps = clone Server::get(IAppConfig::class);

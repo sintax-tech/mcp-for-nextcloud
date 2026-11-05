@@ -13,7 +13,13 @@ use OCA\Mcp\Platform\Numbers\DecimalCounter;
 
 /** Checks a group admission and the lifecycle a preview or save is allowed to treat as unchanged. */
 final class GroupAdmission {
-	/** Whether every credential of a holder is already cut; a generation that cannot be compared is not. */
+	/**
+	 * Whether every credential of a holder is already cut. A generation that cannot be compared is not.
+	 *
+	 * @param string $highest the holder's highest live generation
+	 * @param string $revokedBelow the generation below which credentials are already cut
+	 * @return bool true when every credential of the holder is already cut
+	 */
 	public static function allCut(string $highest, string $revokedBelow): bool {
 		try {
 			return DecimalCounter::compare(DecimalCounter::validate($highest, DecimalCounter::MAX), $revokedBelow) <= 0;
@@ -25,8 +31,11 @@ final class GroupAdmission {
 	/**
 	 * Checks what the external phase answered: cuts only among the holders it was given, and the lifecycles it read.
 	 *
+	 * @param mixed $admission the answer from outside the transaction
 	 * @param list<string> $holders the holders that may be cut
 	 * @return array{trusted:bool, members:list<string>, cuts:list<string>, sources:list<array{groupId:string, state:?string, gen:?string}>}
+	 * @throws \LogicException when the answer is not the admission shape
+	 * @throws SnapshotInvalidated when two reads of one group disagree
 	 */
 	public static function admission(mixed $admission, array $holders): array {
 		if (!is_array($admission) || !is_bool($admission['trusted'] ?? null)
@@ -69,7 +78,12 @@ final class GroupAdmission {
 			'sources' => array_values($distinct)];
 	}
 
-	/** @return array{state:string, gen:string}|null the part of a lifecycle a preview fixes */
+	/**
+	 * The lifecycle fields a preview is allowed to treat as fixed.
+	 *
+	 * @param array{state:string, gen:string}|null $row the stored lifecycle, or null when the group has none
+	 * @return array{state:string, gen:string}|null the part of a lifecycle a preview fixes
+	 */
 	public static function life(?array $row): ?array {
 		return $row === null ? null : ['state' => $row['state'], 'gen' => $row['gen']];
 	}
@@ -82,8 +96,9 @@ final class GroupAdmission {
 	 * admitted. That renewal changes neither the policy nor the members, so it never invalidates a preview or a save;
 	 * every real transition (pending_delete, needs_confirm, purge, recreation) still does.
 	 *
-	 * @param array{state:string, gen:string}|null $a
-	 * @param array{state:string, gen:string}|null $b
+	 * @param array{state:string, gen:string}|null $a the lifecycle read with the command
+	 * @param array{state:string, gen:string}|null $b the lifecycle read again under the mutex
+	 * @return bool true when the second read is still the lifecycle the command used
 	 */
 	public static function sameLife(?array $a, ?array $b): bool {
 		if ($a === null || $b === null) {

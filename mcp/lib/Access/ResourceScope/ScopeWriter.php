@@ -77,6 +77,8 @@ final class ScopeWriter implements ScopeWriterContract {
 	 * Replaces one scope under the mutex when it differs from the stored one, reading the stored scope in this same
 	 * transaction (never a read made outside it).
 	 *
+	 * @param string $uid the user the scope belongs to
+	 * @param string $module the resource family
 	 * @param list<string>|null $items canonical ids in ascending order, or null for unrestricted
 	 * @param string $revision the revision this commit produces, stored as policy_rev
 	 * @return array{uid:string, key:string, before:?string, after:?string}|null the change, or null for a no-op
@@ -99,6 +101,8 @@ final class ScopeWriter implements ScopeWriterContract {
 	}
 
 	/**
+	 * Sorts and checks the resource ids of one scope command.
+	 *
 	 * @param array<mixed> $items candidate ids
 	 * @return list<string> the distinct ids, in ascending numeric order
 	 * @throws \InvalidArgumentException for a non-list or an id that is not a positive canonical decimal string

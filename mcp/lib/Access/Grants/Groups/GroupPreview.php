@@ -33,6 +33,8 @@ final class GroupPreview {
 	/**
 	 * Loads a group preview for its own administrator, with the same ownership-before-expiry rule as receipts.
 	 *
+	 * @param string $previewId the stored preview event
+	 * @param string $actor the administrator who must own it
 	 * @return array{gid:string, grants:array, revision:string, memberHash:string, life:?array}
 	 * @throws ReceiptNotFound|ReceiptExpired|PolicyUnavailable
 	 */

@@ -283,17 +283,6 @@
 			]
 		},
 		{
-			"ceiling": 1039,
-			"expires": "RE-26",
-			"nameParts": [
-				"OCA",
-				"Mcp",
-				"Tools",
-				"Deck",
-				"DeckServiceGateway"
-			]
-		},
-		{
 			"ceiling": 1092,
 			"expires": "RE-27",
 			"nameParts": [

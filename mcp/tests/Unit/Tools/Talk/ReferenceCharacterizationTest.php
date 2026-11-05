@@ -64,6 +64,34 @@ final class ReferenceCharacterizationTest extends TestCase {
 			try { $result = $linker->resolve('alice', $args); }
 			catch (Throwable $e) { $result = ['failure' => substr($e::class, strrpos($e::class, '\\') + 1), 'message' => $e->getMessage(), 'previous' => $e->getPrevious()?->getMessage()]; }
 			$recorded[$scenario] = ['result' => $result, 'deck' => $trace, 'scope' => $scope->asked];
+			// Compare the original linker against the owning-module ports before switching production to them.
+			if ($scenario === 'no-grant') { continue; } // This gate belongs to the caller, not the read port.
+			$oldTrace = $trace; $oldScope = $scope->asked; $trace = []; $scope->asked = [];
+			try {
+				if ($args['type'] === 'deck_card') {
+					$read = (new \OCA\Mcp\Tools\Deck\DeckCardReference($deck))->read('alice', $args['card_id'], $args['board_id']);
+				} else {
+					$read = (new \OCA\Mcp\Modules\Calendar\CalendarEventReference(ScopeStub::access($store, $scope), $store, new EventRepository($store, $classification), $classification))
+						->read('alice', $args['calendar'], $args['uid']);
+				}
+				if ($read->item === null) {
+					$actual = ['failure' => 'ConversationAccessException', 'message' => \OCA\Mcp\Modules\Talk\Presentation\Messages::referenceNotFound(), 'previous' => $read->failure?->getMessage()];
+				} else {
+					$item = $read->item;
+					$title = $item['title'];
+					if ($args['type'] === 'calendar_event' && $title === '') { $title = \OCA\Mcp\Modules\Talk\Presentation\Messages::referenceUntitled(); }
+					$url = $args['type'] === 'deck_card'
+						? $urls->linkToRouteAbsolute('deck.page.indexCard', ['boardId' => $item['boardId'], 'cardId' => $args['card_id']])
+						: $urls->getAbsoluteURL($urls->linkToRoute('calendar.view.index') . 'edit/' . base64_encode($urls->getWebroot() . $item['path'] . rawurlencode($item['uri'])));
+					$actual = ['type' => $args['type'], 'title' => trim((string)preg_replace('/\s+/u', ' ', $title)), 'url' => $url];
+				}
+			} catch (Throwable $e) {
+				$actual = ['failure' => substr($e::class, strrpos($e::class, '\\') + 1), 'message' => $e->getMessage(), 'previous' => $e->getPrevious()?->getMessage()];
+			}
+			self::assertSame($result, $actual, $scenario . ': projection and original failure cause');
+			self::assertSame($oldTrace, $trace, $scenario . ': native Deck read order');
+			self::assertSame($oldScope, $scope->asked, $scenario . ': scoped calendar lookup');
+
 		}
 		$json = json_encode($recorded, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . "\n";
 		if (getenv('MCP_TALK_CHARACTERIZE_WRITE') === '1') { file_put_contents(self::FIXTURE, $json); }

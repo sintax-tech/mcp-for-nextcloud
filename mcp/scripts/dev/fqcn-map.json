@@ -2,6 +2,11 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Access/References/ReadableCalendarEvent.php","fqcn":"OCA\\Mcp\\Access\\References\\ReadableCalendarEvent","target":"stays","owner":"Access","ticket":null},
+		{"path":"lib/Access/References/ReadableDeckCard.php","fqcn":"OCA\\Mcp\\Access\\References\\ReadableDeckCard","target":"stays","owner":"Access","ticket":null},
+		{"path":"lib/Modules/Calendar/CalendarEventReference.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\CalendarEventReference","target":"stays","owner":"Modules\\Calendar","ticket":null},
+		{"path":"lib/Platform/References/ReferenceRead.php","fqcn":"OCA\\Mcp\\Platform\\References\\ReferenceRead","target":"stays","owner":"Platform","ticket":null},
+		{"path":"lib/Tools/Deck/DeckCardReference.php","fqcn":"OCA\\Mcp\\Tools\\Deck\\DeckCardReference","target":"OCA\\Mcp\\Modules\\Deck\\DeckCardReference","owner":"Modules\\Deck","ticket":"RE-27"},
 		{"path":"lib/Modules/Tasks/Presentation/TasksSchema.php","fqcn":"OCA\\Mcp\\Modules\\Tasks\\Presentation\\TasksSchema","target":"stays","owner":"Modules\\Tasks","ticket":null},
 		{"path":"lib/Modules/Tasks/Presentation/TasksGuideNotes.php","fqcn":"OCA\\Mcp\\Modules\\Tasks\\Presentation\\TasksGuideNotes","target":"stays","owner":"Modules\\Tasks","ticket":null},
 		{"path":"lib/Modules/Tasks/Tools/ListTaskCalendars.php","fqcn":"OCA\\Mcp\\Modules\\Tasks\\Tools\\ListTaskCalendars","target":"stays","owner":"Modules\\Tasks","ticket":null},

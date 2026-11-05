@@ -52,6 +52,7 @@ final class CalendarRegistration implements ModuleRegistration {
 		$context->registerService(\OCA\Mcp\Platform\Dav\CalDavObjects::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\Dav\CalDavObjects => $c->get(CalendarStore::class));
 		$context->registerService(\OCA\Mcp\Platform\Dav\CalDavWrite::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\Dav\CalDavWrite => $c->get(CalendarDav::class));
 		$context->registerService(\OCA\Mcp\Access\ResourceScope\ScopedCalendarLookup::class, static fn (ContainerInterface $c): \OCA\Mcp\Access\ResourceScope\ScopedCalendarLookup => $c->get(\OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess::class));
+		$context->registerService(\OCA\Mcp\Access\References\ReadableCalendarEvent::class, static fn (ContainerInterface $c): \OCA\Mcp\Access\References\ReadableCalendarEvent => $c->get(CalendarEventReference::class));
 	}
 
 	/**

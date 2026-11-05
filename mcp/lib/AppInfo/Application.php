@@ -99,6 +99,7 @@ class Application extends App implements IBootstrap {
 			new UserTimezone($c->get(IConfig::class)),
 			$c->get(\OCP\ISession::class),
 		));
+		$context->registerService(\OCA\Mcp\Access\References\ReadableDeckCard::class, static fn (ContainerInterface $c): \OCA\Mcp\Access\References\ReadableDeckCard => $c->get(\OCA\Mcp\Tools\Deck\DeckCardReference::class));
 		// Modules of the 1.3.0 contract register their own services and capability probes.
 		ModuleRegistrations::register($context, self::MODULES);
 		$context->registerService(ToolRegistry::class, static fn (ContainerInterface $c): ToolRegistry => new ToolRegistry(

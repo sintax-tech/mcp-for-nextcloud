@@ -11,6 +11,7 @@
 		{"path":"lib/Modules/Deck/Integration/DeckOwnership.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Integration\\DeckOwnership","target":"OCA\\Mcp\\Modules\\Deck\\Integration\\DeckOwnership","owner":"Modules\\Deck","ticket":"RE-26"},
 		{"path":"lib/Modules/Deck/Integration/DeckStacks.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Integration\\DeckStacks","target":"OCA\\Mcp\\Modules\\Deck\\Integration\\DeckStacks","owner":"Modules\\Deck","ticket":"RE-26"},
 		{"path":"lib/Modules/Deck/Integration/DeckUndo.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Integration\\DeckUndo","target":"OCA\\Mcp\\Modules\\Deck\\Integration\\DeckUndo","owner":"Modules\\Deck","ticket":"RE-26"},
+		{"path":"lib/Modules/Deck/DeckRegistration.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\DeckRegistration","target":"OCA\\Mcp\\Modules\\Deck\\DeckRegistration","owner":"Modules\\Deck","ticket":"RE-26"},
 		{"path":"lib/Modules/Tasks/Presentation/TasksSchema.php","fqcn":"OCA\\Mcp\\Modules\\Tasks\\Presentation\\TasksSchema","target":"stays","owner":"Modules\\Tasks","ticket":null},
 		{"path":"lib/Modules/Tasks/Presentation/TasksGuideNotes.php","fqcn":"OCA\\Mcp\\Modules\\Tasks\\Presentation\\TasksGuideNotes","target":"stays","owner":"Modules\\Tasks","ticket":null},
 		{"path":"lib/Modules/Tasks/Tools/ListTaskCalendars.php","fqcn":"OCA\\Mcp\\Modules\\Tasks\\Tools\\ListTaskCalendars","target":"stays","owner":"Modules\\Tasks","ticket":null},

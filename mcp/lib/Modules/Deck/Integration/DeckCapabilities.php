@@ -11,12 +11,13 @@ use Closure;
 use OCA\Deck\Db\Card;
 use OCA\Deck\Db\CardMapper;
 use OCA\Deck\Service\CardService;
+use OCA\Mcp\Mcp\Tools\CapabilityProbe;
 use OCA\Mcp\Platform\Compat\AppEnablement;
 use OCP\App\IAppManager;
 use OCP\Util;
 
 /** Fail-closed, lazy native API detection; no Deck service is instantiated for catalogue discovery. */
-final class DeckCapabilities {
+final class DeckCapabilities implements CapabilityProbe {
 	/** Exact releases proved in containers; newer patches still require the matching line and native shape. */
 	public const PROVEN = [34 => '1.18.5', 35 => '1.19.0'];
 
@@ -30,6 +31,24 @@ final class DeckCapabilities {
 	public function __construct(private IAppManager $apps, private ?int $nextcloudMajor = null,
 		?callable $nativeProbe = null) {
 		$this->nativeProbe = $nativeProbe === null ? null : Closure::fromCallable($nativeProbe);
+	}
+
+	/** {@inheritDoc} */
+	public function keys(): array {
+		return ['deck.dependencies'];
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * An unknown key is false. The dependency key calls {@see self::dependencies()} and does not catch what it throws.
+	 */
+	public function supports(string $key): bool {
+		if ($key !== 'deck.dependencies') {
+			return false;
+		}
+
+		return $this->dependencies();
 	}
 
 	/** @return bool Whether this compatible installation exposes the native dependency API. */

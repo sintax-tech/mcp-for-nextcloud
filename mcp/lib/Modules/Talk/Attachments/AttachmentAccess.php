@@ -5,8 +5,8 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Talk;
-
+namespace OCA\Mcp\Modules\Talk\Attachments;
+use OCA\Mcp\Modules\Talk\{Locating\Conversation, Failures\ConversationAccessException, Presentation\Messages};
 use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
 use OCP\Files\File;
 use OCP\Share\IManager as IShareManager;

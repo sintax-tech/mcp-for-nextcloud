@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Talk;
+namespace OCA\Mcp\Modules\Talk\Locating;
 
 /**
  * A room already resolved for the authenticated user, together with that user's participant.

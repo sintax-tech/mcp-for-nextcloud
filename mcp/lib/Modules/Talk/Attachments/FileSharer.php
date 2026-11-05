@@ -5,8 +5,8 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Talk;
-
+namespace OCA\Mcp\Modules\Talk\Attachments;
+use OCA\Mcp\Modules\Talk\{Locating\Conversation, Failures\ConversationAccessException, Writing\ConversationWriter, Failures\FileAccessException, Presentation\Messages, Failures\TalkUnavailableException, Locating\UserFileResolver};
 use InvalidArgumentException;
 use OCP\Constants;
 use OCP\Share\IManager as IShareManager;

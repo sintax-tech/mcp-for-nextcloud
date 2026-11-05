@@ -5,8 +5,8 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Talk;
-
+namespace OCA\Mcp\Modules\Talk\Integration;
+use OCA\Mcp\Modules\Talk\{Failures\TalkUnavailableException};
 use OCA\Mcp\Platform\Compat\AppEnablement;
 use OCP\App\IAppManager;
 use OCP\IUserManager;

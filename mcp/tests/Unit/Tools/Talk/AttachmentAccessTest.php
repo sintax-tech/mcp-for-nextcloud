@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Talk;
 
-use OCA\Mcp\Tools\Talk\AttachmentAccess;
-use OCA\Mcp\Tools\Talk\Conversation;
-use OCA\Mcp\Tools\Talk\ConversationAccessException;
-use OCA\Mcp\Tools\Talk\Messages;
+use OCA\Mcp\Modules\Talk\Attachments\AttachmentAccess;
+use OCA\Mcp\Modules\Talk\Locating\Conversation;
+use OCA\Mcp\Modules\Talk\Failures\ConversationAccessException;
+use OCA\Mcp\Modules\Talk\Presentation\Messages;
 use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\NotFoundException;

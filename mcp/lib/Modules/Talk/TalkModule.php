@@ -5,8 +5,8 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Talk;
-
+namespace OCA\Mcp\Modules\Talk;
+use OCA\Mcp\Modules\Talk\{Attachments\AttachmentMessage, Locating\Conversation, Failures\ConversationAccessException, Reading\ConversationReader, Locating\ConversationResolver, Writing\ConversationWriter, Failures\FileAccessException, Attachments\FileSharer, Groups\GroupCreator, Presentation\Messages, Presentation\TalkPlanRenderer, Integration\TalkServices, Failures\TalkUnavailableException, Presentation\ToolResult, Locating\UserConversationResolver, Locating\UserFileResolver, Writing\WritePreview};
 use InvalidArgumentException;
 use OCA\Mcp\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Mcp\Tools\RendersPlans;

@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Talk;
 
 use InvalidArgumentException;
-use OCA\Mcp\Tools\Talk\AttachmentMessage;
-use OCA\Mcp\Tools\Talk\Messages;
+use OCA\Mcp\Modules\Talk\Attachments\AttachmentMessage;
+use OCA\Mcp\Modules\Talk\Presentation\Messages;
 use PHPUnit\Framework\TestCase;
 
 class AttachmentMessageTest extends TestCase {

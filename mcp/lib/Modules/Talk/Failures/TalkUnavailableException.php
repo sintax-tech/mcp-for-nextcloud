@@ -5,8 +5,8 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Talk;
-
+namespace OCA\Mcp\Modules\Talk\Failures;
+use OCA\Mcp\Modules\Talk\{Presentation\Messages};
 use RuntimeException;
 
 /** The optional spreed app is disabled for the user or its classes are not loaded; never reaches the client message. */

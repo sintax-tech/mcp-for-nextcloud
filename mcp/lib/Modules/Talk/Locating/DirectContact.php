@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Talk;
+namespace OCA\Mcp\Modules\Talk\Locating;
 
 /**
  * A user the caller is allowed to start a direct conversation with, named the way the user knows them.

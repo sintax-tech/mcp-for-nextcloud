@@ -5,8 +5,8 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Talk;
-
+namespace OCA\Mcp\Modules\Talk\Presentation;
+use OCA\Mcp\Modules\Talk\{Writing\WritePreview};
 use OCA\Mcp\Mcp\Confirmation\PlanText;
 use Throwable;
 

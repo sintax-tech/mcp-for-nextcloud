@@ -8,9 +8,9 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Talk;
 
 use InvalidArgumentException;
-use OCA\Mcp\Tools\Talk\FileAccessException;
-use OCA\Mcp\Tools\Talk\Messages;
-use OCA\Mcp\Tools\Talk\UserFileResolver;
+use OCA\Mcp\Modules\Talk\Failures\FileAccessException;
+use OCA\Mcp\Modules\Talk\Presentation\Messages;
+use OCA\Mcp\Modules\Talk\Locating\UserFileResolver;
 use OCP\Constants;
 use OCP\Files\File;
 use OCP\Files\Folder;

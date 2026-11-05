@@ -5,8 +5,8 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Talk;
-
+namespace OCA\Mcp\Modules\Talk\Reading;
+use OCA\Mcp\Modules\Talk\{Presentation\ActorNames, Locating\Conversation, Failures\ConversationAccessException, Locating\ConversationResolver, Presentation\Messages, Integration\TalkServices, Failures\TalkUnavailableException};
 use DateTimeInterface;
 use InvalidArgumentException;
 use OCA\Mcp\Access\Visibility\OutputReferenceFilter;

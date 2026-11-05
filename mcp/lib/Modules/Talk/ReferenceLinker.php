@@ -5,8 +5,8 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Talk;
-
+namespace OCA\Mcp\Modules\Talk;
+use OCA\Mcp\Modules\Talk\{Failures\ConversationAccessException, Writing\ConversationWriter, Presentation\Messages};
 use InvalidArgumentException;
 use OCA\Mcp\Platform\Compat\AppEnablement;
 use OCA\Mcp\Access\Grants\GrantPolicy;

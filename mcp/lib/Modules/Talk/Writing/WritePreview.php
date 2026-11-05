@@ -5,8 +5,8 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Talk;
-
+namespace OCA\Mcp\Modules\Talk\Writing;
+use OCA\Mcp\Modules\Talk\{Presentation\ActorNames, Attachments\AttachmentAccess, Attachments\AttachmentMessage, Locating\Conversation, Failures\ConversationAccessException, Locating\DirectContact, Failures\FileAccessException, Attachments\FileSharer, Groups\GroupCreator, Presentation\Messages, Failures\TalkUnavailableException};
 use InvalidArgumentException;
 use OCP\Comments\IComment;
 

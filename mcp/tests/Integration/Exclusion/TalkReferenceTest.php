@@ -153,7 +153,7 @@ final class TalkReferenceTest extends ExclusionTestCase {
 	 */
 	public function testTheContainerWiresTheFilesScopeIntoEveryFileReferenceGate(): void {
 		$property = static fn (object $object, string $name): mixed => (new \ReflectionProperty($object, $name))->getValue($object);
-		foreach ([\OCA\Mcp\Tools\Talk\UserFileResolver::class, \OCA\Mcp\Tools\Talk\AttachmentAccess::class] as $class) {
+		foreach ([\OCA\Mcp\Modules\Talk\Locating\UserFileResolver::class, \OCA\Mcp\Modules\Talk\Attachments\AttachmentAccess::class] as $class) {
 			$filter = $property(Server::get($class), 'references');
 			$this->assertInstanceOf(\OCA\Mcp\Access\Visibility\OutputReferenceFilter::class, $filter, $class);
 			$this->assertInstanceOf(\OCA\Mcp\Access\ResourceScope\FilesReferenceScope::class, $property($filter, 'scope'), $class);

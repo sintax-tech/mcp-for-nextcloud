@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Talk;
+namespace OCA\Mcp\Modules\Talk\Presentation;
 
 /**
  * Builds the MCP result envelope the module answers with.

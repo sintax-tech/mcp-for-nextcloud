@@ -131,7 +131,7 @@
 		},
 		{
 			"rule": "module-isolation",
-			"source": "lib/Tools/Talk/ReferenceLinker.php",
+			"source": "lib/Modules/Talk/ReferenceLinker.php",
 			"target": "OCA\\Mcp\\Modules\\Calendar\\Failures\\CalendarException",
 			"line": 154,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
@@ -139,7 +139,7 @@
 		},
 		{
 			"rule": "module-isolation",
-			"source": "lib/Tools/Talk/ReferenceLinker.php",
+			"source": "lib/Modules/Talk/ReferenceLinker.php",
 			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\CalendarStore",
 			"line": 54,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
@@ -147,7 +147,7 @@
 		},
 		{
 			"rule": "module-isolation",
-			"source": "lib/Tools/Talk/ReferenceLinker.php",
+			"source": "lib/Modules/Talk/ReferenceLinker.php",
 			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\Classification",
 			"line": 172,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
@@ -155,7 +155,7 @@
 		},
 		{
 			"rule": "module-isolation",
-			"source": "lib/Tools/Talk/ReferenceLinker.php",
+			"source": "lib/Modules/Talk/ReferenceLinker.php",
 			"target": "OCA\\Mcp\\Modules\\Calendar\\Presentation\\EventMapper",
 			"line": 172,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
@@ -163,7 +163,7 @@
 		},
 		{
 			"rule": "module-isolation",
-			"source": "lib/Tools/Talk/ReferenceLinker.php",
+			"source": "lib/Modules/Talk/ReferenceLinker.php",
 			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\EventRepository",
 			"line": 55,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
@@ -171,7 +171,7 @@
 		},
 		{
 			"rule": "module-isolation",
-			"source": "lib/Tools/Talk/ReferenceLinker.php",
+			"source": "lib/Modules/Talk/ReferenceLinker.php",
 			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\ScopedCalendarAccess",
 			"line": 53,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
@@ -179,7 +179,7 @@
 		},
 		{
 			"rule": "module-isolation",
-			"source": "lib/Tools/Talk/ReferenceLinker.php",
+			"source": "lib/Modules/Talk/ReferenceLinker.php",
 			"target": "OCA\\Mcp\\Tools\\Deck\\DeckGatewayInterface",
 			"line": 52,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
@@ -187,7 +187,7 @@
 		},
 		{
 			"rule": "module-isolation",
-			"source": "lib/Tools/Talk/ReferenceLinker.php",
+			"source": "lib/Modules/Talk/ReferenceLinker.php",
 			"target": "OCA\\Mcp\\Tools\\Deck\\DeckToolModule",
 			"line": 110,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
@@ -1504,62 +1504,6 @@
 			"line": 72,
 			"reason": "Move this native-app reference behind the owning module Integration boundary.",
 			"expires": "RE-25"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Talk/TalkServices.php",
-			"target": "OCA\\Talk\\Chat\\ChatManager",
-			"line": 24,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-20"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Talk/TalkServices.php",
-			"target": "OCA\\Talk\\Manager",
-			"line": 23,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-20"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Talk/TalkServices.php",
-			"target": "OCA\\Talk\\Model\\Attendee",
-			"line": 27,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-20"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Talk/TalkServices.php",
-			"target": "OCA\\Talk\\Room",
-			"line": 28,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-20"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Talk/TalkServices.php",
-			"target": "OCA\\Talk\\Service\\ParticipantService",
-			"line": 25,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-20"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Talk/TalkServices.php",
-			"target": "OCA\\Talk\\Service\\RoomService",
-			"line": 26,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-20"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Talk/TalkServices.php",
-			"target": "OCA\\Talk\\Webinary",
-			"line": 29,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-20"
 		}
 	]
 }

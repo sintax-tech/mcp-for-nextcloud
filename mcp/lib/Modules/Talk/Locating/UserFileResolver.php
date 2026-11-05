@@ -5,8 +5,8 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Talk;
-
+namespace OCA\Mcp\Modules\Talk\Locating;
+use OCA\Mcp\Modules\Talk\{Failures\FileAccessException, Presentation\Messages};
 use InvalidArgumentException;
 use OCP\Constants;
 use OCP\Files\File;

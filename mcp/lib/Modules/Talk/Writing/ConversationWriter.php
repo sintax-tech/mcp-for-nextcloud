@@ -5,8 +5,8 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Talk;
-
+namespace OCA\Mcp\Modules\Talk\Writing;
+use OCA\Mcp\Modules\Talk\{Attachments\AttachmentAccess, Attachments\AttachmentMessage, Locating\Conversation, Failures\ConversationAccessException, Locating\ConversationResolver, Presentation\Messages, Integration\TalkServices, Failures\TalkUnavailableException};
 use DateTimeZone;
 use InvalidArgumentException;
 use OCP\AppFramework\Utility\ITimeFactory;

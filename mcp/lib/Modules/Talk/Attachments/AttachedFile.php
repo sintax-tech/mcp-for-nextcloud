@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Talk;
+namespace OCA\Mcp\Modules\Talk\Attachments;
 
 use OCP\Files\File;
 use OCP\Files\IRootFolder;

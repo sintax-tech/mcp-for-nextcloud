@@ -150,6 +150,8 @@ final class ScopeBoundariesTest extends TestCase {
 			'Controller/MyScopeController.php',
 			'Controller/ScopeController.php',
 			'Access/Policy/PolicyWriter.php',
+			'Access/ResourceScope/ScopeWriter.php',
+			'Access/ResourceScope/ScopeWriterContract.php',
 			'Access/ResourceScope/NativeResourceEnumerator.php',
 		]);
 		$this->assertSame($expected, $users);

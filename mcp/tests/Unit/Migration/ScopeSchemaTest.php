@@ -186,6 +186,8 @@ final class ScopeSchemaTest extends TestCase {
 			'Access/Policy/PolicyEventPayload.php',
 			'Access/Policy/PolicyResolver.php',
 			'Access/Policy/PolicyWriter.php',
+			'Access/ResourceScope/ScopeWriter.php',
+			'Access/ResourceScope/ScopeWriterContract.php',
 			'Access/Policy/ScopeCleanup.php',
 			'Access/ResourceScope/NativeResourceEnumerator.php',
 			'Access/ResourceScope/ScopeGuard.php',

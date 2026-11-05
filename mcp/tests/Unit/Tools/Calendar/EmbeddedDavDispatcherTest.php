@@ -68,7 +68,7 @@ final class EmbeddedDavDispatcherTest extends TestCase {
 
 	/** @return void */
 	public function testVtodoCreationAndCompletionUseTheSameCalDavPipeline(): void {
-		$data=new \OCA\Mcp\Tools\Tasks\TaskData();
+		$data=new \OCA\Mcp\Modules\Tasks\Composing\TaskData();
 		$now=new \DateTimeImmutable('2026-10-01T12:00:00Z');
 		$task=$data->create(['summary'=>'Undated task'],$now);
 		$created=$this->dispatcher->put('alice','personal','task.ics',$task->serialize());

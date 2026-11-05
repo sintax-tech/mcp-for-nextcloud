@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Tasks;
+namespace OCA\Mcp\Modules\Tasks\Hierarchy;
 
 use Closure;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
@@ -55,11 +55,11 @@ final class TaskHierarchyLock {
 		try {
 			$this->locks->acquireLock($key, ILockingProvider::LOCK_EXCLUSIVE);
 		} catch (LockedException) {
-			throw new ToolFailure(TaskHierarchyMessages::busy());
+			throw new ToolFailure(\OCA\Mcp\Modules\Tasks\Presentation\TaskHierarchyMessages::busy());
 		}
 		try {
 			if (!$this->locks->isLocked($key, ILockingProvider::LOCK_EXCLUSIVE)) {
-				throw new ToolFailure(TaskHierarchyMessages::lockingUnavailable());
+				throw new ToolFailure(\OCA\Mcp\Modules\Tasks\Presentation\TaskHierarchyMessages::lockingUnavailable());
 			}
 			return $work();
 		} finally {

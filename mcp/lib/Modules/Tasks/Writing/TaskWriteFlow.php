@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Tasks;
+namespace OCA\Mcp\Modules\Tasks\Writing;
 
 use InvalidArgumentException;
 use OCA\Mcp\L10n\Translator;
@@ -26,7 +26,7 @@ use RuntimeException;
 use Sabre\VObject\Component\VCalendar;
 
 /**
- * The plan and the native write of the four task write tools, moved out of TasksModule without changing what they
+ * The plan and the native write of the four task write tools, moved out of \OCA\Mcp\Modules\Tasks\TasksModule without changing what they
  * check: grant-resolved writable calendar, visibility, simple task, optional ETag, trash retention, shared-owner
  * notice; then a CalDAV PUT, update or trash with the read ETag as If-Match, and a read-back.
  *
@@ -39,8 +39,8 @@ final class TaskWriteFlow {
 	 * @param ScopedCalendarAccess $access the calendars the tools may reach: native visibility and ACL, narrowed by the resource scope
 	 * @param CalendarStore $store read-only storage port
 	 * @param CalendarDav $dav native DAV write port
-	 * @param TaskData $data complete serialized DAV object
-	 * @param TaskObjects $objects lookup, classification and output of task objects
+	 * @param \OCA\Mcp\Modules\Tasks\Composing\TaskData $data complete serialized DAV object
+	 * @param \OCA\Mcp\Modules\Tasks\Locating\TaskObjects $objects lookup, classification and output of task objects
 	 * @param SharedGuard $guard shared-owner confirmation policy
 	 * @param TrashPolicy $trash calendar retention policy
 	 * @param ITimeFactory $time clock for timestamps
@@ -51,8 +51,8 @@ final class TaskWriteFlow {
 		private ScopedCalendarAccess $access,
 		private CalendarStore $store,
 		private CalendarDav $dav,
-		private TaskData $data,
-		private TaskObjects $objects,
+		private \OCA\Mcp\Modules\Tasks\Composing\TaskData $data,
+		private \OCA\Mcp\Modules\Tasks\Locating\TaskObjects $objects,
 		private SharedGuard $guard,
 		private TrashPolicy $trash,
 		private ITimeFactory $time,

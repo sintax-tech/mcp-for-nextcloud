@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Tasks;
 
 use DateTimeImmutable;
 use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
-use OCA\Mcp\Tools\Tasks\TaskStore;
+use OCA\Mcp\Modules\Tasks\Locating\TaskStore;
 
 /**
  * Calendars in memory for the hierarchy tests, which, unlike the listing double, keep objects apart by calendar

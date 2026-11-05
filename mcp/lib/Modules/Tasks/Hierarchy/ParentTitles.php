@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Tasks;
+namespace OCA\Mcp\Modules\Tasks\Hierarchy;
 
 use OCA\Mcp\Platform\Dav\Calendar;
 use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
@@ -21,12 +21,12 @@ final class ParentTitles {
 	 * Receives the store and the parser.
 	 *
 	 * @param CalendarStore $store read-only storage port
-	 * @param TaskData $data parser and classifier of tasks
+	 * @param \OCA\Mcp\Modules\Tasks\Composing\TaskData $data parser and classifier of tasks
 	 * @return void
 	 */
 	public function __construct(
 		private CalendarStore $store,
-		private TaskData $data,
+		private \OCA\Mcp\Modules\Tasks\Composing\TaskData $data,
 	) {
 	}
 
@@ -46,7 +46,7 @@ final class ParentTitles {
 				continue;
 			}
 			try {
-				$parsed = (new TaskRowReader($this->data))->readable($row, $calendar->ownedByOther($userId));
+				$parsed = (new \OCA\Mcp\Modules\Tasks\Locating\TaskRowReader($this->data))->readable($row, $calendar->ownedByOther($userId));
 				$titles[$uid] = (string)$this->data->master($parsed)->SUMMARY;
 			} catch (ToolFailure) {
 				continue;

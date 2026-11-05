@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Tasks;
+namespace OCA\Mcp\Modules\Tasks\Locating;
 
 use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
@@ -15,20 +15,20 @@ use Sabre\VObject\Component\VCalendar;
 
 /**
  * Finds a task object in an authorized calendar, parses it only when the caller may see it, and turns it into the
- * fields a tool shows. Moved out of TasksModule unchanged, so the task handlers and the write flow share it.
+ * fields a tool shows. Moved out of \OCA\Mcp\Modules\Tasks\TasksModule unchanged, so the task handlers and the write flow share it.
  */
 final class TaskObjects {
 	/**
 	 * Receives the store, the serializer and the output rule for Files references.
 	 *
 	 * @param CalendarStore $store read-only storage port
-	 * @param TaskData $data complete serialized DAV object
+	 * @param \OCA\Mcp\Modules\Tasks\Composing\TaskData $data complete serialized DAV object
 	 * @param OutputReferenceFilter $references output rule for ATTACH references to Files nodes
 	 * @return void
 	 */
 	public function __construct(
 		private CalendarStore $store,
-		private TaskData $data,
+		private \OCA\Mcp\Modules\Tasks\Composing\TaskData $data,
 		private OutputReferenceFilter $references,
 	) {
 	}

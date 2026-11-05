@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Tasks;
+namespace OCA\Mcp\Modules\Tasks\Hierarchy;
 
 use InvalidArgumentException;
 use Sabre\VObject\Component\VTodo;
@@ -51,7 +51,7 @@ final class TaskRelations {
 		}
 		$parent = $arguments['parent'];
 		if ($parent !== null && $parent === (string)$task->UID) {
-			throw new InvalidArgumentException(TaskHierarchyMessages::loop());
+			throw new InvalidArgumentException(\OCA\Mcp\Modules\Tasks\Presentation\TaskHierarchyMessages::loop());
 		}
 		foreach ($task->select('RELATED-TO') as $relation) {
 			if ($this->isParentRelation($relation)) {

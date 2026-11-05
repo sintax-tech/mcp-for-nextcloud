@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Tasks;
+namespace OCA\Mcp\Modules\Tasks;
 
 use InvalidArgumentException;
 use OCA\Mcp\Platform\Time\UserTimezone;
@@ -18,11 +18,11 @@ use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
 use OCA\Mcp\Mcp\Tools\Schema\DavCollectionSchema as Schema;
 use OCA\Mcp\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Mcp\Tools\RendersPlans;
-use OCA\Mcp\Tools\Tasks\Handler\CreateTaskHandler;
-use OCA\Mcp\Tools\Tasks\Handler\EditTaskHandler;
-use OCA\Mcp\Tools\Tasks\Handler\ListTasksHandler;
-use OCA\Mcp\Tools\Tasks\Handler\ParentTaskWrite;
-use OCA\Mcp\Tools\Tasks\Handler\ReadTaskHandler;
+use OCA\Mcp\Modules\Tasks\Creation\CreateTaskHandler;
+use OCA\Mcp\Modules\Tasks\Editing\EditTaskHandler;
+use OCA\Mcp\Modules\Tasks\Reading\ListTasksHandler;
+use OCA\Mcp\Modules\Tasks\Writing\ParentTaskWrite;
+use OCA\Mcp\Modules\Tasks\Reading\ReadTaskHandler;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Guide\ToolGuideNotes;
 use OCA\Mcp\Mcp\Tools\ToolModule;
@@ -38,24 +38,24 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
 	 *
 	 * @param ScopedCalendarAccess $access the calendars the tools may reach: native visibility and ACL, narrowed by the resource scope
 	 * @param CalendarStore $store read-only storage port
-	 * @param TaskStore $tasks live VTODO query port
+	 * @param \OCA\Mcp\Modules\Tasks\Locating\TaskStore $tasks live VTODO query port
 	 * @param CalendarDav $dav native DAV write port
-	 * @param TaskData $data complete serialized DAV object
+	 * @param \OCA\Mcp\Modules\Tasks\Composing\TaskData $data complete serialized DAV object
 	 * @param SharedGuard $guard shared-owner confirmation policy
 	 * @param TrashPolicy $trash calendar retention policy
 	 * @param ITimeFactory $time clock for timestamps
 	 * @param OutputReferenceFilter $references output rule for ATTACH references to Files nodes
 	 * @param UserTimezone|null $zones timezone of the account, so a plan shows the dates the user reads
-	 * @param ILockingProvider|null $locks serializes confirmed MCP writes that set a parent (TaskHierarchyLock); without
+	 * @param ILockingProvider|null $locks serializes confirmed MCP writes that set a parent (\OCA\Mcp\Modules\Tasks\Hierarchy\TaskHierarchyLock); without
 	 *     a provider that excludes, those writes are refused
 	 * @return void
 	 */
 	public function __construct(
 		private ScopedCalendarAccess $access,
 		private CalendarStore $store,
-		private TaskStore $tasks,
+		private \OCA\Mcp\Modules\Tasks\Locating\TaskStore $tasks,
 		private CalendarDav $dav,
-		private TaskData $data,
+		private \OCA\Mcp\Modules\Tasks\Composing\TaskData $data,
 		private SharedGuard $guard,
 		private TrashPolicy $trash,
 		private ITimeFactory $time,
@@ -97,7 +97,7 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
 			],
 			'categories' => [
 				'type' => 'array',
-				'maxItems' => TaskData::MAX_CATEGORIES,
+				'maxItems' => \OCA\Mcp\Modules\Tasks\Composing\TaskData::MAX_CATEGORIES,
 				'items' => ['type' => 'string', 'maxLength' => 1024],
 				'description' => 'Free-text task categories, as in the Tasks app: 1-255 characters each after trimming spaces. '
 					. 'The list replaces all existing categories; [] clears them; omit to preserve them.',
@@ -134,7 +134,7 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
 						'Only list tasks with this category, compared exactly but ignoring case. '
 							. 'Omit the field to apply no category filter; the value is not a pattern.',
 						1,
-						TaskData::MAX_CATEGORY_LENGTH
+						\OCA\Mcp\Modules\Tasks\Composing\TaskData::MAX_CATEGORY_LENGTH
 					),
 					'parent' => Schema::text(
 						'Only list the direct subtasks of the task with this UID. Omit the field to list every task.',
@@ -252,7 +252,7 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
 	 * @return string|null Markdown body, or null when this renderer has nothing to say about it
 	 */
 	public function renderPlan(string $name, array $plan): ?string {
-		return (new TasksPlanRenderer())->render($name, $plan);
+		return (new \OCA\Mcp\Modules\Tasks\Presentation\TasksPlanRenderer())->render($name, $plan);
 	}
 
 	/**
@@ -274,7 +274,7 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
 			);
 		}
 		return match ($name) {
-			'tasks_list_tasks' => (new ListTasksHandler($this->access, $this->store, $this->tasks, $this->data, new TaskRowReader($this->data)))->handle($arguments, $userId),
+			'tasks_list_tasks' => (new ListTasksHandler($this->access, $this->store, $this->tasks, $this->data, new \OCA\Mcp\Modules\Tasks\Locating\TaskRowReader($this->data)))->handle($arguments, $userId),
 			ReadTaskHandler::TOOL => (new ReadTaskHandler($this->access, $this->objects()))->handle($arguments, $userId),
 			CreateTaskHandler::TOOL => (new CreateTaskHandler($this->parentWrite()))->handle($arguments, $userId),
 			EditTaskHandler::TOOL => (new EditTaskHandler($this->parentWrite()))->handle($arguments, $userId),
@@ -282,24 +282,24 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
 		};
 	}
 
-	/** @return TaskObjects lookup, classification and output of task objects */
-	private function objects(): TaskObjects {
-		return new TaskObjects($this->store, $this->data, $this->references);
+	/** @return \OCA\Mcp\Modules\Tasks\Locating\TaskObjects lookup, classification and output of task objects */
+	private function objects(): \OCA\Mcp\Modules\Tasks\Locating\TaskObjects {
+		return new \OCA\Mcp\Modules\Tasks\Locating\TaskObjects($this->store, $this->data, $this->references);
 	}
 
-	/** @return TaskWriteFlow plan and native write of the task writes */
-	private function flow(): TaskWriteFlow {
-		return new TaskWriteFlow($this->access, $this->store, $this->dav, $this->data, $this->objects(), $this->guard, $this->trash, $this->time, $this->zones);
+	/** @return \OCA\Mcp\Modules\Tasks\Writing\TaskWriteFlow plan and native write of the task writes */
+	private function flow(): \OCA\Mcp\Modules\Tasks\Writing\TaskWriteFlow {
+		return new \OCA\Mcp\Modules\Tasks\Writing\TaskWriteFlow($this->access, $this->store, $this->dav, $this->data, $this->objects(), $this->guard, $this->trash, $this->time, $this->zones);
 	}
 
 	/** @return ParentTaskWrite create and edit with the parent check, lock and warning */
 	private function parentWrite(): ParentTaskWrite {
-		return new ParentTaskWrite($this->flow(), new TaskParentStep(
-			new TaskHierarchy($this->store, $this->tasks, $this->data),
-			new ParentTitles($this->store, $this->data),
-			new TaskRelations(),
+		return new ParentTaskWrite($this->flow(), new \OCA\Mcp\Modules\Tasks\Hierarchy\TaskParentStep(
+			new \OCA\Mcp\Modules\Tasks\Hierarchy\TaskHierarchy($this->store, $this->tasks, $this->data),
+			new \OCA\Mcp\Modules\Tasks\Hierarchy\ParentTitles($this->store, $this->data),
+			new \OCA\Mcp\Modules\Tasks\Hierarchy\TaskRelations(),
 			$this->data,
-			$this->locks === null ? null : new TaskHierarchyLock($this->locks),
+			$this->locks === null ? null : new \OCA\Mcp\Modules\Tasks\Hierarchy\TaskHierarchyLock($this->locks),
 		));
 	}
 }

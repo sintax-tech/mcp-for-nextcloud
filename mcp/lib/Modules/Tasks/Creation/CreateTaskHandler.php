@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Tasks\Handler;
+namespace OCA\Mcp\Modules\Tasks\Creation;
 
 use InvalidArgumentException;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
@@ -22,11 +22,11 @@ final class CreateTaskHandler {
 	/**
 	 * Receives the shared parent-aware write.
 	 *
-	 * @param ParentTaskWrite $write plan and confirmed write of the task writes that take parent
+	 * @param \OCA\Mcp\Modules\Tasks\Writing\ParentTaskWrite $write plan and confirmed write of the task writes that take parent
 	 * @return void
 	 */
 	public function __construct(
-		private ParentTaskWrite $write,
+		private \OCA\Mcp\Modules\Tasks\Writing\ParentTaskWrite $write,
 	) {
 	}
 

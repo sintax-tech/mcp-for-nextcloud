@@ -10,8 +10,8 @@ namespace OCA\Mcp\Tests\Unit\Tools\Tasks;
 use OCA\Mcp\Tests\Unit\Tools\Tasks\Handler\TaskListingCase;
 use OCA\Mcp\Platform\Dav\DavResult;
 use OCA\Mcp\Mcp\Confirmation\PlanText;
-use OCA\Mcp\Tools\Tasks\TaskHierarchyLock;
-use OCA\Mcp\Tools\Tasks\TaskHierarchyMessages;
+use OCA\Mcp\Modules\Tasks\Hierarchy\TaskHierarchyLock;
+use OCA\Mcp\Modules\Tasks\Presentation\TaskHierarchyMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**

@@ -5,11 +5,11 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Tasks\Handler;
+namespace OCA\Mcp\Modules\Tasks\Writing;
 
 use InvalidArgumentException;
-use OCA\Mcp\Tools\Tasks\TaskParentStep;
-use OCA\Mcp\Tools\Tasks\TaskWriteFlow;
+use OCA\Mcp\Modules\Tasks\Hierarchy\TaskParentStep;
+use OCA\Mcp\Modules\Tasks\Writing\TaskWriteFlow;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCA\Mcp\Mcp\Confirmation\WriteGate;

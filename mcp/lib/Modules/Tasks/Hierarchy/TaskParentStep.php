@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Tasks;
+namespace OCA\Mcp\Modules\Tasks\Hierarchy;
 
 use Closure;
 use OCA\Mcp\Platform\Dav\Calendar;
@@ -27,7 +27,7 @@ final class TaskParentStep {
 	 * @param TaskHierarchy $hierarchy parent check and loop detection
 	 * @param ParentTitles $titles titles of the parents a plan names
 	 * @param TaskRelations $relations reader of parent links
-	 * @param TaskData $data parser of the prepared task
+	 * @param \OCA\Mcp\Modules\Tasks\Composing\TaskData $data parser of the prepared task
 	 * @param TaskHierarchyLock|null $lock serializes confirmed MCP writes that set a parent; without it such a write is
 	 *     refused, as when the server's locking is disabled
 	 * @return void
@@ -36,7 +36,7 @@ final class TaskParentStep {
 		private TaskHierarchy $hierarchy,
 		private ParentTitles $titles,
 		private TaskRelations $relations,
-		private TaskData $data,
+		private \OCA\Mcp\Modules\Tasks\Composing\TaskData $data,
 		private ?TaskHierarchyLock $lock = null,
 	) {
 	}
@@ -44,7 +44,7 @@ final class TaskParentStep {
 	/**
 	 * Checks the requested parent and names the parents in the plan.
 	 *
-	 * @param array{calendar:Calendar, row:?array, after:?\Sabre\VObject\Component\VCalendar, plan:array<string, mixed>} $prepared result of TaskWriteFlow::prepare()
+	 * @param array{calendar:Calendar, row:?array, after:?\Sabre\VObject\Component\VCalendar, plan:array<string, mixed>} $prepared result of \OCA\Mcp\Modules\Tasks\Writing\TaskWriteFlow::prepare()
 	 * @param array<string, mixed> $arguments validated tool arguments
 	 * @param string $userId authenticated user UID
 	 * @param bool $existing whether the task already exists (edit) and may carry subtasks
@@ -81,7 +81,7 @@ final class TaskParentStep {
 			return $write();
 		}
 		if ($this->lock === null) {
-			throw new ToolFailure(TaskHierarchyMessages::lockingUnavailable());
+			throw new ToolFailure(\OCA\Mcp\Modules\Tasks\Presentation\TaskHierarchyMessages::lockingUnavailable());
 		}
 		return $this->lock->run($calendar->id, $write);
 	}
@@ -89,7 +89,7 @@ final class TaskParentStep {
 	/**
 	 * Adds a warning to the answer of a write that set a parent when the chain read back now loops through the task.
 	 *
-	 * @param array<string, mixed> $answer the written task, as TaskWriteFlow::commit() returned it
+	 * @param array<string, mixed> $answer the written task, as \OCA\Mcp\Modules\Tasks\Writing\TaskWriteFlow::commit() returned it
 	 * @param Calendar $calendar calendar of the task
 	 * @param array<string, mixed> $arguments validated tool arguments
 	 * @return array<string, mixed> the answer, with `warning` when a loop runs through the task
@@ -99,7 +99,7 @@ final class TaskParentStep {
 			return $answer;
 		}
 		if ($this->hierarchy->loopsThrough($calendar->id, (string)$answer['uid'])) {
-			$answer['warning'] = TaskHierarchyMessages::loopAfterWrite();
+			$answer['warning'] = \OCA\Mcp\Modules\Tasks\Presentation\TaskHierarchyMessages::loopAfterWrite();
 		}
 		return $answer;
 	}

@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Tasks;
+namespace OCA\Mcp\Modules\Tasks\Hierarchy;
 
 use OCA\Mcp\Platform\Dav\Calendar;
 use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
@@ -23,7 +23,7 @@ use Sabre\VObject\Component\VCalendar;
  *
  * Only the direct parent is read with the caller's rights. Its ancestors and the descendants of the moved task are
  * read by UID inside the same authorized calendar to count levels and find loops, and nothing of them reaches the
- * answer: every refusal is one of the fixed messages of {@see TaskHierarchyMessages}.
+ * answer: every refusal is one of the fixed messages of {@see \OCA\Mcp\Modules\Tasks\Presentation\TaskHierarchyMessages}.
  */
 final class TaskHierarchy {
 	/** Deepest level a task may reach through an MCP write; a top-level task is level 1. */
@@ -36,15 +36,15 @@ final class TaskHierarchy {
 	 * Receives the stores the hierarchy is read from.
 	 *
 	 * @param CalendarStore $store read-only storage port
-	 * @param TaskStore $tasks live VTODO query port, for the descendants of a moved task
-	 * @param TaskData $data parser of the stored objects
+	 * @param \OCA\Mcp\Modules\Tasks\Locating\TaskStore $tasks live VTODO query port, for the descendants of a moved task
+	 * @param \OCA\Mcp\Modules\Tasks\Composing\TaskData $data parser of the stored objects
 	 * @param TaskRelations $relations reader of parent links
 	 * @return void
 	 */
 	public function __construct(
 		private CalendarStore $store,
-		private TaskStore $tasks,
-		private TaskData $data,
+		private \OCA\Mcp\Modules\Tasks\Locating\TaskStore $tasks,
+		private \OCA\Mcp\Modules\Tasks\Composing\TaskData $data,
 		private TaskRelations $relations = new TaskRelations(),
 	) {
 	}
@@ -66,7 +66,7 @@ final class TaskHierarchy {
 		$level = $this->level($calendar, $current, $uid);
 		$height = $existing ? $this->height($calendar->id, $uid) : 1;
 		if ($level + $height > self::MAX_DEPTH) {
-			throw new ToolFailure(TaskHierarchyMessages::tooDeep(self::MAX_DEPTH));
+			throw new ToolFailure(\OCA\Mcp\Modules\Tasks\Presentation\TaskHierarchyMessages::tooDeep(self::MAX_DEPTH));
 		}
 	}
 
@@ -107,12 +107,12 @@ final class TaskHierarchy {
 	private function readableParent(Calendar $calendar, string $userId, string $parent): VCalendar {
 		$row = $this->store->objectByUid($calendar->id, $parent, 'VTODO');
 		if ($row === null) {
-			throw new ToolFailure(TaskHierarchyMessages::parentNotFound());
+			throw new ToolFailure(\OCA\Mcp\Modules\Tasks\Presentation\TaskHierarchyMessages::parentNotFound());
 		}
 		try {
-			return (new TaskRowReader($this->data))->readable($row, $calendar->ownedByOther($userId));
+			return (new \OCA\Mcp\Modules\Tasks\Locating\TaskRowReader($this->data))->readable($row, $calendar->ownedByOther($userId));
 		} catch (ToolFailure) {
-			throw new ToolFailure(TaskHierarchyMessages::parentNotFound());
+			throw new ToolFailure(\OCA\Mcp\Modules\Tasks\Presentation\TaskHierarchyMessages::parentNotFound());
 		}
 	}
 
@@ -135,10 +135,10 @@ final class TaskHierarchy {
 				return $level;
 			}
 			if ($next === $uid) {
-				throw new ToolFailure(TaskHierarchyMessages::loop());
+				throw new ToolFailure(\OCA\Mcp\Modules\Tasks\Presentation\TaskHierarchyMessages::loop());
 			}
 			if (isset($seen[$next])) {
-				throw new ToolFailure(TaskHierarchyMessages::brokenHierarchy());
+				throw new ToolFailure(\OCA\Mcp\Modules\Tasks\Presentation\TaskHierarchyMessages::brokenHierarchy());
 			}
 			$seen[$next] = true;
 			$row = $this->store->objectByUid($calendar->id, $next, 'VTODO');
@@ -148,10 +148,10 @@ final class TaskHierarchy {
 			try {
 				$current = $this->data->parse($row['data']);
 			} catch (ToolFailure) {
-				throw new ToolFailure(TaskHierarchyMessages::brokenHierarchy());
+				throw new ToolFailure(\OCA\Mcp\Modules\Tasks\Presentation\TaskHierarchyMessages::brokenHierarchy());
 			}
 		}
-		throw new ToolFailure(TaskHierarchyMessages::tooDeep(self::MAX_DEPTH));
+		throw new ToolFailure(\OCA\Mcp\Modules\Tasks\Presentation\TaskHierarchyMessages::tooDeep(self::MAX_DEPTH));
 	}
 
 	/**

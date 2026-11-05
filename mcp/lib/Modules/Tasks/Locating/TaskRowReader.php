@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Tasks;
+namespace OCA\Mcp\Modules\Tasks\Locating;
 
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
@@ -22,11 +22,11 @@ final class TaskRowReader {
 	/**
 	 * Receives the serializer that parses and classifies tasks.
 	 *
-	 * @param TaskData $data complete serialized DAV object
+	 * @param \OCA\Mcp\Modules\Tasks\Composing\TaskData $data complete serialized DAV object
 	 * @return void
 	 */
 	public function __construct(
-		private TaskData $data,
+		private \OCA\Mcp\Modules\Tasks\Composing\TaskData $data,
 	) {
 	}
 

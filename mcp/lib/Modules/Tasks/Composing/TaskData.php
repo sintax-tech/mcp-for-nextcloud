@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Tasks;
+namespace OCA\Mcp\Modules\Tasks\Composing;
 
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -158,7 +158,7 @@ class TaskData {
 				$task->add('CATEGORIES', $categories);
 			}
 		}
-		(new TaskRelations())->apply($task, $arguments);
+		(new \OCA\Mcp\Modules\Tasks\Hierarchy\TaskRelations())->apply($task, $arguments);
 		foreach ([
 			'summary' => 'SUMMARY',
 			'description' => 'DESCRIPTION',
@@ -285,7 +285,7 @@ class TaskData {
 			'due' => $date($task->DUE),
 			'completed' => $date($task->COMPLETED),
 			'categories' => $this->categories($task),
-			'parent' => (new TaskRelations())->parent($task),
+			'parent' => (new \OCA\Mcp\Modules\Tasks\Hierarchy\TaskRelations())->parent($task),
 			'recurring' => isset($task->RRULE) || isset($task->RDATE) || count($calendar->select('VTODO')) > 1,
 			'icalendar' => $calendar->serialize(),
 		];

@@ -19,7 +19,7 @@ use OCA\Mcp\Tests\Integration\Support\LoginFactory;
 use OCA\Mcp\Tests\Integration\Support\McpClient;
 use OCA\Mcp\Modules\Calendar\Locating\CalendarAccess;
 use OCA\Mcp\Modules\Calendar\CalendarModule;
-use OCA\Mcp\Tools\Tasks\TasksModule;
+use OCA\Mcp\Modules\Tasks\TasksModule;
 use OCP\Config\IUserConfig;
 use OCP\IAppConfig;
 use OCP\IConfig;

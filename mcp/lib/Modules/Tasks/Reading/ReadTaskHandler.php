@@ -5,12 +5,12 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Tasks\Handler;
+namespace OCA\Mcp\Modules\Tasks\Reading;
 
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
 use OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess;
-use OCA\Mcp\Tools\Tasks\TaskObjects;
+use OCA\Mcp\Modules\Tasks\Locating\TaskObjects;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 

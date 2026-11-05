@@ -5,14 +5,14 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Tasks;
+namespace OCA\Mcp\Modules\Tasks\Integration;
 
 use OCA\DAV\CalDAV\CalDavBackend;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 
 /** Queries the core CalDAV backend lazily without requiring the optional Tasks app. */
-class DavTaskStore implements TaskStore {
+class DavTaskStore implements \OCA\Mcp\Modules\Tasks\Locating\TaskStore {
 	/**
 	 * Receives the container without resolving the core CalDAV backend yet.
 	 *

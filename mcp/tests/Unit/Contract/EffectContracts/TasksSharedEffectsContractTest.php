@@ -20,9 +20,9 @@ use OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
 use OCA\Mcp\Modules\Calendar\Writing\TrashPolicy;
-use OCA\Mcp\Tools\Tasks\TaskData;
-use OCA\Mcp\Tools\Tasks\TasksModule;
-use OCA\Mcp\Tools\Tasks\TaskStore;
+use OCA\Mcp\Modules\Tasks\Composing\TaskData;
+use OCA\Mcp\Modules\Tasks\TasksModule;
+use OCA\Mcp\Modules\Tasks\Locating\TaskStore;
 use OCP\AppFramework\Utility\ITimeFactory;
 use PHPUnit\Framework\TestCase;
 

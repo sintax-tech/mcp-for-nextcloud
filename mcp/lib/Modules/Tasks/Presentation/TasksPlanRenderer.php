@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Tasks;
+namespace OCA\Mcp\Modules\Tasks\Presentation;
 
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -45,7 +45,7 @@ final class TasksPlanRenderer {
 
 	/**
 	 * @param string $tool write tool of this module
-	 * @param array<string, mixed> $plan plan returned by TasksModule::preview()
+	 * @param array<string, mixed> $plan plan returned by \OCA\Mcp\Modules\Tasks\TasksModule::preview()
 	 * @return string|null Markdown body, or null when the plan lacks what this renderer needs
 	 */
 	public function render(string $tool, array $plan): ?string {

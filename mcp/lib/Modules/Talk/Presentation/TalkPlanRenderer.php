@@ -6,9 +6,10 @@
 declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Talk\Presentation;
-use OCA\Mcp\Modules\Talk\{Writing\WritePreview};
+
 use OCA\Mcp\Mcp\Confirmation\PlanText;
 use Throwable;
+use OCA\Mcp\Modules\Talk\Writing\WritePreview;
 
 /**
  * Turns the plan of a Talk write into the body a person reads before saying yes.
@@ -60,21 +61,21 @@ final class TalkPlanRenderer {
 	 * @return string|null The body, or null when the conversation or the message is missing
 	 */
 	private static function reply(array $plan): ?string {
-		$conversation = self::conversationName($plan);
-		$message = self::stringAt($plan, 'draft', 'message');
+		$conversation = TalkPlanValues::conversationName($plan);
+		$message = TalkPlanValues::stringAt($plan, 'draft', 'message');
 		if ($conversation === null || $message === null) {
 			return null;
 		}
 
-		$body = [\OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::planToConversation($conversation), '', self::excerpt($message)];
+		$body = [TalkPlanMessages::planToConversation($conversation), '', TalkPlanValues::excerpt($message)];
 
-		$quoted = self::quoteBlock(self::valueAt($plan, 'draft', 'replyTo'));
+		$quoted = TalkPlanValues::quoteBlock(TalkPlanValues::valueAt($plan, 'draft', 'replyTo'));
 		if ($quoted !== null) {
 			$body[] = '';
 			$body[] = $quoted;
 		}
 
-		$reference = self::referenceLine($plan);
+		$reference = TalkPlanValues::referenceLine($plan);
 		if ($reference !== null) {
 			$body[] = '';
 			$body[] = $reference;
@@ -90,8 +91,8 @@ final class TalkPlanRenderer {
 	 * @return string|null The body, or null when the conversation or the list of messages is missing
 	 */
 	private static function batch(array $plan): ?string {
-		$conversation = self::conversationName($plan);
-		$items = self::valueAt($plan, 'draft', 'messages');
+		$conversation = TalkPlanValues::conversationName($plan);
+		$items = TalkPlanValues::valueAt($plan, 'draft', 'messages');
 		if ($conversation === null || !is_array($items) || $items === []) {
 			return null;
 		}
@@ -99,8 +100,8 @@ final class TalkPlanRenderer {
 		$items = array_values($items);
 		$body = [
 			count($items) === 1
-				? \OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::planOneMessage($conversation)
-				: \OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::planMessages(count($items), $conversation),
+				? TalkPlanMessages::planOneMessage($conversation)
+				: TalkPlanMessages::planMessages(count($items), $conversation),
 			'',
 		];
 
@@ -110,16 +111,16 @@ final class TalkPlanRenderer {
 			if (!is_array($item)) {
 				return null;
 			}
-			$message = self::stringAt($item, 'message');
+			$message = TalkPlanValues::stringAt($item, 'message');
 			if ($message === null) {
 				return null;
 			}
 			if ($index > 0) {
 				$body[] = '';
 			}
-			$body[] = ($index + 1) . '. ' . self::excerpt($message);
+			$body[] = ($index + 1) . '. ' . TalkPlanValues::excerpt($message);
 
-			$quoted = self::quoteBlock($item['replyTo'] ?? null);
+			$quoted = TalkPlanValues::quoteBlock($item['replyTo'] ?? null);
 			if ($quoted !== null) {
 				$body[] = '';
 				$body[] = $quoted;
@@ -136,26 +137,26 @@ final class TalkPlanRenderer {
 	 * @return string|null The body, or null when the conversation or the name of the file is missing
 	 */
 	private static function attach(array $plan): ?string {
-		$conversation = self::conversationName($plan);
-		$file = self::valueAt($plan, 'draft', 'file');
+		$conversation = TalkPlanValues::conversationName($plan);
+		$file = TalkPlanValues::valueAt($plan, 'draft', 'file');
 		if ($conversation === null || !is_array($file)) {
 			return null;
 		}
-		$name = self::stringAt($file, 'name');
+		$name = TalkPlanValues::stringAt($file, 'name');
 		if ($name === null) {
 			return null;
 		}
 
 		$body = [
-			\OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::planSharingFile($name, self::size($file['size'] ?? null), $conversation),
+			TalkPlanMessages::planSharingFile($name, TalkPlanValues::size($file['size'] ?? null), $conversation),
 		];
 
-		$caption = self::stringAt($plan, 'draft', 'message');
+		$caption = TalkPlanValues::stringAt($plan, 'draft', 'message');
 		if ($caption !== null) {
 			$body[] = '';
-			$body[] = \OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::planCaptionAfterFile();
+			$body[] = TalkPlanMessages::planCaptionAfterFile();
 			$body[] = '';
-			$body[] = self::excerpt($caption);
+			$body[] = TalkPlanValues::excerpt($caption);
 		}
 
 		return implode("\n", $body);
@@ -169,23 +170,23 @@ final class TalkPlanRenderer {
 	 * @return string|null The body, or null when the conversation or the file block is missing
 	 */
 	private static function quote(array $plan): ?string {
-		$conversation = self::conversationName($plan);
-		$file = self::valueAt($plan, 'draft', 'file');
+		$conversation = TalkPlanValues::conversationName($plan);
+		$file = TalkPlanValues::valueAt($plan, 'draft', 'file');
 		if ($conversation === null || !is_array($file)) {
 			return null;
 		}
 
-		$name = self::stringAt($file, 'name');
+		$name = TalkPlanValues::stringAt($file, 'name');
 		$body = [$name === null
-			? \OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::planCitingUnknownFile($conversation)
-			: \OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::planCitingFile($name, $conversation)];
+			? TalkPlanMessages::planCitingUnknownFile($conversation)
+			: TalkPlanMessages::planCitingFile($name, $conversation)];
 
-		$caption = self::stringAt($plan, 'draft', 'message');
+		$caption = TalkPlanValues::stringAt($plan, 'draft', 'message');
 		if ($caption !== null) {
 			$body[] = '';
-			$body[] = \OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::planCaptionWithCitation();
+			$body[] = TalkPlanMessages::planCaptionWithCitation();
 			$body[] = '';
-			$body[] = self::excerpt($caption);
+			$body[] = TalkPlanValues::excerpt($caption);
 		}
 
 		return implode("\n", $body);
@@ -199,18 +200,18 @@ final class TalkPlanRenderer {
 	 * @return string|null The body, or null when the person or the message is missing
 	 */
 	private static function directMessage(array $plan): ?string {
-		$person = self::stringAt($plan, 'target', 'displayName');
-		$message = self::stringAt($plan, 'draft', 'message');
+		$person = TalkPlanValues::stringAt($plan, 'target', 'displayName');
+		$message = TalkPlanValues::stringAt($plan, 'draft', 'message');
 		if ($person === null || $message === null) {
 			return null;
 		}
 
 		return implode("\n", [
-			\OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::planToPerson($person),
+			TalkPlanMessages::planToPerson($person),
 			'',
-			self::excerpt($message),
+			TalkPlanValues::excerpt($message),
 			'',
-			\OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::planDirectConversationCreated($person),
+			TalkPlanMessages::planDirectConversationCreated($person),
 		]);
 	}
 
@@ -221,25 +222,25 @@ final class TalkPlanRenderer {
 	 * @return string|null The body, or null when the name of the group is missing
 	 */
 	private static function group(array $plan): ?string {
-		$name = self::stringAt($plan, 'draft', 'name');
-		$participants = self::valueAt($plan, 'draft', 'participants');
+		$name = TalkPlanValues::stringAt($plan, 'draft', 'name');
+		$participants = TalkPlanValues::valueAt($plan, 'draft', 'participants');
 		if ($name === null || !is_array($participants) || !is_array($plan['draft'] ?? null)) {
 			return null;
 		}
 
-		$body = [\OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::planCreatingGroup($name)];
+		$body = [TalkPlanMessages::planCreatingGroup($name)];
 
 		if ($participants === []) {
 			$body[] = '';
-			$body[] = \OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::planNoGuests();
+			$body[] = TalkPlanMessages::planNoGuests();
 
 			return implode("\n", $body);
 		}
 
 		$body[] = '';
-		$body[] = \OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::planInviting();
+		$body[] = TalkPlanMessages::planInviting();
 		foreach ($participants as $participant) {
-			$displayName = is_array($participant) ? self::stringAt($participant, 'displayName') : null;
+			$displayName = is_array($participant) ? TalkPlanValues::stringAt($participant, 'displayName') : null;
 			if ($displayName === null) {
 				return null;
 			}
@@ -249,129 +250,4 @@ final class TalkPlanRenderer {
 		return implode("\n", $body);
 	}
 
-	/**
-	 * The conversation the plan writes into, by the name the user knows it by.
-	 *
-	 * @param array<string, mixed> $plan Plan of a tool that lands in an existing conversation
-	 * @return string|null The display name, or null when the plan does not carry one
-	 */
-	private static function conversationName(array $plan): ?string {
-		return self::stringAt($plan, 'conversation', 'displayName');
-	}
-
-	/**
-	 * The block naming who is being answered and what was answered.
-	 *
-	 * @param mixed $quote replyTo block of a plan item, or null when the item quotes nothing
-	 * @return string|null The block, or null when the quote is absent or incomplete
-	 */
-	private static function quoteBlock(mixed $quote): ?string {
-		if (!is_array($quote)) {
-			return null;
-		}
-		$author = self::stringAt($quote, 'author');
-		$excerpt = self::stringAt($quote, 'excerpt');
-		if ($author === null || $excerpt === null) {
-			return null;
-		}
-
-		return \OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::planReplyingTo($author) . "\n\n" . self::excerpt($excerpt);
-	}
-
-	/**
-	 * The item a message links to, named by its kind and its title, so the user sees whose item the link exposes.
-	 *
-	 * @param array<string, mixed> $plan Plan of talk_reply
-	 * @return string|null The line, or null when the plan carries no reference or one the renderer cannot name
-	 */
-	private static function referenceLine(array $plan): ?string {
-		$reference = $plan['reference'] ?? null;
-		if (!is_array($reference)) {
-			return null;
-		}
-		$title = self::stringAt($reference, 'title');
-		$label = match ($reference['type'] ?? null) {
-			'deck_card' => \OCA\Mcp\Modules\Talk\Presentation\TalkReferenceLabels::referenceLabelDeck(),
-			'calendar_event' => \OCA\Mcp\Modules\Talk\Presentation\TalkReferenceLabels::referenceLabelCalendar(),
-			default => null,
-		};
-		if ($title === null || $label === null) {
-			return null;
-		}
-
-		return \OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::planLinkTo($label, $title);
-	}
-
-	/**
-	 * A message body as a Markdown quote, cut when it is longer than {@see self::EXCERPT_MAX_LENGTH}.
-	 *
-	 * @param string $message Message as the plan carries it
-	 * @return string The block quote, one "> " per line, with no line able to leave the block or to be read as Markdown
-	 */
-	private static function excerpt(string $message): string {
-		$text = trim($message);
-		$cut = mb_strlen($text) > self::EXCERPT_MAX_LENGTH;
-		if ($cut) {
-			$text = mb_substr($text, 0, self::EXCERPT_MAX_LENGTH);
-		}
-
-		// Every line of the message, whatever ends it ("\n", "\r\n" or a lone "\r"), stays inside the block quote.
-		$quoted = PlanText::quote($text, self::EXCERPT_MAX_LENGTH);
-
-		return $cut ? $quoted . "\n> " . \OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::contentTruncated() : $quoted;
-	}
-
-	/**
-	 * A size a person can read, when the plan carries one.
-	 *
-	 * @param mixed $bytes Size in bytes, as the plan carries it
-	 * @return string The size, or an empty string when the plan carries none and the line must not promise one
-	 */
-	private static function size(mixed $bytes): string {
-		if (!is_int($bytes) || $bytes < 0) {
-			return '';
-		}
-		if ($bytes < 1024) {
-			return \OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::sizeInBytes($bytes);
-		}
-		if ($bytes < 1024 * 1024) {
-			return \OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::sizeInKilobytes(round($bytes / 1024, 1));
-		}
-		if ($bytes < 1024 * 1024 * 1024) {
-			return \OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::sizeInMegabytes(round($bytes / (1024 * 1024), 1));
-		}
-
-		return \OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::sizeInGigabytes(round($bytes / (1024 * 1024 * 1024), 1));
-	}
-
-	/**
-	 * Reads a value nested under keys, without assuming any of them is there.
-	 *
-	 * @param array<string, mixed> $plan Plan, or fragment, to read from
-	 * @param string ...$keys Keys to walk, in order
-	 * @return mixed The value found, or null when any key of the path is missing
-	 */
-	private static function valueAt(array $plan, string ...$keys): mixed {
-		$value = $plan;
-		foreach ($keys as $key) {
-			if (!is_array($value) || !array_key_exists($key, $value)) {
-				return null;
-			}
-			$value = $value[$key];
-		}
-
-		return $value;
-	}
-	/**
-	 * Reads a non-empty text nested under keys.
-	 *
-	 * @param array<string, mixed> $plan Plan, or fragment, to read from
-	 * @param string ...$keys Keys to walk, in order
-	 * @return string|null The text, or null when the path is missing or the value is not a usable text
-	 */
-	private static function stringAt(array $plan, string ...$keys): ?string {
-		$value = self::valueAt($plan, ...$keys);
-
-		return is_string($value) && trim($value) !== '' ? $value : null;
-	}
 }

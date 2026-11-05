@@ -40,6 +40,10 @@ final class TalkTestModule {
 			$arguments,
 			new \OCA\Mcp\Modules\Talk\Replying\ReplyHandler($draft, $writer, $errors),
 			new \OCA\Mcp\Modules\Talk\Replying\ReplyPreview($draft, $preview, $errors),
+			new \OCA\Mcp\Modules\Talk\Attaching\AttachFileHandler($arguments, $resolver, $sharer, $logger, $errors),
+			new \OCA\Mcp\Modules\Talk\Attaching\AttachFilePreview($arguments, $resolver, $preview, $errors),
+			new \OCA\Mcp\Modules\Talk\Quoting\QuoteFileHandler($arguments, $resolver, $writer, $errors),
+			new \OCA\Mcp\Modules\Talk\Quoting\QuoteFilePreview($arguments, $resolver, $preview, $errors),
 		);
 	}
 }

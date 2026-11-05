@@ -2,6 +2,10 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Modules/Talk/Attaching/AttachFileHandler.php","fqcn":"OCA\\Mcp\\Modules\\Talk\\Attaching\\AttachFileHandler","target":"stays","owner":"Modules\\Talk","ticket":null},
+		{"path":"lib/Modules/Talk/Attaching/AttachFilePreview.php","fqcn":"OCA\\Mcp\\Modules\\Talk\\Attaching\\AttachFilePreview","target":"stays","owner":"Modules\\Talk","ticket":null},
+		{"path":"lib/Modules/Talk/Quoting/QuoteFileHandler.php","fqcn":"OCA\\Mcp\\Modules\\Talk\\Quoting\\QuoteFileHandler","target":"stays","owner":"Modules\\Talk","ticket":null},
+		{"path":"lib/Modules/Talk/Quoting/QuoteFilePreview.php","fqcn":"OCA\\Mcp\\Modules\\Talk\\Quoting\\QuoteFilePreview","target":"stays","owner":"Modules\\Talk","ticket":null},
 		{"path":"lib/Modules/Talk/Failures/TalkErrors.php","fqcn":"OCA\\Mcp\\Modules\\Talk\\Failures\\TalkErrors","target":"stays","owner":"Modules\\Talk","ticket":null},
 		{"path":"lib/Modules/Talk/Replying/ReplyDraft.php","fqcn":"OCA\\Mcp\\Modules\\Talk\\Replying\\ReplyDraft","target":"stays","owner":"Modules\\Talk","ticket":null},
 		{"path":"lib/Modules/Talk/Replying/ReplyHandler.php","fqcn":"OCA\\Mcp\\Modules\\Talk\\Replying\\ReplyHandler","target":"stays","owner":"Modules\\Talk","ticket":null},

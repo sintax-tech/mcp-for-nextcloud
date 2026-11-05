@@ -58,6 +58,10 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 	 * @param TalkArguments $arguments existing Talk operation collaborator
 	 * @param \OCA\Mcp\Modules\Talk\Replying\ReplyHandler $replyHandler existing Talk operation collaborator
 	 * @param \OCA\Mcp\Modules\Talk\Replying\ReplyPreview $replyPlans existing Talk operation collaborator
+	 * @param \OCA\Mcp\Modules\Talk\Attaching\AttachFileHandler $attachFileHandler existing Talk operation collaborator
+	 * @param \OCA\Mcp\Modules\Talk\Attaching\AttachFilePreview $attachFilePlans existing Talk operation collaborator
+	 * @param \OCA\Mcp\Modules\Talk\Quoting\QuoteFileHandler $quoteFileHandler existing Talk operation collaborator
+	 * @param \OCA\Mcp\Modules\Talk\Quoting\QuoteFilePreview $quoteFilePlans existing Talk operation collaborator
 	 */
 	public function __construct(
 		private TalkServices $talkServices,
@@ -73,6 +77,10 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 		private TalkArguments $arguments,
 		private \OCA\Mcp\Modules\Talk\Replying\ReplyHandler $replyHandler,
 		private \OCA\Mcp\Modules\Talk\Replying\ReplyPreview $replyPlans,
+		private \OCA\Mcp\Modules\Talk\Attaching\AttachFileHandler $attachFileHandler,
+		private \OCA\Mcp\Modules\Talk\Attaching\AttachFilePreview $attachFilePlans,
+		private \OCA\Mcp\Modules\Talk\Quoting\QuoteFileHandler $quoteFileHandler,
+		private \OCA\Mcp\Modules\Talk\Quoting\QuoteFilePreview $quoteFilePlans,
 	) {
 	}
 
@@ -343,84 +351,6 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 	}
 
 	/**
-	 * @param string $userId Authenticated user
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return array<string, mixed> Result data of talk_attach_file
-	 * @throws InvalidArgumentException When the path is missing
-	 * @throws ConversationAccessException When the conversation cannot be reached for writing
-	 * @throws FileAccessException When the file is missing, not shareable or already shared in this conversation
-	 * @throws TalkUnavailableException When spreed is unavailable
-	 */
-	private function attachCall(string $userId, array $arguments): array {
-		$path = $this->arguments->path($arguments);
-		$caption = $this->arguments->optionalMessage($arguments);
-		$conversation = $this->writable($userId, $arguments);
-
-		$attached = $this->sharer->attach($conversation, $userId, $path, $caption);
-		if (($attached['captionSent'] ?? null) === false) {
-			// The card is already in the room, so this is a real failure of the call even though it is not an
-			// error result: an operator has to be able to see that the caption was lost.
-			$this->logger->error('Talk caption was not sent after the attachment was published', [
-				'app' => 'mcp',
-				'tool' => self::TOOL_ATTACH,
-				'attachmentId' => $attached['attachmentId'],
-				'exception' => 'CaptionFailed',
-			]);
-		}
-
-		return $attached;
-	}
-
-	/**
-	 * @param string $userId Authenticated user
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return array<string, mixed> The plan of talk_attach_file
-	 * @throws InvalidArgumentException When the path is missing
-	 * @throws ConversationAccessException When the conversation cannot be reached for writing
-	 * @throws FileAccessException When the file is missing, not shareable or already shared in this conversation
-	 */
-	private function attachPreview(string $userId, array $arguments): array {
-		return $this->preview->attach(
-			$this->writable($userId, $arguments),
-			$userId,
-			$this->arguments->path($arguments),
-			$this->arguments->optionalMessage($arguments),
-		);
-	}
-
-	/**
-	 * @param string $userId Authenticated user
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return array<string, mixed> Result data of talk_quote_file
-	 * @throws InvalidArgumentException When the attachment id is missing
-	 * @throws ConversationAccessException When the conversation cannot be reached for writing, or the attachment is not a share of it
-	 * @throws TalkUnavailableException When spreed is unavailable
-	 */
-	private function quoteCall(string $userId, array $arguments): array {
-		$attachmentId = $this->arguments->attachmentId($arguments);
-		$caption = $this->arguments->optionalMessage($arguments);
-		$conversation = $this->writable($userId, $arguments);
-
-		return $this->writer->quoteAttachment($conversation, $userId, $attachmentId, $caption);
-	}
-
-	/**
-	 * @param string $userId Authenticated user
-	 * @param array<string, mixed> $arguments Validated arguments
-	 * @return array<string, mixed> The plan of talk_quote_file
-	 * @throws InvalidArgumentException When the attachment id is missing
-	 * @throws ConversationAccessException When the conversation cannot be reached for writing, or the attachment is not a share of it
-	 */
-	private function quotePreview(string $userId, array $arguments): array {
-		return $this->preview->quote(
-			$this->writable($userId, $arguments),
-			$userId,
-			$this->arguments->attachmentId($arguments),
-			$this->arguments->optionalMessage($arguments),
-		);
-	}
-
-	/**
 	 * A direct message to an account. The plan resolves the target and stops there, so a user who says no is not
 	 * left with an empty conversation; the room is created by the confirmed call, and only through the same call
 	 * the Talk UI uses, which keeps the product's own rule about who may talk to whom.
@@ -575,12 +505,16 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 		if ($name === 'talk_reply') {
 			return $this->replyHandler->handle($arguments, $userId);
 		}
+		if ($name === 'talk_attach_file') {
+			return $this->attachFileHandler->handle($arguments, $userId);
+		}
+		if ($name === 'talk_quote_file') {
+			return $this->quoteFileHandler->handle($arguments, $userId);
+		}
 		try {
 			return match ($name) {
 				self::TOOL_LIST => ToolResult::success(['conversations' => $this->reader->listConversations($userId)]),
 				self::TOOL_READ => ToolResult::success(['messages' => $this->reader->readMessages($userId, $this->arguments->token($arguments), $this->arguments->limit($arguments))]),
-				'talk_attach_file' => ToolResult::success($this->attachCall($userId, $arguments)),
-				'talk_quote_file' => ToolResult::success($this->quoteCall($userId, $arguments)),
 				'talk_message_user' => ToolResult::success($this->messageUserCall($userId, $arguments)),
 				'talk_send_batch' => ToolResult::success($this->sendBatchCall($userId, $arguments)),
 				'talk_create_group' => ToolResult::success($this->createGroupCall($userId, $arguments)),
@@ -621,10 +555,14 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 		if ($name === 'talk_reply') {
 			return $this->replyPlans->plan($arguments, $userId);
 		}
+		if ($name === 'talk_attach_file') {
+			return $this->attachFilePlans->plan($arguments, $userId);
+		}
+		if ($name === 'talk_quote_file') {
+			return $this->quoteFilePlans->plan($arguments, $userId);
+		}
 		try {
 			return match ($name) {
-				'talk_attach_file' => $this->attachPreview($userId, $arguments),
-				'talk_quote_file' => $this->quotePreview($userId, $arguments),
 				'talk_message_user' => $this->messageUserPreview($userId, $arguments),
 				'talk_send_batch' => $this->sendBatchPreview($userId, $arguments),
 				'talk_create_group' => $this->createGroupPreview($userId, $arguments),

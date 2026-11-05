@@ -71,7 +71,7 @@ class ReferenceLinkerTest extends TestCase {
 		$urls->method('getWebroot')->willReturn('');
 
 		$classification = new Classification();
-		$this->linker = new ReferenceLinker(
+		$this->linker = \OCA\Mcp\Tests\Unit\Tools\Talk\ReferenceLinkers::build(
 			$this->deck,
 			$this->calendars,
 			$this->store,
@@ -170,7 +170,7 @@ class ReferenceLinkerTest extends TestCase {
 		$guests = $this->createMock(\OCA\Mcp\Access\Guests\GuestRestrictions::class);
 		$guests->method('allowsApp')->willReturnCallback(static fn (string $uid, string $app): bool => $app !== 'deck');
 		$classification = new Classification();
-		$linker = new ReferenceLinker($this->deck, $this->calendars, $this->store, new EventRepository($this->store, $classification),
+		$linker = \OCA\Mcp\Tests\Unit\Tools\Talk\ReferenceLinkers::build($this->deck, $this->calendars, $this->store, new EventRepository($this->store, $classification),
 			$classification, $this->appManager, $this->users, $this->grants, $this->urls, $guests);
 		$this->deck->expects($this->never())->method('findCard');
 
@@ -204,7 +204,7 @@ class ReferenceLinkerTest extends TestCase {
 		$scope = (new \OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub())->restrict('calendar', []);
 		$scope->unavailable = true;
 		$classification = new Classification();
-		$linker = new ReferenceLinker($this->deck, \OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub::access($store, $scope), $store,
+		$linker = \OCA\Mcp\Tests\Unit\Tools\Talk\ReferenceLinkers::build($this->deck, \OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub::access($store, $scope), $store,
 			new EventRepository($store, $classification), $classification, $this->appManager, $this->users, $this->grants, $this->urls);
 		$outcomes = [];
 		foreach ([self::CALENDAR_PATH, '/remote.php/dav/calendars/alice/missing/'] as $path) {
@@ -228,7 +228,7 @@ class ReferenceLinkerTest extends TestCase {
 			. "DTSTAMP:20261001T100000Z\r\nSUMMARY:A task\r\nEND:VTODO\r\nEND:VCALENDAR\r\n");
 		$scope = (new \OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub())->restrict('calendar', ['3'])->restrict('tasks', []);
 		$classification = new Classification();
-		$linker = new ReferenceLinker($this->deck, \OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub::access($store, $scope), $store,
+		$linker = \OCA\Mcp\Tests\Unit\Tools\Talk\ReferenceLinkers::build($this->deck, \OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub::access($store, $scope), $store,
 			new EventRepository($store, $classification), $classification, $this->appManager, $this->users, $this->grants, $this->urls);
 		$outcomes = [];
 		foreach (['todo1', 'no-such-uid'] as $uid) {

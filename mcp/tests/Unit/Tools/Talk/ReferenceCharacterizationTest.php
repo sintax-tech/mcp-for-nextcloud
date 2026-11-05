@@ -57,7 +57,7 @@ final class ReferenceCharacterizationTest extends TestCase {
 			$urls->method('getAbsoluteURL')->willReturnCallback(static fn (string $url): string => 'https://cloud.example' . $url);
 			$urls->method('getWebroot')->willReturn('/cloud');
 			$classification = new Classification();
-			$linker = new ReferenceLinker($deck, ScopeStub::access($store, $scope), $store, new EventRepository($store, $classification), $classification, $apps, $users, $policy, $urls);
+			$linker = \OCA\Mcp\Tests\Unit\Tools\Talk\ReferenceLinkers::build($deck, ScopeStub::access($store, $scope), $store, new EventRepository($store, $classification), $classification, $apps, $users, $policy, $urls);
 			$args = in_array($scenario, ['card', 'board-mismatch', 'card-denied', 'no-grant'], true)
 				? ['type' => 'deck_card', 'card_id' => 7, 'board_id' => $scenario === 'board-mismatch' ? 9 : 4]
 				: ['type' => 'calendar_event', 'calendar' => '/remote.php/dav/calendars/alice/events/', 'uid' => 'event1'];

@@ -8,22 +8,15 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Talk;
 use OCA\Mcp\Modules\Talk\{Failures\ConversationAccessException, Writing\ConversationWriter, Presentation\Messages};
 use InvalidArgumentException;
+use OCA\Mcp\Access\References\ReadableDeckCard;
+use OCA\Mcp\Access\References\ReadableCalendarEvent;
 use OCA\Mcp\Platform\Compat\AppEnablement;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Guests\GuestRestrictions;
-use OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess;
-use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
-use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
-use OCA\Mcp\Modules\Calendar\Locating\Classification;
-use OCA\Mcp\Modules\Calendar\Presentation\EventMapper;
-use OCA\Mcp\Modules\Calendar\Locating\EventRepository;
 use OCA\Mcp\Access\Grants\GrantMatrix;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
-use OCA\Mcp\Tools\Deck\DeckToolModule;
 use OCP\App\IAppManager;
 use OCP\IURLGenerator;
 use OCP\IUserManager;
-use Throwable;
 
 /**
  * Turns a reference to a Deck card or a Calendar event into a line of text a reply carries: the title and the
@@ -48,12 +41,18 @@ class ReferenceLinker {
 	/** Longest calendar path accepted, the same bound the calendar tools use for a path. */
 	public const MAX_CALENDAR_LENGTH = 1000;
 
+	/**
+	 * @param ReadableDeckCard $deck the owning module's permission-checked card projection
+	 * @param ReadableCalendarEvent $calendarEvents the owning module's scoped, classified event projection
+	 * @param IAppManager $appManager existing per-user app enablement
+	 * @param IUserManager $userManager existing authenticated account lookup
+	 * @param GrantPolicy $grants existing read grants
+	 * @param IURLGenerator $urlGenerator existing canonical app URLs
+	 * @param GuestRestrictions|null $guests existing optional Guests app restriction
+	 */
 	public function __construct(
-		private DeckGatewayInterface $deck,
-		private ScopedCalendarAccess $calendars,
-		private CalendarStore $calendarStore,
-		private EventRepository $events,
-		private Classification $classification,
+		private ReadableDeckCard $deck,
+		private ReadableCalendarEvent $calendarEvents,
 		private IAppManager $appManager,
 		private IUserManager $userManager,
 		private GrantPolicy $grants,
@@ -107,26 +106,19 @@ class ReferenceLinker {
 		if ($boardId !== null && (!is_int($boardId) || $boardId < 1)) {
 			throw new InvalidArgumentException(Messages::invalidReference());
 		}
-		$this->assertModuleUsable($userId, 'deck', DeckToolModule::DECK_APP, Messages::referenceDeckOff());
+		$this->assertModuleUsable($userId, 'deck', GrantMatrix::MODULE_APPS['deck'], Messages::referenceDeckOff());
 
-		try {
-			// The same read the deck_read_card tool does: CardService::find() checks the permission and refuses a
-			// deleted card, and the board lookup runs its own read check before it answers.
-			$card = $this->deck->findCard($userId, $cardId);
-			$actualBoard = $this->deck->cardBoardId($userId, $cardId);
-		} catch (Throwable $e) {
-			throw new ConversationAccessException(Messages::referenceNotFound(), $e);
+		$read = $this->deck->read($userId, $cardId, $boardId);
+		if ($read->item === null) {
+			throw new ConversationAccessException(Messages::referenceNotFound(), $read->failure);
 		}
-		// A board id that does not match is a card the caller did not mean; saying so would confirm where it is.
-		if ($boardId !== null && $boardId !== $actualBoard) {
-			throw new ConversationAccessException(Messages::referenceNotFound());
-		}
+		$item = $read->item;
 
 		return [
 			'type' => self::TYPE_DECK_CARD,
-			'title' => self::oneLine((string)$card->getTitle()),
+			'title' => self::oneLine($item['title']),
 			'url' => $this->urlGenerator->linkToRouteAbsolute('deck.page.indexCard', [
-				'boardId' => $actualBoard,
+				'boardId' => $item['boardId'],
 				'cardId' => $cardId,
 			]),
 		];
@@ -145,35 +137,16 @@ class ReferenceLinker {
 		}
 		$this->assertModuleUsable($userId, 'calendar', GrantMatrix::MODULE_APPS['calendar'], Messages::referenceCalendarOff());
 
-		try {
-			// The calendar tools' own rules: the path must be one of the caller's visible calendars, and the
-			// iCalendar CLASS of an event in someone else's calendar decides what the caller may see of it.
-			$calendar = $this->calendars->resolve($userId, $path);
-			$row = $this->calendarStore->objectByUid($calendar->id, $uid, 'VEVENT');
-			$vcalendar = ($row === null || $row['deleted']) ? null : $this->events->parse($row['data']);
-		} catch (CalendarException $e) {
-			throw new ConversationAccessException(Messages::referenceNotFound(), $e);
+		$read = $this->calendarEvents->read($userId, $path, $uid);
+		if ($read->item === null) {
+			throw new ConversationAccessException(Messages::referenceNotFound(), $read->failure);
 		}
-		if ($row === null || $vcalendar === null) {
-			throw new ConversationAccessException(Messages::referenceNotFound());
-		}
-		$visibility = $this->classification->visibility($vcalendar, $calendar, $userId);
-		if ($visibility === Classification::HIDDEN) {
-			throw new ConversationAccessException(Messages::referenceNotFound());
-		}
-
-		$summary = '';
-		foreach ($vcalendar->select('VEVENT') as $event) {
-			if (!isset($event->{'RECURRENCE-ID'})) {
-				$summary = (string)($event->SUMMARY ?? '');
-			}
-		}
-		// A confidential event is shown as busy by the calendar tools, and the link is not a way around that.
-		$title = $visibility === Classification::BUSY ? EventMapper::BUSY_SUMMARY : $summary;
+		$item = $read->item;
+		$title = $item['title'];
 
 		// The deep link the server's own event search builds: the Calendar app opens the object from the base64
 		// of its DAV URL, and it works for shared calendars because the path is the caller's own view of it.
-		$davUrl = $this->urlGenerator->getWebroot() . $calendar->path . rawurlencode((string)$row['uri']);
+		$davUrl = $this->urlGenerator->getWebroot() . $item['path'] . rawurlencode($item['uri']);
 
 		return [
 			'type' => self::TYPE_CALENDAR_EVENT,

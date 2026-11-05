@@ -113,7 +113,7 @@ final class TalkWritesWiring {
 		$userConversations = new UserConversationResolver($talk, $this->users, $this->shareManager);
 		$store = $this->mock(CalendarStore::class);
 		$classification = new Classification();
-		$linker = new ReferenceLinker($this->mock(DeckGatewayInterface::class),
+		$linker = \OCA\Mcp\Tests\Unit\Tools\Talk\ReferenceLinkers::build($this->mock(DeckGatewayInterface::class),
 			new ScopedCalendarAccess($this->mock(CalendarAccess::class), $this->gate->policy()), $store,
 			new EventRepository($store, $classification), $classification, $apps, $this->users, $this->gate->policy(), $urls);
 		return new TalkModule($talk, new ConversationReader($talk, $resolver, $names, $references), $resolver, $writer, $sharer,

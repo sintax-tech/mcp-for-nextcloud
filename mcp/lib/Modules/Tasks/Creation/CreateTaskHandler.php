@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Tasks\Creation;
 
+use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
+
 use InvalidArgumentException;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use RuntimeException;
@@ -24,9 +26,11 @@ final class CreateTaskHandler {
 	 *
 	 * @param \OCA\Mcp\Modules\Tasks\Writing\ParentTaskWrite $write plan and confirmed write of the task writes that take parent
 	 * @return void
+	 * @param OutputReferenceFilter $references availability gate before any calendar or task lookup
 	 */
 	public function __construct(
 		private \OCA\Mcp\Modules\Tasks\Writing\ParentTaskWrite $write,
+		private OutputReferenceFilter $references,
 	) {
 	}
 
@@ -41,6 +45,7 @@ final class CreateTaskHandler {
 	 * @throws RuntimeException when the native write or its read-back verification fails
 	 */
 	public function handle(array $arguments, string $userId): array {
+		$this->references->assertAvailable($userId);
 		return $this->write->handle(self::TOOL, $arguments, $userId, false);
 	}
 }

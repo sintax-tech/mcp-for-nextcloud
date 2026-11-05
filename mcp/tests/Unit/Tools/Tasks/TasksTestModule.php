@@ -31,6 +31,7 @@ use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Lock\ILockingProvider;
 use RuntimeException;
 use OCA\Mcp\Modules\Tasks\TasksModule;
+use Psr\Container\ContainerInterface;
 
 /** Builds the module with the same collaborators its tests passed to the legacy constructor. */
 final class TasksTestModule {
@@ -55,19 +56,35 @@ final class TasksTestModule {
 			new \OCA\Mcp\Modules\Tasks\Hierarchy\TaskRelations(), $data,
 			$locks === null ? null : new \OCA\Mcp\Modules\Tasks\Hierarchy\TaskHierarchyLock($locks),
 		));
-		return new TasksModule(
-			new \OCA\Mcp\Modules\Tasks\Reading\ListTaskCalendarsHandler($access),
-			new \OCA\Mcp\Modules\Tasks\Reading\ListTasksHandler($access, $store, $tasks, $data, new \OCA\Mcp\Modules\Tasks\Locating\TaskRowReader($data)),
-			new \OCA\Mcp\Modules\Tasks\Reading\ReadTaskHandler($access, $objects),
-			new \OCA\Mcp\Modules\Tasks\Creation\CreateTaskHandler($parent),
-			new \OCA\Mcp\Modules\Tasks\Editing\EditTaskHandler($parent),
-			new \OCA\Mcp\Modules\Tasks\Completion\CompleteTaskHandler($flow),
-			new \OCA\Mcp\Modules\Tasks\Deletion\DeleteTaskHandler($flow),
-			new \OCA\Mcp\Modules\Tasks\Creation\CreateTaskPreview($parent),
-			new \OCA\Mcp\Modules\Tasks\Editing\EditTaskPreview($parent),
-			new \OCA\Mcp\Modules\Tasks\Completion\CompleteTaskPreview($flow),
-			new \OCA\Mcp\Modules\Tasks\Deletion\DeleteTaskPreview($flow),
-			$references,
-		);
+		return new TasksModule(self::container([
+			\OCA\Mcp\Modules\Tasks\Tools\ListTaskCalendars::class => new \OCA\Mcp\Modules\Tasks\Tools\ListTaskCalendars(new \OCA\Mcp\Modules\Tasks\Reading\ListTaskCalendarsHandler($access, $references)),
+			\OCA\Mcp\Modules\Tasks\Tools\ListTasks::class => new \OCA\Mcp\Modules\Tasks\Tools\ListTasks(new \OCA\Mcp\Modules\Tasks\Reading\ListTasksHandler($access, $store, $tasks, $data, new \OCA\Mcp\Modules\Tasks\Locating\TaskRowReader($data), $references)),
+			\OCA\Mcp\Modules\Tasks\Tools\ReadTask::class => new \OCA\Mcp\Modules\Tasks\Tools\ReadTask(new \OCA\Mcp\Modules\Tasks\Reading\ReadTaskHandler($access, $objects, $references)),
+			\OCA\Mcp\Modules\Tasks\Tools\CreateTask::class => new \OCA\Mcp\Modules\Tasks\Tools\CreateTask(new \OCA\Mcp\Modules\Tasks\Creation\CreateTaskHandler($parent, $references), new \OCA\Mcp\Modules\Tasks\Creation\CreateTaskPreview($parent, $references)),
+			\OCA\Mcp\Modules\Tasks\Tools\EditTask::class => new \OCA\Mcp\Modules\Tasks\Tools\EditTask(new \OCA\Mcp\Modules\Tasks\Editing\EditTaskHandler($parent, $references), new \OCA\Mcp\Modules\Tasks\Editing\EditTaskPreview($parent, $references)),
+			\OCA\Mcp\Modules\Tasks\Tools\CompleteTask::class => new \OCA\Mcp\Modules\Tasks\Tools\CompleteTask(new \OCA\Mcp\Modules\Tasks\Completion\CompleteTaskHandler($flow, $references), new \OCA\Mcp\Modules\Tasks\Completion\CompleteTaskPreview($flow, $references)),
+			\OCA\Mcp\Modules\Tasks\Tools\DeleteTask::class => new \OCA\Mcp\Modules\Tasks\Tools\DeleteTask(new \OCA\Mcp\Modules\Tasks\Deletion\DeleteTaskHandler($flow, $references), new \OCA\Mcp\Modules\Tasks\Deletion\DeleteTaskPreview($flow, $references)),
+		]));
+	}
+	/**
+	 * @param array<string, object> $services instances by id
+	 * @return ContainerInterface a container that only answers those instances
+	 */
+	public static function container(array $services): ContainerInterface {
+		return new class($services) implements ContainerInterface {
+			/** @param array<string, object> $services instances by id */
+			public function __construct(private array $services) {
+			}
+
+			/** {@inheritDoc} */
+			public function get(string $id): mixed {
+				return $this->services[$id] ?? throw new \LogicException("no test service $id");
+			}
+
+			/** {@inheritDoc} */
+			public function has(string $id): bool {
+				return isset($this->services[$id]);
+			}
+		};
 	}
 }

@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Tasks\Completion;
 
+use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
+
 use OCA\Mcp\Modules\Tasks\Writing\TaskWriteFlow;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use InvalidArgumentException;
@@ -19,8 +21,12 @@ final class CompleteTaskPreview {
 
 	/**
 	 * @param TaskWriteFlow $flow existing task preparation and native DAV write
+	 * @param OutputReferenceFilter $references availability gate before any calendar or task lookup
 	 */
-	public function __construct(private TaskWriteFlow $flow) {
+	public function __construct(
+		private TaskWriteFlow $flow,
+		private OutputReferenceFilter $references,
+	) {
 	}
 
 	/**
@@ -32,6 +38,7 @@ final class CompleteTaskPreview {
 	 * @throws RuntimeException when the native effect or read-back fails
 	 */
 	public function plan(array $arguments, string $userId): array {
+		$this->references->assertAvailable($userId);
 		return $this->flow->prepare(self::TOOL, $arguments, $userId)['plan'];
 	}
 }

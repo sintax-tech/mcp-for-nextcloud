@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Tasks\Reading;
 
+use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
+
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Platform\Dav\CalDavObjects as CalendarStore;
 use OCA\Mcp\Access\ResourceScope\ScopedCalendarLookup as ScopedCalendarAccess;
@@ -44,6 +46,7 @@ final class ListTasksHandler {
 	 * @param TaskRowReader $reader visibility rule of stored task objects
 	 * @param CategoryFilterNote $note explanation of a category filter that matched nothing
 	 * @return void
+	 * @param OutputReferenceFilter $references availability gate before any calendar or task lookup
 	 */
 	public function __construct(
 		private ScopedCalendarAccess $access,
@@ -51,6 +54,7 @@ final class ListTasksHandler {
 		private TaskStore $tasks,
 		private TaskData $data,
 		private TaskRowReader $reader,
+		private OutputReferenceFilter $references,
 		private CategoryFilterNote $note = new CategoryFilterNote(),
 	) {
 	}
@@ -65,6 +69,7 @@ final class ListTasksHandler {
 	 * @throws PolicyUnavailable when the scope cannot be read
 	 */
 	public function handle(array $arguments, string $userId): array {
+		$this->references->assertAvailable($userId);
 		$calendar = $this->access->resolve($userId, $arguments['calendar'], 'VTODO');
 		$items = [];
 		$more = false;

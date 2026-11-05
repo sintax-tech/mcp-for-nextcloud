@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Tasks\Reading;
 
+use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
+
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Access\ResourceScope\ScopedCalendarLookup as ScopedCalendarAccess;
 use OCA\Mcp\Modules\Tasks\Locating\TaskObjects;
@@ -27,10 +29,12 @@ final class ReadTaskHandler {
 	 * @param ScopedCalendarAccess $access the calendars the tool may reach: native visibility and ACL, narrowed by the resource scope
 	 * @param TaskObjects $objects lookup, classification and output of task objects
 	 * @return void
+	 * @param OutputReferenceFilter $references availability gate before any calendar or task lookup
 	 */
 	public function __construct(
 		private ScopedCalendarAccess $access,
 		private TaskObjects $objects,
+		private OutputReferenceFilter $references,
 	) {
 	}
 
@@ -45,6 +49,7 @@ final class ReadTaskHandler {
 	 * @throws PolicyUnavailable when the scope cannot be read
 	 */
 	public function handle(array $arguments, string $userId): array {
+		$this->references->assertAvailable($userId);
 		$calendar = $this->access->resolve($userId, $arguments['calendar'], 'VTODO');
 		$row = $this->objects->row($calendar->id, $arguments['uid']);
 		$parsed = $this->objects->readable($row, $calendar->ownedByOther($userId));

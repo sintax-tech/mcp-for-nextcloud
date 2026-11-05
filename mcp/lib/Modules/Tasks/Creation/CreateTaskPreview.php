@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Tasks\Creation;
 
+use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
+
 use OCA\Mcp\Modules\Tasks\Writing\ParentTaskWrite;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use InvalidArgumentException;
@@ -15,8 +17,12 @@ use InvalidArgumentException;
 final class CreateTaskPreview {
 	/**
 	 * @param ParentTaskWrite $write existing parent-aware preparation
+	 * @param OutputReferenceFilter $references availability gate before any calendar or task lookup
 	 */
-	public function __construct(private ParentTaskWrite $write) {
+	public function __construct(
+		private ParentTaskWrite $write,
+		private OutputReferenceFilter $references,
+	) {
 	}
 
 	/**
@@ -29,6 +35,7 @@ final class CreateTaskPreview {
 	 * @throws InvalidArgumentException when the supplied fields are invalid
 	 */
 	public function plan(array $arguments, string $userId): array {
+		$this->references->assertAvailable($userId);
 		return $this->write->preview(CreateTaskHandler::TOOL, $arguments, $userId, false);
 	}
 

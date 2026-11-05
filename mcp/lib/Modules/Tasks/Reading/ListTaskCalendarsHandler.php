@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Tasks\Reading;
 
+use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
+
 use OCA\Mcp\Access\ResourceScope\ScopedCalendarLookup;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 
@@ -14,8 +16,12 @@ use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 final class ListTaskCalendarsHandler {
 	/**
 	 * @param ScopedCalendarLookup $access native calendar visibility narrowed by the operation scope
+	 * @param OutputReferenceFilter $references availability gate before any calendar or task lookup
 	 */
-	public function __construct(private ScopedCalendarLookup $access) {
+	public function __construct(
+		private ScopedCalendarLookup $access,
+		private OutputReferenceFilter $references,
+	) {
 	}
 
 	/**
@@ -24,6 +30,7 @@ final class ListTaskCalendarsHandler {
 	 * @return array<string, mixed> MCP result of the ordered calendar list
 	 */
 	public function handle(array $arguments, string $userId): array {
+		$this->references->assertAvailable($userId);
 		return ToolResult::json(array_map(static fn ($calendar) => (array) $calendar, $this->access->visible($userId, 'VTODO')));
 	}
 }

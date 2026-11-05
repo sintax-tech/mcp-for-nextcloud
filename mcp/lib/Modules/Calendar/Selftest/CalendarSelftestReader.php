@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Modules\Calendar\Selftest;
 
-use OCA\Mcp\Modules\Calendar\Locating\Calendar;
+use OCA\Mcp\Platform\Dav\Calendar;
 
 /** Read-only evidence that ordinary tool results do not expose. */
 interface CalendarSelftestReader {

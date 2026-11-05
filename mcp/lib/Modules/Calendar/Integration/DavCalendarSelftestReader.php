@@ -7,7 +7,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Calendar\Integration;
 
 use OCA\DAV\CalDAV\CalDavBackend;
-use OCA\Mcp\Modules\Calendar\Locating\Calendar;
+use OCA\Mcp\Platform\Dav\Calendar;
 use Psr\Container\ContainerInterface;
 use OCA\Mcp\Modules\Calendar\Selftest\CalendarSelftestReader;
 

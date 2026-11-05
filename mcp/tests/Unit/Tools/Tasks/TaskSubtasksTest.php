@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Tasks;
 use InvalidArgumentException;
 use OCA\Mcp\Tests\Unit\Tools\Tasks\Handler\TaskListingCase;
 use OCA\Mcp\Platform\Dav\DavResult;
-use OCA\Mcp\Tools\Tasks\TaskHierarchy;
+use OCA\Mcp\Modules\Tasks\Hierarchy\TaskHierarchy;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**

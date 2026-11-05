@@ -18,11 +18,11 @@ use OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub;
 use OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Tests\Unit\Tools\Tasks\IneffectiveLocks;
-use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
-use OCA\Mcp\Modules\Calendar\Writing\TrashPolicy;
-use OCA\Mcp\Tools\Tasks\TaskData;
-use OCA\Mcp\Tools\Tasks\TasksModule;
-use OCA\Mcp\Tools\Tasks\TaskStore;
+use OCA\Mcp\Modules\Tasks\Writing\TaskSharedNotice as SharedGuard;
+use OCA\Mcp\Modules\Tasks\Writing\TaskTrashPolicy as TrashPolicy;
+use OCA\Mcp\Modules\Tasks\Composing\TaskData;
+use OCA\Mcp\Modules\Tasks\TasksModule;
+use OCA\Mcp\Modules\Tasks\Locating\TaskStore;
 use OCP\AppFramework\Utility\ITimeFactory;
 use PHPUnit\Framework\TestCase;
 
@@ -60,7 +60,7 @@ final class TasksEffectsContractTest extends TestCase {
 		$time = $this->createMock(ITimeFactory::class);
 		$time->method('now')->willReturnCallback(static fn (): DateTimeImmutable => new DateTimeImmutable(CalendarEffectsWiring::NOW));
 		// The provider the server hands out with filelocking.enabled false; a create without parent takes no lock.
-		return new TasksModule(ScopeStub::access($this->store), $this->store, $tasks, $this->dav, new TaskData(),
+		return \OCA\Mcp\Tests\Unit\Tools\Tasks\TasksTestModule::build(ScopeStub::access($this->store), $this->store, $tasks, $this->dav, new TaskData(),
 			new SharedGuard(FakeUsers::manager($this, ['alice' => 'Alice'])), new TrashPolicy($this->gate->config()), $time,
 			OutputReferenceFilters::inactive($this), new UserTimezone($this->gate->config()), new IneffectiveLocks());
 	}

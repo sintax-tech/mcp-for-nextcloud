@@ -17,7 +17,7 @@ use OCA\Mcp\Platform\Dav\DavResult;
  * ACL, the same iCalendar validation, the same scheduling rules, the same trash and the same sync
  * notifications. Nothing here writes to the database directly.
  */
-interface CalendarDav {
+interface CalendarDav extends \OCA\Mcp\Platform\Dav\CalDavWrite {
 	/**
 	 * Creates a calendar object, refusing to overwrite an existing one.
 	 *

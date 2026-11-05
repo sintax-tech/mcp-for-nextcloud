@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Modules\Calendar;
 
 use OCA\Mcp\Modules\Calendar\NativeCalendarsAdapter;
-use OCA\Mcp\Modules\Calendar\Locating\Calendar;
+use OCA\Mcp\Platform\Dav\Calendar;
 use OCA\Mcp\Modules\Calendar\Locating\CalendarAccess;
 use PHPUnit\Framework\TestCase;
 

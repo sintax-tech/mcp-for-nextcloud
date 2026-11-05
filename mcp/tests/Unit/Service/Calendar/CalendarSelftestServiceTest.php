@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Service\Calendar;
 use OCA\Mcp\Modules\Calendar\Selftest\CalendarSelftestService;
 use OCA\Mcp\Modules\Calendar\Selftest\CalendarSelftestReader;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\CalendarTestCase;
-use OCA\Mcp\Modules\Calendar\Locating\Calendar;
+use OCA\Mcp\Platform\Dav\Calendar;
 use OCA\Mcp\Modules\Calendar\Locating\CalendarAccess;
 use OCA\Mcp\Modules\Calendar\Writing\TrashPolicy;
 use OCP\App\IAppManager;

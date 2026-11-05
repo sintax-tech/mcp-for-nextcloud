@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Calendar\Locating;
 
+use OCA\Mcp\Platform\Dav\Calendar;
+
 use LogicException;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Access\ResourceScope\ScopeReader;
@@ -25,7 +27,7 @@ use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
  * Only the tools use this class; the administrative pages and the native resource enumeration keep CalendarAccess
  * (F4), since a scope must never hide a calendar from the person who configures it.
  */
-class ScopedCalendarAccess {
+class ScopedCalendarAccess implements \OCA\Mcp\Access\ResourceScope\ScopedCalendarLookup {
 	/** Scope module of each component a tool reads. */
 	public const MODULES = \OCA\Mcp\Access\ResourceScope\NativeCalendars::MODULES;
 

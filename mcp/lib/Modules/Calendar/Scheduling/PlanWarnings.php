@@ -12,7 +12,7 @@ use DateTimeZone;
 use IntlDateFormatter;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Modules\Calendar\Composing\AttendeeResolver;
-use OCA\Mcp\Modules\Calendar\Locating\Calendar;
+use OCA\Mcp\Platform\Dav\Calendar;
 use OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages;
 use OCA\Mcp\Modules\Calendar\Composing\EventBuilder;
 use OCA\Mcp\Modules\Calendar\Approval\PreparedCalendarWrite;

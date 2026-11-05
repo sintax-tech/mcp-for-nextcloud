@@ -51,7 +51,7 @@ class Application extends App implements IBootstrap {
 		NotesModule::class,
 		CalendarModule::class,
 		ContactsModule::class,
-		\OCA\Mcp\Tools\Tasks\TasksModule::class,
+		\OCA\Mcp\Modules\Tasks\TasksModule::class,
 		DeckToolModule::class,
 		TalkModule::class,
 		\OCA\Mcp\Modules\People\PeopleModule::class,
@@ -87,7 +87,6 @@ class Application extends App implements IBootstrap {
 			require_once $autoload;
 		}
 		$context->registerService(\OCA\Mcp\Platform\FileAccess\WriteVisibility::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\FileAccess\WriteVisibility => $c->get(VisibilityGuard::class));
-		$context->registerService(\OCA\Mcp\Tools\Tasks\TaskStore::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Tools\Tasks\DavTaskStore($c));
 		$context->registerService(\OCA\Mcp\Platform\FileAccess\ActorRoot::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Platform\FileAccess\ActorRoot($c->get(\OCP\Files\IRootFolder::class), $c->get(IUserSession::class)));
 		// The tools read the resource scope from the policy snapshot of their operation.
 		$context->registerService(\OCA\Mcp\Access\ResourceScope\ScopeReader::class, static fn (ContainerInterface $c): \OCA\Mcp\Access\ResourceScope\ScopeReader => $c->get(\OCA\Mcp\Access\Grants\GrantPolicy::class));

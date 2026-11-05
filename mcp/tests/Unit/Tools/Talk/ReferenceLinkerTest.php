@@ -12,7 +12,7 @@ use OCA\Deck\Db\Card;
 use OCA\Deck\NoPermissionException;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Modules\Calendar\Locating\Calendar;
+use OCA\Mcp\Platform\Dav\Calendar;
 use OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess;
 use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
 use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;

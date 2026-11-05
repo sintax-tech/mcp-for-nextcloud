@@ -16,8 +16,8 @@ use OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub;
 use OCA\Mcp\Modules\Calendar\Writing\CalendarDav;
 use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
 use OCA\Mcp\Platform\Dav\DavResult;
-use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
-use OCA\Mcp\Modules\Calendar\Writing\TrashPolicy;
+use OCA\Mcp\Modules\Tasks\Writing\TaskSharedNotice as SharedGuard;
+use OCA\Mcp\Modules\Tasks\Writing\TaskTrashPolicy as TrashPolicy;
 use OCA\Mcp\Access\ResourceScope\FileReferenceScope;
 use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
 use OCA\Mcp\Tools\Talk\ActorNames;
@@ -25,9 +25,9 @@ use OCA\Mcp\Tools\Talk\Conversation;
 use OCA\Mcp\Tools\Talk\ConversationReader;
 use OCA\Mcp\Tools\Talk\ConversationResolver;
 use OCA\Mcp\Tools\Talk\TalkServices;
-use OCA\Mcp\Tools\Tasks\TaskData;
-use OCA\Mcp\Tools\Tasks\TaskStore;
-use OCA\Mcp\Tools\Tasks\TasksModule;
+use OCA\Mcp\Modules\Tasks\Composing\TaskData;
+use OCA\Mcp\Modules\Tasks\Locating\TaskStore;
+use OCA\Mcp\Modules\Tasks\TasksModule;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Comments\IComment;
 use OCP\Files\Node;
@@ -237,7 +237,7 @@ final class StructuredReferenceContractTest extends TestCase {
 		$config->method('getAppValue')->willReturn('');
 		$time = $this->createMock(ITimeFactory::class);
 		$time->method('now')->willReturn(new DateTimeImmutable('2026-10-01T12:00:00Z'));
-		return new TasksModule(
+		return \OCA\Mcp\Tests\Unit\Tools\Tasks\TasksTestModule::build(
 			ScopeStub::access($store),
 			$store,
 			$tasks,
@@ -369,6 +369,13 @@ final class StructuredReferenceContractTest extends TestCase {
 				fn () => $module->call('tasks_list_tasks', ['calendar' => self::PATH], 'alice'),
 				fn () => $module->call('tasks_edit_task', ['calendar' => self::PATH, 'uid' => $uid, 'summary' => 'x'], 'alice'),
 				fn () => $module->preview('tasks_complete_task', ['calendar' => self::PATH, 'uid' => $uid], 'alice'),
+				fn () => $module->call('tasks_list_calendars', [], 'alice'),
+				fn () => $module->call('tasks_create_task', ['calendar' => '/remote.php/dav/calendars/alice/nope/', 'summary' => 'x'], 'alice'),
+				fn () => $module->preview('tasks_create_task', ['calendar' => '/remote.php/dav/calendars/alice/nope/', 'summary' => 'x'], 'alice'),
+				fn () => $module->preview('tasks_edit_task', ['calendar' => '/remote.php/dav/calendars/alice/nope/', 'uid' => $uid, 'summary' => 'x'], 'alice'),
+				fn () => $module->call('tasks_complete_task', ['calendar' => '/remote.php/dav/calendars/alice/nope/', 'uid' => $uid], 'alice'),
+				fn () => $module->call('tasks_delete_task', ['calendar' => '/remote.php/dav/calendars/alice/nope/', 'uid' => $uid], 'alice'),
+				fn () => $module->preview('tasks_delete_task', ['calendar' => '/remote.php/dav/calendars/alice/nope/', 'uid' => $uid], 'alice'),
 				// A list that does not exist either: the scope is read before the calendar is resolved.
 				fn () => $module->preview('tasks_complete_task', ['calendar' => '/remote.php/dav/calendars/alice/nope/', 'uid' => $uid], 'alice'),
 				fn () => $module->call('tasks_read_task', ['calendar' => '/remote.php/dav/calendars/alice/nope/', 'uid' => $uid], 'alice')] as $i => $run) {

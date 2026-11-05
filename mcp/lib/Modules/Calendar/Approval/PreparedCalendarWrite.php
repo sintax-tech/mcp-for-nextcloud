@@ -8,7 +8,7 @@ namespace OCA\Mcp\Modules\Calendar\Approval;
 
 use Closure;
 use Sabre\VObject\Component\VCalendar;
-use OCA\Mcp\Modules\Calendar\Locating\Calendar;
+use OCA\Mcp\Platform\Dav\Calendar;
 use OCA\Mcp\Modules\Calendar\Locating\StoredEvent;
 
 /** Request-local proposed write; no ICS or closure is persisted in the approval store. */

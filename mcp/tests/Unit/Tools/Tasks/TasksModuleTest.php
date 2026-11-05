@@ -13,8 +13,8 @@ use OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub;
 use OCA\Mcp\Modules\Calendar\Writing\CalendarDav;
 use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
 use OCA\Mcp\Platform\Dav\DavResult;
-use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
-use OCA\Mcp\Modules\Calendar\Writing\TrashPolicy;
+use OCA\Mcp\Modules\Tasks\Writing\TaskSharedNotice as SharedGuard;
+use OCA\Mcp\Modules\Tasks\Writing\TaskTrashPolicy as TrashPolicy;
 use OCA\Mcp\Modules\Tasks\Composing\TaskData;
 use OCA\Mcp\Modules\Tasks\Locating\TaskStore;
 use OCA\Mcp\Modules\Tasks\TasksModule;
@@ -91,7 +91,7 @@ final class TasksModuleTest extends TestCase {
 		$config->method('getAppValue')->willReturnCallback(fn () => $this->retention);
 		$time = $this->createMock(ITimeFactory::class);
 		$time->method('now')->willReturn(new DateTimeImmutable('2026-10-01T12:00:00Z'));
-		$this->module = new TasksModule(
+		$this->module = \OCA\Mcp\Tests\Unit\Tools\Tasks\TasksTestModule::build(
 			ScopeStub::access($this->store),
 			$this->store,
 			$tasks,

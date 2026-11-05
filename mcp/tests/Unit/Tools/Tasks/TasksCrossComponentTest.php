@@ -11,8 +11,8 @@ use DateTimeImmutable;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\FakeCalendarDav;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\FakeCalendarStore;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub;
-use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
-use OCA\Mcp\Modules\Calendar\Writing\TrashPolicy;
+use OCA\Mcp\Modules\Tasks\Writing\TaskSharedNotice as SharedGuard;
+use OCA\Mcp\Modules\Tasks\Writing\TaskTrashPolicy as TrashPolicy;
 use OCA\Mcp\Modules\Tasks\Composing\TaskData;
 use OCA\Mcp\Modules\Tasks\Locating\TaskStore;
 use OCA\Mcp\Modules\Tasks\TasksModule;
@@ -47,7 +47,7 @@ final class TasksCrossComponentTest extends TestCase {
 		$config->method('getAppValue')->willReturn('');
 		$time = $this->createMock(ITimeFactory::class);
 		$time->method('now')->willReturn(new DateTimeImmutable('2026-10-01T12:00:00Z'));
-		$this->module = new TasksModule(ScopeStub::access($this->store, $scope), $this->store, $tasks, $this->dav,
+		$this->module = \OCA\Mcp\Tests\Unit\Tools\Tasks\TasksTestModule::build(ScopeStub::access($this->store, $scope), $this->store, $tasks, $this->dav,
 			new TaskData(), new SharedGuard($this->createMock(IUserManager::class)), new TrashPolicy($config), $time,
 			\OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this));
 	}

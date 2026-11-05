@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Tasks\Locating;
 
-use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
+use OCA\Mcp\Platform\Dav\CalDavObjects as CalendarStore;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;

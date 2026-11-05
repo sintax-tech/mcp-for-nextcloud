@@ -18,8 +18,8 @@ use OCA\Mcp\Tests\Integration\Support\McpClient;
 use OCA\Mcp\Modules\Calendar\Writing\CalendarDav;
 use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
 use OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess;
-use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
-use OCA\Mcp\Modules\Calendar\Writing\TrashPolicy;
+use OCA\Mcp\Modules\Tasks\Writing\TaskSharedNotice as SharedGuard;
+use OCA\Mcp\Modules\Tasks\Writing\TaskTrashPolicy as TrashPolicy;
 use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
 use OCA\Mcp\Modules\Tasks\Composing\TaskData;
 use OCA\Mcp\Modules\Tasks\Presentation\TaskHierarchyMessages;
@@ -338,7 +338,7 @@ final class McpSubtasksTest extends IntegrationTestCase {
 	 * @return TasksModule the module
 	 */
 	private function module(CalendarDav $dav, bool $withLock, ?ILockingProvider $locks = null): TasksModule {
-		return new TasksModule(
+		return \OCA\Mcp\Tests\Unit\Tools\Tasks\TasksTestModule::build(
 			Server::get(ScopedCalendarAccess::class),
 			Server::get(CalendarStore::class),
 			Server::get(TaskStore::class),

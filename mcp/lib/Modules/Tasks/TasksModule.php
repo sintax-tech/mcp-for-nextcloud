@@ -9,11 +9,11 @@ namespace OCA\Mcp\Modules\Tasks;
 
 use InvalidArgumentException;
 use OCA\Mcp\Platform\Time\UserTimezone;
-use OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess;
-use OCA\Mcp\Modules\Calendar\Writing\CalendarDav;
-use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
-use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
-use OCA\Mcp\Modules\Calendar\Writing\TrashPolicy;
+use OCA\Mcp\Access\ResourceScope\ScopedCalendarLookup as ScopedCalendarAccess;
+use OCA\Mcp\Platform\Dav\CalDavWrite as CalendarDav;
+use OCA\Mcp\Platform\Dav\CalDavObjects as CalendarStore;
+use OCA\Mcp\Modules\Tasks\Writing\TaskSharedNotice as SharedGuard;
+use OCA\Mcp\Modules\Tasks\Writing\TaskTrashPolicy as TrashPolicy;
 use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
 use OCA\Mcp\Mcp\Tools\Schema\DavCollectionSchema as Schema;
 use OCA\Mcp\Mcp\Tools\PreviewsWrites;

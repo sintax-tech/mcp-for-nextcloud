@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Tasks;
 
 use DateTimeImmutable;
-use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
-use OCA\Mcp\Modules\Calendar\Writing\TrashPolicy;
+use OCA\Mcp\Modules\Tasks\Writing\TaskSharedNotice as SharedGuard;
+use OCA\Mcp\Modules\Tasks\Writing\TaskTrashPolicy as TrashPolicy;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters;
 use OCA\Mcp\Tests\Unit\InMemoryLocks;
@@ -54,7 +54,7 @@ final class TasksCharacterizationTest extends TestCase {
 				$config->method('getAppValue')->willReturn($scenario === 'trash-off' ? '0' : '');
 				$time = $this->createMock(ITimeFactory::class);
 				$time->method('now')->willReturn(new DateTimeImmutable('2026-10-01T12:00:00Z'));
-				$module = new TasksModule(ScopeStub::access($store, $scope), $store, $tasks, $dav, new TaskData(),
+				$module = \OCA\Mcp\Tests\Unit\Tools\Tasks\TasksTestModule::build(ScopeStub::access($store, $scope), $store, $tasks, $dav, new TaskData(),
 					new SharedGuard($this->createMock(IUserManager::class)), new TrashPolicy($config), $time,
 					OutputReferenceFilters::inactive($this), null, $scenario === 'no-lock' ? null : new InMemoryLocks());
 				$arguments = ['calendar' => self::PATH, 'uid' => 't1'] + $arguments;

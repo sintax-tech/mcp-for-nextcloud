@@ -15,8 +15,8 @@ use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub;
 use OCA\Mcp\Modules\Calendar\Writing\CalendarDav;
 use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
-use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
-use OCA\Mcp\Modules\Calendar\Writing\TrashPolicy;
+use OCA\Mcp\Modules\Tasks\Writing\TaskSharedNotice as SharedGuard;
+use OCA\Mcp\Modules\Tasks\Writing\TaskTrashPolicy as TrashPolicy;
 use OCA\Mcp\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Modules\Tasks\Composing\TaskData;
 use OCA\Mcp\Modules\Tasks\Locating\TaskStore;
@@ -327,7 +327,7 @@ final class TasksPlanRendererTest extends TestCase {
 		$preferences->user['alice']['core']['timezone'] = 'America/Sao_Paulo';
 		$config = $preferences->mock($this);
 
-		return new TasksModule(
+		return \OCA\Mcp\Tests\Unit\Tools\Tasks\TasksTestModule::build(
 			ScopeStub::access($store),
 			$store,
 			$tasks,

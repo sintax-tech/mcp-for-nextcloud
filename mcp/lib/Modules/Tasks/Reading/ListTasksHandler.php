@@ -8,9 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Tasks\Reading;
 
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
-use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
-use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
-use OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess;
+use OCA\Mcp\Platform\Dav\CalDavObjects as CalendarStore;
+use OCA\Mcp\Access\ResourceScope\ScopedCalendarLookup as ScopedCalendarAccess;
 use OCA\Mcp\Modules\Tasks\Presentation\CategoryFilterNote;
 use OCA\Mcp\Modules\Tasks\Composing\TaskData;
 use OCA\Mcp\Modules\Tasks\Locating\TaskRowReader;
@@ -62,7 +61,7 @@ final class ListTasksHandler {
 	 * @param array<string, mixed> $arguments validated tool arguments: calendar, include_completed, category, parent, limit, offset
 	 * @param string $userId authenticated user UID
 	 * @return array{content:list<array{type:string, text:string}>, isError?:bool} MCP result
-	 * @throws CalendarException when the calendar path is foreign, malformed, not visible or outside the scope
+	 * @throws ToolFailure when the calendar path is foreign, malformed, not visible or outside the scope
 	 * @throws PolicyUnavailable when the scope cannot be read
 	 */
 	public function handle(array $arguments, string $userId): array {

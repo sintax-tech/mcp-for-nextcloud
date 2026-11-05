@@ -18,8 +18,8 @@ use OCA\Mcp\Tests\Unit\Tools\Calendar\FakeCalendarStore;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub;
 use OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
-use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
-use OCA\Mcp\Modules\Calendar\Writing\TrashPolicy;
+use OCA\Mcp\Modules\Tasks\Writing\TaskSharedNotice as SharedGuard;
+use OCA\Mcp\Modules\Tasks\Writing\TaskTrashPolicy as TrashPolicy;
 use OCA\Mcp\Modules\Tasks\Composing\TaskData;
 use OCA\Mcp\Modules\Tasks\TasksModule;
 use OCA\Mcp\Modules\Tasks\Locating\TaskStore;
@@ -39,7 +39,7 @@ final class TasksSharedEffectsContractTest extends TestCase {
 			static fn (array $row): bool => !$row['deleted'])));
 		$time = $this->createMock(ITimeFactory::class);
 		$time->method('now')->willReturnCallback(static fn (): DateTimeImmutable => new DateTimeImmutable(CalendarEffectsWiring::NOW));
-		return new TasksModule(ScopeStub::access($this->store), $this->store, $tasks, $this->dav, new TaskData(),
+		return \OCA\Mcp\Tests\Unit\Tools\Tasks\TasksTestModule::build(ScopeStub::access($this->store), $this->store, $tasks, $this->dav, new TaskData(),
 			new SharedGuard(FakeUsers::manager($this, ['alice' => 'Alice'])), new TrashPolicy($this->gate->config()), $time,
 			OutputReferenceFilters::inactive($this), new UserTimezone($this->gate->config()), new InMemoryLocks());
 	}

@@ -8,8 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Tasks\Reading;
 
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
-use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
-use OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess;
+use OCA\Mcp\Access\ResourceScope\ScopedCalendarLookup as ScopedCalendarAccess;
 use OCA\Mcp\Modules\Tasks\Locating\TaskObjects;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
@@ -41,7 +40,7 @@ final class ReadTaskHandler {
 	 * @param array<string, mixed> $arguments validated tool arguments: calendar, uid
 	 * @param string $userId authenticated user UID
 	 * @return array{content:list<array{type:string, text:string}>, isError?:bool} MCP result
-	 * @throws CalendarException when the calendar path is foreign, malformed, not visible or outside the scope
+	 * @throws ToolFailure when the calendar path is foreign, malformed, not visible or outside the scope
 	 * @throws ToolFailure when the task is missing, trashed, malformed or protected
 	 * @throws PolicyUnavailable when the scope cannot be read
 	 */

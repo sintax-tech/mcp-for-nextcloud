@@ -2,6 +2,11 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Modules/Tasks/Composing/TaskPatch.php","fqcn":"OCA\\Mcp\\Modules\\Tasks\\Composing\\TaskPatch","target":"stays","owner":"Modules\\Tasks","ticket":null},
+		{"path":"lib/Modules/Tasks/Composing/TaskDateInput.php","fqcn":"OCA\\Mcp\\Modules\\Tasks\\Composing\\TaskDateInput","target":"stays","owner":"Modules\\Tasks","ticket":null},
+		{"path":"lib/Modules/Tasks/Writing/TaskSharedNotice.php","fqcn":"OCA\\Mcp\\Modules\\Tasks\\Writing\\TaskSharedNotice","target":"stays","owner":"Modules\\Tasks","ticket":null},
+		{"path":"lib/Modules/Tasks/Writing/TaskTrashPolicy.php","fqcn":"OCA\\Mcp\\Modules\\Tasks\\Writing\\TaskTrashPolicy","target":"stays","owner":"Modules\\Tasks","ticket":null},
+		{"path":"lib/Modules/Tasks/Writing/TrashedTask.php","fqcn":"OCA\\Mcp\\Modules\\Tasks\\Writing\\TrashedTask","target":"stays","owner":"Modules\\Tasks","ticket":null},
 		{"path":"lib/Platform/Dav/CalDavObjects.php","fqcn":"OCA\\Mcp\\Platform\\Dav\\CalDavObjects","target":"stays","owner":"Platform","ticket":null},
 		{"path":"lib/Platform/Dav/CalDavWrite.php","fqcn":"OCA\\Mcp\\Platform\\Dav\\CalDavWrite","target":"stays","owner":"Platform","ticket":null},
 		{"path":"lib/Access/ResourceScope/ScopedCalendarLookup.php","fqcn":"OCA\\Mcp\\Access\\ResourceScope\\ScopedCalendarLookup","target":"stays","owner":"Access","ticket":null},

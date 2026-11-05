@@ -33,6 +33,13 @@ class ConversationReader {
 	/** Default amount of messages when the caller does not ask for a number, matching the module schema. */
 	public const DEFAULT_MESSAGES = 50;
 
+	/**
+	 * Keeps the native read boundary and caller-visible message projections.
+	 * @param TalkServices $talkServices lazy native Talk services and per-user enablement
+	 * @param ConversationResolver $resolver existing conversation access checks
+	 * @param ActorNames $actorNames caller-visible participant names
+	 * @param OutputReferenceFilter $references existing resource reference policy
+	 */
 	public function __construct(
 		private TalkServices $talkServices,
 		private ConversationResolver $resolver,

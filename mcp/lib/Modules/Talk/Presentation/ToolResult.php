@@ -14,6 +14,9 @@ namespace OCA\Mcp\Modules\Talk\Presentation;
  * without a second parsing step, and a failure carries only a message written for the user, never a stack trace.
  */
 final class ToolResult {
+	/**
+	 * Prevents construction of this static presentation utility.
+	 */
 	private function __construct() {
 	}
 

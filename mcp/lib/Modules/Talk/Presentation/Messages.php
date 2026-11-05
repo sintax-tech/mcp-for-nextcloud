@@ -18,6 +18,9 @@ use OCA\Mcp\Mcp\Confirmation\PlanText;
 final class Messages {
 	/* Tool descriptions, exposed to MCP clients in tools/list. */
 
+	/**
+	 * Prevents construction of this static presentation utility.
+	 */
 	private function __construct() {
 	}
 

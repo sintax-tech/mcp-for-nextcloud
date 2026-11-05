@@ -22,6 +22,10 @@ class ConversationResolver {
 	 */
 	private const TOKEN_PATTERN = '/^[a-z0-9]{4,30}$/';
 
+	/**
+	 * Keeps the lazy native Talk boundary for conversation access checks.
+	 * @param TalkServices $talkServices lazy native Talk services and per-user enablement
+	 */
 	public function __construct(
 		private TalkServices $talkServices,
 	) {}
@@ -32,9 +36,10 @@ class ConversationResolver {
 	 *
 	 * @param string $userId Authenticated user
 	 * @param string $token Conversation token
+	 * @return Conversation room and participant after the existing read checks
 	 * @throws InvalidArgumentException When the token is malformed
-	 * @throws ConversationAccessException When the conversation is missing, the user is not a participant or the
 	 *     lobby keeps them out
+	 * @throws ConversationAccessException When the conversation is missing, the user is not a participant or the
 	 * @throws TalkUnavailableException When spreed is unavailable
 	 */
 	public function resolveForReading(string $userId, string $token): Conversation {
@@ -53,6 +58,7 @@ class ConversationResolver {
 	 *
 	 * @param string $userId Authenticated user
 	 * @param string $token Conversation token
+	 * @return Conversation room and participant after the existing write checks
 	 * @throws InvalidArgumentException When the token is malformed
 	 * @throws ConversationAccessException When the conversation is missing or the user may not write in it
 	 * @throws TalkUnavailableException When spreed is unavailable
@@ -86,6 +92,7 @@ class ConversationResolver {
 	 *
 	 * @param string $userId Authenticated user
 	 * @param Conversation $conversation Room and participant of the caller
+	 * @return bool whether the native lobby excludes this participant
 	 * @throws TalkUnavailableException When spreed is unavailable
 	 */
 	public function keepsOutOfLobby(string $userId, Conversation $conversation): bool {
@@ -99,6 +106,7 @@ class ConversationResolver {
 	 *
 	 * @param string $userId Authenticated user
 	 * @param string $token Conversation token
+	 * @return Conversation native room and caller participant before operation-specific checks
 	 * @throws InvalidArgumentException When the token is malformed
 	 * @throws ConversationAccessException When the conversation is missing or the user is not a participant
 	 * @throws TalkUnavailableException When spreed is unavailable
@@ -129,6 +137,7 @@ class ConversationResolver {
 	 * @param string $userId Authenticated user
 	 * @param Conversation $conversation Room and participant of the caller
 	 * @param array{lobbyNone:int, lobbyIgnorePermission:int} $constants Talk constants of {@see TalkServices::conversationConstants()}
+	 * @return bool whether the current lobby state excludes this participant
 	 */
 	private function lobbyKeepsOut(string $userId, Conversation $conversation, array $constants): bool {
 		$room = $conversation->room;
@@ -153,7 +162,8 @@ class ConversationResolver {
 	 * closed, so the worst case is a refusal, never an opened lobby.
 	 *
 	 * @param string $userId Authenticated user
-	 * @param object $room OCA\Talk\Room
+	 * @param object $room native Talk room
+	 * @return void
 	 */
 	private function expireLobbyTimer(string $userId, object $room): void {
 		try {
@@ -167,6 +177,8 @@ class ConversationResolver {
 	}
 
 	/**
+	 * @param string $token public conversation token
+	 * @return void
 	 * @throws InvalidArgumentException When the token is malformed
 	 */
 	private function assertValidToken(string $token): void {

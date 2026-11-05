@@ -30,6 +30,13 @@ class GroupCreator {
 	/** Largest number of people one call may invite on top of the caller. */
 	public const MAX_PARTICIPANTS = 50;
 
+	/**
+	 * Keeps native group creation and existing participant checks together.
+	 * @param TalkServices $talkServices lazy native Talk services and per-user enablement
+	 * @param IUserManager $userManager native account lookup
+	 * @param UserConversationResolver $userConversations existing direct-conversation access checks
+	 * @param LoggerInterface $logger existing sanitized server log
+	 */
 	public function __construct(
 		private TalkServices $talkServices,
 		private IUserManager $userManager,
@@ -116,6 +123,8 @@ class GroupCreator {
 	/**
 	 * The name as Talk will store it, the same way a message body is normalized before it is shown in a draft.
 	 *
+	 * @param string $name requested group name
+	 * @return string trimmed, nonblank group name within the existing length bound
 	 * @throws InvalidArgumentException When the name is blank or longer than self::MAX_NAME_LENGTH
 	 */
 	public static function normalizeName(string $name): string {

@@ -14,6 +14,11 @@ namespace OCA\Mcp\Modules\Talk\Locating;
  * raw account id does not.
  */
 final class DirectContact {
+	/**
+	 * Keeps the recipient identity already checked for the caller.
+	 * @param string $id native account identifier
+	 * @param string $displayName caller-visible account name
+	 */
 	public function __construct(
 		public readonly string $id,
 		public readonly string $displayName,

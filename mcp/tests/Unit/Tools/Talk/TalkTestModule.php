@@ -11,6 +11,19 @@ use Psr\Log\LoggerInterface;
 
 /** Builds Talk with the exact collaborators supplied by its pre-migration tests. */
 final class TalkTestModule {
+	/**
+	 * @param TalkServices $talkServices original test collaborator, preserved without substitution
+	 * @param ConversationReader $reader original test collaborator, preserved without substitution
+	 * @param ConversationResolver $resolver original test collaborator, preserved without substitution
+	 * @param ConversationWriter $writer original test collaborator, preserved without substitution
+	 * @param FileSharer $sharer original test collaborator, preserved without substitution
+	 * @param WritePreview $preview original test collaborator, preserved without substitution
+	 * @param UserConversationResolver $userConversations original test collaborator, preserved without substitution
+	 * @param GroupCreator $groups original test collaborator, preserved without substitution
+	 * @param ReferenceLinker $references original test collaborator, preserved without substitution
+	 * @param LoggerInterface $logger original test collaborator, preserved without substitution
+	 * @return TalkModule module composed from the original test collaborators
+	 */
 	public static function build(
 		TalkServices $talkServices,
 		ConversationReader $reader,

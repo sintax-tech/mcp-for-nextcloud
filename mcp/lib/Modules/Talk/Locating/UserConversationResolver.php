@@ -29,6 +29,12 @@ class UserConversationResolver {
 	/** Longest account id the tool accepts; real ids are far shorter, the cap only bounds the payload. */
 	public const MAX_TARGET_LENGTH = 64;
 
+	/**
+	 * Keeps the native recipient, conversation and share-access dependencies.
+	 * @param TalkServices $talkServices lazy native Talk services and per-user enablement
+	 * @param IUserManager $userManager native account lookup
+	 * @param IShareManager $shareManager native share lookup and creation
+	 */
 	public function __construct(
 		private TalkServices $talkServices,
 		private IUserManager $userManager,
@@ -40,6 +46,7 @@ class UserConversationResolver {
 	 *
 	 * @param string $userId Authenticated user
 	 * @param string $targetId Account the caller wants to talk to
+	 * @return DirectContact recipient after account and contact-reachability checks
 	 * @throws InvalidArgumentException When the account id is malformed
 	 * @throws ConversationAccessException When the target does not exist, is the caller itself, or is not reachable
 	 * @throws TalkUnavailableException When spreed is unavailable
@@ -112,6 +119,7 @@ class UserConversationResolver {
 	 *
 	 * @param string $userId Authenticated user, the sender and the owner of a new room
 	 * @param string $targetId Account the message is addressed to
+	 * @return Conversation native one-to-one room writable by the caller
 	 * @throws InvalidArgumentException When the account id is malformed
 	 * @throws ConversationAccessException When the target is out of reach or the room cannot be used for writing
 	 * @throws TalkUnavailableException When spreed is unavailable
@@ -145,6 +153,9 @@ class UserConversationResolver {
 	/**
 	 * The room may exist yet still refuse writing, the same way any other conversation does.
 	 *
+	 * @param string $userId authenticated caller
+	 * @param Conversation $conversation conversation already resolved for the caller
+	 * @return void
 	 * @throws ConversationAccessException When the caller may not write in the room
 	 * @throws TalkUnavailableException When spreed is unavailable
 	 */
@@ -164,6 +175,8 @@ class UserConversationResolver {
 	}
 
 	/**
+	 * @param string $targetId requested recipient account identifier
+	 * @return void
 	 * @throws InvalidArgumentException When the account id is malformed
 	 */
 	private function assertValidTarget(string $targetId): void {
@@ -172,7 +185,12 @@ class UserConversationResolver {
 		}
 	}
 
-	/** The same refusal for a missing and an unreachable account, optionally naming the id the caller sent. */
+	/**
+	 * The same refusal for a missing and an unreachable account, optionally naming the id the caller sent.
+	 * @param string $targetId requested recipient account identifier
+	 * @param bool $nameTheAccount whether the existing refusal may identify the account
+	 * @return string existing public refusal, naming the submitted account only when allowed
+	 */
 	private static function unreachable(string $targetId, bool $nameTheAccount): string {
 		return $nameTheAccount ? Messages::participantNotReachable($targetId) : Messages::userNotReachable();
 	}

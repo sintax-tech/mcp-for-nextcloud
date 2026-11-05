@@ -95,6 +95,7 @@ class ReferenceLinker {
 
 	/**
 	 * @param array<string, mixed> $reference Reference of type deck_card
+	 * @param string $userId authenticated caller
 	 * @return array{type:string, title:string, url:string}
 	 */
 	private function deckCard(string $userId, array $reference): array {
@@ -126,6 +127,7 @@ class ReferenceLinker {
 
 	/**
 	 * @param array<string, mixed> $reference Reference of type calendar_event
+	 * @param string $userId authenticated caller
 	 * @return array{type:string, title:string, url:string}
 	 */
 	private function calendarEvent(string $userId, array $reference): array {
@@ -158,6 +160,11 @@ class ReferenceLinker {
 	}
 
 	/**
+	 * @param string $userId authenticated caller
+	 * @param string $module referenced MCP module
+	 * @param string $app native app identifier
+	 * @param string $message existing public refusal message
+	 * @return void
 	 * @throws ConversationAccessException When the app is off for the user or the MCP may not read that module
 	 */
 	private function assertModuleUsable(string $userId, string $module, string $app, string $message): void {
@@ -168,7 +175,11 @@ class ReferenceLinker {
 		}
 	}
 
-	/** A title is one line of the message; a newline in it would make the link look like part of the title. */
+	/**
+	 * A title is one line of the message; a newline in it would make the link look like part of the title.
+	 * @param string $title native item title
+	 * @return string title with whitespace collapsed into one message line
+	 */
 	private static function oneLine(string $title): string {
 		return trim((string)preg_replace('/\s+/u', ' ', $title));
 	}

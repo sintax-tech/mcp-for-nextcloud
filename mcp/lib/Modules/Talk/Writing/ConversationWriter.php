@@ -22,6 +22,13 @@ use Throwable;
 class ConversationWriter {
 	public const MAX_MESSAGE_LENGTH = 4000;
 
+	/**
+	 * Keeps the native message clock, Talk services and attachment access dependencies.
+	 * @param TalkServices $talkServices lazy native Talk services and per-user enablement
+	 * @param ITimeFactory $timeFactory native message timestamp source
+	 * @param AttachmentMessage $attachmentMessage existing attachment comment projection
+	 * @param AttachmentAccess $attachmentAccess existing room-share access checks
+	 */
 	public function __construct(
 		private TalkServices $talkServices,
 		private ITimeFactory $timeFactory,

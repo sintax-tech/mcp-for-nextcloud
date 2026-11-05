@@ -20,6 +20,12 @@ use Throwable;
  */
 class AttachmentAccess {
 
+	/**
+	 * Keeps the existing share lookup and caller-specific Files policy checks.
+	 * @param IShareManager $shareManager native share lookup and creation
+	 * @param \OCA\Mcp\Access\Visibility\VisibilityGuard $visibilityGuard existing Files scope and visibility checks
+	 * @param OutputReferenceFilter $references existing resource reference policy
+	 */
 	public function __construct(
 		private IShareManager $shareManager,
 		private \OCA\Mcp\Access\Visibility\VisibilityGuard $visibilityGuard,

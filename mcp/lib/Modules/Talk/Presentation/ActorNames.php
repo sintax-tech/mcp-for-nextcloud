@@ -15,6 +15,10 @@ use OCP\IUserManager;
  * its raw identifier, which is what Talk shows as well.
  */
 class ActorNames {
+	/**
+	 * Keeps native account lookup for caller-visible display names.
+	 * @param IUserManager $userManager native account lookup
+	 */
 	public function __construct(private IUserManager $userManager) {}
 
 	/**

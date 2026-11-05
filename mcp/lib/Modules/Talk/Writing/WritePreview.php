@@ -30,6 +30,13 @@ class WritePreview {
 	/** Largest batch a single call may carry; past this the answer stops being something a user can read. */
 	public const MAX_BATCH = 50;
 
+	/**
+	 * Keeps existing validation and presentation collaborators without performing effects.
+	 * @param ConversationWriter $writer existing Talk message effects
+	 * @param FileSharer $sharer existing Files-to-room share effects
+	 * @param AttachmentAccess $attachmentAccess existing room-share access checks
+	 * @param ActorNames $actorNames caller-visible participant names
+	 */
 	public function __construct(
 		private ConversationWriter $writer,
 		private FileSharer $sharer,

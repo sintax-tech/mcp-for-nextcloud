@@ -21,6 +21,10 @@ use Throwable;
 final class TalkCharacterizationTest extends TestCase {
 	private const FIXTURE = __DIR__ . '/../../../fixtures/talk-characterization.json';
 
+	/**
+	 * @param string $locale locale of the original frozen call and preview records
+	 * @return void
+	 */
 	#[RunInSeparateProcess]
 	#[PreserveGlobalState(false)]
 	#[DataProvider('locales')]

@@ -29,6 +29,7 @@ require_once __DIR__ . '/../Deck/Stubs/deck_stubs.php';
 final class ReferenceCharacterizationTest extends TestCase {
 	private const FIXTURE = __DIR__ . '/../../../fixtures/talk-reference-characterization.json';
 
+	/** @return void Compare current projections, causes and read order with the frozen original reference outcomes. */
 	public function testReferenceReadsAndFailuresStayIdentical(): void {
 		$recorded = [];
 		foreach (['card', 'board-mismatch', 'card-denied', 'PUBLIC', 'PRIVATE', 'CONFIDENTIAL', 'deleted', 'invalid-ics', 'missing', 'no-grant', 'scope-unavailable'] as $scenario) {

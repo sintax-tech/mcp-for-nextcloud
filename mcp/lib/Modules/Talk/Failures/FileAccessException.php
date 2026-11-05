@@ -16,6 +16,11 @@ use RuntimeException;
  * while "already shared in this conversation" can still be specific, which is a fact about the caller's own action.
  */
 class FileAccessException extends RuntimeException {
+	/**
+	 * Retains the existing file refusal and its optional original cause.
+	 * @param string $message existing public refusal message
+	 * @param \Throwable|null $previous original failure retained for the server log
+	 */
 	public function __construct(string $message, ?\Throwable $previous = null) {
 		parent::__construct($message, 0, $previous);
 	}

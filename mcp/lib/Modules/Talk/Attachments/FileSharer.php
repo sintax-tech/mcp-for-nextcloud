@@ -29,6 +29,13 @@ use Throwable;
  * already seen is worse than a missing caption, and it would fail for its own reasons half the time.
  */
 class FileSharer {
+	/**
+	 * Keeps the existing file resolution, room sharing and attachment-message dependencies.
+	 * @param IShareManager $shareManager native share lookup and creation
+	 * @param UserFileResolver $fileResolver existing file lookup below the caller's own user folder
+	 * @param ConversationWriter $writer existing Talk message effects
+	 * @param AttachedFile $attachedFile existing room-share attachment projection
+	 */
 	public function __construct(
 		private IShareManager $shareManager,
 		private UserFileResolver $fileResolver,
@@ -117,7 +124,7 @@ class FileSharer {
 	 * @param Conversation $conversation Conversation already validated for writing
 	 * @param string $userId Authenticated user, the owner of the file and of the share
 	 * @param string $path Path of the file relative to the user folder
-	 * @return object The file node, as an OCA\Files\File
+	 * @return object The file node, as an OCP\Files\File
 	 * @throws InvalidArgumentException When the path is not usable
 	 * @throws FileAccessException When the file is missing, not shareable or already shared in this conversation
 	 */
@@ -141,7 +148,7 @@ class FileSharer {
 	 *
 	 * @param string $userId Authenticated user
 	 * @param string $token Token of the conversation
-	 * @param object $file The file node, as an OCA\Files\File
+	 * @param object $file The file node, as an OCP\Files\File
 	 * @return bool True when a share of this file already targets this conversation
 	 */
 	private function isAlreadySharedIn(string $userId, string $token, object $file): bool {

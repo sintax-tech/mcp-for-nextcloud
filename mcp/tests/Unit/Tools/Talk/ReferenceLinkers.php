@@ -19,6 +19,19 @@ use OCP\IURLGenerator;
 
 /** Composes real owning-module adapters around the exact collaborators of the original linker tests. */
 final class ReferenceLinkers {
+	/**
+	 * @param DeckGatewayInterface $deck original test collaborator, preserved without substitution
+	 * @param ScopedCalendarAccess $calendars original test collaborator, preserved without substitution
+	 * @param CalendarStore $calendarStore original test collaborator, preserved without substitution
+	 * @param EventRepository $events original test collaborator, preserved without substitution
+	 * @param Classification $classification original test collaborator, preserved without substitution
+	 * @param IAppManager $appManager original test collaborator, preserved without substitution
+	 * @param IUserManager $userManager original test collaborator, preserved without substitution
+	 * @param GrantPolicy $grants original test collaborator, preserved without substitution
+	 * @param IURLGenerator $urlGenerator original test collaborator, preserved without substitution
+	 * @param GuestRestrictions|null $guests original test collaborator, preserved without substitution
+	 * @return ReferenceLinker module composed from the original test collaborators
+	 */
 	public static function build(
 		DeckGatewayInterface $deck,
 		ScopedCalendarAccess $calendars,

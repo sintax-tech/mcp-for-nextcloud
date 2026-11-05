@@ -20,6 +20,12 @@ use Throwable;
  * user cannot share is reported exactly like a node that does not exist: the module must not reveal paths.
  */
 class UserFileResolver {
+	/**
+	 * Keeps the native user-folder lookup and existing Files policy checks.
+	 * @param IRootFolder $rootFolder native root folder used to find the caller's files
+	 * @param \OCA\Mcp\Access\Visibility\VisibilityGuard $visibilityGuard existing Files scope and visibility checks
+	 * @param \OCA\Mcp\Access\Visibility\OutputReferenceFilter $references existing resource reference policy
+	 */
 	public function __construct(
 		private IRootFolder $rootFolder,
 		private \OCA\Mcp\Access\Visibility\VisibilityGuard $visibilityGuard,

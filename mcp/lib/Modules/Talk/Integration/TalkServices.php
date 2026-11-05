@@ -39,7 +39,11 @@ class TalkServices {
 		private ?IUserManager $userManager = null,
 	) {}
 
-	/** Whether the optional spreed app is enabled for the user on this very call. */
+	/**
+	 * Whether the optional spreed app is enabled for the user on this very call.
+	 * @param string $userId authenticated caller
+	 * @return bool whether the supported Talk app is enabled for the caller
+	 */
 	public function isEnabledFor(string $userId): bool {
 		// isEnabledForUser() takes an IUser, never the UID string: passing the string breaks at runtime.
 		$user = $this->userManager?->get($userId);
@@ -53,6 +57,7 @@ class TalkServices {
 	/**
 	 * OCA\Talk\Manager: rooms for a user and room resolution by token.
 	 *
+	 * @param string $userId authenticated caller
 	 * @return object OCA\Talk\Manager
 	 * @throws TalkUnavailableException When spreed is disabled for the user or the class is not loaded
 	 */
@@ -63,6 +68,7 @@ class TalkServices {
 	/**
 	 * OCA\Talk\Chat\ChatManager: chat history, parent comment and message sending.
 	 *
+	 * @param string $userId authenticated caller
 	 * @return object OCA\Talk\Chat\ChatManager
 	 * @throws TalkUnavailableException When spreed is disabled for the user or the class is not loaded
 	 */
@@ -73,6 +79,7 @@ class TalkServices {
 	/**
 	 * OCA\Talk\Service\ParticipantService: participant lookup and permissions.
 	 *
+	 * @param string $userId authenticated caller
 	 * @return object OCA\Talk\Service\ParticipantService
 	 * @throws TalkUnavailableException When spreed is disabled for the user or the class is not loaded
 	 */
@@ -83,6 +90,7 @@ class TalkServices {
 	/**
 	 * OCA\Talk\Service\RoomService: creation of conversations, the one path the product itself uses for it.
 	 *
+	 * @param string $userId authenticated caller
 	 * @return object OCA\Talk\Service\RoomService
 	 * @throws TalkUnavailableException When spreed is disabled for the user or the class is not loaded
 	 */
@@ -94,6 +102,7 @@ class TalkServices {
 	 * Talk constants the permission checks depend on, read from the loaded classes instead of being copied here,
 	 * so a change of value upstream cannot silently loosen or break the ACL.
 	 *
+	 * @param string $userId authenticated caller
 	 * @return array{chatPermission:int, lobbyIgnorePermission:int, readOnly:int, changelogType:int, lobbyNone:int, actorUsers:string, groupType:int}
 	 * @throws TalkUnavailableException When spreed is disabled for the user or a class is not loaded
 	 */

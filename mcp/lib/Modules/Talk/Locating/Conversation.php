@@ -10,16 +10,24 @@ namespace OCA\Mcp\Modules\Talk\Locating;
 /**
  * A room already resolved for the authenticated user, together with that user's participant.
  *
- * Both are OCA\Talk objects held untyped on purpose: the class may not exist in this installation and the module
+ * Both are native Talk objects held untyped on purpose: the class may not exist in this installation and the module
  * must compile and be testable without it.
  */
 final class Conversation {
+	/**
+	 * Keeps the native room and participant already resolved for the caller.
+	 * @param object $room native room already resolved for the caller
+	 * @param object $participant native participant already resolved for the caller
+	 */
 	public function __construct(
 		public readonly object $room,
 		public readonly object $participant,
 	) {}
 
-	/** Public token of the room, the only conversation identifier the user ever sees. */
+	/**
+	 * Public token of the room, the only conversation identifier the user ever sees.
+	 * @return string public conversation token
+	 */
 	public function token(): string {
 		return (string)$this->room->getToken();
 	}
@@ -30,6 +38,7 @@ final class Conversation {
 	 * will land in, otherwise approval means nothing.
 	 *
 	 * @param string $userId Authenticated participant
+	 * @return string native room name shown to this participant
 	 */
 	public function displayName(string $userId): string {
 		return (string)$this->room->getDisplayName($userId);

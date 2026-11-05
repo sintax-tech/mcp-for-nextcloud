@@ -25,7 +25,7 @@ class DavTaskStore implements \OCA\Mcp\Modules\Tasks\Locating\TaskStore {
 	 * Queries live VTODO object URIs, including tasks without dates.
 	 *
 	 * @param int $calendarId ID of an authorized VTODO calendar
-	 * @return list<string>
+	 * @return list<string> live VTODO object URIs
 	 * @throws ContainerExceptionInterface when the core backend cannot be resolved
 	 */
 	public function uris(int $calendarId): array {

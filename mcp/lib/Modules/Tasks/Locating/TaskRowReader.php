@@ -35,7 +35,7 @@ final class TaskRowReader {
 	 *
 	 * @param array<string, mixed> $row object returned by CalendarStore
 	 * @param bool $shared whether the calendar belongs to another user
-	 * @return VCalendar
+	 * @return VCalendar visible parsed task calendar
 	 * @throws ToolFailure when the object is trashed, malformed or protected in a share
 	 */
 	public function readable(array $row, bool $shared): VCalendar {

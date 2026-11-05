@@ -30,7 +30,7 @@ class TaskData {
 	 * Reads a calendar containing tasks and rejects mixed event/task objects.
 	 *
 	 * @param string $data complete serialized DAV object
-	 * @return VCalendar
+	 * @return VCalendar parsed or prepared task calendar
 	 * @throws ToolFailure when the object cannot be read safely as a task calendar
 	 */
 	public function parse(string $data): VCalendar {
@@ -49,7 +49,7 @@ class TaskData {
 	 * Finds the task with a UID that is not a recurrence override.
 	 *
 	 * @param VCalendar $calendar parsed task calendar
-	 * @return VTodo
+	 * @return VTodo task master
 	 * @throws ToolFailure when no task master with a UID exists
 	 */
 	public function master(VCalendar $calendar): VTodo {
@@ -66,7 +66,7 @@ class TaskData {
 	 *
 	 * @param VCalendar $calendar parsed task calendar
 	 * @param bool $shared whether the calendar belongs to another user
-	 * @return bool
+	 * @return bool whether the caller may see the task
 	 */
 	public function visible(VCalendar $calendar, bool $shared): bool {
 		if (!$shared) {
@@ -111,7 +111,7 @@ class TaskData {
 	 *
 	 * @param array<string, mixed> $arguments validated tool arguments; omitted editable fields remain unchanged
 	 * @param DateTimeImmutable $now clock time for task metadata
-	 * @return VCalendar
+	 * @return VCalendar parsed or prepared task calendar
 	 * @throws InvalidArgumentException when task dates, progress or categories are invalid
 	 * @throws ToolFailure when the task cannot be read safely
 	 */
@@ -135,7 +135,7 @@ class TaskData {
 	 * @param array<string, mixed> $arguments validated tool arguments; omitted editable fields remain unchanged
 	 * @param DateTimeImmutable $now clock time for task metadata
 	 * @param bool $complete whether to mark the task completed
-	 * @return VCalendar
+	 * @return VCalendar parsed or prepared task calendar
 	 * @throws InvalidArgumentException when dates, progress, categories or reminder dependencies are invalid
 	 * @throws ToolFailure when no safe task master exists
 	 */
@@ -156,7 +156,7 @@ class TaskData {
 	 * Returns the task fields and the full serialized calendar, retaining unknown properties.
 	 *
 	 * @param VCalendar $calendar parsed task calendar
-	 * @return array<string, mixed>
+	 * @return array<string, mixed> task fields and serialized calendar
 	 * @throws ToolFailure when task dates or identity cannot be read safely
 	 */
 	public function item(VCalendar $calendar): array {
@@ -237,7 +237,7 @@ class TaskData {
 	 *
 	 * @param array<string, mixed> $item task fields returned by item()
 	 * @param string $category category to look for
-	 * @return bool
+	 * @return bool whether the task carries the requested category
 	 */
 	public function hasCategory(array $item, string $category): bool {
 		$wanted = $this->foldCategory(trim($category));
@@ -253,7 +253,7 @@ class TaskData {
 	 * Trims categories, drops empty ones and keeps the first spelling of names that differ only in case.
 	 *
 	 * @param list<string> $values raw categories in their original order
-	 * @return list<string>
+	 * @return list<string> normalized category names without duplicates
 	 */
 	private function normalizeCategories(array $values): array {
 		$seen = [];
@@ -274,7 +274,7 @@ class TaskData {
 	 * Folds a category to the Unicode case-folded form two names are compared in.
 	 *
 	 * @param string $category trimmed category
-	 * @return string
+	 * @return string Unicode case-folded category name
 	 */
 	private function foldCategory(string $category): string {
 		// Full case folding, unlike lowercasing, makes "Σ", "σ" and the final "ς" one name.

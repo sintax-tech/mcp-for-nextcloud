@@ -369,6 +369,13 @@ final class StructuredReferenceContractTest extends TestCase {
 				fn () => $module->call('tasks_list_tasks', ['calendar' => self::PATH], 'alice'),
 				fn () => $module->call('tasks_edit_task', ['calendar' => self::PATH, 'uid' => $uid, 'summary' => 'x'], 'alice'),
 				fn () => $module->preview('tasks_complete_task', ['calendar' => self::PATH, 'uid' => $uid], 'alice'),
+				fn () => $module->call('tasks_list_calendars', [], 'alice'),
+				fn () => $module->call('tasks_create_task', ['calendar' => '/remote.php/dav/calendars/alice/nope/', 'summary' => 'x'], 'alice'),
+				fn () => $module->preview('tasks_create_task', ['calendar' => '/remote.php/dav/calendars/alice/nope/', 'summary' => 'x'], 'alice'),
+				fn () => $module->preview('tasks_edit_task', ['calendar' => '/remote.php/dav/calendars/alice/nope/', 'uid' => $uid, 'summary' => 'x'], 'alice'),
+				fn () => $module->call('tasks_complete_task', ['calendar' => '/remote.php/dav/calendars/alice/nope/', 'uid' => $uid], 'alice'),
+				fn () => $module->call('tasks_delete_task', ['calendar' => '/remote.php/dav/calendars/alice/nope/', 'uid' => $uid], 'alice'),
+				fn () => $module->preview('tasks_delete_task', ['calendar' => '/remote.php/dav/calendars/alice/nope/', 'uid' => $uid], 'alice'),
 				// A list that does not exist either: the scope is read before the calendar is resolved.
 				fn () => $module->preview('tasks_complete_task', ['calendar' => '/remote.php/dav/calendars/alice/nope/', 'uid' => $uid], 'alice'),
 				fn () => $module->call('tasks_read_task', ['calendar' => '/remote.php/dav/calendars/alice/nope/', 'uid' => $uid], 'alice')] as $i => $run) {

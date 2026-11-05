@@ -97,7 +97,7 @@ final class TaskWriteFlow {
 	 * @param string $name write tool name
 	 * @param array<string, mixed> $arguments validated tool arguments
 	 * @param string $userId authenticated UID
-	 * @return array{calendar:Calendar, row:?array, after:?VCalendar, plan:array<string, mixed>}
+	 * @return array{calendar:Calendar, row:?array, after:?VCalendar, plan:array<string, mixed>} prepared state and public before/after plan
 	 * @throws ToolFailure when access, task complexity, ETag or retention checks fail
 	 * @throws InvalidArgumentException when the tool or task fields are invalid
 	 */

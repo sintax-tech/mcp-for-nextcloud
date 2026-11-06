@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Forms\Presentation;
 
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Tools\ToolDefinition;
 
 /** Assembles the original closed schemas and their common Forms metadata. */
@@ -20,11 +21,11 @@ final class FormsSchema {
 	 * @return ToolDefinition original schema, app requirement and independent grants
 	 */
 	public static function definition(string $name): ToolDefinition {
-		$rows = [...self::reads(), ...ResultsTools::definitions(), CreateFormTools::definition(), ...EditTools::definitions()];
+		$rows = [...self::reads(), ...ResultsTools::definitions(), CreateFormTools::definition(), ...EditTools::definitions(), ...StructureTools::definitions()];
 		foreach ($rows as $row) {
 			if ($row['name'] !== $name) { continue; }
 			return new ToolDefinition($row['name'], 'forms', $row['operation'], $row['description'], $row['inputSchema'],
-				app: 'forms', grantAnyOf: $row['grantAnyOf'] ?? null, destructiveHint: ($row['destructiveHint'] ?? false) === true);
+				app: 'forms', grantAnyOf: $row['grantAnyOf'] ?? null, destructiveHint: ($row['destructiveHint'] ?? false) === true, requires: $row['requires'] ?? []);
 		}
 		throw new \InvalidArgumentException('Unknown tool');
 	}
@@ -32,6 +33,12 @@ final class FormsSchema {
 	/** @return array<string,mixed> positive native entity identity */
 	public static function id(): array {
 		return ['type' => 'integer', 'minimum' => 1];
+	}
+
+	/** @return array<string,array<string,mixed>> confirm_shared and plan_state properties of a write that renews the native lock */
+	public static function confirmation(): array {
+		return ['confirm_shared' => ['type' => 'boolean', 'default' => false, 'description' => 'Explicitly confirm the shared impact and native 15-minute editing lock shown in this plan.'],
+			PlanState::ARGUMENT => PlanState::property()];
 	}
 
 	/** @return array<string,mixed> opaque bounded continuation token */

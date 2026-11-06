@@ -14,7 +14,8 @@ use Psr\Container\ContainerInterface;
 final class FormsTestModule {
 	public static function build(object ...$handlers): FormsModule {
 		if (!is_subclass_of(FormsModule::class, CatalogModule::class)) { return new FormsModule(...$handlers); }
-		$classes = FormsModule::catalog(); $services = [];
+		// Only the seven 1.2.5 tools have legacy fixture collaborators; the structure tools are built in their own tests.
+		$classes = array_slice(FormsModule::catalog(), 0, 7); $services = [];
 		foreach ($classes as $i => $class) {
 			if ($i < 4) { $services[$class] = new $class($handlers[$i]); continue; }
 			$flow = (new \ReflectionProperty($handlers[$i], 'flow'))->getValue($handlers[$i]);

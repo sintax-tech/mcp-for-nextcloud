@@ -119,6 +119,10 @@ final class ToolRegistryTest extends TestCase {
 				// This fixture wraps each admitted definition in a legacy module; discovery owns requires.
 				$definitions = array_map(static function (array $definition): array { unset($definition['requires']); return $definition; }, $definitions);
 			}
+			if ($instance instanceof \OCA\Mcp\Modules\Forms\FormsModule) {
+				// The Forms structure tools are admitted by their probe in discovery; this envelope check covers them unconditionally.
+				$definitions = array_map(static function (array $definition): array { unset($definition['requires']); return $definition; }, $definitions);
+			}
 			$module = new class($definitions) implements ToolModule {
 				public function __construct(private array $definitions) {}
 				public function definitions(): array {

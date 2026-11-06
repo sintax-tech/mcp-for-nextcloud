@@ -9,6 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Contract\Oracle;
 
 use OCA\Mcp\Access\Logs\LogsAccess;
 use OCA\Mcp\Modules\Deck\Integration\DeckCapabilities;
+use OCA\Mcp\Modules\Forms\Integration\StructureCapabilities;
 use OCP\App\IAppManager;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -20,8 +21,8 @@ use ReflectionNamedType;
  * of the app itself is built for real, recursively, and every Nextcloud or native-app type is a PHPUnit mock.
  *
  * Discovery reads only static definitions, so mocks are enough; the two collaborators that decide which tools exist
- * are set explicitly: the Deck capability probe (dependency tools on or off) and the logs role gate (always open, so
- * the logs tools are listed and frozen like the others).
+ * are set explicitly: the Deck capability probe (dependency tools on or off), the Forms structure probe (always on)
+ * and the logs role gate (always open, so the logs tools are listed and frozen like the others).
  */
 final class ModuleBuilder {
 	/**
@@ -50,6 +51,12 @@ final class ModuleBuilder {
 			$apps->method('isEnabledForAnyone')->willReturn(true);
 			$native = $this->deckDependencies;
 			return new DeckCapabilities($apps, 35, static fn (): bool => $native);
+		}
+		if ($class === StructureCapabilities::class) {
+			$apps = $this->mock(IAppManager::class);
+			$apps->method('getAppVersion')->willReturn('5.4.1');
+			$apps->method('isEnabledForAnyone')->willReturn(true);
+			return new StructureCapabilities($apps, 35, static fn (): bool => true);
 		}
 		$constructor = (new ReflectionClass($class))->getConstructor();
 		$args = [];

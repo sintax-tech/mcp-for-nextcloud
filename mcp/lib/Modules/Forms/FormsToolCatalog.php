@@ -18,6 +18,13 @@ final class FormsToolCatalog {
 		Tools\CreateForm::class,
 		Tools\UpdateQuestion::class,
 		Tools\UpdateOption::class,
+		Tools\AddQuestion::class,
+		Tools\ReorderQuestions::class,
+		Tools\AddOptions::class,
+		Tools\ReorderOptions::class,
+		Tools\DeleteQuestion::class,
+		Tools\DeleteOption::class,
+		Tools\ChangeQuestionType::class,
 	];
 
 	/** Prevents construction of the ordered catalog. */

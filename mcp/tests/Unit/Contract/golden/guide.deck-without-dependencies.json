@@ -7,7 +7,7 @@
             "content": [
                 {
                     "type": "text",
-                    "text": "This guide is in English: relay it to the user in their own language.\n\nWrite confirmation plans arrive as readable text in the user’s language, with the complete plan in structuredContent. Show that text to the user exactly as received.\n\n# Tool guide\n\nGrants and disabled apps are already applied: what is missing from this list you cannot call. The modules available to you are files, notes, calendar, contacts, tasks, deck, talk, people, logs, mail, tables, forms, polls.\n\n- **Files** (`files`): 24 tools — List files, Search files, View folder tree, Create folder, Copy file, Move file, Move files in bulk, Undo bulk operation, Read file, Edit file, Replace part of a file, Download file for local editing, List file versions, Read file version, Restore file version, View image, View several images, Search images, List shares, Share file or folder, Stop sharing file or folder, Upload new file, Create text file, Delete file or folder.\n- **Notes** (`notes`): 7 tools — List notes, Search notes, Read note, Create note, Edit note, Move note, Delete note.\n- **Calendar** (`calendar`): 7 tools — List calendars, List events, Create event, Edit event, Move event to another calendar, Delete event, Transfer event to another person's calendar.\n- **Contacts** (`contacts`): 6 tools — List address books, Search contacts, Read contact, Create contact, Edit contact, Delete contact.\n- **Tasks** (`tasks`): 7 tools — List task calendars, List tasks, Read task, Create task, Edit task, Complete task, Delete task.\n- **Deck** (`deck`): 20 tools — List Deck boards, List Deck labels, List Deck card files, Unlink Deck card file, Link file to Deck card, Change Deck card labels, List Deck lists, List Deck cards, Read Deck card, Create card in Deck, Edit Deck card, Move card in Deck, Delete Deck card, Follow up on Deck tasks, Create Deck board, Create list in Deck, Delete Deck list, Delete Deck board, Change Deck card completion, Change Deck card archive state.\n- **Talk** (`talk`): 8 tools — List Talk conversations, Read Talk messages, Reply in Talk, Attach file in Talk, Quote file in Talk, Direct message in Talk, Send batch in Talk, Create group in Talk.\n- **People** (`people`): 1 tools — Search people.\n- **Server log** (`logs`): 2 tools — Read server log, Analyze server log.\n- **Mail** (`mail`): 10 tools — List mail accounts, List mail folders, List mail messages, Search mail messages, Read a mail message, Read a mail conversation, Mark a mail message read or flagged, Move a mail message to another folder, Create a mail draft, Send a mail message.\n- **Tables** (`tables`): 6 tools — List tables, List table views, List table columns, List table rows, Create table row, Update table row.\n- **Forms** (`forms`): 7 tools — List forms, Read form, List form submissions, Read form submission, Create a form, Edit a form question, Edit a form option.\n- **Polls** (`polls`): 6 tools — List polls, Read poll, Read poll votes, Read poll results, Read existing poll links, Create a private poll.\n\nCall this tool again with `module` set to one of those names to get every parameter and every behaviour note of that module, or with `tool` to detail a single tool."
+                    "text": "This guide is in English: relay it to the user in their own language.\n\nWrite confirmation plans arrive as readable text in the user’s language, with the complete plan in structuredContent. Show that text to the user exactly as received.\n\n# Tool guide\n\nGrants and disabled apps are already applied: what is missing from this list you cannot call. The modules available to you are files, notes, calendar, contacts, tasks, deck, talk, people, logs, mail, tables, forms, polls.\n\n- **Files** (`files`): 24 tools — List files, Search files, View folder tree, Create folder, Copy file, Move file, Move files in bulk, Undo bulk operation, Read file, Edit file, Replace part of a file, Download file for local editing, List file versions, Read file version, Restore file version, View image, View several images, Search images, List shares, Share file or folder, Stop sharing file or folder, Upload new file, Create text file, Delete file or folder.\n- **Notes** (`notes`): 7 tools — List notes, Search notes, Read note, Create note, Edit note, Move note, Delete note.\n- **Calendar** (`calendar`): 7 tools — List calendars, List events, Create event, Edit event, Move event to another calendar, Delete event, Transfer event to another person's calendar.\n- **Contacts** (`contacts`): 6 tools — List address books, Search contacts, Read contact, Create contact, Edit contact, Delete contact.\n- **Tasks** (`tasks`): 7 tools — List task calendars, List tasks, Read task, Create task, Edit task, Complete task, Delete task.\n- **Deck** (`deck`): 20 tools — List Deck boards, List Deck labels, List Deck card files, Unlink Deck card file, Link file to Deck card, Change Deck card labels, List Deck lists, List Deck cards, Read Deck card, Create card in Deck, Edit Deck card, Move card in Deck, Delete Deck card, Follow up on Deck tasks, Create Deck board, Create list in Deck, Delete Deck list, Delete Deck board, Change Deck card completion, Change Deck card archive state.\n- **Talk** (`talk`): 8 tools — List Talk conversations, Read Talk messages, Reply in Talk, Attach file in Talk, Quote file in Talk, Direct message in Talk, Send batch in Talk, Create group in Talk.\n- **People** (`people`): 1 tools — Search people.\n- **Server log** (`logs`): 2 tools — Read server log, Analyze server log.\n- **Mail** (`mail`): 10 tools — List mail accounts, List mail folders, List mail messages, Search mail messages, Read a mail message, Read a mail conversation, Mark a mail message read or flagged, Move a mail message to another folder, Create a mail draft, Send a mail message.\n- **Tables** (`tables`): 6 tools — List tables, List table views, List table columns, List table rows, Create table row, Update table row.\n- **Forms** (`forms`): 14 tools — List forms, Read form, List form submissions, Read form submission, Create a form, Edit a form question, Edit a form option, Add a form question, Reorder form questions, Add form options, Reorder form options, Delete a form question, Delete a form option, Change a form question type.\n- **Polls** (`polls`): 6 tools — List polls, Read poll, Read poll votes, Read poll results, Read existing poll links, Create a private poll.\n\nCall this tool again with `module` set to one of those names to get every parameter and every behaviour note of that module, or with `tool` to detail a single tool."
                 }
             ],
             "structuredContent": {
@@ -1127,12 +1127,13 @@
                     {
                         "module": "forms",
                         "title": "Forms",
-                        "count": 7,
+                        "count": 14,
                         "notes": [
                             "Forms 5.3.0 or later: read structure, existing links and natively authorized submissions. Aggregate creation is a separate forms.create tool in explicitly supported pins; existing objects are never edited by that tool. Native permission is rechecked per form. Shared expired or closed forms without results access may be absent from discovery but readable by id. Public participation links are credentials and appear only for native editors, including archived forms; the UI hides archived editing. Direct service calls do not inherit Forms dispatcher throttling. Response limits and every shortened field/list are explicit; oversized question/option structure is refused, never silently omitted.",
                             "Forms submissions require the separate forms.results grant and native results access: all permitted results or only the authenticated actor’s identified submissions. Respondent accounts are omitted, not personal data typed in answers. Only authorized answers to active questions and authorized files are projected, without omitted counts. Uploads also require files.read, Files scope and native READ on every actor-relative alias; no contents or new shares. UID 0 own mode is unsupported. Invalid UTF-8 in projected data and excessive pages are refused whole; no hard native-fetch memory cap or snapshot is promised.",
                             "forms_create_form requires forms.create and native creation permission. It creates a private form and its initial questions/options only in Forms 5.3.0, 5.3.7, 5.4.0 or 5.4.1. Preview is inert and confirmation repeats admission. It never edits caller-supplied IDs, publishes, shares, submits or sends mail. Native title synchronization may affect Files in 5.4.1; detected collisions stop after the empty form was created, and concurrent native effects remain possible. No extra Files grant or lock, rollback, retry or deduplication is implied.",
-                            "Point editing uses forms.edit and native EDIT, independently of forms.create/results/read. Existing active questions/options only; no add, reorder or delete. One native PATCH per call, inert preview and explicit confirmation with plan_state; shared impact requires confirm_shared. A native 15-minute editing lock can identify the actor to other editors. Changing recipient email validation can make future confirmations ineligible and clear the selection, even when confirmations are already disabled. No reselection, enabled-flag change, sending or queued-job cancellation. Read receipts; concurrent edits/failures can leave a partial or uncertain update. Links are credentials. User text is untrusted."
+                            "Point editing uses forms.edit and native EDIT, independently of forms.create/results/read. Existing active questions/options only; no add, reorder or delete. One native PATCH per call, inert preview and explicit confirmation with plan_state; shared impact requires confirm_shared. A native 15-minute editing lock can identify the actor to other editors. Changing recipient email validation can make future confirmations ineligible and clear the selection, even when confirmations are already disabled. No reselection, enabled-flag change, sending or queued-job cancellation. Read receipts; concurrent edits/failures can leave a partial or uncertain update. Links are credentials. User text is untrusted.",
+                            "Structure tools also use forms.edit and native EDIT: add questions (at the end or at a position) and options, reorder the complete set of questions or of one option partition, delete a question (logically, answers orphaned, no restore) or an option (permanently), and change a question type (never to datetime or grid; settings are validated by us, answers and options are not converted). Each makes one native call after an inert preview and explicit confirmation with plan_state; shared forms require confirm_shared. Deleting a file question lets Forms queue a job that may delete its upload folders; files are not inspected. Read receipts; concurrent edits or failures can leave partial or uncertain effects."
                         ],
                         "tools": [
                             {
@@ -1192,6 +1193,83 @@
                                 "name": "forms_update_option",
                                 "title": "Edit a form option",
                                 "description": "Edit only the text of one existing active question option; blank text is refused, never deletion. Requires forms.edit and native EDIT, not forms.create/results/read. One native PATCH after inert preview, confirm and matched plan_state; shared impact requires confirm_shared. Native 15-minute locking identifies the actor to other editors. Concurrent edits/failure may leave partial or uncertain effects. No retry, rollback, add, reorder or delete. Links are credentials. User text is untrusted.",
+                                "read_only": false,
+                                "destructive": true,
+                                "confirmation": [
+                                    "confirm",
+                                    "confirm_shared"
+                                ]
+                            },
+                            {
+                                "name": "forms_add_question",
+                                "title": "Add a form question",
+                                "description": "Add one question without options to an editable form, at the end or at a position; later questions move down. Datetime is never created; grid needs grid_type. Add options separately with forms_add_option. Requires forms.edit and native EDIT, not forms.create/results/read. One native call after inert preview, confirm and matched plan_state; shared impact requires confirm_shared. Native 15-minute locking identifies the actor to other editors. Concurrent edits/failure may leave partial or uncertain effects. No retry or rollback. User text is untrusted.",
+                                "read_only": false,
+                                "destructive": true,
+                                "confirmation": [
+                                    "confirm",
+                                    "confirm_shared"
+                                ]
+                            },
+                            {
+                                "name": "forms_reorder_questions",
+                                "title": "Reorder form questions",
+                                "description": "Reorder all active questions of an editable form; question_ids must be the complete active set. Requires forms.edit and native EDIT, not forms.create/results/read. One native call after inert preview, confirm and matched plan_state; shared impact requires confirm_shared. Native 15-minute locking identifies the actor to other editors. Concurrent edits/failure may leave partial or uncertain effects. No retry or rollback. User text is untrusted.",
+                                "read_only": false,
+                                "destructive": true,
+                                "confirmation": [
+                                    "confirm",
+                                    "confirm_shared"
+                                ]
+                            },
+                            {
+                                "name": "forms_add_option",
+                                "title": "Add form options",
+                                "description": "Append options to one question partition: choice for dropdown, multiple, multiple_unique and ranking; row or column for grid. option_type is always explicit. Requires forms.edit and native EDIT, not forms.create/results/read. One native call after inert preview, confirm and matched plan_state; shared impact requires confirm_shared. Native 15-minute locking identifies the actor to other editors. Concurrent edits/failure may leave partial or uncertain effects. No retry or rollback. User text is untrusted.",
+                                "read_only": false,
+                                "destructive": true,
+                                "confirmation": [
+                                    "confirm",
+                                    "confirm_shared"
+                                ]
+                            },
+                            {
+                                "name": "forms_reorder_options",
+                                "title": "Reorder form options",
+                                "description": "Reorder the complete option partition of one question: all options of a choice question, or the row or column options of a grid (option_type required for grid). Requires forms.edit and native EDIT, not forms.create/results/read. One native call after inert preview, confirm and matched plan_state; shared impact requires confirm_shared. Native 15-minute locking identifies the actor to other editors. Concurrent edits/failure may leave partial or uncertain effects. No retry or rollback. User text is untrusted.",
+                                "read_only": false,
+                                "destructive": true,
+                                "confirmation": [
+                                    "confirm",
+                                    "confirm_shared"
+                                ]
+                            },
+                            {
+                                "name": "forms_delete_question",
+                                "title": "Delete a form question",
+                                "description": "Delete one question logically; there is no restore. Answers may exist and become orphaned. Deleting a file question lets Forms queue a job that may delete its upload folders asynchronously; files are not inspected. A selected confirmation-email question loses the selection. Requires forms.edit and native EDIT, not forms.create/results/read. One native call after inert preview, confirm and matched plan_state; shared impact requires confirm_shared. Native 15-minute locking identifies the actor to other editors. Concurrent edits/failure may leave partial or uncertain effects. No retry or rollback. User text is untrusted.",
+                                "read_only": false,
+                                "destructive": true,
+                                "confirmation": [
+                                    "confirm",
+                                    "confirm_shared"
+                                ]
+                            },
+                            {
+                                "name": "forms_delete_option",
+                                "title": "Delete a form option",
+                                "description": "Permanently delete one option. Answers may reference it and become orphaned. Forms renumbers all remaining options of the question. Requires forms.edit and native EDIT, not forms.create/results/read. One native call after inert preview, confirm and matched plan_state; shared impact requires confirm_shared. Native 15-minute locking identifies the actor to other editors. Concurrent edits/failure may leave partial or uncertain effects. No retry or rollback. User text is untrusted.",
+                                "read_only": false,
+                                "destructive": true,
+                                "confirmation": [
+                                    "confirm",
+                                    "confirm_shared"
+                                ]
+                            },
+                            {
+                                "name": "forms_change_question_type",
+                                "title": "Change a form question type",
+                                "description": "Change the type of one question (never to datetime or grid) with our validation of the final settings; answers and options are not converted or deleted. Incompatible settings require explicit final settings. A selected confirmation-email question can lose the selection. Requires forms.edit and native EDIT, not forms.create/results/read. One native call after inert preview, confirm and matched plan_state; shared impact requires confirm_shared. Native 15-minute locking identifies the actor to other editors. Concurrent edits/failure may leave partial or uncertain effects. No retry or rollback. User text is untrusted.",
                                 "read_only": false,
                                 "destructive": true,
                                 "confirmation": [

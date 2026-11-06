@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Forms\Editing;
 
 require_once __DIR__.'/EditingFixture.php';
+require_once dirname(__DIR__, 3).'/Modules/Forms/StructurePlans.php';
 
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Tools\AssertsReadablePlans;
@@ -62,7 +63,8 @@ final class AllFormsPlanContract extends TestCase {
 		$plan = $module->preview('forms_create_form', $args, 'alice');
 		$this->assertEveryWriteToolHasAReadablePlan($module, ['forms_create_form' => $plan,
 			'forms_update_question' => $module->preview('forms_update_question', ['form_id'=>1,'question_id'=>2,'changes'=>['text'=>str_repeat('q',2048)]], 'alice'),
-			'forms_update_option' => $module->preview('forms_update_option', ['form_id'=>1,'question_id'=>2,'option_id'=>3,'changes'=>['text'=>str_repeat('o',1024)]], 'alice')]);
+			'forms_update_option' => $module->preview('forms_update_option', ['form_id'=>1,'question_id'=>2,'option_id'=>3,'changes'=>['text'=>str_repeat('o',1024)]], 'alice')]
+			+ \OCA\Mcp\Tests\Unit\Modules\Forms\StructurePlans::all($this));
 		self::assertStringContainsString(str_repeat('z', 1024), $module->renderPlan('forms_create_form', $plan));
 		self::assertSame(CreateFormRequest::of($args), $plan['after']);
 	}

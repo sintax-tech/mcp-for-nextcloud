@@ -30,6 +30,7 @@ final class CreateDraftPreview {
 	 * @param MailDraftPlan $plans snapshot and PlanState
 	 * @param MailDraftHtml $html restricted draft sanitization pipeline
 	 * @param IAppManager $apps installed Mail version for Bcc preservation
+	 * @return void
 	 */
 	public function __construct(private MailDraftAccount $accounts, private MailDraftPlan $plans, private IAppManager $apps, private MailDraftHtml $html) {}
 

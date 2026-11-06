@@ -79,7 +79,7 @@ final class MailDraftRequest {
 		if (str_contains($body, "\0") || !mb_check_encoding($body, 'UTF-8')) {
 			throw new ArgumentValidationException('Invalid argument: body', 'body', MailDraftMessages::invalidBody());
 		}
-		if (isset($arguments['html']) && !is_bool($arguments['html'])) {
+		if (array_key_exists('html', $arguments) && !is_bool($arguments['html'])) {
 			throw new ArgumentValidationException('Invalid argument: html', 'html');
 		}
 		if (mb_strlen($body) > self::MAX_BODY) {

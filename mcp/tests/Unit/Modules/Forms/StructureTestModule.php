@@ -28,6 +28,7 @@ final class StructureTestModule {
 		'forms_change_question_type' => [Tools\ChangeQuestionType::class, 'Editing\\ChangeQuestionType'],
 	];
 
+	/** Static test builder only: prevents instantiation. */
 	private function __construct() {
 	}
 

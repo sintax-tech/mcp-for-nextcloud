@@ -21,6 +21,7 @@ final class OptionPartition {
 	/** Question types whose answers are chosen among options. */
 	private const CHOICE = ['dropdown', 'multiple', 'multiple_unique', 'ranking'];
 
+	/** Static partition rules only: prevents instantiation. */
 	private function __construct() {
 	}
 

@@ -14,6 +14,7 @@ final class StructureMessages {
 	/** Guide note, appended after the existing Forms notes. */
 	public const GUIDE = 'Structure tools also use forms.edit and native EDIT: add questions (at the end or at a position) and options, reorder the complete set of questions or of one option partition, delete a question (logically, answers orphaned, no restore) or an option (permanently), and change a question type (never to datetime or grid; settings are validated by us, answers and options are not converted). Each makes one native call after an inert preview and explicit confirmation with plan_state; shared forms require confirm_shared. Deleting a file question lets Forms queue a job that may delete its upload folders; files are not inspected. Read receipts; concurrent edits or failures can leave partial or uncertain effects.';
 
+	/** Static texts only: prevents instantiation. */
 	private function __construct() {
 	}
 

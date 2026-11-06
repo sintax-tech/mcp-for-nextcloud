@@ -13,6 +13,7 @@ use OCA\Mcp\Platform\FileAccess\CommonMessages;
 
 /** Complete-set ordering shared by question and option reorder: validation, native order prediction and readback. */
 final class OrderSet {
+	/** Static ordering rules only: prevents instantiation. */
 	private function __construct() {
 	}
 

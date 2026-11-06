@@ -13,6 +13,7 @@ use PHPUnit\Framework\TestCase;
 
 /** Plans of the seven structure tools, built by the real flow, for the Forms readability contract. */
 final class StructurePlans {
+	/** Static test builder only: prevents instantiation. */
 	private function __construct() {
 	}
 

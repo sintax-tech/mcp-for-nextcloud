@@ -19,6 +19,7 @@ final class QuestionTypes {
 	/** Cell types of a grid question (native extraSettings.questionType). */
 	public const GRID_TYPES = ['radio', 'checkbox', 'number'];
 
+	/** Constants only: prevents instantiation. */
 	private function __construct() {
 	}
 }

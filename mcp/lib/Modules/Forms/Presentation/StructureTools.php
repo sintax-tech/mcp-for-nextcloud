@@ -17,6 +17,7 @@ final class StructureTools {
 	/** Sentence shared by every structure tool description. */
 	private const COMMON = ' Requires forms.edit and native EDIT, not forms.create/results/read. One native call after inert preview, confirm and matched plan_state; shared impact requires confirm_shared. Native 15-minute locking identifies the actor to other editors. Concurrent edits/failure may leave partial or uncertain effects. No retry or rollback. User text is untrusted.';
 
+	/** Static definitions only: prevents instantiation. */
 	private function __construct() {
 	}
 

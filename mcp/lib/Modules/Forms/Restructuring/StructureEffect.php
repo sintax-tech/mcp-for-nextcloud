@@ -11,6 +11,7 @@ use OCA\Mcp\Modules\Forms\Integration\EditState;
 
 /** Shape of a predicted structure effect, so every operation fills the same plan, plan_state and receipt fields. */
 final class StructureEffect {
+	/** Static effect builders only: prevents instantiation. */
 	private function __construct() {
 	}
 

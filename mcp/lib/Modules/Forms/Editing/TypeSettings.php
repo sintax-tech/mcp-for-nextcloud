@@ -17,6 +17,7 @@ use OCA\Mcp\Modules\Forms\Restructuring\QuestionTypes;
  * forms_update_question schema stays as it is.
  */
 final class TypeSettings {
+	/** Static validation only: prevents instantiation. */
 	private function __construct() {
 	}
 

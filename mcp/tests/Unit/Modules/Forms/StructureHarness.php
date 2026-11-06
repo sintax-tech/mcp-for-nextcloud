@@ -30,6 +30,7 @@ use PHPUnit\Framework\TestCase;
 
 /** Builds the real structure flow over a StructureFixture, with a mocked admission factory. */
 final class StructureHarness {
+	/** Static test builders only: prevents instantiation. */
 	private function __construct() {
 	}
 

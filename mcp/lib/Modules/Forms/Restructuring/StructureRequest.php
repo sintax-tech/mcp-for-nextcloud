@@ -16,6 +16,7 @@ final class StructureRequest {
 	/** Largest accepted request, in bytes of canonical JSON. */
 	private const MAX_BYTES = 65536;
 
+	/** Static validation only: prevents instantiation. */
 	private function __construct() {
 	}
 

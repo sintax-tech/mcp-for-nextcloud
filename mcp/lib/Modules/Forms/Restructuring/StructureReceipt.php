@@ -18,6 +18,7 @@ use OCA\Mcp\Modules\Forms\Presentation\StructureMessages;
  * changed, uncertain when nothing was observed. Success is never inferred from the native status alone.
  */
 final class StructureReceipt {
+	/** Static receipt builder only: prevents instantiation. */
 	private function __construct() {
 	}
 

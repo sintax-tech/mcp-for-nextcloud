@@ -1,0 +1,219 @@
+[
+	{
+		"name": "scope",
+		"path": "mcp/lib/Modules/Polls/Admission/PollsWriteAdmission.php",
+		"old": "|| ($pollId !== null && !$this->policy->inScope($uid, 'polls', (string) $pollId))",
+		"new": "",
+		"filter": "testDirectAdmissionCannotSkipOneGuard"
+	},
+	{
+		"name": "guest",
+		"path": "mcp/lib/Modules/Polls/Admission/PollsWriteAdmission.php",
+		"old": "|| !$this->guests->allowsApp($uid, 'polls')",
+		"new": "",
+		"filter": "testDirectAdmissionCannotSkipOneGuard"
+	},
+	{
+		"name": "app-user",
+		"path": "mcp/lib/Modules/Polls/Admission/PollsWriteAdmission.php",
+		"old": "|| !AppEnablement::forUser($this->apps, 'polls', $user)",
+		"new": "",
+		"filter": "testDirectAdmissionCannotSkipOneGuard"
+	},
+	{
+		"name": "unknown-op",
+		"path": "mcp/lib/Modules/Polls/Admission/PollsWriteAdmission.php",
+		"old": "!in_array($operation, ['configure', 'options', 'options.remove', 'share', 'invite'], true)",
+		"new": "false",
+		"filter": "testDirectAdmissionCannotSkipOneGuard"
+	},
+	{
+		"name": "stale-check",
+		"path": "mcp/lib/Modules/Polls/Integration/PollsNativeAdapter.php",
+		"old": "if ($this->snapshot($uid, $request) !== $before)",
+		"new": "if (false)",
+		"filter": "testFinalSnapshotRaceStopsBeforeAttemptAndToggle"
+	},
+	{
+		"name": "post-read-recheck",
+		"path": "mcp/lib/Modules/Polls/Integration/PollsNativeAdapter.php",
+		"old": "\t\t$this->guard->native($this->session, $uid);\n\t\t$this->admission->check($uid, $this->operation, $request['poll_id']);\n\t\t$this->snapshots->poll",
+		"new": "\t\t$this->snapshots->poll",
+		"filter": "testRechecksIdentityAndScopeAfterReading"
+	},
+	{
+		"name": "share-external",
+		"path": "mcp/lib/Modules/Polls/Sharing/PollShareChanges.php",
+		"old": "&& !$s['shareExternal']",
+		"new": "&& false",
+		"filter": "testPublicPolicyAndDelegation"
+	},
+	{
+		"name": "share-create",
+		"path": "mcp/lib/Modules/Polls/Sharing/PollShareChanges.php",
+		"old": "if (!$s['shareCreate']",
+		"new": "if (false",
+		"filter": "testPublicPolicyAndDelegation"
+	},
+	{
+		"name": "public-allowed-src",
+		"path": "mcp/lib/Modules/Polls/Integration/PollsMutationSnapshot.php",
+		"old": "->getPublicSharesAllowed() === true",
+		"new": "->getPublicSharesAllowed() || true",
+		"filter": "testActualNativePublicPolicyUsesCheckedActor"
+	},
+	{
+		"name": "direct-confirm",
+		"path": "mcp/lib/Modules/Polls/Writing/PollWriteEffectFlow.php",
+		"old": "if (($args['confirm'] ?? null) !== true)",
+		"new": "if (false)",
+		"filter": "testDirectEffectRequiresStrictBooleanConfirm"
+	},
+	{
+		"name": "poll-group-shares",
+		"path": "mcp/lib/Modules/Polls/Integration/PollsMutationSnapshot.php",
+		"old": " || $share->getGroupId()",
+		"new": "",
+		"filter": "testPollGroupSharesNeverJoinTheTargetRows"
+	},
+	{
+		"name": "label-private",
+		"path": "mcp/lib/Modules/Polls/Integration/PollsWriteProjection.php",
+		"old": "'label' => $type === 'public' ? $share->getLabel() : ''",
+		"new": "'label' => $share->getLabel()",
+		"filter": "testPrivateShareLabelIsNotProjected"
+	},
+	{
+		"name": "closed-state",
+		"path": "mcp/lib/Modules/Polls/Editing/PollConfiguration.php",
+		"old": "'closed' => $s['poll']['expire'] > 0 && $s['poll']['expire'] < time(),",
+		"new": "'closed' => $s['poll']['expire'] > 0,",
+		"filter": "testScheduledExpirationDoesNotCountAsAlreadyClosed"
+	},
+	{
+		"name": "archive-noop",
+		"path": "mcp/lib/Modules/Polls/Editing/PollConfiguration.php",
+		"old": "'archived' => $s['poll']['archived'],",
+		"new": "'archived' => false,",
+		"filter": "testDesiredStateDoesNotToggleOrLeaveFutureExpiration"
+	},
+	{
+		"name": "unarchive-noop",
+		"path": "mcp/lib/Modules/Polls/Editing/PollConfiguration.php",
+		"old": "'unarchived' => !$s['poll']['archived'],",
+		"new": "'unarchived' => false,",
+		"filter": "testUnarchiveOfActivePollDoesNotCallToggle"
+	},
+	{
+		"name": "invite-locked",
+		"path": "mcp/lib/Modules/Polls/Sharing/PollShareChanges.php",
+		"old": " || $old['deleted'] || $old['locked'])",
+		"new": " || $old['deleted'])",
+		"filter": "testInvitationOfLockedIndividualIsRefused"
+	},
+	{
+		"name": "invite-public",
+		"path": "mcp/lib/Modules/Polls/Sharing/PollShareChanges.php",
+		"old": "!in_array($old['type'], ['user', 'admin', 'email', 'contact'], true) || $old['deleted']",
+		"new": "$old['deleted']",
+		"filter": "testInvitationAndLabelTypesAreRestricted"
+	},
+	{
+		"name": "probe-ceiling",
+		"path": "mcp/lib/Modules/Polls/Integration/PollsMutationProbe.php",
+		"old": "|| version_compare($v, $bounds[1], '>=')",
+		"new": "",
+		"filter": "testVersionAndAppGatePrecedesNativeIntrospection"
+	},
+	{
+		"name": "probe-enabled",
+		"path": "mcp/lib/Modules/Polls/Integration/PollsMutationProbe.php",
+		"old": "|| !AppEnablement::forAnyone($this->apps, 'polls')",
+		"new": "",
+		"filter": "testVersionAndAppGatePrecedesNativeIntrospection"
+	},
+	{
+		"name": "anon-threshold",
+		"path": "mcp/lib/Modules/Polls/Integration/PollsMutationSnapshot.php",
+		"old": "$p->getAnonymous() > 0 && !$p->getIsAllowed('deanonymize')",
+		"new": "$p->getAnonymous() > 1 && !$p->getIsAllowed('deanonymize')",
+		"filter": "testConfigurationRefusesImplicitAnonymityLock"
+	},
+	{
+		"name": "readback-invariants",
+		"path": "mcp/lib/Modules/Polls/Editing/PollConfiguration.php",
+		"old": "foreach (['type', 'owner', 'access', 'anonymous'] as $key)",
+		"new": "foreach ([] as $key)",
+		"filter": "testConfigurationReadbackChecksProtectedFields"
+	},
+	{
+		"name": "reorder-closed",
+		"path": "mcp/lib/Modules/Polls/Options/OptionChanges.php",
+		"old": " || $s['poll']['expire'] > 0 && $s['poll']['expire'] < time()",
+		"new": "",
+		"filter": "testReorderCompletenessAndExpiration"
+	},
+	{
+		"name": "delegation-note",
+		"path": "mcp/lib/Modules/Polls/Sharing/PollShareChanges.php",
+		"old": "\t\t\tif ($r['type'] === 'admin') {\n\t\t\t\t$notes[] = PollsWriteMessages::delegationTo($v['userId']);\n\t\t\t}",
+		"new": "",
+		"filter": "testAddingAdminNamesTheDelegatedRecipientAndRights"
+	},
+	{
+		"name": "option-parent",
+		"path": "mcp/lib/Modules/Polls/Integration/PollsMutationSnapshot.php",
+		"old": "\t\t\t\tif ($row->getPollId() !== $r['poll_id']) {\n\t\t\t\t\tthrow PollsRefusal::unavailable();\n\t\t\t\t}",
+		"new": "",
+		"filter": "testForeignOptionRowIsRejectedBeforeProjection"
+	},
+	{
+		"name": "edit-acl",
+		"path": "mcp/lib/Modules/Polls/Integration/PollsMutationSnapshot.php",
+		"old": "if (!$poll->getIsAllowed('editPoll'))",
+		"new": "if (false)",
+		"filter": "testParentAclNonDisclosure"
+	},
+	{
+		"name": "email-type-alias",
+		"path": "mcp/lib/Modules/Polls/Integration/PollsWriteProjection.php",
+		"old": "default => '',",
+		"new": "default => $share->getUserId(),",
+		"filter": "testPublicCredentialAliasIsRedacted"
+	},
+	{
+		"name": "restore-public-policy",
+		"path": "mcp/lib/Modules/Polls/Sharing/PollShareChanges.php",
+		"old": "if ($a === 'restore' && $old['type'] === 'public' && (!$s['publicAllowed'] || !$s['shareCreate'] || !$s['shareExternal']))",
+		"new": "if (false)",
+		"filter": "testRestoringPublicShareRechecksEveryPolicy"
+	},
+	{
+		"name": "receipt-uncertain",
+		"path": "mcp/lib/Modules/Polls/Writing/PollWriteEffectFlow.php",
+		"old": "PollWriteReceipt::of($this->plans->status($r, $before, $now), true, $r, $now)",
+		"new": "PollWriteReceipt::of('applied', true, $r, $now)",
+		"filter": "testReorderPartialReceiptIsBasedOnObservedRequestedPositions"
+	},
+	{
+		"name": "session-cleanup",
+		"path": "mcp/lib/Modules/Polls/Integration/PollsNativeAdapter.php",
+		"old": "$session?->cleanSession();",
+		"new": "",
+		"filter": "testCloseCleansNativeIdentityAndDropsContext"
+	},
+	{
+		"name": "write-grant",
+		"path": "mcp/lib/Modules/Polls/Admission/PollsWriteAdmission.php",
+		"old": "|| !$this->policy->granted($uid, 'polls', $operation)",
+		"new": "",
+		"filter": "testDeniedGrantStopsBeforeNativeIntrospection"
+	},
+	{
+		"name": "no-auto-vote",
+		"path": "mcp/lib/Modules/Polls/Integration/PollsMutationWriter.php",
+		"old": "$service->add($pollId, $simple, false)",
+		"new": "$service->add($pollId, $simple, true)",
+		"filter": "testRealLazyProbeAndEveryMissingMember.*9.3.0"
+	}
+]

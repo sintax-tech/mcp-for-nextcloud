@@ -18,10 +18,27 @@ final class PollsNativeAdapter implements PollWriteNative {
 	private ?object $session = null;
 	/** Exact independent grant of this call. */
 	private string $operation = '';
-	/** @param PollsServices $services Existing lazy resolver. @param PollsSessionGuard $guard Both native identities. @param PollsWriteAdmission $admission Fresh grant/app/guest checks. @param PollsMutationSnapshot $snapshots Complete metadata. @param PollsMutationWriter $writer Official sinks only. */
-	public function __construct(private PollsServices $services, private PollsSessionGuard $guard,
-		private PollsWriteAdmission $admission, private PollsMutationSnapshot $snapshots, private PollsMutationWriter $writer) {}
-	/** {@inheritDoc} */
+	/**
+	 * @param PollsServices $services Existing lazy resolver.
+	 * @param PollsSessionGuard $guard Both native identities.
+	 * @param PollsWriteAdmission $admission Fresh grant/app/guest checks.
+	 * @param PollsMutationSnapshot $snapshots Complete metadata.
+	 * @param PollsMutationWriter $writer Official sinks only.
+	 * @return void
+	 */
+	public function __construct(
+		private PollsServices $services,
+		private PollsSessionGuard $guard,
+		private PollsWriteAdmission $admission,
+		private PollsMutationSnapshot $snapshots,
+		private PollsMutationWriter $writer,
+	) {
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public function open(string $uid, string $operation): void {
 		$this->guard->caller($uid);
 		$this->admission->check($uid, $operation);
@@ -30,9 +47,15 @@ final class PollsNativeAdapter implements PollWriteNative {
 		$this->session->cleanSession();
 		$this->guard->native($this->session, $uid);
 	}
-	/** {@inheritDoc} */
+
+	/**
+	 * {@inheritDoc}
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public function snapshot(string $uid, array $request): array {
-		if ($this->session === null) { throw PollsRefusal::unavailable(); }
+		if ($this->session === null) {
+			throw PollsRefusal::unavailable();
+		}
 		$this->session->cleanSession();
 		$this->guard->native($this->session, $uid);
 		$v = $this->admission->check($uid, $this->operation, $request['poll_id']);
@@ -42,15 +65,29 @@ final class PollsNativeAdapter implements PollWriteNative {
 		$this->snapshots->poll($this->session, $request['poll_id']);
 		return $s;
 	}
-	/** {@inheritDoc} */
+
+	/**
+	 * {@inheritDoc}
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public function mutate(string $uid, array $request, array $before, \Closure $attempted): void {
-		$this->writer->write($this->session ?? throw PollsRefusal::unavailable(), $request,
-			version_compare($before['version'], '9.0.0', '>='), function () use ($uid, $request, $before, $attempted): void {
-				if ($this->snapshot($uid, $request) !== $before) { throw new PollWriteStale(); }
+		$this->writer->write(
+			$this->session ?? throw PollsRefusal::unavailable(),
+			$request,
+			version_compare($before['version'], '9.0.0', '>='),
+			function () use ($uid, $request, $before, $attempted): void {
+				if ($this->snapshot($uid, $request) !== $before) {
+					throw new PollWriteStale();
+				}
 				$attempted();
-			});
+			}
+		);
 	}
-	/** {@inheritDoc} */
+
+	/**
+	 * {@inheritDoc}
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public function close(): void {
 		$session = $this->session;
 		$this->session = null;

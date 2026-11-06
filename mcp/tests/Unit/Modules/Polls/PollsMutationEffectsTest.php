@@ -20,31 +20,45 @@ use Psr\Log\LoggerInterface;
 final class PollsMutationEffectsTest extends TestCase {
 	/**
 	 * @return iterable<string,array{string,array<string,mixed>}> Every new write.
+	 * @throws \Throwable If validation or a called collaborator fails.
 	 */
 	public static function tools(): iterable {
 		return PollsMutationCases::all();
 	}
+
 	/**
 	 * @param string $tool Exact public name.
 	 * @param array<string,mixed> $arguments Valid request.
 	 * @return void
+	 * @throws \Throwable If validation or a called collaborator fails.
 	 */
 	#[DataProvider('tools')]
 	public function testEachWriteHasAnEndpointEffectTranscript(string $tool, array $arguments): void {
 		$scene = new PollsMutationScene($tool);
 		$gate = new EffectsGate($this);
-		$gate->serve(fn (): array => [PollsMutationModule::build($this, $scene)],
-			fn (): CapabilityRegistry => new CapabilityRegistry([PollsDiscoveryProbe::build($this)], $this->createMock(LoggerInterface::class)));
-		$flow = (new CriticalFlow(substr($tool, 6), $tool, 'polls', PollsWriteSchema::OPERATIONS[$tool], $arguments,
-			fn (): array => ['state' => $scene->state, 'writes' => $scene->writes]))
-			->changing(function () use ($scene): void {
+		$gate->serve(
+			fn(): array => [PollsMutationModule::build($this, $scene)],
+			fn(): CapabilityRegistry => new CapabilityRegistry([PollsDiscoveryProbe::build($this)], $this->createMock(LoggerInterface::class))
+		);
+		$flow = (new CriticalFlow(
+			substr($tool, 6),
+			$tool,
+			'polls',
+			PollsWriteSchema::OPERATIONS[$tool],
+			$arguments,
+			fn(): array => ['state' => $scene->state, 'writes' => $scene->writes]
+		))->changing(
+			function () use ($scene): void {
 				$scene->state['poll']['title'] = 'Changed by another actor';
-			})
-			->hiding(function () use ($scene): void {
+			}
+		)->hiding(
+			function () use ($scene): void {
 				$scene->deny = true;
-			}, function () use ($scene): void {
+			},
+			function () use ($scene): void {
 				$scene->deny = false;
-			});
+			}
+		);
 		(new FlowRunner($this, $gate, 'polls'))->run($flow);
 	}
 }

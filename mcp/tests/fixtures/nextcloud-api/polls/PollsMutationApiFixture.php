@@ -15,7 +15,6 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
 use FilesystemIterator;
-
 require __DIR__ . '/../../../../vendor/autoload.php';
 
 /** Regenerates only Polls surfaces, preserving other apps and recording absent 8.6 APIs as null. */
@@ -53,7 +52,7 @@ final class PollsMutationApiFixture {
 				$file = dirname(__DIR__) . '/' . $major . '.php';
 				$fixture = require $file;
 				foreach (array_keys($classes) as $class) {
-					if (str_starts_with($class, 'OCA\\Polls\\')) {
+					if (str_starts_with($class, 'OCA\Polls\\')) {
 						$fixture['classes'][$class] = $parser->surface($class);
 					}
 				}
@@ -61,10 +60,9 @@ final class PollsMutationApiFixture {
 				$old = file_get_contents($file);
 				FixtureFile::write($file, substr($old, 0, strpos($old, 'return [')), $fixture);
 			} finally {
-				$files = new RecursiveIteratorIterator(
-					new RecursiveDirectoryIterator($tree, FilesystemIterator::SKIP_DOTS),
-					RecursiveIteratorIterator::CHILD_FIRST,
-				);
+				$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($tree,
+					FilesystemIterator::SKIP_DOTS),
+					RecursiveIteratorIterator::CHILD_FIRST);
 				foreach ($files as $file) {
 					if ($file->isDir()) {
 						rmdir($file->getPathname());
@@ -76,6 +74,7 @@ final class PollsMutationApiFixture {
 			}
 		}
 	}
+
 	/**
 	 * @param string $path Exact source file.
 	 * @param string $sha Expected archive/core SHA256.

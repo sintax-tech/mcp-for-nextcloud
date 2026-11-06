@@ -17,9 +17,11 @@ final class PollWritePreviewFlow {
 	/**
 	 * @param PollWriteReader $reader Read-only native context.
 	 * @param PollWritePlan $plans Stateless signed plans using verb-specific rules.
+	 * @return void
 	 */
 	public function __construct(private PollWriteReader $reader, private PollWritePlan $plans) {
 	}
+
 	/**
 	 * @param array<string,mixed> $request Validated tool-specific input.
 	 * @param string $uid Authenticated actor.
@@ -31,7 +33,7 @@ final class PollWritePreviewFlow {
 		try {
 			$this->reader->open($uid, PollMutation::from($request['tool'])->operation());
 			return $this->plans->of($uid, $request, $this->reader->snapshot($uid, $request));
-		} catch (ToolFailure | \InvalidArgumentException $error) {
+		} catch (ToolFailure|\InvalidArgumentException $error) {
 			throw $error;
 		} catch (\Throwable) {
 			throw PollsRefusal::unavailable();

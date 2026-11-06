@@ -17,8 +17,14 @@ use OCA\Mcp\Modules\Polls\Contracts\PollMutation;
 
 /** Confirmed effect lifecycle, final native guard and authorized readback; no preview flag. */
 final class PollWriteEffectFlow {
-	/** @param PollWriteNative $native Guarded fresh native boundary. @param PollWritePlan $plans Stateless complete plans. */
-	public function __construct(private PollWriteNative $native, private PollWritePlan $plans) {}
+	/**
+	 * @param PollWriteNative $native Guarded fresh native boundary.
+	 * @param PollWritePlan $plans Stateless complete plans.
+	 * @return void
+	 */
+	public function __construct(private PollWriteNative $native, private PollWritePlan $plans) {
+	}
+
 	/**
 	 * @param array<string,mixed> $r Validated tool-specific request.
 	 * @param array<string,mixed> $args Original confirmation and plan state.
@@ -33,19 +39,32 @@ final class PollWriteEffectFlow {
 			throw PollsRefusal::unavailable();
 		}
 		PlanState::require($args);
-		$attempted = false; $result = null; $error = null;
+		$attempted = false;
+		$result = null;
+		$error = null;
 		try {
 			$this->native->open($uid, PollMutation::from($r['tool'])->operation());
 			$before = $this->native->snapshot($uid, $r);
 			$plan = $this->plans->of($uid, $r, $before);
-			if (!PlanState::matches($plan['plan_state'], $args)) { throw new PlanChanged($plan); }
+			if (!PlanState::matches($plan['plan_state'], $args)) {
+				throw new PlanChanged($plan);
+			}
 			if ($plan['noOp']) {
 				$result = PollWriteReceipt::of('applied', false, $r, $before, true);
 			} else {
 				$writeError = null;
 				try {
-					$this->native->mutate($uid, $r, $before, static function () use (&$attempted): void { $attempted = true; });
-				} catch (\Throwable $failure) { $writeError = $failure; }
+					$this->native->mutate(
+						$uid,
+						$r,
+						$before,
+						static function () use (&$attempted): void {
+							$attempted = true;
+						}
+					);
+				} catch (\Throwable $failure) {
+					$writeError = $failure;
+				}
 				if (!$attempted) {
 					if ($writeError instanceof PollWriteStale) {
 						throw new PlanChanged($this->plans->of($uid, $r, $this->native->snapshot($uid, $r)));
@@ -56,19 +75,31 @@ final class PollWriteEffectFlow {
 				try {
 					$now = $this->native->snapshot($uid, $r);
 					$result = PollWriteReceipt::of($this->plans->status($r, $before, $now), true, $r, $now);
-				} catch (\Throwable) { $result = PollWriteReceipt::of('uncertain', true); }
+				} catch (\Throwable) {
+					$result = PollWriteReceipt::of('uncertain', true);
+				}
 			}
-		} catch (\Throwable $failure) { $error = $failure; }
-		finally {
-			try { $this->native->close(); }
-			catch (\Throwable $failure) {
-				if ($attempted) { $result = PollWriteReceipt::of('uncertain', true); $error = null; }
-				else { $error = PollsRefusal::unavailable(); }
+		} catch (\Throwable $failure) {
+			$error = $failure;
+		} finally {
+			try {
+				$this->native->close();
+			} catch (\Throwable $failure) {
+				if ($attempted) {
+					$result = PollWriteReceipt::of('uncertain', true);
+					$error = null;
+				} else {
+					$error = PollsRefusal::unavailable();
+				}
 			}
 		}
 		if ($error !== null) {
-			if ($attempted) { return PollWriteReceipt::of('uncertain', true); }
-			if ($error instanceof ToolFailure || $error instanceof \InvalidArgumentException || $error instanceof PlanChanged) { throw $error; }
+			if ($attempted) {
+				return PollWriteReceipt::of('uncertain', true);
+			}
+			if ($error instanceof ToolFailure || $error instanceof \InvalidArgumentException || $error instanceof PlanChanged) {
+				throw $error;
+			}
 			throw PollsRefusal::unavailable();
 		}
 		return $result ?? throw PollsRefusal::unavailable();

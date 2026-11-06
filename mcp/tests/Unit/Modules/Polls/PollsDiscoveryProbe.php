@@ -15,9 +15,16 @@ use ReflectionMethod;
 
 /** Discovery-only fixture: native shape is explicit and no optional native service is constructed. */
 final class PollsDiscoveryProbe {
-	/** @param TestCase $test Mock owner. @param string $version Installed Polls version. @param int $major Nextcloud major. @param bool $enabled Installation enablement. @return PollsMutationProbe Actual version/enablement probe over an inert shape double. */
+	/**
+	 * @param TestCase $test Mock owner.
+	 * @param string $version Installed Polls version.
+	 * @param int $major Nextcloud major.
+	 * @param bool $enabled Installation enablement.
+	 * @return PollsMutationProbe Actual version/enablement probe over an inert shape double.
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public static function build(TestCase $test, string $version = '9.3.0', int $major = 35, bool $enabled = true): PollsMutationProbe {
-		$mock = static fn (string $class): object => (new ReflectionMethod($test, 'createMock'))->invoke($test, $class);
+		$mock = static fn(string $class): object => (new ReflectionMethod($test, 'createMock'))->invoke($test, $class);
 		$apps = $mock(IAppManager::class);
 		$apps->method('getAppVersion')->willReturn($version);
 		$apps->method('isEnabledForAnyone')->willReturn($enabled);

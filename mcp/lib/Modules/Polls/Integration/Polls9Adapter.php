@@ -9,13 +9,29 @@ namespace OCA\Mcp\Modules\Polls\Integration;
 
 /** Polls 9.x UTC/date interval and typed share signatures. */
 final class Polls9Adapter {
-	/** @param object $options Fresh native service. @param array<string,mixed> $r Validated input. @return void */
+	/**
+	 * @param object $options Fresh native service.
+	 * @param array<string,mixed> $r Validated input.
+	 * @return void
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public function updateOption(object $options, array $r): void {
 		$o = $r['option'];
-		$options->update($r['option_id'], $o['text'] ?? '',
-			isset($o['timestamp']) ? PollsOptionValues::date($o['timestamp']) : null, PollsOptionValues::interval($o['duration'] ?? 0));
+		$options->update(
+			$r['option_id'],
+			$o['text'] ?? '',
+			isset($o['timestamp']) ? PollsOptionValues::date($o['timestamp']) : null,
+			PollsOptionValues::interval($o['duration'] ?? 0)
+		);
 	}
-	/** @param object $shares Fresh native service. @param array<string,mixed> $r Validated input. @param object|null $user Typed recipient, absent for public. @return void */
+
+	/**
+	 * @param object $shares Fresh native service.
+	 * @param array<string,mixed> $r Validated input.
+	 * @param object|null $user Typed recipient, absent for public.
+	 * @return void
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public function addShare(object $shares, array $r, ?object $user): void {
 		PollsShareCreator::create($shares, $r, $user, true);
 	}

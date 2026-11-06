@@ -14,12 +14,28 @@ use PHPUnit\Framework\TestCase;
 
 /** Four official source pins, not substitutes for native runtime cells. */
 final class PollsMutationSourceContractTest extends TestCase {
-	/** @return iterable<string,array{string,array<string,mixed>}> Hash-verified extracted records. */
+	/**
+	 * @return iterable<string,array{string,array<string,mixed>}> Hash-verified extracted records.
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public static function pins(): iterable {
-		$j = json_decode(file_get_contents(__DIR__ . '/../../../fixtures/nextcloud-api/polls/polls-mutation.json'), true, 512, JSON_THROW_ON_ERROR);
-		foreach ($j as $v => $r) { yield $v => [$v, $r]; }
+		$j = json_decode(
+			file_get_contents(__DIR__ . '/../../../fixtures/nextcloud-api/polls/polls-mutation.json'),
+			true,
+			512,
+			JSON_THROW_ON_ERROR
+		);
+		foreach ($j as $v => $r) {
+			yield $v => [$v, $r];
+		}
 	}
-	/** @param string $version Polls pin. @param array<string,mixed> $record Official source. @return void */
+
+	/**
+	 * @param string $version Polls pin.
+	 * @param array<string,mixed> $record Official source.
+	 * @return void
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	#[DataProvider('pins')]
 	public function testAllCalledSignaturesAreExact(string $version, array $record): void {
 		foreach (PollsMutationSurface::methods($version !== '8.6.3') as $class => $methods) {
@@ -34,13 +50,22 @@ final class PollsMutationSourceContractTest extends TestCase {
 		self::assertCount(7, $record['surfaces'][PollsMutationSurface::USER_MAPPER]['types'][$name]);
 		self::assertSame(['int', 'array'], $record['surfaces'][PollsSurface::POLLS]['types']['update']);
 	}
-	/** @param string $version Polls pin. @param array<string,mixed> $record Official source. @return void */
+
+	/**
+	 * @param string $version Polls pin.
+	 * @param array<string,mixed> $record Official source.
+	 * @return void
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	#[DataProvider('pins')]
 	public function testKnownNativeEffectsAreDeclared(string $version, array $record): void {
 		$m = $record['methods'];
 		self::assertStringContainsString('return $default;', $m['Model/Settings/AppSettings.php::getBooleanSetting']);
 		self::assertStringContainsString('|| $this->isMember(', $m['Model/Settings/AppSettings.php::getBooleanSetting']);
-		self::assertStringContainsString('getPublicSharesAllowed', $m['Service/ShareService.php::' . ($version === '8.6.3' ? 'add' : 'createPublicShare')]);
+		self::assertStringContainsString(
+			'getPublicSharesAllowed',
+			$m['Service/ShareService.php::' . ($version === '8.6.3' ? 'add' : 'createPublicShare')]
+		);
 		self::assertStringContainsString('setOwner($this->userSession->getCurrentUserId())', $m['Service/OptionService.php::add']);
 		self::assertStringContainsString('setAnonymousSafe(', $m['Db/Poll.php::deserializeArray']);
 		self::assertStringContainsString('$value = -1', $m['Db/Poll.php::setAnonymousSafe']);
@@ -48,6 +73,9 @@ final class PollsMutationSourceContractTest extends TestCase {
 		self::assertStringNotContainsString('->delete(', $m['Service/OptionService.php::delete']);
 		self::assertStringContainsString('sendInvitation', $m['Service/ShareService.php::sendInvitation']);
 		self::assertStringNotContainsString('PERMISSION_POLL_EDIT', $m['Service/ShareService.php::sendInvitation']);
-		self::assertStringContainsString('setUserId($token)', $m[$version === '8.6.3' ? 'Service/ShareService.php::createNewShare' : 'Db/Share.php::setFromUserObject']);
+		self::assertStringContainsString(
+			'setUserId($token)',
+			$m[$version === '8.6.3' ? 'Service/ShareService.php::createNewShare' : 'Db/Share.php::setFromUserObject']
+		);
 	}
 }

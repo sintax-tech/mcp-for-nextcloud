@@ -18,15 +18,20 @@ use PHPUnit\Framework\TestCase;
 
 /** State and share regressions found by independent mutations. */
 final class PollsMutationDomainGuardsTest extends TestCase {
-	/** @return iterable<string,array{string}> Each effective public sharing guard. */
+	/**
+	 * @return iterable<string,array{string}> Each effective public sharing guard.
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public static function publicGuards(): iterable {
 		foreach (['publicAllowed', 'shareCreate', 'shareExternal'] as $key) {
 			yield $key => [$key];
 		}
 	}
+
 	/**
 	 * @param string $key Only this effective policy denies restoring a public share.
 	 * @return void
+	 * @throws \Throwable If validation or a called collaborator fails.
 	 */
 	#[DataProvider('publicGuards')]
 	public function testRestoringPublicShareRechecksEveryPolicy(string $key): void {
@@ -37,14 +42,22 @@ final class PollsMutationDomainGuardsTest extends TestCase {
 		$this->expectException(ToolFailure::class);
 		PollShareChanges::effect(['tool' => 'polls_update_share', 'share_id' => 20, 'action' => 'restore'], $s);
 	}
-	/** @return void */
+
+	/**
+	 * @return void
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public function testInvitationOfLockedIndividualIsRefused(): void {
 		$s = (new PollsMutationScene('polls_invite_share'))->state;
 		$s['shares'][0]['locked'] = true;
 		$this->expectException(ArgumentValidationException::class);
 		PollShareChanges::effect(['tool' => 'polls_invite_share', 'share_id' => 20], $s);
 	}
-	/** @return void */
+
+	/**
+	 * @return void
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public function testUnarchiveOfActivePollDoesNotCallToggle(): void {
 		$s = new PollsMutationScene('polls_set_poll_state');
 		$flow = PollsMutationCases::flow($this, $s);
@@ -56,7 +69,11 @@ final class PollsMutationDomainGuardsTest extends TestCase {
 		self::assertSame(0, $s->writes);
 		self::assertFalse($s->state['poll']['archived']);
 	}
-	/** @return void */
+
+	/**
+	 * @return void
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public function testScheduledExpirationDoesNotCountAsAlreadyClosed(): void {
 		$s = (new PollsMutationScene('polls_set_poll_state'))->state;
 		$s['poll']['expire'] = time() + 3600;
@@ -64,7 +81,11 @@ final class PollsMutationDomainGuardsTest extends TestCase {
 		$s['poll']['expire'] = time() - 3600;
 		self::assertTrue(PollConfiguration::effect(['state' => 'closed'], $s)['noop']);
 	}
-	/** @return void */
+
+	/**
+	 * @return void
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public function testAddingAdminNamesTheDelegatedRecipientAndRights(): void {
 		$s = (new PollsMutationScene('polls_add_share'))->state;
 		$s['recipient'] = ['type' => 'admin', 'userId' => 'named-editor'];
@@ -72,14 +93,20 @@ final class PollsMutationDomainGuardsTest extends TestCase {
 		self::assertContains(PollsWriteMessages::delegationTo('named-editor'), $effect['notes']);
 		self::assertStringContainsString('editing rights', implode(' ', $effect['notes']));
 	}
-	/** @return iterable<string,array{string,array<string,mixed>}> Every handler direct call. */
+
+	/**
+	 * @return iterable<string,array{string,array<string,mixed>}> Every handler direct call.
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public static function writes(): iterable {
 		return PollsMutationCases::all();
 	}
+
 	/**
 	 * @param string $tool Exact mutation.
 	 * @param array<string,mixed> $a Valid request.
 	 * @return void
+	 * @throws \Throwable If validation or a called collaborator fails.
 	 */
 	#[DataProvider('writes')]
 	public function testDirectEffectRequiresStrictBooleanConfirm(string $tool, array $a): void {
@@ -90,7 +117,7 @@ final class PollsMutationDomainGuardsTest extends TestCase {
 			try {
 				$flow->run($tool, $a + ['confirm' => $confirm, 'plan_state' => $p['plan_state']], 'alice', false);
 				self::fail('Nonboolean confirmation reached the effect');
-			} catch (ToolFailure | \InvalidArgumentException) {
+			} catch (ToolFailure|\InvalidArgumentException) {
 				self::assertSame(0, $s->writes);
 			}
 		}

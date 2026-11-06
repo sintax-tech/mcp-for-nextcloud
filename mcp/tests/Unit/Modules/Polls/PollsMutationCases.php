@@ -14,7 +14,10 @@ use PHPUnit\Framework\TestCase;
 
 /** One data provider and construction harness for all mutation guards. */
 final class PollsMutationCases {
-	/** @return iterable<string,array{string,array<string,mixed>}> All ten public tools. */
+	/**
+	 * @return iterable<string,array{string,array<string,mixed>}> All ten public tools.
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public static function all(): iterable {
 		yield 'configuration' => ['polls_update_poll', ['poll_id' => 1, 'changes' => ['title' => 'New']]];
 		yield 'state' => ['polls_set_poll_state', ['poll_id' => 1, 'state' => 'archived']];
@@ -27,18 +30,41 @@ final class PollsMutationCases {
 		yield 'update share' => ['polls_update_share', ['poll_id' => 1, 'share_id' => 20, 'action' => 'set_admin']];
 		yield 'invite' => ['polls_invite_share', ['poll_id' => 1, 'share_id' => 20]];
 	}
-	/** @param TestCase $test Mock owner. @param PollsMutationScene $scene Native port scene. @return PollsMutationFlows Separate preview and effect production workers. */
+
+	/**
+	 * @param TestCase $test Mock owner.
+	 * @param PollsMutationScene $scene Native port scene.
+	 * @return PollsMutationFlows Separate preview and effect production workers.
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public static function flow(TestCase $test, PollsMutationScene $scene): PollsMutationFlows {
 		return new PollsMutationFlows($scene, new PollWritePlan(new PlanState((new InMemoryConfig())->mock($test))));
 	}
-	/** @param TestCase $test Mock owner. @return array<string,array<string,mixed>> Actual preview plans for the global readability contract. */
+
+	/**
+	 * @param TestCase $test Mock owner.
+	 * @return array<string,array<string,mixed>> Actual preview plans for the global readability contract.
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public static function plans(TestCase $test): array {
 		$out = [];
-		foreach (self::all() as [$tool, $args]) { $out[$tool] = self::flow($test, new PollsMutationScene($tool))->run($tool, $args, 'alice', true); }
+		foreach (self::all() as [$tool, $args]) {
+			$out[$tool] = self::flow($test, new PollsMutationScene($tool))->run($tool, $args, 'alice', true);
+		}
 		return $out;
 	}
-	/** @param list<array<string,mixed>> $tools Full current catalog. @return list<array<string,mixed>> The six unchanged legacy definitions. */
+
+	/**
+	 * @param list<array<string,mixed>> $tools Full current catalog.
+	 * @return list<array<string,mixed>> The six unchanged legacy definitions.
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public static function legacy(array $tools): array {
-		return array_values(array_filter($tools, static fn (array $row): bool => !isset(\OCA\Mcp\Modules\Polls\Presentation\PollsWriteSchema::OPERATIONS[$row['name']])));
+		return array_values(
+			array_filter(
+				$tools,
+				static fn(array $row): bool => !isset(\OCA\Mcp\Modules\Polls\Presentation\PollsWriteSchema::OPERATIONS[$row['name']])
+			)
+		);
 	}
 }

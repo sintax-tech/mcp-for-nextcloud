@@ -13,9 +13,21 @@ use OCA\Mcp\Modules\Polls\Contracts\PollMutation;
 
 /** Confirmed effect of polls_set_poll_state; shared guards remain in the mutation flow. */
 final class SetPollStateHandler {
-	/** @param PollWriteEffectFlow $flow Fresh guarded mutation flow. */
-	public function __construct(private PollWriteEffectFlow $flow) {}
-	/** @param array<string,mixed> $arguments Tool arguments. @param string $uid Authenticated actor. @return array<string,mixed> Honest observed receipt. */
+	/**
+	 * @param PollWriteEffectFlow $flow Fresh guarded mutation flow.
+	 * @return void
+	 */
+	public function __construct(private PollWriteEffectFlow $flow) {
+	}
+
+	/**
+	 * @param array<string,mixed> $arguments Tool arguments.
+	 * @param string $uid Authenticated actor.
+	 * @return array<string,mixed> Honest observed receipt.
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure If admission or native observation fails.
+	 * @throws \OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException If the request is invalid.
+	 * @throws \OCA\Mcp\Mcp\Confirmation\PlanChanged If the confirmed snapshot changed.
+	 */
 	public function handle(array $arguments, string $uid): array {
 		$request = PollWriteRequest::of(PollMutation::SetPollState->value, $arguments);
 		return $this->flow->execute($request, $arguments, $uid);

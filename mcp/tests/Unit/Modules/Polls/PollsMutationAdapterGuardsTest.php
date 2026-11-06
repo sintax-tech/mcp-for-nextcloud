@@ -17,23 +17,34 @@ use PHPUnit\Framework\TestCase;
 #[RunTestsInSeparateProcesses]
 #[PreserveGlobalState(false)]
 final class PollsMutationAdapterGuardsTest extends TestCase {
-	/** @return void */
+	/**
+	 * @return void
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public function testFinalSnapshotRaceStopsBeforeAttemptAndToggle(): void {
 		$rig = new PollsMutationGuardRig($this);
 		$r = ['tool' => 'polls_set_poll_state', 'poll_id' => 1, 'state' => 'archived'];
 		$rig->adapter->open('alice', 'configure');
 		$before = $rig->adapter->snapshot('alice', $r);
 		$rig->poll = new class extends \OCA\Polls\Db\Poll {
-			/** @return int Concurrently archived row. */
+			/**
+			 * @return int Concurrently archived row.
+			 * @throws \Throwable If validation or a called collaborator fails.
+			 */
 			public function getDeleted(): int {
 				return 1;
 			}
 		};
 		$attempts = 0;
 		try {
-			$rig->adapter->mutate('alice', $r, $before, static function () use (&$attempts): void {
-				$attempts++;
-			});
+			$rig->adapter->mutate(
+				'alice',
+				$r,
+				$before,
+				static function () use (&$attempts): void {
+					$attempts++;
+				}
+			);
 			self::fail('Concurrent archive reached the sink');
 		} catch (PollWriteStale) {
 			self::assertSame(0, $attempts);
@@ -42,21 +53,27 @@ final class PollsMutationAdapterGuardsTest extends TestCase {
 			$rig->adapter->close();
 		}
 	}
-	/** @return iterable<string,array{string}> */
+
+	/**
+	 * @return iterable<string,array{string}>
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public static function revocations(): iterable {
 		yield 'native identity' => ['logged'];
 		yield 'resource scope' => ['scope'];
 	}
+
 	/**
 	 * @param string $flag Guard revoked by the mapper read.
 	 * @return void
+	 * @throws \Throwable If validation or a called collaborator fails.
 	 */
 	#[DataProvider('revocations')]
 	public function testRechecksIdentityAndScopeAfterReading(string $flag): void {
 		$rig = new PollsMutationGuardRig($this);
 		$rig->adapter->open('alice', 'configure');
 		$rig->onRead = static function () use ($rig, $flag): void {
-			$rig->$flag = false;
+			$rig->{$flag} = false;
 		};
 		$this->expectException(ToolFailure::class);
 		try {
@@ -66,7 +83,11 @@ final class PollsMutationAdapterGuardsTest extends TestCase {
 			$rig->adapter->close();
 		}
 	}
-	/** @return void */
+
+	/**
+	 * @return void
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public function testCloseCleansNativeIdentityAndDropsContext(): void {
 		$rig = new PollsMutationGuardRig($this);
 		$rig->adapter->open('alice', 'configure');
@@ -78,34 +99,60 @@ final class PollsMutationAdapterGuardsTest extends TestCase {
 		$this->expectException(PollsRefusal::class);
 		$rig->adapter->snapshot('alice', ['tool' => 'polls_set_poll_state', 'poll_id' => 1]);
 	}
-	/** @return void */
+
+	/**
+	 * @return void
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public function testForeignOptionRowIsRejectedBeforeProjection(): void {
 		$rig = new PollsMutationGuardRig($this);
-		$rig->children = [new class {
-			/** @return int Foreign parent. */
-			public function getPollId(): int {
-				return 99;
-			}
-		}];
+		$rig->children = [
+			new class {
+				/**
+				 * @return int Foreign parent.
+				 * @throws \Throwable If validation or a called collaborator fails.
+				 */
+				public function getPollId(): int {
+					return 99;
+				}
+			},
+		];
 		$this->expectException(PollsRefusal::class);
 		$rig->snapshots->read($rig->native, 'alice', ['tool' => 'polls_remove_option', 'poll_id' => 1, 'option_id' => 10], '9.3.0');
 	}
-	/** @return void */
+
+	/**
+	 * @return void
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public function testPollGroupSharesNeverJoinTheTargetRows(): void {
 		$rig = new PollsMutationGuardRig($this);
-		$rig->children = [new \OCA\Polls\Db\Share(), new class extends \OCA\Polls\Db\Share {
-			/** @return int Poll-group container share. */
-			public function getGroupId(): int {
-				return 5;
-			}
-		}];
+		$rig->children = [
+			new \OCA\Polls\Db\Share(),
+			new class extends \OCA\Polls\Db\Share {
+				/**
+				 * @return int Poll-group container share.
+				 * @throws \Throwable If validation or a called collaborator fails.
+				 */
+				public function getGroupId(): int {
+					return 5;
+				}
+			},
+		];
 		self::assertCount(1, $rig->snapshots->shares($rig->native, 1));
 	}
-	/** @return void */
+
+	/**
+	 * @return void
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public function testPrivateShareLabelIsNotProjected(): void {
 		$rig = new PollsMutationGuardRig($this);
 		$share = new class extends \OCA\Polls\Db\Share {
-			/** @return string Individual native share. */
+			/**
+			 * @return string Individual native share.
+			 * @throws \Throwable If validation or a called collaborator fails.
+			 */
 			public function getType(): string {
 				return 'user';
 			}

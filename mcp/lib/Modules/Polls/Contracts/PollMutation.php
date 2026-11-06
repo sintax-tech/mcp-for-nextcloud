@@ -10,7 +10,7 @@ namespace OCA\Mcp\Modules\Polls\Contracts;
 use OCA\Mcp\Modules\Polls\Presentation\PollsWriteSchema;
 
 /** Reviewed mutation identities; an unlisted name cannot select a native operation. */
-enum PollMutation: string {
+enum PollMutation : string {
 	case UpdatePoll = 'polls_update_poll';
 	case SetPollState = 'polls_set_poll_state';
 	case AddOption = 'polls_add_option';
@@ -21,9 +21,9 @@ enum PollMutation: string {
 	case AddShare = 'polls_add_share';
 	case UpdateShare = 'polls_update_share';
 	case InviteShare = 'polls_invite_share';
-
 	/**
 	 * @return PollMutationKind The verb family owning planning and comparison rules.
+	 * @throws \Throwable If validation or a called collaborator fails.
 	 */
 	public function kind(): PollMutationKind {
 		return match ($this) {
@@ -32,8 +32,10 @@ enum PollMutation: string {
 			self::AddShare, self::UpdateShare, self::InviteShare => PollMutationKind::Shares,
 		};
 	}
+
 	/**
 	 * @return string Exact independent grant, including the literal dotted operation.
+	 * @throws \Throwable If validation or a called collaborator fails.
 	 */
 	public function operation(): string {
 		return PollsWriteSchema::OPERATIONS[$this->value];

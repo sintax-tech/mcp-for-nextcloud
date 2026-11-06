@@ -14,6 +14,7 @@ use PHPUnit\Framework\TestCase;
 final class PollsMutationDescriptionsTest extends TestCase {
 	/**
 	 * @return void
+	 * @throws \Throwable If validation or a called collaborator fails.
 	 */
 	public function testEachEffectHasItsOwnDescriptionAndAccessWarning(): void {
 		$descriptions = [];

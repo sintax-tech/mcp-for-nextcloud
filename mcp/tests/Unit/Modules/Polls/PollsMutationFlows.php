@@ -18,11 +18,13 @@ final class PollsMutationFlows {
 	/**
 	 * @param PollsMutationScene $scene Native port double.
 	 * @param PollWritePlan $plans Real HMAC plans.
+	 * @return void
 	 */
 	public function __construct(PollsMutationScene $scene, PollWritePlan $plans) {
 		$this->preview = new PollWritePreviewFlow($scene, $plans);
 		$this->effect = new PollWriteEffectFlow($scene, $plans);
 	}
+
 	/**
 	 * @param string $tool Reviewed tool.
 	 * @param array<string,mixed> $args Arguments.

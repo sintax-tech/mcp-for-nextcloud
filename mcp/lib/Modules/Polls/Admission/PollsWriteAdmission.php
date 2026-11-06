@@ -17,17 +17,41 @@ use OCP\IUserManager;
 
 /** Exact independently denied mutation grants, checked again on direct work calls. */
 final class PollsWriteAdmission {
-	/** @param GrantPolicy $policy Current policy operation. @param IAppManager $apps Per-user enablement. @param IUserManager $users Actor lookup. @param GuestRestrictions $guests Native guest restrictions. @param PollsMutationProbe $probe Installation compatibility. */
-	public function __construct(private GrantPolicy $policy, private IAppManager $apps, private IUserManager $users,
-		private GuestRestrictions $guests, private PollsMutationProbe $probe) {}
-	/** @param string $uid Actor. @param string $operation Exact operation. @param int|null $pollId Scope target when known. @return string Installed supported version. */
+	/**
+	 * @param GrantPolicy $policy Current policy operation.
+	 * @param IAppManager $apps Per-user enablement.
+	 * @param IUserManager $users Actor lookup.
+	 * @param GuestRestrictions $guests Native guest restrictions.
+	 * @param PollsMutationProbe $probe Installation compatibility.
+	 * @return void
+	 */
+	public function __construct(
+		private GrantPolicy $policy,
+		private IAppManager $apps,
+		private IUserManager $users,
+		private GuestRestrictions $guests,
+		private PollsMutationProbe $probe,
+	) {
+	}
+
+	/**
+	 * @param string $uid Actor.
+	 * @param string $operation Exact operation.
+	 * @param int|null $pollId Scope target when known.
+	 * @return string Installed supported version.
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public function check(string $uid, string $operation, ?int $pollId = null): string {
 		$user = $uid === '' ? null : $this->users->get($uid);
 		if (!in_array($operation, ['configure', 'options', 'options.remove', 'share', 'invite'], true)
-			|| $user === null || !$this->policy->granted($uid, 'polls', $operation)
-			|| !AppEnablement::forUser($this->apps, 'polls', $user) || !$this->guests->allowsApp($uid, 'polls')
-			|| ($pollId !== null && !$this->policy->inScope($uid, 'polls', (string)$pollId))
-			|| !$this->probe->supports('polls.native_mutation_api')) { throw PollsRefusal::unavailable(); }
+			|| $user === null
+			|| !$this->policy->granted($uid, 'polls', $operation)
+			|| !AppEnablement::forUser($this->apps, 'polls', $user)
+			|| !$this->guests->allowsApp($uid, 'polls')
+			|| ($pollId !== null && !$this->policy->inScope($uid, 'polls', (string) $pollId))
+			|| !$this->probe->supports('polls.native_mutation_api')) {
+			throw PollsRefusal::unavailable();
+		}
 		return $this->apps->getAppVersion('polls');
 	}
 }

@@ -17,6 +17,7 @@ final class PollsOptionValues {
 	public static function date(int $stamp): object {
 		return new \OCA\Polls\Model\DateTimeImmutable('@' . $stamp);
 	}
+
 	/**
 	 * @param int $seconds Nonnegative duration.
 	 * @return object Native 9.x interval wrapper.
@@ -25,6 +26,7 @@ final class PollsOptionValues {
 	public static function interval(int $seconds): object {
 		return new \OCA\Polls\Model\DateInterval('PT' . $seconds . 'S');
 	}
+
 	/**
 	 * @param object $value Disposable native option.
 	 * @param array<string,mixed> $option Validated scalar value.

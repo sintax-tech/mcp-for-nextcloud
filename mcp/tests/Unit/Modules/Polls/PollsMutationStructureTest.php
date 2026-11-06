@@ -16,7 +16,10 @@ use PHPUnit\Framework\TestCase;
 
 /** The production preview has no mutation port or boolean effect selector. */
 final class PollsMutationStructureTest extends TestCase {
-	/** @return void */
+	/**
+	 * @return void
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public function testPlanningAndEffectsHaveDistinctRealWorkersAndPorts(): void {
 		$preview = new \ReflectionClass(PollWritePreviewFlow::class);
 		$effect = new \ReflectionClass(PollWriteEffectFlow::class);
@@ -32,7 +35,11 @@ final class PollsMutationStructureTest extends TestCase {
 			}
 		}
 	}
-	/** @return void */
+
+	/**
+	 * @return void
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public function testOnlyReviewedTypedNamesCanSelectAVerbFamily(): void {
 		self::assertNull(PollMutation::tryFrom('polls_surprise_option_share'));
 		self::assertSame(PollMutationKind::Options, PollMutation::AddOption->kind());

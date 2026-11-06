@@ -35,27 +35,31 @@ final class PollsMutationModule {
 			}
 			$tools[$class] = new $class(...$arguments);
 		}
-		return new PollsModule(new class($tools) implements ContainerInterface {
-			/**
-			 * @param array<class-string,object> $tools Constructed tools.
-			 */
-			public function __construct(private array $tools) {
+		return new PollsModule(
+			new class($tools) implements ContainerInterface {
+				/**
+				 * @param array<class-string,object> $tools Constructed tools.
+				 * @return void
+				 */
+				public function __construct(private array $tools) {
+				}
+				/**
+				 * @param string $id Tool class.
+				 * @return object Real tool.
+				 * @throws \LogicException If an unrelated legacy tool is requested.
+				 */
+				public function get(string $id): mixed {
+					return $this->tools[$id] ?? throw new \LogicException('Unwired mutation fixture tool');
+				}
+				/**
+				 * @param string $id Tool class.
+				 * @return bool Whether this fixture wires the tool.
+				 * @throws \Throwable If validation or a called collaborator fails.
+				 */
+				public function has(string $id): bool {
+					return isset($this->tools[$id]);
+				}
 			}
-			/**
-			 * @param string $id Tool class.
-			 * @return object Real tool.
-			 * @throws \LogicException If an unrelated legacy tool is requested.
-			 */
-			public function get(string $id): mixed {
-				return $this->tools[$id] ?? throw new \LogicException('Unwired mutation fixture tool');
-			}
-			/**
-			 * @param string $id Tool class.
-			 * @return bool Whether this fixture wires the tool.
-			 */
-			public function has(string $id): bool {
-				return isset($this->tools[$id]);
-			}
-		});
+		);
 	}
 }

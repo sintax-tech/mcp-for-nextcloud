@@ -18,15 +18,20 @@ use PHPUnit\Framework\TestCase;
 
 /** Direct admission must retain every guard independently of registry discovery. */
 final class PollsMutationAdmissionGuardsTest extends TestCase {
-	/** @return iterable<string,array{string}> Each independent guard. */
+	/**
+	 * @return iterable<string,array{string}> Each independent guard.
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public static function guards(): iterable {
 		foreach (['scope', 'guest', 'app-user', 'unknown-op'] as $guard) {
 			yield $guard => [$guard];
 		}
 	}
+
 	/**
 	 * @param string $guard Only this guard denies the otherwise valid actor.
 	 * @return void
+	 * @throws \Throwable If validation or a called collaborator fails.
 	 */
 	#[DataProvider('guards')]
 	public function testDirectAdmissionCannotSkipOneGuard(string $guard): void {
@@ -41,7 +46,14 @@ final class PollsMutationAdmissionGuardsTest extends TestCase {
 		$guests = $this->createMock(GuestRestrictions::class);
 		$guests->method('allowsApp')->willReturn($guard !== 'guest');
 		$this->expectException(ToolFailure::class);
-		(new PollsWriteAdmission($policy, $apps, $users, $guests, PollsDiscoveryProbe::build($this)))
-			->check('alice', $guard === 'unknown-op' ? 'unreviewed' : 'share', 1);
+		(new PollsWriteAdmission($policy,
+			$apps,
+			$users,
+			$guests,
+			PollsDiscoveryProbe::build($this)))->check('alice',
+			$guard === 'unknown-op'
+			? 'unreviewed'
+			: 'share',
+			1);
 	}
 }

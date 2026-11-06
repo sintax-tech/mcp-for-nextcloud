@@ -13,9 +13,21 @@ use OCA\Mcp\Modules\Polls\Contracts\PollMutation;
 
 /** Effect-free preview of polls_update_option; shared guards remain in the mutation flow. */
 final class UpdateOptionPreview {
-	/** @param PollWritePreviewFlow $flow Fresh guarded mutation flow. */
-	public function __construct(private PollWritePreviewFlow $flow) {}
-	/** @param array<string,mixed> $arguments Tool arguments. @param string $uid Authenticated actor. @return array<string,mixed> Complete signed plan. */
+	/**
+	 * @param PollWritePreviewFlow $flow Fresh guarded mutation flow.
+	 * @return void
+	 */
+	public function __construct(private PollWritePreviewFlow $flow) {
+	}
+
+	/**
+	 * @param array<string,mixed> $arguments Tool arguments.
+	 * @param string $uid Authenticated actor.
+	 * @return array<string,mixed> Complete signed plan.
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure If admission or native observation fails.
+	 * @throws \OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException If the request is invalid.
+	 * @throws \OCA\Mcp\Mcp\Confirmation\PlanChanged If the confirmed snapshot changed.
+	 */
 	public function plan(array $arguments, string $uid): array {
 		$request = PollWriteRequest::of(PollMutation::UpdateOption->value, $arguments);
 		return $this->flow->plan($request, $uid);

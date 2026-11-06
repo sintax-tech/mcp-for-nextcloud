@@ -16,9 +16,20 @@ use OCA\Mcp\Modules\Polls\Presentation\PollsWriteMessages;
 
 /** Builds complete stateless plans and compares only declared observable effects. */
 final class PollWritePlan {
-	/** @param PlanState $states Instance-secret plan authenticator. */
-	public function __construct(private PlanState $states) {}
-	/** @param array<string,mixed> $r Request. @param array<string,mixed> $s Fresh snapshot. @return array<string,mixed> Pure effect. */
+	/**
+	 * @param PlanState $states Instance-secret plan authenticator.
+	 * @return void
+	 */
+	public function __construct(private PlanState $states) {
+	}
+
+	/**
+	 * @param array<string,mixed> $r Request.
+	 * @param array<string,mixed> $s Fresh snapshot.
+	 * @return array<string,mixed> Pure effect.
+	 * @throws \OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException If a field or requested transition is invalid.
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure If a target or effective sharing policy refuses the operation.
+	 */
 	public function effect(array $r, array $s): array {
 		return match (PollMutation::from($r['tool'])->kind()) {
 			PollMutationKind::Configuration => PollConfiguration::effect($r, $s),
@@ -26,38 +37,79 @@ final class PollWritePlan {
 			PollMutationKind::Shares => PollShareChanges::effect($r, $s),
 		};
 	}
-	/** @param string $uid Actor. @param array<string,mixed> $r Request. @param array<string,mixed> $s Snapshot. @return array<string,mixed> Safe complete plan. */
+
+	/**
+	 * @param string $uid Actor.
+	 * @param array<string,mixed> $r Request.
+	 * @param array<string,mixed> $s Snapshot.
+	 * @return array<string,mixed> Safe complete plan.
+	 * @throws \OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException If a field or requested transition is invalid.
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure If a target or effective sharing policy refuses the operation.
+	 */
 	public function of(string $uid, array $r, array $s): array {
 		$effect = $this->effect($r, $s);
 		$shown = ['request' => $r, 'snapshot' => $s, 'effect' => $effect];
-		if (strlen(json_encode($shown, JSON_THROW_ON_ERROR)) > 65536) { PollWriteRequest::invalid('arguments'); }
-		return ['action' => $r['tool'], 'target' => $s['poll'], 'request' => $r,
-			'shared' => true, 'before' => $effect['before'], 'after' => $effect['after'],
-			'noOp' => $effect['noop'], 'notes' => [...PollsWriteMessages::notes(), ...$effect['notes']],
-			'plan_state' => $this->states->of($r['tool'], $uid, $shown)];
+		if (strlen(json_encode($shown, JSON_THROW_ON_ERROR)) > 65536) {
+			PollWriteRequest::invalid('arguments');
+		}
+		return [
+			'action' => $r['tool'],
+			'target' => $s['poll'],
+			'request' => $r,
+			'shared' => true,
+			'before' => $effect['before'],
+			'after' => $effect['after'],
+			'noOp' => $effect['noop'],
+			'notes' => [...PollsWriteMessages::notes(), ...$effect['notes']],
+			'plan_state' => $this->states->of($r['tool'], $uid, $shown),
+		];
 	}
-	/** @param array<string,mixed> $r Request. @param array<string,mixed> $before Approved snapshot. @param array<string,mixed> $now Fresh readback. @return bool Complete observable effect. */
+
+	/**
+	 * @param array<string,mixed> $r Request.
+	 * @param array<string,mixed> $before Approved snapshot.
+	 * @param array<string,mixed> $now Fresh readback.
+	 * @return bool Complete observable effect.
+	 * @throws \OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException If a field or requested transition is invalid.
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure If a target or effective sharing policy refuses the operation.
+	 */
 	public function matches(array $r, array $before, array $now): bool {
-		if ($now['poll']['id'] !== $before['poll']['id']) { return false; }
+		if ($now['poll']['id'] !== $before['poll']['id']) {
+			return false;
+		}
 		return match (PollMutation::from($r['tool'])->kind()) {
 			PollMutationKind::Configuration => PollConfiguration::matches($r, $before, $now),
 			PollMutationKind::Options => OptionChanges::matches($r, $before, $now),
 			PollMutationKind::Shares => PollShareChanges::matches($r, $before, $now),
 		};
 	}
-	/** @param array<string,mixed> $r Request. @param array<string,mixed> $before Approved state. @param array<string,mixed> $now Fresh state. @return string Partial only when a requested changed field is actually observed. */
+
+	/**
+	 * @param array<string,mixed> $r Request.
+	 * @param array<string,mixed> $before Approved state.
+	 * @param array<string,mixed> $now Fresh state.
+	 * @return string Partial only when a requested changed field is actually observed.
+	 * @throws \OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException If a field or requested transition is invalid.
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure If a target or effective sharing policy refuses the operation.
+	 */
 	public function status(array $r, array $before, array $now): string {
-		if ($this->matches($r, $before, $now)) { return 'applied'; }
+		if ($this->matches($r, $before, $now)) {
+			return 'applied';
+		}
 		if (isset($r['changes'])) {
 			foreach ($r['changes'] as $key => $value) {
-				if (($before['configuration'][$key] ?? null) !== $value && ($now['configuration'][$key] ?? null) === $value) { return 'partial'; }
+				if (($before['configuration'][$key] ?? null) !== $value && ($now['configuration'][$key] ?? null) === $value) {
+					return 'partial';
+				}
 			}
 		}
 		if (isset($r['option_ids'])) {
 			foreach ($this->effect($r, $before)['after'] as $wanted) {
 				$old = OptionChanges::find($before['options'], $wanted['id']);
 				foreach ($now['options'] as $observed) {
-					if ($observed['id'] === $wanted['id'] && $old['order'] !== $wanted['order'] && $observed['order'] === $wanted['order']) { return 'partial'; }
+					if ($observed['id'] === $wanted['id'] && $old['order'] !== $wanted['order'] && $observed['order'] === $wanted['order']) {
+						return 'partial';
+					}
 				}
 			}
 		}

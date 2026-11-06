@@ -20,9 +20,14 @@ final class PollsShareCreator {
 	public static function create(object $shares, array $r, ?object $user, bool $nine): void {
 		if (!$nine) {
 			$v = $r['recipient'] ?? [];
-			$shares->add($r['poll_id'], $r['type'],
+			$shares->add(
+				$r['poll_id'],
+				$r['type'],
 				$v['user_id'] ?? $v['group_id'] ?? $v['email_address'] ?? $v['contact_id'] ?? '',
-				$v['display_name'] ?? '', $v['email_address'] ?? '', 'poll');
+				$v['display_name'] ?? '',
+				$v['email_address'] ?? '',
+				'poll'
+			);
 		} elseif ($r['type'] === 'public') {
 			$shares->createPublicShare($r['poll_id']);
 		} else {

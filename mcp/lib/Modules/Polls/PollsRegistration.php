@@ -17,11 +17,26 @@ use Psr\Container\ContainerInterface;
 
 /** Binds the native mutation port and registers the installation-only lazy probe. */
 final class PollsRegistration implements ModuleRegistration {
-	/** {@inheritDoc} */
+	/**
+	 * {@inheritDoc}
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
 	public function register(IRegistrationContext $context): void {
-		$context->registerService(PollWriteReader::class, static fn (ContainerInterface $c): PollWriteReader => $c->get(PollsNativeAdapter::class));
-		$context->registerService(PollWriteNative::class, static fn (ContainerInterface $c): PollWriteNative => $c->get(PollsNativeAdapter::class));
+		$context->registerService(
+			PollWriteReader::class,
+			static fn(ContainerInterface $c): PollWriteReader => $c->get(PollsNativeAdapter::class)
+		);
+		$context->registerService(
+			PollWriteNative::class,
+			static fn(ContainerInterface $c): PollWriteNative => $c->get(PollsNativeAdapter::class)
+		);
 	}
-	/** {@inheritDoc} */
-	public function probes(): array { return [PollsMutationProbe::class]; }
+
+	/**
+	 * {@inheritDoc}
+	 * @throws \Throwable If validation or a called collaborator fails.
+	 */
+	public function probes(): array {
+		return [PollsMutationProbe::class];
+	}
 }

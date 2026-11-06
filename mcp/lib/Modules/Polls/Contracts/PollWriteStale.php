@@ -8,4 +8,5 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Polls\Contracts;
 
 /** The last guarded snapshot changed before the native sink; no mutation was attempted. */
-final class PollWriteStale extends \RuntimeException {}
+final class PollWriteStale extends \RuntimeException {
+}

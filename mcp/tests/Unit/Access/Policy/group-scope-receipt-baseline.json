@@ -1,0 +1,1499 @@
+{
+    "preview-no-revision": {
+        "result": {
+            "previewId": "id-1-1",
+            "revision": "0",
+            "groupId": "staff",
+            "grants": {
+                "files": [
+                    "read"
+                ]
+            },
+            "current": [],
+            "state": null,
+            "members": 1,
+            "trusted": true,
+            "withdraws": false,
+            "revokes": 0
+        },
+        "error": null,
+        "revision": "0",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [
+            {
+                "kind": "preview",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"gid\":\"staff\",\"revision\":\"0\",\"grants\":{\"files\":[\"read\"]},\"memberHash\":\"18fa15c442adf6103060e7577e202b4581b185ac52897931ab76233cc5aecb0b\",\"life\":null}"
+            }
+        ],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [
+            "admit-preview:",
+            "state_update",
+            "event_insert"
+        ],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "save-noop": {
+        "result": {
+            "revision": "0",
+            "changed": false,
+            "state": "active",
+            "revoked": 0
+        },
+        "error": null,
+        "revision": "0",
+        "life": [
+            {
+                "group_id": "staff",
+                "state": "active",
+                "gen": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "policy_rev": 0
+            }
+        ],
+        "grants": [
+            {
+                "group_id": "staff",
+                "module": "files",
+                "operation": "read"
+            }
+        ],
+        "scopes": [],
+        "events": [
+            {
+                "kind": "preview",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"gid\":\"staff\",\"revision\":\"0\",\"grants\":{\"files\":[\"read\"]},\"memberHash\":\"18fa15c442adf6103060e7577e202b4581b185ac52897931ab76233cc5aecb0b\",\"life\":{\"state\":\"active\",\"gen\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}}"
+            }
+        ],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [
+            "admit-preview:",
+            "state_update",
+            "event_insert",
+            "admit-save:",
+            "state_update"
+        ],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "save-change": {
+        "result": {
+            "revision": "1",
+            "changed": true,
+            "state": "active",
+            "revoked": 0
+        },
+        "error": null,
+        "revision": "1",
+        "life": [
+            {
+                "group_id": "staff",
+                "state": "active",
+                "gen": "id-1",
+                "policy_rev": 1
+            }
+        ],
+        "grants": [
+            {
+                "group_id": "staff",
+                "module": "files",
+                "operation": "read"
+            }
+        ],
+        "scopes": [],
+        "events": [
+            {
+                "kind": "preview",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"gid\":\"staff\",\"revision\":\"0\",\"grants\":{\"files\":[\"read\"]},\"memberHash\":\"18fa15c442adf6103060e7577e202b4581b185ac52897931ab76233cc5aecb0b\",\"life\":null}"
+            },
+            {
+                "kind": "audit",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"action\":\"group_grants\",\"fromRevision\":\"0\",\"revision\":\"1\",\"receiptId\":null,\"undoOf\":null,\"changes\":[{\"gid\":\"staff\",\"key\":\"group_grants\",\"before\":null,\"after\":\"{\\\"state\\\":\\\"active\\\",\\\"grants\\\":{\\\"files\\\":[\\\"read\\\"]}}\"}]}"
+            }
+        ],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [
+            "admit-preview:",
+            "state_update",
+            "event_insert",
+            "admit-save:",
+            "state_update",
+            "life_insert",
+            "grants_insert",
+            "state_update",
+            "event_insert"
+        ],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "empty-deletes-life": {
+        "result": {
+            "revision": "1",
+            "changed": true,
+            "state": null,
+            "revoked": 0
+        },
+        "error": null,
+        "revision": "1",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [
+            {
+                "kind": "preview",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"gid\":\"staff\",\"revision\":\"0\",\"grants\":[],\"memberHash\":\"18fa15c442adf6103060e7577e202b4581b185ac52897931ab76233cc5aecb0b\",\"life\":{\"state\":\"active\",\"gen\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}}"
+            },
+            {
+                "kind": "audit",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"action\":\"group_grants\",\"fromRevision\":\"0\",\"revision\":\"1\",\"receiptId\":null,\"undoOf\":null,\"changes\":[{\"gid\":\"staff\",\"key\":\"group_grants\",\"before\":\"{\\\"state\\\":\\\"active\\\",\\\"grants\\\":{\\\"files\\\":[\\\"read\\\"]}}\",\"after\":null}]}"
+            }
+        ],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [
+            "admit-preview:",
+            "state_update",
+            "event_insert",
+            "admit-save:",
+            "state_update",
+            "life_delete",
+            "grants_delete",
+            "state_update",
+            "event_insert"
+        ],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "withdraw-holders": {
+        "result": {
+            "revision": "1",
+            "changed": true,
+            "state": "active",
+            "revoked": 1
+        },
+        "error": null,
+        "revision": "1",
+        "life": [
+            {
+                "group_id": "staff",
+                "state": "active",
+                "gen": "id-1",
+                "policy_rev": 1
+            }
+        ],
+        "grants": [
+            {
+                "group_id": "staff",
+                "module": "files",
+                "operation": "read"
+            }
+        ],
+        "scopes": [],
+        "events": [
+            {
+                "kind": "preview",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"gid\":\"staff\",\"revision\":\"0\",\"grants\":{\"files\":[\"read\"]},\"memberHash\":\"18fa15c442adf6103060e7577e202b4581b185ac52897931ab76233cc5aecb0b\",\"life\":{\"state\":\"active\",\"gen\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}}"
+            },
+            {
+                "kind": "cleanup",
+                "payload": "{\"v\":1,\"scope\":\"user\",\"uid\":\"alice\",\"cut\":\"4\",\"epoch\":null}"
+            },
+            {
+                "kind": "audit",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"action\":\"group_grants\",\"fromRevision\":\"0\",\"revision\":\"1\",\"receiptId\":null,\"undoOf\":null,\"changes\":[{\"gid\":\"staff\",\"key\":\"group_grants\",\"before\":\"{\\\"state\\\":\\\"active\\\",\\\"grants\\\":{\\\"_system\\\":[\\\"eligible\\\"]}}\",\"after\":\"{\\\"state\\\":\\\"active\\\",\\\"grants\\\":{\\\"files\\\":[\\\"read\\\"]}}\"}]}"
+            }
+        ],
+        "auth": [
+            {
+                "user_id": "alice",
+                "issue_seq": 4,
+                "revoked_below": 4
+            }
+        ],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [
+            "holders-1",
+            "admit-preview-withdraw:alice",
+            "state_update",
+            "holders-2",
+            "event_insert",
+            "holders-3",
+            "admit-save-withdraw:alice",
+            "state_update",
+            "holders-4",
+            "life_update",
+            "grants_delete",
+            "grants_insert",
+            "auth_update",
+            "state_update",
+            "event_insert",
+            "event_insert"
+        ],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "hash-before-begin": {
+        "result": null,
+        "error": {
+            "class": "OCA\\Mcp\\Access\\Policy\\PolicyConflict",
+            "message": "Policy changed since it was read",
+            "uncertain": null,
+            "items": null,
+            "previous": null
+        },
+        "revision": "0",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [
+            {
+                "kind": "preview",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"gid\":\"staff\",\"revision\":\"0\",\"grants\":{\"files\":[\"read\"]},\"memberHash\":\"18fa15c442adf6103060e7577e202b4581b185ac52897931ab76233cc5aecb0b\",\"life\":null}"
+            }
+        ],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [
+            "admit-preview:",
+            "state_update",
+            "event_insert",
+            "admit-save:"
+        ],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "untrusted-nonempty": {
+        "result": null,
+        "error": {
+            "class": "OCA\\Mcp\\Access\\Policy\\GroupSourceUntrusted",
+            "message": "Group source cannot guarantee group identity",
+            "uncertain": null,
+            "items": null,
+            "previous": null
+        },
+        "revision": "0",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [
+            "admit-preview:"
+        ],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "untrusted-empty": {
+        "result": {
+            "revision": "1",
+            "changed": true,
+            "state": null,
+            "revoked": 0
+        },
+        "error": null,
+        "revision": "1",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [
+            {
+                "kind": "preview",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"gid\":\"staff\",\"revision\":\"0\",\"grants\":[],\"memberHash\":\"18fa15c442adf6103060e7577e202b4581b185ac52897931ab76233cc5aecb0b\",\"life\":{\"state\":\"active\",\"gen\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}}"
+            },
+            {
+                "kind": "audit",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"action\":\"group_grants\",\"fromRevision\":\"0\",\"revision\":\"1\",\"receiptId\":null,\"undoOf\":null,\"changes\":[{\"gid\":\"staff\",\"key\":\"group_grants\",\"before\":\"{\\\"state\\\":\\\"active\\\",\\\"grants\\\":{\\\"files\\\":[\\\"read\\\"]}}\",\"after\":null}]}"
+            }
+        ],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [
+            "admit-preview:",
+            "state_update",
+            "event_insert",
+            "admit-save:",
+            "state_update",
+            "life_delete",
+            "grants_delete",
+            "state_update",
+            "event_insert"
+        ],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "active-renewal": {
+        "result": {
+            "revision": "1",
+            "changed": true,
+            "state": "active",
+            "revoked": 0
+        },
+        "error": null,
+        "revision": "1",
+        "life": [
+            {
+                "group_id": "staff",
+                "state": "active",
+                "gen": "id-1",
+                "policy_rev": 1
+            }
+        ],
+        "grants": [
+            {
+                "group_id": "staff",
+                "module": "files",
+                "operation": "read"
+            }
+        ],
+        "scopes": [],
+        "events": [
+            {
+                "kind": "preview",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"gid\":\"staff\",\"revision\":\"0\",\"grants\":{\"files\":[\"read\"]},\"memberHash\":\"18fa15c442adf6103060e7577e202b4581b185ac52897931ab76233cc5aecb0b\",\"life\":{\"state\":\"active\",\"gen\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}}"
+            },
+            {
+                "kind": "audit",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"action\":\"group_grants\",\"fromRevision\":\"0\",\"revision\":\"1\",\"receiptId\":null,\"undoOf\":null,\"changes\":[{\"gid\":\"staff\",\"key\":\"group_grants\",\"before\":\"{\\\"state\\\":\\\"active\\\",\\\"grants\\\":{}}\",\"after\":\"{\\\"state\\\":\\\"active\\\",\\\"grants\\\":{\\\"files\\\":[\\\"read\\\"]}}\"}]}"
+            }
+        ],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [
+            "admit-preview:",
+            "state_update",
+            "event_insert",
+            "admit-save:",
+            "life_update",
+            "state_update",
+            "life_update",
+            "grants_insert",
+            "state_update",
+            "event_insert"
+        ],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "disagreeing-sources": {
+        "result": null,
+        "error": {
+            "class": "OCA\\Mcp\\Access\\Policy\\PolicyConflict",
+            "message": "Policy changed since it was read",
+            "uncertain": null,
+            "items": null,
+            "previous": null
+        },
+        "revision": "0",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [
+            "admit-preview:",
+            "admit-preview:",
+            "admit-preview:"
+        ],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "preview-foreign": {
+        "result": null,
+        "error": {
+            "class": "OCA\\Mcp\\Access\\Policy\\ReceiptNotFound",
+            "message": "Receipt not found",
+            "uncertain": null,
+            "items": null,
+            "previous": null
+        },
+        "revision": "0",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [
+            {
+                "kind": "preview",
+                "payload": "{\"v\":1,\"actor\":\"other\",\"gid\":\"staff\",\"revision\":\"0\",\"grants\":{\"files\":[\"read\"]},\"memberHash\":\"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945\",\"life\":null}"
+            }
+        ],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "preview-expired": {
+        "result": null,
+        "error": {
+            "class": "OCA\\Mcp\\Access\\Policy\\ReceiptExpired",
+            "message": "Receipt expired",
+            "uncertain": null,
+            "items": null,
+            "previous": null
+        },
+        "revision": "0",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [
+            {
+                "kind": "preview",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"gid\":\"staff\",\"revision\":\"0\",\"grants\":{\"files\":[\"read\"]},\"memberHash\":\"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945\",\"life\":null}"
+            }
+        ],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "preview-foreign-expired": {
+        "result": null,
+        "error": {
+            "class": "OCA\\Mcp\\Access\\Policy\\ReceiptNotFound",
+            "message": "Receipt not found",
+            "uncertain": null,
+            "items": null,
+            "previous": null
+        },
+        "revision": "0",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [
+            {
+                "kind": "preview",
+                "payload": "{\"v\":1,\"actor\":\"other\",\"gid\":\"staff\",\"revision\":\"0\",\"grants\":{\"files\":[\"read\"]},\"memberHash\":\"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945\",\"life\":null}"
+            }
+        ],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "scope-invalid-actor": {
+        "result": null,
+        "error": {
+            "class": "InvalidArgumentException",
+            "message": "Invalid command",
+            "uncertain": null,
+            "items": null,
+            "previous": null
+        },
+        "revision": "0",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "scope-invalid-module": {
+        "result": null,
+        "error": {
+            "class": "InvalidArgumentException",
+            "message": "Invalid command",
+            "uncertain": null,
+            "items": null,
+            "previous": null
+        },
+        "revision": "0",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "scope-barrier-closed": {
+        "result": null,
+        "error": {
+            "class": "OCA\\Mcp\\Access\\Policy\\ScopeInactive",
+            "message": "Resource scope is not active for this module",
+            "uncertain": null,
+            "items": null,
+            "previous": null
+        },
+        "revision": "0",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "scope-inaccessible": {
+        "result": null,
+        "error": {
+            "class": "OCA\\Mcp\\Access\\Policy\\ScopeItemsInaccessible",
+            "message": "Resource not accessible to the user",
+            "uncertain": null,
+            "items": [
+                "2",
+                "10"
+            ],
+            "previous": null
+        },
+        "revision": "0",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [
+            "alice",
+            "alice"
+        ],
+        "trace": [
+            "inaccessible"
+        ],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "scope-noop": {
+        "result": {
+            "revision": "0",
+            "changed": false,
+            "receiptId": null
+        },
+        "error": null,
+        "revision": "0",
+        "life": [],
+        "grants": [],
+        "scopes": [
+            {
+                "user_id": "alice",
+                "module": "files",
+                "policy_rev": 0
+            }
+        ],
+        "events": [],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [
+            "alice",
+            "alice",
+            "alice"
+        ],
+        "trace": [
+            "inaccessible",
+            "state_update"
+        ],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "scope-change": {
+        "result": {
+            "revision": "1",
+            "changed": true,
+            "receiptId": "id-1-1"
+        },
+        "error": null,
+        "revision": "1",
+        "life": [],
+        "grants": [],
+        "scopes": [
+            {
+                "user_id": "alice",
+                "module": "files",
+                "policy_rev": 1
+            }
+        ],
+        "events": [
+            {
+                "kind": "receipt",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"action\":\"scope.update\",\"fromRevision\":\"0\",\"revision\":\"1\",\"changes\":[{\"uid\":\"alice\",\"key\":\"scope_files\",\"before\":null,\"after\":\"[\\\"1\\\",\\\"2\\\"]\"}]}"
+            },
+            {
+                "kind": "audit",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"action\":\"scope.update\",\"fromRevision\":\"0\",\"revision\":\"1\",\"receiptId\":\"id-1-1\",\"undoOf\":null,\"changes\":[]}"
+            }
+        ],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [
+            "alice",
+            "alice",
+            "alice"
+        ],
+        "trace": [
+            "inaccessible",
+            "state_update",
+            "scope_mode_insert",
+            "scope_item_insert",
+            "scope_item_insert",
+            "state_update",
+            "event_insert",
+            "event_insert"
+        ],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "undo-grant": {
+        "result": {
+            "revision": "2",
+            "changed": 1
+        },
+        "error": null,
+        "revision": "2",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [
+            {
+                "kind": "receipt",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"action\":\"grants.commands\",\"fromRevision\":\"0\",\"revision\":\"1\",\"changes\":[{\"uid\":\"alice\",\"key\":\"grant_files_read\",\"before\":\"1\",\"after\":\"0\"}]}"
+            },
+            {
+                "kind": "audit",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"action\":\"grants.undo\",\"fromRevision\":\"1\",\"revision\":\"2\",\"receiptId\":null,\"undoOf\":\"cccccccccccccccccccccccccccccccc\",\"changes\":[{\"uid\":\"alice\",\"key\":\"grant_files_read\",\"before\":\"0\",\"after\":\"1\"}]}"
+            }
+        ],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "1"
+                }
+            }
+        },
+        "clearedUids": [
+            "alice",
+            "alice",
+            "alice"
+        ],
+        "trace": [
+            "state_update",
+            "state_update",
+            "event_insert"
+        ],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "undo-scope": {
+        "result": {
+            "revision": "2",
+            "changed": 1
+        },
+        "error": null,
+        "revision": "2",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [
+            {
+                "kind": "receipt",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"action\":\"scope.update\",\"fromRevision\":\"0\",\"revision\":\"1\",\"changes\":[{\"uid\":\"alice\",\"key\":\"scope_files\",\"before\":null,\"after\":\"[\\\"1\\\"]\"}]}"
+            },
+            {
+                "kind": "audit",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"action\":\"grants.undo\",\"fromRevision\":\"1\",\"revision\":\"2\",\"receiptId\":null,\"undoOf\":\"cccccccccccccccccccccccccccccccc\",\"changes\":[{\"uid\":\"alice\",\"key\":\"scope_files\",\"before\":\"[\\\"1\\\",\\\"2\\\"]\",\"after\":null}]}"
+            }
+        ],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [
+            "alice",
+            "alice",
+            "alice"
+        ],
+        "trace": [
+            "state_update",
+            "scope_mode_delete",
+            "scope_item_delete",
+            "scope_item_delete",
+            "state_update",
+            "event_insert"
+        ],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "undo-deleted-user": {
+        "result": null,
+        "error": {
+            "class": "OCA\\Mcp\\Access\\Policy\\PolicyConflict",
+            "message": "Policy changed since it was read",
+            "uncertain": null,
+            "items": null,
+            "previous": null
+        },
+        "revision": "1",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [
+            {
+                "kind": "receipt",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"action\":\"grants.commands\",\"fromRevision\":\"0\",\"revision\":\"1\",\"changes\":[{\"uid\":\"alice\",\"key\":\"grant_files_read\",\"before\":\"1\",\"after\":\"0\"}]}"
+            }
+        ],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [
+            "alice",
+            "alice"
+        ],
+        "trace": [],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "undo-invalid-receipt": {
+        "result": null,
+        "error": {
+            "class": "OCA\\Mcp\\Access\\Policy\\PolicyUnavailable",
+            "message": "Invalid stored receipt",
+            "uncertain": false,
+            "items": null,
+            "previous": {
+                "class": "UnexpectedValueException",
+                "message": "Invalid policy event payload",
+                "uncertain": null,
+                "items": null,
+                "previous": null
+            }
+        },
+        "revision": "1",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [
+            {
+                "kind": "receipt",
+                "payload": "{\"v\":1,\"broken\":true}"
+            }
+        ],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "undo-foreign-expired": {
+        "result": null,
+        "error": {
+            "class": "OCA\\Mcp\\Access\\Policy\\ReceiptNotFound",
+            "message": "Receipt not found",
+            "uncertain": null,
+            "items": null,
+            "previous": null
+        },
+        "revision": "1",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [
+            {
+                "kind": "receipt",
+                "payload": "{\"v\":1,\"actor\":\"other\",\"action\":\"grants.commands\",\"fromRevision\":\"0\",\"revision\":\"1\",\"changes\":[{\"uid\":\"alice\",\"key\":\"grant_files_read\",\"before\":\"1\",\"after\":\"0\"}]}"
+            }
+        ],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "undo-own-expired": {
+        "result": null,
+        "error": {
+            "class": "OCA\\Mcp\\Access\\Policy\\ReceiptExpired",
+            "message": "Receipt expired",
+            "uncertain": null,
+            "items": null,
+            "previous": null
+        },
+        "revision": "1",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [
+            {
+                "kind": "receipt",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"action\":\"grants.commands\",\"fromRevision\":\"0\",\"revision\":\"1\",\"changes\":[{\"uid\":\"alice\",\"key\":\"grant_files_read\",\"before\":\"1\",\"after\":\"0\"}]}"
+            }
+        ],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "receipt-users-expired": {
+        "result": [
+            "alice"
+        ],
+        "error": null,
+        "revision": "1",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [
+            {
+                "kind": "receipt",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"action\":\"grants.commands\",\"fromRevision\":\"0\",\"revision\":\"1\",\"changes\":[{\"uid\":\"alice\",\"key\":\"grant_files_read\",\"before\":\"1\",\"after\":\"0\"}]}"
+            }
+        ],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "life-then-failure": {
+        "result": null,
+        "error": {
+            "class": "RuntimeException",
+            "message": "injected after lifecycle",
+            "uncertain": null,
+            "items": null,
+            "previous": null
+        },
+        "revision": "0",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [
+            {
+                "kind": "preview",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"gid\":\"staff\",\"revision\":\"0\",\"grants\":{\"files\":[\"read\"]},\"memberHash\":\"18fa15c442adf6103060e7577e202b4581b185ac52897931ab76233cc5aecb0b\",\"life\":null}"
+            }
+        ],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [
+            "admit-preview:",
+            "state_update",
+            "event_insert",
+            "admit-save:",
+            "state_update",
+            "life_insert"
+        ],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "open-transaction": {
+        "result": null,
+        "error": {
+            "class": "OCA\\Mcp\\Access\\Policy\\PolicyUnavailable",
+            "message": "Policy writer requires a top-level transaction",
+            "uncertain": false,
+            "items": null,
+            "previous": null
+        },
+        "revision": "0",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "prepare-opens-transaction": {
+        "result": null,
+        "error": {
+            "class": "OCA\\Mcp\\Access\\Policy\\PolicyUnavailable",
+            "message": "External admission opened a transaction",
+            "uncertain": false,
+            "items": null,
+            "previous": null
+        },
+        "revision": "0",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [
+            "admit-preview:"
+        ],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "stale-revision": {
+        "result": null,
+        "error": {
+            "class": "OCA\\Mcp\\Access\\Policy\\PolicyConflict",
+            "message": "Policy changed since it was read",
+            "uncertain": null,
+            "items": null,
+            "previous": null
+        },
+        "revision": "0",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "snapshot-retries": {
+        "result": null,
+        "error": {
+            "class": "OCA\\Mcp\\Access\\Policy\\PolicyConflict",
+            "message": "Policy changed since it was read",
+            "uncertain": null,
+            "items": null,
+            "previous": null
+        },
+        "revision": "0",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [
+            "alice",
+            "alice",
+            "alice",
+            "alice",
+            "alice",
+            "alice",
+            "alice",
+            "alice",
+            "alice"
+        ],
+        "trace": [
+            "state_update",
+            "state_update",
+            "state_update"
+        ],
+        "attempts": 3,
+        "oneCommandId": true,
+        "freshOutbox": true
+    },
+    "delete-gen-rejected": {
+        "result": null,
+        "error": {
+            "class": "OCA\\Mcp\\Access\\Policy\\PolicyConflict",
+            "message": "Policy changed since it was read",
+            "uncertain": null,
+            "items": null,
+            "previous": null
+        },
+        "revision": "0",
+        "life": [
+            {
+                "group_id": "staff",
+                "state": "active",
+                "gen": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "policy_rev": 0
+            }
+        ],
+        "grants": [
+            {
+                "group_id": "staff",
+                "module": "files",
+                "operation": "read"
+            }
+        ],
+        "scopes": [],
+        "events": [
+            {
+                "kind": "preview",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"gid\":\"staff\",\"revision\":\"0\",\"grants\":[],\"memberHash\":\"18fa15c442adf6103060e7577e202b4581b185ac52897931ab76233cc5aecb0b\",\"life\":{\"state\":\"active\",\"gen\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}}"
+            }
+        ],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [
+            "admit-preview:",
+            "state_update",
+            "event_insert",
+            "admit-save:",
+            "state_update",
+            "life_update",
+            "admit-save:",
+            "state_update",
+            "life_update",
+            "admit-save:",
+            "state_update",
+            "life_update"
+        ],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "cut-stranger": {
+        "result": null,
+        "error": {
+            "class": "LogicException",
+            "message": "A group save may cut only the holders it was given",
+            "uncertain": null,
+            "items": null,
+            "previous": null
+        },
+        "revision": "0",
+        "life": [
+            {
+                "group_id": "staff",
+                "state": "active",
+                "gen": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "policy_rev": 0
+            }
+        ],
+        "grants": [
+            {
+                "group_id": "staff",
+                "module": "_system",
+                "operation": "eligible"
+            }
+        ],
+        "scopes": [],
+        "events": [],
+        "auth": [
+            {
+                "user_id": "alice",
+                "issue_seq": 4,
+                "revoked_below": 0
+            }
+        ],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [
+            "holders-1",
+            "admit-preview-withdraw:alice"
+        ],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "h1-changed": {
+        "result": null,
+        "error": {
+            "class": "OCA\\Mcp\\Access\\Policy\\PolicyConflict",
+            "message": "Policy changed since it was read",
+            "uncertain": null,
+            "items": null,
+            "previous": null
+        },
+        "revision": "0",
+        "life": [
+            {
+                "group_id": "staff",
+                "state": "active",
+                "gen": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "policy_rev": 0
+            }
+        ],
+        "grants": [
+            {
+                "group_id": "staff",
+                "module": "_system",
+                "operation": "eligible"
+            }
+        ],
+        "scopes": [],
+        "events": [],
+        "auth": [
+            {
+                "user_id": "alice",
+                "issue_seq": 4,
+                "revoked_below": 0
+            }
+        ],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [
+            "holders-1",
+            "admit-preview-withdraw:alice",
+            "state_update",
+            "holders-2",
+            "holders-3",
+            "admit-preview-withdraw:alice",
+            "state_update",
+            "holders-4",
+            "holders-5",
+            "admit-preview-withdraw:alice",
+            "state_update",
+            "holders-6"
+        ],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "save-renews-source": {
+        "result": {
+            "revision": "1",
+            "changed": true,
+            "state": "active",
+            "revoked": 0
+        },
+        "error": null,
+        "revision": "1",
+        "life": [
+            {
+                "group_id": "other",
+                "state": "active",
+                "gen": "id-1",
+                "policy_rev": 0
+            },
+            {
+                "group_id": "staff",
+                "state": "active",
+                "gen": "id-2",
+                "policy_rev": 1
+            }
+        ],
+        "grants": [
+            {
+                "group_id": "staff",
+                "module": "files",
+                "operation": "read"
+            }
+        ],
+        "scopes": [],
+        "events": [
+            {
+                "kind": "preview",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"gid\":\"staff\",\"revision\":\"0\",\"grants\":{\"files\":[\"read\"]},\"memberHash\":\"18fa15c442adf6103060e7577e202b4581b185ac52897931ab76233cc5aecb0b\",\"life\":{\"state\":\"active\",\"gen\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}}"
+            },
+            {
+                "kind": "audit",
+                "payload": "{\"v\":1,\"actor\":\"root\",\"action\":\"group_grants\",\"fromRevision\":\"0\",\"revision\":\"1\",\"receiptId\":null,\"undoOf\":null,\"changes\":[{\"gid\":\"staff\",\"key\":\"group_grants\",\"before\":\"{\\\"state\\\":\\\"active\\\",\\\"grants\\\":{}}\",\"after\":\"{\\\"state\\\":\\\"active\\\",\\\"grants\\\":{\\\"files\\\":[\\\"read\\\"]}}\"}]}"
+            }
+        ],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [],
+        "trace": [
+            "admit-preview:",
+            "state_update",
+            "event_insert",
+            "admit-save:",
+            "state_update",
+            "life_update",
+            "life_update",
+            "grants_insert",
+            "state_update",
+            "event_insert"
+        ],
+        "attempts": 0,
+        "oneCommandId": null,
+        "freshOutbox": null
+    },
+    "command-id-stable": {
+        "result": {
+            "revision": "0",
+            "changed": false,
+            "commandId": "id-1",
+            "cleanupPending": false
+        },
+        "error": null,
+        "revision": "0",
+        "life": [],
+        "grants": [],
+        "scopes": [],
+        "events": [],
+        "auth": [],
+        "userValues": {
+            "alice": {
+                "mcp": {
+                    "grant_files_read": "0"
+                }
+            }
+        },
+        "clearedUids": [
+            "alice",
+            "alice",
+            "alice",
+            "alice",
+            "alice",
+            "alice",
+            "alice",
+            "alice",
+            "alice"
+        ],
+        "trace": [
+            "state_update",
+            "state_update",
+            "state_update"
+        ],
+        "attempts": 3,
+        "oneCommandId": true,
+        "freshOutbox": true
+    }
+}

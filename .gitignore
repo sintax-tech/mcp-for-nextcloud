@@ -18,6 +18,8 @@ secrets.*
 .env.*
 app-password*
 credentials*
+# A pasta de código Access/Policy/Credentials casa com credentials* no macOS (ignorecase).
+!mcp/lib/Access/Policy/Credentials/
 auth.json
 tokens.json
 mcp.json

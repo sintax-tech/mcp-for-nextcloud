@@ -1011,7 +1011,16 @@
 		{"path":"lib/Tools/ToolResult.php","fqcn":"OCA\\Mcp\\Tools\\ToolResult","target":"OCA\\Mcp\\Mcp\\Tools\\Results\\ToolResult","owner":"Mcp","ticket":"RE-03"},
 		{"path":"lib/Tools/UnknownToolException.php","fqcn":"OCA\\Mcp\\Tools\\UnknownToolException","target":"OCA\\Mcp\\Mcp\\Tools\\UnknownToolException","owner":"Mcp","ticket":"RE-03"},
 		{"path":"lib/Tools/WriteGate.php","fqcn":"OCA\\Mcp\\Tools\\WriteGate","target":"OCA\\Mcp\\Mcp\\Confirmation\\WriteGate","owner":"Mcp","ticket":"RE-03"},
-		{"path":"lib/Tools/XmlCharset.php","fqcn":"OCA\\Mcp\\Tools\\XmlCharset","target":"OCA\\Mcp\\Platform\\Text\\XmlCharset","owner":"Platform","ticket":"RE-04"}
+		{"path":"lib/Tools/XmlCharset.php","fqcn":"OCA\\Mcp\\Tools\\XmlCharset","target":"OCA\\Mcp\\Platform\\Text\\XmlCharset","owner":"Platform","ticket":"RE-04"},
+		{"path": "lib/Access/Grants/Groups/GroupGrantCommands.php", "fqcn": "OCA\\Mcp\\Access\\Grants\\Groups\\GroupGrantCommands", "target": "stays", "owner": "Access", "ticket": null},
+		{"path": "lib/Access/Grants/Groups/GroupGrantCommandsContract.php", "fqcn": "OCA\\Mcp\\Access\\Grants\\Groups\\GroupGrantCommandsContract", "target": "stays", "owner": "Access", "ticket": null},
+		{"path": "lib/Access/Grants/Groups/GroupAdmission.php", "fqcn": "OCA\\Mcp\\Access\\Grants\\Groups\\GroupAdmission", "target": "stays", "owner": "Access", "ticket": null},
+		{"path": "lib/Access/Grants/Groups/GroupPreview.php", "fqcn": "OCA\\Mcp\\Access\\Grants\\Groups\\GroupPreview", "target": "stays", "owner": "Access", "ticket": null},
+		{"path": "lib/Access/Policy/Credentials/CredentialHolders.php", "fqcn": "OCA\\Mcp\\Access\\Policy\\Credentials\\CredentialHolders", "target": "stays", "owner": "Access", "ticket": null},
+		{"path": "lib/Access/ResourceScope/ScopeWriter.php", "fqcn": "OCA\\Mcp\\Access\\ResourceScope\\ScopeWriter", "target": "stays", "owner": "Access", "ticket": null},
+		{"path": "lib/Access/ResourceScope/ScopeWriterContract.php", "fqcn": "OCA\\Mcp\\Access\\ResourceScope\\ScopeWriterContract", "target": "stays", "owner": "Access", "ticket": null},
+		{"path": "lib/Access/Policy/Receipts/ReceiptRestorer.php", "fqcn": "OCA\\Mcp\\Access\\Policy\\Receipts\\ReceiptRestorer", "target": "stays", "owner": "Access", "ticket": null},
+		{"path": "lib/Access/Policy/Receipts/ReceiptRestorerContract.php", "fqcn": "OCA\\Mcp\\Access\\Policy\\Receipts\\ReceiptRestorerContract", "target": "stays", "owner": "Access", "ticket": null}
 	],
 	"tests": [
 		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\ServerInfoTest","target":"OCA\\Mcp\\Tests\\Unit\\Mcp\\Protocol\\ServerInfoTest"},

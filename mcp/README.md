@@ -718,7 +718,7 @@ AGPL-3.0-or-later, with the additional section 7(b) attribution term in [NOTICE]
 
 Smalot PdfParser, Symfony Polyfill Mbstring and the Composer autoloader are bundled. See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) for versions, copyright, licenses and separate development credits.
 
-**Contributors.** Thanks to @NightDragon1 ([#5](https://github.com/sintax-tech/mcp-for-nextcloud/pull/5)) for the root visibility check, to @matt-ek ([#10](https://github.com/sintax-tech/mcp-for-nextcloud/issues/10)) for the German translation, to @Zegorax ([#8](https://github.com/sintax-tech/mcp-for-nextcloud/pull/8)) for the OAuth clients registered by the administrator, and to @mturgeonferland ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)) for subtasks in the Tasks tools. The hidden-tags audit followed the report in [#4](https://github.com/sintax-tech/mcp-for-nextcloud/issues/4).
+**Contributors.** Thanks to @NightDragon1 ([#5](https://github.com/sintax-tech/mcp-for-nextcloud/pull/5)) for the root visibility check, to @matt-ek ([#10](https://github.com/sintax-tech/mcp-for-nextcloud/issues/10)) for the German translation, to @Zegorax ([#8](https://github.com/sintax-tech/mcp-for-nextcloud/pull/8)) for the OAuth clients registered by the administrator, and to @mturgeonferland ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)) for subtasks in the Tasks tools. The hidden-tags audit followed the report in [#4](https://github.com/sintax-tech/mcp-for-nextcloud/issues/4). Thanks to @Beluluz for reporting the Deck assignment issue ([#26](https://github.com/sintax-tech/mcp-for-nextcloud/issues/26)) and requesting card completion and archiving ([#27](https://github.com/sintax-tech/mcp-for-nextcloud/issues/27)).
 
 ## About Sintax
 

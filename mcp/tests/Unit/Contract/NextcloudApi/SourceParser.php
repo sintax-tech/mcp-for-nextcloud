@@ -27,6 +27,7 @@ final class SourceParser {
 		'OCA\\Tables\\' => 'apps/tables/lib/',
 		'OCA\\Forms\\' => 'apps/forms/lib/',
 		'OCA\\Polls\\' => 'apps/polls/lib/',
+		'OCA\\Collectives\\' => 'apps/collectives/lib/',
 		'OCA\\Files_Versions\\' => 'apps/files_versions/lib/',
 		'OCA\\Files_Trashbin\\' => 'apps/files_trashbin/lib/',
 		'OCA\\Files_Sharing\\' => 'apps/files_sharing/lib/',

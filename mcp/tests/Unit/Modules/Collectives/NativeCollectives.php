@@ -1,0 +1,129 @@
+<?php
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+declare(strict_types=1);
+
+/*
+ * Strict doubles of the native Collectives classes the module reaches, with the exact signatures of Collectives
+ * 4.0.0, 4.4.0, 4.5.0 and 4.7.1 (lib/Service/PageService.php, CollectiveServiceBase.php, SearchService.php,
+ * lib/Db/Collective.php, lib/Model/PageInfo.php; PageService sha256 cbfd29fa…/a4584067…/3e70835e… for 4.0.0/4.5.0/4.7.1).
+ * Their state lives in {@see \OCA\Mcp\Tests\Unit\Modules\Collectives\CollectivesScene}; behaviour mirrors the
+ * native code paths the module depends on: a leaf parent becomes a folder with a Readme.md, move only reorders when
+ * the parent changes, and jsonSerialize carries a share token the module must never publish.
+ */
+
+namespace OCA\Collectives\Service {
+	use OCA\Collectives\Db\Collective;
+	use OCA\Collectives\Model\PageInfo;
+	use OCA\Mcp\Tests\Unit\Modules\Collectives\CollectivesScene;
+	use OCP\Files\File;
+	use OCP\Files\Folder;
+
+	/** Native "not found" of Collectives. */
+	class NotFoundException extends \Exception {
+	}
+
+	/** Native "not permitted" of Collectives. */
+	class NotPermittedException extends \Exception {
+	}
+
+	/** Double of CollectiveService (getCollective inherited from CollectiveServiceBase upstream). */
+	class CollectiveService {
+		/** @param string $userId actor @return list<Collective> the actor's collectives */
+		public function getCollectives(string $userId): array {
+			return CollectivesScene::collectivesOf($userId);
+		}
+
+		/** @param int $id collective @param string $userId actor @return Collective a fresh entity */
+		public function getCollective(int $id, string $userId): Collective {
+			return CollectivesScene::collective($id, $userId);
+		}
+	}
+
+	/** Double of PageService. */
+	class PageService {
+		/** @param int $collectiveId collective @param string $userId actor */
+		public function verifyEditPermissions(int $collectiveId, string $userId): void {
+			if (!CollectivesScene::collective($collectiveId, $userId)->canEdit()) {
+				throw new NotPermittedException('Not allowed to edit collective');
+			}
+		}
+
+		/** @param int $collectiveId collective @param int $fileId page @param string $userId actor @return File the file */
+		public function getPageFile(int $collectiveId, int $fileId, string $userId): File {
+			return CollectivesScene::fileById($collectiveId, $fileId, $userId);
+		}
+
+		/** @param int $collectiveId collective @param int $fileId 0 for the collective folder @param string $userId actor @return Folder the folder */
+		public function getFolder(int $collectiveId, int $fileId, string $userId): Folder {
+			return CollectivesScene::folder($collectiveId, $userId);
+		}
+
+		/** @return list<PageInfo> the pages under the folder, read now */
+		public function getPagesFromFolder(int $collectiveId, Folder $folder, string $userId, bool $recurse = false, bool $forceIndex = false): array {
+			CollectivesScene::$calls[] = 'getPagesFromFolder' . ($forceIndex ? ':forceIndex' : '');
+			return CollectivesScene::pages($collectiveId, $userId);
+		}
+
+		/** @return PageInfo the created page */
+		public function create(int $collectiveId, int $parentId, string $title, ?int $templateId, string $userId, ?string $defaultTitle = null): PageInfo {
+			$this->verifyEditPermissions($collectiveId, $userId);
+			return CollectivesScene::create($collectiveId, $parentId, $title, $templateId, $userId);
+		}
+
+		/** @return PageInfo the moved page */
+		public function move(int $collectiveId, int $id, ?int $parentId, ?string $title, int $index, string $userId): PageInfo {
+			$this->verifyEditPermissions($collectiveId, $userId);
+			return CollectivesScene::move($collectiveId, $id, $parentId, $title, $index, $userId);
+		}
+	}
+
+	/** Double of SearchService of 4.4.0 and later. */
+	class SearchService {
+		/** @return list<array{file_id:int}> the index hits */
+		public function searchCollective(Collective $collective, string $query): array {
+			CollectivesScene::$calls[] = 'searchCollective';
+			return CollectivesScene::$searchHits;
+		}
+	}
+}
+
+namespace OCA\Collectives\Db {
+	/** Double of the Collective entity. */
+	class Collective {
+		/** @param array<string, mixed> $data serialized form */
+		public function __construct(private array $data) {
+		}
+
+		/** @return bool whether the actor may edit */
+		public function canEdit(): bool {
+			return $this->data['canEdit'];
+		}
+
+		/** @return string name of the circle */
+		public function getName(): string {
+			return $this->data['name'];
+		}
+
+		/** @return array<string, mixed> native serialized form */
+		public function jsonSerialize(): array {
+			return $this->data;
+		}
+	}
+}
+
+namespace OCA\Collectives\Model {
+	/** Double of PageInfo. */
+	class PageInfo {
+		/** @param array<string, mixed> $data serialized form */
+		public function __construct(private array $data) {
+		}
+
+		/** @return array<string, mixed> native serialized form */
+		public function jsonSerialize(): array {
+			return $this->data;
+		}
+	}
+}

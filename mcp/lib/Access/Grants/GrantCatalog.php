@@ -38,6 +38,8 @@ final class GrantCatalog {
 		'tables' => ['read', 'create', 'edit'],
 		'forms' => ['read', 'results', 'create', 'edit'],
 		'polls' => ['read', 'results', 'links', 'create'],
+		// Collectives (#22): 'read' lists collectives and pages, reads and searches them; on by default like every read.
+		'collectives' => ['read'],
 	];
 
 	/** Prevents instantiation of the immutable catalog. */

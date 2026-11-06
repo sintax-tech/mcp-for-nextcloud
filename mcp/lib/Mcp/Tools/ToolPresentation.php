@@ -188,6 +188,11 @@ final class ToolPresentation {
 			'polls_read_results' => Translator::t('Read poll results'),
 			'polls_list_links' => Translator::t('Read existing poll links'),
 			'polls_create_poll' => Translator::t('Create a private poll'),
+			// Collectives
+			'collectives_list' => Translator::t('List collectives'),
+			'collectives_pages' => Translator::t('List collective pages'),
+			'collectives_read' => Translator::t('Read collective page'),
+			'collectives_search' => Translator::t('Search collective pages'),
 			// Tables
 			'tables_list_tables' => Translator::t('List tables'),
 			'tables_list_views' => Translator::t('List table views'),
@@ -241,6 +246,7 @@ final class ToolPresentation {
 			'tables' => Translator::t('Tables'),
 			'forms' => Translator::t('Forms'),
 			'polls' => Translator::t('Polls'),
+			'collectives' => Translator::t('Collectives'),
 			default => ucfirst($module),
 		};
 	}

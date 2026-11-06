@@ -82,6 +82,9 @@
             "results",
             "links",
             "create"
+        ],
+        "collectives": [
+            "read"
         ]
     },
     "DENIED_READS": [

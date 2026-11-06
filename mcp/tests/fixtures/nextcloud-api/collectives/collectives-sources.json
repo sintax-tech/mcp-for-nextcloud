@@ -1,0 +1,67 @@
+{
+  "31": {
+    "collectives": {
+      "version": "4.0.0",
+      "url": "https://github.com/nextcloud/collectives/archive/refs/tags/v4.0.0.tar.gz",
+      "sha256": "7aef9874743fc4a36b68c12a9b900e5fe4081d510bd88df8a8e74a138bb8147e"
+    },
+    "server": {
+      "version": "31.0.0",
+      "files": {
+        "lib/public/AppFramework/Db/Entity.php": "6526d3fedc72805a7d7691d0df3685136a2d4dafe8e2588f7fbd366a0d805bf8"
+      }
+    }
+  },
+  "32": {
+    "collectives": {
+      "version": "4.0.0",
+      "url": "https://github.com/nextcloud/collectives/archive/refs/tags/v4.0.0.tar.gz",
+      "sha256": "7aef9874743fc4a36b68c12a9b900e5fe4081d510bd88df8a8e74a138bb8147e"
+    },
+    "server": {
+      "version": "32.0.0",
+      "files": {
+        "lib/public/AppFramework/Db/Entity.php": "60bcf4e2a2d2439eab922ecd9a200e7f4b27228436896a1ded74e104a6288347"
+      }
+    }
+  },
+  "33": {
+    "collectives": {
+      "version": "4.5.0",
+      "url": "https://github.com/nextcloud/collectives/archive/refs/tags/v4.5.0.tar.gz",
+      "sha256": "6f778fd461ec08c415621c720d2e385b58487fb3ef323f516e286f018b7bbfa3"
+    },
+    "server": {
+      "version": "33.0.0",
+      "files": {
+        "lib/public/AppFramework/Db/Entity.php": "cbab8ff845340e44685457d8cdc48563767c3cd10fe283cb3001295e40177477"
+      }
+    }
+  },
+  "34": {
+    "collectives": {
+      "version": "4.4.0",
+      "url": "https://github.com/nextcloud/collectives/archive/refs/tags/v4.4.0.tar.gz",
+      "sha256": "71cb8dc77c8b4b3723e53d6ac43bf3d020d2036d7dff7590affbe83619aa18e8"
+    },
+    "server": {
+      "version": "34.0.0",
+      "files": {
+        "lib/public/AppFramework/Db/Entity.php": "cc8e4cf296405efe844ef21d1c7743eea3f8fcd166d5bc35bda6f73532aebe44"
+      }
+    }
+  },
+  "35": {
+    "collectives": {
+      "version": "4.7.1",
+      "url": "https://github.com/nextcloud/collectives/archive/refs/tags/v4.7.1.tar.gz",
+      "sha256": "7c1d96526284ad53d0ac1c6844377e1b189449ceb3baf00199462f520fbc6d62"
+    },
+    "server": {
+      "version": "35.0.0",
+      "files": {
+        "lib/public/AppFramework/Db/Entity.php": "658aef736eef71a230672c57941f89530229bfa1f449082506ba82a56110c735"
+      }
+    }
+  }
+}

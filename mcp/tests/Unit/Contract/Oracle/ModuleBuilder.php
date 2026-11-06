@@ -27,8 +27,9 @@ final class ModuleBuilder {
 	/**
 	 * @param TestCase $test the running test, owner of the mocks
 	 * @param bool $deckDependencies whether the Deck probe reports the native dependency API
+	 * @param bool $collectivesNative whether the Collectives probe reports the proven native shape
 	 */
-	public function __construct(private TestCase $test, private bool $deckDependencies = true) {
+	public function __construct(private TestCase $test, private bool $deckDependencies = true, private bool $collectivesNative = true) {
 	}
 
 	/**
@@ -50,6 +51,13 @@ final class ModuleBuilder {
 			$apps->method('isEnabledForAnyone')->willReturn(true);
 			$native = $this->deckDependencies;
 			return new DeckCapabilities($apps, 35, static fn (): bool => $native);
+		}
+		if ($class === \OCA\Mcp\Modules\Collectives\Integration\CollectivesCapabilities::class) {
+			$apps = $this->mock(IAppManager::class);
+			$apps->method('getAppVersion')->willReturn('4.7.1');
+			$apps->method('isEnabledForAnyone')->willReturn(true);
+			$native = $this->collectivesNative;
+			return new \OCA\Mcp\Modules\Collectives\Integration\CollectivesCapabilities($apps, 35, static fn (): bool => $native);
 		}
 		$constructor = (new ReflectionClass($class))->getConstructor();
 		$args = [];

@@ -73,7 +73,8 @@
                         "mail": false,
                         "tables": false,
                         "forms": false,
-                        "polls": false
+                        "polls": false,
+                        "collectives": false
                     },
                     "eligible": true,
                     "connected": true,
@@ -160,6 +161,9 @@
                             "results": false,
                             "links": false,
                             "create": false
+                        },
+                        "collectives": {
+                            "read": true
                         }
                     },
                     "origins": {
@@ -421,6 +425,12 @@
                                     "source": "default",
                                     "groupIds": []
                                 }
+                            },
+                            "collectives": {
+                                "read": {
+                                    "source": "default",
+                                    "groupIds": []
+                                }
                             }
                         }
                     },
@@ -549,7 +559,8 @@
                         "mail": false,
                         "tables": false,
                         "forms": false,
-                        "polls": false
+                        "polls": false,
+                        "collectives": false
                     },
                     "eligible": true,
                     "connected": true,
@@ -636,6 +647,9 @@
                             "results": false,
                             "links": false,
                             "create": false
+                        },
+                        "collectives": {
+                            "read": true
                         }
                     },
                     "origins": {
@@ -894,6 +908,12 @@
                                     "groupIds": []
                                 },
                                 "create": {
+                                    "source": "default",
+                                    "groupIds": []
+                                }
+                            },
+                            "collectives": {
+                                "read": {
                                     "source": "default",
                                     "groupIds": []
                                 }
@@ -1728,7 +1748,8 @@
                                     "mail": false,
                                     "tables": false,
                                     "forms": false,
-                                    "polls": false
+                                    "polls": false,
+                                    "collectives": false
                                 },
                                 "eligible": true,
                                 "connected": true,
@@ -1815,6 +1836,9 @@
                                         "results": false,
                                         "links": false,
                                         "create": false
+                                    },
+                                    "collectives": {
+                                        "read": true
                                     }
                                 },
                                 "origins": {
@@ -2073,6 +2097,12 @@
                                                 "groupIds": []
                                             },
                                             "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "collectives": {
+                                            "read": {
                                                 "source": "default",
                                                 "groupIds": []
                                             }
@@ -2506,7 +2536,8 @@
                         "mail": false,
                         "tables": false,
                         "forms": false,
-                        "polls": false
+                        "polls": false,
+                        "collectives": false
                     },
                     "eligible": false,
                     "connected": true,
@@ -2593,6 +2624,9 @@
                             "results": false,
                             "links": false,
                             "create": false
+                        },
+                        "collectives": {
+                            "read": true
                         }
                     },
                     "origins": {
@@ -2851,6 +2885,12 @@
                                     "groupIds": []
                                 },
                                 "create": {
+                                    "source": "default",
+                                    "groupIds": []
+                                }
+                            },
+                            "collectives": {
+                                "read": {
                                     "source": "default",
                                     "groupIds": []
                                 }

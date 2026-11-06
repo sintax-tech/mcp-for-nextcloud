@@ -27,7 +27,7 @@ final class AdminUnitBodiesTest extends TestCase {
 			['rowUnavailableReason', 'rows', 'e622b83adb4df1b847dd13a11bf111c54dfb695f30bb39e4d92f5254f9f86e8d'],
 			['originText', 'level-cells', 'a98a52bce6a98896f551a8018dab689fcff7800429f74a93dd3cf3ab4588d668'],
 			['markIcon', 'level-cells', 'c00c6fbad617ad82e4354b33cdb8d6b11b039eba28a749ce8d24000311f8126a'],
-			['moduleLabels', 'labels', 'fd2737b090cf22771f1313ae83c93ff1d3129bf5beb0665f40c9c527107d123c'],
+			['moduleLabels', 'labels', '9972c0d69b03540d4d42fec78f3fb695c2b8ffec6ba47efca5cacc352fce412a'],
 		];
 		foreach ($cases as [$name, $unit, $expected]) {
 			$source = (string)file_get_contents(dirname(__DIR__, 3) . '/src/admin/matrix/' . $unit . '.js');

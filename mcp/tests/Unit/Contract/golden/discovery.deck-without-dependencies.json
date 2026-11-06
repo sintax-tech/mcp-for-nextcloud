@@ -5566,6 +5566,168 @@
                             "idempotentHint": false,
                             "openWorldHint": false
                         }
+                    },
+                    {
+                        "name": "collectives_list",
+                        "title": "List collectives",
+                        "description": "Lists the collectives (Collectives app) the user is a member of, with what the user may do in each.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "cursor": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 256,
+                                    "description": "next_cursor of the previous answer, to read the next slice."
+                                },
+                                "limit": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 100,
+                                    "default": 50,
+                                    "description": "Maximum number of items to return (1-100, default 50)."
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "annotations": {
+                            "title": "List collectives",
+                            "readOnlyHint": true,
+                            "destructiveHint": false,
+                            "idempotentHint": true,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
+                        "name": "collectives_pages",
+                        "title": "List collective pages",
+                        "description": "Lists the pages of one collective, optionally only the subpages of one page.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "collective_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the collective, as collectives_list returns it."
+                                },
+                                "parent_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Only the subpages (at any depth) of this page; omit for every page."
+                                },
+                                "cursor": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 256,
+                                    "description": "next_cursor of the previous answer, to read the next slice."
+                                },
+                                "limit": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 100,
+                                    "default": 50,
+                                    "description": "Maximum number of items to return (1-100, default 50)."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "collective_id"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "List collective pages",
+                            "readOnlyHint": true,
+                            "destructiveHint": false,
+                            "idempotentHint": true,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
+                        "name": "collectives_read",
+                        "title": "Read collective page",
+                        "description": "Reads the Markdown, etag and metadata of one page of a collective.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "collective_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the collective, as collectives_list returns it."
+                                },
+                                "page_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the page, as collectives_pages returns it."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "collective_id",
+                                "page_id"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Read collective page",
+                            "readOnlyHint": true,
+                            "destructiveHint": false,
+                            "idempotentHint": true,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
+                        "name": "collectives_search",
+                        "title": "Search collective pages",
+                        "description": "Searches the pages of one collective by title, or by content through the Collectives index.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "collective_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the collective, as collectives_list returns it."
+                                },
+                                "query": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 200,
+                                    "description": "Text to find (1-200 characters)."
+                                },
+                                "scope": {
+                                    "type": "string",
+                                    "enum": [
+                                        "title",
+                                        "content"
+                                    ],
+                                    "default": "title",
+                                    "description": "title (default) matches page titles; content uses the Collectives search index."
+                                },
+                                "cursor": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 256,
+                                    "description": "next_cursor of the previous answer, to read the next slice."
+                                },
+                                "limit": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 100,
+                                    "default": 50,
+                                    "description": "Maximum number of items to return (1-100, default 50)."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "collective_id",
+                                "query"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Search collective pages",
+                            "readOnlyHint": true,
+                            "destructiveHint": false,
+                            "idempotentHint": true,
+                            "openWorldHint": false
+                        }
                     }
                 ]
             }

@@ -17,6 +17,7 @@ admin/access/levels/logs.js
 admin/access/levels/mail.js
 admin/access/levels/tables.js
 admin/access/levels/forms.js
+admin/access/levels/collectives.js
 admin/admin-levels.js
 admin/matrix/session.js
 admin/matrix/labels.js

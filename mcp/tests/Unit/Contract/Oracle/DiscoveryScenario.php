@@ -29,6 +29,7 @@ final class DiscoveryScenario {
 	 * @param bool $deckDependencies whether the Deck probe reports the dependency API
 	 * @param (Closure(string, string): bool)|null $grants which catalog grants alice holds; null: all of them
 	 * @param array<string, list<string>> $unknownGrants grants only an indeterminate group holds (left unset for alice)
+	 * @param bool $collectivesNative whether the Collectives probe reports the proven native shape
 	 */
 	private function __construct(
 		public readonly string $name,
@@ -37,6 +38,7 @@ final class DiscoveryScenario {
 		public readonly bool $deckDependencies = true,
 		public readonly ?Closure $grants = null,
 		public readonly array $unknownGrants = [],
+		public readonly bool $collectivesNative = true,
 	) {
 	}
 
@@ -70,9 +72,14 @@ final class DiscoveryScenario {
 		return new self('unknown-grant', unknownGrants: self::UNKNOWN_GRANTS);
 	}
 
+	/** @return self Collectives enabled but outside the proven version or shape: its tools disappear */
+	public static function collectivesUnsupported(): self {
+		return new self('collectives-unsupported', collectivesNative: false);
+	}
+
 	/** @return list<self> every scenario of the ticket, in golden order */
 	public static function all(): array {
-		return [self::allOn(), self::optionalAppsOff(), self::guest(), self::deckWithoutDependencies(), self::filesLinkOnly(), self::unknownGrant()];
+		return [self::allOn(), self::optionalAppsOff(), self::guest(), self::deckWithoutDependencies(), self::filesLinkOnly(), self::unknownGrant(), self::collectivesUnsupported()];
 	}
 
 	/**

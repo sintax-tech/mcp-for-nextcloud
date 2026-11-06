@@ -24,6 +24,8 @@ final class FakeVersion {
 	public array $handles = [];
 	/** When set, read() hands out a stream whose reads fail, as a version file that cannot be read to the end. */
 	public bool $failingRead = false;
+	/** When set, read() throws as the legacy backend does for the listed current version, which has no stored file. */
+	public bool $noStoredFile = false;
 
 	/**
 	 * @param int|string $revision identifier the tools expose as a string
@@ -75,6 +77,9 @@ final class FakeVersion {
 
 	/** @return resource|false a readable stream, as IVersionManager::read() returns */
 	public function read() {
+		if ($this->noStoredFile) {
+			throw new \OCP\Files\NotFoundException('no version file');
+		}
 		if ($this->failingRead) {
 			if (!in_array('mcpfail', stream_get_wrappers(), true)) {
 				stream_wrapper_register('mcpfail', FailingReadStream::class);

@@ -6,8 +6,8 @@
 declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Creation;
-use OCA\Mcp\Modules\Files\Writing\FileWriteBoundary;
 
+use OCA\Mcp\Modules\Files\Writing\FileWriteBoundary;
 use OCA\Mcp\Access\FileTypes\FileTypeGuard;
 use Throwable;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;

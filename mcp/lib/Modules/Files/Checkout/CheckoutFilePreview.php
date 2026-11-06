@@ -16,7 +16,6 @@ use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Modules\Files\Checkout\CheckoutService;
 use OCA\Mcp\Modules\Files\FilesPreviewContext;
 use OCA\Mcp\Modules\Files\Backups\BackupPlan;
-use OCA\Mcp\Modules\Files\Handler;
 
 /** Plans the operation that starts the local checkout workflow, without executing the write. */
 final class CheckoutFilePreview {

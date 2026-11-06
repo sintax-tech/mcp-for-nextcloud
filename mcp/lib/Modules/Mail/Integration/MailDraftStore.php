@@ -60,7 +60,7 @@ class MailDraftStore {
 	public function create(string $userId, object $account, MailDraftRequest $draft): ?int {
 		$transmission = $this->services->transmission($userId);
 		try {
-			$data = $this->services->newMessageData($userId, $account, $draft->joined('to'), $draft->joined('cc'), $draft->joined('bcc'), $draft->subject, $draft->body);
+			$data = $this->services->newMessageData($userId, $account, $draft->joined('to'), $draft->joined('cc'), $draft->joined('bcc'), $draft->subject, $draft->body, $draft->html);
 		} catch (MailUnavailableException $e) {
 			throw $e;
 		} catch (\Throwable $e) {

@@ -28,9 +28,10 @@ final class CreateDraftPreview {
 	/**
 	 * @param MailDraftAccount $accounts actor account and Drafts folder
 	 * @param MailDraftPlan $plans snapshot and PlanState
+	 * @param MailDraftHtml $html restricted draft sanitization pipeline
 	 * @param IAppManager $apps installed Mail version for Bcc preservation
 	 */
-	public function __construct(private MailDraftAccount $accounts, private MailDraftPlan $plans, private IAppManager $apps) {}
+	public function __construct(private MailDraftAccount $accounts, private MailDraftPlan $plans, private IAppManager $apps, private MailDraftHtml $html) {}
 
 	/**
 	 * The plan of a call without confirm.
@@ -47,6 +48,7 @@ final class CreateDraftPreview {
 		$draft = MailDraftRequest::from($arguments);
 		MailDraftBcc::assertKept($draft, $this->apps);
 		[$account, $drafts] = $this->accounts->resolve($userId, (int)$arguments['account_id']);
+		$draft = $draft->sanitized($this->html);
 		return $this->plans->plan($userId, $account, $drafts, $draft);
 	}
 }

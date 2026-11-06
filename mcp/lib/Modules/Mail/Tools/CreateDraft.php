@@ -29,7 +29,8 @@ final class CreateDraft implements WriteTool {
 			'cc' => MailSchema::recipients('Copy recipients: plain addresses such as name@example.com, without display names; omit for none.'),
 			'bcc' => MailSchema::recipients('Blind copy recipients, only with Mail 5.10.11 or later (older Mail saves drafts without them, so they are refused there): plain addresses such as name@example.com, without display names; omit for none.'),
 			'subject' => MailSchema::subject(),
-			'body' => MailSchema::body('Text of the draft, plain text.'),
+			'body' => MailSchema::body('Text of the draft: plain text by default, or HTML when html is true.'),
+			'html' => ['type' => 'boolean', 'default' => false, 'description' => 'Create a sanitized HTML draft instead of plain text. Images are forbidden; no account signature is added.'],
 			'plan_state' => MailSchema::planState(),
 		], ['account_id'], null, [], false);
 	}

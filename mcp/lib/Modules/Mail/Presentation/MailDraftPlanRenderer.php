@@ -54,7 +54,9 @@ final class MailDraftPlanRenderer {
 		$subject = is_string($draft['subject'] ?? null) ? $draft['subject'] : '';
 		$lines[] = '- ' . Translator::t('Subject: %s', [$subject === '' ? '—' : PlanText::strong($subject, 255)]);
 		$body = is_string($draft['body'] ?? null) ? $draft['body'] : '';
-		if ($body !== '') {
+		if (($draft['html'] ?? false) === true) {
+			$lines = array_merge($lines, MailDraftHtmlView::lines($draft));
+		} elseif ($body !== '') {
 			$lines[] = '';
 			$lines[] = PlanText::quote($body, self::BODY_SHOWN);
 			$lines[] = '';

@@ -1,0 +1,241 @@
+<?php
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+declare(strict_types=1);
+namespace OCA\Mcp\Modules\Mail\Creation;
+
+use DOMDocument;
+use DOMElement;
+use DOMNode;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Modules\Mail\Presentation\MailDraftMessages;
+
+/** Filters draft fragments before and after the optional engine, failing closed on unaccounted changes. */
+final class MailDraftHtml {
+	/**
+	 * @param MailDraftHtmlPurifier $engine optional Mail engine behind its integration boundary
+	 * @return void
+	 */
+	public function __construct(private MailDraftHtmlPurifier $engine) {}
+
+	/**
+	 * Produces the saved fragment and a complete removal report, then checks a second interpretation and idempotence.
+	 *
+	 * @param string $input valid UTF-8 source, without NUL
+	 * @return array{body:string, removed:array<string,int>, removedUrls:list<string>, sizes:array<string,int>}
+	 * @throws ToolFailure for unavailable engine, unsafe recovery, unreported loss, empty or oversized output
+	 */
+	public function sanitize(string $input): array {
+		if (!mb_check_encoding($input, 'UTF-8') || str_contains($input, "\0") || mb_strlen($input) > MailDraftRequest::MAX_BODY) {
+			throw new ToolFailure(MailDraftMessages::htmlInvalid());
+		}
+		$result = $this->pass($input);
+		$body = $result['body'];
+		if (mb_strlen($body) > MailDraftRequest::MAX_BODY) {
+			throw new ToolFailure(MailDraftMessages::htmlTooLong());
+		}
+		if ($input !== '' && preg_match('/[\p{L}\p{N}\p{P}\p{S}]/u', $this->parse($body)->textContent) !== 1) {
+			throw new ToolFailure(MailDraftMessages::htmlEmpty());
+		}
+		if ($this->pass($body)['body'] !== $body) {
+			throw new ToolFailure(MailDraftMessages::htmlInvalid());
+		}
+		return $result + ['sizes' => ['input' => mb_strlen($input), 'saved' => mb_strlen($body)]];
+	}
+
+	/**
+	 * One deterministic pass; all mutable report data belongs to this call.
+	 *
+	 * @param string $input UTF-8 fragment
+	 * @return array{body:string, removed:array<string,int>, removedUrls:list<string>}
+	 * @throws ToolFailure for unsafe parsing or an engine change outside the report
+	 */
+	private function pass(string $input): array {
+		$removed = MailDraftHtmlAllow::REMOVED;
+		$urls = [];
+		$document = $this->parse($input);
+		$explicitHead = preg_match('/<head(?:\s|>)/i', $input) === 1;
+		$removed['wrapper'] = preg_match_all('/<(?:html|body)(?:\s|>)/i', $input);
+		foreach (iterator_to_array($document->getElementsByTagName('head')) as $head) {
+			if ($explicitHead) {
+				$head->parentNode->removeChild($head);
+				$removed['subtree']++;
+			} else {
+				$this->filter($head, $removed, $urls);
+			}
+		}
+		$this->filter($document, $removed, $urls);
+		$before = $this->fragment($document);
+		$purified = $this->engine->purify($before);
+		$after = $this->parse($purified);
+		$engineRemoved = MailDraftHtmlAllow::REMOVED;
+		$this->filter($after, $engineRemoved, $urls);
+		// Loss by the engine is not silently called normalization: the policy prefilter accounts for every removal.
+		if (array_sum($engineRemoved) !== 0 || $this->inventory($document) !== $this->inventory($after)) {
+			throw new ToolFailure(MailDraftMessages::htmlInvalid());
+		}
+		$body = $this->fragment($after);
+		$check = $this->parse($body);
+		$checkRemoved = MailDraftHtmlAllow::REMOVED;
+		$checkUrls = [];
+		$this->filter($check, $checkRemoved, $checkUrls);
+		if (array_sum($checkRemoved) !== 0 || $this->fragment($check) !== $body) {
+			throw new ToolFailure(MailDraftMessages::htmlInvalid());
+		}
+		return ['body' => $body, 'removed' => $removed, 'removedUrls' => $urls];
+	}
+
+	/**
+	 * Parses with explicit UTF-8 and no network; only unknown-element diagnostics are recoverable.
+	 *
+	 * Other recovery may lose duplicate attributes or move descendants out of head/form before the filter sees them.
+	 *
+	 * @param string $html UTF-8 fragment
+	 * @return DOMDocument parsed document
+	 * @throws ToolFailure for a parse failure or information-losing recovery
+	 */
+	private function parse(string $html): DOMDocument {
+		$previous = libxml_use_internal_errors(true);
+		libxml_clear_errors();
+		try {
+			$document = new DOMDocument('1.0', 'UTF-8');
+			$loaded = $document->loadHTML('<?xml encoding="UTF-8">' . ($html === '' ? '<body></body>' : $html), LIBXML_NONET);
+			$errors = libxml_get_errors();
+			if (!$loaded || array_filter($errors, static fn ($error): bool => $error->code !== 801)) {
+				throw new ToolFailure(MailDraftMessages::htmlInvalid());
+			}
+			return $document;
+		} finally {
+			libxml_clear_errors();
+			libxml_use_internal_errors($previous);
+		}
+	}
+
+	/**
+	 * Walks before unwrapping, so a forbidden subtree's descendants never survive or count twice.
+	 *
+	 * @param DOMNode $parent parent to filter
+	 * @param array<string,int> $removed report counters
+	 * @param list<string> $urls removed destinations
+	 * @return void
+	 * @throws ToolFailure for an unclassified node
+	 */
+	private function filter(DOMNode $parent, array &$removed, array &$urls): void {
+		foreach (iterator_to_array($parent->childNodes) as $node) {
+			if ($node->nodeType === XML_COMMENT_NODE) {
+				$parent->removeChild($node);
+				$removed['comment']++;
+				continue;
+			}
+			if ($node->nodeType === XML_TEXT_NODE) {
+				$node->nodeValue = preg_replace(MailDraftHtmlAllow::INVISIBLE, '', $node->nodeValue, -1, $count);
+				$removed['invisible'] += $count;
+				continue;
+			}
+			if (!$node instanceof DOMElement) {
+				// Only the parser's encoding instruction and document type exist here, outside the emitted fragment.
+				continue;
+			}
+			$tag = strtolower($node->tagName);
+			if (in_array($tag, MailDraftHtmlAllow::SUBTREES, true)) {
+				// An implicit empty head is parser scaffolding, not removed source content.
+				if ($tag !== 'head' || $node->hasChildNodes()) {
+					$removed['subtree']++;
+				}
+				$parent->removeChild($node);
+				continue;
+			}
+			$this->filter($node, $removed, $urls);
+			if (in_array($tag, ['html', 'body'], true)) {
+				continue;
+			}
+			if (!in_array($tag, MailDraftHtmlAllow::ELEMENTS, true)) {
+				$this->unwrap($node);
+				$removed['unknown-tag']++;
+				continue;
+			}
+			foreach (iterator_to_array($node->attributes) as $attribute) {
+				$name = strtolower($attribute->name);
+				$value = $attribute->value;
+				if ($tag === 'a' && $name === 'href') {
+					if (preg_match('/^(?:https?:\/\/[^\s\\\\]+|mailto:[^\s\\\\]+)$/iu', $value) === 1
+						&& preg_match(MailDraftHtmlAllow::INVISIBLE, $value) !== 1) {
+						continue;
+					}
+					$removed['unsafe-url']++;
+					$urls[] = $value;
+				} elseif (in_array($tag, ['th', 'td'], true) && in_array($name, ['colspan', 'rowspan'], true)
+					&& preg_match('/^[1-9][0-9]?$/D', $value) === 1 && (int)$value <= 50) {
+					continue;
+				} else {
+					$removed['attribute']++;
+				}
+				$node->removeAttributeNode($attribute);
+			}
+			if ($tag === 'a' && !$node->hasAttribute('href')) {
+				$this->unwrap($node);
+			}
+		}
+	}
+
+	/**
+	 * Replaces a wrapper by its already filtered children, preserving text node escaping.
+	 *
+	 * @param DOMNode $node wrapper
+	 * @return void
+	 */
+	private function unwrap(DOMNode $node): void {
+		while ($node->firstChild !== null) {
+			$node->parentNode->insertBefore($node->firstChild, $node);
+		}
+		$node->parentNode->removeChild($node);
+	}
+
+	/**
+	 * Serializes only body children; no encoding instruction, doctype, head or document wrapper escapes.
+	 *
+	 * @param DOMDocument $document filtered document
+	 * @return string UTF-8 fragment
+	 */
+	private function fragment(DOMDocument $document): string {
+		$body = $document->getElementsByTagName('body')->item(0);
+		$out = '';
+		foreach ($body?->childNodes ?? [] as $child) {
+			$out .= $document->saveHTML($child);
+		}
+		return $out;
+	}
+
+	/**
+	 * Captures emitted tags, attributes and text, rejecting any engine loss not already covered by the report.
+	 *
+	 * @param DOMDocument $document filtered document
+	 * @return array<string,int> canonical multiset of fragment content
+	 */
+	private function inventory(DOMDocument $document): array {
+		$items = [];
+		$walk = function (DOMNode $node) use (&$walk, &$items): void {
+			if ($node instanceof DOMElement) {
+				$key = strtolower($node->tagName);
+				if (!in_array($key, ['html', 'body', 'head'], true)) {
+					$items['tag:' . $key] = ($items['tag:' . $key] ?? 0) + 1;
+					foreach ($node->attributes as $attribute) {
+						$id = $key . ':' . $attribute->name . '=' . $attribute->value;
+						$items[$id] = ($items[$id] ?? 0) + 1;
+					}
+				}
+			} elseif ($node->nodeType === XML_TEXT_NODE && trim($node->nodeValue) !== '') {
+				$key = 'text:' . $node->nodeValue;
+				$items[$key] = ($items[$key] ?? 0) + 1;
+			}
+			foreach ($node->childNodes as $child) {
+				$walk($child);
+			}
+		};
+		$walk($document);
+		ksort($items);
+		return $items;
+	}
+}

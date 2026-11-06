@@ -87,7 +87,7 @@ final class MailDraftTools {
 	 */
 	public function preview(string $name, array $arguments, string $userId): array {
 		if (!self::handles($name)) { throw new InvalidArgumentException('Unknown tool'); }
-		return (new CreateDraftPreview(new MailDraftAccount($this->accounts, new MailDraftFolder(new MailMessageGateway($this->services))), new MailDraftPlan($this->states, $this->grants), $this->apps))->plan($arguments, $userId);
+		return (new CreateDraftPreview(new MailDraftAccount($this->accounts, new MailDraftFolder(new MailMessageGateway($this->services))), new MailDraftPlan($this->states, $this->grants), $this->apps, new MailDraftHtml(new \OCA\Mcp\Modules\Mail\Integration\MailDraftHtmlEngine())))->plan($arguments, $userId);
 	}
 
 	/**
@@ -119,6 +119,6 @@ final class MailDraftTools {
 			throw new InvalidArgumentException('Unknown tool');
 		}
 		return new CreateDraftHandler(new MailDraftAccount($this->accounts, new MailDraftFolder(new MailMessageGateway($this->services))),
-			new MailDraftPlan($this->states, $this->grants), new MailDraftStore($this->services), $this->links, $this->apps);
+			new MailDraftPlan($this->states, $this->grants), new MailDraftStore($this->services), $this->links, $this->apps, new MailDraftHtml(new \OCA\Mcp\Modules\Mail\Integration\MailDraftHtmlEngine()));
 	}
 }

@@ -47,6 +47,7 @@ final class CreateDraftHandler {
 	 * @param MailDraftPlan $plans the plan and its state
 	 * @param MailDraftStore $store saves the draft through the Mail app
 	 * @param MailLinks $links direct links into the Mail app, for the Drafts folder
+	 * @param MailDraftHtml $html restricted draft sanitization pipeline
 	 * @param IAppManager $apps app manager, for the installed Mail version
 	 * @return void
 	 */
@@ -56,6 +57,7 @@ final class CreateDraftHandler {
 		private MailDraftStore $store,
 		private MailLinks $links,
 		private IAppManager $apps,
+		private MailDraftHtml $html,
 	) {
 	}
 
@@ -79,6 +81,7 @@ final class CreateDraftHandler {
 		// Checked again: Mail may have been replaced by an older release since the plan.
 		MailDraftBcc::assertKept($draft, $this->apps);
 		[$account, $drafts] = $this->accounts->resolve($userId, (int)$arguments['account_id']);
+		$draft = $draft->sanitized($this->html);
 		if (!PlanState::matches($this->plans->state($userId, $account, $drafts, $draft), $arguments)) {
 			throw new PlanChanged($this->plans->plan($userId, $account, $drafts, $draft, true));
 		}

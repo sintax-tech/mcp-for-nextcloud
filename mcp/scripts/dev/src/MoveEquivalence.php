@@ -39,11 +39,13 @@ final class MoveEquivalence {
 	 * @param array<string,string> $before files of the old tree, path => content
 	 * @param array<string,string> $after files of the new tree, path => content
 	 * @param FqcnMap $map the map of the new tree
+	 * @param list<array<string,mixed>>|null $certificates trusted certificate descriptors, defaulting to the reviewed registry
 	 */
 	public function __construct(
 		private readonly array $before,
 		private readonly array $after,
 		private readonly FqcnMap $map,
+		private readonly ?array $certificates = null,
 	) {
 		$this->beforeIndex = new SourceTreeIndex($before);
 		$this->afterIndex = new SourceTreeIndex($after);
@@ -62,6 +64,7 @@ final class MoveEquivalence {
 		$php = static fn (array $paths): array => array_values(array_filter($paths, static fn (string $p): bool => str_ends_with($p, '.php')));
 		$this->pair($php($deleted), $php($added));
 		$this->collectRenames();
+		$frozen = new FrozenPathSites($this->before, $this->after, $this->pairs, $this->renames, $this->map, $this->beforeIndex, $this->afterIndex, $ticket, $this->certificates ?? FrozenPathCertificates::all());
 		$this->problems = [...$this->problems, ...BoundaryMoves::problems($this->before, $this->after, $this->pairs, $this->renames, $this->map)];
 		$this->problems = [...$this->problems, ...PathRewrites::nonPhp($this->before, $this->after, $this->pairs, $this->renames)];
 		$retired = array_filter($this->libRenames, fn (string $old): bool => !$this->afterIndex->declares($old), ARRAY_FILTER_USE_KEY);
@@ -81,11 +84,18 @@ final class MoveEquivalence {
 				$this->problems[] = "$new: not equivalent to $old: line $oldLine `$oldToken` became line $newLine `$newToken`$reason";
 			}
 			if (dirname($old) !== dirname($new) || $this->beforeIndex->declaredIn($old) !== $this->afterIndex->declaredIn($new)) {
-				foreach (array_unique([...$source->located, ...$normalized[$new]->located], SORT_REGULAR) as [$line, $construct]) {
+				$unproved = [];
+				foreach ([[$old, $source], [$new, $normalized[$new]]] as $side => [$physical, $canonical]) {
+					foreach ($canonical->located as $diagnostic) {
+						if (!$frozen->accepts($side, $physical, $canonical, $diagnostic)) { $unproved[] = array_slice($diagnostic, 0, 2); }
+					}
+				}
+				foreach (array_unique($unproved, SORT_REGULAR) as [$line, $construct]) {
 					$this->problems[] = "$new: line $line of $old uses $construct, whose value depends on the file's folder or namespace; the move changes them and the value cannot be proved the same (path not proved)";
 				}
 			}
 		}
+		$this->problems = [...$this->problems, ...$frozen->problems()];
 		$this->staleReferences($normalizeAfter, $normalized);
 		if ($ticket !== null) {
 			$this->omittedEntries($ticket);

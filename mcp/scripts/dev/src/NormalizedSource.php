@@ -16,7 +16,7 @@ final class NormalizedSource {
 	 * @param list<array{0:string,1:int}> $references fully qualified class names referred to (resolved names,
 	 *                                                unresolved same-namespace candidates and FQCN strings), with lines
 	 * @param list<array{0:string,1:int}> $strings whole literal values, including lib-relative paths and inventory identities, with lines
-	 * @param list<array{0:int,1:string}> $located line and description of each construct whose value depends on the
+	 * @param list<array{0:int,1:string,2?:int}> $located line and description of each construct whose value depends on the
 	 *                                             file's folder or namespace and cannot be folded (relative include,
 	 *                                             `__NAMESPACE__`)
 	 * @param list<array{0:int,1:string}> $namespaces line/namespace of every __NAMESPACE__ use, even in unchanged files

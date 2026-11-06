@@ -27,6 +27,11 @@ final class PollsMutationShapeTest extends TestCase {
 		}
 		yield 'missing invitation' => ['9.3.0', PollsMutationSurface::SHARES, 'sendInvitation'];
 		yield 'missing recipient factory' => ['9.3.0', PollsMutationSurface::USER_MAPPER, 'createUserObject'];
+		foreach (PollsMutationSurface::FIELDS as $class => $fields) {
+			foreach ($fields as $field) { yield $class . '::$' . $field => ['9.3.0', $class, '$' . $field]; }
+		}
+		yield 'missing native date constructor' => ['9.3.0', 'OCA\\Polls\\Model\\DateTimeImmutable', '__construct'];
+		yield 'missing native duration constructor' => ['9.3.0', 'OCA\\Polls\\Model\\DateInterval', '__construct'];
 	}
 	/** @param string $version Pin. @param string|null $missingClass Class whose method is absent. @param string|null $missingMethod Method to rename in the fixture only. @return void */
 	#[DataProvider('shapes')]
@@ -39,7 +44,13 @@ final class PollsMutationShapeTest extends TestCase {
 				self::assertSame($r['files'][$path . '.php'], hash('sha256', $source));
 				$class = 'OCA\\Polls\\' . str_replace('/', '\\', $path);
 				if ($class === $missingClass) {
-					$source = preg_replace('/function\\s+' . preg_quote($missingMethod, '/') . '\\s*\\(/', 'function missing_' . $missingMethod . '(', $source, 1, $count);
+					if (str_starts_with($missingMethod, '$')) {
+						$field = substr($missingMethod, 1);
+						$source = preg_replace('/((?:public|protected|private)\\s+(?:[?\\\\\\w|]+\\s+)?\\$)' . preg_quote($field, '/') . '\\b/',
+							'${1}missing_' . $field, $source, 1, $count);
+					} else {
+						$source = preg_replace('/function\\s+' . preg_quote($missingMethod, '/') . '\\s*\\(/', 'function missing_' . $missingMethod . '(', $source, 1, $count);
+					}
 					self::assertSame(1, $count);
 					if ($missingMethod === '__construct') {
 						$source = preg_replace_callback('/(function missing___construct\\s*\\()(.*?)(\\)\\s*\\{)/s',

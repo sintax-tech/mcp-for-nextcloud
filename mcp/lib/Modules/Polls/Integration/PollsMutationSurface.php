@@ -30,6 +30,10 @@ class PollsMutationSurface {
 		self::SHARE_MAPPER, 'OCA\\Polls\\Service\\SystemService', self::SHARE, 'OCA\\Polls\\Service\\MailService',
 		CreateSurface::SETTINGS, 'OCA\\Polls\\Service\\NotificationService', self::POLL_MAPPER, self::USER_MAPPER,
 		PollsSurface::SESSION, 'OCA\\Polls\\Db\\VoteMapper', self::OPTION_MAPPER, 'OCA\\Polls\\Db\\CommentMapper', 'OCA\\Polls\\Db\\PollGroupMapper'];
+	/** Public magic getters require these actual native entity fields. */
+	public const FIELDS = [PollsSurface::POLL => ['owner', 'expire', 'deleted', 'type', 'title', 'access', 'anonymous'],
+		PollsSurface::OPTION => ['pollId', 'order', 'deleted', 'owner'],
+		self::SHARE => ['pollId', 'groupId', 'userId', 'type', 'locked', 'deleted', 'invitationSent', 'token']];
 
 	/** @param bool $nine Whether the proven 9.x signature is required. @return array<string,array<string,array{array,string|array|null}>> Required exact signatures, without invitation reference parameters. */
 	public static function methods(bool $nine): array {
@@ -89,8 +93,7 @@ class PollsMutationSurface {
 				if (!$parameter->getType() instanceof \ReflectionNamedType || $parameter->getType()->isBuiltin() || $parameter->isPassedByReference()) { throw PollsRefusal::unavailable(); }
 			}
 		}
-		foreach ([PollsSurface::POLL => ['owner', 'expire', 'deleted', 'type', 'title', 'access', 'anonymous'],
-			PollsSurface::OPTION => ['pollId', 'order', 'deleted', 'owner'], self::SHARE => ['pollId', 'groupId', 'userId', 'type', 'locked', 'deleted', 'invitationSent', 'token']] as $class => $fields) {
+		foreach (self::FIELDS as $class => $fields) {
 			foreach ($fields as $field) { if (!property_exists($class, $field)) { throw PollsRefusal::unavailable(); } }
 		}
 	}

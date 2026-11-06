@@ -34,6 +34,7 @@ final class GoldenFile {
 	 * @return void
 	 */
 	public static function assertMatches(TestCase $test, string $path, mixed $value): void {
+		OracleRuntime::assertCanonical($test, $path);
 		$actual = self::encode($value);
 		if (self::updating()) {
 			if (!is_dir(dirname($path))) {

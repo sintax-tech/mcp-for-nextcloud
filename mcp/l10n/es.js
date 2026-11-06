@@ -1815,6 +1815,7 @@ OC.L10N.register(
     "Existing answers are not converted and may be interpreted differently under the new type." : "Las respuestas existentes no se convierten y pueden interpretarse de otra forma con el nuevo tipo.",
     "The new type does not use options. Existing options stay stored but are not shown." : "El nuevo tipo no usa opciones. Las opciones existentes siguen guardadas, pero no se muestran.",
     "Existing options are kept with their IDs and order." : "Las opciones existentes se mantienen con sus ID y su orden.",
-    "Files already uploaded to this question are not touched and no cleanup job is queued." : "Los archivos ya subidos a esta pregunta no se tocan y no se pone en cola ninguna tarea de limpieza."
+    "Files already uploaded to this question are not touched and no cleanup job is queued." : "Los archivos ya subidos a esta pregunta no se tocan y no se pone en cola ninguna tarea de limpieza.",
+    "Change existing forms, including adding, reordering and deleting questions and options and changing a question type" : "Cambiar formularios existentes, incluido añadir, reordenar y eliminar preguntas y opciones y cambiar el tipo de una pregunta"
     },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

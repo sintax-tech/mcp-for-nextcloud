@@ -1178,6 +1178,9 @@
 			if (module === 'calendar' && operation === 'transfer') {
 				return t('mcp', 'Move an event to another person’s calendar')
 			}
+			if (module === 'forms' && operation === 'edit') {
+				return t('mcp', 'Change existing forms, including adding, reordering and deleting questions and options and changing a question type')
+			}
 			const mailHint = window.OCA.Mcp.Admin.pollsGrants?.operationHint(module, operation) || (window.OCA.Mcp.Admin.mailGrants ? window.OCA.Mcp.Admin.mailGrants.operationHint(module, operation) : null)
 			if (mailHint) return mailHint
 			const hints = {

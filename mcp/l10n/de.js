@@ -1815,6 +1815,7 @@ OC.L10N.register(
     "Existing answers are not converted and may be interpreted differently under the new type." : "Vorhandene Antworten werden nicht umgewandelt und können unter dem neuen Typ anders ausgelegt werden.",
     "The new type does not use options. Existing options stay stored but are not shown." : "Der neue Typ verwendet keine Optionen. Vorhandene Optionen bleiben gespeichert, werden aber nicht angezeigt.",
     "Existing options are kept with their IDs and order." : "Vorhandene Optionen bleiben mit ihren IDs und ihrer Reihenfolge erhalten.",
-    "Files already uploaded to this question are not touched and no cleanup job is queued." : "Bereits zu dieser Frage hochgeladene Dateien bleiben unberührt, und es wird kein Bereinigungsjob eingereiht."
+    "Files already uploaded to this question are not touched and no cleanup job is queued." : "Bereits zu dieser Frage hochgeladene Dateien bleiben unberührt, und es wird kein Bereinigungsjob eingereiht.",
+    "Change existing forms, including adding, reordering and deleting questions and options and changing a question type" : "Vorhandene Formulare ändern, einschließlich Fragen und Optionen hinzufügen, neu anordnen und löschen sowie den Typ einer Frage ändern"
     },
 "nplurals=2; plural=(n != 1);");

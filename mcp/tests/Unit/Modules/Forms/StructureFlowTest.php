@@ -156,6 +156,35 @@ final class StructureFlowTest extends TestCase {
 		}
 	}
 
+	/**
+	 * Review R5: every other mutable form header field is signed too. Changed in the same second (same lastUpdated and lock),
+	 * any one of them alone turns the confirmation into a PlanChanged before any mutator, and the plan never shows the share
+	 * hash or the confirmation email.
+	 *
+	 * @return void
+	 */
+	public function testFormHeaderChangesInvalidateThePlan(): void {
+		$op = StructureHarness::operations()['forms_delete_question'];
+		$args = StructureHarness::arguments()['forms_delete_question'];
+		$changes = ['description' => 'Changed elsewhere', 'hash' => 'rotated', 'expires' => 99, 'isAnonymous' => true, 'submitMultiple' => true,
+			'allowEditSubmissions' => true, 'showExpiration' => true, 'submissionMessage' => 'Thanks', 'maxSubmissions' => 5,
+			'confirmationEmailSubject' => 'Hi', 'confirmationEmailBody' => 'Body', 'allowComments' => true, 'fileId' => 7, 'fileFormat' => 'csv'];
+		foreach ($changes as $field => $value) {
+			$f = new StructureFixture();
+			$plan = StructureHarness::flow($this, $f)->preview($op, $args, 'alice');
+			self::assertStringNotContainsString('publichash', json_encode($plan));
+			$stamp = [$f->form->fields['lastUpdated'], $f->form->fields['lockedBy'], $f->form->fields['lockedUntil']];
+			$flow = StructureHarness::flow($this, $f, function () use ($f, $field, $value): void { $f->form->fields[$field] = $value; });
+			try {
+				$flow->handle($op, $args + ['confirm' => true, 'plan_state' => $plan['plan_state']], 'alice');
+				self::fail($field . ' change executed a stale plan');
+			} catch (PlanChanged) {
+			}
+			self::assertSame($stamp, [$f->form->fields['lastUpdated'], $f->form->fields['lockedBy'], $f->form->fields['lockedUntil']], $field);
+			self::assertSame([], $f->calls, $field);
+		}
+	}
+
 	/** Every operation applies once and the receipt is built from the readback. @return void */
 	public function testEveryOperationAppliesOnceWithReadback(): void {
 		foreach (StructureHarness::operations() as $name => $op) {

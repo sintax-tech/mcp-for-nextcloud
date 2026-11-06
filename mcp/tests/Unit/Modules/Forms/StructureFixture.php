@@ -58,7 +58,11 @@ final class StructureFixture {
 	/** Builds a form with a selected email question, a dropdown with two options and a file question. */
 	public function __construct() {
 		$this->form = new EditingForm(['title' => 'Form', 'state' => 0, 'lockedBy' => null, 'lockedUntil' => 0, 'lastUpdated' => 1,
-			'confirmationEmailEnabled' => true, 'confirmationEmailQuestionId' => 2]);
+			'confirmationEmailEnabled' => true, 'confirmationEmailQuestionId' => 2,
+			'hash' => 'publichash', 'description' => '', 'fileId' => null, 'fileFormat' => null, 'created' => 1, 'expires' => 0,
+			'isAnonymous' => false, 'submitMultiple' => false, 'allowEditSubmissions' => false, 'showExpiration' => false,
+			'submissionMessage' => null, 'maxSubmissions' => null, 'confirmationEmailSubject' => null, 'confirmationEmailBody' => null,
+			'allowComments' => false]);
 		$this->question(2, 1, 'short', 'Email', ['validationType' => 'email']);
 		$this->question(3, 2, 'dropdown', 'Choice', []);
 		$this->question(4, 3, 'file', 'Upload', []);

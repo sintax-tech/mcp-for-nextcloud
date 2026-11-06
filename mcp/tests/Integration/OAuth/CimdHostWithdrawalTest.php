@@ -62,6 +62,19 @@ final class CimdHostWithdrawalTest extends OAuthAccountTestCase {
 			ClientAdmission::generation(Server::get(OAuthClientsMapper::class), self::CLIENT) ?? '0'), self::REDIRECT, 'xyz', self::CHALLENGE, self::RESOURCE, 'mcp');
 	}
 
+	/** @param string $code Code of this isolated client. @return array Tokens for the child fixture's identity. */
+	protected function exchange(string $code): array {
+		return Server::get(TokenService::class)->exchangeCode(['code' => $code, 'code_verifier' => self::VERIFIER,
+			'client_id' => self::CLIENT, 'redirect_uri' => self::REDIRECT, 'resource' => self::RESOURCE]);
+	}
+
+	/** @return void Fresh/upgrade defaults are imported once, before any host-setting command. */
+	public function testExistingDefaultHostsKeepTheirLegacyGeneration(): void {
+		$rows = array_column($this->savedHosts, null, 'host');
+		self::assertSame(['host' => 'claude.ai', 'enabled' => true, 'gen' => '1'], $rows['claude.ai'] ?? null);
+		self::assertSame(['host' => 'chatgpt.com', 'enabled' => true, 'gen' => '1'], $rows['chatgpt.com'] ?? null);
+	}
+
 	/** @param callable $action Refused operation. @return void No credentials can be issued. */
 	private function refused(callable $action): void {
 		try { $action(); self::fail('Withdrawn generation was accepted'); }

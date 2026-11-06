@@ -27,7 +27,6 @@ final class EditFile implements WriteTool {
 		$path = ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::path()];
 		$etag = ['type' => 'string', 'description' => FilesMessages::etag()];
 		$confirmShared = ['type' => 'boolean', 'description' => FilesMessages::confirmShared()];
-		$version = ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::version()];
 		return FilesSchema::definition(['name' => 'files_edit', 'module' => 'files', 'operation' => 'edit',
 				'description' => FilesMessages::editTool(),
 				'inputSchema' => FilesSchema::schema([

@@ -25,9 +25,7 @@ final class Mkdir implements WriteTool {
 	/** @return ToolDefinition unchanged static definition */
 	public static function definition(): ToolDefinition {
 		$path = ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::path()];
-		$etag = ['type' => 'string', 'description' => FilesMessages::etag()];
 		$confirmShared = ['type' => 'boolean', 'description' => FilesMessages::confirmShared()];
-		$version = ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::version()];
 		return FilesSchema::definition(['name' => 'files_mkdir', 'module' => 'files', 'operation' => 'create',
 				'description' => FilesMessages::mkdirTool(),
 				'inputSchema' => FilesSchema::schema(['path' => $path, 'confirm_shared' => $confirmShared], ['path'])]);

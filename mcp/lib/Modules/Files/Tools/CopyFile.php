@@ -24,10 +24,8 @@ final class CopyFile implements WriteTool {
 
 	/** @return ToolDefinition unchanged static definition */
 	public static function definition(): ToolDefinition {
-		$path = ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::path()];
 		$etag = ['type' => 'string', 'description' => FilesMessages::etag()];
 		$confirmShared = ['type' => 'boolean', 'description' => FilesMessages::confirmShared()];
-		$version = ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::version()];
 		return FilesSchema::definition(['name' => 'files_copy', 'module' => 'files', 'operation' => 'create',
 				'description' => FilesMessages::copyTool(),
 				'inputSchema' => FilesSchema::schema([

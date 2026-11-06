@@ -2,8 +2,6 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
-		{"path":"lib/Checkout/CheckoutToken.php","fqcn":"OCA\\Mcp\\Checkout\\CheckoutToken","target":"stays","owner":"Mcp","ticket":null},
-		{"path":"lib/Checkout/CheckoutTokenStore.php","fqcn":"OCA\\Mcp\\Checkout\\CheckoutTokenStore","target":"stays","owner":"Mcp","ticket":null},
 		{"path":"lib/Mcp/Resources/FileTextResource.php","fqcn":"OCA\\Mcp\\Mcp\\Resources\\FileTextResource","target":"stays","owner":"Mcp","ticket":null},
 		{"path":"lib/Modules/Files/Checkout/CheckoutFileAction.php","fqcn":"OCA\\Mcp\\Modules\\Files\\Checkout\\CheckoutFileAction","target":"stays","owner":"Modules\\Files","ticket":null},
 		{"path":"lib/Modules/Files/Checkout/CheckoutFilePreview.php","fqcn":"OCA\\Mcp\\Modules\\Files\\Checkout\\CheckoutFilePreview","target":"stays","owner":"Modules\\Files","ticket":null},

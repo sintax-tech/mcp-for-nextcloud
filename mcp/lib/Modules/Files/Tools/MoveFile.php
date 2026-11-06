@@ -24,10 +24,8 @@ final class MoveFile implements WriteTool {
 
 	/** @return ToolDefinition unchanged static definition */
 	public static function definition(): ToolDefinition {
-		$path = ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::path()];
 		$etag = ['type' => 'string', 'description' => FilesMessages::etag()];
 		$confirmShared = ['type' => 'boolean', 'description' => FilesMessages::confirmShared()];
-		$version = ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::version()];
 		return FilesSchema::definition(['name' => 'files_move', 'module' => 'files', 'operation' => 'move',
 				'description' => FilesMessages::moveTool(),
 				'inputSchema' => FilesSchema::schema([

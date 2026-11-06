@@ -1744,6 +1744,22 @@ OC.L10N.register(
     "Delete file or folder" : "Excluir arquivo ou pasta",
     "Inspected tree: %s files, %s folders (including the source), %s bytes." : "Árvore inspecionada: %s arquivos, %s pastas (incluindo a origem), %s bytes.",
     "Deletion supports files and completely inspected folders in Local personal home storage, including shared originals and descendants of local received shares with native DELETE permission. Shared impact requires confirm_shared. Received share roots, other mounts, personal and selected scope roots, and current or historical backup folders are refused. Folders are refused while exclusion tags are configured. Folder limits are 2,000 nodes, 1 GiB and 64 levels." : "A exclusão admite arquivos e pastas completamente inspecionadas no armazenamento pessoal Local, incluindo originais compartilhados e descendentes de compartilhamentos locais recebidos com permissão DELETE nativa. Impacto compartilhado exige confirm_shared. Raízes recebidas, outras montagens, raízes pessoais e de escopo selecionado e backups atuais ou históricos são recusados. Pastas são recusadas enquanto houver etiquetas de exclusão configuradas. Limites: 2.000 nós, 1 GiB e 64 níveis.",
-    "This deletion affects shared content. Ask for explicit confirmation and retry with confirm_shared: true. Other people may lose access. Native recovery is not guaranteed for either person." : "Esta exclusão afeta conteúdo compartilhado. Peça confirmação explícita e repita com confirm_shared: true. Outras pessoas podem perder acesso. A recuperação nativa não é garantida para nenhuma das pessoas."
+    "This deletion affects shared content. Ask for explicit confirmation and retry with confirm_shared: true. Other people may lose access. Native recovery is not guaranteed for either person." : "Esta exclusão afeta conteúdo compartilhado. Peça confirmação explícita e repita com confirm_shared: true. Outras pessoas podem perder acesso. A recuperação nativa não é garantida para nenhuma das pessoas.",
+    "The Mail HTML sanitizer is unavailable; the HTML draft was not saved. Ask an administrator to check the installed Mail app." : "O sanitizador HTML do Mail está indisponível; o rascunho HTML não foi salvo. Peça a um administrador para verificar o app Mail instalado.",
+    "The HTML draft could not be safely parsed and sanitized; nothing was saved." : "Não foi possível interpretar e sanitizar o rascunho HTML com segurança; nada foi salvo.",
+    "The sanitized HTML exceeds 50,000 characters; nothing was saved." : "O HTML sanitizado ultrapassa 50.000 caracteres; nada foi salvo.",
+    "The HTML contains no readable content after sanitization; nothing was saved." : "O HTML não contém conteúdo legível após a sanitização; nada foi salvo.",
+    "Removed content will not be saved. Review the complete sanitized HTML, preview and destinations." : "O conteúdo removido não será salvo. Revise o HTML sanitizado completo, a prévia e os destinos.",
+    "The document structure was normalized; no content was removed." : "A estrutura do documento foi normalizada; nenhum conteúdo foi removido.",
+    "No content was removed by sanitization." : "Nenhum conteúdo foi removido pela sanitização.",
+    "Mail generates the MIME plain text alternative from this HTML with Horde; it may differ from this preview." : "O Mail gera a alternativa MIME em texto simples deste HTML com o Horde; ela pode diferir desta prévia.",
+    "The account signature was not added to this draft." : "A assinatura da conta não foi acrescentada a este rascunho.",
+    "Sanitized HTML: %s" : "HTML sanitizado: %s",
+    "Text preview: %s" : "Prévia textual: %s",
+    "Removal counts: %s" : "Contagem de remoções: %s",
+    "Link text and destination: %s" : "Texto e destino do link: %s",
+    "Removed destination: %s" : "Destino removido: %s",
+    "Sizes in characters (input, saved, preview): %s" : "Tamanhos em caracteres (entrada, salvo, prévia): %s",
+    "Unwrapped elements: %s" : "Elementos com invólucro removido: %s"
     },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

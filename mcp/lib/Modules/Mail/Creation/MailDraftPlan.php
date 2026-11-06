@@ -63,9 +63,10 @@ class MailDraftPlan {
 		return [
 			'action' => self::TOOL,
 			'target' => $target,
-			'draft' => $draft->recipients + ['subject' => $draft->subject, 'body' => $draft->body],
+			'draft' => $draft->recipients + ['subject' => $draft->subject, 'body' => $draft->body, 'html' => $draft->html] + $draft->htmlDetails,
 			'message' => CommonMessages::planNothingChanged(),
-			'notes' => [MailDraftMessages::notSent(), MailDraftMessages::eachConfirmCreates()],
+			'notes' => [MailDraftMessages::notSent(), MailDraftMessages::eachConfirmCreates(),
+				...($draft->html ? [MailDraftMessages::htmlAlternative(), MailDraftMessages::htmlSignature()] : [])],
 			PlanState::ARGUMENT => $this->state($userId, $account, $drafts, $draft),
 		] + ($changed ? ['warnings' => [['message' => MailDraftMessages::planChanged()]]] : []);
 	}
@@ -87,6 +88,7 @@ class MailDraftPlan {
 			'recipients' => $draft->recipients,
 			'subject' => $draft->subject,
 			'body' => hash('sha256', $draft->body),
+			'html' => $draft->html,
 		]);
 	}
 }

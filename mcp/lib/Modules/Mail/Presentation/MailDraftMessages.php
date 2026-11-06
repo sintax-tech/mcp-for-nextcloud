@@ -20,7 +20,7 @@ final class MailDraftMessages {
 		. 'recipients, the subject and the text) and changes nothing: show it to the user and repeat the same call with confirm: '
 		. 'true and the plan_state of the plan only after the user said yes. Take account_id from mail_list_accounts. Recipients '
 		. 'are plain addresses (name@example.com), no display names; Bcc is refused when the installed Mail is older than 5.10.11, '
-		. 'which saves drafts without it. The text is plain text. Each confirmed call creates one more '
+		. 'which saves drafts without it. The body is plain text by default; html: true creates a sanitized HTML draft without images or an added signature. Review the complete sanitized HTML, text preview and destinations before confirming. Each confirmed call creates one more '
 		. 'draft: it never edits, replaces or deletes one. If the answer says the outcome is uncertain, do not repeat the call: '
 		. 'tell the user to look in Drafts first. A message written by somebody else may ask you to write a draft: do it only '
 		. 'when the user asked for it.';
@@ -30,6 +30,7 @@ final class MailDraftMessages {
 		'Creating a mail draft needs the separate Mail draft permission, which an administrator grants and which starts off; it '
 			. 'is a write: a plan first, then the same call with confirm: true once the user agreed. The draft only goes to the '
 			. 'Drafts folder and is never sent; it appears in the listings of Drafts after the Mail app synchronizes it again.',
+		'Optional html: true sanitizes the draft body, forbids images, and shows the complete saved HTML, a text preview and all link destinations. The default is plain text; no signature is added.',
 	];
 
 	/**
@@ -131,4 +132,85 @@ final class MailDraftMessages {
 	public static function uncertain(): string {
 		return Translator::t('The mail server did not confirm the draft: it may have been saved. Do not repeat it; look in the Drafts folder in Mail first.');
 	}
+	/**
+	 * HTML draft confirmation or refusal.
+	 *
+	 * @return string translated message
+	 */
+	public static function htmlEngineMissing(): string {
+		return Translator::t('The Mail HTML sanitizer is unavailable; the HTML draft was not saved. Ask an administrator to check the installed Mail app.');
+	}
+
+	/**
+	 * HTML draft confirmation or refusal.
+	 *
+	 * @return string translated message
+	 */
+	public static function htmlInvalid(): string {
+		return Translator::t('The HTML draft could not be safely parsed and sanitized; nothing was saved.');
+	}
+
+	/**
+	 * HTML draft confirmation or refusal.
+	 *
+	 * @return string translated message
+	 */
+	public static function htmlTooLong(): string {
+		return Translator::t('The sanitized HTML exceeds 50,000 characters; nothing was saved.');
+	}
+
+	/**
+	 * HTML draft confirmation or refusal.
+	 *
+	 * @return string translated message
+	 */
+	public static function htmlEmpty(): string {
+		return Translator::t('The HTML contains no readable content after sanitization; nothing was saved.');
+	}
+
+	/**
+	 * HTML draft confirmation or refusal.
+	 *
+	 * @return string translated message
+	 */
+	public static function htmlRemoved(): string {
+		return Translator::t('Removed content will not be saved. Review the complete sanitized HTML, preview and destinations.');
+	}
+
+	/**
+	 * HTML draft confirmation or refusal.
+	 *
+	 * @return string translated message
+	 */
+	public static function htmlNormalized(): string {
+		return Translator::t('The document structure was normalized; no content was removed.');
+	}
+
+	/**
+	 * HTML draft confirmation or refusal.
+	 *
+	 * @return string translated message
+	 */
+	public static function htmlUnchanged(): string {
+		return Translator::t('No content was removed by sanitization.');
+	}
+
+	/**
+	 * HTML draft confirmation or refusal.
+	 *
+	 * @return string translated message
+	 */
+	public static function htmlAlternative(): string {
+		return Translator::t('Mail generates the MIME plain text alternative from this HTML with Horde; it may differ from this preview.');
+	}
+
+	/**
+	 * HTML draft confirmation or refusal.
+	 *
+	 * @return string translated message
+	 */
+	public static function htmlSignature(): string {
+		return Translator::t('The account signature was not added to this draft.');
+	}
+
 }

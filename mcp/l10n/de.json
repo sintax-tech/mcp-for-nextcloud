@@ -1742,6 +1742,22 @@
     "Delete file or folder" : "Datei oder Ordner löschen",
     "Inspected tree: %s files, %s folders (including the source), %s bytes." : "Geprüfter Baum: %s Dateien, %s Ordner (einschließlich Quelle), %s Bytes.",
     "Deletion supports files and completely inspected folders in Local personal home storage, including shared originals and descendants of local received shares with native DELETE permission. Shared impact requires confirm_shared. Received share roots, other mounts, personal and selected scope roots, and current or historical backup folders are refused. Folders are refused while exclusion tags are configured. Folder limits are 2,000 nodes, 1 GiB and 64 levels." : "Gelöscht werden dürfen Dateien und vollständig geprüfte Ordner im lokalen persönlichen Speicher, einschließlich freigegebener Originale und Nachfahren lokal empfangener Freigaben mit nativem DELETE-Recht. Gemeinsame Auswirkungen erfordern confirm_shared. Empfangene Freigabewurzeln, andere Einhängungen, persönliche und ausgewählte Bereichswurzeln sowie aktuelle oder frühere Sicherungsordner werden abgelehnt. Bei konfigurierten Ausschluss-Tags werden Ordner abgelehnt. Grenzen: 2.000 Knoten, 1 GiB und 64 Ebenen.",
-    "This deletion affects shared content. Ask for explicit confirmation and retry with confirm_shared: true. Other people may lose access. Native recovery is not guaranteed for either person." : "Dieses Löschen betrifft freigegebene Inhalte. Ausdrücklich bestätigen lassen und mit confirm_shared: true wiederholen. Andere Personen können den Zugriff verlieren. Native Wiederherstellung ist für keine der Personen garantiert."
+    "This deletion affects shared content. Ask for explicit confirmation and retry with confirm_shared: true. Other people may lose access. Native recovery is not guaranteed for either person." : "Dieses Löschen betrifft freigegebene Inhalte. Ausdrücklich bestätigen lassen und mit confirm_shared: true wiederholen. Andere Personen können den Zugriff verlieren. Native Wiederherstellung ist für keine der Personen garantiert.",
+    "The Mail HTML sanitizer is unavailable; the HTML draft was not saved. Ask an administrator to check the installed Mail app." : "Die HTML-Bereinigung von Mail ist nicht verfügbar; der HTML-Entwurf wurde nicht gespeichert. Bitten Sie einen Administrator, die installierte Mail-App zu prüfen.",
+    "The HTML draft could not be safely parsed and sanitized; nothing was saved." : "Der HTML-Entwurf konnte nicht sicher gelesen und bereinigt werden; nichts wurde gespeichert.",
+    "The sanitized HTML exceeds 50,000 characters; nothing was saved." : "Das bereinigte HTML überschreitet 50.000 Zeichen; nichts wurde gespeichert.",
+    "The HTML contains no readable content after sanitization; nothing was saved." : "Das HTML enthält nach der Bereinigung keinen lesbaren Inhalt; nichts wurde gespeichert.",
+    "Removed content will not be saved. Review the complete sanitized HTML, preview and destinations." : "Entfernter Inhalt wird nicht gespeichert. Prüfen Sie das vollständige bereinigte HTML, die Vorschau und die Linkziele.",
+    "The document structure was normalized; no content was removed." : "Die Dokumentstruktur wurde normalisiert; kein Inhalt wurde entfernt.",
+    "No content was removed by sanitization." : "Bei der Bereinigung wurde kein Inhalt entfernt.",
+    "Mail generates the MIME plain text alternative from this HTML with Horde; it may differ from this preview." : "Mail erzeugt die MIME-Textalternative aus diesem HTML mit Horde; sie kann von dieser Vorschau abweichen.",
+    "The account signature was not added to this draft." : "Die Kontosignatur wurde diesem Entwurf nicht hinzugefügt.",
+    "Sanitized HTML: %s" : "Bereinigtes HTML: %s",
+    "Text preview: %s" : "Textvorschau: %s",
+    "Removal counts: %s" : "Anzahl der Entfernungen: %s",
+    "Link text and destination: %s" : "Linktext und Ziel: %s",
+    "Removed destination: %s" : "Entferntes Ziel: %s",
+    "Sizes in characters (input, saved, preview): %s" : "Größen in Zeichen (Eingabe, gespeichert, Vorschau): %s",
+    "Unwrapped elements: %s" : "Entfernte Elementhüllen: %s"
     },"pluralForm" : "nplurals=2; plural=(n != 1);"
 }

@@ -28,6 +28,7 @@ final class MailTestModule {
 		$moves = new Moving\MoveMessageContext($services, $accounts, $timezones, $links, $states, $grants, $events);
 		$draftAccount = new Creation\MailDraftAccount($accounts, new Creation\MailDraftFolder($messages));
 		$draftPlan = new Creation\MailDraftPlan($states, $grants);
+		$draftHtml = new Creation\MailDraftHtml(new Integration\MailDraftHtmlEngine());
 		$sendAccount = new Sending\MailSendAccount($accounts, $messages);
 		$sendPlan = new Sending\MailSendPlan($states, $grants, $apps);
 		$tools = [
@@ -40,7 +41,7 @@ final class MailTestModule {
 			Tools\ReadAttachment::class => new Tools\ReadAttachment(new Reading\ReadAttachmentHandler($locator, new Integration\MailAttachmentReader($services), new Extraction\MailAttachmentText(new Extraction\MailAttachmentDocument($temp)))),
 			Tools\SetFlags::class => new Tools\SetFlags(new Editing\SetFlagsHandler($flags), new Editing\SetFlagsPreview($flags)),
 			Tools\MoveMessage::class => new Tools\MoveMessage(new Moving\MoveMessageHandler($moves), new Moving\MoveMessagePreview($moves)),
-			Tools\CreateDraft::class => new Tools\CreateDraft(new Creation\CreateDraftHandler($draftAccount, $draftPlan, new Integration\MailDraftStore($services), $links, $apps), new Creation\CreateDraftPreview($draftAccount, $draftPlan, $apps)),
+			Tools\CreateDraft::class => new Tools\CreateDraft(new Creation\CreateDraftHandler($draftAccount, $draftPlan, new Integration\MailDraftStore($services), $links, $apps, $draftHtml), new Creation\CreateDraftPreview($draftAccount, $draftPlan, $apps, $draftHtml)),
 			Tools\SendMessage::class => new Tools\SendMessage(new Sending\SendMessageHandler($sendAccount, $sendPlan, new Integration\MailSendOutbox($services), $services), new Sending\SendMessagePreview($sendAccount, $sendPlan)),
 		];
 		return new MailModule(new class($tools) implements ContainerInterface {

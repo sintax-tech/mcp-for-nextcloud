@@ -52,7 +52,8 @@
                                     "auditoria@example.com"
                                 ],
                                 "subject": "Proposta revisada",
-                                "body": "Olá Bob,\nsegue a proposta revisada."
+                                "body": "Olá Bob,\nsegue a proposta revisada.",
+                                "html": false
                             },
                             "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
                             "notes": [
@@ -157,7 +158,8 @@
                                     "auditoria@example.com"
                                 ],
                                 "subject": "Proposta revisada",
-                                "body": "Olá Bob,\nsegue a proposta revisada."
+                                "body": "Olá Bob,\nsegue a proposta revisada.",
+                                "html": false
                             },
                             "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
                             "notes": [
@@ -226,7 +228,8 @@
                                     "auditoria@example.com"
                                 ],
                                 "subject": "Proposta revisada",
-                                "body": "Olá Bob,\nsegue a proposta revisada."
+                                "body": "Olá Bob,\nsegue a proposta revisada.",
+                                "html": false
                             },
                             "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
                             "notes": [
@@ -298,7 +301,8 @@
                                     "auditoria@example.com"
                                 ],
                                 "subject": "Proposta revisada",
-                                "body": "Olá Bob,\nsegue a proposta revisada."
+                                "body": "Olá Bob,\nsegue a proposta revisada.",
+                                "html": false
                             },
                             "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
                             "notes": [

@@ -37,6 +37,15 @@ Las escrituras requieren permisos explícitos y confirmación. Los planes descri
 
 Versiones anteriores: consulta el [Historial](HISTORY.es.md).
 
+## HTML mail drafts (1.3.0)
+
+`mail_create_draft` accepts optional `html: true`; the default remains `false` (plain text). The existing `mail.draft` permission and confirmation apply. Mail's HTML sanitizer runs with a restricted configuration before planning and again before saving through `saveDraft`. Scripts, events, CSS, embedded content and all images (remote and `data:`) are forbidden. Links require an explicit `http`, `https` or `mailto` scheme.
+
+The plan shows the complete sanitized HTML, a text preview, removal counts, names of unwrapped elements and every retained or rejected link destination. It preserves spaces and indentation in `pre`/`code`; table cells use tabs and list items have markers. Source and sanitized HTML each have a 50,000-character limit, with no truncation of the HTML confirmation. A nonempty source with no readable content after filtering is refused. If Mail's sanitizer cannot be loaded, HTML mode is refused and nothing is saved. Unsafe parser recovery and unaccounted content loss are also refused.
+
+Mail generates a MIME plain text alternative with Horde, which may differ from the confirmation preview. No account signature is added. Each confirmation creates another draft; draft editing and HTML sending are outside this feature. Suggested by @Beluluz in [#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30).
+
+
 ## Por qué
 
 Los asistentes de IA rinden más cuando alcanzan las herramientas que un equipo ya usa. Conectarlos a Nextcloud suele exigir scripts con contraseñas compartidas, tokens de API amplios o datos copiados a otro sitio. **MCP for Cloud** se ejecuta **dentro** de tu Nextcloud:
@@ -80,7 +89,7 @@ Además:
 
 ## Alcance y permisos de la 1.2.2
 
-- **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** búsqueda/lectura opcional de mensajes, texto de adjuntos y enlaces nativos; permisos separados y denegados por defecto para indicadores, mover en la misma cuenta, borradores nuevos de texto y envío. Leer no marca mensajes como leídos. Cuentas/carpetas siguen bajo `mail.read`; mensajes y adjuntos requieren permisos propios.
+- **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** búsqueda/lectura opcional de mensajes, texto de adjuntos y enlaces nativos; permisos separados y denegados por defecto para indicadores, mover en la misma cuenta, borradores nuevos (texto por defecto, HTML saneado opcional) y envío de texto. Leer no marca mensajes como leídos. Cuentas/carpetas siguen bajo `mail.read`; mensajes y adjuntos requieren permisos propios.
 - **Tables ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** descubrir tablas/vistas/columnas, leer filas autorizadas y crear o editar una fila. Se mantienen filtros de vista y ACL nativas; escribir esquemas y vistas queda para después.
 - **Forms ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** descubrir estructura y enlaces existentes autorizados, leer respuestas propias/todas según acceso nativo con `forms.results`, crear formularios privados con preguntas/opciones iniciales y aplicar PATCH a una pregunta u opción existente. Read/results/create/edit son independientes; añadir, eliminar, reordenar o cambiar tipos existentes queda fuera. La creación puede tener los efectos nativos documentados sobre carpetas de archivos; editar puede renovar el bloqueo o limpiar la selección de email de confirmación, según el plan.
 - **Polls ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** descubrir encuestas/opciones/estado, leer votos/resultados y enlaces existentes dentro del acceso nativo, y crear una encuesta privada simple text/date con 0–100 opciones iniciales. `polls.results` y `polls.links` son permisos separados, denegados por defecto. Gestión de opciones/configuración existentes y flujos más amplios de invitación/enlaces quedan fuera.

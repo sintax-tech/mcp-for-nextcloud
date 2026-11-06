@@ -13,7 +13,7 @@ use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 
 /**
  * The draft a call asks for, what the request of the issue names ("create a draft in the user's Drafts folder"): the
- * recipients (To, Cc, Bcc), the subject and a plain text. No attachment, reply, HTML or sender other than the account.
+ * recipients (To, Cc, Bcc), the subject and a body: plain text by default or sanitized HTML. No attachment, reply or other sender.
  *
  * Recipients are plain addresses only, so the list the Mail app parses (OCA\Mail\AddressList::parse()) is exactly the one
  * the plan shows: no display name, comma or group syntax can turn one entry into several or none. The subject is one line;
@@ -37,13 +37,17 @@ final class MailDraftRequest {
 	 *
 	 * @param array{to:list<string>, cc:list<string>, bcc:list<string>} $recipients plain addresses by field
 	 * @param string $subject one line
-	 * @param string $body plain text
+	 * @param string $body plain text or sanitized HTML
+	 * @param bool $html whether the native draft is HTML
+	 * @param array<string,mixed> $htmlDetails HTML preview and removal report
 	 * @return void
 	 */
 	private function __construct(
 		public readonly array $recipients,
 		public readonly string $subject,
 		public readonly string $body,
+		public readonly bool $html = false,
+		public readonly array $htmlDetails = [],
 	) {
 	}
 
@@ -75,7 +79,29 @@ final class MailDraftRequest {
 		if (str_contains($body, "\0") || !mb_check_encoding($body, 'UTF-8')) {
 			throw new ArgumentValidationException('Invalid argument: body', 'body', MailDraftMessages::invalidBody());
 		}
-		return new self($recipients, $subject, $body);
+		if (array_key_exists('html', $arguments) && !is_bool($arguments['html'])) {
+			throw new ArgumentValidationException('Invalid argument: html', 'html');
+		}
+		if (mb_strlen($body) > self::MAX_BODY) {
+			throw new ArgumentValidationException('Invalid argument: body', 'body', MailDraftMessages::htmlTooLong());
+		}
+		return new self($recipients, $subject, $body, $arguments['html'] ?? false);
+	}
+
+	/**
+	 * Prepares HTML only after account resolution checked actor enablement, on preview and confirmation alike.
+	 *
+	 * @param MailDraftHtml $sanitizer restricted HTML pipeline
+	 * @return self draft whose saved body and confirmation data come from the same fragment
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure when HTML cannot be sanitized
+	 */
+	public function sanitized(MailDraftHtml $sanitizer): self {
+		if (!$this->html) {
+			return $this;
+		}
+		$result = $sanitizer->sanitize($this->body);
+		return new self($this->recipients, $this->subject, $result['body'], true,
+			\OCA\Mcp\Modules\Mail\Presentation\MailDraftHtmlView::fields($result));
 	}
 
 	/**

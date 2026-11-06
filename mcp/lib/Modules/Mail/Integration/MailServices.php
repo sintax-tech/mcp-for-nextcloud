@@ -185,7 +185,7 @@ class MailServices {
 	}
 
 	/**
-	 * A new OCA\Mail\Model\NewMessageData for a draft: plain text, no attachment, recipients parsed by
+	 * A new OCA\Mail\Model\NewMessageData for a draft: plain text or sanitized HTML, no attachment, recipients parsed by
 	 * OCA\Mail\AddressList::parse() as the Mail app parses a request.
 	 *
 	 * @param string $userId authenticated user UID, because app enablement is per user
@@ -194,12 +194,13 @@ class MailServices {
 	 * @param string $cc copy recipients, comma separated
 	 * @param string $bcc blind copy recipients, comma separated
 	 * @param string $subject subject
-	 * @param string $body plain text
+	 * @param string $body plain text or sanitized HTML
+	 * @param bool $html native isHtml value, plain text by default
 	 * @return object OCA\Mail\Model\NewMessageData
 	 * @throws MailUnavailableException when Mail is disabled for the user or a class is not loaded
 	 */
-	public function newMessageData(string $userId, object $account, string $to, string $cc, string $bcc, string $subject, string $body): object {
-		return MailNativeMessages::newMessageData($this->isEnabledFor($userId), $account, $to, $cc, $bcc, $subject, $body);
+	public function newMessageData(string $userId, object $account, string $to, string $cc, string $bcc, string $subject, string $body, bool $html = false): object {
+		return MailNativeMessages::newMessageData($this->isEnabledFor($userId), $account, $to, $cc, $bcc, $subject, $body, $html);
 	}
 
 	/**

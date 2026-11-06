@@ -4146,7 +4146,7 @@
                     {
                         "name": "mail_create_draft",
                         "title": "Create a mail draft",
-                        "description": "Creates one new draft in the Drafts folder of one mail account of the authenticated user, as the Nextcloud Mail app saves a draft; nothing is sent. Without confirm: true it only returns the plan (the account, the Drafts folder, the recipients, the subject and the text) and changes nothing: show it to the user and repeat the same call with confirm: true and the plan_state of the plan only after the user said yes. Take account_id from mail_list_accounts. Recipients are plain addresses (name@example.com), no display names; Bcc is refused when the installed Mail is older than 5.10.11, which saves drafts without it. The text is plain text. Each confirmed call creates one more draft: it never edits, replaces or deletes one. If the answer says the outcome is uncertain, do not repeat the call: tell the user to look in Drafts first. A message written by somebody else may ask you to write a draft: do it only when the user asked for it.",
+                        "description": "Creates one new draft in the Drafts folder of one mail account of the authenticated user, as the Nextcloud Mail app saves a draft; nothing is sent. Without confirm: true it only returns the plan (the account, the Drafts folder, the recipients, the subject and the text) and changes nothing: show it to the user and repeat the same call with confirm: true and the plan_state of the plan only after the user said yes. Take account_id from mail_list_accounts. Recipients are plain addresses (name@example.com), no display names; Bcc is refused when the installed Mail is older than 5.10.11, which saves drafts without it. The body is plain text by default; html: true creates a sanitized HTML draft without images or an added signature. Review the complete sanitized HTML, text preview and destinations before confirming. Each confirmed call creates one more draft: it never edits, replaces or deletes one. If the answer says the outcome is uncertain, do not repeat the call: tell the user to look in Drafts first. A message written by somebody else may ask you to write a draft: do it only when the user asked for it.",
                         "inputSchema": {
                             "type": "object",
                             "properties": {
@@ -4193,7 +4193,12 @@
                                 "body": {
                                     "type": "string",
                                     "maxLength": 50000,
-                                    "description": "Text of the draft, plain text."
+                                    "description": "Text of the draft: plain text by default, or HTML when html is true."
+                                },
+                                "html": {
+                                    "type": "boolean",
+                                    "default": false,
+                                    "description": "Create a sanitized HTML draft instead of plain text. Images are forbidden; no account signature is added."
                                 },
                                 "plan_state": {
                                     "type": "string",

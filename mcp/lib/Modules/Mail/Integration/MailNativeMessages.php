@@ -23,7 +23,7 @@ final class MailNativeMessages {
 	private function __construct() {}
 
 	/**
-	 * A new OCA\Mail\Model\NewMessageData for a draft: plain text, no attachment, recipients parsed by
+	 * A new OCA\Mail\Model\NewMessageData for a draft: plain text or sanitized HTML, no attachment, recipients parsed by
 	 * OCA\Mail\AddressList::parse() as the Mail app parses a request.
 	 *
 	 * @param bool $enabled whether the Mail app is enabled for the actor on this call
@@ -32,17 +32,18 @@ final class MailNativeMessages {
 	 * @param string $cc copy recipients, comma separated
 	 * @param string $bcc blind copy recipients, comma separated
 	 * @param string $subject subject
-	 * @param string $body plain text
+	 * @param string $body plain text or sanitized HTML
+	 * @param bool $html native isHtml value, plain text by default
 	 * @return object OCA\Mail\Model\NewMessageData
 	 * @throws MailUnavailableException when Mail is disabled for the user or a class is not loaded
 	 */
-	public static function newMessageData(bool $enabled, object $account, string $to, string $cc, string $bcc, string $subject, string $body): object {
+	public static function newMessageData(bool $enabled, object $account, string $to, string $cc, string $bcc, string $subject, string $body, bool $html = false): object {
 		$data = self::NEW_MESSAGE_DATA_CLASS;
 		$list = self::ADDRESS_LIST_CLASS;
 		if (!$enabled || !class_exists($data) || !class_exists($list)) {
 			throw new MailUnavailableException();
 		}
-		return new $data($account, $list::parse($to), $list::parse($cc), $list::parse($bcc), $subject, $body, [], false);
+		return new $data($account, $list::parse($to), $list::parse($cc), $list::parse($bcc), $subject, $body, [], $html);
 	}
 
 	/**

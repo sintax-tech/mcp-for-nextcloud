@@ -37,6 +37,15 @@ Schreibzugriffe erfordern ausdrückliche Berechtigungen und Bestätigung. Pläne
 
 Frühere Versionen: siehe [Verlauf](HISTORY.de.md).
 
+## HTML mail drafts (1.3.0)
+
+`mail_create_draft` accepts optional `html: true`; the default remains `false` (plain text). The existing `mail.draft` permission and confirmation apply. Mail's HTML sanitizer runs with a restricted configuration before planning and again before saving through `saveDraft`. Scripts, events, CSS, embedded content and all images (remote and `data:`) are forbidden. Links require an explicit `http`, `https` or `mailto` scheme.
+
+The plan shows the complete sanitized HTML, a text preview, removal counts, names of unwrapped elements and every retained or rejected link destination. It preserves spaces and indentation in `pre`/`code`; table cells use tabs and list items have markers. Source and sanitized HTML each have a 50,000-character limit, with no truncation of the HTML confirmation. A nonempty source with no readable content after filtering is refused. If Mail's sanitizer cannot be loaded, HTML mode is refused and nothing is saved. Unsafe parser recovery and unaccounted content loss are also refused.
+
+Mail generates a MIME plain text alternative with Horde, which may differ from the confirmation preview. No account signature is added. Each confirmation creates another draft; draft editing and HTML sending are outside this feature. Suggested by @Beluluz in [#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30).
+
+
 ## Warum
 
 KI-Assistenten nützen am meisten, wenn sie die Werkzeuge erreichen, die ein Team schon benutzt. Sie an Nextcloud anzuschließen bedeutet sonst Skripte mit gemeinsamen Passwörtern, weite API-Tokens oder Daten, die woandershin kopiert werden. **MCP for Cloud** läuft **in** deinem Nextcloud:
@@ -80,7 +89,7 @@ Dazu:
 
 ## Umfang und Berechtigungen in 1.2.2
 
-- **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Nachrichten suchen/lesen, Anhangtext und native Links mit optionalen Berechtigungen; getrennte, standardmäßig verweigerte Grants für Flags, Verschieben im selben Konto, neue Textentwürfe und Versand. Lesen markiert Nachrichten nicht als gelesen. Konten/Ordner bleiben unter `mail.read`; Nachrichten und Anhänge brauchen eigene Grants.
+- **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Nachrichten suchen/lesen, Anhangtext und native Links mit optionalen Berechtigungen; getrennte, standardmäßig verweigerte Grants für Flags, Verschieben im selben Konto, neue Entwürfe (standardmäßig Text, optional bereinigtes HTML) und Textversand. Lesen markiert Nachrichten nicht als gelesen. Konten/Ordner bleiben unter `mail.read`; Nachrichten und Anhänge brauchen eigene Grants.
 - **Tables ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Tabellen/Ansichten/Spalten entdecken, berechtigte Zeilen lesen und eine Zeile erstellen oder bearbeiten. Ansichtsfilter und native ACLs gelten; Schema- und Ansichtsschreibzugriffe folgen später.
 - **Forms ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Struktur und bestehende berechtigte Links entdecken, eigene/alle Antworten nach nativem Zugriff mit `forms.results` lesen, private Formulare mit ersten Fragen/Optionen erstellen und eine bestehende Frage oder Option per PATCH ändern. Read/results/create/edit bleiben unabhängig; Hinzufügen, Löschen, Umordnen oder Typwechsel bestehender Elemente ist nicht enthalten. Erstellung kann die dokumentierten nativen Upload-Ordner-Effekte haben; Bearbeitung kann die Sperre erneuern oder die Bestätigungs-Email-Auswahl leeren, wie im Plan angegeben.
 - **Polls ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Umfragen/Optionen/Status entdecken, Stimmen/Ergebnisse und bestehende Links innerhalb nativer Rechte lesen, private einfache text/date-Umfragen mit 0–100 Anfangsoptionen erstellen. `polls.results` und `polls.links` sind getrennt und standardmäßig verweigert. Verwaltung bestehender Optionen/Einstellungen und umfassendere Einladungs-/Linkabläufe bleiben außerhalb.

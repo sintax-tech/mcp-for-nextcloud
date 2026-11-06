@@ -1,0 +1,608 @@
+[
+    {
+        "name": "script-events-css",
+        "input": "<p onclick=\"x()\" style=\"background:url(https://track.example);width:expression(x())\">ok</p><script>x()</script>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "subtree-svg",
+        "input": "<svg><a href=\"https://track.example\">hidden</a></svg><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "subtree-math",
+        "input": "<math><mtext>hidden</mtext></math><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "subtree-form",
+        "input": "<form><p>hidden</p></form><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "subtree-head",
+        "input": "<head><title>hidden</title></head><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "subtree-noscript",
+        "input": "<noscript>hidden</noscript><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "subtree-textarea",
+        "input": "<textarea>hidden</textarea><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "subtree-style",
+        "input": "<style>p{display:none}</style><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "subtree-iframe",
+        "input": "<iframe>hidden</iframe><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "subtree-template",
+        "input": "<template>hidden</template><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-js",
+        "input": "<p><a href=\"javascript:x()\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-entity",
+        "input": "<p><a href=\"jav&#x61;script:x()\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-tab",
+        "input": "<p><a href=\"java&#9;script:x()\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-crlf",
+        "input": "<p><a href=\"java&#13;&#10;script:x()\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-space",
+        "input": "<p><a href=\" javascript:x()\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-case",
+        "input": "<p><a href=\"JaVaScRiPt:x()\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-backslash",
+        "input": "<p><a href=\"java\\script:x()\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-no-semicolon",
+        "input": "<p><a href=\"jav&#x61script:x()\">ok</a></p>",
+        "refused": true
+    },
+    {
+        "name": "url-double-entity",
+        "input": "<p><a href=\"jav&amp;#x61;script:x()\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-data-html",
+        "input": "<p><a href=\"data:text/html,evil\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-data-image",
+        "input": "<p><a href=\"data:image/png;base64,AA\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-vbscript",
+        "input": "<p><a href=\"vbscript:x()\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-file",
+        "input": "<p><a href=\"file:///secret\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-ftp",
+        "input": "<p><a href=\"ftp://example.com\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-protocol-relative",
+        "input": "<p><a href=\"//track.example\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-relative",
+        "input": "<p><a href=\"/relative\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "base",
+        "input": "<base href=\"https://track.example\"><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "meta",
+        "input": "<meta http-equiv=\"refresh\" content=\"0;url=https://track.example\"><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "pixel",
+        "input": "<img src=\"https://track.example/pixel\"><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "data-image",
+        "input": "<img src=\"data:image/png;base64,AA\"><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "picture",
+        "input": "<picture><source srcset=\"https://track.example/a\"><img src=\"x\"></picture><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "hidden",
+        "input": "<p hidden title=\"secret\">ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "conditional-hidden",
+        "input": "<!--[if mso]><p>hidden</p><![endif]--><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "conditional-revealed",
+        "input": "<![if !mso]><p>ok</p><![endif]>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "escaped-markup",
+        "input": "<p>&lt;img src=x onerror=x()&gt;</p>",
+        "body": "<p>&lt;img src=x onerror=x()&gt;</p>"
+    },
+    {
+        "name": "bidi-invisible",
+        "input": "<p>ok&#x202e;txt&#x200b;</p>",
+        "body": "<p>oktxt</p>"
+    },
+    {
+        "name": "zwj-zwnj",
+        "input": "<p>👩‍💻 زبان‌ها</p>",
+        "body": "<p>👩‍💻 زبان‌ها</p>"
+    },
+    {
+        "name": "utf8",
+        "input": "<p>Olá ação €</p>",
+        "body": "<p>Olá ação €</p>"
+    },
+    {
+        "name": "pre",
+        "input": "<pre>A  B\n C</pre>",
+        "body": "<pre>A  B\n C</pre>"
+    },
+    {
+        "name": "code",
+        "input": "<p><code>A  B\n C</code></p>",
+        "body": "<p><code>A  B\n C</code></p>"
+    },
+    {
+        "name": "mutation",
+        "input": "<math><mtext><table><mglyph><style><!--</style><img title=\"--><img src=x onerror=x()>\">"
+    },
+    {
+        "name": "table-repair",
+        "input": "<table><tr><td>ok</table>"
+    },
+    {
+        "name": "raw-text",
+        "input": "<style><img src=x onerror=x()></style><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "duplicate-attribute",
+        "input": "<p title=\"one\" title=\"two\">ok</p>",
+        "refused": true
+    },
+    {
+        "name": "deep-tree",
+        "input": "<div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div>ok</div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div>",
+        "refused": true
+    },
+    {
+        "name": "script-only",
+        "input": "<script>x()</script>",
+        "refused": true
+    },
+    {
+        "name": "empty-markup",
+        "input": "<p></p><script>x()</script>",
+        "refused": true
+    },
+    {
+        "name": "br-only",
+        "input": "<br>",
+        "refused": true
+    },
+    {
+        "name": "hr-only",
+        "input": "<hr>",
+        "refused": true
+    },
+    {
+        "name": "spaces",
+        "input": " \n ",
+        "refused": true
+    },
+    {
+        "name": "empty-cell",
+        "input": "<table><tr><td></td></tr></table>",
+        "refused": true
+    },
+    {
+        "name": "comment-only",
+        "input": "<!--x-->",
+        "refused": true
+    },
+    {
+        "name": "image-only",
+        "input": "<img src=\"x\">",
+        "refused": true
+    },
+    {
+        "name": "invisibles-only",
+        "input": "<p>&#x202e;&#x200b;</p>",
+        "refused": true
+    },
+    {
+        "name": "empty-input",
+        "input": "",
+        "body": ""
+    },
+    {
+        "name": "mixed-case-events",
+        "input": "<P oNcLiCk=\"x()\" StYlE=\"display:none\">ok</P><SCRIPT>x()</SCRIPT>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "doctype-unreported",
+        "input": "<!DOCTYPE html><p>ok</p>",
+        "refused": true
+    },
+    {
+        "name": "processing-instruction",
+        "input": "<?custom x?><p>ok</p>",
+        "refused": true
+    },
+    {
+        "name": "table-span-limits",
+        "input": "<table><tbody><tr><td colspan=\"51\" rowspan=\"0\">ok</td></tr></tbody></table>",
+        "body": "<table><tbody><tr><td>ok</td></tr></tbody></table>"
+    },
+    {
+        "name": "table-valid-spans",
+        "input": "<table><tbody><tr><td colspan=\"2\" rowspan=\"50\">ok</td></tr></tbody></table>",
+        "body": "<table><tbody><tr><td colspan=\"2\" rowspan=\"50\">ok</td></tr></tbody></table>"
+    },
+    {
+        "name": "wrapper-in-comment",
+        "input": "<!--<html><body><head>--><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "anchor-no-href",
+        "input": "<p><a>ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unwrapped-element": 1,
+            "unsafe-url": 0,
+            "unknown-tag": 0,
+            "wrapper": 0
+        },
+        "unwrappedElements": [
+            "a"
+        ],
+        "elementTotal": 1
+    },
+    {
+        "name": "anchor-name-only",
+        "input": "<p><a name=\"x\">ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unwrapped-element": 1,
+            "attribute": 1,
+            "unsafe-url": 0
+        },
+        "unwrappedElements": [
+            "a"
+        ],
+        "elementTotal": 1
+    },
+    {
+        "name": "anchor-unsafe-wrapper",
+        "input": "<p><a href=\"javascript:x()\">ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unwrapped-element": 1,
+            "unsafe-url": 1,
+            "attribute": 0
+        },
+        "unwrappedElements": [
+            "a"
+        ],
+        "elementTotal": 1
+    },
+    {
+        "name": "unknown-font-wrapper",
+        "input": "<p><font color=\"red\">ok</font></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unwrapped-element": 0,
+            "unknown-tag": 1,
+            "attribute": 0
+        },
+        "unwrappedElements": [],
+        "elementTotal": 1
+    },
+    {
+        "name": "unknown-center-wrapper",
+        "input": "<center><p>ok</p></center>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unwrapped-element": 0,
+            "unknown-tag": 1
+        },
+        "unwrappedElements": [],
+        "elementTotal": 1
+    },
+    {
+        "name": "document-wrappers",
+        "input": "<html><body><p>ok</p></body></html>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unwrapped-element": 0,
+            "wrapper": 2,
+            "unknown-tag": 0
+        },
+        "unwrappedElements": [],
+        "elementTotal": 2
+    },
+    {
+        "name": "allowed-span-wrapper",
+        "input": "<p><span>ok</span></p>",
+        "body": "<p><span>ok</span></p>",
+        "removed": {
+            "unwrapped-element": 0,
+            "wrapper": 0,
+            "unknown-tag": 0
+        },
+        "unwrappedElements": [],
+        "elementTotal": 0
+    },
+    {
+        "name": "adjacent-anchor-no-href",
+        "input": "<p><a>Olá</a> <strong>ação</strong></p>",
+        "body": "<p>Olá <strong>ação</strong></p>",
+        "removed": {
+            "unwrapped-element": 1,
+            "unsafe-url": 0
+        },
+        "unwrappedElements": [
+            "a"
+        ],
+        "elementTotal": 1
+    },
+    {
+        "name": "adjacent-anchor-name",
+        "input": "<p><a name=\"x\">Olá</a> <strong>ação</strong></p>",
+        "body": "<p>Olá <strong>ação</strong></p>",
+        "removed": {
+            "unwrapped-element": 1,
+            "attribute": 1
+        },
+        "unwrappedElements": [
+            "a"
+        ],
+        "elementTotal": 1
+    },
+    {
+        "name": "adjacent-unknown-font",
+        "input": "<p><font>Olá</font> <strong>ação</strong></p>",
+        "body": "<p>Olá <strong>ação</strong></p>",
+        "removed": {
+            "unwrapped-element": 0,
+            "unknown-tag": 1
+        },
+        "unwrappedElements": [],
+        "elementTotal": 1
+    },
+    {
+        "name": "body-event-and-style",
+        "input": "<body onload=\"alert(1)\" style=\"background:url(https://track.example/p.png)\"><p>ok</p></body>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "attribute": 2,
+            "wrapper": 1,
+            "subtree": 0,
+            "unwrapped-element": 0
+        },
+        "unwrappedElements": [],
+        "elementTotal": 1,
+        "reportChanged": true
+    },
+    {
+        "name": "html-style-body-event",
+        "input": "<html style=\"background:url(https://track.example/c.png)\"><body onload=\"alert(1)\"><p>ok</p></body></html>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "attribute": 2,
+            "wrapper": 2,
+            "subtree": 0,
+            "unwrapped-element": 0
+        },
+        "unwrappedElements": [],
+        "elementTotal": 2,
+        "reportChanged": true
+    },
+    {
+        "name": "body-multiple-events",
+        "input": "<body onload=\"alert(1)\" onclick=\"alert(2)\" onerror=\"alert(3)\"><p>ok</p></body>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "attribute": 3,
+            "wrapper": 1,
+            "subtree": 0,
+            "unwrapped-element": 0
+        },
+        "unwrappedElements": [],
+        "elementTotal": 1,
+        "reportChanged": true
+    },
+    {
+        "name": "head-event-meta",
+        "input": "<html><head onload=\"alert(1)\"><meta http-equiv=\"refresh\" content=\"0;url=https://track.example\"></head><body><p>ok</p></body></html>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "attribute": 1,
+            "wrapper": 2,
+            "subtree": 1,
+            "unwrapped-element": 0
+        },
+        "unwrappedElements": [],
+        "elementTotal": 2,
+        "reportChanged": true
+    },
+    {
+        "name": "head-style-base",
+        "input": "<html><head style=\"background:url(https://track.example)\"><base href=\"https://track.example/\"></head><body onload=\"alert(1)\"><p>ok</p></body></html>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "attribute": 2,
+            "wrapper": 2,
+            "subtree": 1,
+            "unwrapped-element": 0
+        },
+        "unwrappedElements": [],
+        "elementTotal": 2,
+        "reportChanged": true
+    },
+    {
+        "name": "head-multiple-attributes",
+        "input": "<head onload=\"alert(1)\" style=\"background:url(https://track.example)\"><meta charset=\"UTF-8\"><base href=\"https://track.example/\"></head><body><p>ok</p></body>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "attribute": 2,
+            "wrapper": 1,
+            "subtree": 1,
+            "unwrapped-element": 0
+        },
+        "unwrappedElements": [],
+        "elementTotal": 1,
+        "reportChanged": true
+    },
+    {
+        "name": "bare-unsafe-anchor",
+        "input": "<a href=\"javascript:alert(1)\">ok</a>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "unwrappedElements": [
+            "a"
+        ],
+        "elementTotal": 1,
+        "reportChanged": true
+    },
+    {
+        "name": "bare-anchor",
+        "input": "<a>ok</a>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 0,
+            "unwrapped-element": 1
+        },
+        "unwrappedElements": [
+            "a"
+        ],
+        "elementTotal": 1,
+        "reportChanged": true
+    },
+    {
+        "name": "bare-named-anchor",
+        "input": "<a name=\"x\">ok</a>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "attribute": 1,
+            "unwrapped-element": 1
+        },
+        "unwrappedElements": [
+            "a"
+        ],
+        "elementTotal": 1,
+        "reportChanged": true
+    },
+    {
+        "name": "bare-font",
+        "input": "<font>ok</font>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unknown-tag": 1,
+            "unwrapped-element": 0
+        },
+        "unwrappedElements": [],
+        "elementTotal": 1,
+        "reportChanged": true
+    },
+    {
+        "name": "nested-unsafe-anchors",
+        "input": "<a href=\"javascript:alert(1)\">outer<a href=\"data:text/html,evil\">inner</a>end</a>",
+        "refused": true
+    },
+    {
+        "name": "nested-safe-and-unsafe-anchors",
+        "input": "<a href=\"javascript:alert(1)\">outer<a href=\"https://example.com\">inner</a>end</a>",
+        "refused": true
+    },
+    {
+        "name": "bare-unsafe-anchor-and-block",
+        "input": "<p>ok</p><a href=\"javascript:alert(1)\">x</a>",
+        "body": "<p>ok</p>x",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "unwrappedElements": [
+            "a"
+        ],
+        "elementTotal": 1,
+        "reportChanged": true
+    },
+    {
+        "name": "unsafe-anchor-nested-in-inline",
+        "input": "<span>before<a href=\"javascript:alert(1)\"><strong>ok</strong></a>after</span>",
+        "body": "<span>before<strong>ok</strong>after</span>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "unwrappedElements": [
+            "a"
+        ],
+        "elementTotal": 1,
+        "reportChanged": true
+    }
+]

@@ -41,9 +41,9 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Modules/Mail/Moving/MailMoveCapability.php#assertMoveTouchesOnlyTheMessage:literal-move:1' => 'label: IMAP capability name queried, no write',
 			'Modules/Calendar/Writing/EmbeddedDavDispatcher.php#move:literal-move:1' => 'label: DAV HTTP verb; actual dispatcher is classified separately',
 
-			'Controller/CheckoutController.php#send:fopen:1' => 'read: existing file download stream',
+			'Modules/Files/Checkout/CheckoutDownload.php#send:fopen:1' => 'read: existing file download stream',
 			'Modules/Files/Checkout/CheckoutWriter.php#create:fopen:1' => 'read: temporary upload body',
-			'Controller/CheckoutController.php#storeBody:fopen:1' => 'temporary: ITempManager upload body, not a Files node',
+			'Modules/Files/Checkout/BodyReader.php#storeBody:fopen:1' => 'temporary: ITempManager upload body, not a Files node',
 			'Controller/CheckoutController.php#inputStream:fopen:1' => 'read: php input stream',
 			'Modules/Files/Presentation/FilesPlanRenderer.php#render:copy:1' => 'render: static plan text, no Files mutation',
 			'Modules/Files/Presentation/FilesPlanRenderer.php#render:move:1' => 'render: static plan text, no Files mutation',

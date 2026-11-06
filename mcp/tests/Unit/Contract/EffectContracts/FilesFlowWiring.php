@@ -117,7 +117,7 @@ final class FilesFlowWiring {
 		foreach (array_slice((new \ReflectionClass(RoutedCheckoutController::class))->getConstructor()->getParameters(), 2) as $parameter) {
 			$type = $parameter->getType();
 			assert($type instanceof \ReflectionNamedType);
-			$args[] = $parameter->getName() === 'l10n' ? null : $this->resolve($type->getName());
+			$args[] = $this->resolve($type->getName());
 		}
 		$controller = new RoutedCheckoutController(...$args);
 		$controller->route = $route;
@@ -149,7 +149,7 @@ final class FilesFlowWiring {
 				$args[] = $parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : null;
 				continue;
 			}
-			$args[] = $this->resolve($type->getName());
+			$args[] = $class === \OCA\Mcp\Modules\Files\Checkout\CheckoutLanguage::class && $parameter->getName() === 'l10n' ? null : $this->resolve($type->getName());
 		}
 		return BackupDocumentFixture::construct($this->test, $class, $args, $this->gate->data());
 	}

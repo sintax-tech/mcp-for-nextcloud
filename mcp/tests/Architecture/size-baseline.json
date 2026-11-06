@@ -207,16 +207,6 @@
 	],
 	"transitional": [
 		{
-			"ceiling": 562,
-			"expires": "RE-24",
-			"nameParts": [
-				"OCA",
-				"Mcp",
-				"Controller",
-				"CheckoutController"
-			]
-		},
-		{
 			"ceiling": 1485,
 			"expires": "RE-06d",
 			"steps": [

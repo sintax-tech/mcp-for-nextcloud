@@ -92,11 +92,11 @@ final class FileWritePolicyBoundariesTest extends FilesToolsTestCase {
 				return $spent;
 			});
 		}
-		$controller = new PolicyUploadController('mcp', $request, $this->dependency('rootFolder'), $session,
+		$controller = new PolicyUploadController('mcp', $request, \OCA\Mcp\Tests\Unit\Checkout\CheckoutFlowFixture::build($this->dependency('rootFolder'), $session,
 			$this->temp, $this->time, $policy, $store, new TokenHasher($this->config->mock($this)), $this->dependency('checkout'),
 			$this->dependency('backup'), $this->dependency('guard'), $this->dependency('accessInfo'), $this->logger,
 			userManager: $this->users, visibilityGuard: $this->visibilityGuard, creation: $this->creation,
-			locks: $this->locks->service($this), fileTypes: $this->types->guard($this));
+			locks: $this->locks->service($this), fileTypes: $this->types->guard($this)));
 		$controller->token = $token;
 		return $controller;
 	}

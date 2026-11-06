@@ -133,11 +133,11 @@ final class CheckoutCreateTest extends TestCase {
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
 		$checkout = new CheckoutService($this->createMock(IURLGenerator::class), $config, $time, $this->hasher, $this->store, $apps, $users);
 		$guard = $this->guard ?? new \OCA\Mcp\Access\ResourceScope\FilesAccessGuard($config, $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class));
-		$this->controller = new StagedCreateController('mcp', $request, $root, $this->session, $temp, $time, $this->policy,
+		$this->controller = new StagedCreateController('mcp', $request, CheckoutFlowFixture::build($root, $this->session, $temp, $time, $this->policy,
 			$this->store, $this->hasher, $checkout, new FileBackup($apps, $users, $time, $config),
 			new SharedWriteGuard($access), $access, $this->createMock(LoggerInterface::class), null, $users, $this->guard,
 			new FileCreation($access, new SharedWriteGuard($access), $checkout, $this->filenames, $guard, $this->createMock(LoggerInterface::class), $this->locks->service($this), fileTypes: \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this), backupLocation: new \OCA\Mcp\Platform\Backups\BackupLocation($this->createMock(\OCA\Mcp\Platform\Backups\BackupSettingsDocument::class))),
-			$this->locks->service($this), fileTypes: \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this));
+			$this->locks->service($this), fileTypes: \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this)));
 		$this->controller->route = ['token' => self::TOKEN];
 	}
 

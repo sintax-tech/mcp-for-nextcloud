@@ -19,13 +19,39 @@ final class GroupScopeReceiptCharacterizationTest extends TestCase {
 	public function testInputGenerationsStayLiteral(): void {
 		$left = '0123456789abcdef0123456789abcdef';
 		$right = 'fedcba9876543210fedcba9876543210';
-		$first = GroupScopeReceiptScenario::normalize(['inputGen' => $left, 'commandId' => str_repeat('ab', 16)]);
-		$second = GroupScopeReceiptScenario::normalize(['inputGen' => $right, 'commandId' => str_repeat('cd', 16)]);
-		self::assertSame($left, $first['inputGen']);
-		self::assertSame($right, $second['inputGen']);
-		self::assertNotSame($first['inputGen'], $second['inputGen']);
-		self::assertSame('id-1', $first['commandId']);
-		self::assertSame('id-1', $second['commandId']);
+		$first = GroupScopeReceiptScenario::normalize(['life' => ['gen' => $left]]);
+		$second = GroupScopeReceiptScenario::normalize(['life' => ['gen' => $right]]);
+		self::assertSame($left, $first['life']['gen']);
+		self::assertSame($right, $second['life']['gen']);
+		self::assertNotSame($first, $second);
+	}
+
+	public function testMessagesContainingGeneratedIdsStayLiteral(): void {
+		$id = '0123456789abcdef0123456789abcdef';
+		$record = ['result' => ['commandId' => $id], 'error' => ['message' => 'literal ' . $id],
+			'life' => [['gen' => $id]], 'other' => ['commandId' => $id]];
+		$actual = GroupScopeReceiptScenario::normalize($record, [$id], []);
+		self::assertSame('literal ' . $id, $actual['error']['message']);
+		self::assertSame($id, $actual['life'][0]['gen']);
+		self::assertSame($id, $actual['other']['commandId']);
+		self::assertSame('id-1', $actual['result']['commandId']);
+	}
+
+	public function testGeneratedIdsKeepTheirDistinctnessAndKnownReferences(): void {
+		$a = '0123456789abcdef0123456789abcdef';
+		$b = 'fedcba9876543210fedcba9876543210';
+		$record = ['result' => ['commandId' => $a, 'receiptId' => $a . '-2'],
+			'life' => [['gen' => $a], ['gen' => $b]],
+			'events' => [['kind' => 'audit', 'payload' => json_encode(['receiptId' => $a . '-2', 'undoOf' => $a . '-1', 'message' => $a], JSON_THROW_ON_ERROR)]]];
+		$actual = GroupScopeReceiptScenario::normalize($record, [$a], [$a, $b]);
+		self::assertSame('id-1', $actual['result']['commandId']);
+		self::assertSame('id-1-2', $actual['result']['receiptId']);
+		self::assertSame('id-1', $actual['life'][0]['gen']);
+		self::assertSame('id-2', $actual['life'][1]['gen']);
+		$payload = json_decode($actual['events'][0]['payload'], true, 512, JSON_THROW_ON_ERROR);
+		self::assertSame('id-1-2', $payload['receiptId']);
+		self::assertSame('id-1-1', $payload['undoOf']);
+		self::assertSame($a, $payload['message']);
 	}
 
 	#[DataProvider('scenarios')]

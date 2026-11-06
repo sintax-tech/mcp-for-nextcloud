@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Policy;
 
-use OCA\Mcp\Checkout\CheckoutTokenStore;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutTokenStore;
 use OCA\Mcp\OAuth\Storage\TokenHasher;
 use OCA\Mcp\Access\FileTypes\FileWritePolicy;
 use OCA\Mcp\Access\Grants\GrantPolicy;

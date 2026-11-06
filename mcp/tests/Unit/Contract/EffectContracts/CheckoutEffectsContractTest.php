@@ -11,7 +11,7 @@ use OCA\Mcp\Tests\Unit\Contract\Oracle\CriticalFlow;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\EffectsGate;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\FlowRunner;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Modules\Files\CheckoutService;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutService;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use PHPUnit\Framework\TestCase;
 

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 
-use OCA\Mcp\Checkout\CheckoutTokenStore;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutTokenStore;
 use OCA\Mcp\Controller\CheckoutLimitController;
 use OCA\Mcp\Controller\FileWritePolicyController;
 use OCA\Mcp\Controller\LogsPrivacyController;
@@ -18,7 +18,7 @@ use OCA\Mcp\Access\Logs\LogFileNames;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryAppConfig;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Modules\Files\CheckoutService;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutService;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IDBConnection;

@@ -8,10 +8,10 @@ namespace OCA\Mcp\Tests\Unit\Scripts\Dev;
 
 use OCA\Mcp\Scripts\Dev\{FqcnMap, SourceTreeIndex, FrozenProduction, FrozenPathOccurrence, FrozenPathSites, TokenNormalizer};
 
-/** Small four-site trees keep gate mutations independent of the production manifest generator. */
+/** Small certificate-specific trees keep gate mutations independent of the production manifest generator. */
 final class FrozenPathFixture {
-	/** @return array{array<string,string>,array<string,string>,FqcnMap,array<string,string>,array} Old/new trees, map and real pairs. */
-	public static function trees(): array {
+	/** @param string $ticket Existing certificate family. @return array{array<string,string>,array<string,string>,FqcnMap,array<string,string>,array} Old/new trees, map and real pairs. */
+	public static function trees(string $ticket = 'RE-21'): array {
 		$prefix = implode('\\', ['OCA', 'Mcp']); $entries = []; $before = []; $after = []; $pairs = []; $specs = [];
 		$oldPrefix = $prefix . '\\Tools\\Files'; $newPrefix = $prefix . '\\Modules\\Files';
 		$guard = $prefix . '\\Platform\\FileAccess\\PathGuard';
@@ -29,6 +29,23 @@ final class FrozenPathFixture {
 			$entries[] = ['path' => $old, 'fqcn' => $oldPrefix . '\\' . $class, 'target' => $newPrefix . '\\' . $class, 'owner' => 'Modules\\Files', 'ticket' => 'RE-21'];
 			$specs[] = [$old, $method, $parameter, $operand, $call, $transform];
 		}
+		if ($ticket === 'RE-24') {
+			$before = []; $after = []; $pairs = []; $entries = []; $specs = [];
+			foreach ([
+				['Checkout/CheckoutToken', 'CheckoutToken'], ['Checkout/CheckoutTokenStore', 'CheckoutTokenStore'],
+				['Modules/Files/CheckoutService', 'CheckoutService'], ['Modules/Files/Handler/CheckoutFileHandler', 'CheckoutFileHandler'],
+				['Modules/Files/Handler/CheckoutWriteHandler', 'CheckoutWriter'],
+			] as [$relative, $target]) {
+				$old = 'lib/' . $relative . '.php'; $new = 'lib/Modules/Files/Checkout/' . $target . '.php';
+				$from = $prefix . '\\' . str_replace('/', '\\', $relative); $to = $prefix . '\\Modules\\Files\\Checkout\\' . $target;
+				$split = strrpos($from, '\\'); $namespace = substr($from, 0, $split); $short = substr($from, $split + 1);
+				$body = $target === 'CheckoutWriter' ? 'public function write(string $body): string { return file_get_contents($body); }' : '';
+				$before[$old] = "<?php namespace $namespace; use $guard; class $short { $body }";
+				$after[$new] = "<?php namespace $prefix\\Modules\\Files\\Checkout; use $guard; class $target { $body }"; $pairs[$old] = $new;
+				$entries[] = ['path' => $old, 'fqcn' => $from, 'target' => $to, 'owner' => 'Modules\\Files', 'ticket' => $ticket];
+				if ($target === 'CheckoutWriter') { $specs[] = [$old, 'write', '$body', '$body', 'file_get_contents', ['kind' => 'parameter']]; }
+			}
+		}
 		$origin = implode('/', ['lib', 'Proof', 'Caller']) . '.php';
 		$before[$origin] = "<?php namespace $prefix\\Proof; class Caller { public function input(string \$path): string { return \$path; } }";
 		$after[$origin] = $before[$origin];
@@ -41,12 +58,12 @@ final class FrozenPathFixture {
 			$sites[] = ['map_path' => $old, 'target' => $renames[$index->declaredIn($old)[0]], 'method' => $method, 'callable' => $call, 'ordinal' => 1,
 				'parameter' => $parameter, 'transform' => $transform, 'occurrence' => FrozenPathOccurrence::at($source, $source->located[0][2])];
 		}
-		$data = ['version' => 2, 'ticket' => 'RE-21', 'base_commit' => str_repeat('1', 40), 'base_tree' => str_repeat('2', 40),
+		$data = ['version' => 2, 'ticket' => $ticket, 'base_commit' => str_repeat('1', 40), 'base_tree' => str_repeat('2', 40),
 			'production' => FrozenProduction::inventory($before, $index, $renames, $pairs), 'sites' => $sites, 'external_evidence' => []];
 		$before[FrozenPathSites::PATH] = json_encode($data, JSON_THROW_ON_ERROR);
 		$after[FrozenPathSites::PATH] = $before[FrozenPathSites::PATH];
-		$trusted = ['ticket' => 'RE-21', 'pairs_sha256' => FrozenProduction::pairsHash($pairs), 'path' => FrozenPathSites::PATH,
-			'seal' => hash('sha256', $before[FrozenPathSites::PATH]), 'sites' => 4, 'base_commit' => $data['base_commit'], 'base_tree' => $data['base_tree']];
+		$trusted = ['ticket' => $ticket, 'pairs_sha256' => FrozenProduction::pairsHash($pairs), 'path' => FrozenPathSites::PATH,
+			'seal' => hash('sha256', $before[FrozenPathSites::PATH]), 'sites' => count($sites), 'base_commit' => $data['base_commit'], 'base_tree' => $data['base_tree']];
 		return [$before, $after, $map, $pairs, [$trusted]];
 	}
 }

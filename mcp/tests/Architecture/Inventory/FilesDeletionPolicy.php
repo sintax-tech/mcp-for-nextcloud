@@ -31,7 +31,7 @@ final class FilesDeletionPolicy {
 
 	/** @param list<string> $files Files sources. @return void SQL variable names are not file maintenance. */
 	public static function assertBackups(array $files): void {
-		$tokenStore = FilesSources::sink(dirname(__DIR__, 3), 'OCA\\Mcp\\Checkout\\CheckoutTokenStore');
+		$tokenStore = FilesSources::sink(dirname(__DIR__, 3), 'OCA\\Mcp\\Modules\\Files\\Checkout\\CheckoutTokenStore');
 		foreach ($files as $file) {
 			$ownSqlVariable = realpath($file) === realpath($tokenStore);
 			$source = implode('', array_map(static fn ($token) => is_array($token) ? ($ownSqlVariable && $token[0] === T_VARIABLE && $token[1] === '$purge' ? '' : $token[1]) : $token, token_get_all((string)file_get_contents($file))));

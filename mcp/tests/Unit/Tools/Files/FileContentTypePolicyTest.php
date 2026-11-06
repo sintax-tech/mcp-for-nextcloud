@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Files_Versions\Versions\FakeVersion;
 use OCA\Files_Versions\Versions\FakeVersionManager;
-use OCA\Mcp\Checkout\CheckoutTokenStore;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutTokenStore;
 use OCA\Mcp\OAuth\Storage\TokenHasher;
 use OCA\Mcp\Access\FileTypes\FileWritePolicy;
 use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
@@ -28,7 +28,7 @@ use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Modules\Files\BatchStore;
-use OCA\Mcp\Modules\Files\CheckoutService;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutService;
 use OCA\Mcp\Modules\Files\ContentCommit;
 use OCA\Mcp\Modules\Files\ContentTypeGate;
 use OCA\Mcp\Modules\Files\ContentWritePlan;

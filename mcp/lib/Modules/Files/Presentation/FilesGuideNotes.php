@@ -6,7 +6,7 @@
 declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Presentation;
-use OCA\Mcp\Modules\Files\CheckoutService;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutService;
 use OCA\Mcp\Modules\Files\Deletion;
 use OCA\Mcp\Modules\Files\Reorganization;
 use OCA\Mcp\Modules\Files\ReorganizationLimits;

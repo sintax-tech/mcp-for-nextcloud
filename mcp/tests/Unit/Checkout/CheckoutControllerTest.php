@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Checkout;
 
 use OCA\Mcp\Controller\CheckoutController;
-use OCA\Mcp\Checkout\CheckoutToken;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutToken;
 use OCA\Mcp\L10n\UserL10n;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\OAuth\Storage\TokenHasher;
@@ -16,7 +16,7 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
-use OCA\Mcp\Modules\Files\CheckoutService;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutService;
 use OCA\Mcp\Modules\Files\Backups\FileBackup;
 use OCA\Mcp\Modules\Files\Presentation\CheckoutMessages;
 use OCP\App\IAppManager;
@@ -171,11 +171,11 @@ final class CheckoutControllerTest extends TestCase {
 		$request = $this->createMock(IRequest::class);
 		$request->method('getHeader')->willReturnCallback(fn (string $name): string => $this->headers[$name] ?? '');
 		$request->method('getMethod')->willReturn('PUT');
-		return new TestableCheckoutController('mcp', $request, $root, $session,
+		return new TestableCheckoutController('mcp', $request, CheckoutFlowFixture::build($root, $session,
 			$this->temp, $this->time, $this->policy, $this->store, $this->hasher,
 			new CheckoutService($urls, $config, $this->time, $this->hasher, $this->store, $this->apps, $this->users), $backup,
 			new SharedWriteGuard($access), $access, $this->createMock(LoggerInterface::class),
-			$l10n, $this->users, locks: $this->locks->service($this), guests: $this->guests(), fileTypes: \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this));
+			$l10n, $this->users, locks: $this->locks->service($this), guests: $this->guests(), fileTypes: \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this)));
 	}
 
 	/** @return \OCA\Mcp\Access\Guests\GuestRestrictions|null a double answering {@see self::$guestAllowed}, recording when it ran */
@@ -891,11 +891,11 @@ final class CheckoutControllerTest extends TestCase {
 		$request->method('getHeader')->willReturnCallback(fn (string $name): string => $this->headers[$name] ?? '');
 		$request->method('getMethod')->willReturn($method === 'download' ? 'GET' : 'PUT');
 
-		$controller = new TestableCheckoutController('mcp', $request, $root, $this->session,
+		$controller = new TestableCheckoutController('mcp', $request, CheckoutFlowFixture::build($root, $this->session,
 			$this->temp, $this->time, $this->policy, $this->store, $this->hasher,
 			new CheckoutService($this->createMock(IURLGenerator::class), $this->config->mock($this), $this->time, $this->hasher, $this->store, $this->apps, $this->users),
 			$backup, new SharedWriteGuard($access), $access, $this->createMock(LoggerInterface::class),
-			null, $this->users, $guard, fileTypes: \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this));
+			null, $this->users, $guard, fileTypes: \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this)));
 		$controller->route = ['token' => self::TOKEN];
 
 		$controller->staged = 'new content';
@@ -936,11 +936,11 @@ final class CheckoutControllerTest extends TestCase {
 		$request = $this->createMock(IRequest::class);
 		$request->method('getHeader')->willReturnCallback(fn (string $name): string => $this->headers[$name] ?? '');
 		$request->method('getMethod')->willReturn($method === 'download' ? 'GET' : 'PUT');
-		$controller = new TestableCheckoutController('mcp', $request, $root, $this->session,
+		$controller = new TestableCheckoutController('mcp', $request, CheckoutFlowFixture::build($root, $this->session,
 			$this->temp, $this->time, $this->policy, $this->store, $this->hasher,
 			new CheckoutService($this->createMock(IURLGenerator::class), $this->config->mock($this), $this->time, $this->hasher, $this->store, $this->apps, $this->users),
 			new FileBackup($this->apps, $this->users, $this->time, $this->config->mock($this)), new SharedWriteGuard($access), $access,
-			$this->createMock(LoggerInterface::class), null, $this->users, $guard, locks: $this->locks->service($this), fileTypes: \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this));
+			$this->createMock(LoggerInterface::class), null, $this->users, $guard, locks: $this->locks->service($this), fileTypes: \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this)));
 		$controller->route = ['token' => self::TOKEN];
 		$controller->staged = 'new content';
 		$this->headers['Content-Length'] = '11';

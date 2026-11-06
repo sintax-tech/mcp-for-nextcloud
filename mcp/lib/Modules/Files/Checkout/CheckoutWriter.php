@@ -5,20 +5,10 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files\Handler;
+namespace OCA\Mcp\Modules\Files\Checkout;
 
-use OCA\Mcp\Controller\CheckoutController;
-use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
-use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
-use OCA\Mcp\Modules\Files\FileWriteBoundary;
-use OCA\Mcp\Access\FileTypes\FileTypeDenied;
-use OCA\Mcp\Access\FileTypes\FileTypeGuard;
-use LogicException;
 use Throwable;
-use Closure;
-use OCA\Mcp\Checkout\CheckoutToken;
-use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\L10n\UserL10n;
+use LogicException;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
@@ -26,51 +16,54 @@ use OCA\Mcp\Platform\FileAccess\LockMessages;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
-use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Modules\Files\Backups\FileBackup;
 use OCA\Mcp\Modules\Files\FileCreation;
-use OCA\Mcp\Modules\Files\FileExists;
 use OCA\Mcp\Modules\Files\Presentation\CheckoutMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Response;
 use OCP\Files\File;
 use OCP\Files\IRootFolder;
-use OCP\IUserManager;
-use OCP\Lock\LockedException;
 use Psr\Log\LoggerInterface;
+use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
+use OCA\Mcp\Modules\Files\FileWriteBoundary;
+use OCA\Mcp\Access\FileTypes\FileTypeDenied;
+use OCA\Mcp\Access\FileTypes\FileTypeGuard;
+use OCP\Lock\LockedException;
 
-/** PUT/POST write boundaries; rechecks policy before spending, backup and actual storage writes. */
-final class CheckoutWriteHandler {
+/** PUT/POST write boundaries preserving checks, consumption and backup. */
+final class CheckoutWriter {
 	/**
+	 * @param CheckoutResolver $resolver Visible node resolution.
+	 * @param CheckoutPolicy $policy Current capability admission.
+	 * @param CheckoutLanguage $language Owner language.
+	 * @param CheckoutRefusals $refusals Safe HTTP responses.
 	 * @param IRootFolder $rootFolder Official root resolver.
-	 * @param FileCreation|null $creation New-file service.
-	 * @param FileBackup $backup Mandatory internal recovery copy; never receives the policy.
-	 * @param SharedWriteGuard $guard Existing shared confirmation.
-	 * @param NodeAccessInfo $accessInfo Existing access information.
-	 * @param LoggerInterface $logger Client-safe diagnostics.
-	 * @param FilesAccessGuard|null $visibilityGuard Existing exclusions/scope.
-	 * @param LockAwareWrite|null $locks Existing lock enforcement.
-	 * @param UserL10n|null $l10n Owner language.
-	 * @param IUserManager|null $userManager Owner resolver.
-	 * @param FileTypeGuard|null $fileTypes Current type policy.
-	 * @param Closure $resolve Existing token path+id resolution.
-	 * @param Closure $admit Existing grant admission.
-	 * @param Closure $scopeReadable Existing scope availability.
-	 * @param Closure $actsAsUser Existing owner/session comparison.
-	 * @param Closure $spend Atomic single-use token consumption.
-	 * @param Closure $json Existing JSON response adapter.
-	 * @param Closure $refuse Existing safe HTTP refusal adapter.
-	 * @param Closure $lockRefusal Existing lock response adapter.
+	 * @param FileBackup $backup Internal recovery copy.
+	 * @param SharedWriteGuard $guard Shared confirmation.
+	 * @param NodeAccessInfo $accessInfo Current access information.
+	 * @param LoggerInterface $logger Existing diagnostics.
+	 * @param ?FileCreation $creation New-file service.
+	 * @param ?FilesAccessGuard $visibilityGuard Existing scope.
+	 * @param ?LockAwareWrite $locks Existing locks.
+	 * @param ?FileTypeGuard $fileTypes Current type policy.
 	 */
-	public function __construct(private IRootFolder $rootFolder, private ?FileCreation $creation,
-		private FileBackup $backup, private SharedWriteGuard $guard, private NodeAccessInfo $accessInfo,
-		private LoggerInterface $logger, private ?FilesAccessGuard $visibilityGuard,
-		private ?LockAwareWrite $locks, private ?UserL10n $l10n, private ?IUserManager $userManager,
-		private ?FileTypeGuard $fileTypes,
-		private Closure $resolve, private Closure $admit, private Closure $scopeReadable,
-		private Closure $actsAsUser, private Closure $spend, private Closure $json,
-		private Closure $refuse, private Closure $lockRefusal) {
+	public function __construct(
+		private CheckoutResolver $resolver,
+		private CheckoutPolicy $policy,
+		private CheckoutLanguage $language,
+		private CheckoutRefusals $refusals,
+		private IRootFolder $rootFolder,
+		private FileBackup $backup,
+		private SharedWriteGuard $guard,
+		private NodeAccessInfo $accessInfo,
+		private LoggerInterface $logger,
+		private ?FileCreation $creation = null,
+		private ?FilesAccessGuard $visibilityGuard = null,
+		private ?LockAwareWrite $locks = null,
+		private ?FileTypeGuard $fileTypes = null,
+	) {
 	}
 
 	/**
@@ -82,7 +75,7 @@ final class CheckoutWriteHandler {
 	 * @return Response the JSON receipt, the confirmation payload or a refusal
 	 */
 	public function replace(CheckoutToken $row, string $body): Response {
-		$opened = ($this->resolve)($row, CheckoutToken::KIND_UPLOAD);
+		$opened = $this->resolver->resolve($row, CheckoutToken::KIND_UPLOAD);
 		if ($opened instanceof Response) {
 			return $opened;
 		}
@@ -92,13 +85,13 @@ final class CheckoutWriteHandler {
 		}
 		// A lock the agent can wait out: refused before the link is spent, so the same link works once it ends.
 		try {
-			$this->locks?->assertWritable($file, $row->userId, $row->path, ($this->actsAsUser)($row->userId));
+			$this->locks?->assertWritable($file, $row->userId, $row->path, $this->policy->actsAsUser($row->userId));
 		} catch (LockWriteFailure $e) {
-			return ($this->refuse)(Http::STATUS_LOCKED, $e->getMessage());
+			return $this->refusals->refuse(Http::STATUS_LOCKED, $e->getMessage());
 		}
 		// The link is spent here, immediately before anything that can change the file. Everything above is
 		// a refusal the agent can fix without a new checkout; everything below may already have written.
-		if ($failure = ($this->spend)($row)) {
+		if ($failure = $this->policy->spend($row)) {
 			return $failure;
 		}
 		return $this->write($row, $file, $body);
@@ -120,15 +113,15 @@ final class CheckoutWriteHandler {
 		$access = $this->accessInfo->describe($file, $row->userId);
 		// The scope recorded at checkout can be stale: a file may have moved into a share in between.
 		if ($access['scope'] !== NodeAccessInfo::PERSONAL && !$row->sharedConfirmed) {
-			return ($this->json)(Http::STATUS_CONFLICT, $this->guard->request($access, $row->path, CommonMessages::confirmAdviceCheckout()));
+			return $this->refusals->json(Http::STATUS_CONFLICT, $this->guard->request($access, $row->path, CommonMessages::confirmAdviceCheckout()));
 		}
 		if (!$file->isUpdateable()) {
-			return ($this->refuse)(Http::STATUS_FORBIDDEN, CommonMessages::forbidden());
+			return $this->refusals->refuse(Http::STATUS_FORBIDDEN, CommonMessages::forbidden());
 		}
 		$copy = '';
 		try {
 			NodeAccess::checkEtag($file, $row->etag);
-			$asUser = ($this->actsAsUser)($row->userId);
+			$asUser = $this->policy->actsAsUser($row->userId);
 			$copy = $this->backup->prepare($root, $file, $row->path, $row->userId, $row->etag, $asUser);
 			$this->visibilityGuard?->assertVisible($file);
 			FileWriteBoundary::check($this->fileTypes, $file->getName());
@@ -138,25 +131,25 @@ final class CheckoutWriteHandler {
 			NodeAccess::mutate(fn () => $this->locks === null ? $write() : $this->locks->run($write, $file, $row->userId, $row->path, $asUser), $this->visibilityGuard);
 			$node = NodeAccess::requireFile(NodeAccess::get($root, $row->path, $this->visibilityGuard));
 		} catch (FileTypeDenied|FileWritePolicyUnavailable $e) {
-			return ($this->refuse)(Http::STATUS_FORBIDDEN, $e->getMessage());
+			return $this->refusals->refuse(Http::STATUS_FORBIDDEN, $e->getMessage());
 		} catch (LockWriteFailure $e) {
 			// The link is spent all the same; a backup taken before the refusal holds the untouched original.
-			return ($this->lockRefusal)($e, $copy);
+			return $this->refusals->lockRefusal($e, $copy);
 		} catch (LockedException $e) {
 			$failure = NodeAccess::lockFailure($e);
 			return $failure instanceof LockWriteFailure
-				? ($this->lockRefusal)($failure, $copy)
-				: ($this->refuse)(Http::STATUS_LOCKED, $failure->getMessage() . ' ' . LockMessages::newCheckoutNeeded());
+				? $this->refusals->lockRefusal($failure, $copy)
+				: $this->refusals->refuse(Http::STATUS_LOCKED, $failure->getMessage() . ' ' . LockMessages::newCheckoutNeeded());
 		} catch (ToolFailure $e) {
 			$conflict = $e->getMessage() === CommonMessages::conflict();
 			$message = $conflict ? CheckoutMessages::uploadConflict() : $e->getMessage();
-			return ($this->refuse)($conflict ? Http::STATUS_CONFLICT : Http::STATUS_BAD_REQUEST, $message);
+			return $this->refusals->refuse($conflict ? Http::STATUS_CONFLICT : Http::STATUS_BAD_REQUEST, $message);
 		} catch (Throwable) {
 			$this->logger->error('MCP checkout upload failed', ['app' => 'mcp']);
 			// The copy exists by now, so the message can point at the one thing that still holds the original.
-			return ($this->refuse)(Http::STATUS_INTERNAL_SERVER_ERROR, CheckoutMessages::uploadFailed($copy));
+			return $this->refusals->refuse(Http::STATUS_INTERNAL_SERVER_ERROR, CheckoutMessages::uploadFailed($copy));
 		}
-		return ($this->json)(Http::STATUS_OK, [
+		return $this->refusals->json(Http::STATUS_OK, [
 			'path' => $row->path,
 			'size' => (int)filesize($body),
 			'etag' => (string)$node->getEtag(),
@@ -179,12 +172,10 @@ final class CheckoutWriteHandler {
 	 */
 	public function create(CheckoutToken $row, string $body): Response {
 		$uid = $row->userId;
-		if (($refusal = ($this->admit)($uid, CheckoutController::OPERATION_CREATE) ?? ($this->scopeReadable)()) !== null) {
+		if (($refusal = $this->policy->admit($uid, CheckoutPolicy::OPERATION_CREATE) ?? $this->policy->scopeReadable()) !== null) {
 			return $refusal;
 		}
-		if ($this->l10n !== null && $this->userManager !== null && ($user = $this->userManager->get($uid)) !== null) {
-			Translator::use($this->l10n->forUser($user));
-		}
+		$this->language->forOwner($uid);
 		$creation = $this->creation ?? throw new LogicException('FileCreation is not wired');
 		try {
 			$target = NodeAccess::run(fn (): array => $creation->target($this->rootFolder->getUserFolder($uid), $row->path));
@@ -194,18 +185,18 @@ final class CheckoutWriteHandler {
 			}
 			FileCreation::assertCreatable($target['folder']);
 		} catch (Throwable $e) {
-			return $this->createRefusal($e);
+			return $this->refusals->createRefusal($e);
 		}
 		// The scope recorded with the link can be stale: the folder may have been shared in between.
 		if ($access['scope'] !== NodeAccessInfo::PERSONAL && !$row->sharedConfirmed) {
-			return ($this->json)(Http::STATUS_CONFLICT, $this->guard->request($access, $row->path, CommonMessages::confirmAdviceUpload()));
+			return $this->refusals->json(Http::STATUS_CONFLICT, $this->guard->request($access, $row->path, CommonMessages::confirmAdviceUpload()));
 		}
 		$size = (int)filesize($body);
 		$declared = $row->declaredSize();
 		if ($size === 0 && $declared !== null && $declared > 0) {
-			return ($this->refuse)(Http::STATUS_BAD_REQUEST, \OCA\Mcp\Modules\Files\Presentation\CreationMessages::uploadEmptyDeclared($declared));
+			return $this->refusals->refuse(Http::STATUS_BAD_REQUEST, \OCA\Mcp\Modules\Files\Presentation\CreationMessages::uploadEmptyDeclared($declared));
 		}
-		if ($failure = ($this->spend)($row, \OCA\Mcp\Modules\Files\Presentation\CreationMessages::createTokenSpent())) {
+		if ($failure = $this->policy->spend($row, \OCA\Mcp\Modules\Files\Presentation\CreationMessages::createTokenSpent())) {
 			return $failure;
 		}
 		$handle = null;
@@ -214,49 +205,15 @@ final class CheckoutWriteHandler {
 			if ($content === false) {
 				throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createFailed());
 			}
-			$file = NodeAccess::run(fn (): File => $creation->write($target['folder'], $target['name'], $content, $uid, ($this->actsAsUser)($uid)));
-			return ($this->json)(Http::STATUS_CREATED, $creation->receipt($target, $file, $uid));
+			$file = NodeAccess::run(fn (): File => $creation->write($target['folder'], $target['name'], $content, $uid, $this->policy->actsAsUser($uid)));
+			return $this->refusals->json(Http::STATUS_CREATED, $creation->receipt($target, $file, $uid));
 		} catch (Throwable $e) {
-			return $this->createRefusal($e);
+			return $this->refusals->createRefusal($e);
 		} finally {
 			if (is_resource($handle)) {
 				fclose($handle);
 			}
 		}
-	}
-
-	/**
-	 * The status a refusal of a new file maps to, so the agent knows whether to rename, ask or give up.
-	 *
-	 * @param Throwable $e what target() or write() raised
-	 * @return Response 409 for a taken name, 400 for a name or a path Nextcloud refuses, 403 for a denied folder,
-	 *         404 for a missing or hidden one, 423 for a lock, 507 for a full quota and 500 for a write that failed
-	 */
-	public function createRefusal(Throwable $e): Response {
-		if ($e instanceof FileTypeDenied || $e instanceof FileWritePolicyUnavailable) {
-			return ($this->refuse)(Http::STATUS_FORBIDDEN, $e->getMessage());
-		}
-		if ($e instanceof FileExists) {
-			return ($this->refuse)(Http::STATUS_CONFLICT, $e->getMessage());
-		}
-		if ($e instanceof ArgumentValidationException) {
-			return ($this->refuse)(Http::STATUS_BAD_REQUEST, $e->clientMessage());
-		}
-		if ($e instanceof LockWriteFailure) {
-			return ($this->refuse)(Http::STATUS_LOCKED, $e->getMessage());
-		}
-		if (!$e instanceof ToolFailure) {
-			$this->logger->error('MCP create upload failed', ['app' => 'mcp', 'exception_class' => $e::class]);
-			return ($this->refuse)(Http::STATUS_INTERNAL_SERVER_ERROR, \OCA\Mcp\Modules\Files\Presentation\CreationMessages::createFailed());
-		}
-		return match ($e->getMessage()) {
-			CommonMessages::forbidden() => ($this->refuse)(Http::STATUS_FORBIDDEN, $e->getMessage()),
-			\OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath() => ($this->refuse)(Http::STATUS_BAD_REQUEST, $e->getMessage()),
-			CommonMessages::locked() => ($this->refuse)(Http::STATUS_LOCKED, $e->getMessage()),
-			CommonMessages::insufficientQuota() => ($this->refuse)(Http::STATUS_INSUFFICIENT_STORAGE, $e->getMessage()),
-			\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createFailed() => ($this->refuse)(Http::STATUS_INTERNAL_SERVER_ERROR, $e->getMessage()),
-			default => ($this->refuse)(Http::STATUS_NOT_FOUND, $e->getMessage()),
-		};
 	}
 
 	/**
@@ -268,7 +225,7 @@ final class CheckoutWriteHandler {
 			FileWriteBoundary::check($this->fileTypes, $name);
 			return null;
 		} catch (FileTypeDenied|FileWritePolicyUnavailable $e) {
-			return ($this->refuse)(Http::STATUS_FORBIDDEN, $e->getMessage());
+			return $this->refusals->refuse(Http::STATUS_FORBIDDEN, $e->getMessage());
 		}
 	}
 }

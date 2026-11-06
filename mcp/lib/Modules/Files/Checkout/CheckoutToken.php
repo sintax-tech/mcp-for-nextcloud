@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Checkout;
+namespace OCA\Mcp\Modules\Files\Checkout;
 
 /**
  * One row of mcp_checkout_tokens: a single-use capability to download or to replace the content of one

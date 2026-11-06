@@ -13,7 +13,7 @@ use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
-use OCA\Mcp\Modules\Files\CheckoutService;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutService;
 use OCA\Mcp\Modules\Files\FilesPreviewContext;
 use OCA\Mcp\Modules\Files\Backups\BackupPlan;
 use OCA\Mcp\Modules\Files\Handler;
@@ -67,6 +67,6 @@ final class CheckoutFilePreview {
 	 * @throws ToolFailure when the path is the backup folder or not a file, the etag is stale, versioning is off or the write would be refused
 	 */
 	private function planCheckout(Folder $root, string $userId, string $path, ?string $etag): array {
-		return (new Handler\CheckoutFileHandler($this->checkout, $this->accessInfo, $this->guard, $this->visibilityGuard, $this->locks, $this->fileTypes, $this->backupLocation, $this->backupPlan))->plan($root, $userId, $path, $etag);
+		return (new CheckoutFileHandler($this->checkout, $this->accessInfo, $this->guard, $this->visibilityGuard, $this->locks, $this->fileTypes, $this->backupLocation, $this->backupPlan))->plan($root, $userId, $path, $etag);
 	}
 }

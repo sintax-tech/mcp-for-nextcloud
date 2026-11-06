@@ -73,11 +73,6 @@
 	],
 	"transitional": [
 		{
-			"fqcn": "OCA\\Mcp\\Controller\\CheckoutController",
-			"ceiling": 562,
-			"expires": "RE-24"
-		},
-		{
 			"fqcn": "OCA\\Mcp\\Tools\\Files\\Reorganization",
 			"ceiling": 1106,
 			"expires": "RE-23"

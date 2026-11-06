@@ -272,11 +272,11 @@ final class BackupOperationsTest extends FilesToolsTestCase {
 		});
 		$access = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo($this->users, $this->tree->shareManager());
 		$unused = static fn () => throw new \LogicException('Unexpected callback');
-		$handler = new \OCA\Mcp\Modules\Files\Handler\CheckoutWriteHandler($this->visibilityRoot(), null, $backup,
+		$handler = new \OCA\Mcp\Modules\Files\Checkout\CheckoutWriter($this->visibilityRoot(), null, $backup,
 			new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access), $access, new \Psr\Log\NullLogger(), null, null, null, null, \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this),
 			$unused, $unused, $unused, static fn () => false, $unused, $unused,
 			static fn (int $status, string $message) => new \OCP\AppFramework\Http\JSONResponse(['error' => $message], $status), $unused);
-		$row = new \OCA\Mcp\Checkout\CheckoutToken(1, 'upload', 'alice', $file->getId(), '/Documentos/ata.md', $file->getEtag(), 'personal', true, PHP_INT_MAX, true);
+		$row = new \OCA\Mcp\Modules\Files\Checkout\CheckoutToken(1, 'upload', 'alice', $file->getId(), '/Documentos/ata.md', $file->getEtag(), 'personal', true, PHP_INT_MAX, true);
 		$response = $handler->write($row, $file, '/body-must-not-be-read');
 		self::assertSame(400, $response->getStatus());
 		self::assertSame(['error' => \OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath() . ' ' . \OCA\Mcp\Modules\Files\Presentation\EditingMessages::originalKept($copy)], $response->getData());

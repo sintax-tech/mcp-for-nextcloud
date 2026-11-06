@@ -16,7 +16,7 @@ final class FileSizeTest extends ArchitectureCase {
 	}
 	public function testAppSourceHasNoNewOversizedFileOrRaisedCeiling(): void {
 		self::assertCount(21, self::json('size-baseline')['final']);
-		self::assertCount(6, self::json('size-baseline')['transitional']);
+		self::assertCount(0, self::json('size-baseline')['transitional']);
 		self::assertSame([], $this->problems());
 		self::assertSame('lib/OAuth/Storage/OAuthStore.php', self::tree()->present('OCA\\Mcp\\OAuth\\OAuthStore'));
 	}
@@ -75,14 +75,17 @@ final class FileSizeTest extends ArchitectureCase {
 		self::assertNotSame([], $this->problems(files: $files));
 		// Fabricate the historical RE-06c state without reviving an expired live exception.
 		$tickets = new TicketState(self::tickets()->known, array_values(array_diff(self::tickets()->completed, ['RE-06d'])));
-		foreach (self::json('size-baseline')['transitional'] as $row) {
-			if (implode('\\', $row['nameParts']) === $name) {
-				unset($row['nameParts']); $live['transitional'][] = ['fqcn' => $name, ...$row];
-			}
-		}
+		$row = ['ceiling' => 1485, 'expires' => 'RE-06d', 'steps' => [
+			['ticket' => 'RE-06', 'ceiling' => 1300], ['ticket' => 'RE-06b', 'ceiling' => 900], ['ticket' => 'RE-06c', 'ceiling' => 500],
+		]];
+		$live['transitional'][] = ['fqcn' => $name, ...$row];
+		$baseline = self::json('size-baseline');
+		$baseline['transitional'][] = ['nameParts' => explode('\\', $name), ...$row];
+		/** @param array<string, string> $sources Local source bytes. @return list<string> Violations of the fabricated RE-06c state only. */
+		$problems = static fn (array $sources): array => SizeRules::problems(self::tree()->withFiles($sources), $live, $baseline, self::json('source-size-baseline'), $tickets);
 		$files[$path] = str_repeat("// x\n", 500);
-		self::assertSame([], $this->problems($live, $files, $tickets));
+		self::assertSame([], $problems($files));
 		$files[$path] .= "// x\n";
-		self::assertNotSame([], $this->problems($live, $files, $tickets));
+		self::assertNotSame([], $problems($files));
 	}
 }

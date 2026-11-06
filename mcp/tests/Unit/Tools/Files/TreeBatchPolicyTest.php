@@ -29,7 +29,7 @@ final class TreeBatchPolicyTest extends FilesToolsTestCase {
 
 	/** @return CopyMoveContext The very same real context and injected policy used by the module. */
 	private function context(): CopyMoveContext {
-		return (new \ReflectionProperty($this->module, 'reorganization'))->getValue($this->module)->copyMoveContext();
+		return FilesCatalogWiring::of($this->module)->named('reorganization')->copyMoveContext();
 	}
 
 	/** A forbidden child refuses both plans/confirmations, without creating any target or batch row.

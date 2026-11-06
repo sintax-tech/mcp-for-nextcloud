@@ -97,7 +97,7 @@ final class FilesFlowWiring {
 	/** @return FilesModule the module of one request, with fresh per-request services over the persistent fakes */
 	public function module(): FilesModule {
 		$this->request = [];
-		$module = $this->build(FilesModule::class);
+		$module = new FilesModule($this->container());
 		assert($module instanceof FilesModule);
 		return $module;
 	}

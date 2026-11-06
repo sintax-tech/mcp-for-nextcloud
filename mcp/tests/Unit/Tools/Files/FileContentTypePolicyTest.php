@@ -774,7 +774,7 @@ final class FileContentTypePolicyTest extends TestCase {
 		$this->assertStringNotContainsString('->putContent', $versions);
 		$this->assertStringNotContainsString('->rollback', $versions);
 		$this->assertStringContainsString('VersionRestore is not wired', $versions);
-		$this->assertStringContainsString('EditFileHandler is not wired', $files);
+		$this->assertStringContainsString('EditFileHandler is not wired', (string)file_get_contents(dirname(__DIR__, 4) . '/lib/Modules/Files/Editing/EditFileAction.php'));
 	}
 }
 

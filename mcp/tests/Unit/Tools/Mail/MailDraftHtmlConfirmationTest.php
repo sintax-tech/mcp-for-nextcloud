@@ -20,6 +20,7 @@ use PHPUnit\Framework\TestCase;
 final class MailDraftHtmlConfirmationTest extends TestCase {
 	private FakeMailMessageApp $app;
 	private MailDraftTools $tools;
+	private PlanState $states;
 
 	protected function setUp(): void {
 		$this->app = (new FakeMailMessageApp())->withAccount(11, 'alice', 'Work', 'alice@example.com');
@@ -33,8 +34,9 @@ final class MailDraftHtmlConfirmationTest extends TestCase {
 		$engine = new class implements MailDraftHtmlPurifier {
 			public function purify(string $html): string { return $html; }
 		};
+		$this->states = new PlanState($config);
 		$this->tools = new MailDraftTools($this->app, new MailGateway($this->app), FakeMailLinks::create($this),
-			new PlanState($config), $policy, $apps, new MailDraftHtml($engine));
+			$this->states, $policy, $apps, new MailDraftHtml($engine));
 	}
 
 	public function testConfirmedHtmlMatchesTheEntirePlanAndEquivalentSourcesShareState(): void {
@@ -86,4 +88,29 @@ final class MailDraftHtmlConfirmationTest extends TestCase {
 			}
 		}
 	}
+	public function testAnActualPre13PlainTextStateCannotAppend(): void {
+		$args = ['account_id' => 11, 'body' => 'approved'];
+		$oldState = $this->states->of('mail_create_draft', 'alice', ['account' => 11, 'drafts' => 3,
+			'draftsPath' => 'Drafts', 'recipients' => ['to' => [], 'cc' => [], 'bcc' => []], 'subject' => '',
+			'body' => hash('sha256', 'approved')]);
+		$this->assertNotSame($oldState, $this->tools->preview('mail_create_draft', $args, 'alice')['plan_state']);
+		try {
+			$this->tools->call('mail_create_draft', $args + ['confirm' => true, 'plan_state' => $oldState], 'alice');
+			$this->fail('an old plan appended');
+		} catch (PlanChanged) {
+			$this->assertSame([], $this->app->drafts);
+		}
+	}
+
+	public function testInvalidBooleanValuesAreNeverCoerced(): void {
+		foreach ([null, 'true', 1, ''] as $value) {
+			try {
+				$this->tools->preview('mail_create_draft', ['account_id' => 11, 'html' => $value], 'alice');
+				$this->fail('invalid boolean accepted');
+			} catch (\OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException) {
+				$this->assertSame([], $this->app->drafts);
+			}
+		}
+	}
+
 }

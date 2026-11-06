@@ -2,6 +2,11 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Modules/Mail/Creation/MailDraftHtml.php","fqcn":"OCA\\Mcp\\Modules\\Mail\\Creation\\MailDraftHtml","target":"stays","owner":"Modules\\Mail","ticket":null},
+		{"path":"lib/Modules/Mail/Creation/MailDraftHtmlAllow.php","fqcn":"OCA\\Mcp\\Modules\\Mail\\Creation\\MailDraftHtmlAllow","target":"stays","owner":"Modules\\Mail","ticket":null},
+		{"path":"lib/Modules/Mail/Creation/MailDraftHtmlPurifier.php","fqcn":"OCA\\Mcp\\Modules\\Mail\\Creation\\MailDraftHtmlPurifier","target":"stays","owner":"Modules\\Mail","ticket":null},
+		{"path":"lib/Modules/Mail/Integration/MailDraftHtmlEngine.php","fqcn":"OCA\\Mcp\\Modules\\Mail\\Integration\\MailDraftHtmlEngine","target":"stays","owner":"Modules\\Mail","ticket":null},
+		{"path":"lib/Modules/Mail/Presentation/MailDraftHtmlView.php","fqcn":"OCA\\Mcp\\Modules\\Mail\\Presentation\\MailDraftHtmlView","target":"stays","owner":"Modules\\Mail","ticket":null},
 		{"path":"lib/Modules/Deck/Integration/DeckAssignments.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Integration\\DeckAssignments","target":"OCA\\Mcp\\Modules\\Deck\\Integration\\DeckAssignments","owner":"Modules\\Deck","ticket":"RE-26"},
 		{"path":"lib/Modules/Deck/Integration/DeckBoards.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Integration\\DeckBoards","target":"OCA\\Mcp\\Modules\\Deck\\Integration\\DeckBoards","owner":"Modules\\Deck","ticket":"RE-26"},
 		{"path":"lib/Modules/Deck/Integration/DeckCardChanges.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Integration\\DeckCardChanges","target":"OCA\\Mcp\\Modules\\Deck\\Integration\\DeckCardChanges","owner":"Modules\\Deck","ticket":"RE-26"},

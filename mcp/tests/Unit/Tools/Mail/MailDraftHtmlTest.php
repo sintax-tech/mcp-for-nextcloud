@@ -116,4 +116,16 @@ final class MailDraftHtmlTest extends TestCase {
 		(new MailDraftHtmlEngine())->purify('<p>ok</p>');
 	}
 
+	/** @return void */
+	public function testWrappersInsideRemovedSubtreesDoNotDistortTheReportAndPreKeepsEdgeWhitespace(): void {
+		$engine = new class implements MailDraftHtmlPurifier {
+			public function purify(string $html): string { return $html; }
+		};
+		$sanitizer = new MailDraftHtml($engine);
+		$result = $sanitizer->sanitize('<!--<html><body><head>--><pre>' . "\n A  B\n" . '</pre>');
+		$this->assertSame(0, $result['removed']['wrapper']);
+		$this->assertSame(1, $result['removed']['comment']);
+		$this->assertSame("\n A  B\n\n", MailDraftHtmlView::fields($result)['preview']);
+	}
+
 }

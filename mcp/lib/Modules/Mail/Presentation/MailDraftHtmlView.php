@@ -31,7 +31,7 @@ final class MailDraftHtmlView {
 				$text = self::text($anchor);
 				$links[] = ['text' => $text, 'href' => $href, 'differs' => $text !== $href];
 			}
-			$preview = trim(self::text($document), "\n");
+			$preview = self::text($document);
 			$result['sizes']['preview'] = mb_strlen($preview);
 			unset($result['body']);
 			return $result + ['preview' => $preview, 'links' => $links];

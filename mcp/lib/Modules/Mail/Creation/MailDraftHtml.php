@@ -28,7 +28,7 @@ final class MailDraftHtml {
 	 * @throws ToolFailure for unavailable engine, unsafe recovery, unreported loss, empty or oversized output
 	 */
 	public function sanitize(string $input): array {
-		if (!mb_check_encoding($input, 'UTF-8') || str_contains($input, "\0") || mb_strlen($input) > MailDraftRequest::MAX_BODY) {
+		if (!mb_check_encoding($input, 'UTF-8') || str_contains($input, "\0") || preg_match('/<\\?|<!doctype\\b/i', $input) === 1 || mb_strlen($input) > MailDraftRequest::MAX_BODY) {
 			throw new ToolFailure(MailDraftMessages::htmlInvalid());
 		}
 		$result = $this->pass($input);
@@ -57,9 +57,9 @@ final class MailDraftHtml {
 		$urls = [];
 		$marker = 'mcp-conditional-' . bin2hex(random_bytes(16));
 		$source = $this->conditionalMarkers($input, $marker);
-		$document = $this->parse($source);
-		$explicitHead = preg_match('/<head(?:\s|>)/i', $input) === 1;
-		$removed['wrapper'] = preg_match_all('/<(?:html|body)(?:\s|>)/i', $input);
+		$document = $this->parse($source['html']);
+		$explicitHead = $source['head'];
+		$removed['wrapper'] = $source['wrappers'];
 		foreach (iterator_to_array($document->getElementsByTagName('head')) as $head) {
 			if ($explicitHead) {
 				$head->parentNode->removeChild($head);
@@ -97,13 +97,25 @@ final class MailDraftHtml {
 	 *
 	 * @param string $input source fragment
 	 * @param string $marker unpredictable per-pass marker, never emitted
-	 * @return string source with recognized delimiters marked
+	 * @return array{html:string,head:bool,wrappers:int} marked source and explicit wrappers outside discarded subtrees
 	 */
-	private function conditionalMarkers(string $input, string $marker): string {
-		$pattern = '~<!--[\s\S]*?-->|<!\[(?:if\b[^\]]*|endif)\]>|<[a-zA-Z/][^>"\']*(?:(?:"[^"]*"|\'[^\']*\')[^>"\']*)*>~i';
-		return preg_replace_callback($pattern, static function (array $match) use ($marker): string {
-			return preg_match('~^<!\[(?:if\b|endif\])~i', $match[0]) === 1 ? '<!--' . $marker . '-->' : $match[0];
-		}, $input) ?? $input;
+	private function conditionalMarkers(string $input, string $marker): array {
+		$head = false;
+		$wrappers = 0;
+		$blocked = implode('|', MailDraftHtmlAllow::SUBTREES);
+		$pattern = '~<!--[\s\S]*?-->|<(' . $blocked . ')\b[^>]*>[\s\S]*?</\1\s*>|<!\[(?:if\b[^\]]*|endif)\]>|<[a-zA-Z/][^>"\']*(?:(?:"[^"]*"|\'[^\']*\')[^>"\']*)*>~i';
+		$html = preg_replace_callback($pattern, static function (array $match) use ($marker, &$head, &$wrappers): string {
+			if (preg_match('~^<!\[(?:if\b|endif\])~i', $match[0]) === 1) {
+				return '<!--' . $marker . '-->';
+			}
+			$head = $head || preg_match('~^<head(?:\s|>)~i', $match[0]) === 1;
+			$wrappers += preg_match('~^<(?:html|body)(?:\s|>)~i', $match[0]);
+			return $match[0];
+		}, $input);
+		if ($html === null) {
+			throw new ToolFailure(MailDraftMessages::htmlInvalid());
+		}
+		return ['html' => $html, 'head' => $head, 'wrappers' => $wrappers];
 	}
 
 	/**

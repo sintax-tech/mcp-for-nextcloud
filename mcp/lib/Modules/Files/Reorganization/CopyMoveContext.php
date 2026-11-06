@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files;
+namespace OCA\Mcp\Modules\Files\Reorganization;
 
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Access\FileTypes\FileTypeGuard;
@@ -30,9 +30,9 @@ final class CopyMoveContext {
 	 * @return void
 	 */
 	public function __construct(
-		public readonly Reorganization $reorganization,
+		public readonly \OCA\Mcp\Modules\Files\Reorganization\Reorganization $reorganization,
 		public readonly NodeAccessInfo $access,
-		public readonly MoveReport $report,
+		public readonly \OCA\Mcp\Modules\Files\Integration\MoveReport $report,
 		public readonly ?FilesAccessGuard $visibilityGuard,
 		public readonly ?LockAwareWrite $locks,
 		private ?FileTypeGuard $fileTypes,
@@ -45,8 +45,8 @@ final class CopyMoveContext {
 	 *
 	 * @return FileDestinationPolicy Final-name preflight and sink checks.
 	 */
-	public function policy(): FileDestinationPolicy {
-		return new FileDestinationPolicy($this->fileTypes ?? \OCP\Server::get(FileTypeGuard::class), $this);
+	public function policy(): \OCA\Mcp\Modules\Files\Reorganization\FileDestinationPolicy {
+		return new \OCA\Mcp\Modules\Files\Reorganization\FileDestinationPolicy($this->fileTypes ?? \OCP\Server::get(FileTypeGuard::class), $this);
 	}
 
 	/**
@@ -72,7 +72,7 @@ final class CopyMoveContext {
 	 * @throws ToolFailure when the path is /MCP backups or inside it
 	 */
 	public function notBackup(string $path): string {
-		return BackupWriteBoundary::checked($path, $this->backupLocation);
+		return \OCA\Mcp\Modules\Files\BackupWriteBoundary::checked($path, $this->backupLocation);
 	}
 
 	/**

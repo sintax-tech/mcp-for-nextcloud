@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Files\Moving;
 
 use OCP\Files\Folder;
-use OCA\Mcp\Modules\Files\Reorganization;
-use OCA\Mcp\Modules\Files\MovePlanner;
+use OCA\Mcp\Modules\Files\Reorganization\Reorganization;
+use OCA\Mcp\Modules\Files\Reorganization\MovePlanner;
 use OCA\Mcp\Modules\Files\FilesPreviewContext;
 
 /** Plans the operation that executes a planned batch move, without executing the write. */

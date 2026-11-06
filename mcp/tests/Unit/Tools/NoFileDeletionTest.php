@@ -24,7 +24,7 @@ final class NoFileDeletionTest extends TestCase {
 	 * remove an empty folder the batch itself created, and nothing else. Until that tool lands there is no
 	 * allowance at all, so the Files module currently has to contain no removal of any kind.
 	 */
-	private const ALLOWED_EMPTY_FOLDER_REMOVAL = 'lib/Modules/Files/Handler/UndoBatchHandler.php';
+	private const ALLOWED_EMPTY_FOLDER_REMOVAL = 'lib/Modules/Files/Reorganization/UndoBatchHandler.php';
 
 	/**
 	 * @return list<string> every source file of the Files module
@@ -40,7 +40,7 @@ final class NoFileDeletionTest extends TestCase {
 	 * and it has to sit there and nowhere else: a removal anywhere else in the module fails the test.
 	 */
 	public function testNoFilesHandlerDeletesANode(): void {
-		FileDeletionGuard::assertNoNodeDeletion($this->filesSources(), \OCA\Mcp\Tests\Architecture\Inventory\FilesSources::sink(dirname(__DIR__, 3), 'OCA\\Mcp\\Modules\\Files\\Handler\\UndoBatchHandler'));
+		FileDeletionGuard::assertNoNodeDeletion($this->filesSources(), \OCA\Mcp\Tests\Architecture\Inventory\FilesSources::sink(dirname(__DIR__, 3), 'OCA\\Mcp\\Modules\\Files\\Reorganization\\UndoBatchHandler'));
 	}
 
 	/**

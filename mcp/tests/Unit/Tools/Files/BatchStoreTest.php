@@ -9,8 +9,8 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Migration\Version000800Date20261002000000;
 use OCA\Mcp\Tests\Unit\SqliteDatabase;
-use OCA\Mcp\Modules\Files\Batch;
-use OCA\Mcp\Modules\Files\BatchStore;
+use OCA\Mcp\Modules\Files\Reorganization\Batch;
+use OCA\Mcp\Modules\Files\Reorganization\BatchStore;
 use PHPUnit\Framework\TestCase;
 
 /**

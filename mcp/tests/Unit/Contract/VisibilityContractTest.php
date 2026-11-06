@@ -18,7 +18,7 @@ use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Modules\Files\Presentation\CreationMessages;
 use OCA\Mcp\Modules\Files\FilesModule;
-use OCA\Mcp\Modules\Files\Reorganization;
+use OCA\Mcp\Modules\Files\Reorganization\Reorganization;
 use OCA\Mcp\Modules\Notes\NotesModule;
 use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
 use OCA\Mcp\Modules\Talk\Attachments\AttachmentAccess;

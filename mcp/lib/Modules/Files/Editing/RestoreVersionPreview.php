@@ -11,7 +11,7 @@ use OCA\Mcp\Modules\Files\Handler\RestoreVersionHandler;
 use OCA\Mcp\Platform\Time\UserTimezone;
 use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\FilesPreviewContext;
-use OCA\Mcp\Modules\Files\VersionTools;
+use OCA\Mcp\Modules\Files\Integration\VersionTools;
 
 /** Plans the operation that restores historical content through the guarded restore handler, without executing the write. */
 final class RestoreVersionPreview {

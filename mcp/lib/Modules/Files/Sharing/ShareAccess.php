@@ -53,12 +53,12 @@ final class ShareAccess {
 
 	/** D6 visibility is checked by ownNode before a writer applies D7. */
 	public function assertFolderExposure(\OCP\Files\Node $node): void {
-		\OCA\Mcp\Modules\Files\FolderExposureGate::assertExposure($node, $this->visibilityGuard);
+		\OCA\Mcp\Modules\Files\Reorganization\FolderExposureGate::assertExposure($node, $this->visibilityGuard);
 	}
 
 	public function hideFolderUrl(\OCP\Files\Node $node): bool {
 		return NodeAccess::isFolder($node)
-			&& \OCA\Mcp\Modules\Files\FolderExposureGate::active($this->visibilityGuard);
+			&& \OCA\Mcp\Modules\Files\Reorganization\FolderExposureGate::active($this->visibilityGuard);
 	}
 
 	/**

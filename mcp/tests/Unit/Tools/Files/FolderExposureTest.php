@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\Platform\FileAccess\FakeLock;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Modules\Files\Batch;
+use OCA\Mcp\Modules\Files\Reorganization\Batch;
 use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Lock\ILock;
@@ -273,10 +273,10 @@ final class FolderExposureTest extends FilesToolsTestCase {
 		$root = $this->createMock(\OCP\Files\Folder::class);
 		$root->method('get')->willReturnCallback(static fn (string $path) => $path === 'alias'
 			? $aliasParent : throw new \OCP\Files\NotFoundException());
-		\OCA\Mcp\Modules\Files\FolderExposureGate::assertMove($root, $source, '/alias/renamed', $this->visibilityGuard);
+		\OCA\Mcp\Modules\Files\Reorganization\FolderExposureGate::assertMove($root, $source, '/alias/renamed', $this->visibilityGuard);
 		$this->expectException(ToolFailure::class);
 		$this->expectExceptionMessage(FilesMessages::folderExposureRefused());
-		\OCA\Mcp\Modules\Files\FolderExposureGate::assertMove($root, $source, '/missing/renamed', $this->visibilityGuard);
+		\OCA\Mcp\Modules\Files\Reorganization\FolderExposureGate::assertMove($root, $source, '/missing/renamed', $this->visibilityGuard);
 	}
 
 	public function testUndoRechecksD7PerItemAndPreservesRemainingMovesForRetry(): void {
@@ -349,7 +349,7 @@ final class FolderExposureTest extends FilesToolsTestCase {
 		$source->method('getParent')->willReturn($parent);
 		$this->expectException(ToolFailure::class);
 		$this->expectExceptionMessage(FilesMessages::folderExposureRefused());
-		\OCA\Mcp\Modules\Files\FolderExposureGate::assertMove($parent, $source, '/renamed', $this->visibilityGuard);
+		\OCA\Mcp\Modules\Files\Reorganization\FolderExposureGate::assertMove($parent, $source, '/renamed', $this->visibilityGuard);
 	}
 
 	public function testD7MessageIsTranslatedInEveryShippedLanguage(): void {

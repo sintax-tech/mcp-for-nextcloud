@@ -8,8 +8,8 @@ namespace OCA\Mcp\Modules\Files\Deletion\Folder;
 
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Access\ResourceScope\FilesScope;
-use OCA\Mcp\Modules\Files\FolderExposureGate;
-use OCA\Mcp\Modules\Files\ReorganizationLimits;
+use OCA\Mcp\Modules\Files\Reorganization\FolderExposureGate;
+use OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 use OCP\Files\Node;

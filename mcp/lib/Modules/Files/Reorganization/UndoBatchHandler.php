@@ -5,9 +5,14 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files\Handler;
+namespace OCA\Mcp\Modules\Files\Reorganization;
 
-use OCA\Mcp\Modules\Files\{CopyMoveContext, BatchStore, Batch, FileTypePreflight, FolderExposureGate, Presentation\FilesMessages};
+use OCA\Mcp\Modules\Files\Reorganization\CopyMoveContext;
+use OCA\Mcp\Modules\Files\Reorganization\BatchStore;
+use OCA\Mcp\Modules\Files\Reorganization\Batch;
+use OCA\Mcp\Modules\Files\Reorganization\FileTypePreflight;
+use OCA\Mcp\Modules\Files\Reorganization\FolderExposureGate;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;

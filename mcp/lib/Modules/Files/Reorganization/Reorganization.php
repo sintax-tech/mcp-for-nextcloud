@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files;
+namespace OCA\Mcp\Modules\Files\Reorganization;
 
 use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
@@ -37,7 +37,7 @@ final class Reorganization {
 	public function __construct(
 		private NodeAccessInfo $access,
 		private SharedWriteGuard $guard,
-		private MoveReport $report,
+		private \OCA\Mcp\Modules\Files\Integration\MoveReport $report,
 		private \OCP\IUserManager $userManager,
 		private ?\OCA\Mcp\Access\ResourceScope\FilesAccessGuard $visibilityGuard = null,
 		private ?LockAwareWrite $locks = null,
@@ -125,7 +125,7 @@ final class Reorganization {
 		if ($path === '/') {
 			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists());
 		}
-		if (FileBackup::isBackupPath($path, $this->backupLocation)) {
+		if (\OCA\Mcp\Modules\Files\FileBackup::isBackupPath($path, $this->backupLocation)) {
 			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath());
 		}
 		$relPath = ltrim($path, '/');
@@ -240,7 +240,7 @@ final class Reorganization {
 	 * @throws ToolFailure for an occupied destination, a stale ETag, a ceiling or a denied write
 	 */
 	public function copy(Folder $root, string $userId, string $from, string $to, ?string $etag, bool $confirmedShared): array {
-		return (new \OCA\Mcp\Modules\Files\Handler\CopyHandler($this->copyMoveContext()))->handle($root, $userId, $from, $to, $etag, $confirmedShared);
+		return (new \OCA\Mcp\Modules\Files\Reorganization\CopyHandler($this->copyMoveContext()))->handle($root, $userId, $from, $to, $etag, $confirmedShared);
 	}
 
 	/**
@@ -259,7 +259,7 @@ final class Reorganization {
 	 * @throws ToolFailure for an occupied destination, a stale ETag, another storage, a folder into itself or a denied write
 	 */
 	public function move(Folder $root, string $userId, string $from, string $to, ?string $etag, bool $confirmedShared): array {
-		return (new \OCA\Mcp\Modules\Files\Handler\MoveHandler($this->copyMoveContext()))->handle($root, $userId, $from, $to, $etag, $confirmedShared);
+		return (new \OCA\Mcp\Modules\Files\Reorganization\MoveHandler($this->copyMoveContext()))->handle($root, $userId, $from, $to, $etag, $confirmedShared);
 	}
 
 	/**
@@ -267,8 +267,8 @@ final class Reorganization {
 	 *
 	 * @return CopyMoveContext The context over this operation's native checks and policy.
 	 */
-	public function copyMoveContext(): CopyMoveContext {
-		return new CopyMoveContext($this, $this->access, $this->report, $this->visibilityGuard, $this->locks, $this->fileTypes, $this->backupLocation);
+	public function copyMoveContext(): \OCA\Mcp\Modules\Files\Reorganization\CopyMoveContext {
+		return new \OCA\Mcp\Modules\Files\Reorganization\CopyMoveContext($this, $this->access, $this->report, $this->visibilityGuard, $this->locks, $this->fileTypes, $this->backupLocation);
 	}
 
 	/**
@@ -312,7 +312,7 @@ final class Reorganization {
 	 * @throws MoveConflict when the destination is taken, the folder would land inside itself, or the two ends are on different storages
 	 * @throws ToolFailure when the source is missing, unreadable or not changeable, or the destination cannot receive
 	 */
-	public function inspect(Folder $root, string $from, string $to, ?string $etag = null, array $mkdirs = []): Inspection {
+	public function inspect(Folder $root, string $from, string $to, ?string $etag = null, array $mkdirs = []): \OCA\Mcp\Modules\Files\Reorganization\Inspection {
 		$source = $this->writable($root, $from);
 		NodeAccess::checkEtag($source, $etag);
 		$to = self::notBackup(PathGuard::normalize($to, 'to'), $this->backupLocation);
@@ -322,7 +322,7 @@ final class Reorganization {
 		$this->assertFree($root, $to);
 		$destination = $this->destination($root, $to, $mkdirs);
 		$this->assertSameStorage($source, $destination);
-		return new Inspection($source, $destination, $to);
+		return new \OCA\Mcp\Modules\Files\Reorganization\Inspection($source, $destination, $to);
 	}
 
 	/** Classify the whole batch before any lock checks, folder creation or mutation. */
@@ -330,7 +330,7 @@ final class Reorganization {
 		if ($this->visibilityGuard !== null && !$this->visibilityGuard->isConfigurationValid()) {
 			throw new ToolFailure(CommonMessages::notFound());
 		}
-		if (!FolderExposureGate::active($this->visibilityGuard)) {
+		if (!\OCA\Mcp\Modules\Files\Reorganization\FolderExposureGate::active($this->visibilityGuard)) {
 			return;
 		}
 		foreach ($moves as $item) {
@@ -342,7 +342,7 @@ final class Reorganization {
 				// Existing planning/undo checks retain their normal missing/hidden/ACL refusals.
 				continue;
 			}
-			FolderExposureGate::assertMove($root, $source, $to, $this->visibilityGuard);
+			\OCA\Mcp\Modules\Files\Reorganization\FolderExposureGate::assertMove($root, $source, $to, $this->visibilityGuard);
 		}
 	}
 
@@ -376,11 +376,11 @@ final class Reorganization {
 		array $moves,
 		array $mkdirs,
 		bool $confirmedShared,
-		MovePlanner $planner,
-		BatchStore $store,
+		\OCA\Mcp\Modules\Files\Reorganization\MovePlanner $planner,
+		\OCA\Mcp\Modules\Files\Reorganization\BatchStore $store,
 		int $now,
 	): array {
-		return (new \OCA\Mcp\Modules\Files\Handler\MoveBatchHandler($this->copyMoveContext()))->batch($root, $userId, $moves, $mkdirs, $confirmedShared, $planner, $store, $now);
+		return (new \OCA\Mcp\Modules\Files\Reorganization\MoveBatchHandler($this->copyMoveContext()))->batch($root, $userId, $moves, $mkdirs, $confirmedShared, $planner, $store, $now);
 	}
 	/**
 	 * The plan of `files_mkdir`: the levels that do not exist yet, and the folder they would be created in.
@@ -399,7 +399,7 @@ final class Reorganization {
 		if ($path === '/') {
 			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists());
 		}
-		if (FileBackup::isBackupPath($path, $this->backupLocation)) {
+		if (\OCA\Mcp\Modules\Files\FileBackup::isBackupPath($path, $this->backupLocation)) {
 			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath());
 		}
 		$rel = ltrim($path, '/');
@@ -450,7 +450,7 @@ final class Reorganization {
 	 * @throws ToolFailure for an occupied destination, a stale ETag, a ceiling or a denied write
 	 */
 	public function planCopy(Folder $root, string $userId, string $from, string $to, ?string $etag): array {
-		return (new \OCA\Mcp\Modules\Files\Handler\CopyHandler($this->copyMoveContext()))->planCopy($root, $userId, $from, $to, $etag);
+		return (new \OCA\Mcp\Modules\Files\Reorganization\CopyHandler($this->copyMoveContext()))->planCopy($root, $userId, $from, $to, $etag);
 	}
 
 	/**
@@ -467,7 +467,7 @@ final class Reorganization {
 	 * @throws ToolFailure when the source is missing, unreadable, not changeable, or the destination cannot receive
 	 */
 	public function planMove(Folder $root, string $userId, string $from, string $to, ?string $etag): array {
-		return (new \OCA\Mcp\Modules\Files\Handler\MoveHandler($this->copyMoveContext()))->planMove($root, $userId, $from, $to, $etag);
+		return (new \OCA\Mcp\Modules\Files\Reorganization\MoveHandler($this->copyMoveContext()))->planMove($root, $userId, $from, $to, $etag);
 	}
 
 	/**
@@ -480,8 +480,8 @@ final class Reorganization {
 	 * @param MovePlanner $planner the plan builder
 	 * @return array<string, mixed>
 	 */
-	public function planBatch(Folder $root, string $userId, array $moves, array $mkdirs, MovePlanner $planner): array {
-		return (new \OCA\Mcp\Modules\Files\Handler\MoveBatchHandler($this->copyMoveContext()))->planBatch($root, $userId, $moves, $mkdirs, $planner);
+	public function planBatch(Folder $root, string $userId, array $moves, array $mkdirs, \OCA\Mcp\Modules\Files\Reorganization\MovePlanner $planner): array {
+		return (new \OCA\Mcp\Modules\Files\Reorganization\MoveBatchHandler($this->copyMoveContext()))->planBatch($root, $userId, $moves, $mkdirs, $planner);
 	}
 
 	/**
@@ -495,8 +495,8 @@ final class Reorganization {
 	 * @return array<string, mixed>
 	 * @throws ToolFailure when the batch is not this user's, is gone, or was already undone
 	 */
-	public function planUndoBatch(Folder $root, string $userId, int $batchId, BatchStore $store, int $now): array {
-		return (new \OCA\Mcp\Modules\Files\Handler\UndoBatchHandler($this->copyMoveContext()))->planUndoBatch($root, $userId, $batchId, $store, $now);
+	public function planUndoBatch(Folder $root, string $userId, int $batchId, \OCA\Mcp\Modules\Files\Reorganization\BatchStore $store, int $now): array {
+		return (new \OCA\Mcp\Modules\Files\Reorganization\UndoBatchHandler($this->copyMoveContext()))->planUndoBatch($root, $userId, $batchId, $store, $now);
 	}
 
 
@@ -516,8 +516,8 @@ final class Reorganization {
 	 * @return array{batch_id:int, undone:int, removed_dirs:list<string>, kept_dirs:list<string>, conflicts:list<array{from:string, to:string, reason:string}>}
 	 * @throws ToolFailure when the batch is not this user's, is gone, or was already undone
 	 */
-	public function undoBatch(Folder $root, string $userId, int $batchId, BatchStore $store, int $now): array {
-		return (new \OCA\Mcp\Modules\Files\Handler\UndoBatchHandler($this->copyMoveContext()))->undoBatch($root, $userId, $batchId, $store, $now);
+	public function undoBatch(Folder $root, string $userId, int $batchId, \OCA\Mcp\Modules\Files\Reorganization\BatchStore $store, int $now): array {
+		return (new \OCA\Mcp\Modules\Files\Reorganization\UndoBatchHandler($this->copyMoveContext()))->undoBatch($root, $userId, $batchId, $store, $now);
 	}
 
 	/**
@@ -531,7 +531,7 @@ final class Reorganization {
 	 * @param Batch $batch the batch to undo
 	 * @throws ToolFailure when one of those nodes is hidden or cannot be checked
 	 */
-	public function assertUndoVisible(Folder $root, Batch $batch): void {
+	public function assertUndoVisible(Folder $root, \OCA\Mcp\Modules\Files\Reorganization\Batch $batch): void {
 		$paths = $batch->dirs;
 		foreach ($batch->moves as $move) {
 			$paths[] = $move['to'];
@@ -571,7 +571,7 @@ final class Reorganization {
 	 * @param string $userId authenticated user
 	 * @return list<array{from:string, to:string, reason:string}> the items that block the undo, empty when it may run
 	 */
-	public function undoConflicts(Folder $root, Batch $batch, string $userId): array {
+	public function undoConflicts(Folder $root, \OCA\Mcp\Modules\Files\Reorganization\Batch $batch, string $userId): array {
 		$conflicts = [];
 		foreach (array_reverse($batch->moves) as $move) {
 			try {
@@ -591,14 +591,14 @@ final class Reorganization {
 	 * @throws ToolFailure when the item is not what the batch left there, the way back is taken, the permissions
 	 *         changed or a lock refuses the move back
 	 */
-	private function assertUndoable(Folder $root, Batch $batch, array $move, string $userId): void {
+	private function assertUndoable(Folder $root, \OCA\Mcp\Modules\Files\Reorganization\Batch $batch, array $move, string $userId): void {
 		$there = NodeAccess::run(fn () => NodeAccess::get($root, $move['to']));
 		if ((int)$there->getId() !== $move['toId']) {
 			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::notTheBatchNode());
 		}
 		$this->assertUnlocked($there, $userId);
 		if ($root->nodeExists(ltrim(PathGuard::normalize($move['from'], 'moves'), '/'))) {
-			throw new MoveConflict(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists());
+			throw new \OCA\Mcp\Modules\Files\Reorganization\MoveConflict(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists());
 		}
 		if (!$there->isDeletable()) {
 			throw new ToolFailure(CommonMessages::forbidden());
@@ -635,7 +635,7 @@ final class Reorganization {
 	 * @param Batch $batch batch being undone
 	 * @return array{0: list<string>, 1: list<string>} the folders to remove and the folders to keep
 	 */
-	public function emptyDirs(Folder $root, Batch $batch): array {
+	public function emptyDirs(Folder $root, \OCA\Mcp\Modules\Files\Reorganization\Batch $batch): array {
 		$removed = [];
 		$kept = [];
 		$simulatedRemoved = array_map(static fn (array $move): string => PathGuard::normalize($move['to'], 'moves'), $batch->moves);
@@ -704,7 +704,7 @@ final class Reorganization {
 	 * @param Batch $batch the batch being undone
 	 * @return list<string> the missing folders, shallowest first
 	 */
-	public function missingRecordedParents(Folder $root, Batch $batch): array {
+	public function missingRecordedParents(Folder $root, \OCA\Mcp\Modules\Files\Reorganization\Batch $batch): array {
 		$missing = [];
 		foreach ($batch->moves as $move) {
 			$segments = PathGuard::segments(PathGuard::normalize($move['from'], 'moves'));
@@ -738,7 +738,7 @@ final class Reorganization {
 	 * @param string $from original path of a recorded move
 	 * @return bool whether a folder the batch created is the parent of, or an ancestor above, that path
 	 */
-	private function isRecordedAncestor(Batch $batch, string $from): bool {
+	private function isRecordedAncestor(\OCA\Mcp\Modules\Files\Reorganization\Batch $batch, string $from): bool {
 		$segments = PathGuard::segments(PathGuard::normalize($from));
 		array_pop($segments);
 		while ($segments !== []) {
@@ -879,8 +879,8 @@ final class Reorganization {
 				throw new ToolFailure(CommonMessages::forbidden());
 			}
 			$nodes++;
-			if ($nodes > ReorganizationLimits::NODES) {
-				throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::copyTooManyNodes(ReorganizationLimits::NODES));
+			if ($nodes > \OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits::NODES) {
+				throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::copyTooManyNodes(\OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits::NODES));
 			}
 			if ($current instanceof Folder) {
 				foreach ($this->sorted($current) as $child) {
@@ -889,8 +889,8 @@ final class Reorganization {
 				continue;
 			}
 			$bytes += (int)$current->getSize();
-			if ($bytes > ReorganizationLimits::BYTES) {
-				throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::copyTooLarge(ReorganizationLimits::BYTES));
+			if ($bytes > \OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits::BYTES) {
+				throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::copyTooLarge(\OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits::BYTES));
 			}
 		}
 		return ['nodes' => $nodes, 'bytes' => $bytes];
@@ -922,7 +922,7 @@ final class Reorganization {
 	 * @throws ToolFailure when the path is /MCP backups or inside it
 	 */
 	public static function notBackup(string $path, ?\OCA\Mcp\Platform\Backups\BackupLocation $location = null): string {
-		return BackupWriteBoundary::checked($path, $location);
+		return \OCA\Mcp\Modules\Files\BackupWriteBoundary::checked($path, $location);
 	}
 
 	/**
@@ -945,7 +945,7 @@ final class Reorganization {
 					throw new ToolFailure(CommonMessages::notFound());
 				}
 			}
-			throw new MoveConflict(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists());
+			throw new \OCA\Mcp\Modules\Files\Reorganization\MoveConflict(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists());
 		}
 	}
 
@@ -958,7 +958,7 @@ final class Reorganization {
 	private function assertNotIntoItself(Folder $root, Node $from, string $to): void {
 		$source = $root->getRelativePath($from->getPath()) ?? '';
 		if ($from instanceof Folder && ($to === $source || str_starts_with($to, rtrim($source, '/') . '/'))) {
-			throw new MoveConflict(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::folderIntoItself());
+			throw new \OCA\Mcp\Modules\Files\Reorganization\MoveConflict(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::folderIntoItself());
 		}
 	}
 
@@ -972,7 +972,7 @@ final class Reorganization {
 	 */
 	private function assertSameStorage(Node $source, Folder $destination): void {
 		if ($source->getStorage()->getId() !== $destination->getStorage()->getId()) {
-			throw new MoveConflict(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::crossStorage());
+			throw new \OCA\Mcp\Modules\Files\Reorganization\MoveConflict(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::crossStorage());
 		}
 	}
 

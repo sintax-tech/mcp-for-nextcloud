@@ -112,7 +112,7 @@ final class BackupOperationsTest extends FilesToolsTestCase {
 	public function testCopyCannotUseAnyReservedDestination(): void {
 		[$location] = $this->settings('.mcp-backups', false);
 		$access = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo($this->users, $this->tree->shareManager());
-		$service = new \OCA\Mcp\Modules\Files\Reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access), $this->report(), $this->users, backupLocation: $location);
+		$service = new \OCA\Mcp\Modules\Files\Reorganization\Reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access), $this->report(), $this->users, backupLocation: $location);
 		foreach (['MCP backups', '.mcp-backups'] as $folder) {
 			foreach ([false, true] as $write) {
 				try {
@@ -240,7 +240,7 @@ final class BackupOperationsTest extends FilesToolsTestCase {
 			$container = $this->createMock(\Psr\Container\ContainerInterface::class);
 			$container->method('get')->willReturn($manager);
 			$access = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo($this->users, $this->tree->shareManager());
-			$restore = new \OCA\Mcp\Modules\Files\VersionRestore($this->apps, $this->users, new \OCA\Mcp\Modules\Files\ContentTypeGate(\OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this)), $access, $container);
+			$restore = new \OCA\Mcp\Modules\Files\Integration\VersionRestore($this->apps, $this->users, new \OCA\Mcp\Modules\Files\ContentTypeGate(\OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this)), $access, $container);
 			$file = $this->tree->node('/alice/files/Documentos/ata.md');
 			$before = $file->getContent();
 			try { $restore->restore($this->tree->rootFolder(), $file, '/Documentos/ata.md', '1', 'alice', $backup); self::fail('Late reservation written'); }

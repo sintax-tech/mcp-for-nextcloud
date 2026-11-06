@@ -24,16 +24,16 @@ use OCA\Mcp\Modules\Files\Handler\EditFileHandler;
 use OCA\Mcp\Modules\Files\Handler\ReplaceFileHandler;
 use OCA\Mcp\Modules\Files\Handler\RestoreVersionHandler;
 use OCA\Mcp\Modules\Files\Images\ImageTools;
-use OCA\Mcp\Modules\Files\BatchStore;
-use OCA\Mcp\Modules\Files\MovePlanner;
-use OCA\Mcp\Modules\Files\MoveReport;
-use OCA\Mcp\Modules\Files\Reorganization;
+use OCA\Mcp\Modules\Files\Reorganization\BatchStore;
+use OCA\Mcp\Modules\Files\Reorganization\MovePlanner;
+use OCA\Mcp\Modules\Files\Integration\MoveReport;
+use OCA\Mcp\Modules\Files\Reorganization\Reorganization;
 use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\Images\OcrSupport;
 use OCA\Mcp\Modules\Files\TextExtractor;
-use OCA\Mcp\Modules\Files\VersionRestore;
-use OCA\Mcp\Modules\Files\VersionTools;
+use OCA\Mcp\Modules\Files\Integration\VersionRestore;
+use OCA\Mcp\Modules\Files\Integration\VersionTools;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
@@ -350,7 +350,7 @@ final class FilesModuleTest extends TestCase {
 			// Deleting a node is out of the question for Files. BatchStore deletes rows, not files, and the
 			// one allowed Node::delete() lives in Reorganization's undoBatch() — NoFileDeletionTest pins that
 			// one down; no other file in the namespace may call delete() at all.
-			if (!in_array(basename($file), [basename('/lib/Modules/Files/Reorganization.php'), basename('/lib/Modules/Files/BatchStore.php')], true)) {
+			if (!in_array(basename($file), [basename('/lib/Modules/Files/Reorganization/Reorganization.php'), basename('/lib/Modules/Files/Reorganization/BatchStore.php')], true)) {
 				$this->assertDoesNotMatchRegularExpression('/->(delete|unlink)\s*\(/', $code, $file);
 			}
 			$this->assertDoesNotMatchRegularExpression('/->(rename)\s*\(/', $code, $file);
@@ -358,7 +358,7 @@ final class FilesModuleTest extends TestCase {
 		$files = glob(dirname((new \ReflectionClass(FilesModule::class))->getFileName()) . '/*.php') ?: [];
 		$this->assertNotEmpty($files);
 		foreach ($files as $file) {
-			if (basename($file) === basename('/lib/Modules/Files/Reorganization.php')) {
+			if (basename($file) === basename('/lib/Modules/Files/Reorganization/Reorganization.php')) {
 				continue;
 			}
 			// Delegating to Reorganization is the point; any other receiver moving a node is not.

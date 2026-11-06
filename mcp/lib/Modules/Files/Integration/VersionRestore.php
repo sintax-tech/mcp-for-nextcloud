@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files;
+namespace OCA\Mcp\Modules\Files\Integration;
 
 use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
@@ -53,7 +53,7 @@ final class VersionRestore {
 	public function __construct(
 		private IAppManager $appManager,
 		private IUserManager $userManager,
-		private ContentTypeGate $types,
+		private \OCA\Mcp\Modules\Files\ContentTypeGate $types,
 		private NodeAccessInfo $access,
 		private ContainerInterface $container,
 		private ?LockAwareWrite $locks = null,
@@ -86,7 +86,7 @@ final class VersionRestore {
 	 * @throws ToolFailure When versioning is off, the version does not exist or cannot be read, the backup fails, a
 	 *         lock refuses the write ({@see LockWriteFailure}), the rollback reports failure, or the type policy refuses the name.
 	 */
-	public function restore(Folder $root, File $file, string $path, string $revision, string $viewerUid, FileBackup $backup): array {
+	public function restore(Folder $root, File $file, string $path, string $revision, string $viewerUid, \OCA\Mcp\Modules\Files\FileBackup $backup): array {
 		$user = $this->requireVersioning($viewerUid);
 		$version = $this->find($user, $file, $revision);
 		// Before the copy: a refused current name must not create a backup. The version name is not an exemption.
@@ -96,7 +96,7 @@ final class VersionRestore {
 		$this->visibilityGuard?->assertVisible($file);
 		$manager = $this->manager();
 		try {
-			BackupWriteBoundary::afterCopy($backup, $path, $copy);
+			\OCA\Mcp\Modules\Files\BackupWriteBoundary::afterCopy($backup, $path, $copy);
 			if ($this->locks !== null && $this->locks->providerAvailable()) {
 				$this->writeVersion($manager, $version, $file, $path, $viewerUid, $copy);
 			} else {

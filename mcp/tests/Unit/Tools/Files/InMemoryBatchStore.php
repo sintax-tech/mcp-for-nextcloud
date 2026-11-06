@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
-use OCA\Mcp\Modules\Files\Batch;
-use OCA\Mcp\Modules\Files\BatchStore;
+use OCA\Mcp\Modules\Files\Reorganization\Batch;
+use OCA\Mcp\Modules\Files\Reorganization\BatchStore;
 use OCP\IDBConnection;
 
 /**

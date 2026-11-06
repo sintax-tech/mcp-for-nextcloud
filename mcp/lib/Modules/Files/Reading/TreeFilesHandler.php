@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Files\Reading;
 
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCP\Files\Folder;
-use OCA\Mcp\Modules\Files\Reorganization;
+use OCA\Mcp\Modules\Files\Reorganization\Reorganization;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 
 /** Runs the operation that reads a bounded directory tree inside the actor view. */

@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files;
+namespace OCA\Mcp\Modules\Files\Integration;
 
 use OCP\Files\File;
 use OCP\Files\NotFoundException;

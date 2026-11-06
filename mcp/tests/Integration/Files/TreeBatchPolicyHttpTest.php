@@ -10,7 +10,8 @@ namespace OCA\Mcp\Tests\Integration\Files;
 use OCA\Mcp\Access\FileTypes\FileWritePolicy;
 use OCA\Mcp\Tests\Integration\Exclusion\ExclusionTestCase;
 use OCA\Mcp\Access\FileTypes\FileTypeMessages;
-use OCA\Mcp\Modules\Files\{Batch, BatchStore};
+use OCA\Mcp\Modules\Files\Reorganization\Batch;
+use OCA\Mcp\Modules\Files\Reorganization\BatchStore;
 use OCP\IAppConfig;
 use OCP\Server;
 

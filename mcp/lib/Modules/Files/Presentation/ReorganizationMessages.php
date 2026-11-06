@@ -71,8 +71,8 @@ final class ReorganizationMessages {
 	public static function copyTool(): string {
 		return 'Copy a file or folder to another path, creating a new node with a new id. Never '
 			. 'overwrites the destination. The copy is an independent node: does not preserve source id, versions, '
-			. 'or shares. Capped at ' . \OCA\Mcp\Modules\Files\ReorganizationLimits::NODES . ' items and '
-			. \OCA\Mcp\Modules\Files\ReorganizationLimits::BYTES . ' bytes, measured before copying. If source or destination '
+			. 'or shares. Capped at ' . \OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits::NODES . ' items and '
+			. \OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits::BYTES . ' bytes, measured before copying. If source or destination '
 			. 'is outside your personal folder, ask the user first and retry with confirm_shared.';
 	}
 

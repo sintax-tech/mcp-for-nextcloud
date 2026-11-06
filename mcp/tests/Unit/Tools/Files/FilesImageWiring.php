@@ -9,7 +9,16 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
-use OCA\Mcp\Modules\Files\Images\{ImageTools, ImageView, ImageBatch, ImageSearchHandler, ImageMetadata, ImagePreview, ImageSelection, ImageFileAccess, ImageTagSearch, ImageQuerySearch};
+use OCA\Mcp\Modules\Files\Images\ImageTools;
+use OCA\Mcp\Modules\Files\Images\ImageView;
+use OCA\Mcp\Modules\Files\Images\ImageBatch;
+use OCA\Mcp\Modules\Files\Images\ImageSearchHandler;
+use OCA\Mcp\Modules\Files\Images\ImageMetadata;
+use OCA\Mcp\Modules\Files\Images\ImagePreview;
+use OCA\Mcp\Modules\Files\Images\ImageSelection;
+use OCA\Mcp\Modules\Files\Images\ImageFileAccess;
+use OCA\Mcp\Modules\Files\Images\ImageTagSearch;
+use OCA\Mcp\Modules\Files\Images\ImageQuerySearch;
 use OCP\IPreview;
 use OCP\IConfig;
 use OCP\IDBConnection;

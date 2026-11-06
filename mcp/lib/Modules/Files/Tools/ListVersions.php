@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Files\Tools;
 
 use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
-use OCA\Mcp\Modules\Files\VersionTools;
+use OCA\Mcp\Modules\Files\Integration\VersionTools;
 use OCA\Mcp\Modules\Files\Presentation\FilesSchema;
 use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\Tool;

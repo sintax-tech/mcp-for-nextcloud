@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files;
+namespace OCA\Mcp\Modules\Files\Reorganization;
 
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
@@ -18,7 +18,7 @@ final class MoveBatchPlanner {
 	 * @param MovePlanner $native Existing directory planning, shared with the legacy facade.
 	 * @param SharedWriteGuard $guard Existing shared confirmation.
 	 */
-	public function __construct(private CopyMoveContext $context, private MovePlanner $native, private SharedWriteGuard $guard) {
+	public function __construct(private \OCA\Mcp\Modules\Files\Reorganization\CopyMoveContext $context, private \OCA\Mcp\Modules\Files\Reorganization\MovePlanner $native, private SharedWriteGuard $guard) {
 	}
 
 	/**
@@ -29,11 +29,11 @@ final class MoveBatchPlanner {
 	 * @return MovePlan the plan, the runnable items and the pending confirmation
 	 * @throws \InvalidArgumentException for a malformed folder path
 	 */
-	public function plan(Folder $root, string $userId, array $moves, array $mkdirs): MovePlan {
+	public function plan(Folder $root, string $userId, array $moves, array $mkdirs): \OCA\Mcp\Modules\Files\Reorganization\MovePlan {
 		$this->context->reorganization->assertFolderMoves($root, $moves);
 		$typeDenied = [];
 		try {
-			foreach ((new FileTypePreflight($this->context))->moves($root, $moves, $this->context->policy()->snapshot()) as $conflict) {
+			foreach ((new \OCA\Mcp\Modules\Files\Reorganization\FileTypePreflight($this->context))->moves($root, $moves, $this->context->policy()->snapshot()) as $conflict) {
 				$typeDenied[$conflict['from'] . "\0" . $conflict['to']] = $conflict['reason'];
 			}
 		} catch (\OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable $e) {
@@ -58,7 +58,7 @@ final class MoveBatchPlanner {
 				// A locked item is one the run would refuse: it is listed as denied with the explanation, so the plan
 				// still shows the whole list and the batch never starts by moving half of it.
 				$this->context->reorganization->assertUnlocked($check->source, $userId);
-			} catch (MoveConflict $e) {
+			} catch (\OCA\Mcp\Modules\Files\Reorganization\MoveConflict $e) {
 				$conflicts[] = ['from' => $from, 'to' => $to, 'reason' => $e->getMessage()];
 				continue;
 			} catch (ToolFailure $e) {
@@ -110,7 +110,7 @@ final class MoveBatchPlanner {
 				'mkdirs' => count(array_filter($dirs, fn (array $dir) => $dir['willCreate'])),
 			],
 		];
-		return new MovePlan($plan, $planned, $confirmation);
+		return new \OCA\Mcp\Modules\Files\Reorganization\MovePlan($plan, $planned, $confirmation);
 	}
 
 }

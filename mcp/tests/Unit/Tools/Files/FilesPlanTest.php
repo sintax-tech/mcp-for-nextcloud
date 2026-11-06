@@ -16,7 +16,7 @@ use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Modules\Files\FileBackup;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\TextExtractor;
-use OCA\Mcp\Modules\Files\VersionTools;
+use OCA\Mcp\Modules\Files\Integration\VersionTools;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Container\ContainerInterface;

@@ -9,9 +9,9 @@ namespace OCA\Mcp\Modules\Files\Moving;
 
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\Folder;
-use OCA\Mcp\Modules\Files\Reorganization;
+use OCA\Mcp\Modules\Files\Reorganization\Reorganization;
 use OCA\Mcp\Modules\Files\FilesPreviewContext;
-use OCA\Mcp\Modules\Files\BatchStore;
+use OCA\Mcp\Modules\Files\Reorganization\BatchStore;
 
 /** Plans the operation that undoes a recorded batch move, without executing the write. */
 final class UndoBatchPreview {

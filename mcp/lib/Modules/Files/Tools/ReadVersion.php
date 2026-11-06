@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Files\Tools;
 
 use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
-use OCA\Mcp\Modules\Files\VersionTools;
+use OCA\Mcp\Modules\Files\Integration\VersionTools;
 use OCA\Mcp\Modules\Files\Presentation\FilesSchema;
 use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\Tool;
@@ -17,9 +17,9 @@ use OCA\Mcp\Mcp\Tools\ToolContext;
 /** Publishes files_version_read and delegates to the component that reads historical file text with version metadata. */
 final class ReadVersion implements Tool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Reading\ReadVersionHandler $handler executor that reads historical file text with version metadata
+	 * @param \OCA\Mcp\Modules\Files\Integration\ReadVersionHandler $handler executor that reads historical file text with version metadata
 	 */
-	public function __construct(private \OCA\Mcp\Modules\Files\Reading\ReadVersionHandler $handler) {
+	public function __construct(private \OCA\Mcp\Modules\Files\Integration\ReadVersionHandler $handler) {
 	}
 
 	/** @return ToolDefinition unchanged static definition */

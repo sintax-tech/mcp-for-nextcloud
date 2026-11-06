@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files;
+namespace OCA\Mcp\Modules\Files\Reorganization;
 
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
@@ -34,7 +34,7 @@ class BatchStore {
 	 * @param Batch $batch the batch that ran
 	 * @return int the id of the stored row
 	 */
-	public function insert(Batch $batch): int {
+	public function insert(\OCA\Mcp\Modules\Files\Reorganization\Batch $batch): int {
 		$cutoff = $batch->createdAt - self::LIFETIME_SECONDS;
 		$expired = $this->db->getQueryBuilder();
 		$expired->delete(self::TABLE)
@@ -56,7 +56,7 @@ class BatchStore {
 	 * @param string $userId the account asking; a batch of somebody else is answered as not found
 	 * @return Batch|null the batch
 	 */
-	public function find(int $id, string $userId): ?Batch {
+	public function find(int $id, string $userId): ?\OCA\Mcp\Modules\Files\Reorganization\Batch {
 		$qb = $this->db->getQueryBuilder();
 		$result = $qb->select('*')->from(self::TABLE)
 			->where($qb->expr()->eq('id', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT)))
@@ -64,7 +64,7 @@ class BatchStore {
 			->setMaxResults(1)->executeQuery();
 		$row = $result->fetch();
 		$result->closeCursor();
-		return is_array($row) ? Batch::fromRow($row) : null;
+		return is_array($row) ? \OCA\Mcp\Modules\Files\Reorganization\Batch::fromRow($row) : null;
 	}
 
 	/**

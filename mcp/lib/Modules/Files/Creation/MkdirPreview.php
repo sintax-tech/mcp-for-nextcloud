@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Files\Creation;
 
 use OCP\Files\Folder;
-use OCA\Mcp\Modules\Files\Reorganization;
+use OCA\Mcp\Modules\Files\Reorganization\Reorganization;
 use OCA\Mcp\Modules\Files\FilesPreviewContext;
 
 /** Plans the operation that creates a guarded directory, without executing the write. */

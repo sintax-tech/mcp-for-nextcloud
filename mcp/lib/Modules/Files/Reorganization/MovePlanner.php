@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files;
+namespace OCA\Mcp\Modules\Files\Reorganization;
 
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
@@ -43,7 +43,7 @@ final class MovePlan {
  */
 final class MovePlanner {
 	public function __construct(
-		private Reorganization $reorganization,
+		private \OCA\Mcp\Modules\Files\Reorganization\Reorganization $reorganization,
 		private NodeAccessInfo $access,
 		private SharedWriteGuard $guard,
 		private ?\OCA\Mcp\Access\ResourceScope\FilesAccessGuard $visibilityGuard = null,
@@ -57,8 +57,8 @@ final class MovePlanner {
 	 * @return MovePlan the plan, the runnable items and the pending confirmation
 	 * @throws \InvalidArgumentException for a malformed folder path
 	 */
-	public function plan(Folder $root, string $userId, array $moves, array $mkdirs): MovePlan {
-		return (new MoveBatchPlanner($this->reorganization->copyMoveContext(), $this, $this->guard))->plan($root, $userId, $moves, $mkdirs);
+	public function plan(Folder $root, string $userId, array $moves, array $mkdirs): \OCA\Mcp\Modules\Files\Reorganization\MovePlan {
+		return (new \OCA\Mcp\Modules\Files\Reorganization\MoveBatchPlanner($this->reorganization->copyMoveContext(), $this, $this->guard))->plan($root, $userId, $moves, $mkdirs);
 	}
 
 	/**

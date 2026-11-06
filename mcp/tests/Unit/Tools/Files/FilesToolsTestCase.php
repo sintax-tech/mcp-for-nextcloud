@@ -26,14 +26,14 @@ use OCA\Mcp\Modules\Files\Handler\EditFileHandler;
 use OCA\Mcp\Modules\Files\Handler\ReplaceFileHandler;
 use OCA\Mcp\Modules\Files\Handler\RestoreVersionHandler;
 use OCA\Mcp\Modules\Files\Images\ImageTools;
-use OCA\Mcp\Modules\Files\MovePlanner;
-use OCA\Mcp\Modules\Files\MoveReport;
-use OCA\Mcp\Modules\Files\Reorganization;
+use OCA\Mcp\Modules\Files\Reorganization\MovePlanner;
+use OCA\Mcp\Modules\Files\Integration\MoveReport;
+use OCA\Mcp\Modules\Files\Reorganization\Reorganization;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\Images\OcrSupport;
 use OCA\Mcp\Modules\Files\TextExtractor;
-use OCA\Mcp\Modules\Files\VersionRestore;
-use OCA\Mcp\Modules\Files\VersionTools;
+use OCA\Mcp\Modules\Files\Integration\VersionRestore;
+use OCA\Mcp\Modules\Files\Integration\VersionTools;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use OCP\App\IAppManager;
@@ -68,7 +68,7 @@ abstract class FilesToolsTestCase extends TestCase {
 	protected ITimeFactory $time;
 	protected InMemoryBatchStore $batches;
 	/** The store the module records batches in, when a test needs the production one instead of {@see self::$batches}. */
-	protected ?\OCA\Mcp\Modules\Files\BatchStore $batchStore = null;
+	protected ?\OCA\Mcp\Modules\Files\Reorganization\BatchStore $batchStore = null;
 	protected ITempManager $temp;
 	protected \OCA\Mcp\Tests\Unit\InMemoryConfig $config;
 	protected IPreview $previewManager;

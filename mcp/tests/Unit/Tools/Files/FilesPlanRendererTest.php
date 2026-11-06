@@ -17,7 +17,7 @@ use OCA\Mcp\Modules\Files\FileBackup;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\Presentation\FilesPlanRenderer;
 use OCA\Mcp\Modules\Files\TextExtractor;
-use OCA\Mcp\Modules\Files\VersionTools;
+use OCA\Mcp\Modules\Files\Integration\VersionTools;
 use OCA\Mcp\Mcp\Tools\RendersPlans;
 use PHPUnit\Framework\Attributes\DataProvider;
 

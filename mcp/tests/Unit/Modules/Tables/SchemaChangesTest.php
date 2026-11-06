@@ -67,4 +67,30 @@ final class SchemaChangesTest extends TestCase {
 		$this->assertTrue($result['columnSettings'][0]['readonly']);
 		$this->assertTrue($result['columnSettings'][0]['mandatory']);
 	}
+	/** @return void Existing relation rules cannot be rewritten through a different predicate. */
+	public function testExistingRelationFilterCannotBeReplaced(): void {
+		$this->expectExceptionMessage('Invalid argument: patch.filter');
+		SchemaViewChanges::of(['filter' => []], ['filter' => [[['columnId' => 7, 'operator' => 'is-equal', 'value' => '1']]]], [7 => ['type' => 'relation']], '2.3.2');
+	}
+	/** @return void Selection IDs/order are preserved even when new values are individually valid. */
+	public function testSelectionCannotBeReorderedOrRemoved(): void {
+		$old = ['type' => 'selection', 'subtype' => '', 'selectionOptions' => [['id' => 1, 'label' => 'One'], ['id' => 2, 'label' => 'Two']]];
+		foreach ([array_reverse($old['selectionOptions']), [$old['selectionOptions'][0]]] as $values) {
+			try { SchemaColumnChanges::of(['options' => [['name' => 'selectionOptions', 'value' => $values]]], $old); $this->fail('Selection order/removal accepted'); }
+			catch (\InvalidArgumentException) { $this->addToAssertionCount(1); }
+		}
+	}
+	/** @return void A syntactically valid expression must still obey the size bound. */
+	public function testOversizedPatternIsRejected(): void {
+		$this->expectException(\InvalidArgumentException::class);
+		SchemaColumnChanges::of(['type' => 'text', 'subtype' => 'line', 'options' => [['name' => 'textAllowedPattern', 'value' => '/' . str_repeat('a', 512) . '/']]], null);
+	}
+	/** @return void Old DTO truthiness must never silently discard an explicit clear or zero string. */
+	public function testOldViewDescriptionEmptyAndZeroAreRejected(): void {
+		foreach (['1.0.10', '2.2.2'] as $profile) foreach (['', '0'] as $value) {
+			try { SchemaViewChanges::of(['description' => $value], [], [], $profile); $this->fail('Native truthiness discarded description'); }
+			catch (\InvalidArgumentException) { $this->addToAssertionCount(1); }
+		}
+	}
+
 }

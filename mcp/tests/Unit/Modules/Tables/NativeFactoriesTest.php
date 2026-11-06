@@ -55,6 +55,8 @@ final class NativeFactoriesTest extends TestCase {
 		$identities = $this->createMock(UsergroupWhitelist::class);
 		$identities->method('entries')->willReturnCallback(static fn ($column, $value): array => $value);
 		$factory = new SchemaColumnInput($services, $identities);
+		try { $factory->of(['title' => 'Changed'], ['type' => 'relation', 'subtype' => ''], 'alice', $pin); $this->fail('Relation edit accepted'); }
+		catch (\InvalidArgumentException $error) { $this->assertSame('Invalid argument: column_id', $error->getMessage()); }
 		$result = $factory->of(['title' => 'Changed'], ['id' => 3, 'tableId' => 1, 'title' => 'Old', 'type' => 'number', 'subtype' => '',
 			'description' => 'Keep', 'numberDefault' => 2, 'numberMin' => 1, 'numberMax' => 5, 'numberDecimals' => 2], 'alice', $pin);
 		$this->assertSame('Keep', $result['dto']->getDescription());

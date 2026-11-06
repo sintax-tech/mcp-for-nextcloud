@@ -102,4 +102,30 @@ abstract class SchemaToolTestCase extends TestCase {
 		$this->assertSame('unverified', json_decode($r['content'][0]['text'], true)['status']);
 		$this->assertStringNotContainsString('private payload', $r['content'][0]['text']);
 	}
+	/** @return void Third-party native ownership requires the independent shared confirmation. */
+	public function testSharedConfirmationCannotBeOmitted(): void {
+		$gateway = $this->createMock(SchemaGateway::class);
+		$gateway->method('prepare')->willReturnCallback(static fn ($action, $args): array => ['arguments' => $args, 'version' => '2.3.2', 'profile' => '2.3.2', 'shared' => true, 'before' => [], 'after' => [], 'noop' => false]);
+		$gateway->expects($this->never())->method('apply');
+		$config = (new InMemoryConfig())->mock($this);
+		$caps = $this->createMock(TablesWriteCapabilities::class);
+		$caps->method('supports')->willReturn(true);
+		$caps->method('profile')->willReturn('2.3.2');
+		$flow = new SchemaFlow($gateway, new PlanState($config), $this->grants, $this->session, $caps);
+		$plan = $flow->preview(static::ACTION, $this->arguments(), 'alice');
+		$result = $flow->handle(static::ACTION, $this->arguments() + ['confirm' => true, 'plan_state' => $plan['plan_state']], 'alice');
+		$this->assertTrue(json_decode($result['content'][0]['text'], true)['requiresConfirmation']);
+	}
+	/** @return void Revoking the grant during the native attempt prevents private readback. */
+	public function testReadbackRenewsTheGrant(): void {
+		$plan = $this->flow->preview(static::ACTION, $this->arguments(), 'alice');
+		$this->gateway->method('apply')->willReturnCallback(function (): ?int {
+			$this->grants->setGrant('alice', 'tables', $this->sharing() ? 'share' : 'schema', false);
+			return 3;
+		});
+		$this->gateway->expects($this->never())->method('observe');
+		$result = $this->flow->handle(static::ACTION, $this->arguments() + ['confirm' => true, 'plan_state' => $plan['plan_state']], 'alice');
+		$this->assertSame('unverified', json_decode($result['content'][0]['text'], true)['status']);
+	}
+
 }

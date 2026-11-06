@@ -68,6 +68,9 @@ final class PollsWriteSchema {
 			'maxVotesPerOption' => self::integer(0, 2147483647), 'maxVotesPerUser' => self::integer(0, 2147483647),
 			'timezoneName' => self::text(1, 128)];
 		foreach (self::BOOLEANS as $key) { $p[$key] = ['type' => 'boolean']; }
+		foreach (['allowDownload', 'timezoneName'] as $key) {
+			$p[$key]['description'] = 'Supported only by Polls 9.x; unavailable on Polls 8.6.x.';
+		}
 		return $p;
 	}
 	/** @return array<string,mixed> Conditional text/date shape, completed by PollWriteRequest. */

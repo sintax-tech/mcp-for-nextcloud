@@ -5751,7 +5751,8 @@
                                         "timezoneName": {
                                             "type": "string",
                                             "minLength": 1,
-                                            "maxLength": 128
+                                            "maxLength": 128,
+                                            "description": "Supported only by Polls 9.x; unavailable on Polls 8.6.x."
                                         },
                                         "allowComment": {
                                             "type": "boolean"
@@ -5772,7 +5773,8 @@
                                             "type": "boolean"
                                         },
                                         "allowDownload": {
-                                            "type": "boolean"
+                                            "type": "boolean",
+                                            "description": "Supported only by Polls 9.x; unavailable on Polls 8.6.x."
                                         }
                                     },
                                     "required": [],

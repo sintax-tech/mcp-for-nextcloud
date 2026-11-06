@@ -9,7 +9,7 @@ namespace OCA\Mcp\Controller;
 
 use InvalidArgumentException;
 use OCA\Mcp\Modules\Files\Checkout\CheckoutTokenStore;
-use OCA\Mcp\Modules\Files\BatchStore;
+use OCA\Mcp\Modules\Files\Reorganization\BatchStore;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Settings\PersonalSection;

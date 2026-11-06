@@ -10,8 +10,12 @@ use OCA\Mcp\Scripts\Dev\{FqcnMap, SourceTreeIndex, FrozenProduction, FrozenPathO
 
 /** Small certificate-specific trees keep gate mutations independent of the production manifest generator. */
 final class FrozenPathFixture {
-	/** @param string $ticket Existing certificate family. @return array{array<string,string>,array<string,string>,FqcnMap,array<string,string>,array} Old/new trees, map and real pairs. */
+	/**
+	 * @param string $ticket Reviewed transition.
+	 * @return array{array<string,string>,array<string,string>,FqcnMap,array<string,string>,array} Old/new trees, map and real pairs.
+	 */
 	public static function trees(string $ticket = 'RE-21'): array {
+		if ($ticket === 'RE-23') { return self::re23(); }
 		$prefix = implode('\\', ['OCA', 'Mcp']); $entries = []; $before = []; $after = []; $pairs = []; $specs = [];
 		$oldPrefix = $prefix . '\\Tools\\Files'; $newPrefix = $prefix . '\\Modules\\Files';
 		$guard = $prefix . '\\Platform\\FileAccess\\PathGuard';
@@ -65,5 +69,49 @@ final class FrozenPathFixture {
 		$trusted = ['ticket' => $ticket, 'pairs_sha256' => FrozenProduction::pairsHash($pairs), 'path' => FrozenPathSites::PATH,
 			'seal' => hash('sha256', $before[FrozenPathSites::PATH]), 'sites' => count($sites), 'base_commit' => $data['base_commit'], 'base_tree' => $data['base_tree']];
 		return [$before, $after, $map, $pairs, [$trusted]];
+	}
+
+	/** @return array{array<string,string>,array<string,string>,FqcnMap,array<string,string>,array} The exact RE-23 pair/class shape with its two sites and both MoveHandler callers. */
+	private static function re23(): array {
+		$prefix = 'OCA\\Mcp\\Modules\\Files\\'; $before = []; $after = []; $pairs = []; $entries = []; $renames = []; $sites = [];
+		$guard = 'OCA\\Mcp\\Platform\\FileAccess\\PathGuard';
+		foreach (['Batch', 'BatchStore', 'CopyMoveContext', 'Inspection', 'MoveBatchPlanner', 'MoveConflict', 'MovePlanner', 'ReorganizationLimits',
+			'FileDestinationPolicy', 'FileTypePreflight', 'ListedTreeCopy', 'Reorganization', 'FolderExposureGate', 'Handler/CopyHandler',
+			'Handler/MoveHandler', 'Handler/MoveBatchHandler', 'Handler/UndoBatchHandler', 'MoveReport', 'VersionTools', 'VersionRestore', 'VersionStream', 'Reading/ReadVersionHandler'] as $relative) {
+			$short = basename($relative); $integration = in_array($short, ['MoveReport', 'VersionTools', 'VersionRestore', 'VersionStream', 'ReadVersionHandler'], true);
+			$old = 'lib/Modules/Files/' . $relative . '.php'; $new = 'lib/Modules/Files/' . ($integration ? 'Integration' : 'Reorganization') . '/' . $short . '.php';
+			$from = $prefix . str_replace('/', '\\', $relative); $to = $prefix . ($integration ? 'Integration' : 'Reorganization') . '\\' . $short;
+			$body = match ($short) {
+				'Reorganization' => "public function parentExists(string \$path): string { return dirname(PathGuard::normalize(\$path,'moves')); }",
+				'FolderExposureGate' => 'public static function assertMove(string $to): string { return dirname(PathGuard::normalize($to)); }',
+				'MoveHandler' => 'public function handle(string $to): void { FolderExposureGate::assertMove($to); } public function planMove(string $to): void { FolderExposureGate::assertMove($to); }',
+				default => '',
+			};
+			$namespace = substr($from, 0, (int)strrpos($from, '\\')); $targetNamespace = substr($to, 0, (int)strrpos($to, '\\'));
+			$imports = 'use ' . $guard . '; use ' . $prefix . 'FolderExposureGate;';
+			$before[$old] = "<?php namespace $namespace; $imports class $short { $body }";
+			$after[$new] = str_replace(['namespace ' . $namespace . ';', $prefix . 'FolderExposureGate;'], ['namespace ' . $targetNamespace . ';', $prefix . 'Reorganization\\FolderExposureGate;'], $before[$old]);
+			$entry = ['path' => $old, 'fqcn' => $from, 'target' => $to, 'owner' => 'Modules\\Files', 'ticket' => 'RE-23'];
+			if ($short === 'MovePlanner') {
+				$before[$old] .= ' class MovePlan {}'; $after[$new] .= ' class MovePlan {}';
+				$entry['companions'] = [$prefix . 'MovePlan', $prefix . 'Reorganization\\MovePlan']; $renames[$prefix . 'MovePlan'] = $prefix . 'Reorganization\\MovePlan';
+			}
+			$pairs[$old] = $new; $renames[$from] = $to; $entries[] = $entry;
+		}
+		$before['lib/Proof/Caller.php'] = $after['lib/Proof/Caller.php'] = '<?php namespace OCA\\Mcp\\Proof; class Caller { public function input(string $path): string { return $path; } }';
+		$entries[] = ['path' => 'lib/Proof/Caller.php', 'fqcn' => 'OCA\\Mcp\\Proof\\Caller', 'target' => 'stays', 'owner' => 'Platform', 'ticket' => null];
+		$index = new SourceTreeIndex($before); $normalizer = new TokenNormalizer($index);
+		foreach ([['Reorganization', 'parentExists', '$path', 'moves'], ['FolderExposureGate', 'assertMove', '$to', null]] as [$short, $method, $parameter, $label]) {
+			$old = 'lib/Modules/Files/' . $short . '.php'; $source = $normalizer->normalize($before[$old], $renames, $old, $pairs);
+			$sites[] = ['map_path' => $old, 'target' => $renames[$prefix . $short], 'method' => $method, 'callable' => 'dirname', 'ordinal' => 1,
+				'parameter' => $parameter, 'transform' => ['kind' => 'path-guard', 'class' => $guard, 'label' => $label],
+				'occurrence' => FrozenPathOccurrence::at($source, $source->located[0][2])];
+		}
+		$data = ['version' => 2, 'ticket' => 'RE-23', 'base_commit' => str_repeat('3', 40), 'base_tree' => str_repeat('4', 40),
+			'production' => FrozenProduction::inventory($before, $index, $renames, $pairs), 'sites' => $sites, 'external_evidence' => []];
+		$path = 'scripts/dev/frozen-path-sites-re23.json'; $before[$path] = $after[$path] = json_encode($data, JSON_THROW_ON_ERROR);
+		$trusted = ['ticket' => 'RE-23', 'pairs_sha256' => FrozenProduction::pairsHash($pairs), 'path' => $path, 'seal' => hash('sha256', $before[$path]),
+			'sites' => 2, 'base_commit' => $data['base_commit'], 'base_tree' => $data['base_tree']];
+		return [$before, $after, new FqcnMap($entries, 'OCA\\Mcp\\', 'lib/'), $pairs, [$trusted]];
 	}
 }

@@ -5,7 +5,8 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files;
+/** Plan ordered moves and directories through the shared native rule context. */
+namespace OCA\Mcp\Modules\Files\Reorganization;
 
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
@@ -19,6 +20,7 @@ final class MovePlan {
 	 * @param list<array{from:string, to:string}> $planned every item that passed the checks, in the order of the batch,
 	 *   the shared ones included: they run once the caller has the shared confirmation
 	 * @param array<string, mixed>|null $confirmation the guard payload for the first non-personal item
+	 * @return void
 	 */
 	public function __construct(
 		public readonly array $plan,
@@ -42,8 +44,15 @@ final class MovePlan {
  * tool would refuse.
  */
 final class MovePlanner {
+	/**
+	 * @param CopyMoveContext $context Immutable native rule bindings.
+	 * @param NodeAccessInfo $access Native ownership descriptions.
+	 * @param SharedWriteGuard $guard Shared-content confirmation.
+	 * @param \OCA\Mcp\Access\ResourceScope\FilesAccessGuard|null $visibilityGuard Visibility boundary.
+	 * @return void
+	 */
 	public function __construct(
-		private Reorganization $reorganization,
+		private CopyMoveContext $context,
 		private NodeAccessInfo $access,
 		private SharedWriteGuard $guard,
 		private ?\OCA\Mcp\Access\ResourceScope\FilesAccessGuard $visibilityGuard = null,
@@ -57,8 +66,8 @@ final class MovePlanner {
 	 * @return MovePlan the plan, the runnable items and the pending confirmation
 	 * @throws \InvalidArgumentException for a malformed folder path
 	 */
-	public function plan(Folder $root, string $userId, array $moves, array $mkdirs): MovePlan {
-		return (new MoveBatchPlanner($this->reorganization->copyMoveContext(), $this, $this->guard))->plan($root, $userId, $moves, $mkdirs);
+	public function plan(Folder $root, string $userId, array $moves, array $mkdirs): \OCA\Mcp\Modules\Files\Reorganization\MovePlan {
+		return (new \OCA\Mcp\Modules\Files\Reorganization\MoveBatchPlanner($this->context, $this, $this->guard))->plan($root, $userId, $moves, $mkdirs);
 	}
 
 	/**
@@ -75,7 +84,7 @@ final class MovePlanner {
 		$dirs = [];
 		foreach ($paths as $path) {
 			try {
-				$this->reorganization->checkFolder($root, $path);
+				$this->context->reorganization->checkFolder($root, $path);
 			} catch (ToolFailure $e) {
 				$dirs[] = ['path' => $path, 'exists' => false, 'willCreate' => false, 'reason' => $e->getMessage()];
 				continue;

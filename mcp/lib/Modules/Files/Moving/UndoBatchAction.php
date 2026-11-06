@@ -10,9 +10,9 @@ namespace OCA\Mcp\Modules\Files\Moving;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\Folder;
-use OCA\Mcp\Modules\Files\Reorganization;
+use OCA\Mcp\Modules\Files\Reorganization\Reorganization;
 use OCA\Mcp\Modules\Files\FilesCallContext;
-use OCA\Mcp\Modules\Files\BatchStore;
+use OCA\Mcp\Modules\Files\Reorganization\BatchStore;
 
 /** Runs the operation that undoes a recorded batch move inside the actor view. */
 final class UndoBatchAction {

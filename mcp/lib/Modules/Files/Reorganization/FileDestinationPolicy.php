@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files;
+namespace OCA\Mcp\Modules\Files\Reorganization;
 
 use OCA\Mcp\Access\FileTypes\FileTypeCheck;
 use OCA\Mcp\Access\FileTypes\FileTypeGuard;
@@ -19,7 +19,7 @@ final class FileDestinationPolicy {
 	 * @param FileTypeGuard $guard Global policy without a user or client bypass.
 	 * @param CopyMoveContext $context Native visibility for bounded descendant checks.
 	 */
-	public function __construct(private FileTypeGuard $guard, private CopyMoveContext $context) {
+	public function __construct(private FileTypeGuard $guard, private \OCA\Mcp\Modules\Files\Reorganization\CopyMoveContext $context) {
 	}
 
 	/** @return FileTypeCheck One immutable policy boundary shared by the entire preflight. */
@@ -42,7 +42,7 @@ final class FileDestinationPolicy {
 			$segments = PathGuard::segments($to);
 			($snapshot ?? $this->guard->snapshot())->assertWritableName($segments[array_key_last($segments)] ?? '');
 		} else {
-			(new FileTypePreflight($this->context))->inspect($source, $to, $snapshot ?? $this->guard->snapshot());
+			(new \OCA\Mcp\Modules\Files\Reorganization\FileTypePreflight($this->context))->inspect($source, $to, $snapshot ?? $this->guard->snapshot());
 		}
 	}
 

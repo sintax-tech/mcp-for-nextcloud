@@ -27,7 +27,7 @@ use OCA\Mcp\Access\FileTypes\FileTypeMessages;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
-use OCA\Mcp\Modules\Files\BatchStore;
+use OCA\Mcp\Modules\Files\Reorganization\BatchStore;
 use OCA\Mcp\Modules\Files\Checkout\CheckoutService;
 use OCA\Mcp\Modules\Files\ContentCommit;
 use OCA\Mcp\Modules\Files\ContentTypeGate;
@@ -39,13 +39,13 @@ use OCA\Mcp\Modules\Files\Handler\EditFileHandler;
 use OCA\Mcp\Modules\Files\Handler\ReplaceFileHandler;
 use OCA\Mcp\Modules\Files\Handler\RestoreVersionHandler;
 use OCA\Mcp\Modules\Files\Images\ImageTools;
-use OCA\Mcp\Modules\Files\MovePlanner;
-use OCA\Mcp\Modules\Files\MoveReport;
+use OCA\Mcp\Modules\Files\Reorganization\MovePlanner;
+use OCA\Mcp\Modules\Files\Integration\MoveReport;
 use OCA\Mcp\Modules\Files\Images\OcrSupport;
-use OCA\Mcp\Modules\Files\Reorganization;
+use OCA\Mcp\Modules\Files\Reorganization\Reorganization;
 use OCA\Mcp\Modules\Files\TextExtractor;
-use OCA\Mcp\Modules\Files\VersionRestore;
-use OCA\Mcp\Modules\Files\VersionTools;
+use OCA\Mcp\Modules\Files\Integration\VersionRestore;
+use OCA\Mcp\Modules\Files\Integration\VersionTools;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
@@ -154,7 +154,7 @@ final class FileContentTypePolicyTest extends TestCase {
 		$versionRestore = new VersionRestore($apps, $users, $this->gate, $access, $container, $lockService, null);
 		$versions = new VersionTools($apps, $users, $backup, $access, $container, $lockService, null, $versionRestore);
 		$report = new MoveReport($this->createMock(ContainerInterface::class), $this->tree->shareManager(), $apps);
-		$reorganization = new Reorganization($access, new SharedWriteGuard($access), $report, $users);
+		$reorganization = \OCA\Mcp\Tests\Unit\Tools\Files\FilesCatalogWiring::reorganization($access, new SharedWriteGuard($access), $report, $users);
 		$imageTools = FilesImageWiring::build(
 			$this->createMock(\OCP\IPreview::class),
 			$access,
@@ -177,7 +177,7 @@ final class FileContentTypePolicyTest extends TestCase {
 			new CheckoutService($urls, $iConfig, $time, new TokenHasher($iConfig), $this->createMock(CheckoutTokenStore::class), $apps, $users),
 			$versions,
 			$reorganization,
-			new MovePlanner($reorganization, $access, new SharedWriteGuard($access)),
+			new MovePlanner(($reorganization)->copyMoveContext(), $access, new SharedWriteGuard($access)),
 			new BatchStore($db),
 			$time,
 			$imageTools,
@@ -768,7 +768,7 @@ final class FileContentTypePolicyTest extends TestCase {
 	 */
 	public function testEditReplaceAndRestoreDelegateOutOfTheLargeModules(): void {
 		$files = (string)file_get_contents(dirname(__DIR__, 4) . '/lib/Modules/Files/FilesModule.php');
-		$versions = (string)file_get_contents(dirname(__DIR__, 4) . '/lib/Modules/Files/VersionTools.php');
+		$versions = (string)file_get_contents(dirname(__DIR__, 4) . '/lib/Modules/Files/Integration/VersionTools.php');
 		$this->assertStringNotContainsString('->putContent', $files);
 		$this->assertStringNotContainsString('->rollback', $files);
 		$this->assertStringNotContainsString('->putContent', $versions);

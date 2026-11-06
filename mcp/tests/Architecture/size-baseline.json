@@ -243,17 +243,6 @@
 			]
 		},
 		{
-			"ceiling": 1106,
-			"expires": "RE-23",
-			"nameParts": [
-				"OCA",
-				"Mcp",
-				"Tools",
-				"Files",
-				"Reorganization"
-			]
-		},
-		{
 			"ceiling": 554,
 			"expires": "RE-22",
 			"nameParts": [

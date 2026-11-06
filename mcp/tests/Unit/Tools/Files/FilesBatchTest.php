@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages;
-use OCA\Mcp\Modules\Files\ReorganizationLimits;
+use OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits;
 
 /**
  * files_move_batch: the reorganization a person reads before anything happens.
@@ -231,7 +231,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
 		$this->tree->addFile('/alice/files/C', 'um arquivo', 'text/plain');
 		$access = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo(
 			\OCA\Mcp\Tests\Unit\Tools\FakeUsers::manager($this, \OCA\Mcp\Tests\Unit\Tools\FakeUsers::DEFAULTS), $this->tree->shareManager());
-		$reorganization = new \OCA\Mcp\Modules\Files\Reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access),
+		$reorganization = \OCA\Mcp\Tests\Unit\Tools\Files\FilesCatalogWiring::reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access),
 			$this->report(), $this->users);
 		try {
 			$reorganization->createFolders($this->tree->rootFolder(), ['/A/B', '/C']);
@@ -538,13 +538,13 @@ final class FilesBatchTest extends FilesToolsTestCase {
 	 */
 	public function testABatchOfSomebodyElseIsNotFound(): void {
 		$db = new \OCA\Mcp\Tests\Unit\SqliteDatabase($this, [new \OCA\Mcp\Migration\Version000800Date20261002000000()]);
-		$this->batchStore = new \OCA\Mcp\Modules\Files\BatchStore($db->connection());
+		$this->batchStore = new \OCA\Mcp\Modules\Files\Reorganization\BatchStore($db->connection());
 		$this->setUp();
 		$mine = $this->json('files_move_batch', self::BATCH)['batch_id'];
 		$this->assertNull($this->batchStore->find($mine, 'bob'), 'o lote existe, mas não é de bob');
 		$this->assertNotNull($this->batchStore->find($mine, 'alice'));
 
-		$theirs = $this->batchStore->insert(new \OCA\Mcp\Modules\Files\Batch(null, 'bob', 1790000000,
+		$theirs = $this->batchStore->insert(new \OCA\Mcp\Modules\Files\Reorganization\Batch(null, 'bob', 1790000000,
 			[['from' => '/Documentos/orcamento.md', 'to' => '/Arquivado/orcamento.md', 'toId' => 1]], [], null));
 		foreach ([fn () => $this->plan('files_undo_batch', ['batch_id' => $theirs]),
 			fn () => $this->tool('files_undo_batch', ['batch_id' => $theirs, 'confirm' => true])] as $call) {
@@ -555,7 +555,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
 				$this->assertSame(ReorganizationMessages::batchNotFound(), $e->getMessage());
 			}
 		}
-		$this->assertNull($db->rows(\OCA\Mcp\Modules\Files\BatchStore::TABLE)[1]['undone_at'], 'o lote de bob segue intacto');
+		$this->assertNull($db->rows(\OCA\Mcp\Modules\Files\Reorganization\BatchStore::TABLE)[1]['undone_at'], 'o lote de bob segue intacto');
 	}
 
 	/** A destination inside a folder named "0", created by the batch, is where the item lands. */

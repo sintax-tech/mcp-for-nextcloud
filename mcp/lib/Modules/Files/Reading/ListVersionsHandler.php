@@ -11,7 +11,7 @@ use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\FilesCallContext;
-use OCA\Mcp\Modules\Files\VersionTools;
+use OCA\Mcp\Modules\Files\Integration\VersionTools;
 
 /** Runs the operation that lists the versions of a visible file inside the actor view. */
 final class ListVersionsHandler {

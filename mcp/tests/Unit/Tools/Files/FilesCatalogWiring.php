@@ -23,10 +23,10 @@ final class FilesCatalogWiring implements ContainerInterface {
 		'accessInfo' => \OCA\Mcp\Platform\FileAccess\NodeAccessInfo::class,
 		'guard' => \OCA\Mcp\Platform\FileAccess\SharedWriteGuard::class,
 		'checkout' => \OCA\Mcp\Modules\Files\Checkout\CheckoutService::class,
-		'versions' => \OCA\Mcp\Modules\Files\VersionTools::class,
-		'reorganization' => \OCA\Mcp\Modules\Files\Reorganization::class,
-		'planner' => \OCA\Mcp\Modules\Files\MovePlanner::class,
-		'batches' => \OCA\Mcp\Modules\Files\BatchStore::class,
+		'versions' => \OCA\Mcp\Modules\Files\Integration\VersionTools::class,
+		'reorganization' => \OCA\Mcp\Modules\Files\Reorganization\Reorganization::class,
+		'planner' => \OCA\Mcp\Modules\Files\Reorganization\MovePlanner::class,
+		'batches' => \OCA\Mcp\Modules\Files\Reorganization\BatchStore::class,
 		'time' => \OCP\AppFramework\Utility\ITimeFactory::class,
 		'images' => \OCA\Mcp\Modules\Files\Images\ImageTools::class,
 		'ocr' => \OCA\Mcp\Modules\Files\Images\OcrSupport::class,
@@ -48,6 +48,40 @@ final class FilesCatalogWiring implements ContainerInterface {
 		'deleteFile' => \OCA\Mcp\Modules\Files\Deletion\DeleteFileHandler::class,
 		'actorRoot' => \OCA\Mcp\Platform\FileAccess\ActorRoot::class,
 	];
+	/**
+	 * Resolve the focused reorganization graph with the historical test's exact doubles.
+	 *
+	 * @param \OCA\Mcp\Platform\FileAccess\NodeAccessInfo $access Ownership descriptions.
+	 * @param \OCA\Mcp\Platform\FileAccess\SharedWriteGuard $guard Shared-content confirmation.
+	 * @param \OCA\Mcp\Modules\Files\Integration\MoveReport $report Native versions and shares.
+	 * @param \OCP\IUserManager $userManager Existing user lookup.
+	 * @param \OCA\Mcp\Access\ResourceScope\FilesAccessGuard|null $visibilityGuard Visibility boundary.
+	 * @param \OCA\Mcp\Platform\FileAccess\LockAwareWrite|null $locks Existing lock service.
+	 * @param \OCA\Mcp\Access\FileTypes\FileTypeGuard|null $fileTypes Existing final-name policy.
+	 * @param \OCA\Mcp\Platform\Backups\BackupLocation|null $backupLocation Existing reservation names.
+	 * @return \OCA\Mcp\Modules\Files\Reorganization\Reorganization Real focused composition.
+	 */
+	public static function reorganization(
+		\OCA\Mcp\Platform\FileAccess\NodeAccessInfo $access,
+		\OCA\Mcp\Platform\FileAccess\SharedWriteGuard $guard,
+		\OCA\Mcp\Modules\Files\Integration\MoveReport $report,
+		\OCP\IUserManager $userManager,
+		?\OCA\Mcp\Access\ResourceScope\FilesAccessGuard $visibilityGuard = null,
+		?\OCA\Mcp\Platform\FileAccess\LockAwareWrite $locks = null,
+		?\OCA\Mcp\Access\FileTypes\FileTypeGuard $fileTypes = null,
+		?\OCA\Mcp\Platform\Backups\BackupLocation $backupLocation = null,
+	): \OCA\Mcp\Modules\Files\Reorganization\Reorganization {
+		return (new self([
+			\OCA\Mcp\Platform\FileAccess\NodeAccessInfo::class => $access,
+			\OCA\Mcp\Platform\FileAccess\SharedWriteGuard::class => $guard,
+			\OCA\Mcp\Modules\Files\Integration\MoveReport::class => $report,
+			\OCP\IUserManager::class => $userManager,
+			\OCA\Mcp\Access\ResourceScope\FilesAccessGuard::class => $visibilityGuard,
+			\OCA\Mcp\Platform\FileAccess\LockAwareWrite::class => $locks,
+			\OCA\Mcp\Access\FileTypes\FileTypeGuard::class => $fileTypes,
+			\OCA\Mcp\Platform\Backups\BackupLocation::class => $backupLocation,
+		]))->get(\OCA\Mcp\Modules\Files\Reorganization\Reorganization::class);
+	}
 	private function __construct(private array $services) {
 	}
 
@@ -60,10 +94,10 @@ final class FilesCatalogWiring implements ContainerInterface {
 		\OCA\Mcp\Platform\FileAccess\NodeAccessInfo $accessInfo,
 		\OCA\Mcp\Platform\FileAccess\SharedWriteGuard $guard,
 		\OCA\Mcp\Modules\Files\Checkout\CheckoutService $checkout,
-		\OCA\Mcp\Modules\Files\VersionTools $versions,
-		\OCA\Mcp\Modules\Files\Reorganization $reorganization,
-		\OCA\Mcp\Modules\Files\MovePlanner $planner,
-		\OCA\Mcp\Modules\Files\BatchStore $batches,
+		\OCA\Mcp\Modules\Files\Integration\VersionTools $versions,
+		\OCA\Mcp\Modules\Files\Reorganization\Reorganization $reorganization,
+		\OCA\Mcp\Modules\Files\Reorganization\MovePlanner $planner,
+		\OCA\Mcp\Modules\Files\Reorganization\BatchStore $batches,
 		\OCP\AppFramework\Utility\ITimeFactory $time,
 		\OCA\Mcp\Modules\Files\Images\ImageTools $images,
 		\OCA\Mcp\Modules\Files\Images\OcrSupport $ocr,

@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files;
+namespace OCA\Mcp\Modules\Files\Integration;
 
 use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
@@ -53,7 +53,7 @@ final class VersionRestore {
 	public function __construct(
 		private IAppManager $appManager,
 		private IUserManager $userManager,
-		private ContentTypeGate $types,
+		private \OCA\Mcp\Modules\Files\ContentTypeGate $types,
 		private NodeAccessInfo $access,
 		private ContainerInterface $container,
 		private ?LockAwareWrite $locks = null,

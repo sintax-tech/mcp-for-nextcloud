@@ -5,7 +5,8 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files;
+/** Bind immutable copy and move collaborators without caching operation state. */
+namespace OCA\Mcp\Modules\Files\Reorganization;
 
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Access\FileTypes\FileTypeGuard;
@@ -20,7 +21,7 @@ final class CopyMoveContext {
 	/**
 	 * Bind handler dependencies to the existing native checks and final-name policy.
 	 *
-	 * @param Reorganization $reorganization Single owner of native inspection, authorization and receipts.
+	 * @param MoveGuards $reorganization Single owner of native inspection, authorization and receipts.
 	 * @param NodeAccessInfo $access Ownership descriptions.
 	 * @param MoveReport $report Native versions and shares reporting.
 	 * @param FilesAccessGuard|null $visibilityGuard Visibility boundary.
@@ -30,13 +31,13 @@ final class CopyMoveContext {
 	 * @return void
 	 */
 	public function __construct(
-		public readonly Reorganization $reorganization,
+		public readonly MoveGuards $reorganization,
 		public readonly NodeAccessInfo $access,
-		public readonly MoveReport $report,
+		public readonly \OCA\Mcp\Modules\Files\Integration\MoveReport $report,
 		public readonly ?FilesAccessGuard $visibilityGuard,
 		public readonly ?LockAwareWrite $locks,
-		private ?FileTypeGuard $fileTypes,
-		private ?\OCA\Mcp\Platform\Backups\BackupLocation $backupLocation = null,
+		private readonly ?FileTypeGuard $fileTypes,
+		private readonly ?\OCA\Mcp\Platform\Backups\BackupLocation $backupLocation = null,
 	) {
 	}
 
@@ -45,8 +46,8 @@ final class CopyMoveContext {
 	 *
 	 * @return FileDestinationPolicy Final-name preflight and sink checks.
 	 */
-	public function policy(): FileDestinationPolicy {
-		return new FileDestinationPolicy($this->fileTypes ?? \OCP\Server::get(FileTypeGuard::class), $this);
+	public function policy(): \OCA\Mcp\Modules\Files\Reorganization\FileDestinationPolicy {
+		return new \OCA\Mcp\Modules\Files\Reorganization\FileDestinationPolicy($this->fileTypes ?? \OCP\Server::get(FileTypeGuard::class), $this);
 	}
 
 	/**

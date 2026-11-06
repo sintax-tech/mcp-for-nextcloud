@@ -1,29 +1,4 @@
 {
     "version": 1,
-    "exceptions": [
-        {
-            "rule": "native-app",
-            "source": "lib/Modules/Files/MoveReport.php",
-            "target": "OCA\\Files_Versions\\Versions\\IVersionManager",
-            "line": 22,
-            "reason": "Move this native-app reference behind the owning module Integration boundary.",
-            "expires": "RE-23"
-        },
-        {
-            "rule": "native-app",
-            "source": "lib/Modules/Files/VersionRestore.php",
-            "target": "OCA\\Files_Versions\\Versions\\IVersionManager",
-            "line": 42,
-            "reason": "Move this native-app reference behind the owning module Integration boundary.",
-            "expires": "RE-23"
-        },
-        {
-            "rule": "native-app",
-            "source": "lib/Modules/Files/VersionTools.php",
-            "target": "OCA\\Files_Versions\\Versions\\IVersionManager",
-            "line": 37,
-            "reason": "Move this native-app reference behind the owning module Integration boundary.",
-            "expires": "RE-23"
-        }
-    ]
+    "exceptions": []
 }

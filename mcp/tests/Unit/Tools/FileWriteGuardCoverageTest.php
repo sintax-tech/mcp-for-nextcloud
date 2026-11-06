@@ -49,9 +49,9 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Modules/Files/Presentation/FilesPlanRenderer.php#render:move:1' => 'render: static plan text, no Files mutation',
 			'Modules/Files/Images/ImageMetadata.php#originalDimensions:fopen:1' => 'read: original image bytes',
 			'Modules/Files/Backups/FileBackupCopy.php#copy:fopen:1' => 'read: original bytes for internal recovery',
-			'Modules/Files/VersionRestore.php#writeVersion:fopen:1' => 'temporary: php temp stream buffer, not a Files node',
+			'Modules/Files/Integration/VersionRestore.php#writeVersion:fopen:1' => 'temporary: php temp stream buffer, not a Files node',
 			'Modules/Files/TextExtractor.php#read:fopen:1' => 'read: bounded file content, read-only mode',
-			'Modules/Files/VersionStream.php#open:fopen:1' => 'read: current file bytes of the listed current version, read-only mode',
+			'Modules/Files/Integration/VersionStream.php#open:fopen:1' => 'read: current file bytes of the listed current version, read-only mode',
 			'Modules/Files/TextExtractor.php#zipXml:file_put_contents:1' => 'temporary: ITempManager local zip, not a Files node',
 			'Modules/Mail/Extraction/MailAttachmentDocument.php#text:file_put_contents:1' => 'temporary: ITempManager local zip of a mail attachment, not a Files node',
 			'Modules/Mail/Integration/MailMoveStore.php#move:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Mail\\MailMoveToolsTest::testAnotherGenerationNeverMovesAMessage',
@@ -64,16 +64,18 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Modules/Files/FileCreationWriter.php#write:putcontent:1' => 'guarded: OCA\Mcp\Tests\Unit\Tools\Files\FileWritePolicyBoundariesTest::testCreationRechecksBeforePutContentWithoutDeletingEmptyFile',
 			'Modules/Files/Creation/CopyFileHandler.php#handle:copy:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testForbiddenDescendantDeniesBothToolsBeforeEffects',
 			'Modules/Files/Moving/MoveFileHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testForbiddenDescendantDeniesBothToolsBeforeEffects',
-			'Modules/Files/Handler/MoveHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testForbiddenDescendantDeniesBothToolsBeforeEffects',
-			'Modules/Files/Handler/MoveBatchHandler.php#batch:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testBatchRechecksEverySinkAndRecordsPartialProgress',
-			'Modules/Files/Handler/UndoBatchHandler.php#undoBatch:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testUndoRechecksEverySinkAndKeepsOnlyRemainingMoves',
-			'Modules/Files/ListedTreeCopy.php#native:copy:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testListedCopyExcludesLateChildrenAndReportsRenamedSource',
-			'Modules/Files/ListedTreeCopy.php#execute:newfolder:1' => 'directory: only entries of the wholly prevalidated listed tree, never a file',
+			'Modules/Files/Reorganization/Reorganization.php#copy:copy:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testForbiddenDescendantDeniesBothToolsBeforeEffects',
+			'Modules/Files/Reorganization/Reorganization.php#move:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testForbiddenDescendantDeniesBothToolsBeforeEffects',
+			'Modules/Files/Reorganization/MoveHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testForbiddenDescendantDeniesBothToolsBeforeEffects',
+			'Modules/Files/Reorganization/MoveBatchHandler.php#batch:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testBatchRechecksEverySinkAndRecordsPartialProgress',
+			'Modules/Files/Reorganization/UndoBatchHandler.php#undoBatch:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testUndoRechecksEverySinkAndKeepsOnlyRemainingMoves',
+			'Modules/Files/Reorganization/ListedTreeCopy.php#native:copy:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testListedCopyExcludesLateChildrenAndReportsRenamedSource',
+			'Modules/Files/Reorganization/ListedTreeCopy.php#execute:newfolder:1' => 'directory: only entries of the wholly prevalidated listed tree, never a file',
 			'Modules/Files/ContentCommit.php#commit:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\FileContentTypePolicyTest::testSinkDenialAfterBackupKeepsTheOriginalAndTheBackup',
 			'Modules/Files/ContentCommit.php#commit:putcontent:2' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\FileContentTypePolicyTest::testSinkDenialAfterBackupKeepsTheOriginalAndTheBackup',
-			'Modules/Files/VersionRestore.php#restore:rollback:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\FileContentTypePolicyTest::testSinkDenialAfterBackupOnRestoreKeepsTheOriginalAndTheBackup',
-			'Modules/Files/VersionRestore.php#writeVersion:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\FileContentTypePolicyTest::testSinkDenialAfterBackupOnRestoreKeepsTheOriginalAndTheBackup',
-			'Modules/Files/Reorganization.php#createFolders:newfolder:1' => 'directory: type not applicable; T15-6 must preflight associated files first',
+			'Modules/Files/Integration/VersionRestore.php#restore:rollback:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\FileContentTypePolicyTest::testSinkDenialAfterBackupOnRestoreKeepsTheOriginalAndTheBackup',
+			'Modules/Files/Integration/VersionRestore.php#writeVersion:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\FileContentTypePolicyTest::testSinkDenialAfterBackupOnRestoreKeepsTheOriginalAndTheBackup',
+			'Modules/Files/Reorganization/FolderCreator.php#createFolders:newfolder:1' => 'directory: type not applicable; T15-6 must preflight associated files first',
 			'Platform/FileAccess/NodeAccess.php#ensureFolder:newfolder:1' => 'directory: auxiliary folder, not a file; callers preflight associated files',
 			'Modules/Notes/Creation/CreateNoteHandler.php#handle:newfile:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testCreateRefusesBeforeCreatingACategory',
 			'Modules/Notes/Editing/EditNoteHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testWholeEditRefusesADeniedTitleBeforeWritingContent',
@@ -100,8 +102,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 	}
 
 	/**
-	 * Keep 44 real calls, including the merged NT-1 writer and the attachment reader's temporary zip, and 18 explicit
-	 * literals visible.
+	 * Keep all 48 calls, including the two reorganization facade delegations, and all 21 explicit literals visible.
 	 *
 	 * @return void
 	 */
@@ -109,7 +110,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 		$calls = FileWriteSinkInventory::calls(FileWriteSinkInventory::sources(__DIR__ . '/../../../lib'));
 		$literals = array_values(array_filter($calls, static fn (string $call): bool => str_contains($call, ':literal-')));
 		self::assertCount(21, $literals);
-		self::assertCount(46, array_diff($calls, $literals));
+		self::assertCount(48, array_diff($calls, $literals));
 		foreach ($calls as $call) {
 			self::assertDoesNotMatchRegularExpression('/:(?:literal-)?(?:writestream|fputs):/', $call);
 		}

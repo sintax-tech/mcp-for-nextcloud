@@ -5,17 +5,17 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files\Handler;
+namespace OCA\Mcp\Modules\Files\Reorganization;
 
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 use OCP\Files\Node;
-use OCA\Mcp\Modules\Files\CopyMoveContext;
-use OCA\Mcp\Modules\Files\FileTypePreflight;
-use OCA\Mcp\Modules\Files\ListedTreeCopy;
-use OCA\Mcp\Modules\Files\FolderExposureGate;
+use OCA\Mcp\Modules\Files\Reorganization\CopyMoveContext;
+use OCA\Mcp\Modules\Files\Reorganization\FileTypePreflight;
+use OCA\Mcp\Modules\Files\Reorganization\ListedTreeCopy;
+use OCA\Mcp\Modules\Files\Reorganization\FolderExposureGate;
 use OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages;
 
 /** Owns files_copy planning and confirmation, preserving native authorization and receipts. */

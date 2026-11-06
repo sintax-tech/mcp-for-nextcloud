@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Files\Creation;
 
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCP\Files\Folder;
-use OCA\Mcp\Modules\Files\Reorganization;
+use OCA\Mcp\Modules\Files\Reorganization\Reorganization;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 
 /** Runs the operation that creates a guarded directory inside the actor view. */

@@ -5,14 +5,14 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files\Handler;
+namespace OCA\Mcp\Modules\Files\Reorganization;
 
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 use OCP\Files\Node;
-use OCA\Mcp\Modules\Files\CopyMoveContext;
-use OCA\Mcp\Modules\Files\MoveConflict;
-use OCA\Mcp\Modules\Files\FolderExposureGate;
+use OCA\Mcp\Modules\Files\Reorganization\CopyMoveContext;
+use OCA\Mcp\Modules\Files\Reorganization\MoveConflict;
+use OCA\Mcp\Modules\Files\Reorganization\FolderExposureGate;
 use OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages;
 
 /** Owns files_move planning and confirmation, preserving native authorization and receipts. */

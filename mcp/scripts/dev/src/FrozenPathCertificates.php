@@ -34,5 +34,13 @@ final class FrozenPathCertificates {
 			'sites' => 1,
 			'base_commit' => 'bcfa17297d81907741612b0507e3f17cc36ae3cf',
 			'base_tree' => '0e79794dc5d3feb8bd419117dc390eb82cca1e44',
+		], [
+			'ticket' => 'RE-23',
+			'pairs_sha256' => 'b06a0af6178479d8d4e44e7dd6f5f185fe40f10842d365f5473027d3e1f20679',
+			'path' => 'scripts/dev/frozen-path-sites-re23.json',
+			'seal' => '59478283d22ba18c397d9799e027d429620de7d606fe9166761a30cfeb7e05d7',
+			'sites' => 2,
+			'base_commit' => 'bcfa17297d81907741612b0507e3f17cc36ae3cf',
+			'base_tree' => '0e79794dc5d3feb8bd419117dc390eb82cca1e44',
 		]]; }
 }

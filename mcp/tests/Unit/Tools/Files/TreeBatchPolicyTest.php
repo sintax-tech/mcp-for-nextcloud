@@ -9,7 +9,11 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Access\FileTypes\FileWritePolicy;
 use OCA\Mcp\Access\FileTypes\FileTypeDenied;
-use OCA\Mcp\Modules\Files\{Batch, CopyMoveContext, FileTypePreflight, ListedTreeCopy, ReorganizationLimits};
+use OCA\Mcp\Modules\Files\Reorganization\Batch;
+use OCA\Mcp\Modules\Files\Reorganization\CopyMoveContext;
+use OCA\Mcp\Modules\Files\Reorganization\FileTypePreflight;
+use OCA\Mcp\Modules\Files\Reorganization\ListedTreeCopy;
+use OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 

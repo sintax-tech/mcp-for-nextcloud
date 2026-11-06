@@ -306,13 +306,13 @@ final class VisibilityGuardMountBoundaryTest extends TestCase {
 		[$bobFiles, $received] = $this->receivedFolderBesideP();
 
 		$this->expectException(\OCA\Mcp\Mcp\Tools\Results\ToolFailure::class);
-		\OCA\Mcp\Modules\Files\FolderExposureGate::assertMove($bobFiles, $received, '/P/S', $this->guard());
+		\OCA\Mcp\Modules\Files\Reorganization\FolderExposureGate::assertMove($bobFiles, $received, '/P/S', $this->guard());
 	}
 
 	public function testFolderRenameGateAllowsARenameOfAMountRootInItsRealParent(): void {
 		[$bobFiles, $received] = $this->receivedFolderBesideP();
 
-		\OCA\Mcp\Modules\Files\FolderExposureGate::assertMove($bobFiles, $received, '/S-renamed', $this->guard());
+		\OCA\Mcp\Modules\Files\Reorganization\FolderExposureGate::assertMove($bobFiles, $received, '/S-renamed', $this->guard());
 		$this->addToAssertionCount(1);
 	}
 }

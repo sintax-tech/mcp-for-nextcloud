@@ -13,7 +13,11 @@ use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
 use OCA\Mcp\Access\FileTypes\FileTypeGuard;
 use OCA\Mcp\Platform\FileAccess\{NodeAccessInfo, SharedWriteGuard};
-use OCA\Mcp\Modules\Files\{CopyMoveContext, FileTypePreflight, ListedTreeCopy, MoveReport, Reorganization};
+use OCA\Mcp\Modules\Files\Reorganization\CopyMoveContext;
+use OCA\Mcp\Modules\Files\Reorganization\FileTypePreflight;
+use OCA\Mcp\Modules\Files\Reorganization\ListedTreeCopy;
+use OCA\Mcp\Modules\Files\Integration\MoveReport;
+use OCA\Mcp\Modules\Files\Reorganization\Reorganization;
 use OCP\Files\{Folder, IRootFolder};
 use OCP\IAppConfig;
 use OCP\Server;
@@ -51,7 +55,7 @@ final class TreeBatchFilePolicyTest extends IntegrationTestCase {
 		$shares = Server::get(\OCP\Share\IManager::class);
 		$access = new NodeAccessInfo($users, $shares);
 		$report = new MoveReport(\OC::$server, $shares, Server::get(\OCP\App\IAppManager::class));
-		$this->context = (new Reorganization($access, new SharedWriteGuard($access), $report, $users,
+		$this->context = (\OCA\Mcp\Tests\Unit\Tools\Files\FilesCatalogWiring::reorganization($access, new SharedWriteGuard($access), $report, $users,
 			fileTypes: Server::get(FileTypeGuard::class)))->copyMoveContext();
 		Server::get(FileWritePolicy::class)->save('allowlist', ['txt'], false);
 	}

@@ -13,8 +13,8 @@ use OCA\Mcp\OAuth\Storage\OAuthStore;
 use OCA\Mcp\Tests\Unit\Checkout\InMemoryCheckoutTokenStore;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Tests\Unit\Tools\Files\InMemoryBatchStore;
-use OCA\Mcp\Modules\Files\Batch;
-use OCA\Mcp\Modules\Files\BatchStore;
+use OCA\Mcp\Modules\Files\Reorganization\Batch;
+use OCA\Mcp\Modules\Files\Reorganization\BatchStore;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

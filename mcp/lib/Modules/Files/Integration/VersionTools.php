@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files;
+namespace OCA\Mcp\Modules\Files\Integration;
 
 use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
@@ -44,7 +44,7 @@ final class VersionTools {
 		private ContainerInterface $container,
 		private ?LockAwareWrite $locks = null,
 		private ?\OCA\Mcp\Access\ResourceScope\FilesAccessGuard $visibilityGuard = null,
-		private ?VersionRestore $versionRestore = null,
+		private ?\OCA\Mcp\Modules\Files\Integration\VersionRestore $versionRestore = null,
 	) {}
 
 	/**
@@ -89,7 +89,7 @@ final class VersionTools {
 	 */
 	public function open(File $file, string $revision, string $viewerUid): array {
 		$version = $this->find($this->requireVersioning($viewerUid), $file, $revision);
-		return [$version, VersionStream::open($this->manager(), $version, $file)];
+		return [$version, \OCA\Mcp\Modules\Files\Integration\VersionStream::open($this->manager(), $version, $file)];
 	}
 
 	/**

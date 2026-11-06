@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files\Reading;
+namespace OCA\Mcp\Modules\Files\Integration;
 
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
@@ -14,7 +14,7 @@ use OCA\Mcp\Modules\Files\Images\OcrSupport;
 use OCA\Mcp\Modules\Files\Presentation\ReadingMessages;
 use OCA\Mcp\Modules\Files\Presentation\VersionMessages;
 use OCA\Mcp\Modules\Files\TextExtractor;
-use OCA\Mcp\Modules\Files\VersionTools;
+use OCA\Mcp\Modules\Files\Integration\VersionTools;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCP\Files\File;
 use OCP\Files\Folder;
@@ -41,7 +41,7 @@ final class ReadVersionHandler {
 	public function __construct(
 		private FilesCallContext $context,
 		private VersionTools $versions,
-		private ReadableFile $readable,
+		private \OCA\Mcp\Modules\Files\Reading\ReadableFile $readable,
 		private TextExtractor $extractor,
 		private OcrSupport $ocr,
 	) {

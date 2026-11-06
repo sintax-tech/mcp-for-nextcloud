@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files;
+namespace OCA\Mcp\Modules\Files\Reorganization;
 
 use OCA\Mcp\Access\FileTypes\FileTypeCheck;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
@@ -26,7 +26,7 @@ final class FileTypePreflight {
 	private int $work = 0;
 
 	/** @param CopyMoveContext $context Native authorization and the single final-name evaluator. */
-	public function __construct(private CopyMoveContext $context) {
+	public function __construct(private \OCA\Mcp\Modules\Files\Reorganization\CopyMoveContext $context) {
 	}
 
 	/**
@@ -54,14 +54,14 @@ final class FileTypePreflight {
 					throw new ToolFailure(CommonMessages::notFound());
 				}
 				$this->seen[$node->getPath() . ':' . $node->getId()] = true;
-				if (count($this->seen) > ReorganizationLimits::NODES) {
-					throw new ToolFailure(FileTreeMessages::tooManyNodes(ReorganizationLimits::NODES));
+				if (count($this->seen) > \OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits::NODES) {
+					throw new ToolFailure(\OCA\Mcp\Modules\Files\FileTreeMessages::tooManyNodes(\OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits::NODES));
 				}
 				$nodes[] = $node;
 				if ($node instanceof Folder) {
 					foreach ($node->getDirectoryListing() as $child) {
 						$pending[] = $child;
-						if (count($pending) + count($nodes) > ReorganizationLimits::NODES) {
+						if (count($pending) + count($nodes) > \OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits::NODES) {
 							// Pending children are not visibility-checked: memory bounds reveal no count.
 							throw new ToolFailure(CommonMessages::notFound());
 						}
@@ -73,15 +73,15 @@ final class FileTypePreflight {
 		$entries = [];
 		$bytes = 0;
 		foreach ($this->trees[$key] as $node) {
-			if (++$this->work > ReorganizationLimits::NODES) {
-				throw new ToolFailure(FileTreeMessages::tooManyNodes(ReorganizationLimits::NODES));
+			if (++$this->work > \OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits::NODES) {
+				throw new ToolFailure(\OCA\Mcp\Modules\Files\FileTreeMessages::tooManyNodes(\OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits::NODES));
 			}
 			$final = $to . substr($node->getPath(), strlen($source->getPath()));
 			if ($node instanceof File) {
 				$this->context->policy()->assertProjected($node, $final, $snapshot);
 				$bytes += max(0, (int)$node->getSize());
-				if ($copy && $bytes > ReorganizationLimits::BYTES) {
-					throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::copyTooLarge(ReorganizationLimits::BYTES));
+				if ($copy && $bytes > \OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits::BYTES) {
+					throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::copyTooLarge(\OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits::BYTES));
 				}
 			}
 			$entries[] = ['source' => $node->getPath(), 'to' => $final, 'id' => (int)$node->getId(), 'folder' => $node instanceof Folder];

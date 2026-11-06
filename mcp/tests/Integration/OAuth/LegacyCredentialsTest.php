@@ -73,9 +73,10 @@ final class LegacyCredentialsTest extends IntegrationTestCase {
 			foreach ($before as $row) {
 				$now = $after[$row[$key]] ?? null;
 				$this->assertNotNull($now, "$table row {$row[$key]} was recreated or lost");
-				// Same columns, ids and hashes, plus the two generation columns at their migrated values.
+				// Preserve every legacy column/hash; only columns absent from that release receive migration defaults.
 				$this->assertSame($row, array_intersect_key($now, $row), $table);
-				$this->assertSame(['auth_global_epoch' => '0', 'auth_gen' => '1'], array_diff_key($now, $row), $table);
+				$defaults = ['auth_global_epoch' => '0', 'auth_gen' => '1'] + ($table === 'mcp_oauth_spent' ? [] : ['client_gen' => '1']);
+				$this->assertSame(array_diff_key($defaults, $row), array_diff_key($now, $row), $table);
 			}
 		}
 

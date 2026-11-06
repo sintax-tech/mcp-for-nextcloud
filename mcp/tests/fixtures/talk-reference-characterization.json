@@ -1,0 +1,165 @@
+{
+    "card": {
+        "result": {
+            "type": "deck_card",
+            "title": "Line one Line two",
+            "url": "deck.page.indexCard:{\"boardId\":4,\"cardId\":7}"
+        },
+        "deck": [
+            [
+                "findCard",
+                "alice",
+                7
+            ],
+            [
+                "cardBoardId",
+                "alice",
+                7
+            ]
+        ],
+        "scope": []
+    },
+    "board-mismatch": {
+        "result": {
+            "failure": "ConversationAccessException",
+            "message": "referenced item not found or not accessible",
+            "previous": null
+        },
+        "deck": [
+            [
+                "findCard",
+                "alice",
+                7
+            ],
+            [
+                "cardBoardId",
+                "alice",
+                7
+            ]
+        ],
+        "scope": []
+    },
+    "card-denied": {
+        "result": {
+            "failure": "ConversationAccessException",
+            "message": "referenced item not found or not accessible",
+            "previous": "native denial /alice/private"
+        },
+        "deck": [
+            [
+                "findCard",
+                "alice",
+                7
+            ]
+        ],
+        "scope": []
+    },
+    "PUBLIC": {
+        "result": {
+            "type": "calendar_event",
+            "title": "Planning",
+            "url": "https://cloud.example/apps/calendar/edit/L2Nsb3VkL3JlbW90ZS5waHAvZGF2L2NhbGVuZGFycy9hbGljZS9ldmVudHMvZXZlbnQuaWNz"
+        },
+        "deck": [],
+        "scope": [
+            [
+                "alice",
+                "calendar",
+                "3"
+            ]
+        ]
+    },
+    "PRIVATE": {
+        "result": {
+            "failure": "ConversationAccessException",
+            "message": "referenced item not found or not accessible",
+            "previous": null
+        },
+        "deck": [],
+        "scope": [
+            [
+                "alice",
+                "calendar",
+                "3"
+            ]
+        ]
+    },
+    "CONFIDENTIAL": {
+        "result": {
+            "type": "calendar_event",
+            "title": "Ocupado",
+            "url": "https://cloud.example/apps/calendar/edit/L2Nsb3VkL3JlbW90ZS5waHAvZGF2L2NhbGVuZGFycy9hbGljZS9ldmVudHMvZXZlbnQuaWNz"
+        },
+        "deck": [],
+        "scope": [
+            [
+                "alice",
+                "calendar",
+                "3"
+            ]
+        ]
+    },
+    "deleted": {
+        "result": {
+            "failure": "ConversationAccessException",
+            "message": "referenced item not found or not accessible",
+            "previous": null
+        },
+        "deck": [],
+        "scope": [
+            [
+                "alice",
+                "calendar",
+                "3"
+            ]
+        ]
+    },
+    "invalid-ics": {
+        "result": {
+            "failure": "ConversationAccessException",
+            "message": "referenced item not found or not accessible",
+            "previous": null
+        },
+        "deck": [],
+        "scope": [
+            [
+                "alice",
+                "calendar",
+                "3"
+            ]
+        ]
+    },
+    "missing": {
+        "result": {
+            "failure": "ConversationAccessException",
+            "message": "referenced item not found or not accessible",
+            "previous": null
+        },
+        "deck": [],
+        "scope": [
+            [
+                "alice",
+                "calendar",
+                "3"
+            ]
+        ]
+    },
+    "no-grant": {
+        "result": {
+            "failure": "ConversationAccessException",
+            "message": "Deck reference unavailable: the Deck app is turned off for you or the MCP has no read permission in Deck",
+            "previous": null
+        },
+        "deck": [],
+        "scope": []
+    },
+    "scope-unavailable": {
+        "result": {
+            "failure": "PolicyUnavailable",
+            "message": "Resource scope unavailable",
+            "previous": null
+        },
+        "deck": [],
+        "scope": []
+    }
+}

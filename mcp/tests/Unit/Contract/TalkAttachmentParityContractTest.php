@@ -14,19 +14,19 @@ use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
-use OCA\Mcp\Tools\Talk\ActorNames;
-use OCA\Mcp\Tools\Talk\AttachmentAccess;
-use OCA\Mcp\Tools\Talk\AttachmentMessage;
-use OCA\Mcp\Tools\Talk\Conversation;
-use OCA\Mcp\Tools\Talk\ConversationAccessException;
-use OCA\Mcp\Tools\Talk\ConversationReader;
-use OCA\Mcp\Tools\Talk\ConversationResolver;
-use OCA\Mcp\Tools\Talk\ConversationWriter;
-use OCA\Mcp\Tools\Talk\FileAccessException;
-use OCA\Mcp\Tools\Talk\FileSharer;
-use OCA\Mcp\Tools\Talk\TalkServices;
-use OCA\Mcp\Tools\Talk\UserFileResolver;
-use OCA\Mcp\Tools\Talk\WritePreview;
+use OCA\Mcp\Modules\Talk\Presentation\ActorNames;
+use OCA\Mcp\Modules\Talk\Attachments\AttachmentAccess;
+use OCA\Mcp\Modules\Talk\Attachments\AttachmentMessage;
+use OCA\Mcp\Modules\Talk\Locating\Conversation;
+use OCA\Mcp\Modules\Talk\Failures\ConversationAccessException;
+use OCA\Mcp\Modules\Talk\Reading\ConversationReader;
+use OCA\Mcp\Modules\Talk\Locating\ConversationResolver;
+use OCA\Mcp\Modules\Talk\Writing\ConversationWriter;
+use OCA\Mcp\Modules\Talk\Failures\FileAccessException;
+use OCA\Mcp\Modules\Talk\Attachments\FileSharer;
+use OCA\Mcp\Modules\Talk\Integration\TalkServices;
+use OCA\Mcp\Modules\Talk\Locating\UserFileResolver;
+use OCA\Mcp\Modules\Talk\Writing\WritePreview;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Comments\IComment;
 use OCP\IUserManager;
@@ -295,17 +295,17 @@ final class TalkAttachmentParityContractTest extends TestCase {
 	}
 
 	/** The Talk module over the real attach, quote, preview and read paths, the conversation resolved as writable. */
-	private function module(IShareManager $shares): \OCA\Mcp\Tools\Talk\TalkModule {
+	private function module(IShareManager $shares): \OCA\Mcp\Modules\Talk\TalkModule {
 		$resolver = $this->createMock(ConversationResolver::class);
 		$resolver->method('resolveForWriting')->willReturn($this->conversation());
 		$resolver->method('resolveForReading')->willReturn($this->conversation());
 		$files = new UserFileResolver($this->caller->filesystemRoot(), $this->guard, $this->filter($shares));
-		$sharer = new FileSharer($shares, $files, $this->writer($shares), new \OCA\Mcp\Tools\Talk\AttachedFile($this->caller->filesystemRoot()));
+		$sharer = new FileSharer($shares, $files, $this->writer($shares), new \OCA\Mcp\Modules\Talk\Attachments\AttachedFile($this->caller->filesystemRoot()));
 		$preview = new WritePreview($this->writer($shares), $sharer, $this->access($shares), new ActorNames($this->createMock(IUserManager::class)));
-		return new \OCA\Mcp\Tools\Talk\TalkModule($this->talkServices(), new ConversationReader($this->talkServices(), $resolver,
+		return \OCA\Mcp\Tests\Unit\Tools\Talk\TalkTestModule::build($this->talkServices(), new ConversationReader($this->talkServices(), $resolver,
 			new ActorNames($this->createMock(IUserManager::class)), $this->filter($shares)), $resolver, $this->writer($shares), $sharer, $preview,
-			$this->createMock(\OCA\Mcp\Tools\Talk\UserConversationResolver::class), $this->createMock(\OCA\Mcp\Tools\Talk\GroupCreator::class),
-			$this->createMock(\OCA\Mcp\Tools\Talk\ReferenceLinker::class), $this->createMock(\Psr\Log\LoggerInterface::class));
+			$this->createMock(\OCA\Mcp\Modules\Talk\Locating\UserConversationResolver::class), $this->createMock(\OCA\Mcp\Modules\Talk\Groups\GroupCreator::class),
+			$this->createMock(\OCA\Mcp\Modules\Talk\ReferenceLinker::class), $this->createMock(\Psr\Log\LoggerInterface::class));
 	}
 
 	/** @return string what the client gets: the endpoint's 503, or the tool's own answer */

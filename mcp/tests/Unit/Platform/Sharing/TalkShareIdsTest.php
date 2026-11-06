@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Platform\Sharing;
 
 use OCA\Mcp\Platform\Sharing\TalkShareIds;
-use OCA\Mcp\Tools\Talk\AttachmentAccess;
+use OCA\Mcp\Modules\Talk\Attachments\AttachmentAccess;
 use PHPUnit\Framework\TestCase;
 
 /** Shared Talk share identifiers preserve qualified IDs and the existing attachment facade. */

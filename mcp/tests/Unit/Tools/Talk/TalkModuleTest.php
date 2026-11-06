@@ -10,22 +10,22 @@ namespace OCA\Mcp\Tests\Unit\Tools\Talk;
 use InvalidArgumentException;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tools\Talk\Conversation;
-use OCA\Mcp\Tools\Talk\ConversationAccessException;
-use OCA\Mcp\Tools\Talk\ConversationReader;
-use OCA\Mcp\Tools\Talk\ConversationResolver;
-use OCA\Mcp\Tools\Talk\ConversationWriter;
-use OCA\Mcp\Tools\Talk\DirectContact;
-use OCA\Mcp\Tools\Talk\FileAccessException;
-use OCA\Mcp\Tools\Talk\GroupCreator;
-use OCA\Mcp\Tools\Talk\FileSharer;
-use OCA\Mcp\Tools\Talk\Messages;
-use OCA\Mcp\Tools\Talk\ReferenceLinker;
-use OCA\Mcp\Tools\Talk\TalkModule;
-use OCA\Mcp\Tools\Talk\TalkServices;
-use OCA\Mcp\Tools\Talk\TalkUnavailableException;
-use OCA\Mcp\Tools\Talk\UserConversationResolver;
-use OCA\Mcp\Tools\Talk\WritePreview;
+use OCA\Mcp\Modules\Talk\Locating\Conversation;
+use OCA\Mcp\Modules\Talk\Failures\ConversationAccessException;
+use OCA\Mcp\Modules\Talk\Reading\ConversationReader;
+use OCA\Mcp\Modules\Talk\Locating\ConversationResolver;
+use OCA\Mcp\Modules\Talk\Writing\ConversationWriter;
+use OCA\Mcp\Modules\Talk\Locating\DirectContact;
+use OCA\Mcp\Modules\Talk\Failures\FileAccessException;
+use OCA\Mcp\Modules\Talk\Groups\GroupCreator;
+use OCA\Mcp\Modules\Talk\Attachments\FileSharer;
+use OCA\Mcp\Modules\Talk\Presentation\Messages;
+use OCA\Mcp\Modules\Talk\ReferenceLinker;
+use OCA\Mcp\Modules\Talk\TalkModule;
+use OCA\Mcp\Modules\Talk\Integration\TalkServices;
+use OCA\Mcp\Modules\Talk\Failures\TalkUnavailableException;
+use OCA\Mcp\Modules\Talk\Locating\UserConversationResolver;
+use OCA\Mcp\Modules\Talk\Writing\WritePreview;
 use OCA\Mcp\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
@@ -61,7 +61,7 @@ class TalkModuleTest extends TestCase {
 		$this->groups = $this->createMock(GroupCreator::class);
 		$this->references = $this->createMock(ReferenceLinker::class);
 		$this->logger = $this->createMock(LoggerInterface::class);
-		$this->module = new TalkModule(
+		$this->module = \OCA\Mcp\Tests\Unit\Tools\Talk\TalkTestModule::build(
 			$this->createMock(TalkServices::class),
 			$this->reader,
 			$this->resolver,
@@ -644,11 +644,12 @@ class TalkModuleTest extends TestCase {
 
 	/** A read tool has no plan to build: preview() says so instead of inventing one. */
 	public function testPreviewRefusesAReadToolAndKnowsWhichToolsWrite(): void {
-		$this->assertFalse(TalkModule::writesSomething(TalkModule::TOOL_LIST));
-		$this->assertFalse(TalkModule::writesSomething(TalkModule::TOOL_READ));
+		$definitions = array_column($this->module->definitions(), null, 'name');
+		$this->assertFalse(\OCA\Mcp\Mcp\Confirmation\WriteGate::isWrite($definitions[TalkModule::TOOL_LIST]));
+		$this->assertFalse(\OCA\Mcp\Mcp\Confirmation\WriteGate::isWrite($definitions[TalkModule::TOOL_READ]));
 
-		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(Messages::unknownTool());
+		$this->expectException(\LogicException::class);
+		$this->expectExceptionMessage('talk_read_messages is not a WriteTool');
 		$this->module->preview(TalkModule::TOOL_READ, ['conversation_token' => 'abcd'], 'alice');
 	}
 
@@ -656,7 +657,7 @@ class TalkModuleTest extends TestCase {
 	public function testEveryWritingToolIsReportedAsWriting(): void {
 		foreach ($this->module->definitions() as $definition) {
 			$expected = $definition['operation'] !== 'read';
-			$this->assertSame($expected, TalkModule::writesSomething($definition['name']), $definition['name']);
+			$this->assertSame($expected, \OCA\Mcp\Mcp\Confirmation\WriteGate::isWrite($definition), $definition['name']);
 		}
 	}
 
@@ -784,9 +785,14 @@ class TalkModuleTest extends TestCase {
 	}
 
 	public function testUnknownToolNameIsAClientMistake(): void {
-		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(Messages::unknownTool());
-		$this->module->call('talk_delete_conversation', ['conversation_token' => 'abcd'], 'alice');
+		try {
+			$this->module->call('talk_delete_conversation', ['conversation_token' => 'abcd'], 'alice');
+			$this->fail('An unknown tool must be refused as a client mistake');
+		} catch (\OCA\Mcp\Mcp\Tools\UnknownToolException $e) {
+			$this->assertInstanceOf(\OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException::class, $e);
+			$this->assertInstanceOf(InvalidArgumentException::class, $e);
+			$this->assertSame('Unknown tool', $e->getMessage());
+		}
 	}
 
 	public function testPayloadIsIndentedJsonInASingleTextBlock(): void {

@@ -9,15 +9,15 @@ namespace OCA\Mcp\Tests\Unit\Tools\Talk;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
-use OCA\Mcp\Tools\Talk\ActorNames;
-use OCA\Mcp\Tools\Talk\AttachmentAccess;
-use OCA\Mcp\Tools\Talk\Conversation;
-use OCA\Mcp\Tools\Talk\ConversationWriter;
-use OCA\Mcp\Tools\Talk\DirectContact;
-use OCA\Mcp\Tools\Talk\FileSharer;
-use OCA\Mcp\Tools\Talk\Messages;
-use OCA\Mcp\Tools\Talk\TalkPlanRenderer;
-use OCA\Mcp\Tools\Talk\WritePreview;
+use OCA\Mcp\Modules\Talk\Presentation\ActorNames;
+use OCA\Mcp\Modules\Talk\Attachments\AttachmentAccess;
+use OCA\Mcp\Modules\Talk\Locating\Conversation;
+use OCA\Mcp\Modules\Talk\Writing\ConversationWriter;
+use OCA\Mcp\Modules\Talk\Locating\DirectContact;
+use OCA\Mcp\Modules\Talk\Attachments\FileSharer;
+use OCA\Mcp\Modules\Talk\Presentation\Messages;
+use OCA\Mcp\Modules\Talk\Presentation\TalkPlanRenderer;
+use OCA\Mcp\Modules\Talk\Writing\WritePreview;
 use OCP\Comments\IComment;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -81,7 +81,7 @@ final class TalkPlanRendererTest extends TestCase {
 		);
 
 		// The text is cut, not hidden: the user has to know they are approving a beginning of a long message.
-		$this->assertStringContainsString(Messages::contentTruncated(), (string)$body);
+		$this->assertStringContainsString(\OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::contentTruncated(), (string)$body);
 		$this->assertStringContainsString(str_repeat('a', TalkPlanRenderer::EXCERPT_MAX_LENGTH), (string)$body);
 		$this->assertLessThan(400, mb_strlen((string)$body));
 	}
@@ -159,7 +159,7 @@ final class TalkPlanRendererTest extends TestCase {
 			[['message' => 'única']],
 		));
 
-		$this->assertStringContainsString(Messages::planOneMessage('Comercial'), (string)$body);
+		$this->assertStringContainsString(\OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::planOneMessage('Comercial'), (string)$body);
 	}
 
 	public function testAnAttachmentIsNamedByItsFileNameAndCarriesTheCaption(): void {
@@ -247,7 +247,7 @@ final class TalkPlanRendererTest extends TestCase {
 		);
 
 		$this->assertStringContainsString('**Projeto X**', (string)$body);
-		$this->assertStringContainsString(Messages::planNoGuests(), (string)$body);
+		$this->assertStringContainsString(\OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::planNoGuests(), (string)$body);
 	}
 
 	public function testAnUnknownToolOrAnEmptyPlanAnswersNullSoTheGenericBodySpeaks(): void {
@@ -411,19 +411,19 @@ final class TalkPlanRendererTest extends TestCase {
 	/**
 	 * The module of the readability contract, over the doubles of this test.
 	 */
-	private function module(): \OCA\Mcp\Tools\Talk\TalkModule {
-		$services = $this->createMock(\OCA\Mcp\Tools\Talk\TalkServices::class);
-		$resolver = new \OCA\Mcp\Tools\Talk\ConversationResolver($services);
-		return new \OCA\Mcp\Tools\Talk\TalkModule(
+	private function module(): \OCA\Mcp\Modules\Talk\TalkModule {
+		$services = $this->createMock(\OCA\Mcp\Modules\Talk\Integration\TalkServices::class);
+		$resolver = new \OCA\Mcp\Modules\Talk\Locating\ConversationResolver($services);
+		return \OCA\Mcp\Tests\Unit\Tools\Talk\TalkTestModule::build(
 			$services,
-			new \OCA\Mcp\Tools\Talk\ConversationReader($services, $resolver, $this->createMock(ActorNames::class), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this)),
+			new \OCA\Mcp\Modules\Talk\Reading\ConversationReader($services, $resolver, $this->createMock(ActorNames::class), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this)),
 			$resolver,
 			$this->writer,
 			$this->sharer,
 			$this->previews,
-			$this->createMock(\OCA\Mcp\Tools\Talk\UserConversationResolver::class),
-			$this->createMock(\OCA\Mcp\Tools\Talk\GroupCreator::class),
-			$this->createMock(\OCA\Mcp\Tools\Talk\ReferenceLinker::class),
+			$this->createMock(\OCA\Mcp\Modules\Talk\Locating\UserConversationResolver::class),
+			$this->createMock(\OCA\Mcp\Modules\Talk\Groups\GroupCreator::class),
+			$this->createMock(\OCA\Mcp\Modules\Talk\ReferenceLinker::class),
 			$this->createMock(\Psr\Log\LoggerInterface::class),
 		);
 	}

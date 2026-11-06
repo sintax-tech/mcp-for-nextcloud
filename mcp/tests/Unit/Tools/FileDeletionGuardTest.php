@@ -21,7 +21,7 @@ final class FileDeletionGuardTest extends TestCase {
 	public static function nestedSources(): iterable {
 		yield 'handler' => ['Handler', 'Injected.php'];
 		yield 'sharing' => ['Sharing', 'Injected.php'];
-		yield 'nested FD-1-name collision' => ['Sharing', basename('/lib/Modules/Files/Handler/DeleteFileHandler.php')];
+		yield 'nested FD-1-name collision' => ['Sharing', basename('/lib/Modules/Files/Deletion/DeleteFileHandler.php')];
 		yield 'nested undo-name collision' => ['Handler', basename('/lib/Modules/Files/Reorganization.php')];
 	}
 

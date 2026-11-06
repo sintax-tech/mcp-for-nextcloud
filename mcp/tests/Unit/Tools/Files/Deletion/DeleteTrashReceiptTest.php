@@ -14,7 +14,7 @@ use OCA\Mcp\Modules\Files\Deletion\DeletePlanText;
 use OCA\Mcp\Modules\Files\Integration\DeleteTrashVeto;
 use OCA\Mcp\Modules\Files\Deletion\TrashReceiptMessages;
 use OCA\Mcp\Modules\Files\Integration\TrashReceiptVerifier;
-use OCA\Mcp\Modules\Files\Handler\DeleteFileHandler;
+use OCA\Mcp\Modules\Files\Deletion\DeleteFileHandler;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\File;

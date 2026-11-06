@@ -15,7 +15,7 @@ final class FilesDeletionControlsTest extends ArchitectureCase {
 	public function testFutureNestedSinksCopiesBackupCleanupAndNodeUnlinkFail(): void {
 		$root = sys_get_temp_dir() . '/mcp-re08-delete-' . bin2hex(random_bytes(6));
 		mkdir($root . '/Modules/Files/Sharing/deep', 0700, true);
-		$path = $root . '/Modules/Files/Sharing/deep/' . basename('/lib/Modules/Files/Handler/DeleteFileHandler.php');
+		$path = $root . '/Modules/Files/Sharing/deep/' . basename('/lib/Modules/Files/Deletion/DeleteFileHandler.php');
 		try {
 			foreach ([
 				['<?php function handle($node) { $node->delete(); }', 'node'],

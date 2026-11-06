@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 declare(strict_types=1);
-namespace OCA\Mcp\Modules\Files\Handler;
+namespace OCA\Mcp\Modules\Files\Deletion;
 
 use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Platform\FileAccess\PathGuard;

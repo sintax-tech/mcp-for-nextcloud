@@ -45,7 +45,7 @@ final class FilesCatalogWiring implements ContainerInterface {
 		'restoreVersion' => \OCA\Mcp\Modules\Files\Handler\RestoreVersionHandler::class,
 		'backupLocation' => \OCA\Mcp\Platform\Backups\BackupLocation::class,
 		'backupPlan' => \OCA\Mcp\Modules\Files\Backups\BackupPlan::class,
-		'deleteFile' => \OCA\Mcp\Modules\Files\Handler\DeleteFileHandler::class,
+		'deleteFile' => \OCA\Mcp\Modules\Files\Deletion\DeleteFileHandler::class,
 		'actorRoot' => \OCA\Mcp\Platform\FileAccess\ActorRoot::class,
 	];
 	private function __construct(private array $services) {
@@ -82,7 +82,7 @@ final class FilesCatalogWiring implements ContainerInterface {
 		?\OCA\Mcp\Modules\Files\Handler\RestoreVersionHandler $restoreVersion = null,
 		?\OCA\Mcp\Platform\Backups\BackupLocation $backupLocation = null,
 		?\OCA\Mcp\Modules\Files\Backups\BackupPlan $backupPlan = null,
-		?\OCA\Mcp\Modules\Files\Handler\DeleteFileHandler $deleteFile = null,
+		?\OCA\Mcp\Modules\Files\Deletion\DeleteFileHandler $deleteFile = null,
 		?\OCA\Mcp\Platform\FileAccess\ActorRoot $actorRoot = null
 	): FilesModule {
 		$values = get_defined_vars();

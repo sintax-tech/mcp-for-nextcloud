@@ -10,7 +10,7 @@ use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Modules\Files\Deletion\DeleteEligibility;
 use OCA\Mcp\Modules\Files\Integration\DeleteTrashVeto;
-use OCA\Mcp\Modules\Files\Handler\DeleteFileHandler;
+use OCA\Mcp\Modules\Files\Deletion\DeleteFileHandler;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Files\Folder;

@@ -11,7 +11,7 @@ use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Modules\Files\Deletion\DeleteEligibility;
 use OCA\Mcp\Modules\Files\Deletion\DeleteMessages;
 use OCA\Mcp\Modules\Files\Deletion\DeleteOutcome;
-use OCA\Mcp\Modules\Files\Handler\DeleteFileHandler;
+use OCA\Mcp\Modules\Files\Deletion\DeleteFileHandler;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 

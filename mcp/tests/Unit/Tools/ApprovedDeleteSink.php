@@ -15,7 +15,7 @@ final class ApprovedDeleteSink {
 	 * @return list<string> Sources still subject to the historical no-deletion guard.
 	 */
 	public static function remaining(array $files): array {
-		$approved = realpath(\OCA\Mcp\Tests\Architecture\Inventory\FilesSources::sink(dirname(__DIR__, 3), 'OCA\\Mcp\\Modules\\Files\\Handler\\DeleteFileHandler'));
+		$approved = realpath(\OCA\Mcp\Tests\Architecture\Inventory\FilesSources::sink(dirname(__DIR__, 3), 'OCA\\Mcp\\Modules\\Files\\Deletion\\DeleteFileHandler'));
 		return array_values(array_filter($files, static function (string $file) use ($approved): bool {
 			if ($approved === false || realpath($file) !== $approved) {
 				return true;

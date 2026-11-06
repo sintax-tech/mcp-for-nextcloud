@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files;
+namespace OCA\Mcp\Modules\Files\Images;
 
 use OCA\Mcp\Platform\Compat\AppEnablement;
 use OCP\App\IAppManager;
@@ -13,7 +13,7 @@ use OCP\App\IAppManager;
 /**
  * Knows whether the Workflow OCR app is on and what to tell the model about a PDF or image without text.
  *
- * Workflow OCR writes the recognised text into the PDF as a new version, so {@see TextExtractor} already
+ * Workflow OCR writes the recognised text into the PDF as a new version, so {@see \OCA\Mcp\Modules\Files\TextExtractor} already
  * reads the result; this class never calls the app, it only detects it and words the notice.
  */
 class OcrSupport {
@@ -43,6 +43,6 @@ class OcrSupport {
 
 	/** @return string notice for a file without text, depending on whether Workflow OCR is active */
 	public function noTextNotice(): string {
-		return $this->isActive() ? FilesMessages::noTextOcrActive() : FilesMessages::noTextOcrInactive();
+		return $this->isActive() ? \OCA\Mcp\Modules\Files\FilesMessages::noTextOcrActive() : \OCA\Mcp\Modules\Files\FilesMessages::noTextOcrInactive();
 	}
 }

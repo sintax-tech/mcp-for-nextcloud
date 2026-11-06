@@ -5,15 +5,15 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files\Handler;
+namespace OCA\Mcp\Modules\Files\Images;
 
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCA\Mcp\Modules\Files\FilesMessages;
-use OCA\Mcp\Modules\Files\ImageSearchMessages;
-use OCA\Mcp\Modules\Files\ImageTools;
+use OCA\Mcp\Modules\Files\Images\ImageSearchMessages;
+use OCA\Mcp\Modules\Files\Images\ImageTools;
 use OCA\Mcp\Modules\Files\NameSearchQuery;
 use OCA\Mcp\Modules\Files\SearchBinaryOperator;
 use OCA\Mcp\Modules\Files\SearchComparison;

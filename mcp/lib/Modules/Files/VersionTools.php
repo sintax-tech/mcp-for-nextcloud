@@ -44,7 +44,7 @@ final class VersionTools {
 		private FileBackup $backup,
 		private NodeAccessInfo $access,
 		private ContainerInterface $container,
-		private OcrSupport $ocr,
+		private Images\OcrSupport $ocr,
 		private ?LockAwareWrite $locks = null,
 		private ?\OCA\Mcp\Access\ResourceScope\FilesAccessGuard $visibilityGuard = null,
 		private ?VersionRestore $versionRestore = null,
@@ -105,7 +105,7 @@ final class VersionTools {
 		}
 		$mime = $version->getMimeType();
 		$name = $version->getSourceFileName() ?: $path;
-		$scannable = OcrSupport::canLackText($name, $mime);
+		$scannable = Images\OcrSupport::canLackText($name, $mime);
 		$text = $scannable && str_starts_with(strtolower($mime), 'image/') ? '' : $this->extractor->extractBytes($bytes, $name, $mime);
 		if ($scannable && trim($text) === '') {
 			$notice = $this->ocr->noTextNotice();

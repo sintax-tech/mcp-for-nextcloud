@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
-use OCA\Mcp\Modules\Files\Handler\ImageSearchHandler;
+use OCA\Mcp\Modules\Files\Images\ImageSearchHandler;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 use OCP\Files\Folder;

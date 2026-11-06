@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files;
+namespace OCA\Mcp\Modules\Files\Images;
 
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
@@ -111,10 +111,10 @@ final class ImageTools {
 	 */
 	public function viewMany(Folder $root, string $userId, ?array $paths, ?string $folder, int $limit, int $maxSize): array {
 		if ($paths === null && $folder === null) {
-			throw new ToolFailure(FilesMessages::imagesNoTarget());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\FilesMessages::imagesNoTarget());
 		}
 		if ($paths !== null && $folder !== null) {
-			throw new ToolFailure(FilesMessages::imagesConflict());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\FilesMessages::imagesConflict());
 		}
 		$selected = $paths !== null
 			? $this->selectPaths($root, $paths)
@@ -167,7 +167,7 @@ final class ImageTools {
 	 * @throws ToolFailure for an invalid folder or date
 	 */
 	public function search(Folder $root, string $userId, array $args): array {
-		return (new Handler\ImageSearchHandler($this->tagManager, $this->tagMapper, $this->userManager, $this->logger, $this->db, $this->searchEntry(...), $this->visibilityGuard))->execute($root, $userId, $args);
+		return (new ImageSearchHandler($this->tagManager, $this->tagMapper, $this->userManager, $this->logger, $this->db, $this->searchEntry(...), $this->visibilityGuard))->execute($root, $userId, $args);
 	}
 
 	/**
@@ -184,12 +184,12 @@ final class ImageTools {
 		$normalized = PathGuard::normalize($folder, 'folder');
 		$scope = NodeAccess::getBase($root, $normalized, $this->visibilityGuard);
 		if (!$scope instanceof Folder) {
-			throw new ToolFailure(FilesMessages::notAFolder());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\FilesMessages::notAFolder());
 		}
-		$operation = new SearchComparison('mimetype', ISearchComparison::COMPARE_LIKE, 'image/%');
-		$order = [new SearchOrder('mtime', ISearchOrder::DIRECTION_DESCENDING)];
+		$operation = new \OCA\Mcp\Modules\Files\SearchComparison('mimetype', ISearchComparison::COMPARE_LIKE, 'image/%');
+		$order = [new \OCA\Mcp\Modules\Files\SearchOrder('mtime', ISearchOrder::DIRECTION_DESCENDING)];
 		$user = $this->userManager->get($userId);
-		$search = new NameSearchQuery($operation, min($limit, self::BATCH_MAX_ITEMS), $user, $order);
+		$search = new \OCA\Mcp\Modules\Files\NameSearchQuery($operation, min($limit, self::BATCH_MAX_ITEMS), $user, $order);
 		$files = [];
 		foreach ($scope->search($search) as $node) {
 			if ($node instanceof File && $node->isReadable() && ($this->visibilityGuard === null || $this->visibilityGuard->isVisible($node))) {
@@ -213,11 +213,11 @@ final class ImageTools {
 			try {
 				$node = NodeAccess::get($root, $path, $this->visibilityGuard);
 				if (!$node instanceof File) {
-					$out[] = [$path, null, FilesMessages::notAnImage()];
+					$out[] = [$path, null, \OCA\Mcp\Modules\Files\FilesMessages::notAnImage()];
 					continue;
 				}
 				if (!self::looksLikeImage((string)$node->getMimetype())) {
-					$out[] = [$path, null, FilesMessages::notAnImage()];
+					$out[] = [$path, null, \OCA\Mcp\Modules\Files\FilesMessages::notAnImage()];
 					continue;
 				}
 				$out[] = [$path, $node, null];
@@ -265,9 +265,9 @@ final class ImageTools {
 			if ($size > 0 && $size <= $byteLimit) {
 				return [(string)$file->getContent(), $mime, $maxSize];
 			}
-			throw new ToolFailure(FilesMessages::imagePreviewTooLarge());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\FilesMessages::imagePreviewTooLarge());
 		}
-		throw new ToolFailure(FilesMessages::imageUnsupported());
+		throw new ToolFailure(\OCA\Mcp\Modules\Files\FilesMessages::imageUnsupported());
 	}
 
 	/**
@@ -420,10 +420,10 @@ final class ImageTools {
 	private function requireImage(Folder $root, string $path): File {
 		$node = NodeAccess::get($root, $path, $this->visibilityGuard);
 		if (!$node instanceof File) {
-			throw new ToolFailure(FilesMessages::notAnImage());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\FilesMessages::notAnImage());
 		}
 		if (!self::looksLikeImage((string)$node->getMimetype())) {
-			throw new ToolFailure(FilesMessages::notAnImage());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\FilesMessages::notAnImage());
 		}
 		return $node;
 	}

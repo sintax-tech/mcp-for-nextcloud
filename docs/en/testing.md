@@ -56,7 +56,7 @@ php -d memory_limit=1G scripts/dev/map_check.php
 
 The architecture suite covers catalog/delegation contracts, module/layer/native-app boundaries, DI cycles, missing ports, size ceilings, style and packaged asset boundaries. `map_check.php` validates the live FQCN map and size inventory. Neither is a substitute for running the actual tool.
 
-Keep [`boundary-exceptions.json`](../../mcp/tests/Architecture/boundary-exceptions.json), the size inventory and their baselines consistent with the move. Do not add broad exemptions or raise a retained ceiling to make a split pass. A structural dependency call found in tokens does not establish that an enclosed callback is reached.
+Keep the FQCN map and retained size ceilings consistent with the move. [`boundary-exceptions.json`](../../mcp/tests/Architecture/boundary-exceptions.json) has no live exceptions, and the size inventory has no transitional entries. Historical checker fixtures and frozen baselines are controls, not permission to restore an expired exception. Do not add broad exemptions or raise a retained ceiling to make a split pass. A structural dependency call found in tokens does not establish that an enclosed callback is reached.
 
 ## Move equivalence
 

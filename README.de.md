@@ -412,7 +412,7 @@ composer install
 vendor/bin/phpunit          # unit tests with OCP mocks, no Nextcloud needed
 ```
 
-Codeaufbau unter `mcp/`: `lib/Modules/<App>` (Capability-Module und Werkzeuge), `lib/Mcp` (Protokoll, Erkennung und Bestätigung), `lib/Access` (Berechtigungen, Sichtbarkeit und Bereiche), `lib/OAuth` (Authorization-Server), `lib/Platform` (gemeinsame Grundbausteine), dazu `lib/Controller`, Templates und Assets. Siehe die [Entwicklungsdokumentation auf Englisch](docs/en/architecture.md) und die ausführlichen technischen Notizen in [`mcp/README.md`](mcp/README.md).
+Codeaufbau unter `mcp/`: `lib/Modules/<App>` (Capability-Module und Werkzeuge), `lib/Mcp` (Protokoll, Erkennung und Bestätigung), `lib/Access` (Berechtigungen, Sichtbarkeit und Bereiche), `lib/OAuth` (Authorization-Server), `lib/Platform` (gemeinsame Grundbausteine), dazu `lib/Controller`, Templates und Assets. Siehe die [Entwicklungsdokumentation auf Englisch](docs/en/architecture.md) und die ausführlichen technischen Notizen in [`mcp/README.md`](mcp/README.md). Die Modulregistrierung verwendet `Application::MODULES`; jedes Modul führt seine Werkzeuge in `<App>ToolCatalog::TOOLS` auf.
 
 Der ursprüngliche Node.js-stdio-Prototyp (nur lesen) wurde entfernt; er bleibt in der Git-Geschichte bis zum Commit 27739f0 (Tag v0.11.0).
 

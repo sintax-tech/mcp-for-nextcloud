@@ -6,17 +6,17 @@
 
 Use the capability-module contract for new work. Start with the existing module when adding a tool to an app already supported. Read [Architecture](architecture.md) before selecting dependency boundaries.
 
-Use the linked catalog modules as examples; do not copy an old dispatcher or infer that every transitional implementation is the new contract.
+Use the linked catalog modules as examples; keep dispatch in the shared catalog base and business logic in focused work classes.
 
 ## Before adding a tool
 
 Define the user operation, its grant, optional native app, inputs, return shape and refusal cases first. A new feature needs explicit scope; a restructuring ticket must preserve the existing behavior. Published MCP tool names and persisted names must not be renamed as an incidental cleanup.
 
-Check [`GrantMatrix`](../../mcp/lib/Access/Grants/GrantMatrix.php), [`Application::MODULES`](../../mcp/lib/AppInfo/Application.php) and [`ToolDefinition`](../../mcp/lib/Mcp/Tools/ToolDefinition.php) instead of inventing an operation or registration API. A new grant or persisted key needs its own compatibility review and contract evidence.
+Check [`GrantCatalog`](../../mcp/lib/Access/Grants/GrantCatalog.php) for grant operations, [`GrantMatrix`](../../mcp/lib/Access/Grants/GrantMatrix.php) for module-to-native-app mapping, [`Application::MODULES`](../../mcp/lib/AppInfo/Application.php) and [`ToolDefinition`](../../mcp/lib/Mcp/Tools/ToolDefinition.php) instead of inventing an operation or registration API. A new grant or persisted key needs its own compatibility review and contract evidence.
 
 ## Module folder and catalog
 
-Create `mcp/lib/Modules/<App>/` with an `<App>Module` extending `CatalogModule`. Keep the module limited to delegation. `<App>ToolCatalog` is final, has a private constructor and publishes an ordered `public const TOOLS` containing the tool classes. The module's static `catalog()` returns that constant. Register a new module in the explicit ordered `Application::MODULES` list; append new tools to their existing catalog order.
+Create `mcp/lib/Modules/<App>/` with an `<App>Module` extending `CatalogModule`. Keep the module limited to delegation. `<App>ToolCatalog` is final, has a private constructor and publishes an ordered `public const TOOLS` containing the tool classes. The module's static `catalog()` returns that constant. Register a new module in the explicit ordered `Application::MODULES` list; append new tools to their existing catalog order. There is no second `Application::CATALOG` list to update. `GrantCatalog::CATALOG` is separate: it declares permission operations, not tool or module registration.
 
 Use [`NotesModule`](../../mcp/lib/Modules/Notes/NotesModule.php) and [`NotesToolCatalog`](../../mcp/lib/Modules/Notes/NotesToolCatalog.php) for the module/catalog shape. [`FilesModule`](../../mcp/lib/Modules/Files/FilesModule.php) shows a module without its own constructor. Inherit the base's call/preview dispatch and errors; do not override them with a second dispatcher. A catalog containing only read tools still uses the same base, which rejects previewing a read tool.
 

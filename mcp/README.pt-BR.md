@@ -720,7 +720,7 @@ vendor/bin/phpunit
 
 Os testes são unitários, com mocks das interfaces OCP (`nextcloud/ocp` stable33) e uma árvore de arquivos em memória (`tests/Unit/Tools/FakeTree.php`). Eles não substituem a instalação num Nextcloud real, que é o único lugar onde se verificam ACL de compartilhamento, criação de versão, lixeira e storages externos.
 
-A estrutura de módulos por capacidades separa `lib/Modules`, `lib/Mcp`, `lib/Access`, `lib/OAuth` e `lib/Platform`; controllers e infraestrutura do Nextcloud permanecem em `lib/`. Documentação de desenvolvimento no repositório (em inglês):
+A estrutura de módulos por capacidades separa `lib/Modules`, `lib/Mcp`, `lib/Access`, `lib/OAuth` e `lib/Platform`; controllers e infraestrutura do Nextcloud permanecem em `lib/`. O registro de módulos usa `Application::MODULES`; cada módulo lista suas ferramentas em `<App>ToolCatalog::TOOLS`. Documentação de desenvolvimento no repositório (em inglês):
 
 - [Arquitetura](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/docs/en/architecture.md)
 - [Como adicionar um módulo](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/docs/en/adding-a-module.md)

@@ -18,6 +18,8 @@ The repository root holds user READMEs, the CHANGELOG, legal documents and these
 - `lib/AppInfo/`, `Controller/`, `Db/`, `Migration/`, `Listener/`, `Middleware/` and `Settings/` retain Nextcloud bootstrap, HTTP, persistence and lifecycle responsibilities.
 - `templates/`, `src/`, `js/`, `css/`, `img/` and `l10n/` hold UI templates, authored assets, committed bundles, styles, images and translations.
 
+There is no `lib/Tools/` or `lib/Service/` compatibility tree. A module's own `Tools/` directory lives under `lib/Modules/<App>/`; shared protocol tools live under `lib/Mcp/Tools/`.
+
 This is an ownership map, not a rule that every directory must be nested in a module. Production dependencies are installed into the packaged `vendor/`; development dependencies, tests and these guides stay in the repository.
 
 ## Dependency boundaries
@@ -26,11 +28,11 @@ A module can use `Mcp`, `Access` and `Platform`; those layers must not depend on
 
 Within the shared layers, `Platform` is the lower boundary; `OAuth/Storage` can be used by `Access`, and the rest of `OAuth` can use `Access`. This storage exception does not permit a reverse dependency on the OAuth server. Constructor and registration graphs must remain acyclic.
 
-A module names another native app's PHP API only inside its own `Integration/` boundary. An app ID in an availability check is distinct from a PHP namespace dependency. Prefer a lower-layer interface to direct module-to-module coupling. The executable rules and any explicitly temporary exceptions live in [`tests/Architecture`](../../mcp/tests/Architecture), including `boundary-exceptions.json`; a temporary exception has an owner and an expiry, not an open-ended waiver.
+A module names another native app's PHP API only inside its own `Integration/` boundary. An app ID in an availability check is distinct from a PHP namespace dependency. Prefer a lower-layer interface to direct module-to-module coupling. The executable rules live in [`tests/Architecture`](../../mcp/tests/Architecture). Its `boundary-exceptions.json` has an empty exception list; new work must satisfy the boundaries rather than revive expired exceptions.
 
 ## Module and tool lifecycle
 
-[`Application::MODULES`](../../mcp/lib/AppInfo/Application.php) is the ordered module list. A catalog module extends [`CatalogModule`](../../mcp/lib/Mcp/Tools/CatalogModule.php) and returns its final, non-instantiable `<App>ToolCatalog::TOOLS` constant. The order is observable in `tools/list`; append a new tool instead of reordering existing tools.
+[`Application::MODULES`](../../mcp/lib/AppInfo/Application.php) is the sole ordered module list; there is no separate `Application::CATALOG` compatibility list. It registers Files, Notes, Calendar, Contacts, Tasks, Deck, Talk, People, Logs, Mail, Tables, Forms and Polls in that order. Every registered module extends [`CatalogModule`](../../mcp/lib/Mcp/Tools/CatalogModule.php) and returns its final, non-instantiable `<App>ToolCatalog::TOOLS` constant. The order is observable in `tools/list`; append a new tool instead of reordering existing tools.
 
 A tool publishes a static [`ToolDefinition`](../../mcp/lib/Mcp/Tools/ToolDefinition.php). Reading definitions does not instantiate its work classes or native app services. The base checks duplicate names and requires every writing definition to implement `WriteTool`. It resolves a tool lazily from the container when called or previewed and reuses it within the request. Unknown tools and previews of read tools use the base's canonical errors.
 
@@ -48,13 +50,15 @@ The registry adds confirmation metadata for non-read operations. Without confirm
 
 This does not promise that every preview has no platform effects. Files previews can use a lazy native root; a qualifying native NotFound can trigger actor setup and one retry. Mount setup can normalize received-share targets, and the lazy preview view can differ from the fully initialized confirmed-call view. Preserve these documented limits when splitting the workflow; see [`FilesPreviewContext`](../../mcp/lib/Modules/Files/FilesPreviewContext.php).
 
+Files work is grouped under `Reading/`, `Creation/`, `Editing/`, `Moving/`, `Sharing/`, `Images/`, `Backups/`, `Deletion/`, `Reorganization/` and `Checkout/`, with presentation in `Presentation/` and native boundaries in `Integration/`. For example, [`VersionStream`](../../mcp/lib/Modules/Files/Integration/VersionStream.php) owns the native version stream, while [`CheckoutWriter`](../../mcp/lib/Modules/Files/Checkout/CheckoutWriter.php) owns checkout writes and [`Reorganization`](../../mcp/lib/Modules/Files/Reorganization/Reorganization.php) delegates folder and move work.
+
 ## Assets and packaging boundaries
 
 Authored JavaScript is under `mcp/src/`; [`build_assets.php`](../../mcp/scripts/build_assets.php) builds committed bundles according to the asset manifests. The production archive contains generated runtime assets, not the authored sources or development harness. The repository's guides are not copied into the archive. [Packaging](packaging.md) explains the checks and the distinction between building and publishing.
 
-## Legacy size policy
+## Source size policy
 
-New source files must fit the default size limit enforced by [`FileSizeTest`](../../mcp/tests/Architecture/FileSizeTest.php). [`size-inventory.json`](../../mcp/scripts/dev/size-inventory.json) records the retained final exceptions and the transitional entries that must disappear with their owning restructuring steps. Existing ceilings cannot rise and transitional files cannot grow. The structure does not imply that all retained files are below the default limit.
+New source files must fit the default size limit enforced by [`FileSizeTest`](../../mcp/tests/Architecture/FileSizeTest.php). [`size-inventory.json`](../../mcp/scripts/dev/size-inventory.json) records the retained final exceptions; its transitional list is empty. The final exceptions retain their frozen ceilings, which cannot rise. Some entries use historical FQCN identities resolved through the move map; they do not imply a live legacy namespace or compatibility alias. An empty transitional list does not mean that all retained files are below the default limit.
 
 ## Compatibility and limitations
 

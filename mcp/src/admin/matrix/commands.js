@@ -25,8 +25,9 @@
 		 * @return {{changes: Array<{operation: string, granted: boolean, previous: Map<string, boolean>}>, users: number, unavailable: number, unchanged: number}}
 		 */
 		function bulkPlan(module, operationList, granted, uids = null) {
-			const target = (operation) => typeof granted === 'boolean' ? granted : granted[operation] === true
-			const changes = operationList.map((operation) => ({ operation, granted: target(operation), previous: new Map() }))
+			const target = (operation) => typeof granted === 'boolean' ? granted : granted[operation]
+			const changes = operationList.filter(operation => target(operation) !== undefined)
+				.map((operation) => ({ operation, granted: target(operation), previous: new Map() }))
 			let users = 0
 			let unavailable = 0
 			let unchanged = 0
@@ -34,7 +35,7 @@
 				if (uids !== null && !uids.includes(user.uid)) {
 					continue
 				}
-				if (context.unavailableReason(user, module) !== null || operationList.some((operation) =>
+				if (context.unavailableReason(user, module) !== null || changes.some(({ operation }) =>
 					(module === null ? user.eligible : user.grants[module][operation]) === null)) {
 					unavailable++
 					continue
@@ -88,8 +89,8 @@
 				return
 			}
 			const operationList = module === null ? ['eligible'] : context.state.data.catalog[module]
-			const allowed = module === null ? (level === 'read' ? ['eligible'] : []) : window.OCA.Mcp.Admin.levels.operationsFor(module, operationList, level)
-			const plan = context.bulkPlan(module, operationList, Object.fromEntries(operationList.map((operation) => [operation, allowed.includes(operation)])), uids)
+			const target = module === null ? { eligible: level === 'read' } : window.OCA.Mcp.Admin.levels.targetFor(module, operationList, level)
+			const plan = context.bulkPlan(module, operationList, target, uids)
 			const levelName = module === null ? (level === 'read' ? t('mcp', 'Yes') : t('mcp', 'No')) : context.levelLabels()[level] || level
 			const vars = { permission: module === null ? t('mcp', 'Can connect') : context.moduleLabels()[module] || module, level: levelName }
 			const lines = []

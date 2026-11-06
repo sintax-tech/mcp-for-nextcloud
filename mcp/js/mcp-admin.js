@@ -984,6 +984,20 @@
 	}
 
 	/**
+	 * A preset changes only operations represented by its tiers; None explicitly clears the whole catalog.
+	 * @param {string} module catalog module id
+	 * @param {string[]} operations catalog operations
+	 * @param {string} level existing preset id
+	 * @return {Object<string, boolean>} omitted operations keep their stored values
+	 */
+	function targetFor(module, operations, level) {
+		const allowed = operationsFor(module, operations, level)
+		const tiered = new Set(tiers(module, operations).flatMap(tier => tier.operations))
+		return Object.fromEntries(operations.filter(operation => level === 'none' || tiered.has(operation))
+			.map(operation => [operation, allowed.includes(operation)]))
+	}
+
+	/**
 	 * The level a user has in a module, from the effective value of each operation.
 	 *
 	 * @param {string} module module id
@@ -1024,7 +1038,7 @@
 		return { source: 'default', groupIds: [] }
 	}
 
-	root.OCA.Mcp.Admin.levels = { TIERS, MODULE_TIER_NAMES, tierNames, tiers, levels, operationsFor, levelOf, originOf }
+	root.OCA.Mcp.Admin.levels = { TIERS, MODULE_TIER_NAMES, tierNames, tiers, levels, operationsFor, targetFor, levelOf, originOf }
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
 /* admin/matrix/session.js */
@@ -2664,8 +2678,9 @@
 		 * @return {{changes: Array<{operation: string, granted: boolean, previous: Map<string, boolean>}>, users: number, unavailable: number, unchanged: number}}
 		 */
 		function bulkPlan(module, operationList, granted, uids = null) {
-			const target = (operation) => typeof granted === 'boolean' ? granted : granted[operation] === true
-			const changes = operationList.map((operation) => ({ operation, granted: target(operation), previous: new Map() }))
+			const target = (operation) => typeof granted === 'boolean' ? granted : granted[operation]
+			const changes = operationList.filter(operation => target(operation) !== undefined)
+				.map((operation) => ({ operation, granted: target(operation), previous: new Map() }))
 			let users = 0
 			let unavailable = 0
 			let unchanged = 0
@@ -2673,7 +2688,7 @@
 				if (uids !== null && !uids.includes(user.uid)) {
 					continue
 				}
-				if (context.unavailableReason(user, module) !== null || operationList.some((operation) =>
+				if (context.unavailableReason(user, module) !== null || changes.some(({ operation }) =>
 					(module === null ? user.eligible : user.grants[module][operation]) === null)) {
 					unavailable++
 					continue
@@ -2727,8 +2742,8 @@
 				return
 			}
 			const operationList = module === null ? ['eligible'] : context.state.data.catalog[module]
-			const allowed = module === null ? (level === 'read' ? ['eligible'] : []) : window.OCA.Mcp.Admin.levels.operationsFor(module, operationList, level)
-			const plan = context.bulkPlan(module, operationList, Object.fromEntries(operationList.map((operation) => [operation, allowed.includes(operation)])), uids)
+			const target = module === null ? { eligible: level === 'read' } : window.OCA.Mcp.Admin.levels.targetFor(module, operationList, level)
+			const plan = context.bulkPlan(module, operationList, target, uids)
 			const levelName = module === null ? (level === 'read' ? t('mcp', 'Yes') : t('mcp', 'No')) : context.levelLabels()[level] || level
 			const vars = { permission: module === null ? t('mcp', 'Can connect') : context.moduleLabels()[module] || module, level: levelName }
 			const lines = []
@@ -4189,8 +4204,7 @@
 		 */
 		function planLevel(user, module, level, inherited) {
 			const operations = context.operationsOf(module)
-			const allowed = context.levels.operationsFor(module, operations, level)
-			return context.planTarget(user, module, Object.fromEntries(operations.map((operation) => [operation, allowed.includes(operation)])), inherited)
+			return context.planTarget(user, module, context.levels.targetFor(module, operations, level), inherited)
 		}
 
 		/** Plan removal of the cell's individual values so its inheritance applies.
@@ -6794,6 +6808,17 @@
 			}
 			return lines
 		}
+		/** Apply a preset while preserving operations outside all of its tiers, except when clearing with None.
+		 * @param {string} module catalog module ID
+		 * @param {string} level requested preset
+		 * @param {string} focusKey editor control to focus after redraw
+		 * @return {void}
+		 */
+		function setLevel(module, level, focusKey) {
+			const operations = context.current.catalog[module]
+			const target = window.OCA.Mcp.Admin.levels.targetFor(module, operations, level)
+			context.setOperations(module, operations.filter(operation => target[operation] ?? operationsIn(context.draft, module).includes(operation)), focusKey)
+		}
 		/** Replace a module's draft operations, invalidate its preview and redraw the editor.
 		 * @param {string} module catalog module ID
 		 * @param {string[]} operations catalog operation IDs
@@ -6853,7 +6878,7 @@
 			modules: { configurable: true, get: () => modules },
 		})
 
-		Object.assign(context, { changes, defaultLevel, levelButton, levelIn, levelName, levelText, setOperations, viewInMatrix })
+		Object.assign(context, { changes, defaultLevel, levelButton, levelIn, levelName, levelText, setLevel, setOperations, viewInMatrix })
 	}
 })((globalThis.window || globalThis).OCA.Mcp.Admin)
 ;
@@ -6940,7 +6965,7 @@
 					}))
 				} else {
 					control = context.el('span', { className: 'mcp-group-levels' }, window.OCA.Mcp.Admin.levels.levels(module, operations).map((choice) => keyed('level:' + module + ':' + choice,
-						context.levelButton(module, choice, choice === level, () => context.setOperations(module, window.OCA.Mcp.Admin.levels.operationsFor(module, operations, choice), 'level:' + module + ':' + choice)))))
+						context.levelButton(module, choice, choice === level, () => context.setLevel(module, choice, 'level:' + module + ':' + choice)))))
 				}
 				control.setAttribute('role', 'group')
 				control.setAttribute('aria-labelledby', 'mcp-group-module-' + module)

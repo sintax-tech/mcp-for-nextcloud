@@ -80,7 +80,7 @@
 					}))
 				} else {
 					control = context.el('span', { className: 'mcp-group-levels' }, window.OCA.Mcp.Admin.levels.levels(module, operations).map((choice) => keyed('level:' + module + ':' + choice,
-						context.levelButton(module, choice, choice === level, () => context.setOperations(module, window.OCA.Mcp.Admin.levels.operationsFor(module, operations, choice), 'level:' + module + ':' + choice)))))
+						context.levelButton(module, choice, choice === level, () => context.setLevel(module, choice, 'level:' + module + ':' + choice)))))
 				}
 				control.setAttribute('role', 'group')
 				control.setAttribute('aria-labelledby', 'mcp-group-module-' + module)

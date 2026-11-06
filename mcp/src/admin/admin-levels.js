@@ -94,6 +94,20 @@
 	}
 
 	/**
+	 * A preset changes only operations represented by its tiers; None explicitly clears the whole catalog.
+	 * @param {string} module catalog module id
+	 * @param {string[]} operations catalog operations
+	 * @param {string} level existing preset id
+	 * @return {Object<string, boolean>} omitted operations keep their stored values
+	 */
+	function targetFor(module, operations, level) {
+		const allowed = operationsFor(module, operations, level)
+		const tiered = new Set(tiers(module, operations).flatMap(tier => tier.operations))
+		return Object.fromEntries(operations.filter(operation => level === 'none' || tiered.has(operation))
+			.map(operation => [operation, allowed.includes(operation)]))
+	}
+
+	/**
 	 * The level a user has in a module, from the effective value of each operation.
 	 *
 	 * @param {string} module module id
@@ -134,5 +148,5 @@
 		return { source: 'default', groupIds: [] }
 	}
 
-	root.OCA.Mcp.Admin.levels = { TIERS, MODULE_TIER_NAMES, tierNames, tiers, levels, operationsFor, levelOf, originOf }
+	root.OCA.Mcp.Admin.levels = { TIERS, MODULE_TIER_NAMES, tierNames, tiers, levels, operationsFor, targetFor, levelOf, originOf }
 })(typeof window !== 'undefined' ? window : globalThis)

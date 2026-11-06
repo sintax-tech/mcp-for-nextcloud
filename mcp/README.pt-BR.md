@@ -719,5 +719,6 @@ Smalot PdfParser, Symfony Polyfill Mbstring and the Composer autoloader are bund
 
 Developed by [Sintax](https://sintax.tech) · sintax.tech. Contact: contato@sintax.tech.
 
+## OAuth
 
 Remover um host de **Hosts de clientes permitidos** também revoga as páginas de consentimento pendentes, os códigos de autorização e os tokens de acesso e renovação desse host. Recolocá-lo exige uma nova autorização; credenciais antigas continuam revogadas. Isso não muda os hosts padrão nem comprova compatibilidade com o Zapia.

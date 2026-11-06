@@ -264,6 +264,8 @@ Adicione um cliente por harness: cada um tem nome, redirect URIs, opção **Ativ
 
 O redirect URI precisa casar caractere por caractere com um dos URIs daquele cliente — outro caminho, query, **porta** (também em `127.0.0.1`, `localhost` e `[::1]`: cadastre `http://127.0.0.1:8080/cb` e só a porta 8080 retorna) ou barra final, ou o URI de outro cliente, é recusado antes da tela de login. Desmarcar **Ativado**, excluir o cliente ou remover um dos URIs dele revoga todas as conexões, códigos e tokens de renovação desse cliente, e só dele (os outros clientes das mesmas pessoas continuam conectados): a alteração e a exclusão são um passo único, tudo ou nada, então, se o servidor não conseguir excluir, a alteração também não é salva. Uma tela de consentimento que já estava aberta, uma troca de código ou uma renovação que começou antes da alteração nunca é concluída depois dela, e um cliente ativado de novo, ou um URI adicionado de volta, não traz de volta uma conexão antiga nem uma tela de consentimento antiga: conecte de novo. Renomear, adicionar um URI ou ativar não desconecta ninguém. Um salvamento feito de uma tela desatualizada (outra janela ou outro administrador salvou antes) é recusado e a tela recarrega, então ele nunca reativa um cliente nem recoloca um URI removido. O `client_id` não concede nada sozinho: o login, a elegibilidade, a conexão pessoal, as liberações do administrador, o consentimento e o PKCE continuam valendo.
 
+Remover um host de **Hosts de clientes permitidos** também revoga as páginas de consentimento pendentes, os códigos de autorização e os tokens de acesso e renovação desse host. Recolocá-lo exige uma nova autorização; credenciais antigas continuam revogadas. Isso não muda os hosts padrão nem comprova compatibilidade com o Zapia.
+
 ### Administradores: Clientes OAuth
 
 *Configurações de administração → MCP for Cloud → Clientes OAuth* decide quais clientes podem conectar, sem nenhum passo no terminal:
@@ -423,6 +425,3 @@ Desenvolvido pela [Sintax](https://sintax.tech) · sintax.tech.
 - GitHub: https://github.com/sintax-tech
 - Contato: contato@sintax.tech
 - Outros apps da Sintax para Nextcloud: [MCP for Cloud](https://apps.nextcloud.com/apps/mcp) · [Audiolog](https://apps.nextcloud.com/apps/audiolog)
-
-
-Remover um host de **Hosts de clientes permitidos** também revoga as páginas de consentimento pendentes, os códigos de autorização e os tokens de acesso e renovação desse host. Recolocá-lo exige uma nova autorização; credenciais antigas continuam revogadas. Isso não muda os hosts padrão nem comprova compatibilidade com o Zapia.

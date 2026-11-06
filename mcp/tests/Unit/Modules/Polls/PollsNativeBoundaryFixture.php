@@ -29,6 +29,8 @@ namespace OCA\Polls {
 	final class AppConstants { public const APP_ID = 'polls'; }
 	/** Same-object native identity used by the actual production session guard. */
 	class UserSession {
+		/** Number of native cache cleanups. */
+		public int $cleans = 0;
 		/** @param \OCA\Polls\Model\UserBase $user Authenticated actor. */
 		public function __construct(private \OCA\Polls\Model\UserBase $user) {}
 		/** @return string Actor. */
@@ -40,7 +42,7 @@ namespace OCA\Polls {
 		/** @return string No public-token session. */
 		public function getShareToken(): string { return ''; }
 		/** @return void No cached state in this fixture. */
-		public function cleanSession(): void {}
+		public function cleanSession(): void { $this->cleans++; }
 	}
 }
 namespace OCA\Polls\Db {

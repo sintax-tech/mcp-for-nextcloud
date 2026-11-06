@@ -271,20 +271,27 @@ final class BackupOperationsTest extends FilesToolsTestCase {
 			return $copy;
 		});
 		$access = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo($this->users, $this->tree->shareManager());
-		$unused = static fn () => throw new \LogicException('Unexpected callback');
-		$handler = new \OCA\Mcp\Modules\Files\Checkout\CheckoutWriter($this->visibilityRoot(), null, $backup,
-			new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access), $access, new \Psr\Log\NullLogger(), null, null, null, null, \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this),
-			$unused, $unused, $unused, static fn () => false, $unused, $unused,
-			static fn (int $status, string $message) => new \OCP\AppFramework\Http\JSONResponse(['error' => $message], $status), $unused);
+		$logger = new \Psr\Log\NullLogger();
+		$root = $this->visibilityRoot();
+		$tokens = new \OCA\Mcp\Tests\Unit\Checkout\InMemoryCheckoutTokenStore();
+		$session = $this->createMock(\OCP\IUserSession::class);
+		$refusals = new \OCA\Mcp\Modules\Files\Checkout\CheckoutRefusals($logger);
+		$language = new \OCA\Mcp\Modules\Files\Checkout\CheckoutLanguage($tokens,
+			new \OCA\Mcp\OAuth\Storage\TokenHasher($this->config->mock($this)), $session);
+		$policy = new \OCA\Mcp\Modules\Files\Checkout\CheckoutPolicy($refusals, $tokens, $this->sharePolicy, $session, $this->time);
+		$resolver = new \OCA\Mcp\Modules\Files\Checkout\CheckoutResolver($policy, $language, $refusals, $root);
+		$handler = new \OCA\Mcp\Modules\Files\Checkout\CheckoutWriter($resolver, $policy, $language, $refusals, $root, $backup,
+			new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access), $access, $logger,
+			fileTypes: \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this));
 		$row = new \OCA\Mcp\Modules\Files\Checkout\CheckoutToken(1, 'upload', 'alice', $file->getId(), '/Documentos/ata.md', $file->getEtag(), 'personal', true, PHP_INT_MAX, true);
 		$response = $handler->write($row, $file, '/body-must-not-be-read');
 		self::assertSame(400, $response->getStatus());
-		self::assertSame(['error' => \OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath() . ' ' . \OCA\Mcp\Modules\Files\Presentation\EditingMessages::originalKept($copy)], $response->getData());
+		self::assertSame(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath() . ' ' . \OCA\Mcp\Modules\Files\Presentation\EditingMessages::originalKept($copy), $response->getData());
 		self::assertSame($before, $file->getContent());
 		if ($createCopy) {
 			self::assertNotSame('', $copy);
 			self::assertSame($before, $this->tree->rootFolder()->get($copy)->getContent());
-			self::assertSame(1, substr_count($response->getData()['error'], $copy));
+			self::assertSame(1, substr_count($response->getData(), $copy));
 		} else {
 			self::assertSame('', $copy);
 			self::assertFalse($this->tree->rootFolder()->nodeExists('.mcp-backups'));

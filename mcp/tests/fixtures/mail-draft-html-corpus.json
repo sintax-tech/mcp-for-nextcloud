@@ -87,7 +87,7 @@
     {
         "name": "url-no-semicolon",
         "input": "<p><a href=\"jav&#x61script:x()\">ok</a></p>",
-        "body": "<p>ok</p>"
+        "refused": true
     },
     {
         "name": "url-double-entity",

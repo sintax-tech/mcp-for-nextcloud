@@ -48,7 +48,11 @@ final class MailDraftHtmlTest extends TestCase {
 		if (isset($row['body'])) {
 			$this->assertSame($row['body'], $result['body']);
 		}
-		$this->assertDoesNotMatchRegularExpression('/<(?:script|style|svg|math|form|img|iframe)\b|\s(?:on\w+|style|src|srcset)=/i', $result['body']);
+		$document = new \DOMDocument();
+		$document->loadHTML('<?xml encoding="UTF-8"><body>' . $result['body'] . '</body>');
+		$xpath = new \DOMXPath($document);
+		$this->assertSame(0, $xpath->query('//script|//style|//svg|//math|//form|//img|//iframe')->length);
+		$this->assertSame(0, $xpath->query('//@*[starts-with(name(),"on") or name()="style" or name()="src" or name()="srcset"]')->length);
 		$this->assertSame($result['body'], (new MailDraftHtml($engine))->sanitize($result['body'])['body']);
 	}
 
@@ -103,4 +107,13 @@ final class MailDraftHtmlTest extends TestCase {
 			}
 		}
 	}
+	/** @return void */
+	#[RunInSeparateProcess]
+	public function testRealAdapterRefusesAnAbsentLibrary(): void {
+		$this->assertFalse(class_exists('HTMLPurifier', false));
+		$this->expectException(ToolFailure::class);
+		$this->expectExceptionMessage(MailDraftMessages::htmlEngineMissing());
+		(new MailDraftHtmlEngine())->purify('<p>ok</p>');
+	}
+
 }

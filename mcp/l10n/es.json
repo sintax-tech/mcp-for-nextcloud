@@ -1742,6 +1742,21 @@
     "Delete file or folder" : "Eliminar archivo o carpeta",
     "Inspected tree: %s files, %s folders (including the source), %s bytes." : "Árbol inspeccionado: %s archivos, %s carpetas (incluida la de origen), %s bytes.",
     "Deletion supports files and completely inspected folders in Local personal home storage, including shared originals and descendants of local received shares with native DELETE permission. Shared impact requires confirm_shared. Received share roots, other mounts, personal and selected scope roots, and current or historical backup folders are refused. Folders are refused while exclusion tags are configured. Folder limits are 2,000 nodes, 1 GiB and 64 levels." : "La eliminación admite archivos y carpetas completamente inspeccionadas en almacenamiento personal Local, incluidos originales compartidos y descendientes de recursos locales recibidos con permiso DELETE nativo. El impacto compartido exige confirm_shared. Se rechazan raíces recibidas, otros montajes, raíces personales y de ámbito seleccionado y copias actuales o históricas. Se rechazan carpetas mientras haya etiquetas de exclusión configuradas. Límites: 2.000 nodos, 1 GiB y 64 niveles.",
-    "This deletion affects shared content. Ask for explicit confirmation and retry with confirm_shared: true. Other people may lose access. Native recovery is not guaranteed for either person." : "Esta eliminación afecta contenido compartido. Pida confirmación explícita y repita con confirm_shared: true. Otras personas pueden perder acceso. No se garantiza recuperación nativa para ninguna de ellas."
+    "This deletion affects shared content. Ask for explicit confirmation and retry with confirm_shared: true. Other people may lose access. Native recovery is not guaranteed for either person." : "Esta eliminación afecta contenido compartido. Pida confirmación explícita y repita con confirm_shared: true. Otras personas pueden perder acceso. No se garantiza recuperación nativa para ninguna de ellas.",
+    "The Mail HTML sanitizer is unavailable; the HTML draft was not saved. Ask an administrator to check the installed Mail app." : "El saneador HTML de Mail no está disponible; el borrador HTML no se guardó. Pide a un administrador que revise la aplicación Mail instalada.",
+    "The HTML draft could not be safely parsed and sanitized; nothing was saved." : "No se pudo interpretar y sanear el borrador HTML de forma segura; no se guardó nada.",
+    "The sanitized HTML exceeds 50,000 characters; nothing was saved." : "El HTML saneado supera los 50.000 caracteres; no se guardó nada.",
+    "The HTML contains no readable content after sanitization; nothing was saved." : "El HTML no contiene contenido legible después del saneamiento; no se guardó nada.",
+    "Removed content will not be saved. Review the complete sanitized HTML, preview and destinations." : "El contenido eliminado no se guardará. Revisa el HTML saneado completo, la vista previa y los destinos.",
+    "The document structure was normalized; no content was removed." : "La estructura del documento se normalizó; no se eliminó contenido.",
+    "No content was removed by sanitization." : "No se eliminó contenido durante el saneamiento.",
+    "Mail generates the MIME plain text alternative from this HTML with Horde; it may differ from this preview." : "Mail genera la alternativa MIME de texto a partir de este HTML con Horde; puede diferir de esta vista previa.",
+    "The account signature was not added to this draft." : "No se añadió la firma de la cuenta a este borrador.",
+    "Sanitized HTML: %s" : "HTML saneado: %s",
+    "Text preview: %s" : "Vista previa de texto: %s",
+    "Removal counts: %s" : "Recuento de eliminaciones: %s",
+    "Link text and destination: %s" : "Texto y destino del enlace: %s",
+    "Removed destination: %s" : "Destino eliminado: %s",
+    "Sizes in characters (input, saved, preview): %s" : "Tamaños en caracteres (entrada, guardado, vista previa): %s"
     },"pluralForm" : "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

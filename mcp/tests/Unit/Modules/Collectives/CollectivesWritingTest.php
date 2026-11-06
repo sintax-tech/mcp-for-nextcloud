@@ -181,6 +181,31 @@ final class CollectivesWritingTest extends TestCase {
 		$this->assertCount(1, CollectivesScene::$tree->ops);
 	}
 
+	/** @return void membership revoked during the attempt: every receipt is uncertain and shows nothing read after it */
+	public function testRevocationDuringTheAttemptGivesAnUncertainReceiptWithoutSnapshot(): void {
+		$revoke = static function (): void {
+			CollectivesScene::$collectives[7]['members'] = [];
+		};
+		$guide = CollectivesScene::$ids['Guide.md'];
+		$cases = [
+			['collectives_create', ['collective_id' => 7, 'parent_id' => $guide, 'title' => 'Late']],
+			['collectives_move', ['collective_id' => 7, 'page_id' => $guide, 'parent_id' => CollectivesScene::$ids['Team/Readme.md']]],
+			['collectives_edit', ['collective_id' => 7, 'page_id' => CollectivesScene::$ids['Team/Onboarding.md'], 'append' => 'Late']],
+		];
+		foreach ($cases as [$tool, $args]) {
+			CollectivesScene::$collectives[7]['members'] = ['alice'];
+			$plan = $this->plan($tool, $args);
+			CollectivesScene::$afterNative = $revoke;
+			CollectivesScene::$tree->afterWrite = static fn () => $revoke();
+			$receipt = $this->confirm($tool, $args + ['plan_state' => $plan['plan_state']] + (isset($plan['etag']) ? ['etag' => $plan['etag']] : []));
+			$this->assertSame('uncertain', $receipt['status'], $tool);
+			$this->assertArrayNotHasKey('observed', $receipt, $tool);
+			$this->assertArrayNotHasKey('page', $receipt, $tool);
+			CollectivesScene::$afterNative = null;
+			CollectivesScene::$tree->afterWrite = null;
+		}
+	}
+
 	/** @return void the same content is no change: nothing is attempted */
 	public function testNoChangeIsNotAttempted(): void {
 		$guide = CollectivesScene::$ids['Guide.md'];

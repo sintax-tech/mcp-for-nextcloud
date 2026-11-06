@@ -28,6 +28,20 @@ final class CardStatusPersistenceTest extends IntegrationTestCase {
 		return $this->data($client->write($tool, $args + ['plan_state' => $plan['plan_state'], 'confirm_shared' => true]));
 	}
 
+	/** @param string $actor Writer. @param string $reader Other board member. @param int $card Native ID. @param string $subject Exact native contract. @param array $before Earlier stream. @return array New stream. */
+	private function activity(string $actor, string $reader, int $card, string $subject, array $before): array {
+		$rows = FunctionalDeckScene::run($reader, 'activity', ['card' => $card])['rows'];
+		$last = $before === [] ? 0 : $before[array_key_last($before)]['activity_id'];
+		$added = array_values(array_filter($rows, static fn (array $row): bool => $row['activity_id'] > $last));
+		self::assertCount(1, $added, json_encode($rows, JSON_THROW_ON_ERROR));
+		self::assertSame($subject, $added[0]['subject']);
+		self::assertSame($actor, $added[0]['user']);
+		self::assertSame($reader, $added[0]['affecteduser']);
+		self::assertSame('deck_card', $added[0]['object_type']);
+		self::assertSame($card, $added[0]['object_id']);
+		return $rows;
+	}
+
 	/** Both actors/timezones persist the native instant, native destination and unchanged completion across archive. */
 	public function testStatusSettersPersistNativeUtcAndPreserveOtherFields(): void {
 		$scene = new FunctionalDeckScene();
@@ -37,6 +51,8 @@ final class CardStatusPersistenceTest extends IntegrationTestCase {
 			foreach ([[$a, 'America/Sao_Paulo', $f['card']], [$b, 'Asia/Tokyo', $f['nativeCard']]] as [$uid, $zone, $card]) {
 				Server::get(IConfig::class)->setUserValue($uid, 'core', 'timezone', $zone);
 				$client = new McpClient(LoginFactory::bearer($uid));
+				$reader = $uid === $a ? $b : $a;
+				$activities = FunctionalDeckScene::run($reader, 'activity', ['card' => $card])['rows'];
 				$before = FunctionalDeckScene::run($uid, 'read', ['card' => $card]);
 				$preview = $this->data($client->tool('deck_set_card_done', ['cardId' => $card, 'done' => true]));
 				self::assertTrue($preview['requiresConfirmation']);
@@ -45,6 +61,7 @@ final class CardStatusPersistenceTest extends IntegrationTestCase {
 				self::assertFalse($missing->ok(), 'A bare confirmation must not write');
 				$written = $this->write($client, 'deck_set_card_done', ['cardId' => $card, 'done' => true]);
 				self::assertTrue($written['confirmed']); self::assertTrue($written['changed']);
+				$activities = $this->activity($uid, $reader, $card, 'card_update_done', $activities);
 				$native = FunctionalDeckScene::run($uid, 'read', ['card' => $card]);
 				self::assertSame('UTC', $native['timezone']);
 				self::assertGreaterThanOrEqual($before['clock'], $native['done']);
@@ -55,15 +72,20 @@ final class CardStatusPersistenceTest extends IntegrationTestCase {
 				self::assertSame($before['duedate'], $native['duedate']);
 				$noop = $this->write($client, 'deck_set_card_done', ['cardId' => $card, 'done' => true]);
 				self::assertFalse($noop['changed']); self::assertSame($native['raw'], FunctionalDeckScene::run($uid, 'read', ['card' => $card])['raw']);
+				self::assertSame($activities, FunctionalDeckScene::run($reader, 'activity', ['card' => $card])['rows']);
 				$archived = $this->write($client, 'deck_set_card_archived', ['cardId' => $card, 'archived' => true]);
 				self::assertTrue($archived['archived']); self::assertSame($native['done'], $archived['done']);
+				$activities = $this->activity($uid, $reader, $card, 'card_update_archive', $activities);
 				self::assertFalse($client->tool('deck_set_card_done', ['cardId' => $card, 'done' => false])->ok());
 				$unarchived = $this->write($client, 'deck_set_card_archived', ['cardId' => $card, 'archived' => false]);
 				self::assertFalse($unarchived['archived']); self::assertSame($native['done'], $unarchived['done']);
+				$activities = $this->activity($uid, $reader, $card, 'card_update_unarchive', $activities);
 				$reopened = $this->write($client, 'deck_set_card_done', ['cardId' => $card, 'done' => false]);
 				self::assertNull($reopened['done']); self::assertSame($written['stackId'], $reopened['stackId']);
+				$activities = $this->activity($uid, $reader, $card, 'card_update_undone', $activities);
 				self::assertNull(FunctionalDeckScene::run($uid, 'read', ['card' => $card])['raw']['done']);
 				file_put_contents('/tmp/mcp-it-observations.txt', json_encode(['issue27' => 'UTC and native states persisted',
+					'activitySubjects' => array_column($activities, 'subject'),
 					'zone' => $zone, 'done' => $native['done'], 'rawDone' => $native['raw']['done'],
 					'clockWindow' => [$before['clock'], $native['clock']], 'nativeAutoMove' => $column['supported']], JSON_THROW_ON_ERROR) . "\n", FILE_APPEND);
 			}

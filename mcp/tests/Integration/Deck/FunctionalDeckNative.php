@@ -21,6 +21,7 @@ final class FunctionalDeckNative {
 	 * @return array<string,mixed> Persisted observations or native IDs.
 	 */
 	public static function run(string $uid, string $action, array $in): array {
+		if ($action === 'activity') { return CardActivityProbe::read($uid, (int)$in['card']); }
 		$cards = Server::get(CardService::class);
 		$boards = Server::get(BoardService::class);
 		$stacks = Server::get(StackService::class);

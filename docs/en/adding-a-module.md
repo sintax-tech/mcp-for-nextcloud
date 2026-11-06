@@ -6,7 +6,7 @@
 
 Use the capability-module contract for new work. Start with the existing module when adding a tool to an app already supported. Read [Architecture](architecture.md) before selecting dependency boundaries.
 
-**Before the 1.3.0 release:** recheck this recipe against the final Files splits and legacy removal. Use the linked catalog modules as examples; do not copy an old dispatcher or infer that every transitional implementation is the new contract.
+Use the linked catalog modules as examples; do not copy an old dispatcher or infer that every transitional implementation is the new contract.
 
 ## Before adding a tool
 

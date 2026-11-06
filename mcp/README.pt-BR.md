@@ -727,7 +727,7 @@ A estrutura de módulos por capacidades separa `lib/Modules`, `lib/Mcp`, `lib/Ac
 - [Testes](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/docs/en/testing.md)
 - [Empacotamento](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/docs/en/packaging.md)
 
-Esses guias não são incluídos no pacote instalado. Eles descrevem o desenvolvimento no repositório e marcam as verificações de estrutura pendentes da 1.3.0; o repositório atual pode diferir de uma release mais antiga instalada.
+Esses guias não são incluídos no pacote instalado. Eles descrevem o desenvolvimento no repositório; o repositório atual pode diferir de uma release mais antiga instalada.
 
 ## License
 

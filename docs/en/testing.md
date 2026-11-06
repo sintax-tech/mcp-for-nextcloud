@@ -6,7 +6,7 @@
 
 Use focused tests while developing and the required gates for the final committed change. Keep the command, PHP configuration, revision, exit status and evidence together. A test count alone is not a behavioral comparison.
 
-**Before the 1.3.0 release:** reconfirm source-reader paths and move certificates after the remaining Files splits and legacy removal. The commands below refer to the checked-in harness; integration image pins and the chosen execution matrix belong to the workflow and dated validation record.
+When moving or splitting code, reconfirm source-reader paths and move certificates against the affected revisions. The commands below refer to the checked-in harness; integration image pins and the chosen execution matrix belong to the workflow and dated validation record.
 
 ## Prerequisites
 

@@ -726,7 +726,7 @@ The capability-module layout separates `lib/Modules`, `lib/Mcp`, `lib/Access`, `
 - [Testing](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/docs/en/testing.md)
 - [Packaging](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/docs/en/packaging.md)
 
-These guides are not included in the installed archive. They describe repository development and flag the remaining 1.3.0 layout checks; the current repository may differ from an older installed release.
+These guides are not included in the installed archive. They describe repository development; the current repository may differ from an older installed release.
 
 ## License
 

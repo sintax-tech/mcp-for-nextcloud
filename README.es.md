@@ -412,7 +412,7 @@ composer install
 vendor/bin/phpunit          # unit tests with OCP mocks, no Nextcloud needed
 ```
 
-Disposición del código en `mcp/`: `lib/Modules/<App>` (módulos por capacidades y herramientas), `lib/Mcp` (protocolo, descubrimiento y confirmación), `lib/Access` (permisos, visibilidad y ámbitos), `lib/OAuth` (servidor de autorización), `lib/Platform` (primitivas compartidas), además de `lib/Controller`, plantillas y recursos. Consulta la [documentación de desarrollo en inglés](docs/en/architecture.md) y las notas técnicas detalladas en [`mcp/README.md`](mcp/README.md). Las guías de 1.3.0 identifican las comprobaciones de estructura pendientes antes de la publicación.
+Disposición del código en `mcp/`: `lib/Modules/<App>` (módulos por capacidades y herramientas), `lib/Mcp` (protocolo, descubrimiento y confirmación), `lib/Access` (permisos, visibilidad y ámbitos), `lib/OAuth` (servidor de autorización), `lib/Platform` (primitivas compartidas), además de `lib/Controller`, plantillas y recursos. Consulta la [documentación de desarrollo en inglés](docs/en/architecture.md) y las notas técnicas detalladas en [`mcp/README.md`](mcp/README.md).
 
 El prototipo original de Node.js por stdio (solo lectura) se eliminó; permanece en la historia de git hasta el commit 27739f0 (etiqueta v0.11.0).
 

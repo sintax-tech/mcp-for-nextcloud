@@ -6,8 +6,6 @@
 
 The package is the installable `mcp` app, not a copy of the entire repository. Building and checking an archive does not sign, publish or install it.
 
-**Before the 1.3.0 release:** reconfirm the final source layout after the remaining Files splits and legacy removal, then rebuild against the final release metadata. A package built during documentation work is not the final release artifact.
-
 ## Package inputs and exclusions
 
 [`package.sh`](../../mcp/scripts/package.sh) stages `appinfo`, `lib`, templates, the two technical READMEs, legal documents, Composer metadata and runtime asset directories. It installs production dependencies from the lock file into the stage and removes that staged lock file before archiving. The archive has one top-level `mcp/` directory.

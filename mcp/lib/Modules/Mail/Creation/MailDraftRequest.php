@@ -13,7 +13,7 @@ use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 
 /**
  * The draft a call asks for, what the request of the issue names ("create a draft in the user's Drafts folder"): the
- * recipients (To, Cc, Bcc), the subject and a plain text. No attachment, reply, HTML or sender other than the account.
+ * recipients (To, Cc, Bcc), the subject and a body: plain text by default or sanitized HTML. No attachment, reply or other sender.
  *
  * Recipients are plain addresses only, so the list the Mail app parses (OCA\Mail\AddressList::parse()) is exactly the one
  * the plan shows: no display name, comma or group syntax can turn one entry into several or none. The subject is one line;

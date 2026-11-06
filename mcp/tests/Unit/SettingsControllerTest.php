@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit;
 
 use OCA\Mcp\Controller\McpController;
 use OCA\Mcp\Controller\SettingsController;
-use OCA\Mcp\Checkout\CheckoutTokenStore;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutTokenStore;
 use OCA\Mcp\Modules\Files\BatchStore;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;

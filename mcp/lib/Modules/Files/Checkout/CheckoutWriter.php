@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files\Handler;
+namespace OCA\Mcp\Modules\Files\Checkout;
 
 use OCA\Mcp\Controller\CheckoutController;
 use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
@@ -16,7 +16,7 @@ use OCA\Mcp\Access\FileTypes\FileTypeGuard;
 use LogicException;
 use Throwable;
 use Closure;
-use OCA\Mcp\Checkout\CheckoutToken;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutToken;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\L10n\UserL10n;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
@@ -41,7 +41,7 @@ use OCP\Lock\LockedException;
 use Psr\Log\LoggerInterface;
 
 /** PUT/POST write boundaries; rechecks policy before spending, backup and actual storage writes. */
-final class CheckoutWriteHandler {
+final class CheckoutWriter {
 	/**
 	 * @param IRootFolder $rootFolder Official root resolver.
 	 * @param FileCreation|null $creation New-file service.

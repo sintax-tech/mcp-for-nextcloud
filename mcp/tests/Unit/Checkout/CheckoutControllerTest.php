@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Checkout;
 
 use OCA\Mcp\Controller\CheckoutController;
-use OCA\Mcp\Checkout\CheckoutToken;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutToken;
 use OCA\Mcp\L10n\UserL10n;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\OAuth\Storage\TokenHasher;
@@ -16,7 +16,7 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
-use OCA\Mcp\Modules\Files\CheckoutService;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutService;
 use OCA\Mcp\Modules\Files\FileBackup;
 use OCA\Mcp\Modules\Files\Presentation\CheckoutMessages;
 use OCP\App\IAppManager;

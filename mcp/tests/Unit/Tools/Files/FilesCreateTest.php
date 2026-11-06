@@ -7,12 +7,12 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
-use OCA\Mcp\Checkout\CheckoutToken;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutToken;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Modules\Files\CheckoutService;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutService;
 use OCA\Mcp\Modules\Files\FileCreation;
 use OCA\Mcp\Modules\Files\Presentation\CreationMessages;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
@@ -28,7 +28,7 @@ use Psr\Log\LoggerInterface;
  * Both refuse an occupied name, a missing folder and a name Nextcloud itself refuses, before anything is written.
  */
 final class FilesCreateTest extends FilesToolsTestCase {
-	/** @return \OCA\Mcp\Checkout\CheckoutToken|null the create link minted so far, if any */
+	/** @return \OCA\Mcp\Modules\Files\Checkout\CheckoutToken|null the create link minted so far, if any */
 	private function createToken(): ?CheckoutToken {
 		return $this->store->ofKind(CheckoutToken::KIND_CREATE);
 	}
@@ -332,7 +332,7 @@ final class FilesCreateTest extends FilesToolsTestCase {
 		$this->store->rows = [];
 		$this->json('files_upload', ['path' => '/sem-tamanho.docx']);
 		$this->assertNull($this->createToken()->declaredSize());
-		$this->assertSame(\OCA\Mcp\Checkout\CheckoutToken::NO_ETAG, $this->createToken()->etag);
+		$this->assertSame(\OCA\Mcp\Modules\Files\Checkout\CheckoutToken::NO_ETAG, $this->createToken()->etag);
 	}
 
 	/**

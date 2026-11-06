@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Checkout;
 
-use OCA\Mcp\Checkout\CheckoutToken;
-use OCA\Mcp\Checkout\CheckoutTokenStore;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutToken;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutTokenStore;
 
 /** CheckoutTokenStore double keeping rows in an array, with the same single-use semantics as the SQL store. */
 final class InMemoryCheckoutTokenStore extends CheckoutTokenStore {

@@ -5,13 +5,13 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files\Handler;
+namespace OCA\Mcp\Modules\Files\Checkout;
 
 use OCA\Mcp\Access\FileTypes\FileTypeDenied;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCP\Files\NotFoundException;
-use OCA\Mcp\Modules\Files\CheckoutService;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutService;
 use OCA\Mcp\Modules\Files\FileBackup;
 use OCA\Mcp\Modules\Files\FileWriteBoundary;
 use OCA\Mcp\Modules\Files\Presentation\EditingMessages;

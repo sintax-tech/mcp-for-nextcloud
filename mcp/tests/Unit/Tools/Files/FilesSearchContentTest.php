@@ -174,7 +174,7 @@ final class FilesSearchContentTest extends FilesToolsTestCase {
 			$db,
 			$access,
 			new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access),
-			new \OCA\Mcp\Modules\Files\CheckoutService(
+			new \OCA\Mcp\Modules\Files\Checkout\CheckoutService(
 				$this->createMock(\OCP\IURLGenerator::class),
 				$this->config->mock($this),
 				$this->time,

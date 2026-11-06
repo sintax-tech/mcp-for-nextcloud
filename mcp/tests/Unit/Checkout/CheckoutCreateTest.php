@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Checkout;
 
-use OCA\Mcp\Checkout\CheckoutToken;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutToken;
 use OCA\Mcp\Controller\CheckoutController;
 use OCA\Mcp\OAuth\Storage\TokenHasher;
 use OCA\Mcp\Access\Grants\GrantPolicy;
@@ -19,7 +19,7 @@ use OCA\Mcp\Tests\Unit\Tools\Files\FakeFilenameValidator;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
-use OCA\Mcp\Modules\Files\CheckoutService;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutService;
 use OCA\Mcp\Modules\Files\FileBackup;
 use OCA\Mcp\Modules\Files\FileCreation;
 use OCA\Mcp\Modules\Files\Presentation\CheckoutMessages;

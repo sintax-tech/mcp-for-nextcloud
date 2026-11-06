@@ -42,7 +42,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Modules/Calendar/Writing/EmbeddedDavDispatcher.php#move:literal-move:1' => 'label: DAV HTTP verb; actual dispatcher is classified separately',
 
 			'Controller/CheckoutController.php#send:fopen:1' => 'read: existing file download stream',
-			'Modules/Files/Handler/CheckoutWriteHandler.php#create:fopen:1' => 'read: temporary upload body',
+			'Modules/Files/Checkout/CheckoutWriter.php#create:fopen:1' => 'read: temporary upload body',
 			'Controller/CheckoutController.php#storeBody:fopen:1' => 'temporary: ITempManager upload body, not a Files node',
 			'Controller/CheckoutController.php#inputStream:fopen:1' => 'read: php input stream',
 			'Modules/Files/Presentation/FilesPlanRenderer.php#render:copy:1' => 'render: static plan text, no Files mutation',
@@ -59,7 +59,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Modules/Calendar/Editing/UpdateEventDraft.php#prepare:touch:1' => 'DAV: update an in-memory event timestamp, not Files touch',
 			'Access/FileTypes/FileWritePolicy.php#recoverStringType:rollback:1' => 'database: rollback owned configuration repair, not Files',
 
-			'Modules/Files/Handler/CheckoutWriteHandler.php#write:putcontent:1' => 'guarded: OCA\Mcp\Tests\Unit\Tools\Files\FileWritePolicyBoundariesTest::testPolicyChangeDuringBackupRefusesContentSinkAndKeepsOriginalAndBackup',
+			'Modules/Files/Checkout/CheckoutWriter.php#write:putcontent:1' => 'guarded: OCA\Mcp\Tests\Unit\Tools\Files\FileWritePolicyBoundariesTest::testPolicyChangeDuringBackupRefusesContentSinkAndKeepsOriginalAndBackup',
 			'Modules/Files/FileCreationWriter.php#write:newfile:1' => 'guarded: OCA\Mcp\Tests\Unit\Tools\Files\FileWritePolicyBoundariesTest::testDirectCreationSinkRefusesBeforeNewFile',
 			'Modules/Files/FileCreationWriter.php#write:putcontent:1' => 'guarded: OCA\Mcp\Tests\Unit\Tools\Files\FileWritePolicyBoundariesTest::testCreationRechecksBeforePutContentWithoutDeletingEmptyFile',
 			'Modules/Files/Creation/CopyFileHandler.php#handle:copy:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testForbiddenDescendantDeniesBothToolsBeforeEffects',

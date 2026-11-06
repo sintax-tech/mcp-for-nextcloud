@@ -48,7 +48,7 @@ final class FileCreation {
 	public function __construct(
 		private NodeAccessInfo $access,
 		private SharedWriteGuard $guard,
-		private CheckoutService $checkout,
+		private \OCA\Mcp\Modules\Files\Checkout\CheckoutService $checkout,
 		private IFilenameValidator $filenames,
 		private FilesAccessGuard $visibilityGuard,
 		private LoggerInterface $logger,
@@ -80,7 +80,7 @@ final class FileCreation {
 			'folder' => $target['folderPath'],
 		] + ($size === null ? [] : ['size' => $size]) + [
 			'uploadMaxBytes' => $limit,
-			'uploadTtlSeconds' => CheckoutService::UPLOAD_TTL,
+			'uploadTtlSeconds' => \OCA\Mcp\Modules\Files\Checkout\CheckoutService::UPLOAD_TTL,
 			'access' => $this->access->describe($target['folder'], $userId),
 			'shared' => $shared === null ? [] : [$shared],
 			'requiresSharedConfirmation' => $shared !== null,

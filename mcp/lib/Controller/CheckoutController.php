@@ -8,9 +8,9 @@ declare(strict_types=1);
 namespace OCA\Mcp\Controller;
 
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
-use OCA\Mcp\Modules\Files\Handler\CheckoutWriteHandler;
-use OCA\Mcp\Checkout\CheckoutToken;
-use OCA\Mcp\Checkout\CheckoutTokenStore;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutWriter;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutToken;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutTokenStore;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\L10n\UserL10n;
 use OCA\Mcp\OAuth\Storage\TokenHasher;
@@ -23,7 +23,7 @@ use OCA\Mcp\Platform\FileAccess\LockMessages;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
-use OCA\Mcp\Modules\Files\CheckoutService;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutService;
 use OCA\Mcp\Modules\Files\FileBackup;
 use OCA\Mcp\Modules\Files\FileCreation;
 use OCA\Mcp\Modules\Files\Presentation\CheckoutMessages;
@@ -331,9 +331,9 @@ class CheckoutController extends Controller {
 		return $this->writes()->create($row, $body);
 	}
 
-	/** @return CheckoutWriteHandler the focused adapter for this controller's existing checks and responses */
-	private function writes(): CheckoutWriteHandler {
-		return new CheckoutWriteHandler(
+	/** @return CheckoutWriter the focused adapter for this controller's existing checks and responses */
+	private function writes(): CheckoutWriter {
+		return new CheckoutWriter(
 			$this->rootFolder, $this->creation, $this->backup, $this->guard, $this->accessInfo,
 			$this->logger, $this->visibilityGuard, $this->locks, $this->l10n, $this->userManager, $this->fileTypes,
 			$this->resolve(...), $this->admit(...), $this->scopeReadable(...), $this->actsAsUser(...),

@@ -1819,6 +1819,7 @@ OC.L10N.register(
     "Change page **%s** (%s): %d bytes now, %d after; the diff is in the plan." : "Seite **%s** ändern (%s): jetzt %d Bytes, danach %d; der Diff steht im Plan.",
     "Move page **%s** under *%s* as **%s**." : "Seite **%s** unter *%s* als **%s** verschieben.",
     "Move collective page" : "Seite eines Kollektivs verschieben",
-    "A folder of this collective has pages but no Readme.md, and reading it would make Collectives create one; nothing was read or changed. Open the collective in Collectives once, then try again." : "Ein Ordner dieses Kollektivs hat Seiten, aber keine Readme.md, und das Lesen würde Kollektive eine anlegen lassen; nichts wurde gelesen oder geändert. Öffne das Kollektiv einmal in Kollektive und versuche es dann erneut."
+    "A folder of this collective has pages but no Readme.md, and reading it would make Collectives create one; nothing was read or changed. Open the collective in Collectives once, then try again." : "Ein Ordner dieses Kollektivs hat Seiten, aber keine Readme.md, und das Lesen würde Kollektive eine anlegen lassen; nichts wurde gelesen oder geändert. Öffne das Kollektiv einmal in Kollektive und versuche es dann erneut.",
+    "This page carries subpages or files you cannot change through MCP; nothing was moved." : "Diese Seite enthält Unterseiten oder Dateien, die du über MCP nicht ändern kannst; es wurde nichts verschoben."
     },
 "nplurals=2; plural=(n != 1);");

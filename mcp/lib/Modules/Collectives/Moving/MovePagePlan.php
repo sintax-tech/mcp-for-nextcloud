@@ -9,6 +9,7 @@ namespace OCA\Mcp\Modules\Collectives\Moving;
 
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Collectives\Integration\CollectivesGateway;
+use OCA\Mcp\Modules\Collectives\Integration\PageFiles;
 use OCA\Mcp\Modules\Collectives\Integration\PageProjection;
 use OCA\Mcp\Modules\Collectives\Locating\PageTreeLoader;
 use OCA\Mcp\Modules\Collectives\Presentation\CollectivesMessages;
@@ -29,11 +30,13 @@ class MovePagePlan {
 	 * @param CollectivesGateway $gateway native Collectives
 	 * @param PageTreeLoader $trees the page tree, read now
 	 * @param PlanConfirmation $confirmation plan states
+	 * @param PageFiles $files everything the native move carries, each node checked
 	 */
 	public function __construct(
 		private CollectivesGateway $gateway,
 		private PageTreeLoader $trees,
 		private PlanConfirmation $confirmation,
+		private PageFiles $files,
 	) {
 	}
 
@@ -58,6 +61,8 @@ class MovePagePlan {
 		if ($to === $id || in_array($to, $tree->descendants($id), true)) {
 			throw new ToolFailure(CollectivesMessages::cycle());
 		}
+		// The native move carries the whole folder of an index page: everything in it must be the actor's to change.
+		$carried = $this->files->carried($tree->folder, $page, $uid);
 		$moves = $to !== $from;
 		if (isset($arguments['index']) && !$moves) {
 			throw new ToolFailure(CollectivesMessages::indexNeedsParent());
@@ -74,7 +79,7 @@ class MovePagePlan {
 			'to' => ['parent_id' => $to, 'parent_title' => $target['title'], 'title' => $title, 'position' => $moves ? min($index, count($siblings)) : $tree->position($from, $id)],
 			'changes' => $changes, 'parent_becomes_folder' => $leaf, 'recoverable' => true, 'notices' => $notices];
 		$shown = ['collective_id' => $cid, 'page_id' => $id, 'from' => $from, 'to' => $to, 'title' => $title, 'old_title' => $page['title'],
-			'index' => $index, 'siblings' => $siblings, 'descendants' => $tree->descendants($id), 'leaf' => $leaf];
+			'index' => $index, 'siblings' => $siblings, 'descendants' => $tree->descendants($id), 'carried' => $carried, 'leaf' => $leaf];
 		return ['plan' => $this->confirmation->sign(self::TOOL, $uid, $plan, $shown), 'page_id' => $id, 'from' => $from, 'to' => $to,
 			'title' => $title, 'index' => $index, 'changes' => $changes, 'moves' => $moves];
 	}

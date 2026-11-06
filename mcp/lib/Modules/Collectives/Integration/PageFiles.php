@@ -10,9 +10,11 @@ namespace OCA\Mcp\Modules\Collectives\Integration;
 use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Modules\Collectives\Presentation\CollectivesMessages;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCP\Files\File;
 use OCP\Files\Folder;
+use OCP\Files\Node;
 use Throwable;
 
 /**
@@ -84,6 +86,59 @@ class PageFiles {
 			throw new ToolFailure(CommonMessages::notFound());
 		}
 		return $file;
+	}
+
+	/**
+	 * Everything a native move of this page carries, read through Files and not through the filtered tree: the whole
+	 * folder of an index page with every subpage, attachment and file below it, or a leaf with its attachments folder.
+	 * Each node must be one MCP may show the actor; one that is not refuses the move without naming it.
+	 * @param Folder $folder the actor's folder of the collective
+	 * @param array<string, mixed> $page the page to move, an admitted page of the tree
+	 * @param string $uid authenticated actor
+	 * @return list<int> ids of every node the move carries, sorted, for the plan state
+	 * @throws ToolFailure when a node is hidden from MCP or outside the actor's scope, or cannot be read
+	 */
+	public function carried(Folder $folder, array $page, string $uid): array {
+		$path = self::relativePath($page);
+		try {
+			$file = $folder->get($path);
+			$parent = $file->getParent();
+			$attachments = '.attachments.' . $file->getId();
+			if ($page['file_name'] === 'Readme.md' && (string)$page['file_path'] !== '') {
+				$roots = [$parent];
+			} else {
+				$roots = $parent->nodeExists($attachments) ? [$file, $parent->get($attachments)] : [$file];
+			}
+			$ids = [];
+			foreach ($roots as $root) {
+				array_push($ids, ...$this->walk($root, $uid));
+			}
+		} catch (ToolFailure $e) {
+			throw $e;
+		} catch (Throwable) {
+			throw new ToolFailure(CollectivesMessages::carriesHiddenContent());
+		}
+		sort($ids);
+		return $ids;
+	}
+
+	/**
+	 * @param Node $node a node the move carries
+	 * @param string $uid authenticated actor
+	 * @return list<int> its id and those of everything below it
+	 * @throws ToolFailure when one of them may not be shown to the actor
+	 */
+	private function walk(Node $node, string $uid): array {
+		if (!$this->visibility->isVisible($node) || !$this->scope->allowsUserNode($uid, $node)) {
+			throw new ToolFailure(CollectivesMessages::carriesHiddenContent());
+		}
+		$ids = [(int)$node->getId()];
+		if ($node instanceof Folder) {
+			foreach ($node->getDirectoryListing() as $child) {
+				array_push($ids, ...$this->walk($child, $uid));
+			}
+		}
+		return $ids;
 	}
 
 	/**

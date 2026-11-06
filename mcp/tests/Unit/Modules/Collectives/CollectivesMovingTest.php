@@ -113,6 +113,37 @@ final class CollectivesMovingTest extends TestCase {
 		$this->fail('another collective was accepted');
 	}
 
+	/** @return void moving an index page carries its folder: a hidden or out-of-scope node below it refuses the move */
+	public function testEverythingTheMoveCarriesMustBeChangeable(): void {
+		$team = CollectivesScene::$ids['Team/Readme.md'];
+		$guide = CollectivesScene::$ids['Guide.md'];
+		$args = ['page_id' => $team, 'parent_id' => $guide];
+		foreach (['hidden' => 'hidden', 'out of scope' => 'outOfScope'] as $case => $switch) {
+			$this->rig->{$switch} = [CollectivesScene::$ids['Team/Onboarding.md']];
+			$message = $this->refusal($args);
+			$this->assertStringContainsString('cannot change through MCP', $message, $case);
+			$this->assertStringNotContainsString('Onboarding', $message, $case . ': the refusal names nothing');
+			$this->rig->{$switch} = [];
+		}
+		$attachment = CollectivesScene::$tree->addFile(CollectivesScene::ROOT . '/.attachments.' . $guide . '/secret.png', 'x', 'image/png');
+		$this->rig->hidden = [$attachment];
+		$this->assertStringContainsString('cannot change through MCP', $this->refusal(['page_id' => $guide, 'parent_id' => $team]), 'a hidden attachment of a leaf');
+		$this->assertNotContains('move', CollectivesScene::$calls);
+	}
+
+	/** @return void a node added below the page between plan and confirmation is part of the approved state: nothing moves */
+	public function testANodeAddedBelowThePageChangesThePlan(): void {
+		$args = ['collective_id' => 7, 'page_id' => CollectivesScene::$ids['Team/Readme.md'], 'parent_id' => CollectivesScene::$ids['Guide.md']];
+		$plan = $this->plan($args);
+		CollectivesScene::$tree->addFile(CollectivesScene::ROOT . '/Team/.attachments.' . CollectivesScene::$ids['Team/Onboarding.md'] . '/a.png', 'x', 'image/png');
+		$this->expectException(PlanChanged::class);
+		try {
+			$this->rig->module()->call('collectives_move', $args + ['confirm' => true, 'plan_state' => $plan['plan_state']], 'alice');
+		} finally {
+			$this->assertNotContains('move', CollectivesScene::$calls);
+		}
+	}
+
 	/** @return void the same parent and title is a plan that changes nothing and a confirmation that attempts nothing */
 	public function testNoChangeIsNotAttempted(): void {
 		$plan = $this->plan(['page_id' => CollectivesScene::$ids['Guide.md']]);

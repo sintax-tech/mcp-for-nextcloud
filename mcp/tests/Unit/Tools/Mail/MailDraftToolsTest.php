@@ -78,7 +78,7 @@ final class MailDraftToolsTest extends TestCase {
 		$this->assertSame([], $this->app->drafts);
 		$this->assertSame(['accountId' => 11, 'draftsMailboxId' => 3, 'account' => 'alice@example.com', 'draftsPath' => 'Drafts'], $plan['target']);
 		$this->assertSame(['to' => ['bob@example.com'], 'cc' => ['carol@example.com'], 'bcc' => ['dave@example.com'], 'subject' => 'Budget review',
-			'body' => self::DRAFT['body']], $plan['draft']);
+			'body' => self::DRAFT['body'], 'html' => false], $plan['draft']);
 		$this->assertSame([MailDraftMessages::notSent(), MailDraftMessages::eachConfirmCreates()], $plan['notes']);
 		$this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $plan[PlanState::ARGUMENT]);
 

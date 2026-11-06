@@ -86,7 +86,6 @@ class Application extends App implements IBootstrap {
 		if (is_file($autoload)) {
 			require_once $autoload;
 		}
-		$context->registerService(\OCA\Mcp\Modules\Mail\Creation\MailDraftHtmlPurifier::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Modules\Mail\Integration\MailDraftHtmlEngine());
 		$context->registerService(\OCA\Mcp\Platform\FileAccess\WriteVisibility::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\FileAccess\WriteVisibility => $c->get(VisibilityGuard::class));
 		$context->registerService(\OCA\Mcp\Platform\FileAccess\ActorRoot::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Platform\FileAccess\ActorRoot($c->get(\OCP\Files\IRootFolder::class), $c->get(IUserSession::class)));
 		// The tools read the resource scope from the policy snapshot of their operation.

@@ -55,7 +55,9 @@ final class MailDraftHtml {
 	private function pass(string $input): array {
 		$removed = MailDraftHtmlAllow::REMOVED;
 		$urls = [];
-		$document = $this->parse($input);
+		$marker = 'mcp-conditional-' . bin2hex(random_bytes(16));
+		$source = $this->conditionalMarkers($input, $marker);
+		$document = $this->parse($source);
 		$explicitHead = preg_match('/<head(?:\s|>)/i', $input) === 1;
 		$removed['wrapper'] = preg_match_all('/<(?:html|body)(?:\s|>)/i', $input);
 		foreach (iterator_to_array($document->getElementsByTagName('head')) as $head) {
@@ -63,10 +65,10 @@ final class MailDraftHtml {
 				$head->parentNode->removeChild($head);
 				$removed['subtree']++;
 			} else {
-				$this->filter($head, $removed, $urls);
+				$this->filter($head, $removed, $urls, $marker);
 			}
 		}
-		$this->filter($document, $removed, $urls);
+		$this->filter($document, $removed, $urls, $marker);
 		$before = $this->fragment($document);
 		$purified = $this->engine->purify($before);
 		$after = $this->parse($purified);
@@ -85,6 +87,23 @@ final class MailDraftHtml {
 			throw new ToolFailure(MailDraftMessages::htmlInvalid());
 		}
 		return ['body' => $body, 'removed' => $removed, 'removedUrls' => $urls];
+	}
+
+	/**
+	 * Marks revealed conditional delimiters without editing comments or quoted tag attributes.
+	 *
+	 * Markers become comments only for parsing. The subtree walk removes them under its normal precedence; a marker
+	 * inside script, head or another discarded subtree never becomes a separately counted removal.
+	 *
+	 * @param string $input source fragment
+	 * @param string $marker unpredictable per-pass marker, never emitted
+	 * @return string source with recognized delimiters marked
+	 */
+	private function conditionalMarkers(string $input, string $marker): string {
+		$pattern = '~<!--[\s\S]*?-->|<!\[(?:if\b[^\]]*|endif)\]>|<[a-zA-Z/][^>"\']*(?:(?:"[^"]*"|\'[^\']*\')[^>"\']*)*>~i';
+		return preg_replace_callback($pattern, static function (array $match) use ($marker): string {
+			return preg_match('~^<!\[(?:if\b|endif\])~i', $match[0]) === 1 ? '<!--' . $marker . '-->' : $match[0];
+		}, $input) ?? $input;
 	}
 
 	/**
@@ -119,14 +138,15 @@ final class MailDraftHtml {
 	 * @param DOMNode $parent parent to filter
 	 * @param array<string,int> $removed report counters
 	 * @param list<string> $urls removed destinations
+	 * @param string $marker private marker for revealed conditional tokens
 	 * @return void
 	 * @throws ToolFailure for an unclassified node
 	 */
-	private function filter(DOMNode $parent, array &$removed, array &$urls): void {
+	private function filter(DOMNode $parent, array &$removed, array &$urls, string $marker = ''): void {
 		foreach (iterator_to_array($parent->childNodes) as $node) {
 			if ($node->nodeType === XML_COMMENT_NODE) {
 				$parent->removeChild($node);
-				$removed['comment']++;
+				$removed[$marker !== '' && $node->nodeValue === $marker ? 'conditional' : 'comment']++;
 				continue;
 			}
 			if ($node->nodeType === XML_TEXT_NODE) {
@@ -147,7 +167,7 @@ final class MailDraftHtml {
 				$parent->removeChild($node);
 				continue;
 			}
-			$this->filter($node, $removed, $urls);
+			$this->filter($node, $removed, $urls, $marker);
 			if (in_array($tag, ['html', 'body'], true)) {
 				continue;
 			}

@@ -42,6 +42,7 @@ final class MailDraftTools {
 	 * @param MailLinks $links direct links into the Mail app
 	 * @param PlanState $states the instance's plan states
 	 * @param GrantPolicy $grants who may read what, for the plan
+	 * @param MailDraftHtml|null $html optional explicit pipeline for isolated callers
 	 * @param IAppManager $apps app manager, for the installed Mail version ({@see MailDraftBcc})
 	 * @return void
 	 */
@@ -52,6 +53,7 @@ final class MailDraftTools {
 		private PlanState $states,
 		private GrantPolicy $grants,
 		private IAppManager $apps,
+		private ?MailDraftHtml $html = null,
 	) {
 	}
 
@@ -87,7 +89,7 @@ final class MailDraftTools {
 	 */
 	public function preview(string $name, array $arguments, string $userId): array {
 		if (!self::handles($name)) { throw new InvalidArgumentException('Unknown tool'); }
-		return (new CreateDraftPreview(new MailDraftAccount($this->accounts, new MailDraftFolder(new MailMessageGateway($this->services))), new MailDraftPlan($this->states, $this->grants), $this->apps, new MailDraftHtml(new \OCA\Mcp\Modules\Mail\Integration\MailDraftHtmlEngine())))->plan($arguments, $userId);
+		return (new CreateDraftPreview(new MailDraftAccount($this->accounts, new MailDraftFolder(new MailMessageGateway($this->services))), new MailDraftPlan($this->states, $this->grants), $this->apps, ($this->html ?? new MailDraftHtml(new \OCA\Mcp\Modules\Mail\Integration\MailDraftHtmlEngine()))))->plan($arguments, $userId);
 	}
 
 	/**
@@ -119,6 +121,6 @@ final class MailDraftTools {
 			throw new InvalidArgumentException('Unknown tool');
 		}
 		return new CreateDraftHandler(new MailDraftAccount($this->accounts, new MailDraftFolder(new MailMessageGateway($this->services))),
-			new MailDraftPlan($this->states, $this->grants), new MailDraftStore($this->services), $this->links, $this->apps, new MailDraftHtml(new \OCA\Mcp\Modules\Mail\Integration\MailDraftHtmlEngine()));
+			new MailDraftPlan($this->states, $this->grants), new MailDraftStore($this->services), $this->links, $this->apps, ($this->html ?? new MailDraftHtml(new \OCA\Mcp\Modules\Mail\Integration\MailDraftHtmlEngine())));
 	}
 }

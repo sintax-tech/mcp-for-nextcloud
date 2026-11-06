@@ -1,0 +1,275 @@
+[
+    {
+        "name": "script-events-css",
+        "input": "<p onclick=\"x()\" style=\"background:url(https://track.example);width:expression(x())\">ok</p><script>x()</script>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "subtree-svg",
+        "input": "<svg><a href=\"https://track.example\">hidden</a></svg><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "subtree-math",
+        "input": "<math><mtext>hidden</mtext></math><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "subtree-form",
+        "input": "<form><p>hidden</p></form><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "subtree-head",
+        "input": "<head><title>hidden</title></head><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "subtree-noscript",
+        "input": "<noscript>hidden</noscript><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "subtree-textarea",
+        "input": "<textarea>hidden</textarea><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "subtree-style",
+        "input": "<style>p{display:none}</style><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "subtree-iframe",
+        "input": "<iframe>hidden</iframe><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "subtree-template",
+        "input": "<template>hidden</template><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-js",
+        "input": "<p><a href=\"javascript:x()\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-entity",
+        "input": "<p><a href=\"jav&#x61;script:x()\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-tab",
+        "input": "<p><a href=\"java&#9;script:x()\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-crlf",
+        "input": "<p><a href=\"java&#13;&#10;script:x()\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-space",
+        "input": "<p><a href=\" javascript:x()\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-case",
+        "input": "<p><a href=\"JaVaScRiPt:x()\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-backslash",
+        "input": "<p><a href=\"java\\script:x()\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-no-semicolon",
+        "input": "<p><a href=\"jav&#x61script:x()\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-double-entity",
+        "input": "<p><a href=\"jav&amp;#x61;script:x()\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-data-html",
+        "input": "<p><a href=\"data:text/html,evil\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-data-image",
+        "input": "<p><a href=\"data:image/png;base64,AA\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-vbscript",
+        "input": "<p><a href=\"vbscript:x()\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-file",
+        "input": "<p><a href=\"file:///secret\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-ftp",
+        "input": "<p><a href=\"ftp://example.com\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-protocol-relative",
+        "input": "<p><a href=\"//track.example\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "url-relative",
+        "input": "<p><a href=\"/relative\">ok</a></p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "base",
+        "input": "<base href=\"https://track.example\"><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "meta",
+        "input": "<meta http-equiv=\"refresh\" content=\"0;url=https://track.example\"><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "pixel",
+        "input": "<img src=\"https://track.example/pixel\"><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "data-image",
+        "input": "<img src=\"data:image/png;base64,AA\"><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "picture",
+        "input": "<picture><source srcset=\"https://track.example/a\"><img src=\"x\"></picture><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "hidden",
+        "input": "<p hidden title=\"secret\">ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "conditional-hidden",
+        "input": "<!--[if mso]><p>hidden</p><![endif]--><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "conditional-revealed",
+        "input": "<![if !mso]><p>ok</p><![endif]>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "escaped-markup",
+        "input": "<p>&lt;img src=x onerror=x()&gt;</p>",
+        "body": "<p>&lt;img src=x onerror=x()&gt;</p>"
+    },
+    {
+        "name": "bidi-invisible",
+        "input": "<p>ok&#x202e;txt&#x200b;</p>",
+        "body": "<p>oktxt</p>"
+    },
+    {
+        "name": "zwj-zwnj",
+        "input": "<p>👩‍💻 زبان‌ها</p>",
+        "body": "<p>👩‍💻 زبان‌ها</p>"
+    },
+    {
+        "name": "utf8",
+        "input": "<p>Olá ação €</p>",
+        "body": "<p>Olá ação €</p>"
+    },
+    {
+        "name": "pre",
+        "input": "<pre>A  B\n C</pre>",
+        "body": "<pre>A  B\n C</pre>"
+    },
+    {
+        "name": "code",
+        "input": "<p><code>A  B\n C</code></p>",
+        "body": "<p><code>A  B\n C</code></p>"
+    },
+    {
+        "name": "mutation",
+        "input": "<math><mtext><table><mglyph><style><!--</style><img title=\"--><img src=x onerror=x()>\">"
+    },
+    {
+        "name": "table-repair",
+        "input": "<table><tr><td>ok</table>"
+    },
+    {
+        "name": "raw-text",
+        "input": "<style><img src=x onerror=x()></style><p>ok</p>",
+        "body": "<p>ok</p>"
+    },
+    {
+        "name": "duplicate-attribute",
+        "input": "<p title=\"one\" title=\"two\">ok</p>",
+        "refused": true
+    },
+    {
+        "name": "deep-tree",
+        "input": "<div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div>ok</div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div>",
+        "refused": true
+    },
+    {
+        "name": "script-only",
+        "input": "<script>x()</script>",
+        "refused": true
+    },
+    {
+        "name": "empty-markup",
+        "input": "<p></p><script>x()</script>",
+        "refused": true
+    },
+    {
+        "name": "br-only",
+        "input": "<br>",
+        "refused": true
+    },
+    {
+        "name": "hr-only",
+        "input": "<hr>",
+        "refused": true
+    },
+    {
+        "name": "spaces",
+        "input": " \n ",
+        "refused": true
+    },
+    {
+        "name": "empty-cell",
+        "input": "<table><tr><td></td></tr></table>",
+        "refused": true
+    },
+    {
+        "name": "comment-only",
+        "input": "<!--x-->",
+        "refused": true
+    },
+    {
+        "name": "image-only",
+        "input": "<img src=\"x\">",
+        "refused": true
+    },
+    {
+        "name": "invisibles-only",
+        "input": "<p>&#x202e;&#x200b;</p>",
+        "refused": true
+    },
+    {
+        "name": "empty-input",
+        "input": "",
+        "body": ""
+    }
+]

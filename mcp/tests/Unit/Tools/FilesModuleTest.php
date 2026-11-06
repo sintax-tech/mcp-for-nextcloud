@@ -228,9 +228,9 @@ final class FilesModuleTest extends TestCase {
 
 	public function testCorruptDocumentsAndZipBombsReturnANotice(): void {
 		$this->tree->addFile('/alice/files/bad.pdf', "%PDF-broken\0\0", 'application/pdf');
-		$this->assertSame(FilesMessages::notExtracted('bad.pdf'), $this->tool('files_read', ['path' => '/bad.pdf'])['content'][0]['text']);
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\ReadingMessages::notExtracted('bad.pdf'), $this->tool('files_read', ['path' => '/bad.pdf'])['content'][0]['text']);
 		$this->tree->addFile('/alice/files/bomb.docx', self::zip('word/document.xml', str_repeat('A', TextExtractor::MAX_BYTES + 1)), '');
-		$this->assertSame(FilesMessages::notExtracted('bomb.docx'), $this->tool('files_read', ['path' => '/bomb.docx'])['content'][0]['text']);
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\ReadingMessages::notExtracted('bomb.docx'), $this->tool('files_read', ['path' => '/bomb.docx'])['content'][0]['text']);
 	}
 
 	public function testReadEnforcesByteLimitBeforeAndWhileReading(): void {
@@ -246,14 +246,14 @@ final class FilesModuleTest extends TestCase {
 		$text = $this->tool('files_read', ['path' => '/long.txt'])['content'][0]['text'];
 		$this->assertStringEndsWith("
 
-" . FilesMessages::textTruncated(), $text);
+" . \OCA\Mcp\Modules\Files\Presentation\ReadingMessages::textTruncated(), $text);
 		$this->assertSame(FilesModule::MAX_CHARS, mb_strlen(explode("\n\n[", $text)[0]));
 	}
 
 	public function testReadRejectsFoldersAndBinaries(): void {
 		$this->assertSame(FilesMessages::notAFile(), $this->failure('files_read', ['path' => '/Documentos']));
 		$this->tree->addFile('/alice/files/dados.bin', "\x00\x01", 'application/octet-stream');
-		$this->assertSame(FilesMessages::unsupportedFormat(), $this->failure('files_read', ['path' => '/dados.bin']));
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\ReadingMessages::unsupportedFormat(), $this->failure('files_read', ['path' => '/dados.bin']));
 	}
 
 	public function testEditBacksUpThenWrites(): void {
@@ -312,7 +312,7 @@ final class FilesModuleTest extends TestCase {
 
 	/** @return iterable<string, array{0: callable(self):void, 1: string}> */
 	public static function blockedEdits(): iterable {
-		yield 'versions disabled' => [fn (self $t) => $t->apps = [], FilesMessages::versioningOff()];
+		yield 'versions disabled' => [fn (self $t) => $t->apps = [], \OCA\Mcp\Modules\Files\Presentation\EditingMessages::versioningOff()];
 		yield 'copy fails' => [fn (self $t) => $t->tree->failBackupWrite = true, FilesMessages::backupFailed()];
 		yield 'copy size differs' => [fn (self $t) => $t->tree->shortBackupWrite = true, FilesMessages::backupFailed()];
 		yield 'not updateable' => [fn (self $t) => $t->tree->nodes['/alice/files/Documentos/ata.md']['updateable'] = false, CommonMessages::forbidden()];
@@ -329,10 +329,10 @@ final class FilesModuleTest extends TestCase {
 
 	public function testEditRefusesStaleEtagBinariesBackupsAndOversizedContent(): void {
 		$this->assertSame(CommonMessages::conflict(), $this->failure('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'x', 'etag' => 'old']));
-		$this->assertSame(FilesMessages::notText(), $this->failure('files_edit', ['path' => '/relatorio.pdf', 'content' => 'x']));
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::notText(), $this->failure('files_edit', ['path' => '/relatorio.pdf', 'content' => 'x']));
 		$this->tree->addFile('/alice/files/MCP backups/a.txt.bak', 'b');
-		$this->assertSame(FilesMessages::backupPath(), $this->failure('files_edit', ['path' => '/MCP backups/a.txt.bak', 'content' => 'x']));
-		$this->assertSame(FilesMessages::editTooLarge(FilesModule::MAX_EDIT_BYTES), $this->failure('files_edit', ['path' => '/Documentos/ata.md', 'content' => str_repeat('x', FilesModule::MAX_EDIT_BYTES + 1)]));
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath(), $this->failure('files_edit', ['path' => '/MCP backups/a.txt.bak', 'content' => 'x']));
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::editTooLarge(FilesModule::MAX_EDIT_BYTES), $this->failure('files_edit', ['path' => '/Documentos/ata.md', 'content' => str_repeat('x', FilesModule::MAX_EDIT_BYTES + 1)]));
 		$this->assertSame(CommonMessages::notFound(), $this->failure('files_edit', ['path' => '/novo.txt', 'content' => 'x']));
 		$this->assertSame([], $this->tree->ops);
 	}

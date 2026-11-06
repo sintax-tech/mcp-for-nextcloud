@@ -26,7 +26,7 @@ final class ListVersions implements Tool {
 	public static function definition(): ToolDefinition {
 		$path = ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::path()];
 		return FilesSchema::definition(['name' => 'files_versions_list', 'module' => 'files', 'operation' => 'read', 'app' => VersionTools::APP,
-				'description' => FilesMessages::versionsListTool(),
+				'description' => \OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionsListTool(),
 				'inputSchema' => FilesSchema::schema([
 					'path' => $path,
 					'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => VersionTools::DEFAULT_LIMIT, 'default' => VersionTools::DEFAULT_LIMIT],

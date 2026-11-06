@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files\Sharing;
 
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\SharingMessages;
 use OCA\Mcp\Modules\Files\Sharing\LinkPassword;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\EventDispatcher\IEventDispatcher;
@@ -116,7 +116,7 @@ final class LinkPasswordTest extends TestCase {
 			$this->passwords()->generate();
 			self::fail('no failure');
 		} catch (ToolFailure $e) {
-			self::assertSame(FilesMessages::linkPasswordRefused(), $e->getMessage());
+			self::assertSame(SharingMessages::linkPasswordRefused(), $e->getMessage());
 		}
 		self::assertCount(3, $this->events, 'no máximo duas senhas de reserva');
 	}
@@ -143,7 +143,7 @@ final class LinkPasswordTest extends TestCase {
 			$this->passwords()->generate();
 			self::fail('no failure');
 		} catch (ToolFailure $e) {
-			self::assertSame(FilesMessages::linkPasswordRefused(), $e->getMessage());
+			self::assertSame(SharingMessages::linkPasswordRefused(), $e->getMessage());
 		}
 		self::assertCount(1, $this->validated, 'nenhuma outra senha é tentada');
 		self::assertCount(1, $this->logged);
@@ -158,7 +158,7 @@ final class LinkPasswordTest extends TestCase {
 			$this->passwords()->generate();
 			self::fail('no failure');
 		} catch (ToolFailure $e) {
-			self::assertSame(FilesMessages::linkPasswordRefused(), $e->getMessage());
+			self::assertSame(SharingMessages::linkPasswordRefused(), $e->getMessage());
 		}
 		self::assertSame(\TypeError::class, $this->logged[0][1]['exception_class']);
 	}

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Tools;
 
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages;
 use OCA\Mcp\Modules\Files\Presentation\FilesSchema;
 use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;
@@ -25,7 +25,7 @@ final class UndoBatch implements WriteTool {
 	/** @return ToolDefinition unchanged static definition */
 	public static function definition(): ToolDefinition {
 		return FilesSchema::definition(['name' => 'files_undo_batch', 'module' => 'files', 'operation' => 'move',
-				'description' => FilesMessages::undoTool(),
+				'description' => ReorganizationMessages::undoTool(),
 				'inputSchema' => FilesSchema::schema([
 					'batch_id' => ['type' => 'integer', 'minimum' => 1, 'description' => 'The batch_id returned by files_move_batch.'],
 				], ['batch_id'])]);

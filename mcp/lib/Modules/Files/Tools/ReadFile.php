@@ -25,7 +25,7 @@ final class ReadFile implements Tool {
 	public static function definition(): ToolDefinition {
 		$path = ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::path()];
 		return FilesSchema::definition(['name' => 'files_read', 'module' => 'files', 'operation' => 'read',
-				'description' => FilesMessages::readTool(),
+				'description' => \OCA\Mcp\Modules\Files\Presentation\ReadingMessages::readTool(),
 				'inputSchema' => FilesSchema::schema(['path' => $path], ['path'])]);
 	}
 

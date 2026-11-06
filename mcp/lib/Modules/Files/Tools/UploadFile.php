@@ -26,10 +26,10 @@ final class UploadFile implements WriteTool {
 	public static function definition(): ToolDefinition {
 		$confirmShared = ['type' => 'boolean', 'description' => FilesMessages::confirmShared()];
 		return FilesSchema::definition(['name' => 'files_upload', 'module' => 'files', 'operation' => 'create',
-				'description' => FilesMessages::uploadTool(),
+				'description' => \OCA\Mcp\Modules\Files\Presentation\CreationMessages::uploadTool(),
 				'inputSchema' => FilesSchema::schema([
-					'path' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::newFilePath()],
-					'size' => ['type' => 'integer', 'minimum' => 0, 'description' => FilesMessages::uploadSize()],
+					'path' => ['type' => 'string', 'minLength' => 1, 'description' => \OCA\Mcp\Modules\Files\Presentation\CreationMessages::newFilePath()],
+					'size' => ['type' => 'integer', 'minimum' => 0, 'description' => \OCA\Mcp\Modules\Files\Presentation\CreationMessages::uploadSize()],
 					'confirm_shared' => $confirmShared,
 				], ['path'])]);
 	}

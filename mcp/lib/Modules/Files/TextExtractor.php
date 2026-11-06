@@ -96,13 +96,13 @@ class TextExtractor {
 		}
 		$text = $this->extract($file);
 		return mb_strlen($text) > $maxChars
-			? mb_substr($text, 0, $maxChars) . "\n\n" . \OCA\Mcp\Modules\Files\Presentation\FilesMessages::textTruncated()
+			? mb_substr($text, 0, $maxChars) . "\n\n" . \OCA\Mcp\Modules\Files\Presentation\ReadingMessages::textTruncated()
 			: $text;
 	}
 
 	/**
 	 * @param File $file readable file within the byte limit
-	 * @return string extracted text; a localized extraction-failure notice (see \OCA\Mcp\Modules\Files\Presentation\FilesMessages::notExtracted) for corrupt PDF/DOCX/ODT
+	 * @return string extracted text; a localized extraction-failure notice (see \OCA\Mcp\Modules\Files\Presentation\ReadingMessages::notExtracted) for corrupt PDF/DOCX/ODT
 	 * @throws ToolFailure over the byte limit, unreadable or unsupported format
 	 */
 	public function extract(File $file): string {
@@ -115,7 +115,7 @@ class TextExtractor {
 	 * @param string $bytes raw content within MAX_BYTES
 	 * @param string $name file name the content came from, whose extension counts as text
 	 * @param string $mime MIME type the content came from
-	 * @return string extracted text; a localized extraction-failure notice (see \OCA\Mcp\Modules\Files\Presentation\FilesMessages::notExtracted) for a corrupt PDF/DOCX/ODT
+	 * @return string extracted text; a localized extraction-failure notice (see \OCA\Mcp\Modules\Files\Presentation\ReadingMessages::notExtracted) for a corrupt PDF/DOCX/ODT
 	 * @throws ToolFailure for an unsupported format
 	 */
 	public function extractBytes(string $bytes, string $name, string $mime): string {
@@ -134,7 +134,7 @@ class TextExtractor {
 			$text = mb_scrub($bytes, 'UTF-8');
 			return str_starts_with($text, "\u{FEFF}") ? substr($text, 3) : $text;
 		}
-		throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::unsupportedFormat());
+		throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReadingMessages::unsupportedFormat());
 	}
 
 	/**
@@ -150,7 +150,7 @@ class TextExtractor {
 		}
 		$handle = $file->fopen('r');
 		if ($handle === false) {
-			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::openFailed());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReadingMessages::openFailed());
 		}
 		try {
 			$bytes = stream_get_contents($handle, self::MAX_BYTES + 1);
@@ -158,7 +158,7 @@ class TextExtractor {
 			fclose($handle);
 		}
 		if ($bytes === false) {
-			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::readFailed());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReadingMessages::readFailed());
 		}
 		if (strlen($bytes) > self::MAX_BYTES) {
 			throw new ToolFailure(self::tooLarge());
@@ -168,7 +168,7 @@ class TextExtractor {
 
 	/** @return string client message for a file over MAX_BYTES */
 	public static function tooLarge(): string {
-		return \OCA\Mcp\Modules\Files\Presentation\FilesMessages::readTooLarge(self::MAX_BYTES);
+		return \OCA\Mcp\Modules\Files\Presentation\ReadingMessages::readTooLarge(self::MAX_BYTES);
 	}
 
 	/**
@@ -180,7 +180,7 @@ class TextExtractor {
 		try {
 			return trim(ExtractedText::utf8($extract()));
 		} catch (\Throwable) {
-			return \OCA\Mcp\Modules\Files\Presentation\FilesMessages::notExtracted($name);
+			return \OCA\Mcp\Modules\Files\Presentation\ReadingMessages::notExtracted($name);
 		}
 	}
 

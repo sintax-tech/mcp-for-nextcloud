@@ -27,7 +27,7 @@ final class CopyFile implements WriteTool {
 		$etag = ['type' => 'string', 'description' => FilesMessages::etag()];
 		$confirmShared = ['type' => 'boolean', 'description' => FilesMessages::confirmShared()];
 		return FilesSchema::definition(['name' => 'files_copy', 'module' => 'files', 'operation' => 'create',
-				'description' => FilesMessages::copyTool(),
+				'description' => \OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::copyTool(),
 				'inputSchema' => FilesSchema::schema([
 					'from' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::path()],
 					'to' => ['type' => 'string', 'minLength' => 1, 'description' => 'Destination path, e.g. /Archived/plan.md'],

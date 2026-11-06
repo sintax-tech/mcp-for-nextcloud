@@ -17,7 +17,7 @@ use OCA\Mcp\Modules\Files\ContentCommit;
 use OCA\Mcp\Modules\Files\ContentTypeGate;
 use OCA\Mcp\Modules\Files\ContentWritePlan;
 use OCA\Mcp\Modules\Files\FileBackup;
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\EditingMessages;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\ReplaceSource;
 use OCA\Mcp\Modules\Files\TextExtractor;
@@ -76,7 +76,7 @@ final class ReplaceFileHandler {
 		$path = PathGuard::normalize($path);
 		$this->assertEditable($root, $path);
 		if (strlen($new) > FilesModule::MAX_EDIT_BYTES) {
-			throw new ToolFailure(FilesMessages::editTooLarge(FilesModule::MAX_EDIT_BYTES));
+			throw new ToolFailure(EditingMessages::editTooLarge(FilesModule::MAX_EDIT_BYTES));
 		}
 		UniqueSnippet::assertText($old);
 		$file = $this->file($root, $path);
@@ -90,7 +90,7 @@ final class ReplaceFileHandler {
 			'snippet' => ['occurrences' => 1, 'replaced' => 1],
 			'size' => ['before' => (int)$file->getSize(), 'after' => strlen($updated)],
 			'diff' => UnifiedDiff::between($this->extractor->extract($file), $updated),
-			'message' => FilesMessages::planReplace(),
+			'message' => EditingMessages::planReplace(),
 		]);
 	}
 
@@ -117,7 +117,7 @@ final class ReplaceFileHandler {
 		$path = PathGuard::normalize($path);
 		$this->assertEditable($root, $path);
 		if (strlen($new) > FilesModule::MAX_EDIT_BYTES) {
-			throw new ToolFailure(FilesMessages::editTooLarge(FilesModule::MAX_EDIT_BYTES));
+			throw new ToolFailure(EditingMessages::editTooLarge(FilesModule::MAX_EDIT_BYTES));
 		}
 		UniqueSnippet::assertText($old);
 		$file = $this->file($root, $path);
@@ -142,10 +142,10 @@ final class ReplaceFileHandler {
 	 */
 	private function assertEditable(Folder $root, string $path): void {
 		if (FileBackup::isBackupPath($path, $this->backupLocation)) {
-			throw new ToolFailure(FilesMessages::backupPath());
+			throw new ToolFailure(EditingMessages::backupPath());
 		}
 		if (!TextExtractor::isText($this->file($root, $path))) {
-			throw new ToolFailure(FilesMessages::notText());
+			throw new ToolFailure(EditingMessages::notText());
 		}
 	}
 

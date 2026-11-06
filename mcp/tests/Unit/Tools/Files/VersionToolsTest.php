@@ -17,7 +17,7 @@ use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Modules\Files\FileBackup;
 use OCA\Mcp\Modules\Files\TextExtractor;
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\VersionMessages;
 use OCA\Mcp\Modules\Files\VersionRestore;
 use OCA\Mcp\Modules\Files\VersionTools;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
@@ -103,7 +103,7 @@ final class VersionToolsTest extends TestCase {
 		$tools = new VersionTools($apps, $this->users, $this->createMock(TextExtractor::class), $this->backup,
 			new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager()), $this->createMock(ContainerInterface::class), new \OCA\Mcp\Modules\Files\Images\OcrSupport($apps));
 		$this->expectException(ToolFailure::class);
-		$this->expectExceptionMessage(FilesMessages::versionsOff());
+		$this->expectExceptionMessage(VersionMessages::versionsOff());
 		$tools->list($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', 50, 'alice');
 	}
 
@@ -143,7 +143,7 @@ final class VersionToolsTest extends TestCase {
 		$out = $this->tools->read($this->file(), '/Documentos/foto.jpg', '1759200000', 'alice');
 		$this->assertFalse($out['text_layer']);
 		$this->assertFalse($out['ocr_active']);
-		$this->assertSame(FilesMessages::noTextOcrInactive(), $out['notice']);
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\ImageMessages::noTextOcrInactive(), $out['notice']);
 		$this->assertSame($out['notice'], $out['text']);
 	}
 
@@ -152,13 +152,13 @@ final class VersionToolsTest extends TestCase {
 			$this->tools->read($this->file(), '/Documentos/ata.md', 'nope', 'alice');
 			$this->fail('an unknown revision must not resolve');
 		} catch (ToolFailure $e) {
-			$this->assertSame(FilesMessages::versionMissing('nope'), $e->getMessage());
+			$this->assertSame(VersionMessages::versionMissing('nope'), $e->getMessage());
 		}
 	}
 
 	public function testReadReportsAVersionThatCannotBeOpened(): void {
 		$this->expectException(ToolFailure::class);
-		$this->expectExceptionMessage(FilesMessages::versionUnreadable());
+		$this->expectExceptionMessage(VersionMessages::versionUnreadable());
 		$this->tools->read($this->file(), '/Documentos/ata.md', '1759200000', 'alice');
 	}
 
@@ -226,7 +226,7 @@ final class VersionToolsTest extends TestCase {
 	public function testRestoreReportsARollbackThatFailed(): void {
 		$this->manager->rollbackResult = false;
 		$this->expectException(ToolFailure::class);
-		$this->expectExceptionMessage(FilesMessages::versionRestoreFailed());
+		$this->expectExceptionMessage(VersionMessages::versionRestoreFailed());
 		$this->tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
 	}
 
@@ -352,7 +352,7 @@ final class VersionToolsTest extends TestCase {
 			$this->lockedTools(new FakeLockManager())->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
 			$this->fail('an unreadable version was restored');
 		} catch (ToolFailure $e) {
-			$this->assertSame(FilesMessages::versionRestoreFailed(), $e->getMessage());
+			$this->assertSame(VersionMessages::versionRestoreFailed(), $e->getMessage());
 		}
 		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
 	}
@@ -384,7 +384,7 @@ final class VersionToolsTest extends TestCase {
 			$this->lockedTools(new FakeLockManager())->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
 			$this->fail('a version that could not be copied was restored');
 		} catch (ToolFailure $e) {
-			$this->assertSame(FilesMessages::versionRestoreFailed(), $e->getMessage());
+			$this->assertSame(VersionMessages::versionRestoreFailed(), $e->getMessage());
 		}
 		$this->assertNotContains('write ' . self::FILE, $this->tree->ops, 'nothing was written over the file');
 		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);

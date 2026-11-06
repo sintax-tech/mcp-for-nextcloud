@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\ReadingMessages;
 use OCA\Mcp\Modules\Files\ReplaceSource;
 use OCA\Mcp\Modules\Files\TextExtractor;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
@@ -92,14 +92,14 @@ final class ReplaceSourceTest extends FilesToolsTestCase {
 	/** The plan of an oversized file refuses before getContent() and writes nothing. */
 	public function testThePlanRefusesAnOversizedFileBeforeReadingIt(): void {
 		$this->oversized();
-		$this->assertSame(FilesMessages::readTooLarge(TextExtractor::MAX_BYTES), $this->planFailure('files_replace', $this->args()));
+		$this->assertSame(ReadingMessages::readTooLarge(TextExtractor::MAX_BYTES), $this->planFailure('files_replace', $this->args()));
 		$this->assertNeverReadOrWritten();
 	}
 
 	/** The confirmed write refuses the same file on its own, also before getContent(). */
 	public function testTheConfirmedWriteRefusesAnOversizedFileBeforeReadingIt(): void {
 		$this->oversized();
-		$this->assertSame(FilesMessages::readTooLarge(TextExtractor::MAX_BYTES), $this->failure('files_replace', $this->args()));
+		$this->assertSame(ReadingMessages::readTooLarge(TextExtractor::MAX_BYTES), $this->failure('files_replace', $this->args()));
 		$this->assertNeverReadOrWritten();
 	}
 
@@ -124,7 +124,7 @@ final class ReplaceSourceTest extends FilesToolsTestCase {
 	public function testAConfirmedSharedOversizedFileIsRefusedWithoutWriting(): void {
 		$this->tree->addFile(self::ABS, "hello UNIQ\n", 'text/plain', ['scope' => 'shared', 'size' => TextExtractor::MAX_BYTES + 1]);
 		$this->assertSame(
-			FilesMessages::readTooLarge(TextExtractor::MAX_BYTES),
+			ReadingMessages::readTooLarge(TextExtractor::MAX_BYTES),
 			$this->failure('files_replace', $this->args() + ['confirm_shared' => true]),
 		);
 		$this->assertSame("hello UNIQ\n", $this->tree->nodes[self::ABS]['content']);
@@ -142,7 +142,7 @@ final class ReplaceSourceTest extends FilesToolsTestCase {
 		$this->tree->contentReads = [];
 		$this->tree->opened = [];
 		$this->tree->ops = [];
-		$this->assertSame(FilesMessages::readTooLarge(TextExtractor::MAX_BYTES), $this->failure('files_replace', $this->args()));
+		$this->assertSame(ReadingMessages::readTooLarge(TextExtractor::MAX_BYTES), $this->failure('files_replace', $this->args()));
 		$this->assertSame("hello UNIQ\n", $this->tree->nodes[self::ABS]['content']);
 		$this->assertNeverReadOrWritten();
 	}
@@ -178,8 +178,8 @@ final class ReplaceSourceTest extends FilesToolsTestCase {
 			$this->tree->contentReads = [];
 			$this->tree->opened = [];
 			$this->tree->ops = [];
-			$this->assertSame(FilesMessages::readTooLarge(TextExtractor::MAX_BYTES), $this->planFailure('files_replace', $this->args()));
-			$this->assertSame(FilesMessages::readTooLarge(TextExtractor::MAX_BYTES), $this->failure('files_replace', $this->args()));
+			$this->assertSame(ReadingMessages::readTooLarge(TextExtractor::MAX_BYTES), $this->planFailure('files_replace', $this->args()));
+			$this->assertSame(ReadingMessages::readTooLarge(TextExtractor::MAX_BYTES), $this->failure('files_replace', $this->args()));
 			$this->assertNeverReadOrWritten();
 		}
 	}
@@ -198,7 +198,7 @@ final class ReplaceSourceTest extends FilesToolsTestCase {
 		try {
 			$read();
 		} catch (ToolFailure $e) {
-			$this->assertSame(FilesMessages::readTooLarge(TextExtractor::MAX_BYTES), $e->getMessage());
+			$this->assertSame(ReadingMessages::readTooLarge(TextExtractor::MAX_BYTES), $e->getMessage());
 			return;
 		}
 		$this->fail('the read was accepted');

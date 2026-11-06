@@ -57,7 +57,7 @@ final class MoveBatchHandler {
 		if (!$result->isOk()) {
 			// A folder the batch cannot create is an item without permission too: nothing of the list runs.
 			$refusedDirs = array_filter($result->plan['mkdirs'], static fn (array $dir): bool => isset($dir['reason']));
-			throw new ToolFailure(FilesMessages::batchNotOk(
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::batchNotOk(
 				count($result->plan['conflicts']),
 				count($result->plan['denied']) + count($refusedDirs),
 			));
@@ -76,7 +76,7 @@ final class MoveBatchHandler {
 				$moved[] = ['from' => $item['from'], 'to' => $check->to, 'toId' => (int)$movedNode->getId()];
 				$this->context->visibilityGuard?->assertVisible($movedNode);
 			} catch (\Throwable $e) {
-				$failure = $e instanceof ToolFailure ? $e->getMessage() : FilesMessages::moveFailed();
+				$failure = $e instanceof ToolFailure ? $e->getMessage() : \OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::moveFailed();
 				$batchId = $store->insert(new Batch(null, $userId, $now, $moved, $created, null));
 				$this->context->reorganization->assertUndoVisible($root, new Batch(null, $userId, $now, $result->planned, $created, null));
 				return [
@@ -117,7 +117,7 @@ final class MoveBatchHandler {
 			'order' => array_map(static fn (array $item): array => ['from' => $item['from'], 'to' => $item['to']], $moves),
 			'undo' => 'files_undo_batch with the batch_id the run returns',
 			'requiresSharedConfirmation' => $result->confirmation !== null,
-			'message' => FilesMessages::planBatch(),
+			'message' => \OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::planBatch(),
 		] + $plan;
 	}
 

@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Tests\Unit\Tools\Files\Sharing\FakeShares;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\SharingMessages;
 use OCA\Mcp\Modules\Files\Sharing\ShareFormatter;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Constants;
@@ -104,7 +104,7 @@ final class FilesShareLinkTest extends FilesToolsTestCase {
 		$out = json_decode($result['content'][0]['text'], true);
 		self::assertSame(self::PASSWORD, $out['password']);
 		self::assertSame(self::PASSWORD, $result['structuredContent']['password']);
-		self::assertSame(FilesMessages::linkPasswordShownOnce(), $out['passwordNotice']);
+		self::assertSame(SharingMessages::linkPasswordShownOnce(), $out['passwordNotice']);
 		self::assertTrue($out['hasPassword']);
 		[[, $share]] = $this->shares->writes;
 		self::assertSame(FakeShares::hashOf(self::PASSWORD), $share->getPassword(), 'o core recebe a senha e guarda o hash');
@@ -122,13 +122,13 @@ final class FilesShareLinkTest extends FilesToolsTestCase {
 
 	public function testAPolicyThatRefusesEveryPasswordCreatesNoLink(): void {
 		$this->refuseAllPasswords = true;
-		self::assertSame(FilesMessages::linkPasswordRefused(), $this->refusal('confirm', ['path' => self::FILE, 'with' => 'link', 'password' => true]));
+		self::assertSame(SharingMessages::linkPasswordRefused(), $this->refusal('confirm', ['path' => self::FILE, 'with' => 'link', 'password' => true]));
 		self::assertSame([], $this->shares->writes);
 	}
 
 	public function testLinksTurnedOffByTheAdministratorAreRefusedBeforeTheCore(): void {
 		$this->shares->settings['shareApiAllowLinks'] = false;
-		self::assertSame(FilesMessages::shareLinksDisabled(), $this->refusal('plan', ['path' => self::FILE, 'with' => 'link']));
+		self::assertSame(SharingMessages::shareLinksDisabled(), $this->refusal('plan', ['path' => self::FILE, 'with' => 'link']));
 	}
 
 	/** Invariant 4: a link never edits. */
@@ -140,12 +140,12 @@ final class FilesShareLinkTest extends FilesToolsTestCase {
 	public function testWithoutTheLinkGrantNothingIsPlanned(): void {
 		$this->sharePolicy->setGrant('alice', 'files', 'link', false);
 		$this->sharePolicy->setGrant('alice', 'files', 'share', true);
-		self::assertSame(FilesMessages::shareNotGranted(), $this->refusal('plan', ['path' => self::FILE, 'with' => 'link']));
+		self::assertSame(SharingMessages::shareNotGranted(), $this->refusal('plan', ['path' => self::FILE, 'with' => 'link']));
 	}
 
 	public function testANodeOfAnotherOwnerIsRefused(): void {
 		$this->tree->addFile('/alice/files/Recebido.pdf', 'x', 'application/pdf', ['scope' => 'shared']);
-		self::assertSame(FilesMessages::shareNotOwner(), $this->refusal('plan', ['path' => '/Recebido.pdf', 'with' => 'link']));
+		self::assertSame(SharingMessages::shareNotOwner(), $this->refusal('plan', ['path' => '/Recebido.pdf', 'with' => 'link']));
 	}
 
 	/** One link per file: asking again changes the one that exists. */
@@ -261,7 +261,7 @@ final class FilesShareLinkTest extends FilesToolsTestCase {
 	public function testTheConfirmedCallChecksAgain(): void {
 		$state = $this->stateOf('files_share', ['path' => self::FILE, 'with' => 'link']);
 		$this->sharePolicy->setGrant('alice', 'files', 'link', false);
-		self::assertSame(FilesMessages::shareNotGranted(), $this->refusal('confirm',
+		self::assertSame(SharingMessages::shareNotGranted(), $this->refusal('confirm',
 			['path' => self::FILE, 'with' => 'link', \OCA\Mcp\Mcp\Confirmation\PlanState::ARGUMENT => $state]));
 		self::assertSame([], $this->shares->writes);
 	}
@@ -270,7 +270,7 @@ final class FilesShareLinkTest extends FilesToolsTestCase {
 	public function testLinksTurnedOffAfterThePlanAreRefusedByTheConfirmedCall(): void {
 		$state = $this->stateOf('files_share', ['path' => self::FILE, 'with' => 'link']);
 		$this->shares->settings['shareApiAllowLinks'] = false;
-		self::assertSame(FilesMessages::shareLinksDisabled(), $this->refusal('confirm',
+		self::assertSame(SharingMessages::shareLinksDisabled(), $this->refusal('confirm',
 			['path' => self::FILE, 'with' => 'link', \OCA\Mcp\Mcp\Confirmation\PlanState::ARGUMENT => $state]));
 		self::assertSame([], $this->shares->writes);
 	}

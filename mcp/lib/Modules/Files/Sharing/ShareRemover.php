@@ -12,7 +12,7 @@ use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\SharingMessages;
 use OCA\Mcp\Mcp\Confirmation\PlanChanged;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
@@ -74,7 +74,7 @@ final class ShareRemover {
 			'with' => $target['recipient']->toArray(),
 			'message' => CommonMessages::planNothingChanged(),
 			PlanState::ARGUMENT => $this->stateOf($target, $uid),
-		] + ($changed ? ['warnings' => [['message' => FilesMessages::sharePlanChanged()]]] : []);
+		] + ($changed ? ['warnings' => [['message' => SharingMessages::sharePlanChanged()]]] : []);
 	}
 
 	/**
@@ -118,7 +118,7 @@ final class ShareRemover {
 			$this->shareManager->deleteShare($target['share']);
 		} catch (\Exception $e) {
 			ShareFailureLog::record($this->logger, 'MCP unshare refused by Nextcloud', $e);
-			throw new ToolFailure(FilesMessages::unshareRefused());
+			throw new ToolFailure(SharingMessages::unshareRefused());
 		}
 		return [
 			'removed' => (string)$target['share']->getFullId(),
@@ -173,7 +173,7 @@ final class ShareRemover {
 		// Visibility comes before anything that would say more than "not found": a hidden node does not exist (invariant 1).
 		$node = $this->access->nodeOf($userFolder, $share) ?? throw new ToolFailure(CommonMessages::notFound());
 		if ($share->getShareType() === IShare::TYPE_ROOM) {
-			throw new ToolFailure(FilesMessages::shareTypeUnsupported());
+			throw new ToolFailure(SharingMessages::shareTypeUnsupported());
 		}
 		if (!$this->access->isRemovable($share, $uid)) {
 			throw new ToolFailure(CommonMessages::notFound());

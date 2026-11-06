@@ -67,12 +67,12 @@ final class ContentCommit {
 			// Checked again right before the write: the backup took time, and files_lock does not refuse every lock.
 			NodeAccess::mutate(fn () => $this->locks === null ? $file->putContent($content) : $this->locks->run(fn () => $file->putContent($content), $file, $userId, $path), $this->visibilityGuard);
 		} catch (LockWriteFailure $e) {
-			throw $e->withNote(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::originalKept($copy));
+			throw $e->withNote(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::originalKept($copy));
 		} catch (LockedException $e) {
 			$failure = NodeAccess::lockFailure($e);
-			throw $failure instanceof LockWriteFailure ? $failure->withNote(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::originalKept($copy)) : new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::writeFailed($copy));
+			throw $failure instanceof LockWriteFailure ? $failure->withNote(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::originalKept($copy)) : new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::writeFailed($copy));
 		} catch (\Throwable) {
-			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::writeFailed($copy));
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::writeFailed($copy));
 		}
 		$node = NodeAccess::requireFile(NodeAccess::get($root, $path, $this->visibilityGuard));
 		return [

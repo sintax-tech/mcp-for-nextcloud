@@ -27,7 +27,7 @@ final class MoveBatch implements WriteTool {
 	public static function definition(): ToolDefinition {
 		$confirmShared = ['type' => 'boolean', 'description' => FilesMessages::confirmShared()];
 		return FilesSchema::definition(['name' => 'files_move_batch', 'module' => 'files', 'operation' => 'move',
-				'description' => FilesMessages::batchTool(),
+				'description' => \OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::batchTool(),
 				'inputSchema' => FilesSchema::schema([
 					'moves' => ['type' => 'array', 'minItems' => 1, 'maxItems' => ReorganizationLimits::BATCH_ITEMS,
 						'description' => 'Moves in the order they will be executed.',

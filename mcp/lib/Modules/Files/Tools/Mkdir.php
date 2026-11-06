@@ -27,7 +27,7 @@ final class Mkdir implements WriteTool {
 		$path = ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::path()];
 		$confirmShared = ['type' => 'boolean', 'description' => FilesMessages::confirmShared()];
 		return FilesSchema::definition(['name' => 'files_mkdir', 'module' => 'files', 'operation' => 'create',
-				'description' => FilesMessages::mkdirTool(),
+				'description' => \OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::mkdirTool(),
 				'inputSchema' => FilesSchema::schema(['path' => $path, 'confirm_shared' => $confirmShared], ['path'])]);
 	}
 

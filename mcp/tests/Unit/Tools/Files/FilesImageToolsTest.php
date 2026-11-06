@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\ImageMessages;
 use OCA\Mcp\Modules\Files\Images\ImageTools;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Constants;
@@ -67,7 +67,7 @@ final class FilesImageToolsTest extends FilesToolsTestCase {
 	public function testImageViewFailsFriendlyOnUnsupportedMime(): void {
 		$this->tree->addFile('/alice/files/Documentos/notes.txt', 'hello', 'text/plain');
 
-		self::assertSame(FilesMessages::notAnImage(),
+		self::assertSame(ImageMessages::notAnImage(),
 			$this->failure('files_image_view', ['path' => '/Documentos/notes.txt']));
 	}
 
@@ -75,7 +75,7 @@ final class FilesImageToolsTest extends FilesToolsTestCase {
 		$this->tree->addFile('/alice/files/Photos/big.png', str_repeat('P', 3 * 1024 * 1024), 'image/png');
 		$this->previewManager->method('getPreview')->willThrowException(new \RuntimeException('no provider'));
 
-		self::assertSame(FilesMessages::imagePreviewTooLarge(),
+		self::assertSame(ImageMessages::imagePreviewTooLarge(),
 			$this->failure('files_image_view', ['path' => '/Photos/big.png']));
 	}
 
@@ -102,12 +102,12 @@ final class FilesImageToolsTest extends FilesToolsTestCase {
 	public function testImagesViewRefusesWhenPathsAndFolderBothProvided(): void {
 		$this->tree->addFile('/alice/files/Photos/a.jpg', 'A', 'image/jpeg');
 
-		self::assertSame(FilesMessages::imagesConflict(),
+		self::assertSame(ImageMessages::imagesConflict(),
 			$this->failure('files_images_view', ['paths' => ['/Photos/a.jpg'], 'folder' => '/Photos']));
 	}
 
 	public function testImagesViewRefusesWhenNoTargetProvided(): void {
-		self::assertSame(FilesMessages::imagesNoTarget(),
+		self::assertSame(ImageMessages::imagesNoTarget(),
 			$this->failure('files_images_view', []));
 	}
 
@@ -159,7 +159,7 @@ final class FilesImageToolsTest extends FilesToolsTestCase {
 	}
 
 	public function testImageSearchRefusesInvalidDate(): void {
-		self::assertSame(FilesMessages::invalidDate('not-a-date'),
+		self::assertSame(ImageMessages::invalidDate('not-a-date'),
 			$this->failure('files_image_search', ['modified_after' => 'not-a-date']));
 	}
 

@@ -72,7 +72,7 @@ final class ListedTreeCopy {
 				} else {
 					$bytes += max(0, (int)$node->getSize());
 					if ($bytes > ReorganizationLimits::BYTES) {
-						throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::copyTooLarge(ReorganizationLimits::BYTES));
+						throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::copyTooLarge(ReorganizationLimits::BYTES));
 					}
 					$copy = $this->native($root, $node, $this->context->absolute($root, $entry['to']), $userId, $entry['to'], $entry);
 				}
@@ -82,10 +82,10 @@ final class ListedTreeCopy {
 					$copiedRoot = $copy;
 				}
 			} catch (\Throwable $e) {
-				$conflicts[] = ['path' => $entry['to'], 'reason' => $e instanceof ToolFailure ? $e->getMessage() : \OCA\Mcp\Modules\Files\Presentation\FilesMessages::moveFailed()];
+				$conflicts[] = ['path' => $entry['to'], 'reason' => $e instanceof ToolFailure ? $e->getMessage() : \OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::moveFailed()];
 				$missing[] = $entry['to'];
 				if ($created === []) {
-					throw ($e instanceof ToolFailure ? $e : new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::moveFailed()));
+					throw ($e instanceof ToolFailure ? $e : new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::moveFailed()));
 				}
 				if ($bytes > ReorganizationLimits::BYTES || $this->stopsCopy($e)) {
 					$missing = array_merge($missing, array_column(array_slice($manifest['entries'], $index + 1), 'to'));
@@ -120,12 +120,12 @@ final class ListedTreeCopy {
 	private function listed(Folder $root, array $entry): Node {
 		$relative = $root->getRelativePath($entry['source']);
 		if ($relative === null) {
-			throw new MoveConflict(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::notTheBatchNode());
+			throw new MoveConflict(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::notTheBatchNode());
 		}
 		// A listed source that disappeared is an item conflict, not an unexpected global failure.
 		$node = NodeAccess::run(fn () => NodeAccess::get($root, $relative, $this->context->visibilityGuard));
 		if ($node->getPath() !== $entry['source'] || (int)$node->getId() !== $entry['id'] || ($node instanceof Folder) !== $entry['folder']) {
-			throw new MoveConflict(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::notTheBatchNode());
+			throw new MoveConflict(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::notTheBatchNode());
 		}
 		return $node;
 	}

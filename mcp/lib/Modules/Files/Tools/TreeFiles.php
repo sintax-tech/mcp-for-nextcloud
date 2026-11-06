@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Files\Tools;
 
 use OCA\Mcp\Modules\Files\Reorganization;
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\ReadingMessages;
 use OCA\Mcp\Modules\Files\Presentation\FilesSchema;
 use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\Tool;
@@ -25,9 +25,9 @@ final class TreeFiles implements Tool {
 	/** @return ToolDefinition unchanged static definition */
 	public static function definition(): ToolDefinition {
 		return FilesSchema::definition(['name' => 'files_tree', 'module' => 'files', 'operation' => 'read',
-				'description' => FilesMessages::treeTool(),
+				'description' => ReadingMessages::treeTool(),
 				'inputSchema' => FilesSchema::schema([
-					'path' => ['type' => 'string', 'default' => '/', 'description' => FilesMessages::path()],
+					'path' => ['type' => 'string', 'default' => '/', 'description' => \OCA\Mcp\Modules\Files\Presentation\FilesMessages::path()],
 					'depth' => ['type' => 'integer', 'minimum' => 1, 'maximum' => Reorganization::MAX_DEPTH, 'default' => Reorganization::MAX_DEPTH],
 					'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => Reorganization::MAX_ENTRIES, 'default' => Reorganization::MAX_ENTRIES],
 				])]);

@@ -103,12 +103,12 @@ final class VersionRestore {
 				// Immediately before the native rollback, still after the backup.
 				$this->types->assertCurrentName($file);
 				if (NodeAccess::mutate(fn () => $manager->rollback($version), $this->visibilityGuard) === false) {
-					throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::versionRestoreFailed());
+					throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionRestoreFailed());
 				}
 			}
 		} catch (FileTypeDenied | FileWritePolicyUnavailable) {
 			// The copy already exists. Do not roll back, do not write, and do not delete the backup.
-			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::writeFailed($copy));
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::writeFailed($copy));
 		}
 		$node = NodeAccess::requireFile(NodeAccess::get($root, $path, $this->visibilityGuard));
 		$this->visibilityGuard?->assertVisible($node);
@@ -148,14 +148,14 @@ final class VersionRestore {
 		$locks = $this->locks ?? throw new \LogicException('LockAwareWrite is not wired');
 		$stream = $manager->read($version);
 		if (!is_resource($stream)) {
-			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::versionRestoreFailed());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionRestoreFailed());
 		}
 		$content = null;
 		try {
 			try {
 				$content = fopen('php://temp/maxmemory:' . self::COPY_MEMORY, 'w+');
 				if ($content === false || stream_copy_to_stream($stream, $content) === false) {
-					throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::versionRestoreFailed());
+					throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionRestoreFailed());
 				}
 			} finally {
 				// Before the write: the version's file must not be open while the file is written.
@@ -170,7 +170,7 @@ final class VersionRestore {
 				$file->putContent($content);
 			}, $file, $viewerUid, $path), $this->visibilityGuard);
 		} catch (LockWriteFailure $e) {
-			throw $e->withNote(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::originalKept($copy));
+			throw $e->withNote(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::originalKept($copy));
 		} finally {
 			if (is_resource($content)) {
 				fclose($content);
@@ -186,7 +186,7 @@ final class VersionRestore {
 	private function requireVersioning(string $viewerUid): IUser {
 		$user = $this->userManager->get($viewerUid);
 		if ($user === null || !$this->appManager->isEnabledForUser(self::APP, $user)) {
-			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::versionsOff());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionsOff());
 		}
 		return $user;
 	}
@@ -204,7 +204,7 @@ final class VersionRestore {
 				return $version;
 			}
 		}
-		throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::versionMissing($revision));
+		throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionMissing($revision));
 	}
 
 	/**
@@ -218,7 +218,7 @@ final class VersionRestore {
 			$manager = null;
 		}
 		if (!is_object($manager)) {
-			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::versionsOff());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionsOff());
 		}
 		return $manager;
 	}

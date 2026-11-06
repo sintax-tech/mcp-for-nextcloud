@@ -22,7 +22,7 @@ use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Modules\Files\CheckoutService;
 use OCA\Mcp\Modules\Files\FileBackup;
 use OCA\Mcp\Modules\Files\FileCreation;
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\CheckoutMessages;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Http\DataDisplayResponse;
 use OCP\AppFramework\Http\Response;
@@ -251,7 +251,7 @@ final class CheckoutCreateTest extends TestCase {
 		$this->stage('--x', 'multipart/form-data; boundary=x');
 		$response = $this->controller->upload();
 		$this->assertSame(400, $response->getStatus());
-		$this->assertSame(FilesMessages::uploadMultipart(), $this->text($response));
+		$this->assertSame(CheckoutMessages::uploadMultipart(), $this->text($response));
 		$this->assertFalse($this->spent());
 		$this->assertSame([], $this->tree->ops);
 	}
@@ -274,7 +274,7 @@ final class CheckoutCreateTest extends TestCase {
 		$response = $this->controller->upload();
 
 		$this->assertSame(409, $response->getStatus());
-		$this->assertSame(FilesMessages::fileExists(), $this->text($response));
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::fileExists(), $this->text($response));
 		$this->assertSame('original', $this->tree->nodes[self::FILE]['content']);
 		$this->assertSame([], $this->tree->ops);
 		$this->assertFalse($this->spent());
@@ -289,7 +289,7 @@ final class CheckoutCreateTest extends TestCase {
 		$response = $this->controller->upload();
 
 		$this->assertSame(409, $response->getStatus());
-		$this->assertSame(FilesMessages::fileExists(), $this->text($response));
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::fileExists(), $this->text($response));
 		$this->assertSame('do outro', $this->tree->nodes[self::FILE]['content']);
 		$this->assertNotContains('write ' . self::FILE, $this->tree->ops);
 	}
@@ -298,7 +298,7 @@ final class CheckoutCreateTest extends TestCase {
 		$this->issue('/Sumiu/novo.docx');
 		$response = $this->controller->upload();
 		$this->assertSame(404, $response->getStatus());
-		$this->assertSame(FilesMessages::createFolderMissing(), $this->text($response));
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createFolderMissing(), $this->text($response));
 		$this->assertFalse($this->spent());
 		$this->assertSame([], $this->tree->ops);
 	}
@@ -317,7 +317,7 @@ final class CheckoutCreateTest extends TestCase {
 
 		$response = $this->controller->upload();
 		$this->assertSame(404, $response->getStatus());
-		$this->assertSame(FilesMessages::createFolderMissing(), $this->text($response));
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createFolderMissing(), $this->text($response));
 		$this->assertStringNotContainsString('Documentos', $this->text($response));
 		$this->assertFalse($this->spent());
 		$this->assertSame([], $this->tree->ops);
@@ -384,8 +384,8 @@ final class CheckoutCreateTest extends TestCase {
 		$this->tree->ops = [];
 		$response = $this->controller->upload();
 		$this->assertSame(410, $response->getStatus());
-		$this->assertSame(FilesMessages::createTokenSpent(), $this->text($response));
-		$this->assertStringContainsString('files_upload', FilesMessages::createTokenSpent());
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createTokenSpent(), $this->text($response));
+		$this->assertStringContainsString('files_upload', \OCA\Mcp\Modules\Files\Presentation\CreationMessages::createTokenSpent());
 		$this->assertSame([], $this->tree->ops);
 	}
 
@@ -440,7 +440,7 @@ final class CheckoutCreateTest extends TestCase {
 		$this->tree->failWrite = true;
 		$response = $this->controller->upload();
 		$this->assertSame(500, $response->getStatus());
-		$this->assertSame(FilesMessages::createFailed(), $this->text($response));
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createFailed(), $this->text($response));
 		$this->assertNotContains('delete ' . self::FILE, $this->tree->ops);
 	}
 
@@ -508,7 +508,7 @@ final class CheckoutCreateTest extends TestCase {
 		$this->stage('');
 		$response = $this->controller->upload();
 		$this->assertSame(400, $response->getStatus());
-		$this->assertSame(FilesMessages::uploadEmptyDeclared(48213), $this->text($response));
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::uploadEmptyDeclared(48213), $this->text($response));
 		$this->assertFalse($this->spent());
 		$this->assertArrayNotHasKey(self::FILE, $this->tree->nodes);
 
@@ -538,7 +538,7 @@ final class CheckoutCreateTest extends TestCase {
 		$this->stage('outro conteúdo');
 		$response = $this->controller->upload();
 		$this->assertSame(409, $response->getStatus());
-		$this->assertSame(FilesMessages::fileExists(), $this->text($response));
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::fileExists(), $this->text($response));
 		$this->assertSame('PK docx bytes', $this->tree->nodes[self::FILE]['content']);
 		$this->assertFalse($this->spent());
 	}

@@ -13,7 +13,7 @@ use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\SharingMessages;
 use OCA\Mcp\Modules\Files\Sharing\ShareAccess;
 use OCA\Mcp\Modules\Files\Sharing\ShareRecipient;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
@@ -66,7 +66,7 @@ final class ShareAccessTest extends TestCase {
 	}
 
 	public function testANodeOfAnotherOwnerIsRefused(): void {
-		self::assertSame(FilesMessages::shareNotOwner(),
+		self::assertSame(SharingMessages::shareNotOwner(),
 			$this->failure(fn () => $this->access->ownNode($this->tree->rootFolder(), 'alice', '/Recebido.pdf')));
 	}
 
@@ -82,7 +82,7 @@ final class ShareAccessTest extends TestCase {
 	}
 
 	public function testTheRootFolderIsRefused(): void {
-		self::assertSame(FilesMessages::shareRootRefused(),
+		self::assertSame(SharingMessages::shareRootRefused(),
 			$this->failure(fn () => $this->access->ownNode($this->tree->rootFolder(), 'alice', '/')));
 	}
 
@@ -219,13 +219,13 @@ final class ShareAccessTest extends TestCase {
 		self::assertSame('share', ShareAccess::operationFor(IShare::TYPE_USER));
 		self::assertSame('share', ShareAccess::operationFor(IShare::TYPE_GROUP));
 		self::assertSame('link', ShareAccess::operationFor(IShare::TYPE_LINK));
-		self::assertSame(FilesMessages::shareTypeUnsupported(), $this->failure(fn () => ShareAccess::operationFor(IShare::TYPE_ROOM)));
+		self::assertSame(SharingMessages::shareTypeUnsupported(), $this->failure(fn () => ShareAccess::operationFor(IShare::TYPE_ROOM)));
 
-		self::assertSame(FilesMessages::shareNotGranted(), $this->failure(fn () => $this->access->assertGranted('alice', IShare::TYPE_USER)));
+		self::assertSame(SharingMessages::shareNotGranted(), $this->failure(fn () => $this->access->assertGranted('alice', IShare::TYPE_USER)));
 		$this->policy->setGrant('alice', 'files', 'share', true);
 		$this->access->assertGranted('alice', IShare::TYPE_USER);
 		$this->access->assertGranted('alice', IShare::TYPE_GROUP);
-		self::assertSame(FilesMessages::shareNotGranted(), $this->failure(fn () => $this->access->assertGranted('alice', IShare::TYPE_LINK)));
+		self::assertSame(SharingMessages::shareNotGranted(), $this->failure(fn () => $this->access->assertGranted('alice', IShare::TYPE_LINK)));
 		$this->policy->setGrant('alice', 'files', 'link', true);
 		$this->access->assertGranted('alice', IShare::TYPE_LINK);
 	}

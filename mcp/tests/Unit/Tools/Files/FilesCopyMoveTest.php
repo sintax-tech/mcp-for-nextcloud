@@ -99,7 +99,7 @@ final class FilesCopyMoveTest extends FilesToolsTestCase {
 		for ($i = 0; $i < ReorganizationLimits::NODES + 1; $i++) {
 			$this->tree->addFile("/alice/files/Grande/arquivo-$i.txt", 'x', 'text/plain');
 		}
-		$this->assertSame(FilesMessages::copyTooManyNodes(ReorganizationLimits::NODES),
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::copyTooManyNodes(ReorganizationLimits::NODES),
 			$this->failure('files_copy', ['from' => '/Grande', 'to' => '/Copia/Grande']));
 		$this->assertFalse(array_key_exists('/alice/files/Copia/Grande', $this->tree->nodes));
 		$this->assertSame([], $this->tree->ops);
@@ -108,7 +108,7 @@ final class FilesCopyMoveTest extends FilesToolsTestCase {
 	public function testCopyRefusesATreeOverTheByteCeilingWithoutCopyingAnything(): void {
 		$this->tree->addFile('/alice/files/Pesada/grande.bin', str_repeat('x', 16), 'application/octet-stream');
 		$this->tree->nodes['/alice/files/Pesada/grande.bin']['size'] = ReorganizationLimits::BYTES + 1;
-		$this->assertSame(FilesMessages::copyTooLarge(ReorganizationLimits::BYTES),
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::copyTooLarge(ReorganizationLimits::BYTES),
 			$this->failure('files_copy', ['from' => '/Pesada', 'to' => '/Copia/Pesada']));
 		$this->assertSame([], $this->tree->ops);
 	}
@@ -119,7 +119,7 @@ final class FilesCopyMoveTest extends FilesToolsTestCase {
 			$this->tree->addFile("/alice/files/Grande/arquivo-$i.txt", 'x', 'text/plain');
 		}
 		$this->expectException(\OCA\Mcp\Mcp\Tools\Results\ToolFailure::class);
-		$this->expectExceptionMessage(FilesMessages::copyTooManyNodes(ReorganizationLimits::NODES));
+		$this->expectExceptionMessage(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::copyTooManyNodes(ReorganizationLimits::NODES));
 		$this->reorganization()->measure($this->tree->node('/alice/files/Grande'));
 	}
 
@@ -202,7 +202,7 @@ final class FilesCopyMoveTest extends FilesToolsTestCase {
 		// A mount point is what puts a subtree on another storage, so the folder carries the id.
 		$this->tree->addFolder('/alice/files/Externo', ['storageId' => 'externo']);
 		$this->tree->addFile('/alice/files/Externo/plano.md', 'plano', 'text/markdown');
-		$this->assertSame(FilesMessages::crossStorage(),
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::crossStorage(),
 			$this->failure('files_move', ['from' => '/Documentos/ata.md', 'to' => '/Externo/ata.md']));
 		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::SOURCE]['content'], 'a origem tem que continuar onde estava');
 		$this->assertSame([], $this->tree->ops);
@@ -217,13 +217,13 @@ final class FilesCopyMoveTest extends FilesToolsTestCase {
 	}
 
 	public function testARefusesAFolderIntoItself(): void {
-		$this->assertSame(FilesMessages::folderIntoItself(),
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::folderIntoItself(),
 			$this->failure('files_move', ['from' => '/Documentos', 'to' => '/Documentos/2026/sub']));
 		$this->assertSame([], $this->tree->ops);
 	}
 
 	public function testARefusesAFolderIntoItsOwnSubfolder(): void {
-		$this->assertSame(FilesMessages::folderIntoItself(),
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::folderIntoItself(),
 			$this->failure('files_move', ['from' => '/Documentos', 'to' => '/Documentos/2026']));
 	}
 

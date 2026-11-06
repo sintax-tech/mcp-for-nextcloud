@@ -91,7 +91,7 @@ final class ImageSearchHandler {
 		$value = (string)$raw;
 		$time = strtotime($value);
 		if ($time === false) {
-			throw new ToolFailure(FilesMessages::invalidDate($value));
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ImageMessages::invalidDate($value));
 		}
 		return $time;
 	}

@@ -28,7 +28,7 @@ final class CheckoutFile implements WriteTool {
 		$etag = ['type' => 'string', 'description' => FilesMessages::etag()];
 		$confirmShared = ['type' => 'boolean', 'description' => FilesMessages::confirmShared()];
 		return FilesSchema::definition(['name' => 'files_checkout', 'module' => 'files', 'operation' => 'edit',
-				'description' => FilesMessages::checkoutTool(),
+				'description' => \OCA\Mcp\Modules\Files\Presentation\CheckoutMessages::checkoutTool(),
 				'inputSchema' => FilesSchema::schema(['path' => $path, 'etag' => $etag, 'confirm_shared' => $confirmShared], ['path'])]);
 	}
 

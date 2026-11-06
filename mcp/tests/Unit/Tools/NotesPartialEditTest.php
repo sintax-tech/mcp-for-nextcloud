@@ -15,7 +15,7 @@ use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\EditingMessages;
 use OCA\Mcp\Platform\Text\UnifiedDiff;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Modules\Notes\Editing\NoteChangePlan;
@@ -224,10 +224,10 @@ final class NotesPartialEditTest extends TestCase {
 		$missing = ['id' => $this->id, 'old' => '103', 'new' => 'x', 'etag' => $this->etag(), PlanState::ARGUMENT => 'x'];
 		$repeated = ['id' => $this->id, 'old' => 'aberto', 'new' => 'fechado', 'etag' => $this->etag(), PlanState::ARGUMENT => 'x'];
 
-		$this->assertSame(FilesMessages::snippetMissing(), $this->refusal(fn () => $this->plan($missing)));
-		$this->assertSame(FilesMessages::snippetMissing(), $this->refusal(fn () => $this->write($missing)));
-		$this->assertSame(FilesMessages::snippetAmbiguous(), $this->refusal(fn () => $this->plan($repeated)));
-		$this->assertSame(FilesMessages::snippetAmbiguous(), $this->refusal(fn () => $this->write($repeated)));
+		$this->assertSame(EditingMessages::snippetMissing(), $this->refusal(fn () => $this->plan($missing)));
+		$this->assertSame(EditingMessages::snippetMissing(), $this->refusal(fn () => $this->write($missing)));
+		$this->assertSame(EditingMessages::snippetAmbiguous(), $this->refusal(fn () => $this->plan($repeated)));
+		$this->assertSame(EditingMessages::snippetAmbiguous(), $this->refusal(fn () => $this->write($repeated)));
 		$this->assertNothingWritten($before);
 	}
 
@@ -235,9 +235,9 @@ final class NotesPartialEditTest extends TestCase {
 	public function testReplaceRefusesAnOverlappingPassageInThePlanAndTheWrite(): void {
 		$this->tree->nodes[self::PATH]['content'] = 'banana';
 		$arguments = ['id' => $this->id, 'old' => 'ana', 'new' => 'X'];
-		$this->assertSame(FilesMessages::snippetAmbiguous(), $this->refusal(fn () => $this->plan($arguments)));
+		$this->assertSame(EditingMessages::snippetAmbiguous(), $this->refusal(fn () => $this->plan($arguments)));
 		$confirmed = $arguments + ['etag' => $this->etag(), PlanState::ARGUMENT => 'x'];
-		$this->assertSame(FilesMessages::snippetAmbiguous(), $this->refusal(fn () => $this->write($confirmed)));
+		$this->assertSame(EditingMessages::snippetAmbiguous(), $this->refusal(fn () => $this->write($confirmed)));
 		$this->assertNothingWritten('banana');
 	}
 
@@ -248,7 +248,7 @@ final class NotesPartialEditTest extends TestCase {
 			\OCA\Mcp\Modules\Notes\Editing\NoteChange::apply('replace', str_repeat('a', 1048576), ['old' => str_repeat('a', 65536), 'new' => 'X']);
 			$this->fail('the replace was accepted');
 		} catch (ToolFailure $e) {
-			$this->assertSame(FilesMessages::snippetAmbiguous(), $e->getMessage());
+			$this->assertSame(EditingMessages::snippetAmbiguous(), $e->getMessage());
 		}
 		$this->assertLessThan(1.0, (hrtime(true) - $started) / 1e9);
 	}
@@ -281,7 +281,7 @@ final class NotesPartialEditTest extends TestCase {
 	public function testReplaceRefusesAPassageThatIsNotUtf8(): void {
 		$before = $this->content();
 		$message = $this->refusal(fn () => $this->write(['id' => $this->id, 'old' => "\xC3", 'new' => 'x', 'etag' => $this->etag(), PlanState::ARGUMENT => 'x']));
-		$this->assertSame(FilesMessages::snippetNotUtf8(), $message);
+		$this->assertSame(EditingMessages::snippetNotUtf8(), $message);
 		$this->assertNothingWritten($before);
 	}
 

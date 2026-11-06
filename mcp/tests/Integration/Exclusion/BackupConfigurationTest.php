@@ -169,7 +169,7 @@ final class BackupConfigurationTest extends ExclusionTestCase {
 		$path = '/' . $nfd . '/' . $this->run . '/must-not-exist.txt';
 		$refused = $this->mcp()->write('files_create', ['path' => $path, 'content' => 'must not write']);
 		self::assertTrue($refused->isError(), $refused->describe());
-		self::assertStringContainsString(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::backupPath(), $refused->fingerprint());
+		self::assertStringContainsString(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath(), $refused->fingerprint());
 		self::assertFalse($home->nodeExists($nfc . '/' . $this->run . '/must-not-exist.txt'));
 		$this->tag($original);
 		$this->exclude();

@@ -28,10 +28,10 @@ final class EditFile implements WriteTool {
 		$etag = ['type' => 'string', 'description' => FilesMessages::etag()];
 		$confirmShared = ['type' => 'boolean', 'description' => FilesMessages::confirmShared()];
 		return FilesSchema::definition(['name' => 'files_edit', 'module' => 'files', 'operation' => 'edit',
-				'description' => FilesMessages::editTool(),
+				'description' => \OCA\Mcp\Modules\Files\Presentation\EditingMessages::editTool(),
 				'inputSchema' => FilesSchema::schema([
 					'path' => $path,
-					'content' => ['type' => 'string', 'description' => FilesMessages::content()],
+					'content' => ['type' => 'string', 'description' => \OCA\Mcp\Modules\Files\Presentation\EditingMessages::content()],
 					'etag' => $etag,
 					'confirm_shared' => $confirmShared,
 				], ['path', 'content'])]);

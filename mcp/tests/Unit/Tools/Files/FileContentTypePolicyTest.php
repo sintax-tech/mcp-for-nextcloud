@@ -33,7 +33,7 @@ use OCA\Mcp\Modules\Files\ContentCommit;
 use OCA\Mcp\Modules\Files\ContentTypeGate;
 use OCA\Mcp\Modules\Files\ContentWritePlan;
 use OCA\Mcp\Modules\Files\FileBackup;
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\EditingMessages;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\Handler\EditFileHandler;
 use OCA\Mcp\Modules\Files\Handler\ReplaceFileHandler;
@@ -393,11 +393,11 @@ final class FileContentTypePolicyTest extends TestCase {
 		$this->allow(['txt']);
 		$path = $this->put('a.php', 'alpha', 'text/plain');
 		$missing = $this->planFailure('files_replace', ['path' => $path, 'old' => 'nope', 'new' => 'x']);
-		$this->assertSame(FilesMessages::snippetMissing(), $missing->getMessage());
+		$this->assertSame(EditingMessages::snippetMissing(), $missing->getMessage());
 		$this->assertNotInstanceOf(FileTypeDenied::class, $missing);
 
 		$raw = $this->failure('files_replace', ['path' => $path, 'old' => "\xE3", 'new' => 'x']);
-		$this->assertSame(FilesMessages::snippetNotUtf8(), $raw->getMessage());
+		$this->assertSame(EditingMessages::snippetNotUtf8(), $raw->getMessage());
 		$this->assertSame([], $this->tree->ops);
 	}
 
@@ -412,14 +412,14 @@ final class FileContentTypePolicyTest extends TestCase {
 		$pdf = $this->put('a.pdf', '%PDF', 'application/pdf');
 		$pngBefore = $this->node($png);
 		$picture = $this->failure('files_edit', ['path' => $png, 'content' => 'x']);
-		$this->assertSame(FilesMessages::notText(), $picture->getMessage());
-		$this->assertSame(FilesMessages::notText(), $this->planFailure('files_edit', ['path' => $pdf, 'content' => 'x'])->getMessage());
+		$this->assertSame(EditingMessages::notText(), $picture->getMessage());
+		$this->assertSame(EditingMessages::notText(), $this->planFailure('files_edit', ['path' => $pdf, 'content' => 'x'])->getMessage());
 		$this->assertUntouched($png, 'PNG', $pngBefore['etag']);
 
 		$php = $this->put('a.php', '<?php ');
 		$huge = $this->failure('files_edit', ['path' => $php, 'content' => str_repeat('x', FilesModule::MAX_EDIT_BYTES + 1)]);
-		$this->assertSame(FilesMessages::editTooLarge(FilesModule::MAX_EDIT_BYTES), $huge->getMessage());
-		$this->assertSame(FilesMessages::backupPath(), $this->failure('files_edit', ['path' => '/MCP backups/a.txt', 'content' => 'x'])->getMessage());
+		$this->assertSame(EditingMessages::editTooLarge(FilesModule::MAX_EDIT_BYTES), $huge->getMessage());
+		$this->assertSame(EditingMessages::backupPath(), $this->failure('files_edit', ['path' => '/MCP backups/a.txt', 'content' => 'x'])->getMessage());
 
 		$txt = $this->put('a.txt', 'alpha');
 		$stalePlan = $this->planFailure('files_edit', ['path' => $php, 'content' => 'x', 'etag' => 'stale']);
@@ -560,7 +560,7 @@ final class FileContentTypePolicyTest extends TestCase {
 		$this->manager->ops = [];
 		$this->manager->versions = [];
 		$missing = $this->planFailure('files_version_restore', ['path' => $this->put('a.txt', 'alpha'), 'version' => 'nope']);
-		$this->assertSame(FilesMessages::versionMissing('nope'), $missing->getMessage());
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionMissing('nope'), $missing->getMessage());
 		$this->assertSame([], $this->backups());
 	}
 
@@ -692,7 +692,7 @@ final class FileContentTypePolicyTest extends TestCase {
 
 		$done = $this->failure('files_edit', ['path' => $path, 'content' => 'beta']);
 		$relative = $this->keptBackup($path, 'alpha', $before['etag']);
-		$this->assertSame(FilesMessages::writeFailed($relative), $done->getMessage());
+		$this->assertSame(EditingMessages::writeFailed($relative), $done->getMessage());
 		$this->assertNotInstanceOf(FileTypeDenied::class, $done);
 		$this->assertSame(3, $this->gate->calls);
 	}
@@ -724,7 +724,7 @@ final class FileContentTypePolicyTest extends TestCase {
 
 		$done = $this->failure('files_version_restore', ['path' => $path, 'version' => '1']);
 		$relative = $this->keptBackup($path, 'current', $before['etag']);
-		$this->assertSame(FilesMessages::writeFailed($relative), $done->getMessage());
+		$this->assertSame(EditingMessages::writeFailed($relative), $done->getMessage());
 		$this->assertNotContains('rollback', $this->manager->ops);
 		$this->assertSame(3, $this->gate->calls);
 	}

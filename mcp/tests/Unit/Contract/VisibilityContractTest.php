@@ -16,7 +16,7 @@ use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\CreationMessages;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\Reorganization;
 use OCA\Mcp\Modules\Notes\NotesModule;
@@ -513,7 +513,7 @@ final class VisibilityContractTest extends TestCase {
 				$res = $registry->call($tool, ['path' => '/SecretFolder/novo.txt', 'confirm' => $confirm, 'confirm_shared' => true] + $extra, 'alice');
 				$this->assertTrue($res['isError'] ?? false, $tool);
 				$this->assertStringStartsWith(CommonMessages::notFound(), $res['content'][0]['text'], $tool);
-				$this->assertSame(FilesMessages::createFolderMissing(), $res['content'][0]['text'], $tool);
+				$this->assertSame(CreationMessages::createFolderMissing(), $res['content'][0]['text'], $tool);
 				$assertNoLeak($res['content'][0]['text']);
 			}
 		}

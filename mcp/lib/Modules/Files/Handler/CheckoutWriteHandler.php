@@ -30,7 +30,7 @@ use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Modules\Files\FileBackup;
 use OCA\Mcp\Modules\Files\FileCreation;
 use OCA\Mcp\Modules\Files\FileExists;
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\CheckoutMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Response;
@@ -149,12 +149,12 @@ final class CheckoutWriteHandler {
 				: ($this->refuse)(Http::STATUS_LOCKED, $failure->getMessage() . ' ' . LockMessages::newCheckoutNeeded());
 		} catch (ToolFailure $e) {
 			$conflict = $e->getMessage() === CommonMessages::conflict();
-			$message = $conflict ? FilesMessages::uploadConflict() : $e->getMessage();
+			$message = $conflict ? CheckoutMessages::uploadConflict() : $e->getMessage();
 			return ($this->refuse)($conflict ? Http::STATUS_CONFLICT : Http::STATUS_BAD_REQUEST, $message);
 		} catch (Throwable) {
 			$this->logger->error('MCP checkout upload failed', ['app' => 'mcp']);
 			// The copy exists by now, so the message can point at the one thing that still holds the original.
-			return ($this->refuse)(Http::STATUS_INTERNAL_SERVER_ERROR, FilesMessages::uploadFailed($copy));
+			return ($this->refuse)(Http::STATUS_INTERNAL_SERVER_ERROR, CheckoutMessages::uploadFailed($copy));
 		}
 		return ($this->json)(Http::STATUS_OK, [
 			'path' => $row->path,
@@ -203,16 +203,16 @@ final class CheckoutWriteHandler {
 		$size = (int)filesize($body);
 		$declared = $row->declaredSize();
 		if ($size === 0 && $declared !== null && $declared > 0) {
-			return ($this->refuse)(Http::STATUS_BAD_REQUEST, FilesMessages::uploadEmptyDeclared($declared));
+			return ($this->refuse)(Http::STATUS_BAD_REQUEST, \OCA\Mcp\Modules\Files\Presentation\CreationMessages::uploadEmptyDeclared($declared));
 		}
-		if ($failure = ($this->spend)($row, FilesMessages::createTokenSpent())) {
+		if ($failure = ($this->spend)($row, \OCA\Mcp\Modules\Files\Presentation\CreationMessages::createTokenSpent())) {
 			return $failure;
 		}
 		$handle = null;
 		try {
 			$content = $size === 0 ? '' : ($handle = fopen($body, 'rb'));
 			if ($content === false) {
-				throw new ToolFailure(FilesMessages::createFailed());
+				throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createFailed());
 			}
 			$file = NodeAccess::run(fn (): File => $creation->write($target['folder'], $target['name'], $content, $uid, ($this->actsAsUser)($uid)));
 			return ($this->json)(Http::STATUS_CREATED, $creation->receipt($target, $file, $uid));
@@ -247,14 +247,14 @@ final class CheckoutWriteHandler {
 		}
 		if (!$e instanceof ToolFailure) {
 			$this->logger->error('MCP create upload failed', ['app' => 'mcp', 'exception_class' => $e::class]);
-			return ($this->refuse)(Http::STATUS_INTERNAL_SERVER_ERROR, FilesMessages::createFailed());
+			return ($this->refuse)(Http::STATUS_INTERNAL_SERVER_ERROR, \OCA\Mcp\Modules\Files\Presentation\CreationMessages::createFailed());
 		}
 		return match ($e->getMessage()) {
 			CommonMessages::forbidden() => ($this->refuse)(Http::STATUS_FORBIDDEN, $e->getMessage()),
-			FilesMessages::backupPath() => ($this->refuse)(Http::STATUS_BAD_REQUEST, $e->getMessage()),
+			\OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath() => ($this->refuse)(Http::STATUS_BAD_REQUEST, $e->getMessage()),
 			CommonMessages::locked() => ($this->refuse)(Http::STATUS_LOCKED, $e->getMessage()),
 			CommonMessages::insufficientQuota() => ($this->refuse)(Http::STATUS_INSUFFICIENT_STORAGE, $e->getMessage()),
-			FilesMessages::createFailed() => ($this->refuse)(Http::STATUS_INTERNAL_SERVER_ERROR, $e->getMessage()),
+			\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createFailed() => ($this->refuse)(Http::STATUS_INTERNAL_SERVER_ERROR, $e->getMessage()),
 			default => ($this->refuse)(Http::STATUS_NOT_FOUND, $e->getMessage()),
 		};
 	}

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Sharing;
 
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\SharingMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\HintException;
@@ -31,7 +31,7 @@ use Psr\Log\LoggerInterface;
  *
  * The password is returned to the caller only: nothing here logs it or keeps it. A listener that breaks in any other way
  * than a policy refusal may have written the candidate into its message, so that failure becomes the safe
- * {@see FilesMessages::linkPasswordRefused()} and the log keeps the exception class only. Stateless.
+ * {@see SharingMessages::linkPasswordRefused()} and the log keeps the exception class only. Stateless.
  */
 final class LinkPassword {
 	/** Length of the fallback password. */
@@ -62,7 +62,7 @@ final class LinkPassword {
 				return $candidate;
 			}
 		}
-		throw new ToolFailure(FilesMessages::linkPasswordRefused());
+		throw new ToolFailure(SharingMessages::linkPasswordRefused());
 	}
 
 	/** @return string|null the password of the policy app, null when no listener answered or the generator failed */
@@ -90,7 +90,7 @@ final class LinkPassword {
 			return false;
 		} catch (\Throwable $e) {
 			$this->logger->warning('MCP link password validation failed', ['app' => 'mcp', 'exception_class' => $e::class]);
-			throw new ToolFailure(FilesMessages::linkPasswordRefused());
+			throw new ToolFailure(SharingMessages::linkPasswordRefused());
 		}
 	}
 

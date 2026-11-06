@@ -14,7 +14,7 @@ use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Modules\Files\CheckoutService;
 use OCA\Mcp\Modules\Files\FileBackup;
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\Reorganization;
 use OCA\Mcp\Modules\Files\TextExtractor;
@@ -54,18 +54,18 @@ final class FilesTranslationTest extends TestCase {
 		self::assertSame('O caminho informado não é um arquivo.', CommonMessages::notAFile());
 		self::assertSame('Já existe um arquivo com o nome da pasta de destino.', CommonMessages::fileInTargetFolderPath());
 
-		self::assertSame('Lote não encontrado.', FilesMessages::batchNotFound());
-		self::assertSame('Este lote já foi desfeito.', FilesMessages::batchAlreadyUndone());
-		self::assertSame('O item não é mais o que este lote moveu; nada foi desfeito.', FilesMessages::notTheBatchNode());
-		self::assertSame('O caminho informado não é uma pasta.', FilesMessages::notAFolder());
-		self::assertSame('Já existe um arquivo ou pasta neste destino.', FilesMessages::destinationExists());
-		self::assertSame('O trecho informado não aparece no arquivo.', FilesMessages::snippetMissing());
-		self::assertSame('O trecho informado não é UTF-8 válido; envie-o exatamente como aparece no arquivo.', FilesMessages::snippetNotUtf8());
-		self::assertSame('Conteúdo excede o limite de edição de 100 bytes.', FilesMessages::editTooLarge(100));
-		self::assertSame('O versionamento de arquivos (files_versions) não está ativo nesta conta.', FilesMessages::versionsOff());
-		self::assertSame('Envie os bytes do arquivo como corpo bruto (curl -T), não como formulário multipart.', FilesMessages::uploadMultipart());
-		self::assertSame('O corpo enviado está vazio; nada foi gravado.', FilesMessages::uploadEmpty());
-		self::assertSame('Recurso excede o limite de leitura binária de 524288 bytes.', FilesMessages::binaryResourceTooLarge(524288));
+		self::assertSame('Lote não encontrado.', ReorganizationMessages::batchNotFound());
+		self::assertSame('Este lote já foi desfeito.', ReorganizationMessages::batchAlreadyUndone());
+		self::assertSame('O item não é mais o que este lote moveu; nada foi desfeito.', ReorganizationMessages::notTheBatchNode());
+		self::assertSame('O caminho informado não é uma pasta.', \OCA\Mcp\Modules\Files\Presentation\FilesMessages::notAFolder());
+		self::assertSame('Já existe um arquivo ou pasta neste destino.', \OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists());
+		self::assertSame('O trecho informado não aparece no arquivo.', \OCA\Mcp\Modules\Files\Presentation\EditingMessages::snippetMissing());
+		self::assertSame('O trecho informado não é UTF-8 válido; envie-o exatamente como aparece no arquivo.', \OCA\Mcp\Modules\Files\Presentation\EditingMessages::snippetNotUtf8());
+		self::assertSame('Conteúdo excede o limite de edição de 100 bytes.', \OCA\Mcp\Modules\Files\Presentation\EditingMessages::editTooLarge(100));
+		self::assertSame('O versionamento de arquivos (files_versions) não está ativo nesta conta.', \OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionsOff());
+		self::assertSame('Envie os bytes do arquivo como corpo bruto (curl -T), não como formulário multipart.', \OCA\Mcp\Modules\Files\Presentation\CheckoutMessages::uploadMultipart());
+		self::assertSame('O corpo enviado está vazio; nada foi gravado.', \OCA\Mcp\Modules\Files\Presentation\CheckoutMessages::uploadEmpty());
+		self::assertSame('Recurso excede o limite de leitura binária de 524288 bytes.', \OCA\Mcp\Platform\FileAccess\BinaryResourceMessages::binaryResourceTooLarge(524288));
 	}
 
 	public function testSpanishUserGetsSpanishTexts(): void {
@@ -74,10 +74,10 @@ final class FilesTranslationTest extends TestCase {
 			CommonMessages::forbidden(),
 			CommonMessages::externalStorage(),
 			CommonMessages::confirmAdvice(),
-			FilesMessages::destinationExists(),
-			FilesMessages::uploadMultipart(),
-			FilesMessages::versionsOff(),
-			FilesMessages::editTooLarge(100),
+			\OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists(),
+			\OCA\Mcp\Modules\Files\Presentation\CheckoutMessages::uploadMultipart(),
+			\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionsOff(),
+			\OCA\Mcp\Modules\Files\Presentation\EditingMessages::editTooLarge(100),
 		];
 
 		Translator::use(new JsonL10n('es'));
@@ -87,10 +87,10 @@ final class FilesTranslationTest extends TestCase {
 			CommonMessages::forbidden(),
 			CommonMessages::externalStorage(),
 			CommonMessages::confirmAdvice(),
-			FilesMessages::destinationExists(),
-			FilesMessages::uploadMultipart(),
-			FilesMessages::versionsOff(),
-			FilesMessages::editTooLarge(100),
+			\OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists(),
+			\OCA\Mcp\Modules\Files\Presentation\CheckoutMessages::uploadMultipart(),
+			\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionsOff(),
+			\OCA\Mcp\Modules\Files\Presentation\EditingMessages::editTooLarge(100),
 		];
 
 		foreach ($translated as $index => $text) {
@@ -101,21 +101,21 @@ final class FilesTranslationTest extends TestCase {
 		self::assertSame('Recurso no encontrado en Nextcloud.', CommonMessages::notFound());
 		self::assertSame('Sin acceso a este recurso en Nextcloud.', CommonMessages::forbidden());
 		self::assertSame('Este archivo está en un almacenamiento externo.', CommonMessages::externalStorage());
-		self::assertSame('Ya existe un archivo o carpeta en este destino.', FilesMessages::destinationExists());
-		self::assertSame('Envíe los bytes del archivo como cuerpo sin procesar (curl -T), no como formulario multiparte.', FilesMessages::uploadMultipart());
-		self::assertSame('El versionado de archivos (files_versions) no está activo en esta cuenta.', FilesMessages::versionsOff());
-		self::assertSame('El recurso excede el límite de lectura binaria de 524288 bytes.', FilesMessages::binaryResourceTooLarge(524288));
+		self::assertSame('Ya existe un archivo o carpeta en este destino.', \OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists());
+		self::assertSame('Envíe los bytes del archivo como cuerpo sin procesar (curl -T), no como formulario multiparte.', \OCA\Mcp\Modules\Files\Presentation\CheckoutMessages::uploadMultipart());
+		self::assertSame('El versionado de archivos (files_versions) no está activo en esta cuenta.', \OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionsOff());
+		self::assertSame('El recurso excede el límite de lectura binaria de 524288 bytes.', \OCA\Mcp\Platform\FileAccess\BinaryResourceMessages::binaryResourceTooLarge(524288));
 	}
 
 	public function testWithoutTranslatorOrWithUnknownLanguageTheMessagesAreEnglish(): void {
 		Translator::reset();
 		self::assertSame('Resource not found in Nextcloud.', CommonMessages::notFound());
-		self::assertSame('A file or folder already exists at this destination.', FilesMessages::destinationExists());
+		self::assertSame('A file or folder already exists at this destination.', \OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists());
 		self::assertSame('This file is on an external storage.', CommonMessages::externalStorage());
 
 		Translator::use(new JsonL10n('fr'));
 		self::assertSame('Resource not found in Nextcloud.', CommonMessages::notFound());
-		self::assertSame('A file or folder already exists at this destination.', FilesMessages::destinationExists());
+		self::assertSame('A file or folder already exists at this destination.', \OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists());
 		self::assertSame('This file is on an external storage.', CommonMessages::externalStorage());
 	}
 
@@ -137,6 +137,6 @@ final class FilesTranslationTest extends TestCase {
 		foreach ($texts as $text) {
 			self::assertDoesNotMatchRegularExpression('/[À-ÿ]/u', $text);
 		}
-		self::assertSame(FilesMessages::listTool(), $definitions[0]['description']);
+		self::assertSame(\OCA\Mcp\Modules\Files\Presentation\ReadingMessages::listTool(), $definitions[0]['description']);
 	}
 }

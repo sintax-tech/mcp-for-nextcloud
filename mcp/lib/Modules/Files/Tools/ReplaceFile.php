@@ -28,11 +28,11 @@ final class ReplaceFile implements WriteTool {
 		$etag = ['type' => 'string', 'description' => FilesMessages::etag()];
 		$confirmShared = ['type' => 'boolean', 'description' => FilesMessages::confirmShared()];
 		return FilesSchema::definition(['name' => 'files_replace', 'module' => 'files', 'operation' => 'edit',
-				'description' => FilesMessages::replaceTool(),
+				'description' => \OCA\Mcp\Modules\Files\Presentation\EditingMessages::replaceTool(),
 				'inputSchema' => FilesSchema::schema([
 					'path' => $path,
-					'old' => ['type' => 'string', 'minLength' => 1, 'maxLength' => \OCA\Mcp\Platform\Text\UniqueSnippet::MAX_BYTES, 'description' => FilesMessages::oldSnippet()],
-					'new' => ['type' => 'string', 'description' => FilesMessages::newSnippet()],
+					'old' => ['type' => 'string', 'minLength' => 1, 'maxLength' => \OCA\Mcp\Platform\Text\UniqueSnippet::MAX_BYTES, 'description' => \OCA\Mcp\Modules\Files\Presentation\EditingMessages::oldSnippet()],
+					'new' => ['type' => 'string', 'description' => \OCA\Mcp\Modules\Files\Presentation\EditingMessages::newSnippet()],
 					'etag' => $etag,
 					'confirm_shared' => $confirmShared,
 				], ['path', 'old', 'new'])]);

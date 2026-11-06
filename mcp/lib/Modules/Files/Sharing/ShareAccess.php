@@ -11,7 +11,7 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\SharingMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 use OCP\Files\Node;
@@ -74,11 +74,11 @@ final class ShareAccess {
 	 */
 	public function ownNode(Folder $userFolder, string $uid, string $path): Node {
 		if (PathGuard::normalize($path) === '/') {
-			throw new ToolFailure(FilesMessages::shareRootRefused());
+			throw new ToolFailure(SharingMessages::shareRootRefused());
 		}
 		$node = NodeAccess::run(fn (): Node => NodeAccess::get($userFolder, $path, $this->visibilityGuard));
 		if ($node->getOwner()?->getUID() !== $uid) {
-			throw new ToolFailure(FilesMessages::shareNotOwner());
+			throw new ToolFailure(SharingMessages::shareNotOwner());
 		}
 		return $node;
 	}
@@ -220,7 +220,7 @@ final class ShareAccess {
 	 * @throws ToolFailure for any other type, a Talk attachment included
 	 */
 	public static function operationFor(int $shareType): string {
-		return self::OPERATIONS[$shareType] ?? throw new ToolFailure(FilesMessages::shareTypeUnsupported());
+		return self::OPERATIONS[$shareType] ?? throw new ToolFailure(SharingMessages::shareTypeUnsupported());
 	}
 
 	/**
@@ -233,7 +233,7 @@ final class ShareAccess {
 	 */
 	public function assertGranted(string $uid, int $shareType): void {
 		if (!$this->policy->granted($uid, 'files', self::operationFor($shareType))) {
-			throw new ToolFailure(FilesMessages::shareNotGranted());
+			throw new ToolFailure(SharingMessages::shareNotGranted());
 		}
 	}
 

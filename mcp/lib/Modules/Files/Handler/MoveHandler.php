@@ -13,7 +13,7 @@ use OCP\Files\Node;
 use OCA\Mcp\Modules\Files\CopyMoveContext;
 use OCA\Mcp\Modules\Files\MoveConflict;
 use OCA\Mcp\Modules\Files\FolderExposureGate;
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages;
 
 /** Owns files_move planning and confirmation, preserving native authorization and receipts. */
 final class MoveHandler {
@@ -94,7 +94,7 @@ final class MoveHandler {
 			'access' => $this->context->access->describe($check->source, $userId),
 			'shared' => $this->context->sharedOf($userId, $check->source, $check->destination),
 			'recoverable' => true,
-			'message' => FilesMessages::planMove(),
+			'message' => ReorganizationMessages::planMove(),
 		] + ($this->context->locks?->planNotice($check->source, $userId) ?? []);
 	}
 }

@@ -26,11 +26,11 @@ final class ViewImage implements Tool {
 	public static function definition(): ToolDefinition {
 		$path = ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::path()];
 		return FilesSchema::definition(['name' => 'files_image_view', 'module' => 'files', 'operation' => 'read',
-				'description' => FilesMessages::imageViewTool(),
+				'description' => \OCA\Mcp\Modules\Files\Presentation\ImageMessages::imageViewTool(),
 				'inputSchema' => FilesSchema::schema([
 					'path' => $path,
 					'max_size' => ['type' => 'integer', 'minimum' => ImageTools::MIN_MAX_SIZE, 'maximum' => ImageTools::MAX_MAX_SIZE,
-						'default' => ImageTools::DEFAULT_MAX_SIZE, 'description' => FilesMessages::imageMaxSize()],
+						'default' => ImageTools::DEFAULT_MAX_SIZE, 'description' => \OCA\Mcp\Modules\Files\Presentation\ImageMessages::imageMaxSize()],
 				], ['path'])]);
 	}
 

@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages;
 use OCA\Mcp\Modules\Files\ReorganizationLimits;
 
 /**
@@ -196,7 +196,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
 			$plan = $this->plan('files_move_batch', $args);
 			$this->assertFalse($plan['ok'], "plano de $dir");
 			$this->assertSame([['path' => $dir, 'exists' => false, 'willCreate' => false, 'reason' => $reason]], $plan['mkdirs']);
-			$this->assertSame(FilesMessages::batchNotOk(0, 1), $this->failure('files_move_batch', $args + ['confirm' => true]), "execução de $dir");
+			$this->assertSame(ReorganizationMessages::batchNotOk(0, 1), $this->failure('files_move_batch', $args + ['confirm' => true]), "execução de $dir");
 		}
 		$this->assertSame([], $this->tree->ops, 'nem a pasta nem o movimento');
 		$this->assertArrayNotHasKey('/alice/files/Hidden/New', $this->tree->nodes);
@@ -215,9 +215,9 @@ final class FilesBatchTest extends FilesToolsTestCase {
 		$this->assertFalse($plan['ok'], 'o plano não diz ok para uma pasta que não pode ser criada');
 		$this->assertSame([
 			['path' => '/A/B', 'exists' => false, 'willCreate' => true],
-			['path' => '/C', 'exists' => false, 'willCreate' => false, 'reason' => FilesMessages::destinationExists()],
+			['path' => '/C', 'exists' => false, 'willCreate' => false, 'reason' => \OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists()],
 		], $plan['mkdirs']);
-		$this->assertSame(FilesMessages::batchNotOk(0, 1), $this->failure('files_move_batch', $args + ['confirm' => true]));
+		$this->assertSame(ReorganizationMessages::batchNotOk(0, 1), $this->failure('files_move_batch', $args + ['confirm' => true]));
 		$this->assertSame([], $this->tree->ops, 'nenhuma pasta órfã');
 		$this->assertArrayNotHasKey('/alice/files/A', $this->tree->nodes);
 		$this->assertSame([], $this->batches->rows);
@@ -237,7 +237,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
 			$reorganization->createFolders($this->tree->rootFolder(), ['/A/B', '/C']);
 			$this->fail('createFolders aceitou uma pasta sobre um arquivo');
 		} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
-			$this->assertSame(FilesMessages::destinationExists(), $e->getMessage());
+			$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists(), $e->getMessage());
 		}
 		$this->assertSame([], $this->tree->ops);
 	}
@@ -247,7 +247,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
 		$this->tree->addFolder('/alice/files/ReadOnly', ['permissions' => \OCP\Constants::PERMISSION_READ]);
 		$args = ['moves' => [['from' => '/Documentos/ata.md', 'to' => '/New/ata.md']], 'mkdirs' => ['/New', '/ReadOnly/Sub']];
 		$this->assertSame(CommonMessages::forbidden(), $this->plan('files_move_batch', $args)['mkdirs'][1]['reason']);
-		$this->assertSame(FilesMessages::batchNotOk(0, 1), $this->failure('files_move_batch', $args + ['confirm' => true]));
+		$this->assertSame(ReorganizationMessages::batchNotOk(0, 1), $this->failure('files_move_batch', $args + ['confirm' => true]));
 		$this->assertSame([], $this->tree->ops);
 		$this->assertArrayNotHasKey('/alice/files/New', $this->tree->nodes);
 	}
@@ -301,7 +301,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
 		$this->assertFalse($plan['ok'], 'um plano com item bloqueado não está ok');
 		$this->assertSame([['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md', 'ok' => true]], $plan['moves']);
 		$this->assertSame([['from' => '/Documentos/plano.md', 'to' => '/Arquivado/plano.md',
-			'reason' => FilesMessages::destinationExists()]], $plan['conflicts']);
+			'reason' => \OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists()]], $plan['conflicts']);
 		$this->assertSame([['from' => '/Documentos/orcamento.md', 'to' => '/Arquivado/orcamento.md',
 			'reason' => CommonMessages::forbidden()]], $plan['denied']);
 		$this->assertSame(['total' => 3, 'planned' => 1, 'conflicts' => 1, 'denied' => 1, 'shared' => 0, 'sharedDirs' => 0, 'mkdirs' => 0],
@@ -322,7 +322,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
 			'moves' => [['from' => '/Documentos', 'to' => '/Documentos/sub']],
 		]);
 		$this->assertFalse($plan['ok']);
-		$this->assertSame(FilesMessages::folderIntoItself(), $plan['conflicts'][0]['reason']);
+		$this->assertSame(ReorganizationMessages::folderIntoItself(), $plan['conflicts'][0]['reason']);
 	}
 
 	/**
@@ -552,7 +552,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
 				$call();
 				$this->fail('o lote de bob foi achado por alice');
 			} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
-				$this->assertSame(FilesMessages::batchNotFound(), $e->getMessage());
+				$this->assertSame(ReorganizationMessages::batchNotFound(), $e->getMessage());
 			}
 		}
 		$this->assertNull($db->rows(\OCA\Mcp\Modules\Files\BatchStore::TABLE)[1]['undone_at'], 'o lote de bob segue intacto');

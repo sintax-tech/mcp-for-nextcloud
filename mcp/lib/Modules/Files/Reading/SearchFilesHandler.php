@@ -13,7 +13,7 @@ use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCP\FullTextSearch\IFullTextSearchManager;
 use OCP\FullTextSearch\Model\ISearchResult;
 use OCA\Mcp\Modules\Files\FilesModule;
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\ReadingMessages;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 
 /** Preserves the existing Files SearchFilesHandler behavior. */
@@ -67,7 +67,7 @@ final class SearchFilesHandler {
 			return [
 				'search_mode' => 'name_only',
 				'full_text_active' => false,
-				'notice' => FilesMessages::searchNameOnlyNotice(),
+				'notice' => ReadingMessages::searchNameOnlyNotice(),
 				'files' => $this->names->search($root, $userId, $query, $limit),
 			];
 		}
@@ -138,7 +138,7 @@ final class SearchFilesHandler {
 			return [
 				'search_mode' => 'name_only',
 				'full_text_active' => false,
-				'notice' => FilesMessages::searchFallbackNotice(),
+				'notice' => ReadingMessages::searchFallbackNotice(),
 				'files' => $this->names->search($root, $userId, $query, $limit),
 			];
 		}

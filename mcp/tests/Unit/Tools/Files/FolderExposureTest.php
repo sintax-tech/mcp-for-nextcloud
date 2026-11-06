@@ -204,7 +204,7 @@ final class FolderExposureTest extends FilesToolsTestCase {
 		$plan = $this->plan('files_move_batch', $batchArgs);
 		$this->assertFalse($plan['ok']);
 		$this->assertStringContainsString('locked', $plan['denied'][0]['reason']);
-		$this->assertSame(FilesMessages::batchNotOk(0, 1), $this->refused('files_move_batch', $batchArgs, true));
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::batchNotOk(0, 1), $this->refused('files_move_batch', $batchArgs, true));
 		$this->assertSame([], $this->tree->ops);
 	}
 	public function testRenameBatchAndUndoStillRunTheirDescendantLockGuards(): void {
@@ -314,7 +314,7 @@ final class FolderExposureTest extends FilesToolsTestCase {
 		$plan = $this->plan('files_move_batch', $args);
 		$this->assertFalse($plan['ok']);
 		$this->assertSame(CommonMessages::notFound(), $plan['denied'][0]['reason']);
-		$this->assertSame(FilesMessages::batchNotOk(0, 1), $this->refused('files_move_batch', $args, true));
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::batchNotOk(0, 1), $this->refused('files_move_batch', $args, true));
 		$this->assertSame([], $this->tree->ops);
 		$this->assertSame([], $this->batches->rows);
 		$this->assertArrayHasKey('/alice/files/Documentos', $this->tree->nodes);
@@ -339,7 +339,7 @@ final class FolderExposureTest extends FilesToolsTestCase {
 				}
 			}
 		}
-		$this->assertStringContainsString('null for a folder link while files are excluded from MCP access', FilesMessages::listSharesTool());
+		$this->assertStringContainsString('null for a folder link while files are excluded from MCP access', \OCA\Mcp\Modules\Files\Presentation\SharingMessages::listSharesTool());
 	}
 
 	public function testNonpositiveParentIdentityCannotAuthorizeARename(): void {

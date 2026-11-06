@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Files\Sharing;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\SharingMessages;
 use OCP\IGroupManager;
 use OCP\IUserManager;
 use OCP\Share\IShare;
@@ -36,7 +36,7 @@ final class ShareRecipientResolver {
 	public function resolve(string $with, string $field = 'with'): ShareRecipient {
 		$with = trim($with);
 		if ($with === ShareRecipient::LINK) {
-			return new ShareRecipient(ShareRecipient::LINK, '', FilesMessages::publicLink());
+			return new ShareRecipient(ShareRecipient::LINK, '', SharingMessages::publicLink());
 		}
 		[$kind, $id] = array_pad(explode(':', $with, 2), 2, '');
 		if ($id === '' || !in_array($kind, [ShareRecipient::USER, ShareRecipient::GROUP], true)) {
@@ -80,7 +80,7 @@ final class ShareRecipientResolver {
 		$name = match ($kind) {
 			ShareRecipient::USER => $this->userManager->get($id)?->getDisplayName(),
 			ShareRecipient::GROUP => $this->groupManager->get($id)?->getDisplayName(),
-			ShareRecipient::LINK => FilesMessages::publicLink(),
+			ShareRecipient::LINK => SharingMessages::publicLink(),
 			ShareRecipient::ROOM => (string)$share->getSharedWithDisplayName(),
 		};
 		return new ShareRecipient($kind, $kind === ShareRecipient::LINK ? '' : $id, $name === null || $name === '' ? $id : $name);

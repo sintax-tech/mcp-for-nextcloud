@@ -126,7 +126,7 @@ final class Reorganization {
 			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists());
 		}
 		if (FileBackup::isBackupPath($path, $this->backupLocation)) {
-			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::backupPath());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath());
 		}
 		$relPath = ltrim($path, '/');
 		if ($root->nodeExists($relPath)) {
@@ -400,7 +400,7 @@ final class Reorganization {
 			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists());
 		}
 		if (FileBackup::isBackupPath($path, $this->backupLocation)) {
-			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::backupPath());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath());
 		}
 		$rel = ltrim($path, '/');
 		if ($root->nodeExists($rel)) {
@@ -433,7 +433,7 @@ final class Reorganization {
 			'access' => $this->access->describe($parent, $userId),
 			'shared' => $this->sharedOf($userId, $parent),
 			'recoverable' => true,
-			'message' => \OCA\Mcp\Modules\Files\Presentation\FilesMessages::planMkdir(),
+			'message' => \OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::planMkdir(),
 		];
 	}
 
@@ -558,7 +558,7 @@ final class Reorganization {
 				$visible = false;
 			}
 			if (!$visible) {
-				throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::batchHasHiddenItem());
+				throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::batchHasHiddenItem());
 			}
 		}
 	}
@@ -594,7 +594,7 @@ final class Reorganization {
 	private function assertUndoable(Folder $root, Batch $batch, array $move, string $userId): void {
 		$there = NodeAccess::run(fn () => NodeAccess::get($root, $move['to']));
 		if ((int)$there->getId() !== $move['toId']) {
-			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::notTheBatchNode());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::notTheBatchNode());
 		}
 		$this->assertUnlocked($there, $userId);
 		if ($root->nodeExists(ltrim(PathGuard::normalize($move['from'], 'moves'), '/'))) {
@@ -880,7 +880,7 @@ final class Reorganization {
 			}
 			$nodes++;
 			if ($nodes > ReorganizationLimits::NODES) {
-				throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::copyTooManyNodes(ReorganizationLimits::NODES));
+				throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::copyTooManyNodes(ReorganizationLimits::NODES));
 			}
 			if ($current instanceof Folder) {
 				foreach ($this->sorted($current) as $child) {
@@ -890,7 +890,7 @@ final class Reorganization {
 			}
 			$bytes += (int)$current->getSize();
 			if ($bytes > ReorganizationLimits::BYTES) {
-				throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::copyTooLarge(ReorganizationLimits::BYTES));
+				throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::copyTooLarge(ReorganizationLimits::BYTES));
 			}
 		}
 		return ['nodes' => $nodes, 'bytes' => $bytes];
@@ -958,7 +958,7 @@ final class Reorganization {
 	private function assertNotIntoItself(Folder $root, Node $from, string $to): void {
 		$source = $root->getRelativePath($from->getPath()) ?? '';
 		if ($from instanceof Folder && ($to === $source || str_starts_with($to, rtrim($source, '/') . '/'))) {
-			throw new MoveConflict(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::folderIntoItself());
+			throw new MoveConflict(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::folderIntoItself());
 		}
 	}
 
@@ -972,7 +972,7 @@ final class Reorganization {
 	 */
 	private function assertSameStorage(Node $source, Folder $destination): void {
 		if ($source->getStorage()->getId() !== $destination->getStorage()->getId()) {
-			throw new MoveConflict(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::crossStorage());
+			throw new MoveConflict(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::crossStorage());
 		}
 	}
 

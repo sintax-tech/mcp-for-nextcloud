@@ -18,7 +18,7 @@ use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Modules\Files\CheckoutService;
 use OCA\Mcp\Modules\Files\FileBackup;
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\CheckoutMessages;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
@@ -385,7 +385,7 @@ final class CheckoutControllerTest extends TestCase {
 
 		foreach (['download' => $download, 'upload' => $upload] as $route => $response) {
 			$this->assertSame(404, $this->code($response), $route);
-			$this->assertSame(FilesMessages::tokenInvalid(), $response->render(), "$route: the answer of an unknown link");
+			$this->assertSame(CheckoutMessages::tokenInvalid(), $response->render(), "$route: the answer of an unknown link");
 		}
 		$this->assertSame(['alice before any file', 'alice before any file'], $this->guestCalls);
 		$this->assertSame([], $this->tree->ops, 'nothing was backed up or written');
@@ -605,7 +605,7 @@ final class CheckoutControllerTest extends TestCase {
 		$this->headers['Content-Type'] = 'multipart/form-data; boundary=x';
 		$response = $this->controller->upload();
 		$this->assertSame(400, $this->code($response));
-		$this->assertSame(FilesMessages::uploadMultipart(), (string)$response->render());
+		$this->assertSame(CheckoutMessages::uploadMultipart(), (string)$response->render());
 		$this->assertSame([], $this->tree->ops);
 		$this->assertNotContains('consume', $this->store->ops, 'o link tem que continuar valendo');
 	}
@@ -642,7 +642,7 @@ final class CheckoutControllerTest extends TestCase {
 		$this->stage('');
 		$response = $this->controller->upload();
 		$this->assertSame(400, $this->code($response));
-		$this->assertSame(FilesMessages::uploadEmpty(), (string)$response->render());
+		$this->assertSame(CheckoutMessages::uploadEmpty(), (string)$response->render());
 		$this->assertSame([], $this->tree->ops);
 		$this->assertNotContains('consume', $this->store->ops, 'o link tem que continuar valendo');
 	}
@@ -972,7 +972,7 @@ final class CheckoutControllerTest extends TestCase {
 		$items = false;
 		$unavailable = $controller->$method();
 		$this->assertSame(503, $this->code($unavailable));
-		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::checkoutUnavailable(), $unavailable->getData());
+		$this->assertSame(CheckoutMessages::checkoutUnavailable(), $unavailable->getData());
 
 		$items = [(string)$this->tree->nodes['/alice/files/Documentos']['id']];
 		$this->assertSame(200, $this->code($controller->$method()), 'no refusal spent the link');

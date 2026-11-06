@@ -27,9 +27,9 @@ final class RestoreVersion implements WriteTool {
 	public static function definition(): ToolDefinition {
 		$path = ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::path()];
 		$confirmShared = ['type' => 'boolean', 'description' => FilesMessages::confirmShared()];
-		$version = ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::version()];
+		$version = ['type' => 'string', 'minLength' => 1, 'description' => \OCA\Mcp\Modules\Files\Presentation\VersionMessages::version()];
 		return FilesSchema::definition(['name' => 'files_version_restore', 'module' => 'files', 'operation' => 'restore', 'app' => VersionTools::APP,
-				'description' => FilesMessages::versionRestoreTool(),
+				'description' => \OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionRestoreTool(),
 				'inputSchema' => FilesSchema::schema([
 					'path' => $path,
 					'version' => $version,

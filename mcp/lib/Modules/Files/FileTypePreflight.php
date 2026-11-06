@@ -81,7 +81,7 @@ final class FileTypePreflight {
 				$this->context->policy()->assertProjected($node, $final, $snapshot);
 				$bytes += max(0, (int)$node->getSize());
 				if ($copy && $bytes > ReorganizationLimits::BYTES) {
-					throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::copyTooLarge(ReorganizationLimits::BYTES));
+					throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::copyTooLarge(ReorganizationLimits::BYTES));
 				}
 			}
 			$entries[] = ['source' => $node->getPath(), 'to' => $final, 'id' => (int)$node->getId(), 'folder' => $node instanceof Folder];

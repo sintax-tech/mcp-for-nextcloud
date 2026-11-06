@@ -78,11 +78,11 @@ final class ImageSelection {
 			try {
 				$node = NodeAccess::get($root, $path, $this->visibilityGuard);
 				if (!$node instanceof File) {
-					$out[] = [$path, null, FilesMessages::notAnImage()];
+					$out[] = [$path, null, \OCA\Mcp\Modules\Files\Presentation\ImageMessages::notAnImage()];
 					continue;
 				}
 				if (!ImageFileAccess::looksLikeImage((string)$node->getMimetype())) {
-					$out[] = [$path, null, FilesMessages::notAnImage()];
+					$out[] = [$path, null, \OCA\Mcp\Modules\Files\Presentation\ImageMessages::notAnImage()];
 					continue;
 				}
 				$out[] = [$path, $node, null];

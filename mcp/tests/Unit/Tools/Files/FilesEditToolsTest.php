@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Checkout\CheckoutToken;
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\EditingMessages;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
@@ -63,7 +63,7 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
 	/** A snippet that is not valid UTF-8 cannot be located safely, so it is refused before anything else. */
 	public function testReplaceRefusesASnippetThatIsNotValidUtf8(): void {
 		$this->tree->addFile('/alice/files/Documentos/pessoas.csv', "a;\xE3o\n", 'text/csv');
-		$this->assertSame(FilesMessages::snippetNotUtf8(),
+		$this->assertSame(EditingMessages::snippetNotUtf8(),
 			$this->failure('files_replace', ['path' => '/Documentos/pessoas.csv', 'old' => "\xE3", 'new' => 'x']));
 		$this->assertSame("a;\xE3o\n", $this->tree->nodes['/alice/files/Documentos/pessoas.csv']['content']);
 		$this->assertSame([], $this->tree->ops);
@@ -72,7 +72,7 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
 	/** The search is over bytes, so the same snippet twice in a Latin-1 file is still ambiguous. */
 	public function testReplaceSearchesOccurrencesOverBytes(): void {
 		$this->tree->addFile('/alice/files/Documentos/pessoas.csv', "Rio\nS\xE3o\nRio\n", 'text/csv');
-		$this->assertSame(FilesMessages::snippetAmbiguous(),
+		$this->assertSame(EditingMessages::snippetAmbiguous(),
 			$this->failure('files_replace', ['path' => '/Documentos/pessoas.csv', 'old' => 'Rio', 'new' => 'x']));
 	}
 
@@ -83,7 +83,7 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
 	public function testVersionRestoreRefusesAFileInsideTheBackupFolder(): void {
 		$copy = '/alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak';
 		$this->tree->addFile($copy, '# Ata', 'text/markdown');
-		$this->assertSame(FilesMessages::backupPath(), $this->failure(
+		$this->assertSame(EditingMessages::backupPath(), $this->failure(
 			'files_version_restore',
 			['path' => '/MCP backups/Documentos/ata.md.20260921-141320.bak', 'version' => '1759100000', 'confirm' => true],
 		));
@@ -115,21 +115,21 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
 			'move the folder' => ['files_move', ['from' => '/MCP backups', 'to' => '/Arquivo/renomeada']],
 		];
 		foreach ($calls as $case => [$tool, $arguments]) {
-			$this->assertSame(FilesMessages::backupPath(), $this->planFailure($tool, $arguments), "plano de $case");
-			$this->assertSame(FilesMessages::backupPath(), $this->failure($tool, $arguments + ['confirm' => true]), "confirmação de $case");
+			$this->assertSame(EditingMessages::backupPath(), $this->planFailure($tool, $arguments), "plano de $case");
+			$this->assertSame(EditingMessages::backupPath(), $this->failure($tool, $arguments + ['confirm' => true]), "confirmação de $case");
 		}
 		// A batch lists each blocked item in its plan and runs none of them.
 		foreach ([['from' => $backup, 'to' => '/Documentos/x.md'], ['from' => '/Documentos/ata.md', 'to' => '/MCP backups/x.md']] as $move) {
 			$plan = $this->plan('files_move_batch', ['moves' => [$move]]);
 			$this->assertFalse($plan['ok']);
-			$this->assertSame([$move + ['reason' => FilesMessages::backupPath()]], $plan['denied']);
-			$this->assertSame(FilesMessages::batchNotOk(0, 1), $this->failure('files_move_batch', ['moves' => [$move], 'confirm' => true]));
+			$this->assertSame([$move + ['reason' => EditingMessages::backupPath()]], $plan['denied']);
+			$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::batchNotOk(0, 1), $this->failure('files_move_batch', ['moves' => [$move], 'confirm' => true]));
 		}
 		$mkdirs = ['moves' => [['from' => '/Documentos/ata.md', 'to' => '/Documentos/ata2.md']], 'mkdirs' => ['/MCP backups/x']];
 		$plan = $this->plan('files_move_batch', $mkdirs);
 		$this->assertFalse($plan['ok']);
-		$this->assertSame(FilesMessages::backupPath(), $plan['mkdirs'][0]['reason']);
-		$this->assertSame(FilesMessages::batchNotOk(0, 1), $this->failure('files_move_batch', $mkdirs + ['confirm' => true]));
+		$this->assertSame(EditingMessages::backupPath(), $plan['mkdirs'][0]['reason']);
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::batchNotOk(0, 1), $this->failure('files_move_batch', $mkdirs + ['confirm' => true]));
 		$this->assertSame([], $this->tree->ops);
 		$this->assertSame('# Ata', $this->tree->nodes['/alice/files' . $backup]['content']);
 		$this->assertSame([], $this->batches->rows);
@@ -167,7 +167,7 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
 	 */
 	public function testCheckoutIsRefusedWhenVersioningIsOff(): void {
 		$this->enabled = [];
-		$this->assertSame(FilesMessages::versionsOff(),
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionsOff(),
 			$this->failure('files_checkout', ['path' => '/Documentos/ata.md']));
 		$this->assertSame([], $this->store->rows, 'nenhum link pode ser emitido');
 		$this->assertSame([], $this->tree->ops);
@@ -200,8 +200,8 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
 	public function testReplaceRefusesAnOverlappingSnippetInThePlanAndTheWrite(): void {
 		$this->tree->addFile('/alice/files/Documentos/aaa.txt', 'aaa', 'text/plain');
 		$arguments = ['path' => '/Documentos/aaa.txt', 'old' => 'aa', 'new' => 'b'];
-		$this->assertSame(FilesMessages::snippetAmbiguous(), $this->failure('files_replace', $arguments));
-		$this->assertSame(FilesMessages::snippetAmbiguous(), $this->planFailure('files_replace', $arguments));
+		$this->assertSame(EditingMessages::snippetAmbiguous(), $this->failure('files_replace', $arguments));
+		$this->assertSame(EditingMessages::snippetAmbiguous(), $this->planFailure('files_replace', $arguments));
 		$this->assertSame('aaa', $this->tree->nodes['/alice/files/Documentos/aaa.txt']['content']);
 		$this->assertSame([], $this->tree->ops);
 	}
@@ -231,14 +231,14 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
 	}
 
 	public function testReplaceRefusesASnippetThatIsNotThere(): void {
-		$this->assertSame(FilesMessages::snippetMissing(),
+		$this->assertSame(EditingMessages::snippetMissing(),
 			$this->failure('files_replace', ['path' => '/Documentos/ata.md', 'old' => 'inexistente', 'new' => 'x']));
 		$this->assertSame([], $this->tree->ops);
 	}
 
 	public function testReplaceRefusesAnAmbiguousSnippet(): void {
 		$this->tree->addFile('/alice/files/Documentos/repetido.md', 'a a a', 'text/markdown');
-		$this->assertSame(FilesMessages::snippetAmbiguous(),
+		$this->assertSame(EditingMessages::snippetAmbiguous(),
 			$this->failure('files_replace', ['path' => '/Documentos/repetido.md', 'old' => 'a', 'new' => 'b']));
 		$this->assertSame([], $this->tree->ops);
 	}
@@ -252,9 +252,9 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
 
 	public function testReplaceRefusesBinariesAndTheBackupFolder(): void {
 		$this->tree->addFile('/alice/files/foto.jpg', 'bin', 'image/jpeg');
-		$this->assertSame(FilesMessages::notText(),
+		$this->assertSame(EditingMessages::notText(),
 			$this->failure('files_replace', ['path' => '/foto.jpg', 'old' => 'bin', 'new' => 'x']));
-		$this->assertSame(FilesMessages::backupPath(),
+		$this->assertSame(EditingMessages::backupPath(),
 			$this->failure('files_replace', ['path' => '/MCP backups/ata.md', 'old' => 'Ata', 'new' => 'x']));
 	}
 
@@ -285,15 +285,15 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
 	#[\PHPUnit\Framework\Attributes\DataProvider('binaryProvider')]
 	public function testEditAndReplaceStillRefuseABinaryFile(string $path, string $mime): void {
 		$this->tree->addFile('/alice/files' . $path, "PK\x03\x04\x00\xFF", $mime);
-		$this->assertSame(FilesMessages::notText(), $this->failure('files_edit', ['path' => $path, 'content' => 'x']));
-		$this->assertSame(FilesMessages::notText(), $this->failure('files_replace', ['path' => $path, 'old' => 'PK', 'new' => 'x']));
+		$this->assertSame(EditingMessages::notText(), $this->failure('files_edit', ['path' => $path, 'content' => 'x']));
+		$this->assertSame(EditingMessages::notText(), $this->failure('files_replace', ['path' => $path, 'old' => 'PK', 'new' => 'x']));
 		$this->assertSame([], $this->tree->ops);
 	}
 
 	/** A binary inside the backup folder is still refused: the folder a user recovers from is never checked out. */
 	public function testCheckoutRefusesABinaryInsideTheBackupFolder(): void {
 		$this->tree->addFile('/alice/files/MCP backups/contrato.docx.20260921-141320.bak', 'bin', 'application/octet-stream');
-		$this->assertSame(FilesMessages::backupPath(),
+		$this->assertSame(EditingMessages::backupPath(),
 			$this->failure('files_checkout', ['path' => '/MCP backups/contrato.docx.20260921-141320.bak']));
 		$this->assertSame([], $this->store->rows);
 	}

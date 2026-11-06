@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\SharingMessages;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Constants;
@@ -110,7 +110,7 @@ final class FilesShareTest extends FilesToolsTestCase {
 	public function testAFolderWithEditWarnsThatTheRecipientCanDelete(): void {
 		$plan = $this->plan('files_share', ['path' => '/Projetos', 'with' => 'user:bruno', 'permission' => 'edit']);
 		self::assertTrue($plan['isDir']);
-		self::assertContains(FilesMessages::shareFolderEditWarning('Bruno Lima'), array_column($plan['warnings'], 'message'));
+		self::assertContains(SharingMessages::shareFolderEditWarning('Bruno Lima'), array_column($plan['warnings'], 'message'));
 		$plan = $this->plan('files_share', ['path' => '/Projetos', 'with' => 'user:bruno']);
 		self::assertSame([], $plan['warnings']);
 	}
@@ -118,7 +118,7 @@ final class FilesShareTest extends FilesToolsTestCase {
 	public function testAGroupShareReachesEveryMember(): void {
 		$plan = $this->plan('files_share', ['path' => '/Documentos/ata.md', 'with' => 'group:finance']);
 		self::assertSame(['type' => 'group', 'id' => 'finance', 'displayName' => 'Financeiro'], $plan['with']);
-		self::assertContains(FilesMessages::shareGroupWarning('Financeiro'), array_column($plan['warnings'], 'message'));
+		self::assertContains(SharingMessages::shareGroupWarning('Financeiro'), array_column($plan['warnings'], 'message'));
 
 		$this->confirm(['path' => '/Documentos/ata.md', 'with' => 'group:finance']);
 		self::assertSame(IShare::TYPE_GROUP, $this->shares->writes[0][1]->getShareType());
@@ -224,7 +224,7 @@ final class FilesShareTest extends FilesToolsTestCase {
 	}
 
 	public function testSharingWithYourselfIsRefused(): void {
-		self::assertSame(FilesMessages::shareWithSelf(), $this->planFailure(['path' => '/Documentos/ata.md', 'with' => 'user:alice']));
+		self::assertSame(SharingMessages::shareWithSelf(), $this->planFailure(['path' => '/Documentos/ata.md', 'with' => 'user:alice']));
 	}
 
 	public function testAnUnknownRecipientIsAnArgumentError(): void {
@@ -234,13 +234,13 @@ final class FilesShareTest extends FilesToolsTestCase {
 
 	public function testANodeOfAnotherOwnerIsRefused(): void {
 		$this->tree->addFile('/alice/files/Recebido.pdf', 'x', 'application/pdf', ['scope' => 'shared']);
-		self::assertSame(FilesMessages::shareNotOwner(), $this->planFailure(['path' => '/Recebido.pdf', 'with' => 'user:bruno']));
+		self::assertSame(SharingMessages::shareNotOwner(), $this->planFailure(['path' => '/Recebido.pdf', 'with' => 'user:bruno']));
 	}
 
 	public function testWithoutTheShareGrantNothingIsPlanned(): void {
 		$this->sharePolicy->setGrant('alice', 'files', 'share', false);
 		$this->sharePolicy->setGrant('alice', 'files', 'link', true);
-		self::assertSame(FilesMessages::shareNotGranted(), $this->planFailure(['path' => '/Documentos/ata.md', 'with' => 'user:bruno']));
+		self::assertSame(SharingMessages::shareNotGranted(), $this->planFailure(['path' => '/Documentos/ata.md', 'with' => 'user:bruno']));
 	}
 
 	/** A link answers to its own grant, not to `share`; the link behaviour itself is in FilesShareLinkTest. */
@@ -248,7 +248,7 @@ final class FilesShareTest extends FilesToolsTestCase {
 		$this->sharePolicy->setGrant('alice', 'files', 'link', true);
 		self::assertSame('create', $this->plan('files_share', ['path' => '/Documentos/ata.md', 'with' => 'link'])['action']);
 		$this->sharePolicy->setGrant('alice', 'files', 'link', false);
-		self::assertSame(FilesMessages::shareNotGranted(), $this->planFailure(['path' => '/Documentos/ata.md', 'with' => 'link']));
+		self::assertSame(SharingMessages::shareNotGranted(), $this->planFailure(['path' => '/Documentos/ata.md', 'with' => 'link']));
 	}
 
 	/** @return array<string, array{\Closure(self):void, string, string}> */
@@ -280,13 +280,13 @@ final class FilesShareTest extends FilesToolsTestCase {
 
 	public function testANodeTheCoreWouldNotShareIsRefused(): void {
 		$this->tree->addFile('/alice/files/Travado.md', 'x', 'text/markdown', ['shareable' => false]);
-		self::assertSame(FilesMessages::shareNodeNotShareable(), $this->planFailure(['path' => '/Travado.md', 'with' => 'user:bruno']));
+		self::assertSame(SharingMessages::shareNodeNotShareable(), $this->planFailure(['path' => '/Travado.md', 'with' => 'user:bruno']));
 	}
 
 	/** The core refuses more than the sharer has; the plan says it first, in words. */
 	public function testEditOnAReadOnlyNodeIsRefused(): void {
 		$this->tree->addFile('/alice/files/SoLeitura.md', 'x', 'text/markdown', ['permissions' => Constants::PERMISSION_READ | Constants::PERMISSION_SHARE]);
-		self::assertSame(FilesMessages::shareAboveOwnPermissions(), $this->planFailure(['path' => '/SoLeitura.md', 'with' => 'user:bruno', 'permission' => 'edit']));
+		self::assertSame(SharingMessages::shareAboveOwnPermissions(), $this->planFailure(['path' => '/SoLeitura.md', 'with' => 'user:bruno', 'permission' => 'edit']));
 		self::assertSame('create', $this->plan('files_share', ['path' => '/SoLeitura.md', 'with' => 'user:bruno'])['action']);
 	}
 
@@ -324,7 +324,7 @@ final class FilesShareTest extends FilesToolsTestCase {
 			$this->confirm(['path' => '/Documentos/ata.md', 'with' => 'user:bruno']);
 			self::fail('no failure');
 		} catch (ToolFailure $e) {
-			self::assertSame(FilesMessages::shareAlreadyHasAccess(), $e->getMessage());
+			self::assertSame(SharingMessages::shareAlreadyHasAccess(), $e->getMessage());
 		}
 	}
 
@@ -340,7 +340,7 @@ final class FilesShareTest extends FilesToolsTestCase {
 			$this->confirm($arguments + [PlanState::ARGUMENT => $state]);
 			self::fail('no failure');
 		} catch (ToolFailure $e) {
-			self::assertSame(FilesMessages::shareNotGranted(), $e->getMessage());
+			self::assertSame(SharingMessages::shareNotGranted(), $e->getMessage());
 		}
 		self::assertSame([], $this->shares->writes);
 	}
@@ -431,13 +431,13 @@ final class FilesShareTest extends FilesToolsTestCase {
 		$arguments = ['path' => '/Documentos/ata.md', 'with' => 'user:bruno'];
 		$state = $this->stateOf('files_share', $arguments);
 		$this->shares->settings['shareApiEnabled'] = false;
-		self::assertSame(FilesMessages::shareDisabled(), $this->confirmFailure($arguments + [PlanState::ARGUMENT => $state]));
+		self::assertSame(SharingMessages::shareDisabled(), $this->confirmFailure($arguments + [PlanState::ARGUMENT => $state]));
 		$this->shares->settings['shareApiEnabled'] = true;
 
 		$edit = $arguments + ['permission' => 'edit'];
 		$state = $this->stateOf('files_share', $edit);
 		$this->tree->nodes['/alice/files/Documentos/ata.md']['permissions'] = Constants::PERMISSION_READ | Constants::PERMISSION_SHARE;
-		self::assertSame(FilesMessages::shareAboveOwnPermissions(), $this->confirmFailure($edit + [PlanState::ARGUMENT => $state]));
+		self::assertSame(SharingMessages::shareAboveOwnPermissions(), $this->confirmFailure($edit + [PlanState::ARGUMENT => $state]));
 		self::assertSame([], $this->shares->writes);
 	}
 

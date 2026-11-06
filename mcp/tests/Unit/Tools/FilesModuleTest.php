@@ -90,8 +90,8 @@ final class FilesModuleTest extends TestCase {
 		$versions = new VersionTools($apps, $users, $versionBackup, $access, $versionContainer,
 			versionRestore: new VersionRestore($apps, $users, $gate, $access, $versionContainer));
 		$report = new MoveReport($this->createMock(\Psr\Container\ContainerInterface::class), $this->tree->shareManager(), $apps);
-		$reorganization = new Reorganization($access, new SharedWriteGuard($access), $report, $users);
-		$planner = new MovePlanner($reorganization, $access, new SharedWriteGuard($access));
+		$reorganization = \OCA\Mcp\Tests\Unit\Tools\Files\FilesCatalogWiring::reorganization($access, new SharedWriteGuard($access), $report, $users);
+		$planner = new MovePlanner(($reorganization)->copyMoveContext(), $access, new SharedWriteGuard($access));
 		$store = new BatchStore($db);
 		$imageTools = \OCA\Mcp\Tests\Unit\Tools\Files\FilesImageWiring::build(
 			$this->createMock(\OCP\IPreview::class),

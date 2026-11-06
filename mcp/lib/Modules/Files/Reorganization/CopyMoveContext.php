@@ -5,6 +5,7 @@
  */
 declare(strict_types=1);
 
+/** Bind immutable copy and move collaborators without caching operation state. */
 namespace OCA\Mcp\Modules\Files\Reorganization;
 
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
@@ -20,7 +21,7 @@ final class CopyMoveContext {
 	/**
 	 * Bind handler dependencies to the existing native checks and final-name policy.
 	 *
-	 * @param Reorganization $reorganization Single owner of native inspection, authorization and receipts.
+	 * @param MoveGuards $reorganization Single owner of native inspection, authorization and receipts.
 	 * @param NodeAccessInfo $access Ownership descriptions.
 	 * @param MoveReport $report Native versions and shares reporting.
 	 * @param FilesAccessGuard|null $visibilityGuard Visibility boundary.
@@ -30,13 +31,13 @@ final class CopyMoveContext {
 	 * @return void
 	 */
 	public function __construct(
-		public readonly \OCA\Mcp\Modules\Files\Reorganization\Reorganization $reorganization,
+		public readonly MoveGuards $reorganization,
 		public readonly NodeAccessInfo $access,
 		public readonly \OCA\Mcp\Modules\Files\Integration\MoveReport $report,
 		public readonly ?FilesAccessGuard $visibilityGuard,
 		public readonly ?LockAwareWrite $locks,
-		private ?FileTypeGuard $fileTypes,
-		private ?\OCA\Mcp\Platform\Backups\BackupLocation $backupLocation = null,
+		private readonly ?FileTypeGuard $fileTypes,
+		private readonly ?\OCA\Mcp\Platform\Backups\BackupLocation $backupLocation = null,
 	) {
 	}
 

@@ -78,11 +78,6 @@
 			"expires": "RE-24"
 		},
 		{
-			"fqcn": "OCA\\Mcp\\Tools\\Files\\Reorganization",
-			"ceiling": 1106,
-			"expires": "RE-23"
-		},
-		{
 			"fqcn": "OCA\\Mcp\\Tools\\Files\\Sharing\\ShareWriter",
 			"ceiling": 554,
 			"expires": "RE-22"

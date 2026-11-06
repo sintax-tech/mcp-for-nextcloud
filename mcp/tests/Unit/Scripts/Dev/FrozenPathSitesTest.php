@@ -24,7 +24,7 @@ final class FrozenPathSitesTest extends TestCase {
 		self::assertSame(4, count(array_filter($problems, static fn (string $p): bool => str_contains($p, 'path not proved'))));
 	}
 
-	/** @return iterable<string,array{string,string}> Equal mutations on both sides must still invalidate the frozen source. */
+	/** @return iterable<string,array{0:string,1:string,2?:string}> Equal mutations on both sides must still invalidate the frozen source. */
 	public static function sourceMutants(): iterable {
 		yield 'different parameter' => ['$body', '$other'];
 		yield 'source file assignment' => ['return file_get_contents', '$body = __FILE__; return file_get_contents'];
@@ -37,11 +37,30 @@ final class FrozenPathSitesTest extends TestCase {
 		yield 'function alias' => ['class CheckoutWriteHandler', 'use function Evil\\file_get_contents; class CheckoutWriteHandler'];
 		yield 'namespace override' => ['class CheckoutWriteHandler', 'function file_get_contents($p) { return $p; } class CheckoutWriteHandler'];
 		yield 'different PathGuard alias' => ['Platform\\FileAccess\\PathGuard;', 'Other\\PathGuard;'];
+		foreach ([
+			['path reassignment', "return dirname(PathGuard::normalize(\$path,'moves'))", "\$path = __FILE__; return dirname(PathGuard::normalize(\$path,'moves'))"],
+			['destination reassignment', 'return dirname(PathGuard::normalize($to))', '$to = __DIR__; return dirname(PathGuard::normalize($to))'],
+			['parameter default', 'string $path)', "string \$path = 'relative')"],
+			['normalization label', "normalize(\$path,'moves')", "normalize(\$path,'other')"],
+			['extra argument', 'dirname(PathGuard::normalize($to))', 'dirname(PathGuard::normalize($to),2)'],
+			['second dirname', 'return dirname(PathGuard::normalize($to));', 'return dirname(PathGuard::normalize($to)) . dirname($to);'],
+			['another method', 'function parentExists(', 'function other('],
+			['builtin alias', 'class Reorganization', 'use function Evil\\dirname; class Reorganization'],
+			['builtin override', 'class Reorganization', 'function dirname($p) { return $p; } class Reorganization'],
+			['PathGuard alias', 'Platform\\FileAccess\\PathGuard;', 'Other\\PathGuard;'],
+		] as [$label, $find, $replace]) { yield 'RE-23 ' . $label => [$find, $replace, 'RE-23']; }
+
 	}
 
+	/**
+	 * @param string $find Original expression.
+	 * @param string $replace Unreviewed expression.
+	 * @param string $ticket Reviewed transition.
+	 * @return void
+	 */
 	#[DataProvider('sourceMutants')]
-	public function testEqualButUnreviewedSourcesAreRejected(string $find, string $replace): void {
-		[$before, $after, $map, $pairs, $certificates] = FrozenPathFixture::trees(); $changed = 0;
+	public function testEqualButUnreviewedSourcesAreRejected(string $find, string $replace, string $ticket = 'RE-21'): void {
+		[$before, $after, $map, $pairs, $certificates] = FrozenPathFixture::trees($ticket); $certificatePath = $certificates[0]['path']; $changed = 0;
 		foreach ([$before, $after] as $side => $tree) {
 			foreach ($tree as $path => $code) {
 				if (str_ends_with($path, '.php') && str_contains($code, $find)) {
@@ -51,8 +70,8 @@ final class FrozenPathSitesTest extends TestCase {
 			if ($side === 0) { $before = $tree; } else { $after = $tree; }
 		}
 		self::assertGreaterThanOrEqual(2, $changed);
-		$problems = implode("\n", (new MoveEquivalence($before, $after, $map, $certificates))->check('RE-21'));
-		self::assertStringContainsString(FrozenPathSites::PATH . ':', $problems);
+		$problems = implode("\n", (new MoveEquivalence($before, $after, $map, $certificates))->check($ticket));
+		self::assertStringContainsString($certificatePath . ':', $problems);
 		self::assertStringContainsString('path not proved', $problems);
 	}
 
@@ -64,22 +83,28 @@ final class FrozenPathSitesTest extends TestCase {
 		self::assertStringContainsString('caller/origin changed', implode("\n", (new MoveEquivalence($before, $after, $map, $certificates))->check('RE-21')));
 	}
 
-	/** @return iterable<string,array{string}> Manifest failures, including entries that cannot be consumed. */
+	/** @return iterable<string,array{0:string,1?:string}> Manifest failures, including entries that cannot be consumed. */
 	public static function manifestMutants(): iterable {
 		foreach (['one-sided edit', 'missing before', 'missing after', 'malformed', 'duplicate', 'excess', 'unknown identity', 'unknown field', 'missing provenance', 'wrong ordinal', 'changed operand hash'] as $kind) { yield $kind => [$kind]; }
+		foreach (['one-sided edit', 'missing before', 'missing after', 'malformed', 'duplicate', 'excess', 'unknown identity', 'wrong ordinal', 'changed operand hash'] as $kind) { yield 'RE-23 ' . $kind => [$kind, 'RE-23']; }
 	}
 
+	/**
+	 * @param string $kind Manifest mutation.
+	 * @param string $ticket Reviewed transition.
+	 * @return void
+	 */
 	#[DataProvider('manifestMutants')]
-	public function testInvalidOrUnconsumableManifestCannotGrantAProof(string $kind): void {
-		[$before, $after, $map, $pairs, $certificates] = FrozenPathFixture::trees(); $data = json_decode($before[FrozenPathSites::PATH], true);
+	public function testInvalidOrUnconsumableManifestCannotGrantAProof(string $kind, string $ticket = 'RE-21'): void {
+		[$before, $after, $map, $pairs, $certificates] = FrozenPathFixture::trees($ticket); $certificatePath = $certificates[0]['path']; $data = json_decode($before[$certificatePath], true);
 		switch ($kind) {
-			case 'one-sided edit': $after[FrozenPathSites::PATH] .= "\n"; break;
-			case 'missing before': unset($before[FrozenPathSites::PATH]); break;
-			case 'missing after': unset($after[FrozenPathSites::PATH]); break;
-			case 'malformed': $before[FrozenPathSites::PATH] = $after[FrozenPathSites::PATH] = '{'; break;
+			case 'one-sided edit': $after[$certificatePath] .= "\n"; break;
+			case 'missing before': unset($before[$certificatePath]); break;
+			case 'missing after': unset($after[$certificatePath]); break;
+			case 'malformed': $before[$certificatePath] = $after[$certificatePath] = '{'; break;
 			default:
 				switch ($kind) {
-					case 'duplicate': $data['sites'][3] = $data['sites'][0]; break;
+					case 'duplicate': $data['sites'][count($data['sites']) - 1] = $data['sites'][0]; break;
 					case 'excess': $data['sites'][] = $data['sites'][0]; break;
 					case 'unknown identity': $data['sites'][0]['map_path'] = 'lib/Unknown.php'; break;
 					case 'unknown field': $data['sites'][0]['allow_any'] = true; break;
@@ -87,10 +112,10 @@ final class FrozenPathSitesTest extends TestCase {
 					case 'wrong ordinal': $data['sites'][0]['ordinal'] = 2; break;
 					case 'changed operand hash': $data['sites'][0]['occurrence']['operand_sha256'] = str_repeat('0', 64); break;
 				}
-				$before[FrozenPathSites::PATH] = $after[FrozenPathSites::PATH] = json_encode($data, JSON_THROW_ON_ERROR);
+				$before[$certificatePath] = $after[$certificatePath] = json_encode($data, JSON_THROW_ON_ERROR);
 		}
-		$problems = implode("\n", (new MoveEquivalence($before, $after, $map, $certificates))->check('RE-21'));
-		self::assertStringContainsString(FrozenPathSites::PATH . ':', $problems);
+		$problems = implode("\n", (new MoveEquivalence($before, $after, $map, $certificates))->check($ticket));
+		self::assertStringContainsString($certificatePath . ':', $problems);
 		self::assertStringContainsString('path not proved', $problems);
 	}
 
@@ -147,7 +172,27 @@ final class FrozenPathSitesTest extends TestCase {
 		try { FrozenPathCall::locate($site, $code, new SourceTreeIndex($before)); self::fail('Default passed'); }
 		catch (RuntimeException $error) { self::assertStringContainsString('required string', $error->getMessage()); }
 	}
-	public function testInactiveTicketDoesNotReadEvenAnInvalidManifest(): void {
+	/**
+	 * @param string $kind Inactive transition.
+	 * @return void
+	 */
+	#[DataProvider('inactiveRanges')]
+	public function testInactiveTicketDoesNotReadEvenAnInvalidManifest(string $kind = 'RE-21 wrong ticket'): void {
+		if (str_starts_with($kind, 'RE-23')) {
+			[$before, $after, $map, $pairs, $certificates] = FrozenPathFixture::trees('RE-23'); $path = $certificates[0]['path'];
+			$after[$path] = '{'; $ticket = 'RE-23';
+			if ($kind === 'RE-23 wrong RE-21') { $ticket = 'RE-21'; }
+			elseif ($kind === 'RE-23 wrong RE-24') { $ticket = 'RE-24'; }
+			elseif ($kind === 'RE-23 missing pair') { array_pop($pairs); }
+			elseif ($kind === 'RE-23 extra pair') { $pairs['lib/Extra.php'] = 'lib/Moved/Extra.php'; }
+			elseif ($kind === 'RE-23 duplicate destination') { $pairs[array_key_first($pairs)] = end($pairs); }
+			$proof = new FrozenPathSites($before, $after, $pairs, [], $map, new SourceTreeIndex($before), new SourceTreeIndex($after), $ticket, $certificates);
+			self::assertSame([], $proof->problems(), 'Inactive data must not be read even when malformed');
+			$descriptor = $certificates[0]; $descriptor['ticket'] = 'RE-OTHER';
+			$problems = (new MoveEquivalence($before, $after, $map, [$descriptor]))->check('RE-23');
+			self::assertSame(2, count(array_filter($problems, static fn (string $p): bool => str_contains($p, 'whose value depends'))));
+			return;
+		}
 		[$before, $after, $map, , $certificates] = FrozenPathFixture::trees();
 		$after[FrozenPathSites::PATH] = '{';
 		$problems = (new MoveEquivalence($before, $after, $map, $certificates))->check('RE-OTHER');
@@ -156,48 +201,87 @@ final class FrozenPathSitesTest extends TestCase {
 		self::assertSame(4, count(array_filter($problems, static fn (string $p): bool => str_contains($p, 'whose value depends'))));
 	}
 
-	/** @return iterable<string,array{string}> Changes to any caller invalidate even two equally rewritten trees. */
+	/** @return iterable<string,array{0:string,1?:string}> Changes to any caller invalidate even two equally rewritten trees. */
 	public static function callerMutants(): iterable {
 		foreach (['added caller', 'removed caller', 'indirect caller', 'closure changed', 'dynamic dispatch', 'recomputed JSON'] as $kind) { yield $kind => [$kind]; }
+		foreach (['added caller', 'removed caller', 'indirect caller', 'closure changed', 'dynamic dispatch', 'recomputed JSON', 'move handler effect', 'move handler plan'] as $kind) { yield 'RE-23 ' . $kind => [$kind, 'RE-23']; }
 	}
 
+	/**
+	 * @param string $kind Caller mutation.
+	 * @param string $ticket Reviewed transition.
+	 * @return void
+	 */
 	#[DataProvider('callerMutants')]
-	public function testCompleteUniverseCannotLoseAnyCaller(string $kind): void {
-		[$before, $after, $map, , $certificates] = FrozenPathFixture::trees();
+	public function testCompleteUniverseCannotLoseAnyCaller(string $kind, string $ticket = 'RE-21'): void {
+		[$before, $after, $map, $pairs, $certificates] = FrozenPathFixture::trees($ticket); $certificatePath = $certificates[0]['path'];
 		$path = implode('/', ['lib', 'Proof', 'Caller']) . '.php';
-		if ($kind === 'removed caller') { unset($before[$path], $after[$path]); }
+		if (str_starts_with($kind, 'move handler ')) {
+			$path = 'lib/Modules/Files/Handler/MoveHandler.php'; $target = $pairs[$path];
+			$method = $kind === 'move handler effect' ? 'handle' : 'planMove';
+			foreach ([0 => $path, 1 => $target] as $side => $physical) {
+				$files = $side === 0 ? $before : $after; $files[$physical] = str_replace($method . '(string $to): void { FolderExposureGate::assertMove($to);', $method . '(string $to): void { FolderExposureGate::assertMove("changed");', $files[$physical]);
+				if ($side === 0) { $before = $files; } else { $after = $files; }
+			}
+		} elseif ($kind === 'removed caller') { unset($before[$path], $after[$path]); }
 		elseif ($kind === 'added caller') { $before['lib/Extra.php'] = $after['lib/Extra.php'] = '<?php class Extra {}'; }
 		else {
 			$replacement = match ($kind) { 'indirect caller' => 'return $this->forward($path);', 'closure changed' => 'return (fn () => $path)();', 'dynamic dispatch' => 'return $this->$method($path);', default => "return 'changed';" };
 			$before[$path] = $after[$path] = str_replace('return $path;', $replacement, $before[$path]);
 			if ($kind === 'recomputed JSON') {
-				$data = json_decode($before[FrozenPathSites::PATH], true); $data['production'][$path] = 'refreshed';
-				$before[FrozenPathSites::PATH] = $after[FrozenPathSites::PATH] = json_encode($data, JSON_THROW_ON_ERROR);
+				$data = json_decode($before[$certificatePath], true); $names = []; foreach ($map->entries as $entry) { if ($entry['target'] !== 'stays') { $names[$entry['fqcn']] = $entry['target']; } }
+				if ($ticket === 'RE-23') { $names['OCA\\Mcp\\Modules\\Files\\MovePlan'] = 'OCA\\Mcp\\Modules\\Files\\Reorganization\\MovePlan'; }
+				$data['production'] = FrozenProduction::inventory($before, new SourceTreeIndex($before), $names, $pairs);
+				$before[$certificatePath] = $after[$certificatePath] = json_encode($data, JSON_THROW_ON_ERROR);
 			}
 		}
-		$problems = implode("\n", (new MoveEquivalence($before, $after, $map, $certificates))->check('RE-21'));
-		self::assertStringContainsString(FrozenPathSites::PATH . ':', $problems);
+		$problems = implode("\n", (new MoveEquivalence($before, $after, $map, $certificates))->check($ticket));
+		self::assertStringContainsString($certificatePath . ':', $problems);
 		self::assertStringContainsString('path not proved', $problems);
 	}
 
-	public function testSecondCallOnSameLineCannotConsumeTheFirstAuthorization(): void {
-		[$before, $after, $map, $pairs, $certificates] = FrozenPathFixture::trees();
+	/**
+	 * @param string $ticket Reviewed transition.
+	 * @return void
+	 */
+	#[DataProvider('certifiedTickets')]
+	public function testSecondCallOnSameLineCannotConsumeTheFirstAuthorization(string $ticket = 'RE-21'): void {
+		[$before, $after, $map, $pairs, $certificates] = FrozenPathFixture::trees($ticket); $certificatePath = $certificates[0]['path'];
+		self::assertSame([], (new MoveEquivalence($before, $after, $map, $certificates))->check($ticket));
+		if ($ticket === 'RE-23') {
+			self::assertCount(22, $pairs);
+			$registered = array_values(array_filter(\OCA\Mcp\Scripts\Dev\FrozenPathCertificates::all(), static fn (array $d): bool => $d['ticket'] === 'RE-23'))[0];
+			self::assertSame($registered['pairs_sha256'], FrozenProduction::pairsHash($pairs));
+			self::assertCount(23, array_merge(...array_map((new SourceTreeIndex($before))->declaredIn(...), array_keys($pairs))));
+		}
 		foreach ([$before, $after] as $side => $files) {
-			foreach ($files as $path => $code) { if (str_contains($code, 'return dirname($path);')) { $files[$path] = str_replace('return dirname($path);', 'return dirname($path) . dirname($other);', $code); } }
+			foreach ($files as $path => $code) { if (str_contains($code, 'return dirname(')) { $files[$path] = preg_replace('~return (dirname\(.+\));~', 'return $1 . dirname($other);', $code); } }
 			if ($side === 0) { $before = $files; } else { $after = $files; }
 		}
 		// Deliberately grant a newly reviewed seal here to isolate occurrence accounting from the independent seal check.
 		$renames = []; foreach ($map->entries as $e) { if ($e['target'] !== 'stays') { $renames[$e['fqcn']] = $e['target']; } }
-		$index = new SourceTreeIndex($before); $data = json_decode($before[FrozenPathSites::PATH], true);
+		if ($ticket === 'RE-23') { $renames['OCA\\Mcp\\Modules\\Files\\MovePlan'] = 'OCA\\Mcp\\Modules\\Files\\Reorganization\\MovePlan'; }
+		$index = new SourceTreeIndex($before); $data = json_decode($before[$certificatePath], true);
 		$data['production'] = FrozenProduction::inventory($before, $index, $renames, $pairs);
 		foreach ($data['sites'] as &$site) {
 			$source = (new TokenNormalizer($index))->normalize($before[$site['map_path']], $renames, $site['map_path'], $pairs);
 			$site['occurrence'] = \OCA\Mcp\Scripts\Dev\FrozenPathOccurrence::at($source, $source->located[0][2]);
 		} unset($site);
-		$before[FrozenPathSites::PATH] = $after[FrozenPathSites::PATH] = json_encode($data, JSON_THROW_ON_ERROR);
-		$certificates[0]['seal'] = hash('sha256', $before[FrozenPathSites::PATH]);
-		$problems = implode("\n", (new MoveEquivalence($before, $after, $map, $certificates))->check('RE-21'));
+		$before[$certificatePath] = $after[$certificatePath] = json_encode($data, JSON_THROW_ON_ERROR);
+		$certificates[0]['seal'] = hash('sha256', $before[$certificatePath]);
+		$problems = implode("\n", (new MoveEquivalence($before, $after, $map, $certificates))->check($ticket));
 		self::assertStringContainsString('path not proved', $problems);
 	}
 
+
+	/** @return iterable<string,array{string}> Existing mutation controls run with both reviewed transition shapes. */
+	public static function certifiedTickets(): iterable {
+		yield 'RE-21' => ['RE-21'];
+		yield 'RE-23' => ['RE-23'];
+	}
+
+	/** @return iterable<string,array{string}> Activation is exact and precedes reading any manifest. */
+	public static function inactiveRanges(): iterable {
+		foreach (['RE-21 wrong ticket', 'RE-23 wrong RE-21', 'RE-23 wrong RE-24', 'RE-23 missing pair', 'RE-23 extra pair', 'RE-23 duplicate destination'] as $kind) { yield $kind => [$kind]; }
+	}
 }

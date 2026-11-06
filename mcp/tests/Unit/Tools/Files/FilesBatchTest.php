@@ -231,7 +231,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
 		$this->tree->addFile('/alice/files/C', 'um arquivo', 'text/plain');
 		$access = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo(
 			\OCA\Mcp\Tests\Unit\Tools\FakeUsers::manager($this, \OCA\Mcp\Tests\Unit\Tools\FakeUsers::DEFAULTS), $this->tree->shareManager());
-		$reorganization = new \OCA\Mcp\Modules\Files\Reorganization\Reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access),
+		$reorganization = \OCA\Mcp\Tests\Unit\Tools\Files\FilesCatalogWiring::reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access),
 			$this->report(), $this->users);
 		try {
 			$reorganization->createFolders($this->tree->rootFolder(), ['/A/B', '/C']);

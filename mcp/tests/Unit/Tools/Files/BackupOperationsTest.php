@@ -112,7 +112,7 @@ final class BackupOperationsTest extends FilesToolsTestCase {
 	public function testCopyCannotUseAnyReservedDestination(): void {
 		[$location] = $this->settings('.mcp-backups', false);
 		$access = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo($this->users, $this->tree->shareManager());
-		$service = new \OCA\Mcp\Modules\Files\Reorganization\Reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access), $this->report(), $this->users, backupLocation: $location);
+		$service = \OCA\Mcp\Tests\Unit\Tools\Files\FilesCatalogWiring::reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access), $this->report(), $this->users, backupLocation: $location);
 		foreach (['MCP backups', '.mcp-backups'] as $folder) {
 			foreach ([false, true] as $write) {
 				try {

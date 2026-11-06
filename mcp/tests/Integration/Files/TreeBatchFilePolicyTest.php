@@ -55,7 +55,7 @@ final class TreeBatchFilePolicyTest extends IntegrationTestCase {
 		$shares = Server::get(\OCP\Share\IManager::class);
 		$access = new NodeAccessInfo($users, $shares);
 		$report = new MoveReport(\OC::$server, $shares, Server::get(\OCP\App\IAppManager::class));
-		$this->context = (new Reorganization($access, new SharedWriteGuard($access), $report, $users,
+		$this->context = (\OCA\Mcp\Tests\Unit\Tools\Files\FilesCatalogWiring::reorganization($access, new SharedWriteGuard($access), $report, $users,
 			fileTypes: Server::get(FileTypeGuard::class)))->copyMoveContext();
 		Server::get(FileWritePolicy::class)->save('allowlist', ['txt'], false);
 	}

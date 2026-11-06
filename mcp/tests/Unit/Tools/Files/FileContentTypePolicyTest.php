@@ -154,7 +154,7 @@ final class FileContentTypePolicyTest extends TestCase {
 		$versionRestore = new VersionRestore($apps, $users, $this->gate, $access, $container, $lockService, null);
 		$versions = new VersionTools($apps, $users, $backup, $access, $container, $lockService, null, $versionRestore);
 		$report = new MoveReport($this->createMock(ContainerInterface::class), $this->tree->shareManager(), $apps);
-		$reorganization = new Reorganization($access, new SharedWriteGuard($access), $report, $users);
+		$reorganization = \OCA\Mcp\Tests\Unit\Tools\Files\FilesCatalogWiring::reorganization($access, new SharedWriteGuard($access), $report, $users);
 		$imageTools = FilesImageWiring::build(
 			$this->createMock(\OCP\IPreview::class),
 			$access,
@@ -177,7 +177,7 @@ final class FileContentTypePolicyTest extends TestCase {
 			new CheckoutService($urls, $iConfig, $time, new TokenHasher($iConfig), $this->createMock(CheckoutTokenStore::class), $apps, $users),
 			$versions,
 			$reorganization,
-			new MovePlanner($reorganization, $access, new SharedWriteGuard($access)),
+			new MovePlanner(($reorganization)->copyMoveContext(), $access, new SharedWriteGuard($access)),
 			new BatchStore($db),
 			$time,
 			$imageTools,

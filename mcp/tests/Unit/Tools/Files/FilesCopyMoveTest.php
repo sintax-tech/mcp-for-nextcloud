@@ -129,7 +129,7 @@ final class FilesCopyMoveTest extends FilesToolsTestCase {
 			\OCA\Mcp\Tests\Unit\Tools\FakeUsers::manager($this, \OCA\Mcp\Tests\Unit\Tools\FakeUsers::DEFAULTS),
 			$this->tree->shareManager(),
 		);
-		return new \OCA\Mcp\Modules\Files\Reorganization\Reorganization(
+		return \OCA\Mcp\Tests\Unit\Tools\Files\FilesCatalogWiring::reorganization(
 			$access,
 			new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access),
 			$this->report(),

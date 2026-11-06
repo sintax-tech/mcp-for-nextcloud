@@ -157,7 +157,7 @@ final class CopyMoveFilePolicyTest extends FilesToolsTestCase {
 		$access = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo($this->users, $this->tree->shareManager());
 		$fixture = CopyMovePolicyFixture::forTest($this);
 		$fixture->reads = [self::policy(), array_replace(self::policy(), ['extensions' => []])];
-		$reorganization = new \OCA\Mcp\Modules\Files\Reorganization\Reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access),
+		$reorganization = \OCA\Mcp\Tests\Unit\Tools\Files\FilesCatalogWiring::reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access),
 			$this->report(), $this->users, fileTypes: $fixture->guard);
 		try {
 			$reorganization->copy($this->tree->rootFolder(), 'alice', '/input.txt', '/output.txt', null, false);

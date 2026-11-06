@@ -56,7 +56,7 @@ final class CreationPlanText {
 		}
 		$lines[] = '- ' . CreationMessages::planNewFileConsequence();
 		$lines = array_merge($lines, PlanConsequences::sharing($plan));
-		$preview = is_string($plan['preview'] ?? null) ? PlanText::quote($plan['preview'], \OCA\Mcp\Modules\Files\FileCreation::PREVIEW_CHARS) : '';
+		$preview = is_string($plan['preview'] ?? null) ? PlanText::quote($plan['preview'], \OCA\Mcp\Modules\Files\Creation\FileCreation::PREVIEW_CHARS) : '';
 		if ($preview === '') {
 			return array_merge($lines, ['', Translator::t('The file is empty.')]);
 		}

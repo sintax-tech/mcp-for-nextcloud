@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Editing;
 
-use OCA\Mcp\Modules\Files\Handler\EditFileHandler;
+use OCA\Mcp\Modules\Files\Editing\EditFileHandler;
 use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\FilesPreviewContext;
 

@@ -444,7 +444,7 @@ final class TreeBatchPolicyTest extends FilesToolsTestCase {
 			$preflight->inspect($source, '/target.txt', $snapshot);
 			self::fail('Projected work must remain bounded');
 		} catch (ToolFailure $e) {
-			self::assertSame(\OCA\Mcp\Modules\Files\FileTreeMessages::tooManyNodes(ReorganizationLimits::NODES), $e->getMessage());
+			self::assertSame(\OCA\Mcp\Modules\Files\Presentation\FileTreeMessages::tooManyNodes(ReorganizationLimits::NODES), $e->getMessage());
 			self::assertStringNotContainsString('copied', $e->getMessage());
 		}
 	}

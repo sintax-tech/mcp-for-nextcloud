@@ -19,7 +19,7 @@ use Psr\Log\LoggerInterface;
 use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCA\Mcp\Access\FileTypes\FileTypeDenied;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
-use OCA\Mcp\Modules\Files\FileExists;
+use OCA\Mcp\Modules\Files\Creation\FileExists;
 
 /** Client-safe checkout refusals and JSON receipts. */
 final class CheckoutRefusals {

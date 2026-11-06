@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files\Handler;
+namespace OCA\Mcp\Modules\Files\Editing;
 
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
@@ -13,14 +13,14 @@ use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
-use OCA\Mcp\Modules\Files\ContentCommit;
-use OCA\Mcp\Modules\Files\ContentTypeGate;
-use OCA\Mcp\Modules\Files\ContentWritePlan;
+use OCA\Mcp\Modules\Files\Writing\ContentCommit;
+use OCA\Mcp\Modules\Files\Writing\ContentTypeGate;
+use OCA\Mcp\Modules\Files\Writing\ContentWritePlan;
 use OCA\Mcp\Modules\Files\Backups\FileBackup;
 use OCA\Mcp\Modules\Files\Presentation\EditingMessages;
 use OCA\Mcp\Modules\Files\FilesModule;
-use OCA\Mcp\Modules\Files\ReplaceSource;
-use OCA\Mcp\Modules\Files\TextExtractor;
+use OCA\Mcp\Modules\Files\Editing\ReplaceSource;
+use OCA\Mcp\Modules\Files\Extraction\TextExtractor;
 use OCA\Mcp\Platform\Text\UnifiedDiff;
 use OCA\Mcp\Platform\Text\UniqueSnippet;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;

@@ -15,7 +15,7 @@ use OCA\Mcp\OAuth\Storage\TokenHasher;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture;
 use OCA\Mcp\Access\FileTypes\FileTypeDenied;
-use OCA\Mcp\Modules\Files\FileCreation;
+use OCA\Mcp\Modules\Files\Creation\FileCreation;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCP\Files\IRootFolder;
 use OCP\IRequest;

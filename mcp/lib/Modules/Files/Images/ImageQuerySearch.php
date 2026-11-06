@@ -8,10 +8,10 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Files\Images;
 
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
-use OCA\Mcp\Modules\Files\NameSearchQuery;
-use OCA\Mcp\Modules\Files\SearchBinaryOperator;
-use OCA\Mcp\Modules\Files\SearchComparison;
-use OCA\Mcp\Modules\Files\SearchOrder;
+use OCA\Mcp\Modules\Files\Searching\NameSearchQuery;
+use OCA\Mcp\Modules\Files\Searching\SearchBinaryOperator;
+use OCA\Mcp\Modules\Files\Searching\SearchComparison;
+use OCA\Mcp\Modules\Files\Searching\SearchOrder;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 use OCP\Files\Folder;

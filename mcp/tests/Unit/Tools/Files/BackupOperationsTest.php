@@ -240,7 +240,7 @@ final class BackupOperationsTest extends FilesToolsTestCase {
 			$container = $this->createMock(\Psr\Container\ContainerInterface::class);
 			$container->method('get')->willReturn($manager);
 			$access = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo($this->users, $this->tree->shareManager());
-			$restore = new \OCA\Mcp\Modules\Files\Integration\VersionRestore($this->apps, $this->users, new \OCA\Mcp\Modules\Files\ContentTypeGate(\OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this)), $access, $container);
+			$restore = new \OCA\Mcp\Modules\Files\Integration\VersionRestore($this->apps, $this->users, new \OCA\Mcp\Modules\Files\Writing\ContentTypeGate(\OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this)), $access, $container);
 			$file = $this->tree->node('/alice/files/Documentos/ata.md');
 			$before = $file->getContent();
 			try { $restore->restore($this->tree->rootFolder(), $file, '/Documentos/ata.md', '1', 'alice', $backup); self::fail('Late reservation written'); }

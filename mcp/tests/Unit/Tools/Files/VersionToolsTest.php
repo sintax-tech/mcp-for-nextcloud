@@ -19,7 +19,7 @@ use OCA\Mcp\Modules\Files\Backups\FileBackup;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 use OCA\Mcp\Modules\Files\Reading\ReadableFile;
 use OCA\Mcp\Modules\Files\Integration\ReadVersionHandler;
-use OCA\Mcp\Modules\Files\TextExtractor;
+use OCA\Mcp\Modules\Files\Extraction\TextExtractor;
 use OCA\Mcp\Modules\Files\Presentation\VersionMessages;
 use OCA\Mcp\Modules\Files\Integration\VersionRestore;
 use OCA\Mcp\Modules\Files\Integration\VersionTools;

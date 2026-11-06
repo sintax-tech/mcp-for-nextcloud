@@ -11,7 +11,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 use OCA\Mcp\Access\FileTypes\FileWritePolicy;
 use OCA\Mcp\Tests\Unit\InMemoryAppConfig;
 use OCA\Mcp\Access\FileTypes\FileTypeGuard;
-use OCA\Mcp\Modules\Files\ContentTypeGate;
+use OCA\Mcp\Modules\Files\Writing\ContentTypeGate;
 use OCP\IDBConnection;
 use PHPUnit\Framework\TestCase;
 

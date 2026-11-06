@@ -6,6 +6,7 @@
 declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files;
+use OCA\Mcp\Modules\Files\Extraction\TextExtractor;
 
 use OCA\Mcp\Mcp\Tools\CatalogModule;
 

@@ -27,7 +27,7 @@ use OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture;
 use OCA\Mcp\Access\FileTypes\FileTypeGuard;
 use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Platform\FileAccess\ActorRoot;
-use OCA\Mcp\Modules\Files\ContentTypeGate;
+use OCA\Mcp\Modules\Files\Writing\ContentTypeGate;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;

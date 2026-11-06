@@ -13,7 +13,7 @@ use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCP\Files\NotFoundException;
 use OCA\Mcp\Modules\Files\Checkout\CheckoutService;
 use OCA\Mcp\Modules\Files\Backups\FileBackup;
-use OCA\Mcp\Modules\Files\FileWriteBoundary;
+use OCA\Mcp\Modules\Files\Writing\FileWriteBoundary;
 use OCA\Mcp\Modules\Files\Presentation\EditingMessages;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;

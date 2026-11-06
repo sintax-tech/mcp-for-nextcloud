@@ -55,7 +55,7 @@ final class FileTypePreflight {
 				}
 				$this->seen[$node->getPath() . ':' . $node->getId()] = true;
 				if (count($this->seen) > \OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits::NODES) {
-					throw new ToolFailure(\OCA\Mcp\Modules\Files\FileTreeMessages::tooManyNodes(\OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits::NODES));
+					throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FileTreeMessages::tooManyNodes(\OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits::NODES));
 				}
 				$nodes[] = $node;
 				if ($node instanceof Folder) {
@@ -74,7 +74,7 @@ final class FileTypePreflight {
 		$bytes = 0;
 		foreach ($this->trees[$key] as $node) {
 			if (++$this->work > \OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits::NODES) {
-				throw new ToolFailure(\OCA\Mcp\Modules\Files\FileTreeMessages::tooManyNodes(\OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits::NODES));
+				throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FileTreeMessages::tooManyNodes(\OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits::NODES));
 			}
 			$final = $to . substr($node->getPath(), strlen($source->getPath()));
 			if ($node instanceof File) {

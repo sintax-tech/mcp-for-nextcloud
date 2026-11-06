@@ -26,7 +26,7 @@ final class CreationMessages {
 	/** @return string description of files_create, read by the model and therefore fixed English */
 	public static function createTool(): string {
 		return 'Create a NEW small text file with its content inline: ' . implode(', ', array_map(
-			static fn (string $extension): string => '.' . $extension, \OCA\Mcp\Modules\Files\FileCreation::TEXT_EXTENSIONS))
+			static fn (string $extension): string => '.' . $extension, \OCA\Mcp\Modules\Files\Creation\FileCreation::TEXT_EXTENSIONS))
 			. ', up to 1 MB of UTF-8. Never overwrites a file with content: an existing name is refused (use files_edit or files_checkout '
 			. 'to change it). For any other type or a larger file use files_upload. The folder must exist '
 			. '(files_mkdir creates it); outside your personal folder ask the user and retry with confirm_shared.';
@@ -116,6 +116,6 @@ final class CreationMessages {
 	/** @return string the rule of a path whose extension files_create does not write */
 	public static function createExtensionRule(): string {
 		return Translator::t('files_create only writes text files (%s); use files_upload for any other type', [implode(', ', array_map(
-			static fn (string $extension): string => '.' . $extension, \OCA\Mcp\Modules\Files\FileCreation::TEXT_EXTENSIONS))]);
+			static fn (string $extension): string => '.' . $extension, \OCA\Mcp\Modules\Files\Creation\FileCreation::TEXT_EXTENSIONS))]);
 	}
 }

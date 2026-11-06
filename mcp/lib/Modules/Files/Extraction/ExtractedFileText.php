@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 declare(strict_types=1);
-namespace OCA\Mcp\Modules\Files;
+namespace OCA\Mcp\Modules\Files\Extraction;
 
 use OCA\Mcp\Mcp\Resources\FileTextResource;
 use OCP\Files\File;

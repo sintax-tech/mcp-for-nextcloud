@@ -148,7 +148,7 @@ final class FilesSearchContentTest extends FilesToolsTestCase {
 		IFullTextSearchManager $ftsManager,
 		?\OCA\Mcp\Access\ResourceScope\FilesAccessGuard $guard = null,
 	): FilesModule {
-		$extractor = new \OCA\Mcp\Modules\Files\TextExtractor($this->temp);
+		$extractor = new \OCA\Mcp\Modules\Files\Extraction\TextExtractor($this->temp);
 		$backup = new \OCA\Mcp\Modules\Files\Backups\FileBackup($this->apps, $this->users, $this->time, $this->config->mock($this));
 		$access = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo(\OCA\Mcp\Tests\Unit\Tools\FakeUsers::manager($this, \OCA\Mcp\Tests\Unit\Tools\FakeUsers::DEFAULTS), $this->tree->shareManager());
 		$db = $this->createMock(\OCP\IDBConnection::class);

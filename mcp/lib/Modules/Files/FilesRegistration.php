@@ -5,6 +5,7 @@
  */
 declare(strict_types=1);
 namespace OCA\Mcp\Modules\Files;
+use OCA\Mcp\Modules\Files\Extraction\ExtractedFileText;
 
 use OCA\Mcp\Mcp\Resources\FileTextResource;
 use OCA\Mcp\Mcp\Tools\ModuleRegistration;

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Editing;
 
-use OCA\Mcp\Modules\Files\Handler\RestoreVersionHandler;
+use OCA\Mcp\Modules\Files\Editing\RestoreVersionHandler;
 use OCA\Mcp\Platform\Time\UserTimezone;
 use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\FilesPreviewContext;

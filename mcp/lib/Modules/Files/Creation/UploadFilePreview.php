@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Files\Creation;
 
 use OCP\Files\Folder;
-use OCA\Mcp\Modules\Files\FileCreation;
+use OCA\Mcp\Modules\Files\Creation\FileCreation;
 use OCA\Mcp\Modules\Files\FilesPreviewContext;
 use OCA\Mcp\Modules\Files\Handler;
 
@@ -30,6 +30,6 @@ final class UploadFilePreview {
 	 * @return array<string,mixed> unchanged read-only plan
 	 */
 	public function plan(array $arguments, string $userId): array {
-		return $this->context->run($userId, fn (Folder $root): array => (new Handler\UploadFileHandler(($this->creation ?? throw new \LogicException('FileCreation is not wired'))))->plan($root, $userId, $arguments['path'], $arguments['size'] ?? null));
+		return $this->context->run($userId, fn (Folder $root): array => (new \OCA\Mcp\Modules\Files\Creation\UploadFileHandler(($this->creation ?? throw new \LogicException('FileCreation is not wired'))))->plan($root, $userId, $arguments['path'], $arguments['size'] ?? null));
 	}
 }

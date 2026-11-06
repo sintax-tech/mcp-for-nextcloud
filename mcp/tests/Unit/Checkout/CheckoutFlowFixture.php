@@ -17,7 +17,7 @@ use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Modules\Files\Checkout\CheckoutService;
 use OCA\Mcp\Modules\Files\Backups\FileBackup;
-use OCA\Mcp\Modules\Files\FileCreation;
+use OCA\Mcp\Modules\Files\Creation\FileCreation;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\IRootFolder;
 use OCP\ITempManager;

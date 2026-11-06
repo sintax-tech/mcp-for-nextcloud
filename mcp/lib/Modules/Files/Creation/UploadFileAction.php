@@ -10,7 +10,7 @@ namespace OCA\Mcp\Modules\Files\Creation;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\FilesCallContext;
-use OCA\Mcp\Modules\Files\FileCreation;
+use OCA\Mcp\Modules\Files\Creation\FileCreation;
 use OCA\Mcp\Modules\Files\Handler;
 
 /** Runs the operation that creates a file from an upload link inside the actor view. */
@@ -32,6 +32,6 @@ final class UploadFileAction {
 	 */
 	public function handle(array $arguments, string $userId): array {
 		$confirmed = (bool)($arguments['confirm_shared'] ?? false);
-		return $this->context->run($userId, fn (Folder $root): array => ToolResult::json((new Handler\UploadFileHandler(($this->creation ?? throw new \LogicException('FileCreation is not wired'))))->execute($root, $userId, $arguments['path'], $arguments['size'] ?? null, $confirmed)));
+		return $this->context->run($userId, fn (Folder $root): array => ToolResult::json((new \OCA\Mcp\Modules\Files\Creation\UploadFileHandler(($this->creation ?? throw new \LogicException('FileCreation is not wired'))))->execute($root, $userId, $arguments['path'], $arguments['size'] ?? null, $confirmed)));
 	}
 }

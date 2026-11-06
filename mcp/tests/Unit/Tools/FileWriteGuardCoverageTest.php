@@ -35,7 +35,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Tools/Files/FilesModule.php#definitions:literal-move:3' => 'label: files_undo_batch operation metadata',
 			'Modules/Logs/Presentation/LogRedactor.php#<global>:literal-copy:1' => 'label: allowed HTTP verb for redacted log rendering',
 			'Modules/Logs/Presentation/LogRedactor.php#<global>:literal-move:1' => 'label: allowed HTTP verb for redacted log rendering',
-			'Tools/Deck/DeckToolModule.php#definitions:literal-move:1' => 'label: move-card operation metadata',
+			'Modules/Deck/DeckToolModule.php#definitions:literal-move:1' => 'label: move-card operation metadata',
 			'Modules/Calendar/Tools/MoveEvent.php#definition:literal-move:1' => 'label: calendar_move_event operation metadata',
 			'Modules/Mail/Moving/MailMoveTools.php#<global>:literal-move:1' => 'label: mail_move_message operation metadata',
 			'Modules/Mail/Moving/MailMoveCapability.php#assertMoveTouchesOnlyTheMessage:literal-move:1' => 'label: IMAP capability name queried, no write',

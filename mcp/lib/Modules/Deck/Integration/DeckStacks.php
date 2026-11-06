@@ -15,7 +15,7 @@ use OCA\Deck\Db\StackMapper;
 use OCA\Deck\NoPermissionException;
 use OCA\Deck\Service\PermissionService;
 use OCA\Deck\Service\StackService;
-use OCA\Mcp\Tools\Deck\DeckErrors;
+use OCA\Mcp\Modules\Deck\Integration\DeckErrors;
 
 /** Lists and creates stacks, counts the cards of a stack the caller may manage, and reads a stack back from the trash. */
 final class DeckStacks {

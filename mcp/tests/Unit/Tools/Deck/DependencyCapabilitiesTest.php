@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use OCA\Mcp\Modules\Deck\Integration\DeckCapabilities;
-use OCA\Mcp\Tools\Deck\DeckToolModule;
+use OCA\Mcp\Modules\Deck\DeckToolModule;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
@@ -69,7 +69,7 @@ final class DependencyCapabilitiesTest extends TestCase {
 				$module->call('deck_read_card_dependencies', ['cardId' => 7], 'alice');
 				self::fail('unsupported direct call accepted');
 			} catch (\InvalidArgumentException $e) {
-				self::assertSame(\OCA\Mcp\Tools\Deck\DeckMessages::dependenciesUnavailable(), $e->getMessage());
+				self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckMessages::dependenciesUnavailable(), $e->getMessage());
 			}
 		}
 	}
@@ -121,7 +121,7 @@ final class DependencyCapabilitiesTest extends TestCase {
 			foreach (['en', 'pt_BR', 'es', 'de'] as $language) {
 				\OCA\Mcp\L10n\Translator::use(new \OCA\Mcp\Tests\Unit\L10n\JsonL10n($language));
 				$title = \OCA\Mcp\Mcp\Tools\ToolPresentation::title('deck_read_card_dependencies');
-				$message = \OCA\Mcp\Tools\Deck\DeckMessages::dependencyGraphLimit();
+				$message = \OCA\Mcp\Modules\Deck\Presentation\DeckMessages::dependencyGraphLimit();
 				if ($language === 'en') {
 					self::assertSame('Read Deck card dependencies', $title);
 				} else {

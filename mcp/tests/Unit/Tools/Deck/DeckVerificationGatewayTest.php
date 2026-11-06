@@ -20,7 +20,7 @@ use OCA\Deck\NoPermissionException;
 use OCA\Deck\Service\BoardService;
 use OCA\Deck\Service\PermissionService;
 use OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway;
-use OCA\Mcp\Tools\Deck\DeckSessionException;
+use OCA\Mcp\Modules\Deck\Failures\DeckSessionException;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\ISession;
 use PHPUnit\Framework\MockObject\MockObject;

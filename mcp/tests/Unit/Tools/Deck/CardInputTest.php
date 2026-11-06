@@ -8,9 +8,9 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use InvalidArgumentException;
-use OCA\Mcp\Tools\Deck\CardDueDateMessages;
-use OCA\Mcp\Tools\Deck\CardInput;
-use OCA\Mcp\Tools\Deck\DeckMessages;
+use OCA\Mcp\Modules\Deck\DueDates\CardDueDateMessages;
+use OCA\Mcp\Modules\Deck\Editing\CardInput;
+use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

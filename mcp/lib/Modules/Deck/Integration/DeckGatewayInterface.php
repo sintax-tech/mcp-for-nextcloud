@@ -20,7 +20,7 @@ use OCP\Share\IShare;
  * installed and never learn which Deck class answered. Every method performs the ACL check the
  * Deck service does internally, plus the explicit checks noted in the sprint 03 contract.
  */
-interface DeckGatewayInterface extends \OCA\Mcp\Tools\Deck\DependencyNodeSource {
+interface DeckGatewayInterface extends \OCA\Mcp\Modules\Deck\Integration\DependencyNodeSource {
 	/**
 	 * Boards shared with the user, archived ones excluded.
 	 *

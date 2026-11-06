@@ -11,7 +11,7 @@ use OCA\Deck\Db\{Acl, AssignmentMapper, Board, Card, CardMapper, Label, LabelMap
 use OCA\Deck\Service\{BoardService, CardService, PermissionService, StackService};
 use OCA\Deck\NoPermissionException;
 use OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway;
-use OCA\Mcp\Tools\Deck\{DeckSessionException};
+use OCA\Mcp\Modules\Deck\Failures\DeckSessionException;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\ISession;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -228,7 +228,7 @@ final class DeckReferenceBoundaryTest extends TestCase {
 		$stacks = $this->createMock(StackMapper::class);
 		$stacks->method('findAll')->willReturn([new Stack(['id' => 10])]);
 		$this->services[StackMapper::class] = $stacks;
-		$graph = (new \OCA\Mcp\Tools\Deck\DependencyGraph($this->gateway, 1, 0, 0))->read('reader', 7);
+		$graph = (new \OCA\Mcp\Modules\Deck\Dependencies\DependencyGraph($this->gateway, 1, 0, 0))->read('reader', 7);
 		self::assertTrue($graph['complete']);
 		self::assertCount(1, $graph['nodes']);
 		self::assertSame([], $graph['edges']);

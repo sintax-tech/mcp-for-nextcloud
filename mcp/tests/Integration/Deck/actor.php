@@ -173,7 +173,7 @@ switch ($action) {
 	case 'mcp-observe':
 		$gateway = new OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway(OC::$server,
 			Server::get(OCP\AppFramework\Utility\ITimeFactory::class), null, Server::get(OCP\ISession::class));
-		$module = new OCA\Mcp\Tools\Deck\DeckToolModule(OC::$server, $apps, Server::get(Psr\Log\LoggerInterface::class),
+		$module = new OCA\Mcp\Modules\Deck\DeckToolModule(OC::$server, $apps, Server::get(Psr\Log\LoggerInterface::class),
 			Server::get(OCP\IURLGenerator::class), Server::get(OCP\AppFramework\Utility\ITimeFactory::class),
 			Server::get(OCP\IUserManager::class), Server::get(OCP\IConfig::class), Server::get(OCP\ISession::class));
 		$source = $gateway->findCard($uid, $in['a']);
@@ -331,7 +331,7 @@ switch ($action) {
 		$out = ['changed' => true];
 		break;
 	case 'mcp-card-files':
-		$module = new OCA\Mcp\Tools\Deck\DeckToolModule(OC::$server, $apps, Server::get(Psr\Log\LoggerInterface::class),
+		$module = new OCA\Mcp\Modules\Deck\DeckToolModule(OC::$server, $apps, Server::get(Psr\Log\LoggerInterface::class),
 			Server::get(OCP\IURLGenerator::class), Server::get(OCP\AppFramework\Utility\ITimeFactory::class),
 			Server::get(OCP\IUserManager::class), Server::get(OCP\IConfig::class), Server::get(OCP\ISession::class));
 		$policy = Server::get(OCA\Mcp\Access\Grants\GrantPolicy::class);
@@ -346,7 +346,7 @@ switch ($action) {
 		catch (InvalidArgumentException) { $out = ['refused' => true]; }
 		break;
 	case 'mcp-dependency':
-		$module = new OCA\Mcp\Tools\Deck\DeckToolModule(OC::$server, $apps, Server::get(Psr\Log\LoggerInterface::class),
+		$module = new OCA\Mcp\Modules\Deck\DeckToolModule(OC::$server, $apps, Server::get(Psr\Log\LoggerInterface::class),
 			Server::get(OCP\IURLGenerator::class), Server::get(OCP\AppFramework\Utility\ITimeFactory::class),
 			Server::get(OCP\IUserManager::class), Server::get(OCP\IConfig::class), Server::get(OCP\ISession::class));
 		$policy = Server::get(OCA\Mcp\Access\Grants\GrantPolicy::class);
@@ -363,7 +363,7 @@ switch ($action) {
 		}
 		break;
 	case 'dependency-read':
-		$module = new OCA\Mcp\Tools\Deck\DeckToolModule(OC::$server, $apps, Server::get(Psr\Log\LoggerInterface::class),
+		$module = new OCA\Mcp\Modules\Deck\DeckToolModule(OC::$server, $apps, Server::get(Psr\Log\LoggerInterface::class),
 			Server::get(OCP\IURLGenerator::class), Server::get(OCP\AppFramework\Utility\ITimeFactory::class),
 			Server::get(OCP\IUserManager::class), Server::get(OCP\IConfig::class), Server::get(OCP\ISession::class));
 		$policy = Server::get(OCA\Mcp\Access\Grants\GrantPolicy::class);
@@ -380,7 +380,7 @@ switch ($action) {
 		}
 		break;
 	case 'mcp-labels':
-		$module = new OCA\Mcp\Tools\Deck\DeckToolModule(OC::$server, $apps, Server::get(Psr\Log\LoggerInterface::class),
+		$module = new OCA\Mcp\Modules\Deck\DeckToolModule(OC::$server, $apps, Server::get(Psr\Log\LoggerInterface::class),
 			Server::get(OCP\IURLGenerator::class), Server::get(OCP\AppFramework\Utility\ITimeFactory::class),
 			Server::get(OCP\IUserManager::class), Server::get(OCP\IConfig::class), Server::get(OCP\ISession::class));
 		try {
@@ -388,12 +388,12 @@ switch ($action) {
 				$result = $module->call('deck_edit_card_labels', $in['arguments'], $uid);
 			} else {
 				$plan = $module->preview('deck_edit_card_labels', $in['arguments'], $uid);
-				$result = OCA\Mcp\Tools\Deck\DeckResult::ok(OCA\Mcp\Mcp\Confirmation\WriteGate::envelope(
+				$result = OCA\Mcp\Modules\Deck\Failures\DeckResult::ok(OCA\Mcp\Mcp\Confirmation\WriteGate::envelope(
 					['name' => 'deck_edit_card_labels'], $plan));
 			}
 			$out = ['result'=>$result];
 		} catch (OCA\Mcp\Mcp\Confirmation\PlanChanged $e) { $out = ['changedPlan'=>$e->plan]; }
-		catch (OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) { $out = ['result'=>OCA\Mcp\Tools\Deck\DeckResult::error($e->getMessage())]; }
+		catch (OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) { $out = ['result'=>OCA\Mcp\Modules\Deck\Failures\DeckResult::error($e->getMessage())]; }
 		// Read through the same service that populates the native Deck UI, in this fresh actor request.
 		try { $out['nativeLabels'] = labelIds($cards->find($in['arguments']['cardId'])); }
 		catch (OCA\Deck\NoPermissionException) { $out['nativeLabels'] = null; }

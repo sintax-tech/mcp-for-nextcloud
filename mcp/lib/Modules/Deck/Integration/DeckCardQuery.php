@@ -15,7 +15,7 @@ use OCA\Deck\Db\CardMapper;
 use OCA\Deck\Db\StackMapper;
 use OCA\Deck\Service\CardService;
 use OCA\Deck\Service\PermissionService;
-use OCA\Mcp\Tools\Deck\DeckErrors;
+use OCA\Mcp\Modules\Deck\Integration\DeckErrors;
 use OCP\AppFramework\Utility\ITimeFactory;
 
 /** Reads cards, the board of a card, its assignments and state, and the card a failed creation saved. */

@@ -13,12 +13,12 @@ use OCA\Deck\Db\CardMapper;
 use OCA\Deck\NoPermissionException;
 use OCA\Deck\Service\CardService;
 use OCA\Deck\Service\PermissionService;
-use OCA\Mcp\Tools\Deck\DeckConflictException;
-use OCA\Mcp\Tools\Deck\DeckMessages;
-use OCA\Mcp\Tools\Deck\DeckRefusalException;
-use OCA\Mcp\Tools\Deck\DependencyChange;
-use OCA\Mcp\Tools\Deck\DependencyGraph;
-use OCA\Mcp\Tools\Deck\DependencyNodeSource;
+use OCA\Mcp\Modules\Deck\Failures\DeckConflictException;
+use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
+use OCA\Mcp\Modules\Deck\Failures\DeckRefusalException;
+use OCA\Mcp\Modules\Deck\Dependencies\DependencyChange;
+use OCA\Mcp\Modules\Deck\Dependencies\DependencyGraph;
+use OCA\Mcp\Modules\Deck\Integration\DependencyNodeSource;
 
 /** Native dependency reads and writes with the existing readable-cycle boundary. */
 final class DeckDependencyGateway implements DependencyNodeSource {

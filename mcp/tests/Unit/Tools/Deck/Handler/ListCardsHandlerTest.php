@@ -8,10 +8,10 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Deck\Handler;
 
 use OCA\Deck\NoPermissionException;
-use OCA\Mcp\Tools\Deck\CardFormatter;
+use OCA\Mcp\Modules\Deck\Integration\CardFormatter;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Tools\Deck\DeckMessages;
-use OCA\Mcp\Tools\Deck\Handler\ListCardsHandler;
+use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
+use OCA\Mcp\Modules\Deck\Reading\ListCardsHandler;
 use OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestHelpers;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;

@@ -34,7 +34,7 @@ use OCA\Mcp\Modules\Calendar\Scheduling\Scheduling;
 use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
 use OCA\Mcp\Modules\Calendar\Writing\TrashPolicy;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Tools\Deck\DeckToolModule;
+use OCA\Mcp\Modules\Deck\DeckToolModule;
 use OCA\Mcp\Modules\Notes\NotesModule;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;

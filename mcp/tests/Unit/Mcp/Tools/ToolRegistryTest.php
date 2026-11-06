@@ -112,7 +112,7 @@ final class ToolRegistryTest extends TestCase {
 		foreach (\OCA\Mcp\AppInfo\Application::MODULES as $class) {
 			// Exercise both the unavailable catalogue and the native dependency tools without resource services.
 			$instance = (new \ReflectionClass($class))->newInstanceWithoutConstructor();
-			if ($instance instanceof \OCA\Mcp\Tools\Deck\DeckToolModule) {
+			if ($instance instanceof \OCA\Mcp\Modules\Deck\DeckToolModule) {
 				(new \ReflectionProperty($instance, 'capabilities'))->setValue($instance,
 					new \OCA\Mcp\Modules\Deck\Integration\DeckCapabilities($this->nativeDeckApps(), $dependencies ? 35 : 32, static fn (): bool => true));
 			}

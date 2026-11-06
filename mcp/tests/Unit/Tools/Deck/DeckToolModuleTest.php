@@ -8,21 +8,21 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use InvalidArgumentException;
-use OCA\Mcp\Tools\Deck\DeckMessages;
-use OCA\Mcp\Tools\Deck\DeckToolModule;
-use OCA\Mcp\Tools\Deck\Handler\CreateBoardHandler;
-use OCA\Mcp\Tools\Deck\Handler\CreateCardHandler;
-use OCA\Mcp\Tools\Deck\Handler\CreateStackHandler;
-use OCA\Mcp\Tools\Deck\Handler\DeleteBoardHandler;
-use OCA\Mcp\Tools\Deck\Handler\DeleteCardHandler;
-use OCA\Mcp\Tools\Deck\Handler\DeleteStackHandler;
-use OCA\Mcp\Tools\Deck\Handler\EditCardHandler;
-use OCA\Mcp\Tools\Deck\Handler\FollowupCardsHandler;
-use OCA\Mcp\Tools\Deck\Handler\ListBoardsHandler;
-use OCA\Mcp\Tools\Deck\Handler\ListCardsHandler;
-use OCA\Mcp\Tools\Deck\Handler\ListStacksHandler;
-use OCA\Mcp\Tools\Deck\Handler\MoveCardHandler;
-use OCA\Mcp\Tools\Deck\Handler\ReadCardHandler;
+use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
+use OCA\Mcp\Modules\Deck\DeckToolModule;
+use OCA\Mcp\Modules\Deck\Structure\CreateBoardHandler;
+use OCA\Mcp\Modules\Deck\CreateCardHandler;
+use OCA\Mcp\Modules\Deck\Structure\CreateStackHandler;
+use OCA\Mcp\Modules\Deck\Structure\DeleteBoardHandler;
+use OCA\Mcp\Modules\Deck\DeleteCardHandler;
+use OCA\Mcp\Modules\Deck\Structure\DeleteStackHandler;
+use OCA\Mcp\Modules\Deck\Editing\EditCardHandler;
+use OCA\Mcp\Modules\Deck\Reading\FollowupCardsHandler;
+use OCA\Mcp\Modules\Deck\Reading\ListBoardsHandler;
+use OCA\Mcp\Modules\Deck\Reading\ListCardsHandler;
+use OCA\Mcp\Modules\Deck\Reading\ListStacksHandler;
+use OCA\Mcp\Modules\Deck\MoveCardHandler;
+use OCA\Mcp\Modules\Deck\Reading\ReadCardHandler;
 use OCA\Mcp\Mcp\Tools\ToolModule;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -128,7 +128,7 @@ final class DeckToolModuleTest extends TestCase {
 
 	public function testLabelSchemaAndHandlerShareTheDefaultLimit(): void {
 		$schema = $this->definitionOf('deck_list_labels')['inputSchema'];
-		self::assertSame(\OCA\Mcp\Tools\Deck\Handler\ListLabelsHandler::DEFAULT_LIMIT,
+		self::assertSame(\OCA\Mcp\Modules\Deck\Reading\ListLabelsHandler::DEFAULT_LIMIT,
 			$schema['properties']['limit']['default']);
 	}
 

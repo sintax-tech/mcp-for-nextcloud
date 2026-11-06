@@ -9,10 +9,10 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use OCA\Circles\Model\Member;
 use OCA\Deck\Service\CirclesService;
-use OCA\Mcp\Tools\Deck\DeckRecipientDirectory;
+use OCA\Mcp\Modules\Deck\Integration\DeckRecipientDirectory;
 use OCA\Mcp\Modules\Deck\Integration\DeckServiceContext;
-use OCA\Mcp\Tools\Deck\RecipientExpansion;
-use OCA\Mcp\Tools\Deck\RecipientResolutionException;
+use OCA\Mcp\Modules\Deck\Recipients\RecipientExpansion;
+use OCA\Mcp\Modules\Deck\Recipients\RecipientResolutionException;
 use OCP\App\IAppManager;
 use OCP\IGroup;
 use OCP\IGroupManager;

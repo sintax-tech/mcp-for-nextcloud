@@ -9,10 +9,10 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use OCA\Deck\Db\Card;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Tools\Deck\DeckRefusalException;
-use OCA\Mcp\Tools\Deck\DependencyGraph;
-use OCA\Mcp\Tools\Deck\DependencyNodeSource;
-use OCA\Mcp\Tools\Deck\Handler\ReadCardDependenciesHandler;
+use OCA\Mcp\Modules\Deck\Failures\DeckRefusalException;
+use OCA\Mcp\Modules\Deck\Dependencies\DependencyGraph;
+use OCA\Mcp\Modules\Deck\Integration\DependencyNodeSource;
+use OCA\Mcp\Modules\Deck\Reading\ReadCardDependenciesHandler;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;

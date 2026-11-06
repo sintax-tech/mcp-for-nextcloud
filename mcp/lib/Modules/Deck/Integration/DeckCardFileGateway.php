@@ -17,10 +17,10 @@ use OCA\Deck\Sharing\DeckShareProvider;
 use OCP\Files\File;
 use OCP\Share\Exceptions\ShareNotFound;
 use OCP\Share\IShare;
-use OCA\Mcp\Tools\Deck\CardFiles;
-use OCA\Mcp\Tools\Deck\DeckConflictException;
-use OCA\Mcp\Tools\Deck\DeckMessages;
-use OCA\Mcp\Tools\Deck\DeckRefusalException;
+use OCA\Mcp\Modules\Deck\Attachments\CardFiles;
+use OCA\Mcp\Modules\Deck\Failures\DeckConflictException;
+use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
+use OCA\Mcp\Modules\Deck\Failures\DeckRefusalException;
 
 /** Native card-file associations; Files visibility remains the responsibility of CardFiles. */
 final class DeckCardFileGateway {

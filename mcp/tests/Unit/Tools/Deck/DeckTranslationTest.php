@@ -10,9 +10,9 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 use InvalidArgumentException;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
-use OCA\Mcp\Tools\Deck\DeckErrors;
-use OCA\Mcp\Tools\Deck\DeckMessages;
-use OCA\Mcp\Tools\Deck\DeckToolModule;
+use OCA\Mcp\Modules\Deck\Integration\DeckErrors;
+use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
+use OCA\Mcp\Modules\Deck\DeckToolModule;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IURLGenerator;
@@ -160,16 +160,16 @@ final class DeckTranslationTest extends TestCase {
 	 * @return void
 	 */
 	public function testTimedDeadlineTranslations(): void {
-		$source = \OCA\Mcp\Tools\Deck\CardDueDateMessages::nonexistent();
-		$invalid = \OCA\Mcp\Tools\Deck\CardDueDateMessages::invalid();
+		$source = \OCA\Mcp\Modules\Deck\DueDates\CardDueDateMessages::nonexistent();
+		$invalid = \OCA\Mcp\Modules\Deck\DueDates\CardDueDateMessages::invalid();
 		foreach (['pt_BR', 'es', 'de'] as $language) {
 			$catalog = json_decode(file_get_contents(__DIR__ . '/../../../../l10n/' . $language . '.json'), true)['translations'];
 			self::assertArrayHasKey($invalid, $catalog);
 			self::assertArrayHasKey($source, $catalog);
 			self::assertArrayHasKey('%s (%s, UTC%s)', $catalog);
 			Translator::use(new JsonL10n($language));
-			self::assertNotSame($source, \OCA\Mcp\Tools\Deck\CardDueDateMessages::nonexistent());
-			self::assertSame($catalog[$invalid], \OCA\Mcp\Tools\Deck\CardDueDateMessages::invalid());
+			self::assertNotSame($source, \OCA\Mcp\Modules\Deck\DueDates\CardDueDateMessages::nonexistent());
+			self::assertSame($catalog[$invalid], \OCA\Mcp\Modules\Deck\DueDates\CardDueDateMessages::invalid());
 			self::assertStringContainsString('YYYY-MM-DDTHH:MM[:SS]', $catalog[$invalid]);
 		}
 	}

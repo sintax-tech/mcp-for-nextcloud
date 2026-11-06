@@ -18,7 +18,7 @@ use OCA\Mcp\Modules\Calendar\CalendarModule;
 use OCA\Mcp\Modules\Contacts\ContactsModule;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway;
-use OCA\Mcp\Tools\Deck\DeckToolModule;
+use OCA\Mcp\Modules\Deck\DeckToolModule;
 use OCA\Mcp\Modules\Talk\TalkModule;
 use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\TextExtractor;
@@ -99,7 +99,7 @@ class Application extends App implements IBootstrap {
 			new UserTimezone($c->get(IConfig::class)),
 			$c->get(\OCP\ISession::class),
 		));
-		$context->registerService(\OCA\Mcp\Access\References\ReadableDeckCard::class, static fn (ContainerInterface $c): \OCA\Mcp\Access\References\ReadableDeckCard => $c->get(\OCA\Mcp\Tools\Deck\DeckCardReference::class));
+		$context->registerService(\OCA\Mcp\Access\References\ReadableDeckCard::class, static fn (ContainerInterface $c): \OCA\Mcp\Access\References\ReadableDeckCard => $c->get(\OCA\Mcp\Modules\Deck\DeckCardReference::class));
 		// Modules of the 1.3.0 contract register their own services and capability probes.
 		ModuleRegistrations::register($context, self::MODULES);
 		$context->registerService(ToolRegistry::class, static fn (ContainerInterface $c): ToolRegistry => new ToolRegistry(

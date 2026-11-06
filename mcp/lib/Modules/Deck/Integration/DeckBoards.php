@@ -13,7 +13,7 @@ use OCA\Deck\Db\Board;
 use OCA\Deck\Db\BoardMapper;
 use OCA\Deck\Service\BoardService;
 use OCA\Deck\Service\PermissionService;
-use OCA\Mcp\Tools\Deck\DeckErrors;
+use OCA\Mcp\Modules\Deck\Integration\DeckErrors;
 
 /** Lists and creates boards, counts the cards of a board the caller may manage, and reads the boards the caller owns. */
 final class DeckBoards {

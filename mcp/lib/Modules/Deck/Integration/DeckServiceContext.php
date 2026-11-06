@@ -11,7 +11,7 @@ use OCA\Deck\Service\BoardService;
 use OCP\ISession;
 use OCP\IUserManager;
 use Psr\Container\ContainerInterface;
-use OCA\Mcp\Tools\Deck\DeckSessionException;
+use OCA\Mcp\Modules\Deck\Failures\DeckSessionException;
 
 /** Request-local lazy native services and caller binding shared by the Deck facade's collaborators. */
 final class DeckServiceContext {

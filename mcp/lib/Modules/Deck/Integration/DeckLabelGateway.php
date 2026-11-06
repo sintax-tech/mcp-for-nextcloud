@@ -16,10 +16,10 @@ use OCA\Deck\Db\StackMapper;
 use OCA\Deck\NoPermissionException;
 use OCA\Deck\Service\CardService;
 use OCA\Deck\Service\PermissionService;
-use OCA\Mcp\Tools\Deck\CardLabelChanges;
-use OCA\Mcp\Tools\Deck\DeckConflictException;
-use OCA\Mcp\Tools\Deck\DeckMessages;
-use OCA\Mcp\Tools\Deck\DeckRefusalException;
+use OCA\Mcp\Modules\Deck\Editing\CardLabelChanges;
+use OCA\Mcp\Modules\Deck\Failures\DeckConflictException;
+use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
+use OCA\Mcp\Modules\Deck\Failures\DeckRefusalException;
 
 /** Native board-label reads and incremental card-label associations. */
 final class DeckLabelGateway {

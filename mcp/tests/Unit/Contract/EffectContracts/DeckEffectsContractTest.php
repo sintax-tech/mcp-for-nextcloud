@@ -18,7 +18,7 @@ use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Tools\Deck\DeckToolModule;
+use OCA\Mcp\Modules\Deck\DeckToolModule;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\File;

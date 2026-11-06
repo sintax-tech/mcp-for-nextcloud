@@ -9,8 +9,8 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use OCA\Deck\NoPermissionException;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Tools\Deck\{DeckConflictException, DeckPlanRenderer};
-use OCA\Mcp\Tools\Deck\Handler\ChangeCardDependencyHandler;
+use OCA\Mcp\Modules\Deck\Failures\DeckConflictException; use OCA\Mcp\Modules\Deck\Presentation\DeckPlans\DeckPlanRenderer;
+use OCA\Mcp\Modules\Deck\Dependencies\ChangeCardDependencyHandler;
 use OCA\Mcp\Mcp\{Confirmation\PlanState, Confirmation\PlanChanged, Tools\Validation\ArgumentValidationException};
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;

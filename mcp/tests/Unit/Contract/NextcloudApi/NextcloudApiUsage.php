@@ -555,8 +555,8 @@ final class NextcloudApiUsage {
 			'fallback' => 'OCA\\Deck\\Service\\CardService::update',
 			'by' => \OCA\Mcp\Modules\Deck\Integration\DeckCardChanges::class,
 			'elsewhere' => [
-				'Tools/Deck/CardFormatter.php' => 'OCA\\Deck\\Db\\Board::getColor',
-				'Tools/Deck/Handler/ListLabelsHandler.php' => 'OCA\\Deck\\Db\\Label::getColor',
+				'Modules/Deck/Integration/CardFormatter.php' => 'OCA\\Deck\\Db\\Board::getColor',
+				'Modules/Deck/Reading/ListLabelsHandler.php' => 'OCA\\Deck\\Db\\Label::getColor',
 				'Modules/Deck/Integration/DeckLabelGateway.php' => 'OCA\\Deck\\Db\\Label::getColor',
 			],
 		],

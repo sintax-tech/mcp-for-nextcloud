@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
-use OCA\Mcp\Tools\Deck\CardCriteria;
-use OCA\Mcp\Tools\Deck\CardDueDate;
+use OCA\Mcp\Modules\Deck\Integration\CardCriteria;
+use OCA\Mcp\Modules\Deck\DueDates\CardDueDate;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/Stubs/deck_stubs.php';

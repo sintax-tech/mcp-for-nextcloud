@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\CriticalFlow;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\EffectsGate;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\FlowRunner;
-use OCA\Mcp\Tools\Deck\DeckMessages;
+use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
 use OCP\Share\IShare;
 use PHPUnit\Framework\TestCase;
 

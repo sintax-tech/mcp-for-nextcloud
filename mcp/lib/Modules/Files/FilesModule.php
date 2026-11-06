@@ -19,7 +19,7 @@ use OCA\Mcp\Mcp\Tools\CatalogModule;
  *
  * A file locked by files_lock (open in Text or Office, locked by another person or a WebDAV client) is a warning in
  * the plan and a refusal of the confirmed call, decided before the shared-write confirmation and the backup
- * ({@see LockAwareWrite}). The user's own manual lock lets the write through, as in the Files app.
+ * ({@see \OCA\Mcp\Platform\FileAccess\LockAwareWrite}). The user's own manual lock lets the write through, as in the Files app.
  */
 final class FilesModule extends CatalogModule {
 	/** Characters returned by files_read before the text is truncated. */

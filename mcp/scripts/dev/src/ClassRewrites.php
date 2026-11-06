@@ -42,6 +42,7 @@ final class ClassRewrites {
 	/**
 	 * Reports every whole old name of a class retired in the range that a non-PHP file of the new tree still holds,
 	 * whether the file changed or not (a golden forgotten entirely), with the same boundaries as {@see text()}.
+	 * Exact registered certificate paths preserve historical names; PathRewrites::nonPhp refuses changes outside tests/.
 	 *
 	 * @param array<string,string> $files new tree, path => content; PHP files and the allowed data are skipped
 	 * @param array<string,string> $retired old class => new class, for classes of the app no longer declared
@@ -49,8 +50,9 @@ final class ClassRewrites {
 	 */
 	public static function stale(array $files, array $retired): array {
 		$problems = [];
+		$certificates = array_column(FrozenPathCertificates::all(), 'path');
 		foreach ($files as $path => $content) {
-			if (str_ends_with($path, '.php') || in_array($path, MoveEquivalence::ALLOWED_DATA, true)) {
+			if (str_ends_with($path, '.php') || in_array($path, MoveEquivalence::ALLOWED_DATA, true) || in_array($path, $certificates, true)) {
 				continue;
 			}
 			foreach ($retired as $old => $new) {

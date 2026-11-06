@@ -9,7 +9,9 @@ namespace OCA\Mcp\Tests\Unit\Scripts\Dev;
 
 use OCA\Mcp\Scripts\Dev\ClassRewrites;
 use OCA\Mcp\Scripts\Dev\FqcnMap;
+use OCA\Mcp\Scripts\Dev\FrozenPathCertificates;
 use OCA\Mcp\Scripts\Dev\MoveEquivalence;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../../../../scripts/dev/bootstrap.php';
@@ -61,11 +63,32 @@ final class NonPhpClassRenameTest extends TestCase {
 	 * A golden left entirely as it was still names the retired class: every occurrence fails, plain and JSON-escaped,
 	 * with its line, although the file did not change.
 	 *
+	 * @param string $path Exact path of unchanged historical or ordinary data.
+	 * @param bool $registered Whether the trusted certificate registry owns this path.
 	 * @return void
 	 */
-	public function testAGoldenForgottenEntirelyFails(): void {
-		$stale = static fn (int $line): string => "tests/golden.json:$line: still refers to Acme\\A\\Probe, moved to Acme\\B\\Probe in this range";
-		$this->assertSame([$stale(2), $stale(1), $stale(1), $stale(1)], $this->check(self::GOLDEN));
+	#[DataProvider('unchangedDataPaths')]
+	public function testAGoldenForgottenEntirelyFails(string $path, bool $registered): void {
+		$stale = static fn (int $line): string => "$path:$line: still refers to Acme\\A\\Probe, moved to Acme\\B\\Probe in this range";
+		$expected = $registered ? [] : [$stale(2), $stale(1), $stale(1), $stale(1)];
+		$this->assertSame($expected, ClassRewrites::stale([$path => self::GOLDEN], ['Acme\\A\\Probe' => 'Acme\\B\\Probe']));
+		$this->assertSame($expected, $this->check(str_replace('\\A\\', '\\B\\', self::GOLDEN), [$path => self::GOLDEN]));
+		if ($registered) {
+			$map = new FqcnMap([], 'Acme\\', 'lib/');
+			$problems = (new MoveEquivalence([$path => self::GOLDEN], [$path => self::GOLDEN . "\n"], $map))->check();
+			$this->assertContains($path . ': non-PHP file changed; a move commit only moves PHP and updates the map', $problems);
+		}
+	}
+
+	/** @return iterable<string,array{string,bool}> Only exact registered certificate paths keep historical names. */
+	public static function unchangedDataPaths(): iterable {
+		yield 'ordinary JSON' => ['tests/ordinary.json', false];
+		yield 'ordinary non-PHP text' => ['tests/ordinary.txt', false];
+		yield 'unregistered certificate' => ['scripts/dev/unregistered-certificate.json', false];
+		foreach (FrozenPathCertificates::all() as $certificate) {
+			yield $certificate['ticket'] . ' registered certificate' => [$certificate['path'], true];
+			yield $certificate['ticket'] . ' unregistered adjacent path' => [$certificate['path'] . '.backup', false];
+		}
 	}
 
 	/**

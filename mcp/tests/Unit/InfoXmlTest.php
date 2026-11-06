@@ -94,6 +94,7 @@ final class InfoXmlTest extends TestCase {
 		$repository = 'https://github.com/sintax-tech/mcp-for-nextcloud';
 
 		$this->assertSame('mcp', (string)$manifest->id);
+		$this->assertSame(FinalStoreLocaleContract::VERSION, (string)$manifest->version);
 		$this->assertSame($repository, (string)$manifest->website);
 		$this->assertSame($repository . '/issues', (string)$manifest->bugs);
 		$this->assertSame($repository . '.git', (string)$manifest->repository);

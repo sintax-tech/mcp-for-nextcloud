@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\Tests\Unit\FinalStoreLocaleContract;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Modules\Deck\Attachments\CardFileNodeAccess;
 use OCA\Mcp\Modules\Deck\Attachments\CardLinkMessages;
@@ -195,10 +196,20 @@ final class DeckCutPresentationTest extends TestCase {
 		self::assertStringContainsString('só quando o vínculo é criado', $portuguese);
 		self::assertStringContainsString('não revoga o vínculo depois', $portuguese);
 		$info = (string)file_get_contents($repo . '/mcp/appinfo/info.xml');
-		self::assertStringContainsString('<version>1.2.1</version>', $info);
-		self::assertStringContainsString('never deletes', $info);
-		self::assertStringContainsString('nunca apaga', $info);
-		self::assertStringContainsString('nunca borra', $info);
+		self::assertStringContainsString('<version>' . FinalStoreLocaleContract::VERSION . '</version>', $info);
+		$unlinkGuarantees = [
+			'en' => 'Unlinking a Deck file association never deletes the original file.',
+			'pt-br' => 'Desvincular um arquivo do Deck nunca apaga o arquivo original.',
+			'es' => 'Desvincular un archivo de Deck nunca borra el archivo original.',
+			'de' => 'Das Aufheben einer Deck-Dateiverknüpfung löscht niemals die Originaldatei.',
+		];
+		$descriptions = [];
+		foreach (simplexml_load_string($info)->description as $description) {
+			$descriptions[(string)($description['lang'] ?? 'en')] = (string)$description;
+		}
+		foreach ($unlinkGuarantees as $locale => $guarantee) {
+			self::assertStringContainsString($guarantee, $descriptions[$locale] ?? '', $locale);
+		}
 		self::assertStringContainsString('Nextcloud 32–35', $info);
 		foreach (['kein-ki', 'lethal trifecta', 'mail_browse', 'tables_browse', 'prepare_context', 'threat-model.md', 'hardening.md'] as $banned) {
 			self::assertStringNotContainsString($banned, $english . $portuguese . $info);

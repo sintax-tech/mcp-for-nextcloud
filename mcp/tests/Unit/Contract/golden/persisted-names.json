@@ -35,11 +35,11 @@
     },
     "di": {
         "registerService": [
-            "OCA\\Mcp\\Mcp\\Resources\\FileTextResource",
             "OCA\\Mcp\\Platform\\FileAccess\\WriteVisibility",
             "OCA\\Mcp\\Platform\\FileAccess\\ActorRoot",
             "OCA\\Mcp\\Access\\ResourceScope\\ScopeReader",
             "OCA\\Mcp\\Access\\ResourceScope\\FileReferenceScope",
+            "OCA\\Mcp\\Mcp\\Resources\\FileTextResource",
             "OCA\\Mcp\\Mcp\\Resources\\NoteResource",
             "OCA\\Mcp\\Access\\ResourceScope\\NativeCalendars",
             "OCA\\Mcp\\Modules\\Calendar\\Selftest\\CalendarSelftestReader",

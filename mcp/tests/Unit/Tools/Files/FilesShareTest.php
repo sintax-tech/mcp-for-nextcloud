@@ -269,7 +269,7 @@ final class FilesShareTest extends FilesToolsTestCase {
 	/** @dataProvider serverRules */
 	public function testTheAdministratorsRulesAreExplainedBeforeTheCoreRefuses(\Closure $rule, string $with, string $message): void {
 		$rule($this);
-		self::assertSame(FilesMessages::$message(), $this->planFailure(['path' => '/Documentos/ata.md', 'with' => $with]));
+		self::assertSame(SharingMessages::$message(), $this->planFailure(['path' => '/Documentos/ata.md', 'with' => $with]));
 	}
 
 	public function testMembersOnlyStillAllowsACommonGroup(): void {
@@ -308,7 +308,7 @@ final class FilesShareTest extends FilesToolsTestCase {
 			$this->confirm(['path' => '/Documentos/ata.md', 'with' => 'user:bruno']);
 			self::fail('no failure');
 		} catch (ToolFailure $e) {
-			self::assertSame(FilesMessages::$message(), $e->getMessage());
+			self::assertSame(SharingMessages::$message(), $e->getMessage());
 			self::assertStringNotContainsString($failure->getMessage(), $e->getMessage());
 		}
 	}
@@ -393,16 +393,16 @@ final class FilesShareTest extends FilesToolsTestCase {
 	 *
 	 * @dataProvider refusals
 	 * @param \Closure(self): array<string, mixed> $setup prepares the refusal and returns the call
-	 * @param string $message the FilesMessages method of the refusal
+	 * @param string $message the SharingMessages method of the refusal
 	 */
 	public function testTheConfirmedCallRefusesOnItsOwn(\Closure $setup, string $message): void {
 		$arguments = $setup($this);
-		self::assertSame(FilesMessages::$message(), $this->planFailure($arguments), 'o plano');
+		self::assertSame(SharingMessages::$message(), $this->planFailure($arguments), 'o plano');
 		try {
 			$this->confirm($arguments);
 			self::fail('the confirmed call went through');
 		} catch (ToolFailure $e) {
-			self::assertSame(FilesMessages::$message(), $e->getMessage(), 'a confirmação');
+			self::assertSame(SharingMessages::$message(), $e->getMessage(), 'a confirmação');
 		}
 		self::assertSame([], $this->shares->writes);
 	}

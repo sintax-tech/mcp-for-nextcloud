@@ -1782,6 +1782,12 @@ OC.L10N.register(
     "Shared board owner: %s" : "Propietario del tablero compartido: %s",
     "Native completion will also move the card to: %s" : "La finalización nativa también moverá la tarjeta a: %s",
     "Change Deck card completion" : "Cambiar finalización de la tarjeta de Deck",
-    "Change Deck card archive state" : "Cambiar archivado de la tarjeta de Deck"
+    "Change Deck card archive state" : "Cambiar archivado de la tarjeta de Deck",
+    "configure" : "configurar",
+    "options" : "opciones",
+    "remove or restore options" : "eliminar o restaurar opciones",
+    "invite" : "invitar",
+    "options.remove" : "eliminar o restaurar opciones",
+    "schema" : "estructura"
     },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

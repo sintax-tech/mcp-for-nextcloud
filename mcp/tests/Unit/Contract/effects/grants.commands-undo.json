@@ -938,7 +938,9 @@
                                     "tables": {
                                         "read": true,
                                         "create": false,
-                                        "edit": false
+                                        "edit": false,
+                                        "schema": false,
+                                        "share": false
                                     },
                                     "forms": {
                                         "read": true,
@@ -950,7 +952,12 @@
                                         "read": true,
                                         "results": false,
                                         "links": false,
-                                        "create": false
+                                        "create": false,
+                                        "configure": false,
+                                        "options": false,
+                                        "options.remove": false,
+                                        "share": false,
+                                        "invite": false
                                     }
                                 },
                                 "origins": {
@@ -1175,6 +1182,14 @@
                                             "edit": {
                                                 "source": "default",
                                                 "groupIds": []
+                                            },
+                                            "schema": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "share": {
+                                                "source": "default",
+                                                "groupIds": []
                                             }
                                         },
                                         "forms": {
@@ -1209,6 +1224,26 @@
                                                 "groupIds": []
                                             },
                                             "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "configure": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "options": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "options.remove": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "share": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "invite": {
                                                 "source": "default",
                                                 "groupIds": []
                                             }
@@ -1321,7 +1356,9 @@
                                     "tables": {
                                         "read": true,
                                         "create": false,
-                                        "edit": false
+                                        "edit": false,
+                                        "schema": false,
+                                        "share": false
                                     },
                                     "forms": {
                                         "read": true,
@@ -1333,7 +1370,12 @@
                                         "read": true,
                                         "results": false,
                                         "links": false,
-                                        "create": false
+                                        "create": false,
+                                        "configure": false,
+                                        "options": false,
+                                        "options.remove": false,
+                                        "share": false,
+                                        "invite": false
                                     }
                                 },
                                 "origins": {
@@ -1558,6 +1600,14 @@
                                             "edit": {
                                                 "source": "default",
                                                 "groupIds": []
+                                            },
+                                            "schema": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "share": {
+                                                "source": "default",
+                                                "groupIds": []
                                             }
                                         },
                                         "forms": {
@@ -1592,6 +1642,26 @@
                                                 "groupIds": []
                                             },
                                             "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "configure": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "options": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "options.remove": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "share": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "invite": {
                                                 "source": "default",
                                                 "groupIds": []
                                             }
@@ -2031,7 +2101,9 @@
                                     "tables": {
                                         "read": true,
                                         "create": false,
-                                        "edit": false
+                                        "edit": false,
+                                        "schema": false,
+                                        "share": false
                                     },
                                     "forms": {
                                         "read": true,
@@ -2043,7 +2115,12 @@
                                         "read": true,
                                         "results": false,
                                         "links": false,
-                                        "create": false
+                                        "create": false,
+                                        "configure": false,
+                                        "options": false,
+                                        "options.remove": false,
+                                        "share": false,
+                                        "invite": false
                                     }
                                 },
                                 "origins": {
@@ -2268,6 +2345,14 @@
                                             "edit": {
                                                 "source": "default",
                                                 "groupIds": []
+                                            },
+                                            "schema": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "share": {
+                                                "source": "default",
+                                                "groupIds": []
                                             }
                                         },
                                         "forms": {
@@ -2302,6 +2387,26 @@
                                                 "groupIds": []
                                             },
                                             "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "configure": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "options": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "options.remove": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "share": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "invite": {
                                                 "source": "default",
                                                 "groupIds": []
                                             }
@@ -2414,7 +2519,9 @@
                                     "tables": {
                                         "read": true,
                                         "create": false,
-                                        "edit": false
+                                        "edit": false,
+                                        "schema": false,
+                                        "share": false
                                     },
                                     "forms": {
                                         "read": true,
@@ -2426,7 +2533,12 @@
                                         "read": true,
                                         "results": false,
                                         "links": false,
-                                        "create": false
+                                        "create": false,
+                                        "configure": false,
+                                        "options": false,
+                                        "options.remove": false,
+                                        "share": false,
+                                        "invite": false
                                     }
                                 },
                                 "origins": {
@@ -2651,6 +2763,14 @@
                                             "edit": {
                                                 "source": "default",
                                                 "groupIds": []
+                                            },
+                                            "schema": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "share": {
+                                                "source": "default",
+                                                "groupIds": []
                                             }
                                         },
                                         "forms": {
@@ -2685,6 +2805,26 @@
                                                 "groupIds": []
                                             },
                                             "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "configure": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "options": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "options.remove": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "share": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "invite": {
                                                 "source": "default",
                                                 "groupIds": []
                                             }

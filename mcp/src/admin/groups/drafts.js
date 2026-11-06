@@ -74,6 +74,17 @@
 			}
 			return lines
 		}
+		/** Apply a preset while preserving operations outside all of its tiers, except when clearing with None.
+		 * @param {string} module catalog module ID
+		 * @param {string} level requested preset
+		 * @param {string} focusKey editor control to focus after redraw
+		 * @return {void}
+		 */
+		function setLevel(module, level, focusKey) {
+			const operations = context.current.catalog[module]
+			const target = window.OCA.Mcp.Admin.levels.targetFor(module, operations, level)
+			context.setOperations(module, operations.filter(operation => target[operation] ?? operationsIn(context.draft, module).includes(operation)), focusKey)
+		}
 		/** Replace a module's draft operations, invalidate its preview and redraw the editor.
 		 * @param {string} module catalog module ID
 		 * @param {string[]} operations catalog operation IDs
@@ -133,6 +144,6 @@
 			modules: { configurable: true, get: () => modules },
 		})
 
-		Object.assign(context, { changes, defaultLevel, levelButton, levelIn, levelName, levelText, setOperations, viewInMatrix })
+		Object.assign(context, { changes, defaultLevel, levelButton, levelIn, levelName, levelText, setLevel, setOperations, viewInMatrix })
 	}
 })((globalThis.window || globalThis).OCA.Mcp.Admin)

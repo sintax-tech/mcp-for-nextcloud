@@ -16,7 +16,8 @@ class PollsAdminLabels {
 		vm.runInNewContext(require('./AdminManifest.cjs').levelsSource(), context)
 		vm.runInNewContext(cut('function operationLabels() {') + '\nthis.labels = operationLabels()', context)
 		const policy = fs.readFileSync(path.join(root, 'lib/Access/Grants/GrantCatalog.php'), 'utf8')
-		const operations = new Set([...policy.matchAll(/^\s*'\w+' => \[((?:'\w+',? ?)+)\],$/gm)].flatMap((match) => match[1].match(/\w+/g)))
+		const operations = new Set([...policy.matchAll(/^\s*'[\w.]+' => \[((?:'[\w.]+',? ?)+)\],$/gm)].flatMap((match) => match[1].match(/[\w.]+/g)))
+		assert.ok(operations.has('options.remove'), 'literal dotted operation is parsed')
 		assert.ok(operations.has('restore'), 'the catalog was read from lib/Access/Grants/GrantCatalog.php')
 		for (const operation of operations) {
 			assert.equal(typeof context.labels[operation], 'string', `label of ${operation}`)

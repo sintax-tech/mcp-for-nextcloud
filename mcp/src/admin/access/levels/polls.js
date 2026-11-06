@@ -22,7 +22,7 @@
 
 	/** @return {Object<string,string>} common results key matches Forms; links is distinct from Files.link */
 	function operationLabels() {
-		return { results: t('mcp', 'results'), links: t('mcp', 'Read existing links (credentials)') }
+		return { results: t('mcp', 'results'), links: t('mcp', 'Read existing links (credentials)'), configure: t('mcp', 'configure'), options: t('mcp', 'options'), 'options.remove': t('mcp', 'remove or restore options'), invite: t('mcp', 'invite') }
 	}
 
 	/**

@@ -1780,6 +1780,12 @@
     "Shared board owner: %s" : "Proprietário do quadro compartilhado: %s",
     "Native completion will also move the card to: %s" : "A conclusão nativa também moverá o cartão para: %s",
     "Change Deck card completion" : "Alterar conclusão do cartão no Deck",
-    "Change Deck card archive state" : "Alterar arquivamento do cartão no Deck"
+    "Change Deck card archive state" : "Alterar arquivamento do cartão no Deck",
+    "configure" : "configurar",
+    "options" : "opções",
+    "remove or restore options" : "remover ou restaurar opções",
+    "invite" : "convidar",
+    "options.remove" : "remover ou restaurar opções",
+    "schema" : "estrutura"
     },"pluralForm" : "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

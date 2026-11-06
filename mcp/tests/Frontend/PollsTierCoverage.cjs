@@ -15,11 +15,11 @@ class PollsTierCoverage {
 		for (const [module, operations] of Object.entries(modules)) {
 			if (module === 'polls') {
 				const rows = levels.tiers(module, operations)
-				assert.deepEqual([...new Set(rows.flatMap(row => [...row.operations]))].sort(), [...operations].sort())
+				assert.deepEqual([...new Set(rows.flatMap(row => [...row.operations]))].sort(), operations.filter(operation => !['configure', 'options', 'options.remove', 'share', 'invite'].includes(operation)).sort())
 				continue
 			}
 			const listed = levels.TIERS[module].flat()
-			assert.deepEqual([...listed].sort(), [...operations].sort(), module)
+			assert.deepEqual([...listed, ...(module === 'tables' ? ['schema', 'share'] : [])].sort(), [...operations].sort(), module)
 			assert.equal(new Set(listed).size, listed.length, module + ' has no operation twice')
 			assert.deepEqual(JSON.parse(JSON.stringify(levels.TIERS[module][0])), ['read'], module + ' starts with Read')
 		}

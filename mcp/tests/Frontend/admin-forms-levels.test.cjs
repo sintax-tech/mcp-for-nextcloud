@@ -34,7 +34,7 @@ function formsOperations() {
 	const policy = fs.readFileSync(path.join(root, 'lib/Access/Grants/GrantCatalog.php'), 'utf8')
 	const line = policy.match(/'forms' => \[([^\]]*)\]/)
 	assert.ok(line, 'the Forms entry of GrantCatalog::CATALOG')
-	return [...line[1].matchAll(/'(\w+)'/g)].map((match) => match[1])
+	return [...line[1].matchAll(/'([\w.]+)'/g)].map((match) => match[1])
 }
 
 test('Forms writing never implicitly grants response reading', () => {

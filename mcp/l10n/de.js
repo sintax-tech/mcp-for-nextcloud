@@ -1782,6 +1782,12 @@ OC.L10N.register(
     "Shared board owner: %s" : "Eigentümer des geteilten Boards: %s",
     "Native completion will also move the card to: %s" : "Der native Abschluss verschiebt die Karte außerdem nach: %s",
     "Change Deck card completion" : "Abschluss der Deck-Karte ändern",
-    "Change Deck card archive state" : "Archivierungsstatus der Deck-Karte ändern"
+    "Change Deck card archive state" : "Archivierungsstatus der Deck-Karte ändern",
+    "configure" : "konfigurieren",
+    "options" : "Optionen",
+    "remove or restore options" : "Optionen entfernen oder wiederherstellen",
+    "invite" : "einladen",
+    "options.remove" : "Optionen entfernen oder wiederherstellen",
+    "schema" : "Schema"
     },
 "nplurals=2; plural=(n != 1);");

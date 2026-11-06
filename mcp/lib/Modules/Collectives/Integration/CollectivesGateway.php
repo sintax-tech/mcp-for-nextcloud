@@ -27,12 +27,10 @@ class CollectivesGateway {
 	/**
 	 * @param ContainerInterface $container server container the native services are shared in
 	 * @param CollectivesAdmission $admission what every call proves first
-	 * @param CollectivesSurface $surface the proven native shape, also for the content search variant
 	 */
 	public function __construct(
 		private ContainerInterface $container,
 		private CollectivesAdmission $admission,
-		private CollectivesSurface $surface,
 	) {
 	}
 
@@ -118,31 +116,21 @@ class CollectivesGateway {
 	}
 
 	/**
+	 * One native content search for the actor, through the collective read for them now.
 	 * @param int $cid collective id
 	 * @param string $query text to find
 	 * @param string $uid authenticated actor
-	 * @param int $budget most native results asked for, where the version lets the caller say
-	 * @return array{ids:list<int>, capped:bool} page ids in native rank order, and whether the native answer may have stopped at the budget
-	 * @throws ToolFailure when this version has no proven content search, or the call is not admitted
+	 * @param int|null $limit the most results, passed only to a release whose search takes it
+	 * @return array<mixed> the native hits, untouched
+	 * @throws ToolFailure when the call is not admitted or Collectives fails
 	 */
-	public function searchContent(int $cid, string $query, string $uid, int $budget): array {
+	public function searchCollective(int $cid, string $query, string $uid, ?int $limit): array {
 		$this->admission->admit($uid, 'read');
-		$arity = $this->surface->searchArity() ?? throw new ToolFailure(CollectivesMessages::contentSearchUnavailable());
-		$results = $this->call(function () use ($cid, $query, $uid, $budget, $arity): array {
+		return $this->call(function () use ($cid, $query, $uid, $limit): array {
 			$collective = $this->service(CollectivesSurface::COLLECTIVES)->getCollective($cid, $uid);
 			$search = $this->service(CollectivesSurface::SEARCH);
-			return $arity === CollectivesSurface::SEARCH_WITH_LIMIT
-				? $search->searchCollective($collective, $query, $budget)
-				: $search->searchCollective($collective, $query);
+			return $limit === null ? $search->searchCollective($collective, $query) : $search->searchCollective($collective, $query, $limit);
 		});
-		$ids = [];
-		foreach ($results as $hit) {
-			$id = is_array($hit) ? (int)($hit['file_id'] ?? 0) : 0;
-			if ($id > 0 && !in_array($id, $ids, true)) {
-				$ids[] = $id;
-			}
-		}
-		return ['ids' => array_slice($ids, 0, $budget), 'capped' => count($results) >= $budget];
 	}
 
 	/**

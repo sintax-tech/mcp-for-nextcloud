@@ -88,7 +88,8 @@ final class CollectivesRig {
 			IAppManager::class => $this->apps(),
 			CollectivesAdmission::class => new CollectivesAdmission($this->policy(), $this->apps(), $this->users(), $this->session(),
 				$this->config(), $this->appConfig(), $this->surface ?? new CollectivesSurface()),
-			CollectivesGateway::class => new CollectivesGateway($this->container(), $this->build(CollectivesAdmission::class), $this->surface ?? new CollectivesSurface()),
+			CollectivesGateway::class => new CollectivesGateway($this->container(), $this->build(CollectivesAdmission::class)),
+			CollectivesSurface::class => $this->surface ?? new CollectivesSurface(),
 			PageFiles::class => new PageFiles($this->visibility(), $this->scope()),
 			default => $this->autowire($class),
 		};

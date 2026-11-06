@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Collectives\Reading;
 
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Collectives\Locating\PageTreeLoader;
-use OCA\Mcp\Modules\Collectives\Integration\CollectivesGateway;
+use OCA\Mcp\Modules\Collectives\Integration\ContentSearch;
 use OCA\Mcp\Modules\Collectives\Presentation\CollectivesMessages;
 
 /**
@@ -26,12 +26,12 @@ class SearchPagesHandler {
 
 	/**
 	 * @param PageTreeLoader $trees the page tree, read now
-	 * @param CollectivesGateway $gateway native content search
+	 * @param ContentSearch $content the native content search, either proven shape
 	 * @param PageCursor $cursors listing cursors
 	 */
 	public function __construct(
 		private PageTreeLoader $trees,
-		private CollectivesGateway $gateway,
+		private ContentSearch $content,
 		private PageCursor $cursors,
 	) {
 	}
@@ -49,7 +49,7 @@ class SearchPagesHandler {
 		$query = (string)$arguments['query'];
 		$notices = [];
 		if (($arguments['scope'] ?? 'title') === 'content') {
-			$found = $this->gateway->searchContent($tree->collectiveId, $query, $uid, self::BUDGET);
+			$found = $this->content->search($tree->collectiveId, $query, $uid, self::BUDGET);
 			$hits = array_values(array_filter($found['ids'], static fn (int $id): bool => $tree->has($id)));
 			$notices[] = CollectivesMessages::searchIndexNotice();
 			if ($found['capped']) {

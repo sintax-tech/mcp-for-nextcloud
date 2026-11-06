@@ -18,7 +18,7 @@ final class DirectoryRules {
 		}
 		$verbs = [];
 		foreach ($paths as $path) {
-			if (preg_match('#^lib/Modules/[^/]+/(Reading|Creation|Editing|Deletion|Sharing|Moving|Reorganization|Checkout|Writing|Searching|Extraction|Locating|Composing|Scheduling|Sending|Attaching|Batching|Messaging|Quoting|Replying|Completion|Planning|Selftest|Admission)/[^/]+\.php$#', $path)) { $verbs[dirname($path)][] = $path; }
+			if (preg_match('#^lib/Modules/[^/]+/(?!(?:Tools|Integration)/)[^/]+/[^/]+\.php$#', $path)) { $verbs[dirname($path)][] = $path; }
 		}
 		foreach ($verbs as $directory => $members) { if (count($members) < 2) { $errors[] = 'Single class in work directory: ' . $directory; } }
 		return $errors;

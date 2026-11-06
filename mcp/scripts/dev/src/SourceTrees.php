@@ -29,7 +29,10 @@ final class SourceTrees {
 		$blobs = [];
 		foreach (array_filter(explode("\0", $listing)) as $line) {
 			[$meta, $path] = explode("\t", $line, 2);
-			[, $type, $object] = explode(' ', $meta);
+			[$mode, $type, $object] = explode(' ', $meta);
+			if ($type === 'blob' && !in_array($mode, ['100644', '100755'], true)) {
+				throw new RuntimeException("Unsupported Git file mode $mode: $path");
+			}
 			if ($type === 'blob') {
 				$blobs[substr($path, strlen($prefix))] = $object;
 			}

@@ -61,6 +61,14 @@ final class SourceTreesTest extends TestCase {
 			file_put_contents($this->dir . '/mcp/lib/Sub/A.php', "<?php\nclass Changed {}\n");
 			$files = SourceTrees::fromGit($this->dir, 'HEAD', 'mcp');
 			$this->assertSame(['lib/Sub/A.php' => "<?php\nclass A {}\n", 'tests/ATest.php' => "<?php\n"], $files);
+			// A symlink keeps the identical PHP blob: rejecting its mode must precede content normalization.
+			exec($git . 'rev-parse HEAD:mcp/lib/Sub/A.php', $objects, $status);
+			$this->assertSame(0, $status);
+			exec($git . 'update-index --cacheinfo 120000,' . escapeshellarg($objects[0]) . ',mcp/lib/Sub/A.php && ' . $git . 'write-tree', $trees, $status);
+			$this->assertSame(0, $status);
+			$this->expectException(\RuntimeException::class);
+			$this->expectExceptionMessage('Unsupported Git file mode 120000: mcp/lib/Sub/A.php');
+			SourceTrees::fromGit($this->dir, $trees[0], 'mcp');
 		});
 	}
 

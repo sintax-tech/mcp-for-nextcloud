@@ -275,29 +275,6 @@
 			]
 		},
 		{
-			"ceiling": 312,
-			"expires": "RE-21d",
-			"nameParts": [
-				"OCA",
-				"Mcp",
-				"Tools",
-				"Files",
-				"Handler",
-				"ImageSearchHandler"
-			]
-		},
-		{
-			"ceiling": 448,
-			"expires": "RE-21d",
-			"nameParts": [
-				"OCA",
-				"Mcp",
-				"Tools",
-				"Files",
-				"ImageTools"
-			]
-		},
-		{
 			"ceiling": 1106,
 			"expires": "RE-23",
 			"nameParts": [

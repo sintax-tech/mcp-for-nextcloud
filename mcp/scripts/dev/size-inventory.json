@@ -88,16 +88,6 @@
 			"expires": "RE-21c"
 		},
 		{
-			"fqcn": "OCA\\Mcp\\Tools\\Files\\Handler\\ImageSearchHandler",
-			"ceiling": 312,
-			"expires": "RE-21d"
-		},
-		{
-			"fqcn": "OCA\\Mcp\\Tools\\Files\\ImageTools",
-			"ceiling": 448,
-			"expires": "RE-21d"
-		},
-		{
 			"fqcn": "OCA\\Mcp\\Tools\\Files\\Reorganization",
 			"ceiling": 1106,
 			"expires": "RE-23"

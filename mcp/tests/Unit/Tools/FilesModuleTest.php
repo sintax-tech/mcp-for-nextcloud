@@ -23,14 +23,14 @@ use OCA\Mcp\Modules\Files\FileBackup;
 use OCA\Mcp\Modules\Files\Handler\EditFileHandler;
 use OCA\Mcp\Modules\Files\Handler\ReplaceFileHandler;
 use OCA\Mcp\Modules\Files\Handler\RestoreVersionHandler;
-use OCA\Mcp\Modules\Files\ImageTools;
+use OCA\Mcp\Modules\Files\Images\ImageTools;
 use OCA\Mcp\Modules\Files\BatchStore;
 use OCA\Mcp\Modules\Files\MovePlanner;
 use OCA\Mcp\Modules\Files\MoveReport;
 use OCA\Mcp\Modules\Files\Reorganization;
 use OCA\Mcp\Modules\Files\FilesMessages;
 use OCA\Mcp\Modules\Files\FilesModule;
-use OCA\Mcp\Modules\Files\OcrSupport;
+use OCA\Mcp\Modules\Files\Images\OcrSupport;
 use OCA\Mcp\Modules\Files\TextExtractor;
 use OCA\Mcp\Modules\Files\VersionRestore;
 use OCA\Mcp\Modules\Files\VersionTools;
@@ -93,7 +93,7 @@ final class FilesModuleTest extends TestCase {
 		$reorganization = new Reorganization($access, new SharedWriteGuard($access), $report, $users);
 		$planner = new MovePlanner($reorganization, $access, new SharedWriteGuard($access));
 		$store = new BatchStore($db);
-		$imageTools = new ImageTools(
+		$imageTools = \OCA\Mcp\Tests\Unit\Tools\Files\FilesImageWiring::build(
 			$this->createMock(\OCP\IPreview::class),
 			$access,
 			$appConfig,

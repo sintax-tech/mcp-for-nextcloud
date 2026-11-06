@@ -10,7 +10,7 @@ namespace OCA\Mcp\Modules\Files\Reading;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\FilesCallContext;
-use OCA\Mcp\Modules\Files\ImageTools;
+use OCA\Mcp\Modules\Files\Images\ImageTools;
 
 /** Preserves the existing Files SearchImagesHandler behavior. */
 final class SearchImagesHandler {

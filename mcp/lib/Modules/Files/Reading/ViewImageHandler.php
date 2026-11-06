@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Files\Reading;
 
 use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\FilesCallContext;
-use OCA\Mcp\Modules\Files\ImageTools;
+use OCA\Mcp\Modules\Files\Images\ImageTools;
 
 /** Preserves the existing Files ViewImageHandler behavior. */
 final class ViewImageHandler {

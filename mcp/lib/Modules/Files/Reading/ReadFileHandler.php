@@ -12,7 +12,7 @@ use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\TextExtractor;
 use OCA\Mcp\Modules\Files\FilesCallContext;
-use OCA\Mcp\Modules\Files\OcrSupport;
+use OCA\Mcp\Modules\Files\Images\OcrSupport;
 
 /** Preserves the existing Files ReadFileHandler behavior. */
 final class ReadFileHandler {

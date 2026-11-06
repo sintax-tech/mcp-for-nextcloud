@@ -25,12 +25,12 @@ use OCA\Mcp\Modules\Files\FileCreation;
 use OCA\Mcp\Modules\Files\Handler\EditFileHandler;
 use OCA\Mcp\Modules\Files\Handler\ReplaceFileHandler;
 use OCA\Mcp\Modules\Files\Handler\RestoreVersionHandler;
-use OCA\Mcp\Modules\Files\ImageTools;
+use OCA\Mcp\Modules\Files\Images\ImageTools;
 use OCA\Mcp\Modules\Files\MovePlanner;
 use OCA\Mcp\Modules\Files\MoveReport;
 use OCA\Mcp\Modules\Files\Reorganization;
 use OCA\Mcp\Modules\Files\FilesModule;
-use OCA\Mcp\Modules\Files\OcrSupport;
+use OCA\Mcp\Modules\Files\Images\OcrSupport;
 use OCA\Mcp\Modules\Files\TextExtractor;
 use OCA\Mcp\Modules\Files\VersionRestore;
 use OCA\Mcp\Modules\Files\VersionTools;
@@ -166,7 +166,7 @@ abstract class FilesToolsTestCase extends TestCase {
 		$this->filenames = new FakeFilenameValidator();
 		$this->creationLogger = $this->createMock(\Psr\Log\LoggerInterface::class);
 		$checkout = new CheckoutService($urls, $config, $this->time, new TokenHasher($config), $this->store, $this->apps, $this->users);
-		$imageTools = new ImageTools(
+		$imageTools = FilesImageWiring::build(
 			$this->previewManager,
 			$access,
 			$config,

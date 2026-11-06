@@ -38,10 +38,10 @@ use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\Handler\EditFileHandler;
 use OCA\Mcp\Modules\Files\Handler\ReplaceFileHandler;
 use OCA\Mcp\Modules\Files\Handler\RestoreVersionHandler;
-use OCA\Mcp\Modules\Files\ImageTools;
+use OCA\Mcp\Modules\Files\Images\ImageTools;
 use OCA\Mcp\Modules\Files\MovePlanner;
 use OCA\Mcp\Modules\Files\MoveReport;
-use OCA\Mcp\Modules\Files\OcrSupport;
+use OCA\Mcp\Modules\Files\Images\OcrSupport;
 use OCA\Mcp\Modules\Files\Reorganization;
 use OCA\Mcp\Modules\Files\TextExtractor;
 use OCA\Mcp\Modules\Files\VersionRestore;
@@ -155,7 +155,7 @@ final class FileContentTypePolicyTest extends TestCase {
 		$versions = new VersionTools($apps, $users, $extractor, $backup, $access, $container, new OcrSupport($apps), $lockService, null, $versionRestore);
 		$report = new MoveReport($this->createMock(ContainerInterface::class), $this->tree->shareManager(), $apps);
 		$reorganization = new Reorganization($access, new SharedWriteGuard($access), $report, $users);
-		$imageTools = new ImageTools(
+		$imageTools = FilesImageWiring::build(
 			$this->createMock(\OCP\IPreview::class),
 			$access,
 			$iConfig,

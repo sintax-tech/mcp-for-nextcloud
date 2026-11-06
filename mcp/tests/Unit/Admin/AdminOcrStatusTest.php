@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Admin;
 use OCA\Mcp\OAuth\Connections\ConnectionList;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Settings\AdminSettings;
-use OCA\Mcp\Modules\Files\OcrSupport;
+use OCA\Mcp\Modules\Files\Images\OcrSupport;
 use OCP\App\IAppManager;
 use OCP\IURLGenerator;
 use PHPUnit\Framework\TestCase;

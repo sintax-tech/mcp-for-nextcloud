@@ -44,7 +44,7 @@ final class PolicyStateSeedTest extends TestCase {
 	/** The step the server runs on install and after a migration, as appinfo/info.xml declares it. */
 	private function declaredStep(string $phase): PolicyStateSeedStep {
 		$steps = simplexml_load_file(self::MANIFEST)->{'repair-steps'}->{$phase}->step ?? [];
-		$this->assertCount(1, $steps, "appinfo/info.xml must declare exactly one <$phase> step");
+		$this->assertCount(2, $steps, "appinfo/info.xml declares policy and CIMD initialization");
 		$class = (string)$steps[0];
 		$this->assertSame(PolicyStateSeedStep::class, $class);
 		return new $class(new PolicyStateSeeder($this->db));

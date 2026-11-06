@@ -6,7 +6,9 @@
         ],
         "repair-steps": [
             "OCA\\Mcp\\Migration\\PolicyStateSeedStep",
-            "OCA\\Mcp\\Migration\\PolicyStateSeedStep"
+            "OCA\\Mcp\\Migration\\CimdHostsSeedStep",
+            "OCA\\Mcp\\Migration\\PolicyStateSeedStep",
+            "OCA\\Mcp\\Migration\\CimdHostsSeedStep"
         ],
         "commands": [
             "OCA\\Mcp\\Command\\CalendarSelftest"
@@ -27,7 +29,8 @@
             "OCA\\Mcp\\Migration\\Version001100Date20261015000000",
             "OCA\\Mcp\\Migration\\Version001100Date20261015010000",
             "OCA\\Mcp\\Migration\\Version001100Date20261015020000",
-            "OCA\\Mcp\\Migration\\Version001100Date20261016000000"
+            "OCA\\Mcp\\Migration\\Version001100Date20261016000000",
+            "OCA\\Mcp\\Migration\\Version001205Date20261106000000"
         ]
     },
     "di": {

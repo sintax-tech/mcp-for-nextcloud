@@ -30,6 +30,7 @@ final class ClientsTable {
 		$mock = fn (string $class) => (new \ReflectionMethod($test, 'createMock'))->invoke($test, $class);
 		$this->db = new SqliteDatabase($test, [new Version001100Date20261016000000($mock(IDBConnection::class), $mock(IConfig::class), $mock(IAppConfig::class))]);
 		$this->mapper = new OAuthClientsMapper($this->db->connection());
+		(new CimdTableSeed())->apply($test, $this->db);
 	}
 
 	/** Turns the native client on or off, as stored, with the given generation. */

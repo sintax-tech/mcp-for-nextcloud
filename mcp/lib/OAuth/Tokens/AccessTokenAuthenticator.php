@@ -63,7 +63,7 @@ class AccessTokenAuthenticator {
 			$clientId = (string)$row['client_id'];
 			// The client's row is read from the app's table on every request, never from the AppConfig caches. The
 			// check sits before the owner gate, which keeps the issue_seq read below for its cut.
-			if (($clientId === NativeClient::CLIENT_ID || CustomClient::owns($clientId)) && ClientResolver::builtInDisabled($this->clients, $clientId)) {
+			if (!\OCA\Mcp\OAuth\Clients\ClientAdmission::admits($this->clients, $clientId, \OCA\Mcp\OAuth\Clients\ClientAdmission::credentialGeneration($row))) {
 				return null;
 			}
 			$uid = (string)$row['user_id'];

@@ -30,6 +30,18 @@
                         "gen": "1"
                     }
                 ],
+                "cimdHosts": [
+                    {
+                        "host": "claude.ai",
+                        "enabled": true,
+                        "gen": "1"
+                    },
+                    {
+                        "host": "chatgpt.com",
+                        "enabled": true,
+                        "gen": "1"
+                    }
+                ],
                 "grants": [
                     "ana @ https://claude.ai/c",
                     "bob @ https://claude.ai/c",
@@ -78,6 +90,18 @@
                         "redirectUris": [
                             "https://ops.example.test/cb"
                         ],
+                        "gen": "1"
+                    }
+                ],
+                "cimdHosts": [
+                    {
+                        "host": "claude.ai",
+                        "enabled": true,
+                        "gen": "1"
+                    },
+                    {
+                        "host": "chatgpt.com",
+                        "enabled": true,
                         "gen": "1"
                     }
                 ],
@@ -130,6 +154,18 @@
                         "redirectUris": [
                             "https://ops.example.test/cb"
                         ],
+                        "gen": "1"
+                    }
+                ],
+                "cimdHosts": [
+                    {
+                        "host": "claude.ai",
+                        "enabled": true,
+                        "gen": "1"
+                    },
+                    {
+                        "host": "chatgpt.com",
+                        "enabled": true,
                         "gen": "1"
                     }
                 ],
@@ -187,6 +223,18 @@
                         "gen": "1"
                     }
                 ],
+                "cimdHosts": [
+                    {
+                        "host": "claude.ai",
+                        "enabled": true,
+                        "gen": "1"
+                    },
+                    {
+                        "host": "chatgpt.com",
+                        "enabled": true,
+                        "gen": "1"
+                    }
+                ],
                 "grants": [
                     "ana @ https://claude.ai/c",
                     "bob @ https://claude.ai/c",
@@ -237,6 +285,18 @@
                         "redirectUris": [
                             "https://ops.example.test/cb"
                         ],
+                        "gen": "1"
+                    }
+                ],
+                "cimdHosts": [
+                    {
+                        "host": "claude.ai",
+                        "enabled": true,
+                        "gen": "1"
+                    },
+                    {
+                        "host": "chatgpt.com",
+                        "enabled": true,
                         "gen": "1"
                     }
                 ],
@@ -331,6 +391,18 @@
                         "gen": "1"
                     }
                 ],
+                "cimdHosts": [
+                    {
+                        "host": "claude.ai",
+                        "enabled": true,
+                        "gen": "1"
+                    },
+                    {
+                        "host": "chatgpt.com",
+                        "enabled": true,
+                        "gen": "1"
+                    }
+                ],
                 "grants": [
                     "ana @ https://claude.ai/c",
                     "bob @ https://claude.ai/c",
@@ -399,6 +471,18 @@
                         "redirectUris": [
                             "https://ops.example.test/cb"
                         ],
+                        "gen": "1"
+                    }
+                ],
+                "cimdHosts": [
+                    {
+                        "host": "claude.ai",
+                        "enabled": true,
+                        "gen": "1"
+                    },
+                    {
+                        "host": "chatgpt.com",
+                        "enabled": true,
                         "gen": "1"
                     }
                 ],
@@ -487,6 +571,18 @@
                         "redirectUris": [
                             "https://ops.example.test/cb"
                         ],
+                        "gen": "1"
+                    }
+                ],
+                "cimdHosts": [
+                    {
+                        "host": "claude.ai",
+                        "enabled": true,
+                        "gen": "1"
+                    },
+                    {
+                        "host": "chatgpt.com",
+                        "enabled": true,
                         "gen": "1"
                     }
                 ],
@@ -593,6 +689,18 @@
                         "gen": "2"
                     }
                 ],
+                "cimdHosts": [
+                    {
+                        "host": "claude.ai",
+                        "enabled": true,
+                        "gen": "1"
+                    },
+                    {
+                        "host": "chatgpt.com",
+                        "enabled": true,
+                        "gen": "1"
+                    }
+                ],
                 "grants": [
                     "ana @ https://claude.ai/c",
                     "bob @ https://claude.ai/c",
@@ -692,6 +800,18 @@
                         "gen": "3"
                     }
                 ],
+                "cimdHosts": [
+                    {
+                        "host": "claude.ai",
+                        "enabled": true,
+                        "gen": "1"
+                    },
+                    {
+                        "host": "chatgpt.com",
+                        "enabled": true,
+                        "gen": "1"
+                    }
+                ],
                 "grants": [
                     "ana @ https://claude.ai/c",
                     "bob @ https://claude.ai/c",
@@ -773,10 +893,205 @@
                         "gen": "3"
                     }
                 ],
+                "cimdHosts": [
+                    {
+                        "host": "claude.ai",
+                        "enabled": true,
+                        "gen": "1"
+                    },
+                    {
+                        "host": "chatgpt.com",
+                        "enabled": true,
+                        "gen": "1"
+                    }
+                ],
                 "grants": [
                     "ana @ https://claude.ai/c",
                     "bob @ https://claude.ai/c"
                 ]
+            }
+        },
+        {
+            "step": "CIMD host withdrawn: its grants are deleted",
+            "request": {
+                "route": "grants#updateOauthClients",
+                "user": "root",
+                "body": {
+                    "hosts": [
+                        "chatgpt.com"
+                    ],
+                    "expectedRevision": "9"
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "hosts": [
+                        "chatgpt.com"
+                    ],
+                    "hostsDefault": false,
+                    "nativeClientEnabled": false,
+                    "nativeClientId": "nextcloud-mcp-native",
+                    "nativeRedirectUris": [
+                        "http://localhost/oauth/callback",
+                        "http://127.0.0.1/oauth/callback",
+                        "http://[::1]/oauth/callback"
+                    ],
+                    "revision": "10",
+                    "customClients": [
+                        {
+                            "id": "aaaaaaaaaaaa",
+                            "clientId": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                            "name": "Lab",
+                            "enabled": true,
+                            "redirectUris": [
+                                "https://lab.example.test/cb"
+                            ]
+                        },
+                        {
+                            "id": "bbbbbbbbbbbb",
+                            "clientId": "nextcloud-mcp-custom-bbbbbbbbbbbb",
+                            "name": "Ops",
+                            "enabled": false,
+                            "redirectUris": [
+                                "https://ops.example.test/cb"
+                            ]
+                        }
+                    ]
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1",
+                    "oauth_client_hosts": "chatgpt.com"
+                },
+                "revision": 10,
+                "native": false,
+                "custom": [
+                    {
+                        "id": "aaaaaaaaaaaa",
+                        "name": "Lab",
+                        "enabled": true,
+                        "redirectUris": [
+                            "https://lab.example.test/cb"
+                        ],
+                        "gen": "2"
+                    },
+                    {
+                        "id": "bbbbbbbbbbbb",
+                        "name": "Ops",
+                        "enabled": false,
+                        "redirectUris": [
+                            "https://ops.example.test/cb"
+                        ],
+                        "gen": "3"
+                    }
+                ],
+                "cimdHosts": [
+                    {
+                        "host": "claude.ai",
+                        "enabled": false,
+                        "gen": "2"
+                    },
+                    {
+                        "host": "chatgpt.com",
+                        "enabled": true,
+                        "gen": "1"
+                    }
+                ],
+                "grants": []
+            }
+        },
+        {
+            "step": "CIMD host re-added: old grants never return",
+            "request": {
+                "route": "grants#updateOauthClients",
+                "user": "root",
+                "body": {
+                    "hosts": [
+                        "claude.ai",
+                        "chatgpt.com"
+                    ],
+                    "expectedRevision": "10"
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "hosts": [
+                        "claude.ai",
+                        "chatgpt.com"
+                    ],
+                    "hostsDefault": true,
+                    "nativeClientEnabled": false,
+                    "nativeClientId": "nextcloud-mcp-native",
+                    "nativeRedirectUris": [
+                        "http://localhost/oauth/callback",
+                        "http://127.0.0.1/oauth/callback",
+                        "http://[::1]/oauth/callback"
+                    ],
+                    "revision": "11",
+                    "customClients": [
+                        {
+                            "id": "aaaaaaaaaaaa",
+                            "clientId": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                            "name": "Lab",
+                            "enabled": true,
+                            "redirectUris": [
+                                "https://lab.example.test/cb"
+                            ]
+                        },
+                        {
+                            "id": "bbbbbbbbbbbb",
+                            "clientId": "nextcloud-mcp-custom-bbbbbbbbbbbb",
+                            "name": "Ops",
+                            "enabled": false,
+                            "redirectUris": [
+                                "https://ops.example.test/cb"
+                            ]
+                        }
+                    ]
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "revision": 11,
+                "native": false,
+                "custom": [
+                    {
+                        "id": "aaaaaaaaaaaa",
+                        "name": "Lab",
+                        "enabled": true,
+                        "redirectUris": [
+                            "https://lab.example.test/cb"
+                        ],
+                        "gen": "2"
+                    },
+                    {
+                        "id": "bbbbbbbbbbbb",
+                        "name": "Ops",
+                        "enabled": false,
+                        "redirectUris": [
+                            "https://ops.example.test/cb"
+                        ],
+                        "gen": "3"
+                    }
+                ],
+                "cimdHosts": [
+                    {
+                        "host": "claude.ai",
+                        "enabled": true,
+                        "gen": "2"
+                    },
+                    {
+                        "host": "chatgpt.com",
+                        "enabled": true,
+                        "gen": "1"
+                    }
+                ],
+                "grants": []
             }
         }
     ]

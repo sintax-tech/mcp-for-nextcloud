@@ -204,9 +204,11 @@ Nextcloud 32–35, PHP 8.2+. Mail 5.0.0+ (Anhangtext 5.10.11+), Tables 1.0.0+, F
     <repair-steps>
         <post-migration>
             <step>OCA\Mcp\Migration\PolicyStateSeedStep</step>
+            <step>OCA\Mcp\Migration\CimdHostsSeedStep</step>
         </post-migration>
         <install>
             <step>OCA\Mcp\Migration\PolicyStateSeedStep</step>
+            <step>OCA\Mcp\Migration\CimdHostsSeedStep</step>
         </install>
     </repair-steps>
     <commands><command>OCA\Mcp\Command\CalendarSelftest</command></commands>

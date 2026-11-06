@@ -15,11 +15,7 @@ use OCP\IDBConnection;
  * Persistence of authorization codes and token grants (tables mcp_oauth_codes / mcp_oauth_tokens). Only keyed
  * hashes are stored. Single use is enforced by conditional DELETE/UPDATE and their affected-row count.
  *
- * Every code, grant and spent record carries (auth_global_epoch, auth_gen) (contracts §3.1): a grant inherits the
- * generation of its code, and rotation and spent records keep it. Writes that issue, rotate or consume run inside the
- * policy writer's transaction, under its mutex. Revocation is logical (the epoch or the user's cut); the deletes here
- * are the physical cleanup after it, always qualified by generation or epoch, so a late or repeated cleanup never
- * removes a credential issued after the revocation it belongs to.
+ * Writes run in the policy transaction; generation-qualified cleanup never removes later credentials.
  */
 class OAuthStore {
 	private const CODES = 'mcp_oauth_codes';
@@ -345,6 +341,9 @@ class OAuthStore {
 			$qb->delete($table)->where($qb->expr()->eq('client_id', $qb->createNamedParameter($clientId)))->executeStatement();
 		}
 	}
+
+	/** @param string $host Exact lowercase CIMD host. @return void Runs in the caller's policy transaction. */
+	public function deleteForHost(string $host): void { (new HostCredentialCut($this->db))->delete($host); }
 
 	/** Normal token issuance, rotation and replay checks bound history retention without an occ step. */
 	private function purgeSpent(int $now): void {

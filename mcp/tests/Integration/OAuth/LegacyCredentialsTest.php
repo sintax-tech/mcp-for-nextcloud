@@ -63,8 +63,8 @@ final class LegacyCredentialsTest extends IntegrationTestCase {
 		$legacy = $this->legacy;
 		$this->assertSame(Fixtures::LEGACY, $legacy['uid']);
 		$this->assertCount(1, $legacy['rows']['mcp_oauth_codes']);
-		$this->assertCount(2, $legacy['rows']['mcp_oauth_tokens']);
-		$this->assertCount(1, $legacy['rows']['mcp_oauth_spent']);
+		$this->assertCount(3, $legacy['rows']['mcp_oauth_tokens']);
+		$this->assertCount(2, $legacy['rows']['mcp_oauth_spent']);
 		foreach ($legacy['rows'] as $table => $before) {
 			$after = $this->rows($table);
 			$this->assertCount(count($before), $after, $table);
@@ -73,9 +73,10 @@ final class LegacyCredentialsTest extends IntegrationTestCase {
 			foreach ($before as $row) {
 				$now = $after[$row[$key]] ?? null;
 				$this->assertNotNull($now, "$table row {$row[$key]} was recreated or lost");
-				// Same columns, ids and hashes, plus the two generation columns at their migrated values.
+				// Preserve every legacy column/hash; only columns absent from that release receive migration defaults.
 				$this->assertSame($row, array_intersect_key($now, $row), $table);
-				$this->assertSame(['auth_global_epoch' => '0', 'auth_gen' => '1'], array_diff_key($now, $row), $table);
+				$defaults = ['auth_global_epoch' => '0', 'auth_gen' => '1'] + ($table === 'mcp_oauth_spent' ? [] : ['client_gen' => '1']);
+				$this->assertSame(array_diff_key($defaults, $row), array_diff_key($now, $row), $table);
 			}
 		}
 
@@ -87,6 +88,14 @@ final class LegacyCredentialsTest extends IntegrationTestCase {
 		$tokens = Server::get(TokenService::class);
 		$bearer = fn (string $token) => $authenticator->authenticate('Bearer ' . $token, $legacy['resource'])?->getUID();
 
+		$this->assertNull($bearer($legacy['tokens']['untrusted']['access']), 'The old fixture host was never trusted; the previous implementation admitted it only through the CIMD gap');
+		try {
+			$tokens->refresh(['refresh_token' => $legacy['tokens']['untrusted']['refresh'], 'client_id' => $legacy['untrusted_client']]);
+			$this->fail('An untrusted legacy host refreshed after upgrade');
+		} catch (OAuthException $e) {
+			$this->assertSame('invalid_grant', $e->error);
+		}
+		LegacyHostAdmissionProof::run($this, $legacy);
 		$this->assertSame(Fixtures::LEGACY, $bearer($legacy['tokens']['rotated']['access']));
 		$this->assertSame(Fixtures::LEGACY, $bearer($legacy['tokens']['plain']['access']));
 		$exchanged = $tokens->exchangeCode(['code' => $legacy['code'], 'code_verifier' => $legacy['verifier'],

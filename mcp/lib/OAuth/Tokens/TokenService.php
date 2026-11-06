@@ -78,7 +78,7 @@ class TokenService {
 				'expires_at' => $now + self::CODE_TTL,
 				'auth_global_epoch' => $epoch,
 				'auth_gen' => $generation,
-			], $now);
+			] + \OCA\Mcp\OAuth\Clients\ClientAdmission::stamp($request->client->clientId, $request->client->generation), $now);
 		}, $this->gate->causes());
 		return $allowed ? $code : null;
 	}
@@ -116,12 +116,12 @@ class TokenService {
 				$error = new \OCA\Mcp\OAuth\Authorization\OAuthException('invalid_grant', 'Invalid authorization code');
 				return;
 			}
-			if (!$this->clientAdmitted((string)$row['client_id'], null, (string)$row['redirect_uri'])) {
+			if (!$this->clientAdmitted((string)$row['client_id'], \OCA\Mcp\OAuth\Clients\ClientAdmission::credentialGeneration($row), (string)$row['redirect_uri'])) {
 				$error = new \OCA\Mcp\OAuth\Authorization\OAuthException('invalid_grant', 'This client is disabled');
 				return;
 			}
 			$body = $this->issue($uid, (string)$row['client_id'], (string)$row['resource'], (string)$row['scope'],
-				(string)$row['auth_gen'], $state['auth_epoch']);
+				(string)$row['auth_gen'], $state['auth_epoch'], (string)($row['client_gen'] ?? '1'));
 		});
 		if ($error !== null) {
 			throw $error;
@@ -169,7 +169,7 @@ class TokenService {
 				return;
 			}
 			// Under the mutex, not before it: a client withdrawn after the external phase refuses this rotation.
-			if (!$this->clientAdmitted((string)$current['client_id'], null, null)) {
+			if (!$this->clientAdmitted((string)$current['client_id'], \OCA\Mcp\OAuth\Clients\ClientAdmission::credentialGeneration($current), null)) {
 				$disabled = true;
 				return;
 			}
@@ -301,19 +301,14 @@ class TokenService {
 	/**
 	 * The admission of a client, read under the mutex from the app's own table (never through the AppConfig caches,
 	 * whose loader may publish a snapshot older than a withdrawal): the native client must be on, a self-hosted one
-	 * stored and enabled, with the redirect URI and generation of the request when given. A CIMD client has nothing
-	 * to withdraw. A stored row that does not validate refuses.
+	 * stored and enabled, with the redirect URI and generation of the request when given. CIMD trust is read from the host table with its generation. A stored row that does not validate refuses.
 	 *
-	 * @param string|null $generation generation the consent page was made in; null for a code or a grant
+	 * @param string|null $generation CIMD consent/credential generation; null for managed-client credential checks
 	 * @param string|null $redirectUri redirect URI of the consent or of the code; null for a grant
 	 * @return bool false when the administrator withdrew the client
 	 */
 	private function clientAdmitted(string $clientId, ?string $generation, ?string $redirectUri): bool {
-		if ($clientId === \OCA\Mcp\OAuth\Clients\NativeClient::CLIENT_ID) {
-			$current = \OCA\Mcp\OAuth\Clients\ClientResolver::nativeGeneration($this->clients);
-			return $current !== null && ($generation === null || $generation === $current);
-		}
-		return !\OCA\Mcp\OAuth\Clients\CustomClient::owns($clientId) || \OCA\Mcp\OAuth\Clients\CustomClient::admits($this->clients, $clientId, $generation, $redirectUri);
+		return \OCA\Mcp\OAuth\Clients\ClientAdmission::admits($this->clients, $clientId, $generation, $redirectUri);
 	}
 
 	/**
@@ -321,7 +316,7 @@ class TokenService {
 	 *
 	 * @return array<string,string|int>
 	 */
-	private function issue(string $uid, string $clientId, string $resource, string $scope, string $generation, string $epoch): array {
+	private function issue(string $uid, string $clientId, string $resource, string $scope, string $generation, string $epoch, string $clientGeneration): array {
 		$access = $this->hasher->generate('at');
 		$refresh = $this->hasher->generate('rt');
 		$now = $this->time->getTime();
@@ -337,7 +332,7 @@ class TokenService {
 			'created_at' => $now,
 			'auth_global_epoch' => $epoch,
 			'auth_gen' => $generation,
-		], $now);
+		] + \OCA\Mcp\OAuth\Clients\ClientAdmission::stamp($clientId, $clientGeneration), $now);
 		return $this->body($access, $refresh, $scope);
 	}
 

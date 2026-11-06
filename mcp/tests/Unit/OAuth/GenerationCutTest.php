@@ -80,7 +80,8 @@ final class GenerationCutTest extends TestCase {
 		$this->database = new SqliteDatabase($this, [new Version000500Date20260930000000(), new Version000700Date20261001000000(),
 			new Version000800Date20261002000000(), new Version000800Date20261002010000(), new Version001002Date20261008000000(),
 			new Version001100Date20261015000000($this->createMock(IDBConnection::class)), new Version001100Date20261015010000(),
-			new \OCA\Mcp\Migration\Version001100Date20261014000000(), new \OCA\Mcp\Migration\Version001100Date20261015020000()]);
+			new \OCA\Mcp\Migration\Version001100Date20261014000000(), new \OCA\Mcp\Migration\Version001100Date20261015020000(),
+			new \OCA\Mcp\Migration\Version001205Date20261106000000($this->createMock(IDBConnection::class), $this->createMock(IConfig::class), $this->createMock(IAppConfig::class))]);
 		$this->db = $this->database->connection();
 		(new PolicyStateSeeder($this->db))->seed();
 		$this->data = new InMemoryConfig();

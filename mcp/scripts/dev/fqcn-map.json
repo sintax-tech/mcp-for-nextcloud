@@ -2,6 +2,13 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Db/CimdHostsSeeder.php","fqcn":"OCA\\Mcp\\Db\\CimdHostsSeeder","target":"stays","owner":"Db","ticket":null},
+		{"path":"lib/Migration/CimdHostsSeedStep.php","fqcn":"OCA\\Mcp\\Migration\\CimdHostsSeedStep","target":"stays","owner":"Migration","ticket":null},
+		{"path":"lib/Db/CimdHostsMapper.php","fqcn":"OCA\\Mcp\\Db\\CimdHostsMapper","target":"stays","owner":"Db","ticket":null},
+		{"path":"lib/Migration/Version001205Date20261106000000.php","fqcn":"OCA\\Mcp\\Migration\\Version001205Date20261106000000","target":"stays","owner":"Migration","ticket":null},
+		{"path":"lib/OAuth/Clients/CimdHostsUpdate.php","fqcn":"OCA\\Mcp\\OAuth\\Clients\\CimdHostsUpdate","target":"stays","owner":"OAuth","ticket":null},
+		{"path":"lib/OAuth/Clients/ClientAdmission.php","fqcn":"OCA\\Mcp\\OAuth\\Clients\\ClientAdmission","target":"stays","owner":"OAuth","ticket":null},
+		{"path":"lib/OAuth/Storage/HostCredentialCut.php","fqcn":"OCA\\Mcp\\OAuth\\Storage\\HostCredentialCut","target":"stays","owner":"OAuth","ticket":null},
 		{"path":"lib/Modules/Deck/Integration/DeckAssignments.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Integration\\DeckAssignments","target":"OCA\\Mcp\\Modules\\Deck\\Integration\\DeckAssignments","owner":"Modules\\Deck","ticket":"RE-26"},
 		{"path":"lib/Modules/Deck/Integration/DeckBoards.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Integration\\DeckBoards","target":"OCA\\Mcp\\Modules\\Deck\\Integration\\DeckBoards","owner":"Modules\\Deck","ticket":"RE-26"},
 		{"path":"lib/Modules/Deck/Integration/DeckCardChanges.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Integration\\DeckCardChanges","target":"OCA\\Mcp\\Modules\\Deck\\Integration\\DeckCardChanges","owner":"Modules\\Deck","ticket":"RE-26"},

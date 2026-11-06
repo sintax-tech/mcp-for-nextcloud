@@ -43,6 +43,7 @@ final class OAuthClientsEffectsContractTest extends TestCase {
 			'revision' => $this->rig->fx->config->revision,
 			'native' => $this->rig->fx->clients->nativeRow(),
 			'custom' => $this->rig->fx->clients->stored(),
+			'cimdHosts' => $this->rig->fx->clients->mapper->cimdHosts()->all(),
 			'grants' => array_values(array_map(static fn (array $row): string => $row['user_id'] . ' @ ' . $row['client_id'], $this->rig->fx->oauth->tokens)),
 		];
 	}
@@ -92,6 +93,10 @@ final class OAuthClientsEffectsContractTest extends TestCase {
 		$this->assertSame(['https://claude.ai/c', 'https://claude.ai/c'], array_values(array_column($this->rig->fx->oauth->tokens, 'client_id')),
 			'only the grants of the discovered (CIMD) client remain');
 		$this->assertFalse($this->rig->fx->clients->nativeRow());
+		$this->send('CIMD host withdrawn: its grants are deleted', ['hosts' => ['chatgpt.com']]);
+		$this->assertSame([], $this->rig->fx->oauth->tokens);
+		$this->send('CIMD host re-added: old grants never return', ['hosts' => ['claude.ai', 'chatgpt.com']]);
+		$this->assertSame([], $this->rig->fx->oauth->tokens);
 		$this->rig->register($this->transcript);
 		$this->transcript->assertGolden();
 	}

@@ -178,7 +178,7 @@ abstract class FilesToolsTestCase extends TestCase {
 			$db,
 			$this->visibilityGuard,
 		);
-		$this->module = new FilesModule(
+		$this->module = \OCA\Mcp\Tests\Unit\Tools\Files\FilesCatalogWiring::module(
 			$root,
 			$extractor,
 			$backup,

@@ -19,7 +19,6 @@ use OCA\Mcp\Modules\Contacts\ContactsModule;
 use OCA\Mcp\Modules\Deck\DeckModule;
 use OCA\Mcp\Modules\Talk\TalkModule;
 use OCA\Mcp\Modules\Files\FilesModule;
-use OCA\Mcp\Modules\Files\TextExtractor;
 use OCA\Mcp\Modules\Notes\NotesModule;
 use OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry;
 use OCA\Mcp\Mcp\Tools\Discovery\ModuleRegistrations;
@@ -108,7 +107,7 @@ class Application extends App implements IBootstrap {
 			$c->get(IUserManager::class),
 			$c->get(IRootFolder::class),
 			$c->get(VisibilityGuard::class),
-			new TextExtractor($c->get(ITempManager::class)),
+			$c->get(\OCA\Mcp\Mcp\Resources\FileTextResource::class),
 			$c->get(\OCA\Mcp\Mcp\Resources\NoteResource::class),
 			$c->get(ToolRegistry::class)->guide(),
 			// nc://files answers to the Files gate, the resource scope included; nc://notes keeps the plain guard (D4).

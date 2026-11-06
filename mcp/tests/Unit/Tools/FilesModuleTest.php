@@ -104,7 +104,7 @@ final class FilesModuleTest extends TestCase {
 			$this->createMock(\Psr\Container\ContainerInterface::class),
 			$db,
 		);
-		$this->module = new FilesModule($root, $extractor, new FileBackup($apps, $users, $time, $appConfig), $users, $db,
+		$this->module = \OCA\Mcp\Tests\Unit\Tools\Files\FilesCatalogWiring::module($root, $extractor, new FileBackup($apps, $users, $time, $appConfig), $users, $db,
 			$access, $shared,
 			new CheckoutService($urls, $appConfig, $time, new TokenHasher($appConfig), $this->createMock(CheckoutTokenStore::class), $apps, $users),
 			$versions, $reorganization, $planner, $store, $time, $imageTools, new OcrSupport($apps),

@@ -160,6 +160,7 @@ final class FilesFlowWiring {
 	 */
 	private function known(string $class): ?object {
 		return match ($class) {
+			\Psr\Container\ContainerInterface::class => $this->container(),
 			IConfig::class => $this->gate->config(),
 			GrantPolicy::class, ScopeReader::class => $this->gate->policy(),
 			IShareManager::class => $this->tree->shareManager(),
@@ -187,6 +188,14 @@ final class FilesFlowWiring {
 			BackupSettingsDocument::class => BackupDocumentFixture::fromConfig($this->test, $this->gate->data()->appConfig($this->test)),
 			default => null,
 		};
+	}
+
+	/** @return \Psr\Container\ContainerInterface container sharing this request's resolved doubles */
+	private function container(): \Psr\Container\ContainerInterface {
+		$container = $this->mock(\Psr\Container\ContainerInterface::class);
+		$container->method('get')->willReturnCallback(fn (string $id): object => $this->resolve($id));
+		$container->method('has')->willReturnCallback(static fn (string $id): bool => class_exists($id) || interface_exists($id));
+		return $container;
 	}
 
 	/**

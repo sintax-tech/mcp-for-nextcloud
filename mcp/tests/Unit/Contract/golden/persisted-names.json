@@ -35,6 +35,7 @@
     },
     "di": {
         "registerService": [
+            "OCA\\Mcp\\Mcp\\Resources\\FileTextResource",
             "OCA\\Mcp\\Platform\\FileAccess\\WriteVisibility",
             "OCA\\Mcp\\Platform\\FileAccess\\ActorRoot",
             "OCA\\Mcp\\Access\\ResourceScope\\ScopeReader",

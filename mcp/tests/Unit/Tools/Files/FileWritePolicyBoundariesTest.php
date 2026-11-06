@@ -52,8 +52,9 @@ final class FileWritePolicyBoundariesTest extends FilesToolsTestCase {
 		parent::setUp();
 		$this->user->method('isEnabled')->willReturn(true);
 		$this->types = new FileTypePolicyFixture();
-		$this->creation = (new ReflectionProperty(FilesModule::class, 'creation'))->getValue($this->module);
-		foreach ([$this->module, $this->creation] as $service) {
+		$this->creation = FilesCatalogWiring::of($this->module)->named('creation');
+		$this->module = FilesCatalogWiring::replacing($this->module, [\OCA\Mcp\Access\FileTypes\FileTypeGuard::class => $this->types->guard($this)]);
+		foreach ([$this->creation] as $service) {
 			(new ReflectionProperty($service, 'fileTypes'))->setValue($service, $this->types->guard($this));
 		}
 	}
@@ -63,7 +64,7 @@ final class FileWritePolicyBoundariesTest extends FilesToolsTestCase {
 	 * @return mixed The already wired service.
 	 */
 	private function dependency(string $name): mixed {
-		return (new ReflectionProperty(FilesModule::class, $name))->getValue($this->module);
+		return FilesCatalogWiring::of($this->module)->named($name);
 	}
 
 	/**

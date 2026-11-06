@@ -166,7 +166,7 @@ final class FileContentTypePolicyTest extends TestCase {
 			$this->createMock(ContainerInterface::class),
 			$db,
 		);
-		$this->module = new FilesModule(
+		$this->module = \OCA\Mcp\Tests\Unit\Tools\Files\FilesCatalogWiring::module(
 			$this->tree->filesystemRoot(),
 			$extractor,
 			$backup,

@@ -20,7 +20,7 @@ class TextExtractor {
 	/** Largest file read (and largest zip entry inflated), in bytes. */
 	public const MAX_BYTES = 20 * 1024 * 1024;
 	/** Characters returned by files_read and resources/read before the text is truncated. */
-	public const MAX_CHARS = 100_000;
+	public const MAX_CHARS = \OCA\Mcp\Mcp\Resources\FileTextResource::MAX_CHARS;
 	/** Extensions returned as UTF-8 text. */
 	private const TEXT_EXTENSIONS = ['txt', 'md', 'markdown', 'csv', 'tsv', 'json', 'xml', 'yaml', 'yml', 'log', 'ini', 'conf', 'html', 'htm', 'css', 'js', 'ts', 'php', 'py', 'sh', 'sql', 'svg', 'ics', 'vcf', 'rtf', 'tex'];
 	/** Non text/* MIME types that are still text. */

@@ -115,6 +115,7 @@ final class FilesContractWiring {
 	 */
 	private function known(string $class): ?object {
 		return match ($class) {
+			\Psr\Container\ContainerInterface::class => $this->container(),
 			IConfig::class => $this->gate->config(),
 			GrantPolicy::class, ScopeReader::class => $this->gate->policy(),
 			IShareManager::class => $this->shares->manager(),
@@ -139,6 +140,14 @@ final class FilesContractWiring {
 			BackupSettingsDocument::class => BackupDocumentFixture::fromConfig($this->test, $this->gate->data()->appConfig($this->test)),
 			default => null,
 		};
+	}
+
+	/** @return \Psr\Container\ContainerInterface container sharing this request's resolved doubles */
+	private function container(): \Psr\Container\ContainerInterface {
+		$container = $this->mock(\Psr\Container\ContainerInterface::class);
+		$container->method('get')->willReturnCallback(fn (string $id): object => $this->resolve($id));
+		$container->method('has')->willReturnCallback(static fn (string $id): bool => class_exists($id) || interface_exists($id));
+		return $container;
 	}
 
 	/** @return ISystemTagObjectMapper the tags of every node: the hidden tag on {@see self::$hidden} */

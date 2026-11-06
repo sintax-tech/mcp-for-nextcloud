@@ -55,12 +55,12 @@ final class FilesPlanTest extends FilesToolsTestCase {
 	 * @return FilesModule the module of the base case with those collaborators replaced
 	 */
 	private function rebuilt(array $replace): FilesModule {
-		$args = [];
-		foreach ((new \ReflectionClass(FilesModule::class))->getConstructor()->getParameters() as $parameter) {
-			$name = $parameter->getName();
-			$args[] = $replace[$name] ?? (new \ReflectionProperty(FilesModule::class, $name))->getValue($this->module);
+		$overrides = [];
+		foreach ($replace as $name => $value) {
+			$type = $name === 'backup' ? FileBackup::class : VersionTools::class;
+			$overrides[$type] = $value;
 		}
-		return new FilesModule(...$args);
+		return FilesCatalogWiring::replacing($this->module, $overrides);
 	}
 
 	private function snapshot(): void {

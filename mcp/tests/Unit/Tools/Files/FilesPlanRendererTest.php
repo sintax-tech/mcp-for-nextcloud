@@ -36,12 +36,7 @@ final class FilesPlanRendererTest extends FilesToolsTestCase {
 		$container->method('get')->willReturnCallback(fn (string $id) => $id === 'OCA\Files_Versions\Versions\IVersionManager' ? $manager : null);
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
 		$versions = new VersionTools($this->apps, $this->users, new TextExtractor($this->temp), $backup, $access, $container, new \OCA\Mcp\Modules\Files\OcrSupport($this->apps));
-		$args = [];
-		foreach ((new \ReflectionClass(FilesModule::class))->getConstructor()->getParameters() as $parameter) {
-			$name = $parameter->getName();
-			$args[] = $name === 'versions' ? $versions : (new \ReflectionProperty(FilesModule::class, $name))->getValue($this->module);
-		}
-		$this->module = new FilesModule(...$args);
+		$this->module = FilesCatalogWiring::replacing($this->module, [VersionTools::class => $versions]);
 	}
 
 	protected function tearDown(): void {

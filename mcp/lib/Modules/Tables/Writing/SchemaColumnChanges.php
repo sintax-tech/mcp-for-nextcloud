@@ -33,13 +33,14 @@ final class SchemaColumnChanges {
 			$changes[$name] = $value;
 		}
 		$merged = array_replace($current ?? [], $changes);
-		foreach (ColumnOptions::TYPE_FIELDS[$type] as $field) if (isset($merged[$field])) self::value($field, $merged[$field], $subtype, $legacyUnlimitedText);
-		if (isset($merged['numberMin'], $merged['numberMax']) && $merged['numberMin'] > $merged['numberMax']) SchemaRequest::invalid('options');
-		if (isset($merged['numberDefault']) && (($merged['numberMin'] ?? -INF) > $merged['numberDefault'] || ($merged['numberMax'] ?? INF) < $merged['numberDefault'])) SchemaRequest::invalid('options');
-		if ($type === 'number' && in_array($subtype, ['stars', 'progress'], true) && isset($merged['numberDefault'])
+		// Preserved native values are not client input: do not narrow their existing domain.
+		$changed = array_keys($changes);
+		if (($current === null || array_intersect($changed, ['numberMin', 'numberMax'])) && isset($merged['numberMin'], $merged['numberMax']) && $merged['numberMin'] > $merged['numberMax']) SchemaRequest::invalid('options');
+		if (($current === null || array_intersect($changed, ['numberDefault', 'numberMin', 'numberMax'])) && isset($merged['numberDefault']) && (($merged['numberMin'] ?? -INF) > $merged['numberDefault'] || ($merged['numberMax'] ?? INF) < $merged['numberDefault'])) SchemaRequest::invalid('options');
+		if (($current === null || array_intersect($changed, ['numberDefault'])) && $type === 'number' && in_array($subtype, ['stars', 'progress'], true) && isset($merged['numberDefault'])
 			&& (!is_numeric($merged['numberDefault']) || floor($merged['numberDefault']) !== (float)$merged['numberDefault']
 				|| $merged['numberDefault'] < 0 || $merged['numberDefault'] > ($subtype === 'stars' ? 5 : 100))) SchemaRequest::invalid('options');
-		if ($type === 'selection') self::selection($merged, $current, $subtype);
+		if ($type === 'selection' && ($current === null || array_intersect($changed, ['selectionOptions', 'selectionDefault']))) self::selection($merged, $current, $subtype);
 		return $merged;
 	}
 	/**
@@ -60,8 +61,9 @@ final class SchemaColumnChanges {
 		} else {
 			if (!is_string($value) || strlen($value) > 10000) SchemaRequest::invalid('options');
 			if ($name === 'textAllowedPattern') {
-				if ($subtype === 'link') { if (!in_array($value, ['', 'url'], true)) SchemaRequest::invalid('options'); }
-				else self::pattern($value);
+				if (strlen($value) > 512) SchemaRequest::invalid('options');
+				// Native text regex semantics are unproved; only the proven link-provider CSV may be written.
+				if ($subtype !== 'link' || preg_match('/^(?:url|files|contacts)(?:,(?:url|files|contacts))*$/D', $value) !== 1) SchemaRequest::invalid('options');
 			}
 			if ($name === 'textDefault' && $subtype === 'link' && $value !== '' && !CellValueDomain::isCanonicalLink(['type' => 'text', 'subtype' => 'link'], $value)) SchemaRequest::invalid('options');
 			if ($name === 'datetimeDefault' && $value !== '') {
@@ -70,20 +72,6 @@ final class SchemaColumnChanges {
 				if ($d === false || $d->format($format) !== $value) SchemaRequest::invalid('options');
 			}
 		}
-	}
-	/**
-	 * @param string $pattern Client pattern, never run against rows.
-	 * @return void
-	 */
-	private static function pattern(string $pattern): void {
-		if ($pattern === '') return;
-		if (strlen($pattern) > 512) SchemaRequest::invalid('options');
-		$matchLimit = ini_get('pcre.backtrack_limit'); $depthLimit = ini_get('pcre.recursion_limit');
-		ini_set('pcre.backtrack_limit', '10000'); ini_set('pcre.recursion_limit', '100');
-		set_error_handler(static fn (): bool => true);
-		try { $ok = preg_match($pattern, ''); $error = preg_last_error(); }
-		finally { restore_error_handler(); ini_set('pcre.backtrack_limit', $matchLimit); ini_set('pcre.recursion_limit', $depthLimit); }
-		if ($ok === false || $error !== PREG_NO_ERROR) SchemaRequest::invalid('options');
 	}
 	/**
 	 * @param array<string,mixed> $data Merged column.

@@ -41,14 +41,14 @@ final class SchemaChangesTest extends TestCase {
 		$this->expectException(\InvalidArgumentException::class);
 		SchemaViewChanges::of(['filter' => [[['column_id' => 1, 'operator' => 'contains', 'value' => 'x']]]], [], [1 => ['type' => 'number', 'subtype' => '']], '2.3.2');
 	}
-	/** @return void Regex validation restores limits and rejects malformed/oversized patterns. */
-	public function testRegexIsCompiledWithBoundsAndRestoresProcessConfiguration(): void {
-		$limit = ini_get('pcre.backtrack_limit');
-		$result = SchemaColumnChanges::of(['type' => 'text', 'subtype' => 'line', 'options' => [['name' => 'textAllowedPattern', 'value' => '/^[a-z]+$/u']]], null);
-		$this->assertSame('/^[a-z]+$/u', $result['textAllowedPattern']);
-		$this->assertSame($limit, ini_get('pcre.backtrack_limit'));
-		try { SchemaColumnChanges::of(['type' => 'text', 'subtype' => 'line', 'options' => [['name' => 'textAllowedPattern', 'value' => '/[/']]], null); $this->fail('Malformed regex accepted'); }
-		catch (\InvalidArgumentException) { $this->assertSame($limit, ini_get('pcre.backtrack_limit')); }
+	/** @return void Only the proven native provider CSV can be changed; text regex writing stays closed. */
+	public function testPatternWritesRequireProvenNativeSemantics(): void {
+		$result = SchemaColumnChanges::of(['type' => 'text', 'subtype' => 'link', 'options' => [['name' => 'textAllowedPattern', 'value' => 'url,files,contacts']]], null);
+		$this->assertSame('url,files,contacts', $result['textAllowedPattern']);
+		foreach (['^[A-Z]+$', '/^[a-z]+$/u', ''] as $pattern) {
+			try { SchemaColumnChanges::of(['type' => 'text', 'subtype' => 'line', 'options' => [['name' => 'textAllowedPattern', 'value' => $pattern]]], null); $this->fail('Unproved text regex written'); }
+			catch (\InvalidArgumentException) { $this->addToAssertionCount(1); }
+		}
 	}
 	/** @return void Native settings objects retain readonly/mandatory when only visible order is edited. */
 	public function testNestedNativeSettingsAreMaterializedWithoutDroppingFlags(): void {
@@ -83,7 +83,7 @@ final class SchemaChangesTest extends TestCase {
 	/** @return void A syntactically valid expression must still obey the size bound. */
 	public function testOversizedPatternIsRejected(): void {
 		$this->expectException(\InvalidArgumentException::class);
-		SchemaColumnChanges::of(['type' => 'text', 'subtype' => 'line', 'options' => [['name' => 'textAllowedPattern', 'value' => '/' . str_repeat('a', 512) . '/']]], null);
+		SchemaColumnChanges::of(['type' => 'text', 'subtype' => 'link', 'options' => [['name' => 'textAllowedPattern', 'value' => str_repeat('url,', 130) . 'files']]], null);
 	}
 	/** @return void Old DTO truthiness must never silently discard an explicit clear or zero string. */
 	public function testOldViewDescriptionEmptyAndZeroAreRejected(): void {

@@ -77,8 +77,12 @@ final class NativeFactoriesTest extends TestCase {
 				$this->assertSame(-1, $factory->of(['title' => 'Changed'], $text, 'alice', $pin)['dto']->getTextMaxLength());
 			} else {
 				try { $factory->of(['title' => 'Changed'], $text, 'alice', $pin); $this->fail('Legacy unlimited sentinel accepted on modern profile'); }
-				catch (\InvalidArgumentException) { $this->addToAssertionCount(1); }
+				catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure) { $this->addToAssertionCount(1); }
 			}
+		}
+		foreach (['link' => 'url,files', 'line' => '^[A-Z]+$'] as $subtype => $pattern) {
+			$preserved = $factory->of(['title' => 'Changed'], ['title' => 'Old', 'type' => 'text', 'subtype' => $subtype, 'textAllowedPattern' => $pattern], 'alice', $pin);
+			$this->assertSame($pattern, $preserved['dto']->getTextAllowedPattern());
 		}
 		$shareService = new class {
 			public array $captured = [];

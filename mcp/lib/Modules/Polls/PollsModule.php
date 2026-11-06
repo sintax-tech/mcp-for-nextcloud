@@ -10,6 +10,7 @@ namespace OCA\Mcp\Modules\Polls;
 use OCA\Mcp\Mcp\Tools\CatalogModule;
 use OCA\Mcp\Modules\Polls\Presentation\PollsGuideNotes;
 use OCA\Mcp\Modules\Polls\Presentation\PollsPlanRenderer;
+use OCA\Mcp\Modules\Polls\Presentation\PollsWritePlanRenderer;
 
 /**
  * The Polls module: the tools of {@see PollsToolCatalog}, their behaviour notes and the Markdown of the creation plan.
@@ -40,6 +41,6 @@ final class PollsModule extends CatalogModule {
 	 * {@inheritDoc}
 	 */
 	public function renderPlan(string $tool, array $plan): ?string {
-		return (new Presentation\PollsWritePlanRenderer())->render($tool, $plan) ?? (new PollsPlanRenderer())->render($tool, $plan);
+		return (new PollsWritePlanRenderer())->render($tool, $plan) ?? (new PollsPlanRenderer())->render($tool, $plan);
 	}
 }

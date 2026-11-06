@@ -63,6 +63,7 @@ final class MailDraftHtml {
 		$removed['wrapper'] = $source['wrappers'];
 		foreach (iterator_to_array($document->getElementsByTagName('head')) as $head) {
 			if ($explicitHead) {
+				$removed['attribute'] += $head->attributes->length;
 				$head->parentNode->removeChild($head);
 				$removed['subtree']++;
 			} else {
@@ -187,6 +188,8 @@ final class MailDraftHtml {
 			}
 			$this->filter($node, $removed, $urls, $unwrapped, $marker);
 			if (in_array($tag, ['html', 'body'], true)) {
+				// The wrapper and each discarded attribute are different removal units.
+				$removed['attribute'] += $node->attributes->length;
 				continue;
 			}
 			if (!in_array($tag, MailDraftHtmlAllow::ELEMENTS, true)) {

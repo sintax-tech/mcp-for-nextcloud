@@ -428,5 +428,89 @@
         },
         "unwrappedElements": [],
         "elementTotal": 1
+    },
+    {
+        "name": "body-event-and-style",
+        "input": "<body onload=\"alert(1)\" style=\"background:url(https://track.example/p.png)\"><p>ok</p></body>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "attribute": 2,
+            "wrapper": 1,
+            "subtree": 0,
+            "unwrapped-element": 0
+        },
+        "unwrappedElements": [],
+        "elementTotal": 1,
+        "reportChanged": true
+    },
+    {
+        "name": "html-style-body-event",
+        "input": "<html style=\"background:url(https://track.example/c.png)\"><body onload=\"alert(1)\"><p>ok</p></body></html>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "attribute": 2,
+            "wrapper": 2,
+            "subtree": 0,
+            "unwrapped-element": 0
+        },
+        "unwrappedElements": [],
+        "elementTotal": 2,
+        "reportChanged": true
+    },
+    {
+        "name": "body-multiple-events",
+        "input": "<body onload=\"alert(1)\" onclick=\"alert(2)\" onerror=\"alert(3)\"><p>ok</p></body>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "attribute": 3,
+            "wrapper": 1,
+            "subtree": 0,
+            "unwrapped-element": 0
+        },
+        "unwrappedElements": [],
+        "elementTotal": 1,
+        "reportChanged": true
+    },
+    {
+        "name": "head-event-meta",
+        "input": "<html><head onload=\"alert(1)\"><meta http-equiv=\"refresh\" content=\"0;url=https://track.example\"></head><body><p>ok</p></body></html>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "attribute": 1,
+            "wrapper": 2,
+            "subtree": 1,
+            "unwrapped-element": 0
+        },
+        "unwrappedElements": [],
+        "elementTotal": 2,
+        "reportChanged": true
+    },
+    {
+        "name": "head-style-base",
+        "input": "<html><head style=\"background:url(https://track.example)\"><base href=\"https://track.example/\"></head><body onload=\"alert(1)\"><p>ok</p></body></html>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "attribute": 2,
+            "wrapper": 2,
+            "subtree": 1,
+            "unwrapped-element": 0
+        },
+        "unwrappedElements": [],
+        "elementTotal": 2,
+        "reportChanged": true
+    },
+    {
+        "name": "head-multiple-attributes",
+        "input": "<head onload=\"alert(1)\" style=\"background:url(https://track.example)\"><meta charset=\"UTF-8\"><base href=\"https://track.example/\"></head><body><p>ok</p></body>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "attribute": 2,
+            "wrapper": 1,
+            "subtree": 1,
+            "unwrapped-element": 0
+        },
+        "unwrappedElements": [],
+        "elementTotal": 1,
+        "reportChanged": true
     }
 ]

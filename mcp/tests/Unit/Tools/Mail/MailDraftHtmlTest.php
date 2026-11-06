@@ -60,6 +60,12 @@ final class MailDraftHtmlTest extends TestCase {
 		if (isset($row['unwrappedElements'])) {
 			$this->assertSame($row['unwrappedElements'], $result['unwrappedElements']);
 		}
+		if ($row['reportChanged'] ?? false) {
+			$render = implode("\n", MailDraftHtmlView::lines(['body' => $result['body']] + MailDraftHtmlView::fields($result)));
+			$this->assertStringContainsString(MailDraftMessages::htmlRemoved(), $render);
+			$this->assertStringNotContainsString(MailDraftMessages::htmlNormalized(), $render);
+			$this->assertStringNotContainsString(MailDraftMessages::htmlUnchanged(), $render);
+		}
 		if (isset($row['elementTotal'])) {
 			$elementTotal = $result['removed']['unknown-tag'] + $result['removed']['wrapper'] + $result['removed']['unwrapped-element'];
 			$this->assertSame($row['elementTotal'], $elementTotal, 'each wrapper is counted in only one element category');

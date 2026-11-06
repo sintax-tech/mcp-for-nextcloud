@@ -12,12 +12,12 @@ use OCA\Mcp\Modules\Files\Reorganization;
 use OCA\Mcp\Modules\Files\MovePlanner;
 use OCA\Mcp\Modules\Files\FilesPreviewContext;
 
-/** Preserves the existing Files MoveBatchPreview behavior. */
+/** Plans the operation that executes a planned batch move, without executing the write. */
 final class MoveBatchPreview {
 	/**
-	 * @param FilesPreviewContext $context existing context collaborator
-	 * @param Reorganization $reorganization existing reorganization collaborator
-	 * @param MovePlanner $planner existing planner collaborator
+	 * @param FilesPreviewContext $context actor-root admission and node-access mapping
+	 * @param Reorganization $reorganization guarded folder, copy and move operations
+	 * @param MovePlanner $planner batch move planning service
 	 */
 	public function __construct(
 		private FilesPreviewContext $context,
@@ -32,7 +32,6 @@ final class MoveBatchPreview {
 	 * @return array<string,mixed> unchanged read-only plan
 	 */
 	public function plan(array $arguments, string $userId): array {
-		$etag = $arguments['etag'] ?? null;
 		return $this->context->run($userId, fn (Folder $root): array => $this->reorganization->planBatch($root, $userId, $arguments['moves'], $arguments['mkdirs'] ?? [], $this->planner));
 	}
 }

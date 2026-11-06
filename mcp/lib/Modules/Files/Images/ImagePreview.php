@@ -18,9 +18,9 @@ final class ImagePreview {
 	/** MIME types that are safe to return as-is when no preview provider accepts the file. */
 	private const RETURNABLE_ORIGINAL_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 	/**
-	 * @param IPreview $preview Existing request-scoped collaborator.
-	 * @param IConfig $config Existing request-scoped collaborator.
-	 * @param LoggerInterface $logger Existing request-scoped collaborator.
+	 * @param IPreview $preview Native image preview provider.
+	 * @param IConfig $config App configuration for image byte budgets.
+	 * @param LoggerInterface $logger Safe diagnostics for failed image operations.
 	 */
 	public function __construct(
 		private IPreview $preview,

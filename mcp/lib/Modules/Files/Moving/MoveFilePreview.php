@@ -11,11 +11,11 @@ use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\Reorganization;
 use OCA\Mcp\Modules\Files\FilesPreviewContext;
 
-/** Preserves the existing Files MoveFilePreview behavior. */
+/** Plans the operation that moves a node through reorganization guards, without executing the write. */
 final class MoveFilePreview {
 	/**
-	 * @param FilesPreviewContext $context existing context collaborator
-	 * @param Reorganization $reorganization existing reorganization collaborator
+	 * @param FilesPreviewContext $context actor-root admission and node-access mapping
+	 * @param Reorganization $reorganization guarded folder, copy and move operations
 	 */
 	public function __construct(
 		private FilesPreviewContext $context,

@@ -13,11 +13,11 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_upload tool. */
+/** Publishes files_upload and delegates to the component that creates a file from an upload link. */
 final class UploadFile implements WriteTool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Creation\UploadFileAction $handler existing effect composition
-	 * @param \OCA\Mcp\Modules\Files\Creation\UploadFilePreview $plans distinct plan composition
+	 * @param \OCA\Mcp\Modules\Files\Creation\UploadFileAction $handler executor that creates a file from an upload link
+	 * @param \OCA\Mcp\Modules\Files\Creation\UploadFilePreview $plans read-only planner for this write operation
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Creation\UploadFileAction $handler, private \OCA\Mcp\Modules\Files\Creation\UploadFilePreview $plans) {
 	}

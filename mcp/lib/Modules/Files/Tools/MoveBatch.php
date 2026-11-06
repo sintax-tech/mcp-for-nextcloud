@@ -14,11 +14,11 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_move_batch tool. */
+/** Publishes files_move_batch and delegates to the component that executes a planned batch move. */
 final class MoveBatch implements WriteTool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Moving\MoveBatchAction $handler existing effect composition
-	 * @param \OCA\Mcp\Modules\Files\Moving\MoveBatchPreview $plans distinct plan composition
+	 * @param \OCA\Mcp\Modules\Files\Moving\MoveBatchAction $handler executor that executes a planned batch move
+	 * @param \OCA\Mcp\Modules\Files\Moving\MoveBatchPreview $plans read-only planner for this write operation
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Moving\MoveBatchAction $handler, private \OCA\Mcp\Modules\Files\Moving\MoveBatchPreview $plans) {
 	}

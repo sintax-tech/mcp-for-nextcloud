@@ -13,11 +13,11 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_copy tool. */
+/** Publishes files_copy and delegates to the component that copies a node through reorganization guards. */
 final class CopyFile implements WriteTool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Creation\CopyFileHandler $handler existing effect composition
-	 * @param \OCA\Mcp\Modules\Files\Creation\CopyFilePreview $plans distinct plan composition
+	 * @param \OCA\Mcp\Modules\Files\Creation\CopyFileHandler $handler executor that copies a node through reorganization guards
+	 * @param \OCA\Mcp\Modules\Files\Creation\CopyFilePreview $plans read-only planner for this write operation
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Creation\CopyFileHandler $handler, private \OCA\Mcp\Modules\Files\Creation\CopyFilePreview $plans) {
 	}

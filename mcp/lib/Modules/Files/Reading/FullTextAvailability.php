@@ -11,12 +11,12 @@ use OCP\App\IAppManager;
 use OCP\FullTextSearch\IFullTextSearchManager;
 use OCP\IUserManager;
 
-/** Preserves the existing Files FullTextAvailability behavior. */
+/** Checks per-user app availability and whether the Files full-text provider is indexed. */
 final class FullTextAvailability {
 	/**
-	 * @param IUserManager $userManager existing userManager collaborator
-	 * @param ?IAppManager $appManager existing appManager collaborator
-	 * @param ?IFullTextSearchManager $ftsManager existing ftsManager collaborator
+	 * @param IUserManager $userManager user lookup for enabled-app checks
+	 * @param ?IAppManager $appManager optional per-user app availability service
+	 * @param ?IFullTextSearchManager $ftsManager optional full-text search provider
 	 */
 	public function __construct(
 		private IUserManager $userManager,

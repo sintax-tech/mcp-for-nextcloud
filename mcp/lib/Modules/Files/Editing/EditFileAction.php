@@ -12,12 +12,12 @@ use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\FileBackup;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 
-/** Preserves the existing Files EditFileAction behavior. */
+/** Runs the operation that replaces file content through the guarded edit handler inside the actor view. */
 final class EditFileAction {
 	/**
-	 * @param FilesCallContext $context existing context collaborator
-	 * @param FileBackup $backup existing backup collaborator
-	 * @param ?EditFileHandler $editFile existing editFile collaborator
+	 * @param FilesCallContext $context actor-root admission and node-access mapping
+	 * @param FileBackup $backup pre-write backup service
+	 * @param ?EditFileHandler $editFile optional guarded content-edit handler
 	 */
 	public function __construct(
 		private FilesCallContext $context,

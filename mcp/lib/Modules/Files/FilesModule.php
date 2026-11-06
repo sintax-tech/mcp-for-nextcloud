@@ -7,10 +7,20 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files;
 
-use OCP\Files\Folder;
 use OCA\Mcp\Mcp\Tools\CatalogModule;
 
-/** Publishes Files and delegates its existing workflow and confirmation text. */
+/**
+ * Publishes Files tools and delegates workflow guidance and confirmation text.
+ *
+ * Every writing tool also answers {@see self::preview()}, which the registry asks for whenever the call
+ * arrives without `confirm: true`. A plan reads what it needs — the file, its ETag, the diff, the backup
+ * that would be created, the node the batch would touch — and writes nothing: no folder is created, no
+ * checkout token is minted and no file is backed up before the user has said yes.
+ *
+ * A file locked by files_lock (open in Text or Office, locked by another person or a WebDAV client) is a warning in
+ * the plan and a refusal of the confirmed call, decided before the shared-write confirmation and the backup
+ * ({@see LockAwareWrite}). The user's own manual lock lets the write through, as in the Files app.
+ */
 final class FilesModule extends CatalogModule {
 	/** Characters returned by files_read before the text is truncated. */
 	public const MAX_CHARS = TextExtractor::MAX_CHARS;

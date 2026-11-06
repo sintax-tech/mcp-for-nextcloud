@@ -13,10 +13,10 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\Tool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_list tool. */
+/** Publishes files_list and delegates to the component that lists directory entries and their access metadata. */
 final class ListFiles implements Tool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Reading\ListFilesHandler $handler existing effect composition
+	 * @param \OCA\Mcp\Modules\Files\Reading\ListFilesHandler $handler executor that lists directory entries and their access metadata
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Reading\ListFilesHandler $handler) {
 	}

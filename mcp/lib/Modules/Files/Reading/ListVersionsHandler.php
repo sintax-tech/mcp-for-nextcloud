@@ -13,12 +13,12 @@ use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 use OCA\Mcp\Modules\Files\VersionTools;
 
-/** Preserves the existing Files ListVersionsHandler behavior. */
+/** Runs the operation that lists the versions of a visible file inside the actor view. */
 final class ListVersionsHandler {
 	/**
-	 * @param FilesCallContext $context existing context collaborator
-	 * @param VersionTools $versions existing versions collaborator
-	 * @param ReadableFile $readable existing readable collaborator
+	 * @param FilesCallContext $context actor-root admission and node-access mapping
+	 * @param VersionTools $versions version listing and content access
+	 * @param ReadableFile $readable visible file resolver
 	 */
 	public function __construct(
 		private FilesCallContext $context,
@@ -33,7 +33,6 @@ final class ListVersionsHandler {
 	 * @return array<string,mixed> unchanged tool result
 	 */
 	public function handle(array $arguments, string $userId): array {
-		$confirmed = (bool)($arguments['confirm_shared'] ?? false);
 		return $this->context->run($userId, fn (Folder $root): array => ToolResult::json($this->versions->list($root, $this->readable->get($root, $arguments['path']), PathGuard::normalize($arguments['path']), $arguments['limit'], $userId)));
 	}
 }

@@ -15,9 +15,9 @@ use OCP\Files\Folder;
 /** Returns ordered image previews under the unchanged shared byte budget. */
 final class ImageBatch {
 	/**
-	 * @param ImageSelection $selection Existing request-scoped collaborator.
-	 * @param ImagePreview $preview Existing request-scoped collaborator.
-	 * @param ImageMetadata $metadata Existing request-scoped collaborator.
+	 * @param ImageSelection $selection Explicit-path and folder image candidate selection.
+	 * @param ImagePreview $preview Native image preview provider and byte-budget checks.
+	 * @param ImageMetadata $metadata Image metadata and actor access formatter.
 	 */
 	public function __construct(
 		private ImageSelection $selection,

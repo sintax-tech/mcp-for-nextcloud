@@ -14,10 +14,10 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\Tool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_versions_list tool. */
+/** Publishes files_versions_list and delegates to the component that lists the versions of a visible file. */
 final class ListVersions implements Tool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Reading\ListVersionsHandler $handler existing effect composition
+	 * @param \OCA\Mcp\Modules\Files\Reading\ListVersionsHandler $handler executor that lists the versions of a visible file
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Reading\ListVersionsHandler $handler) {
 	}

@@ -13,12 +13,12 @@ use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 
-/** Preserves the existing Files FilesCallContext behavior. */
+/** Runs confirmed operations after scope admission and full actor setup, mapping native node errors. */
 final class FilesCallContext {
 	/**
-	 * @param IRootFolder $rootFolder existing rootFolder collaborator
-	 * @param ?FilesAccessGuard $visibilityGuard existing visibilityGuard collaborator
-	 * @param ?Access\ActorRoot $actorRoot existing actorRoot collaborator
+	 * @param IRootFolder $rootFolder native root provider for the actor view
+	 * @param ?FilesAccessGuard $visibilityGuard optional resource-scope admission guard
+	 * @param ?Access\ActorRoot $actorRoot optional actor filesystem setup
 	 */
 	public function __construct(
 		private IRootFolder $rootFolder,
@@ -29,7 +29,7 @@ final class FilesCallContext {
 
 	/**
 	 * @param string $userId authenticated caller
-	 * @param callable(Folder):array $callback operation over the existing actor view
+	 * @param callable(Folder):array $callback operation over the admitted actor folder
 	 * @return array<string,mixed> unchanged operation result
 	 */
 	public function run(string $userId, callable $callback): array {

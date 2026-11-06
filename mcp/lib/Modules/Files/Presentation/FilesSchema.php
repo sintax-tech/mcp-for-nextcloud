@@ -15,7 +15,7 @@ final class FilesSchema {
 	private function __construct() {
 	}
 	/**
-	 * @param array<string,mixed> $row existing definition array
+	 * @param array<string,mixed> $row tool metadata and JSON input schema
 	 * @return ToolDefinition its unchanged catalog definition
 	 */
 	public static function definition(array $row): ToolDefinition {

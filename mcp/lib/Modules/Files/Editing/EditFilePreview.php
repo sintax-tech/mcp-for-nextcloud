@@ -11,11 +11,11 @@ use OCA\Mcp\Modules\Files\Handler\EditFileHandler;
 use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\FilesPreviewContext;
 
-/** Preserves the existing Files EditFilePreview behavior. */
+/** Plans the operation that replaces file content through the guarded edit handler, without executing the write. */
 final class EditFilePreview {
 	/**
-	 * @param FilesPreviewContext $context existing context collaborator
-	 * @param ?EditFileHandler $editFile existing editFile collaborator
+	 * @param FilesPreviewContext $context actor-root admission and node-access mapping
+	 * @param ?EditFileHandler $editFile optional guarded content-edit handler
 	 */
 	public function __construct(
 		private FilesPreviewContext $context,

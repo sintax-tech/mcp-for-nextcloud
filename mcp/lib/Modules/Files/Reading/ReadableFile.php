@@ -13,10 +13,10 @@ use OCP\Files\File;
 use OCP\Files\Folder;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 
-/** Preserves the existing Files ReadableFile behavior. */
+/** Resolves a visible user-relative path and requires a file node. */
 final class ReadableFile {
 	/**
-	 * @param ?FilesAccessGuard $visibilityGuard existing visibilityGuard collaborator
+	 * @param ?FilesAccessGuard $visibilityGuard optional resource-scope admission guard
 	 */
 	public function __construct(
 		private ?FilesAccessGuard $visibilityGuard = null,

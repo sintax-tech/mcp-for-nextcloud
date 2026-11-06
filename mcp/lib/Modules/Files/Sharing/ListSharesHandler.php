@@ -12,11 +12,11 @@ use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 
-/** Preserves the existing Files ListSharesHandler behavior. */
+/** Runs the operation that lists shares owned by the actor inside the actor view. */
 final class ListSharesHandler {
 	/**
-	 * @param FilesCallContext $context existing context collaborator
-	 * @param ?ShareLister $shareLister existing shareLister collaborator
+	 * @param FilesCallContext $context actor-root admission and node-access mapping
+	 * @param ?ShareLister $shareLister optional owner-share listing service
 	 */
 	public function __construct(
 		private FilesCallContext $context,
@@ -30,7 +30,6 @@ final class ListSharesHandler {
 	 * @return array<string,mixed> unchanged tool result
 	 */
 	public function handle(array $arguments, string $userId): array {
-		$confirmed = (bool)($arguments['confirm_shared'] ?? false);
 		return $this->context->run($userId, fn (Folder $root): array => ToolResult::json($this->listShares($root, $userId, $arguments['path'] ?? null, (int)$arguments['offset'])));
 	}
 

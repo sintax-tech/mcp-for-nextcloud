@@ -11,11 +11,11 @@ use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 
-/** Preserves the existing Files UnshareFileHandler behavior. */
+/** Runs the operation that removes an actor-owned share inside the actor view. */
 final class UnshareFileHandler {
 	/**
-	 * @param FilesCallContext $context existing context collaborator
-	 * @param ?ShareRemover $shareRemover existing shareRemover collaborator
+	 * @param FilesCallContext $context actor-root admission and node-access mapping
+	 * @param ?ShareRemover $shareRemover optional owner-share removal service
 	 */
 	public function __construct(
 		private FilesCallContext $context,
@@ -29,7 +29,6 @@ final class UnshareFileHandler {
 	 * @return array<string,mixed> unchanged tool result
 	 */
 	public function handle(array $arguments, string $userId): array {
-		$confirmed = (bool)($arguments['confirm_shared'] ?? false);
 		return $this->context->run($userId, fn (Folder $root): array => ToolResult::json(($this->shareRemover ?? throw new \LogicException('ShareRemover is not wired'))->apply($root, $userId, $arguments)));
 	}
 }

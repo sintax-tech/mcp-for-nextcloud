@@ -7,18 +7,17 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Tools;
 
-use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\Deletion;
 use OCA\Mcp\Modules\Files\Presentation\FilesSchema;
 use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_delete tool. */
+/** Publishes files_delete and delegates to the component that deletes a file through the guarded deletion handler. */
 final class DeleteFile implements WriteTool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Deletion\DeleteFileAction $handler existing effect composition
-	 * @param \OCA\Mcp\Modules\Files\Deletion\DeleteFilePreview $plans distinct plan composition
+	 * @param \OCA\Mcp\Modules\Files\Deletion\DeleteFileAction $handler executor that deletes a file through the guarded deletion handler
+	 * @param \OCA\Mcp\Modules\Files\Deletion\DeleteFilePreview $plans read-only planner for this write operation
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Deletion\DeleteFileAction $handler, private \OCA\Mcp\Modules\Files\Deletion\DeleteFilePreview $plans) {
 	}

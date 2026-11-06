@@ -15,13 +15,13 @@ use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\NameSearchQuery;
 use OCA\Mcp\Modules\Files\NameLikeComparison;
 
-/** Preserves the existing Files NameSearch behavior. */
+/** Searches filenames in the database and formats only visible matches. */
 final class NameSearch {
 	/**
-	 * @param IDBConnection $db existing db collaborator
-	 * @param IUserManager $userManager existing userManager collaborator
-	 * @param FileEntry $entries existing entries collaborator
-	 * @param ?FilesAccessGuard $visibilityGuard existing visibilityGuard collaborator
+	 * @param IDBConnection $db database connection for filename search
+	 * @param IUserManager $userManager actor lookup for the native filename search query
+	 * @param FileEntry $entries node listing entry formatter
+	 * @param ?FilesAccessGuard $visibilityGuard optional resource-scope admission guard
 	 */
 	public function __construct(
 		private IDBConnection $db,
@@ -32,10 +32,10 @@ final class NameSearch {
 	}
 
 	/** @return list<array{name:string, path:string, isDir:bool, size:int, mtime:string, contentType:string, access:array<string, mixed>}>
-	 * @param Folder $root existing operation root
-	 * @param string $userId existing operation userId
-	 * @param string $query existing operation query
-	 * @param int $limit existing operation limit
+	 * @param Folder $root actor folder used to resolve relative paths
+	 * @param string $userId authenticated actor identifier
+	 * @param string $query search text supplied by the caller
+	 * @param int $limit maximum number of results
 	 */
 	public function search(Folder $root, string $userId, string $query, int $limit): array {
 		// %, _ and \ in the term are literal: escaped the way core's own file search escapes LIKE terms.

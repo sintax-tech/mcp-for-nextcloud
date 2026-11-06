@@ -15,14 +15,14 @@ use OCA\Mcp\Modules\Files\MovePlanner;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 use OCA\Mcp\Modules\Files\BatchStore;
 
-/** Preserves the existing Files MoveBatchAction behavior. */
+/** Runs the operation that executes a planned batch move inside the actor view. */
 final class MoveBatchAction {
 	/**
-	 * @param FilesCallContext $context existing context collaborator
-	 * @param Reorganization $reorganization existing reorganization collaborator
-	 * @param MovePlanner $planner existing planner collaborator
-	 * @param BatchStore $batches existing batches collaborator
-	 * @param ITimeFactory $time existing time collaborator
+	 * @param FilesCallContext $context actor-root admission and node-access mapping
+	 * @param Reorganization $reorganization guarded folder, copy and move operations
+	 * @param MovePlanner $planner batch move planning service
+	 * @param BatchStore $batches batch move and undo persistence
+	 * @param ITimeFactory $time clock for batch timestamps
 	 */
 	public function __construct(
 		private FilesCallContext $context,

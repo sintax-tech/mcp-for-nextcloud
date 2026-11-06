@@ -14,11 +14,11 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_unshare tool. */
+/** Publishes files_unshare and delegates to the component that removes an actor-owned share. */
 final class UnshareFile implements WriteTool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Sharing\UnshareFileHandler $handler existing effect composition
-	 * @param \OCA\Mcp\Modules\Files\Sharing\UnshareFilePreview $plans distinct plan composition
+	 * @param \OCA\Mcp\Modules\Files\Sharing\UnshareFileHandler $handler executor that removes an actor-owned share
+	 * @param \OCA\Mcp\Modules\Files\Sharing\UnshareFilePreview $plans read-only planner for this write operation
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Sharing\UnshareFileHandler $handler, private \OCA\Mcp\Modules\Files\Sharing\UnshareFilePreview $plans) {
 	}

@@ -13,11 +13,11 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_replace tool. */
+/** Publishes files_replace and delegates to the component that replaces a snippet through the guarded replacement handler. */
 final class ReplaceFile implements WriteTool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Editing\ReplaceFileAction $handler existing effect composition
-	 * @param \OCA\Mcp\Modules\Files\Editing\ReplaceFilePreview $plans distinct plan composition
+	 * @param \OCA\Mcp\Modules\Files\Editing\ReplaceFileAction $handler executor that replaces a snippet through the guarded replacement handler
+	 * @param \OCA\Mcp\Modules\Files\Editing\ReplaceFilePreview $plans read-only planner for this write operation
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Editing\ReplaceFileAction $handler, private \OCA\Mcp\Modules\Files\Editing\ReplaceFilePreview $plans) {
 	}

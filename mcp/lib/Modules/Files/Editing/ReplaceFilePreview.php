@@ -11,11 +11,11 @@ use OCA\Mcp\Modules\Files\Handler\ReplaceFileHandler;
 use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\FilesPreviewContext;
 
-/** Preserves the existing Files ReplaceFilePreview behavior. */
+/** Plans the operation that replaces a snippet through the guarded replacement handler, without executing the write. */
 final class ReplaceFilePreview {
 	/**
-	 * @param FilesPreviewContext $context existing context collaborator
-	 * @param ?ReplaceFileHandler $replaceFile existing replaceFile collaborator
+	 * @param FilesPreviewContext $context actor-root admission and node-access mapping
+	 * @param ?ReplaceFileHandler $replaceFile optional guarded snippet-replacement handler
 	 */
 	public function __construct(
 		private FilesPreviewContext $context,

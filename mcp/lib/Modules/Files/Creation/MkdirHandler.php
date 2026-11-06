@@ -12,11 +12,11 @@ use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\Reorganization;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 
-/** Preserves the existing Files MkdirHandler behavior. */
+/** Runs the operation that creates a guarded directory inside the actor view. */
 final class MkdirHandler {
 	/**
-	 * @param FilesCallContext $context existing context collaborator
-	 * @param Reorganization $reorganization existing reorganization collaborator
+	 * @param FilesCallContext $context actor-root admission and node-access mapping
+	 * @param Reorganization $reorganization guarded folder, copy and move operations
 	 */
 	public function __construct(
 		private FilesCallContext $context,

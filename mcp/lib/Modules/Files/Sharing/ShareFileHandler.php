@@ -11,11 +11,11 @@ use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 
-/** Preserves the existing Files ShareFileHandler behavior. */
+/** Runs the operation that creates or updates an actor-owned share inside the actor view. */
 final class ShareFileHandler {
 	/**
-	 * @param FilesCallContext $context existing context collaborator
-	 * @param ?ShareWriter $shareWriter existing shareWriter collaborator
+	 * @param FilesCallContext $context actor-root admission and node-access mapping
+	 * @param ?ShareWriter $shareWriter optional share creation and update service
 	 */
 	public function __construct(
 		private FilesCallContext $context,
@@ -29,7 +29,6 @@ final class ShareFileHandler {
 	 * @return array<string,mixed> unchanged tool result
 	 */
 	public function handle(array $arguments, string $userId): array {
-		$confirmed = (bool)($arguments['confirm_shared'] ?? false);
 		return $this->context->run($userId, fn (Folder $root): array => self::shareResult(($this->shareWriter ?? throw new \LogicException('ShareWriter is not wired'))->apply($root, $userId, $arguments)));
 	}
 

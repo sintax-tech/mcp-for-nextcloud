@@ -13,13 +13,13 @@ use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\FilesPreviewContext;
 use OCA\Mcp\Modules\Files\VersionTools;
 
-/** Preserves the existing Files RestoreVersionPreview behavior. */
+/** Plans the operation that restores historical content through the guarded restore handler, without executing the write. */
 final class RestoreVersionPreview {
 	/**
-	 * @param FilesPreviewContext $context existing context collaborator
-	 * @param VersionTools $versions existing versions collaborator
-	 * @param ?RestoreVersionHandler $restoreVersion existing restoreVersion collaborator
-	 * @param ?UserTimezone $timezone existing timezone collaborator
+	 * @param FilesPreviewContext $context actor-root admission and node-access mapping
+	 * @param VersionTools $versions version listing and content access
+	 * @param ?RestoreVersionHandler $restoreVersion optional guarded version-restore handler
+	 * @param ?UserTimezone $timezone optional user timezone formatter
 	 */
 	public function __construct(
 		private FilesPreviewContext $context,
@@ -35,7 +35,6 @@ final class RestoreVersionPreview {
 	 * @return array<string,mixed> unchanged read-only plan
 	 */
 	public function plan(array $arguments, string $userId): array {
-		$etag = $arguments['etag'] ?? null;
 		return $this->context->run($userId, fn (Folder $root): array => ($this->restoreVersion ?? throw new \LogicException('RestoreVersionHandler is not wired'))->plan($root, $userId, $arguments['path'], $arguments['version'], $this->versions, $this->timezone));
 	}
 }

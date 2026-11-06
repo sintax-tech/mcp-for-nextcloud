@@ -14,10 +14,10 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\Tool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_list_shares tool. */
+/** Publishes files_list_shares and delegates to the component that lists shares owned by the actor. */
 final class ListShares implements Tool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Sharing\ListSharesHandler $handler existing effect composition
+	 * @param \OCA\Mcp\Modules\Files\Sharing\ListSharesHandler $handler executor that lists shares owned by the actor
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Sharing\ListSharesHandler $handler) {
 	}

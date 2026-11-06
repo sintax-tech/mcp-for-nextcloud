@@ -16,15 +16,15 @@ use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\Presentation\ReadingMessages;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 
-/** Preserves the existing Files SearchFilesHandler behavior. */
+/** Runs the operation that searches indexed text with a filename fallback inside the actor view. */
 final class SearchFilesHandler {
 	/**
-	 * @param FilesCallContext $context existing context collaborator
-	 * @param FullTextAvailability $availability existing availability collaborator
-	 * @param NameSearch $names existing names collaborator
-	 * @param FileEntry $entries existing entries collaborator
-	 * @param ?IFullTextSearchManager $ftsManager existing ftsManager collaborator
-	 * @param ?FilesAccessGuard $visibilityGuard existing visibilityGuard collaborator
+	 * @param FilesCallContext $context actor-root admission and node-access mapping
+	 * @param FullTextAvailability $availability full-text provider availability check
+	 * @param NameSearch $names filename search fallback
+	 * @param FileEntry $entries node listing entry formatter
+	 * @param ?IFullTextSearchManager $ftsManager optional full-text search provider
+	 * @param ?FilesAccessGuard $visibilityGuard optional resource-scope admission guard
 	 */
 	public function __construct(
 		private FilesCallContext $context,
@@ -42,17 +42,16 @@ final class SearchFilesHandler {
 	 * @return array<string,mixed> unchanged tool result
 	 */
 	public function handle(array $arguments, string $userId): array {
-		$confirmed = (bool)($arguments['confirm_shared'] ?? false);
 		return $this->context->run($userId, fn (Folder $root): array => ToolResult::json($this->search($root, $userId, $arguments['query'], (int)$arguments['limit'], (string)($arguments['mode'] ?? 'auto'))));
 	}
 
 	/**
 	 * @return array{search_mode:string, full_text_active:bool, notice?:string, files:list<array{name:string, path:string, isDir:bool, size:int, mtime:string, contentType:string, access:array<string, mixed>, excerpts?:list<string>}>}
-	 * @param Folder $root existing operation root
-	 * @param string $userId existing operation userId
-	 * @param string $query existing operation query
-	 * @param int $limit existing operation limit
-	 * @param string $mode existing operation mode
+	 * @param Folder $root actor folder used to resolve relative paths
+	 * @param string $userId authenticated actor identifier
+	 * @param string $query search text supplied by the caller
+	 * @param int $limit maximum number of results
+	 * @param string $mode requested filename or full-text search mode
 	 */
 	private function search(Folder $root, string $userId, string $query, int $limit, string $mode = 'auto'): array {
 		if ($mode === 'name') {

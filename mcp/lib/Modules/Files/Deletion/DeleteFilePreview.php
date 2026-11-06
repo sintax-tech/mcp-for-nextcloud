@@ -11,11 +11,11 @@ use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\FilesPreviewContext;
 use OCA\Mcp\Modules\Files\Handler;
 
-/** Preserves the existing Files DeleteFilePreview behavior. */
+/** Plans the operation that deletes a file through the guarded deletion handler, without executing the write. */
 final class DeleteFilePreview {
 	/**
-	 * @param FilesPreviewContext $context existing context collaborator
-	 * @param ?Handler\DeleteFileHandler $deleteFile existing deleteFile collaborator
+	 * @param FilesPreviewContext $context actor-root admission and node-access mapping
+	 * @param ?Handler\DeleteFileHandler $deleteFile optional guarded file-deletion handler
 	 */
 	public function __construct(
 		private FilesPreviewContext $context,
@@ -29,7 +29,6 @@ final class DeleteFilePreview {
 	 * @return array<string,mixed> unchanged read-only plan
 	 */
 	public function plan(array $arguments, string $userId): array {
-		$etag = $arguments['etag'] ?? null;
 		return $this->context->run($userId, fn (Folder $root): array => $this->deleteFile->plan($root, $userId, $arguments));
 	}
 }

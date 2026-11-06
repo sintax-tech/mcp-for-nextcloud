@@ -20,10 +20,12 @@ class PageTreeLoader {
 	/**
 	 * @param CollectivesGateway $gateway native Collectives
 	 * @param PageFiles $files which pages MCP may show
+	 * @param MissingIndexCheck $indexes refuses a tree Collectives would complete by writing
 	 */
 	public function __construct(
 		private CollectivesGateway $gateway,
 		private PageFiles $files,
+		private MissingIndexCheck $indexes,
 	) {
 	}
 
@@ -31,13 +33,17 @@ class PageTreeLoader {
 	 * @param int $cid collective id
 	 * @param string $uid authenticated actor
 	 * @param string $operation exact grant of the call
+	 * The actor's membership is read again first, without the page service's per-request cache, so a read back
+	 * after a write never relies on the authorization the write started with.
 	 * @return PageTree the admitted pages, read now
-	 * @throws ToolFailure when the collective is unknown to the actor or the call is not admitted
+	 * @throws ToolFailure when the collective is unknown to the actor, the call is not admitted, or reading would write
 	 */
 	public function load(int $cid, string $uid, string $operation): PageTree {
-		$tree = $this->gateway->tree($cid, $uid, $operation);
-		$folder = $tree['folder'];
-		$pages = array_values(array_filter($tree['pages'], fn (array $page): bool => $this->files->shows($folder, $page, $uid)));
+		$this->gateway->collective($cid, $uid, $operation);
+		$folder = $this->gateway->folder($cid, $uid, $operation);
+		$this->indexes->assertComplete($folder);
+		$pages = array_values(array_filter($this->gateway->pages($cid, $folder, $uid, $operation),
+			fn (array $page): bool => $this->files->shows($folder, $page, $uid)));
 		return new PageTree($cid, $folder, $pages);
 	}
 

@@ -80,15 +80,28 @@ final class CollectivesScene {
 			'canEdit' => $data['canEdit'], 'canShare' => false, 'shareToken' => 'share-token-secret', 'level' => 9]);
 	}
 
-	/** @param int $cid collective @param string $uid actor @return Folder the actor's folder of the collective */
-	public static function folder(int $cid, string $uid): Folder {
-		self::collective($cid, $uid);
+	/** @return Folder the folder of the collective; membership is the caller's (the page service checks it once per request) */
+	public static function folder(): Folder {
 		return self::$tree->node(self::ROOT);
 	}
 
+	/** @return void writes the Readme.md of every non-dotted folder that holds pages without one, as Collectives does */
+	public static function createMissingIndexes(): void {
+		foreach (array_keys(self::$tree->nodes) as $path) {
+			if (self::$tree->nodes[$path]['type'] !== 'dir' || !str_starts_with($path . '/', self::ROOT . '/') || preg_match('#/\.#', substr($path, strlen(self::ROOT)))) {
+				continue;
+			}
+			$pages = array_filter(array_keys(self::$tree->nodes), static fn (string $other): bool => str_starts_with($other, $path . '/')
+				&& str_ends_with($other, '.md') && !preg_match('#/\.#', substr($other, strlen($path))));
+			if ($pages !== [] && !isset(self::$tree->nodes[$path . '/Readme.md'])) {
+				self::$calls[] = 'newPage';
+				self::$tree->addFile($path . '/Readme.md', '', 'text/markdown');
+			}
+		}
+	}
+
 	/** @return File the file with that id inside the collective folder */
-	public static function fileById(int $cid, int $id, string $uid): File {
-		self::collective($cid, $uid);
+	public static function fileById(int $cid, int $id): File {
 		foreach (self::$tree->nodes as $path => $node) {
 			if ($node['id'] === $id && $node['type'] === 'file' && str_starts_with($path, self::ROOT . '/')) {
 				return self::$tree->node($path);
@@ -98,8 +111,7 @@ final class CollectivesScene {
 	}
 
 	/** @return list<PageInfo> every page of the collective, derived from the tree now */
-	public static function pages(int $cid, string $uid): array {
-		self::collective($cid, $uid);
+	public static function pages(): array {
 		$pages = [];
 		foreach (self::relativePages() as $relative => $id) {
 			$dir = dirname($relative) === '.' ? '' : dirname($relative);
@@ -153,7 +165,7 @@ final class CollectivesScene {
 
 	/** @return PageInfo the current page of that id */
 	private static function page(int $id): PageInfo {
-		foreach (self::pages(self::CID, 'alice') as $page) {
+		foreach (self::pages() as $page) {
 			if ($page->jsonSerialize()['id'] === $id) {
 				return $page;
 			}

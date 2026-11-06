@@ -97,6 +97,11 @@ final class CollectivesMessages {
 		return Translator::t('The page changed since it was read; nothing was written. Current etag: %s', [$etag]);
 	}
 
+	/** @return string a folder of pages without its index page */
+	public static function indexMissing(): string {
+		return Translator::t('A folder of this collective has pages but no Readme.md, and reading it would make Collectives create one; nothing was read or changed. Open the collective in Collectives once, then try again.');
+	}
+
 	/** @return string moving the landing page */
 	public static function rootNotMovable(): string {
 		return Translator::t('The landing page of a collective cannot be moved.');

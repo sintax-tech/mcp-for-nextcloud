@@ -65,18 +65,28 @@ class CollectivesGateway {
 	 * @param int $cid collective id
 	 * @param string $uid authenticated actor
 	 * @param string $operation exact grant of the call
-	 * @return array{folder:Folder, pages:list<array<string, mixed>>} the actor's folder of the collective and every page, built now
+	 * @return Folder the actor's folder of the collective
 	 * @throws ToolFailure when the collective is unknown to the actor or the call is not admitted
 	 */
-	public function tree(int $cid, string $uid, string $operation): array {
+	public function folder(int $cid, string $uid, string $operation): Folder {
 		$this->admission->admit($uid, $operation);
-		return $this->call(function () use ($cid, $uid): array {
-			$pages = $this->service(CollectivesSurface::PAGES);
-			$folder = $pages->getFolder($cid, 0, $uid);
-			$native = $pages->getPagesFromFolder($cid, $folder, $uid, true, false);
-			return ['folder' => $folder, 'pages' => array_values(array_map(static fn (object $page): array => PageProjection::page($page),
-				array_filter($native, static fn (mixed $item): bool => is_object($item))))];
-		});
+		return $this->call(fn (): Folder => $this->service(CollectivesSurface::PAGES)->getFolder($cid, 0, $uid));
+	}
+
+	/**
+	 * Builds the page tree; call it only after {@see \OCA\Mcp\Modules\Collectives\Locating\MissingIndexCheck} passed.
+	 * @param int $cid collective id
+	 * @param Folder $folder the actor's folder of the collective
+	 * @param string $uid authenticated actor
+	 * @param string $operation exact grant of the call
+	 * @return list<array<string, mixed>> every page, built now
+	 * @throws ToolFailure when the collective is unknown to the actor or the call is not admitted
+	 */
+	public function pages(int $cid, Folder $folder, string $uid, string $operation): array {
+		$this->admission->admit($uid, $operation);
+		$native = $this->call(fn (): array => $this->service(CollectivesSurface::PAGES)->getPagesFromFolder($cid, $folder, $uid, true, false));
+		return array_values(array_map(static fn (object $page): array => PageProjection::page($page),
+			array_filter($native, static fn (mixed $item): bool => is_object($item))));
 	}
 
 	/**

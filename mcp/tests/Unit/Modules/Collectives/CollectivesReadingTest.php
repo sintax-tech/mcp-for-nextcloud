@@ -106,6 +106,27 @@ final class CollectivesReadingTest extends TestCase {
 		}
 	}
 
+	/** @return void a folder of pages without its Readme.md: reads and plans are refused before Collectives could create it */
+	public function testAMissingIndexIsRefusedInsteadOfCreated(): void {
+		unset(CollectivesScene::$tree->nodes[CollectivesScene::ROOT . '/Team/Readme.md']);
+		$this->rig->grants = ['read'];
+		$before = CollectivesScene::$tree->nodes;
+		foreach ([['collectives_pages', ['collective_id' => 7]], ['collectives_read', ['collective_id' => 7, 'page_id' => CollectivesScene::$ids['Guide.md']]],
+			['collectives_search', ['collective_id' => 7, 'query' => 'x']]] as [$tool, $arguments]) {
+			$this->assertStringContainsString('no Readme.md', $this->refusal($tool, $arguments), $tool);
+		}
+		$this->rig->grants = ['read', 'create', 'edit', 'move'];
+		try {
+			$this->rig->module()->preview('collectives_create', ['collective_id' => 7, 'parent_id' => 0, 'title' => 'X'], 'alice');
+			$this->fail('a plan was made over a tree Collectives would complete');
+		} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
+			$this->assertStringContainsString('no Readme.md', $e->getMessage());
+		}
+		$this->assertSame($before, CollectivesScene::$tree->nodes, 'nothing was written');
+		$this->assertNotContains('newPage', CollectivesScene::$calls);
+		$this->assertNotContains('getPagesFromFolder', CollectivesScene::$calls, 'Collectives was not asked for the tree');
+	}
+
 	/** @return void a page over the limit is refused, never truncated */
 	public function testRefusesAPageOverTheReadLimit(): void {
 		CollectivesScene::$tree->nodes[CollectivesScene::ROOT . '/Guide.md']['content'] = str_repeat('a', 262145);

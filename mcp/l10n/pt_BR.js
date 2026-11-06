@@ -1818,6 +1818,7 @@ OC.L10N.register(
     "Create page **%s** under *%s*." : "Criar a página **%s** sob *%s*.",
     "Change page **%s** (%s): %d bytes now, %d after; the diff is in the plan." : "Alterar a página **%s** (%s): %d bytes agora, %d depois; o diff está no plano.",
     "Move page **%s** under *%s* as **%s**." : "Mover a página **%s** para baixo de *%s* como **%s**.",
-    "Move collective page" : "Mover página de um coletivo"
+    "Move collective page" : "Mover página de um coletivo",
+    "A folder of this collective has pages but no Readme.md, and reading it would make Collectives create one; nothing was read or changed. Open the collective in Collectives once, then try again." : "Uma pasta deste coletivo tem páginas, mas não tem Readme.md, e lê-la faria o Coletivos criar um; nada foi lido nem alterado. Abra o coletivo uma vez no Coletivos e tente de novo."
     },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

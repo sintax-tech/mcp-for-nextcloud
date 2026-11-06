@@ -46,30 +46,40 @@ namespace OCA\Collectives\Service {
 	class PageService {
 		private ?Collective $collective = null;
 
-		/** @param int $collectiveId collective @param string $userId actor */
-		public function verifyEditPermissions(int $collectiveId, string $userId): void {
+		/** @param int $collectiveId collective @param string $userId actor @return Collective the collective read first in this request */
+		private function cached(int $collectiveId, string $userId): Collective {
 			if ($this->collective === null || $this->collective->jsonSerialize()['id'] !== $collectiveId) {
 				$this->collective = CollectivesScene::collective($collectiveId, $userId);
 			}
-			if (!$this->collective->canEdit()) {
+			return $this->collective;
+		}
+
+		/** @param int $collectiveId collective @param string $userId actor */
+		public function verifyEditPermissions(int $collectiveId, string $userId): void {
+			if (!$this->cached($collectiveId, $userId)->canEdit()) {
 				throw new NotPermittedException('Not allowed to edit collective');
 			}
 		}
 
 		/** @param int $collectiveId collective @param int $fileId page @param string $userId actor @return File the file */
 		public function getPageFile(int $collectiveId, int $fileId, string $userId): File {
-			return CollectivesScene::fileById($collectiveId, $fileId, $userId);
+			$this->cached($collectiveId, $userId);
+			return CollectivesScene::fileById($collectiveId, $fileId);
 		}
 
 		/** @param int $collectiveId collective @param int $fileId 0 for the collective folder @param string $userId actor @return Folder the folder */
 		public function getFolder(int $collectiveId, int $fileId, string $userId): Folder {
-			return CollectivesScene::folder($collectiveId, $userId);
+			$this->cached($collectiveId, $userId);
+			return CollectivesScene::folder();
 		}
 
 		/** @return list<PageInfo> the pages under the folder, read now */
 		public function getPagesFromFolder(int $collectiveId, Folder $folder, string $userId, bool $recurse = false, bool $forceIndex = false): array {
 			CollectivesScene::$calls[] = 'getPagesFromFolder' . ($forceIndex ? ':forceIndex' : '');
-			return CollectivesScene::pages($collectiveId, $userId);
+			$this->cached($collectiveId, $userId);
+			// Every proven release creates the Readme.md of a folder that holds pages without one, forceIndex or not.
+			CollectivesScene::createMissingIndexes();
+			return CollectivesScene::pages();
 		}
 
 		/** @return PageInfo the created page */

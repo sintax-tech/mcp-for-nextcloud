@@ -11,7 +11,6 @@ use OCA\Mcp\Platform\Compat\AppEnablement;
 use OCP\App\IAppManager;
 use OCP\IRequest;
 use OCP\IUser;
-use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
@@ -43,10 +42,16 @@ class GuestRestrictions {
 	/** @var array<string, bool> answers of {@see self::hidesExternalStorage()} in this request, by user */
 	private array $external = [];
 
+	/**
+	 * @param IAppManager $appManager checks whether Guests is enabled before any native call
+	 * @param IRequest $request supplies the path at the existing URL-check point
+	 * @param NativeGuests $nativeGuests lazy native restrictions, supplied by the owning module
+	 * @param LoggerInterface $logger records failures that refuse access
+	 */
 	public function __construct(
 		private IAppManager $appManager,
 		private IRequest $request,
-		private ContainerInterface $container,
+		private NativeGuests $nativeGuests,
 		private LoggerInterface $logger,
 	) {}
 
@@ -86,22 +91,13 @@ class GuestRestrictions {
 			return true;
 		}
 		try {
-			if (!$this->container->get('OCA\Guests\GuestManager')->isGuest($user)) {
+			if (!$this->nativeGuests->isGuest($user)) {
 				return true;
 			}
-			if (!$this->container->get('OCA\Guests\AppWhitelist')->isUrlAllowed($user, $this->request->getPathInfo())) {
+			if (!$this->nativeGuests->isUrlAllowed($user, $this->request->getPathInfo())) {
 				return false;
 			}
-			$restrictions = $this->container->get('OCA\Guests\RestrictionManager');
-			if (!$session && (new \ReflectionMethod($restrictions, 'setupRestrictions'))->getNumberOfParameters() === 0) {
-				$this->logger->warning('This Guests release applies its restrictions only to a session user; a checkout link of a guest is refused', ['app' => 'mcp']);
-				return false;
-			}
-			$restrictions->setupRestrictions($user);
-			if ($session) {
-				$restrictions->lateSetupRestrictions();
-			}
-			return true;
+			return $this->nativeGuests->setUp($user, $session);
 		} catch (Throwable $e) {
 			$this->logger->error('The restrictions of the Guests app could not be applied to an MCP request; it is refused', [
 				'app' => 'mcp',
@@ -129,9 +125,8 @@ class GuestRestrictions {
 		}
 		try {
 			$allowed = !AppEnablement::forAnyone($this->appManager, self::APP)
-				|| !$this->container->get('OCA\Guests\GuestManager')->isGuest($userId)
-				|| !($whitelist = $this->container->get('OCA\Guests\AppWhitelist'))->isWhitelistEnabled()
-				|| $whitelist->isAppWhitelisted($app);
+				|| !$this->nativeGuests->isGuest($userId)
+				|| $this->nativeGuests->allowsAppOnList($app);
 		} catch (Throwable $e) {
 			$this->logger->error('The apps the Guests app allows could not be read; the module is refused', [
 				'app' => 'mcp',
@@ -158,8 +153,8 @@ class GuestRestrictions {
 		}
 		try {
 			$hides = AppEnablement::forAnyone($this->appManager, self::APP)
-				&& $this->container->get('OCA\Guests\GuestManager')->isGuest($userId)
-				&& !$this->container->get('OCA\Guests\Config')->allowExternalStorage();
+				&& $this->nativeGuests->isGuest($userId)
+				&& !$this->nativeGuests->allowExternalStorage();
 		} catch (Throwable $e) {
 			$this->logger->error('Whether the Guests app hides external storage could not be read; it is hidden', [
 				'app' => 'mcp',

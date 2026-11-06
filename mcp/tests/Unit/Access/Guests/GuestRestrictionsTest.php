@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Access\Guests;
 
 use OCA\Mcp\Access\Guests\GuestRestrictions;
+use OCA\Mcp\Modules\People\Integration\NativeGuestsAdapter;
 use OCP\App\IAppManager;
 use OCP\IRequest;
 use OCP\IUser;
@@ -72,7 +73,7 @@ final class GuestRestrictionsTest extends TestCase {
 		$logger = $this->createMock(LoggerInterface::class);
 		$logger->method('error')->willReturnCallback(function (): void { $this->errors++; });
 		$logger->method('warning')->willReturnCallback(function (): void { $this->warnings++; });
-		return new GuestRestrictions($apps, $request, $container, $logger);
+		return new GuestRestrictions($apps, $request, new NativeGuestsAdapter($container, $logger), $logger);
 	}
 
 	/** @internal answers of the Guests doubles, recorded in order */

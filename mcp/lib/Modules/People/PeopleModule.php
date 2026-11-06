@@ -22,6 +22,11 @@ final class PeopleModule extends CatalogModule {
 		return PeopleToolCatalog::TOOLS;
 	}
 
+	/** @return class-string<\OCA\Mcp\Mcp\Tools\ModuleRegistration> the module's lazy native binding */
+	public static function registration(): ?string {
+		return PeopleRegistration::class;
+	}
+
 	/**
 	 * @return list<string> what the schema cannot say about finding accounts and sharing with groups
 	 */

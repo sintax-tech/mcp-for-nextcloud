@@ -2,6 +2,9 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Access/Guests/NativeGuests.php","fqcn":"OCA\\Mcp\\Access\\Guests\\NativeGuests","target":"stays","owner":"Access","ticket":null},
+		{"path":"lib/Modules/People/Integration/NativeGuestsAdapter.php","fqcn":"OCA\\Mcp\\Modules\\People\\Integration\\NativeGuestsAdapter","target":"stays","owner":"Modules\\People","ticket":null},
+		{"path":"lib/Modules/People/PeopleRegistration.php","fqcn":"OCA\\Mcp\\Modules\\People\\PeopleRegistration","target":"stays","owner":"Modules\\People","ticket":null},
 		{"path":"lib/Access/Policy/Credentials/ConsentCommands.php","fqcn":"OCA\\Mcp\\Access\\Policy\\Credentials\\ConsentCommands","target":"stays","owner":"Access","ticket":null},
 		{"path":"lib/Access/Policy/Credentials/ConsentCommandsContract.php","fqcn":"OCA\\Mcp\\Access\\Policy\\Credentials\\ConsentCommandsContract","target":"stays","owner":"Access","ticket":null},
 		{"path":"lib/Access/Policy/Credentials/CredentialCommands.php","fqcn":"OCA\\Mcp\\Access\\Policy\\Credentials\\CredentialCommands","target":"stays","owner":"Access","ticket":null},

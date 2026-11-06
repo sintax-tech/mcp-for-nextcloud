@@ -70,7 +70,7 @@ final class DiAcyclicTest extends TestCase {
 	public static function wrongFactory(): object { return new \stdClass(); }
 
 	public function testMissingPortsFailWithoutGenericInternalDoubles(): void {
-		foreach ([WriteVisibility::class, NativeCalendars::class, \OCA\Mcp\Mcp\Resources\NoteResource::class, \OCA\Mcp\Platform\Dav\CalDavObjects::class, \OCA\Mcp\Platform\Dav\CalDavWrite::class, \OCA\Mcp\Access\ResourceScope\ScopedCalendarLookup::class, \OCA\Mcp\Access\References\ReadableDeckCard::class, \OCA\Mcp\Access\References\ReadableCalendarEvent::class] as $port) {
+		foreach ([WriteVisibility::class, NativeCalendars::class, \OCA\Mcp\Access\Guests\NativeGuests::class, \OCA\Mcp\Mcp\Resources\NoteResource::class, \OCA\Mcp\Platform\Dav\CalDavObjects::class, \OCA\Mcp\Platform\Dav\CalDavWrite::class, \OCA\Mcp\Access\ResourceScope\ScopedCalendarLookup::class, \OCA\Mcp\Access\References\ReadableDeckCard::class, \OCA\Mcp\Access\References\ReadableCalendarEvent::class] as $port) {
 			$factories = Registrations::capture($this); unset($factories[$port]);
 			try { $this->resolver($factories)->get($port); self::fail('Missing port resolved'); }
 			catch (LogicException $error) { self::assertStringContainsString('Missing internal binding', $error->getMessage()); }

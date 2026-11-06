@@ -39,6 +39,7 @@ final class CalendarAlarmsTest extends CalendarTestCase {
 		self::assertSame('applied', $created['alarmReceipt']['status']);
 		self::assertCount($size, $created['alarmReceipt']['observed']);
 		self::assertFalse($created['alarmReceipt']['notificationDeliveryVerified']);
+		self::assertArrayNotHasKey('overridesMessage', $created['alarmReceipt']);
 		foreach ($created['alarmReceipt']['observed'] as $row) {
 			self::assertSame([-900, 'Meeting'], [$row['offsetSeconds'], $row['description']]);
 		}
@@ -66,6 +67,23 @@ final class CalendarAlarmsTest extends CalendarTestCase {
 		self::assertSame(EventAlarms::fingerprints($before, false), EventAlarms::fingerprints($this->stored(), false));
 		$plan = $this->module->preview('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'mixed', 'summary' => 'Again'], 'alice');
 		self::assertArrayNotHasKey('alarmChange', $plan);
+	}
+
+	/** @return void opt-in reminders use the same legacy result mapping even with an override first */
+	public function testUpdateMappingMatchesLegacyWhenMasterIsNotFirst(): void {
+		$override = self::ics("UID:series\nSUMMARY:Occurrence\nRECURRENCE-ID:20261202T120000Z\nDTSTART:20261202T140000Z\nDTEND:20261202T150000Z",
+			"BEGIN:VEVENT\nUID:series\nSUMMARY:Master\nDTSTART:20261201T120000Z\nDTEND:20261201T130000Z\nRRULE:FREQ=DAILY\nEND:VEVENT");
+		$results = [];
+		foreach ([[], ['alarms' => []]] as $extra) {
+			$this->store->addObject(1, 'series.ics', $override);
+			$result = self::json($this->call('calendar_update_event', [
+				'calendar' => self::PERSONAL, 'uid' => 'series', 'summary' => 'Master changed',
+			] + $extra));
+			self::assertSame('Occurrence', $result['summary']);
+			unset($result['etag'], $result['alarmReceipt']);
+			$results[] = $result;
+		}
+		self::assertSame($results[0], $results[1]);
 	}
 
 	/** @return iterable<string, array{string, string}> required presentation languages */
@@ -105,10 +123,10 @@ final class CalendarAlarmsTest extends CalendarTestCase {
 		$plan = $this->module->preview('calendar_update_event', $args, 'alice');
 		self::assertCount(3, $plan['alarmChange']['before']);
 		self::assertCount(6, $plan['alarmChange']['preserved']);
-		self::assertSame(1, $plan['alarmChange']['overridesUnchanged']);
-		$text = $this->module->renderPlan('calendar_update_event', $plan);
+		self::assertSame(1, $plan['alarmChange']['overrideCount']);
+		$text = \OCA\Mcp\Mcp\Confirmation\PlanRenderer::render($this->module, 'calendar_update_event', $plan);
 		self::assertStringContainsString('+1 more reminders', $text);
-		self::assertStringContainsString('do not receive these reminders', $text);
+		self::assertStringContainsString('does not receive these reminders', $text);
 		self::assertStringContainsString('2026-12-01', $text);
 		$this->assertNoWrites();
 		$result = self::json($this->registry->call('calendar_update_event', $args + ['confirm' => true], 'alice'));
@@ -120,7 +138,7 @@ final class CalendarAlarmsTest extends CalendarTestCase {
 		$shared['calendar'] = self::TEAM;
 		$shared['alarms'] = [['minutesBefore' => 0]];
 		$plan = $this->module->preview('calendar_create_event', $shared, 'alice');
-		self::assertStringContainsString('shared event', $this->module->renderPlan('calendar_create_event', $plan));
+		self::assertStringContainsString('shared event', \OCA\Mcp\Mcp\Confirmation\PlanRenderer::render($this->module, 'calendar_create_event', $plan));
 		$refused = $this->registry->call('calendar_create_event', $shared + ['confirm' => true], 'alice');
 		self::assertTrue($refused['isError']);
 		self::assertCount(1, $this->dav->calls, 'shared refusal dispatches nothing');

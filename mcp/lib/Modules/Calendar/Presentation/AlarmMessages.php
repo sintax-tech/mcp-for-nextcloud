@@ -19,9 +19,15 @@ final class AlarmMessages {
 	/**
 	 * @param string $status applied, partial or uncertain
 	 * @param string $uid known event UID
+	 * @param bool $creating whether this request creates the event
 	 * @return string honest observation, with no delivery claim
 	 */
-	public static function receipt(string $status, string $uid): string {
+	public static function receipt(string $status, string $uid, bool $creating): string {
+		if (!$creating && $status !== 'applied') {
+			return $status === 'partial'
+				? Translator::t('Event %s exists, but its reminders differ from the requested change. Do not repeat the change; check List events.', [$uid])
+				: Translator::t('The change to event %s could not be verified. Do not repeat the change; check List events.', [$uid]);
+		}
 		return match ($status) {
 			'applied' => Translator::t('Reminders were observed on the server. Notification delivery was not verified.'),
 			'partial' => Translator::t('Event %s exists, but its reminders differ from the requested change. Do not repeat the creation; check List events.', [$uid]),
@@ -34,6 +40,6 @@ final class AlarmMessages {
 	 * @return string consequence of changing only master reminders
 	 */
 	public static function overrides(int $count): string {
-		return Translator::t('%s individually changed occurrences keep their own reminders and do not receive these reminders.', [$count]);
+		return Translator::n('%n individually changed occurrence keeps its own reminders and does not receive these reminders.', '%n individually changed occurrences keep their own reminders and do not receive these reminders.', $count);
 	}
 }

@@ -35,17 +35,17 @@ final class AlarmReceipt {
 		} catch (CalendarException $e) {
 			// The official dispatcher translates definite DAV refusals into domain failures.
 			if ($e->getCode() >= 500) {
-				return self::uncertain($uid);
+				return self::uncertain($uid, $before === null);
 			}
 			throw $e;
 		} catch (Throwable) {
-			return self::uncertain($uid);
+			return self::uncertain($uid, $before === null);
 		}
 		try {
 			$row = $read();
 			$written = $row === null ? null : $events->parse($row['data']);
 			if ($written === null || (new StoredEvent(0, '', '', $written))->master() === null) {
-				return self::uncertain($uid);
+				return self::uncertain($uid, $before === null);
 			}
 			$preserved = EventAlarms::fingerprints($before, false) === EventAlarms::fingerprints($written, false);
 			$overrides = EventAlarms::overrides($before) === EventAlarms::overrides($written);
@@ -58,28 +58,28 @@ final class AlarmReceipt {
 					'requested' => EventAlarms::inspect($proposed)['managed'],
 					'observed' => EventAlarms::inspect($written)['managed'],
 					'preservedVerified' => $preserved, 'overridesUnchanged' => $overrides,
-					'overridesMessage' => AlarmMessages::overrides(count(EventAlarms::overrides($before))),
 					'notificationDeliveryVerified' => false,
-					'message' => AlarmMessages::receipt($status, $uid),
-				],
+					'message' => AlarmMessages::receipt($status, $uid, $before === null),
+				] + (($count = count(EventAlarms::overrides($before))) > 0 ? ['overridesMessage' => AlarmMessages::overrides($count)] : []),
 			]);
 		} catch (Throwable) {
-			return self::uncertain($uid);
+			return self::uncertain($uid, $before === null);
 		}
 	}
 
 	/**
 	 * @param string $uid generated or updated event identity
+	 * @param bool $creating whether this request creates an event
 	 * @return array<string, mixed> no observed snapshot and no instruction to retry
 	 */
-	private static function uncertain(string $uid): array {
+	private static function uncertain(string $uid, bool $creating): array {
 		return SchemaBuilder::result([
 			'uid' => $uid,
 			'alarmReceipt' => [
 				'scope' => 'master', 'status' => 'uncertain',
 				'preservedVerified' => null, 'overridesUnchanged' => null,
 				'notificationDeliveryVerified' => false,
-				'message' => AlarmMessages::receipt('uncertain', $uid),
+				'message' => AlarmMessages::receipt('uncertain', $uid, $creating),
 			],
 		]) + ['isError' => true];
 	}

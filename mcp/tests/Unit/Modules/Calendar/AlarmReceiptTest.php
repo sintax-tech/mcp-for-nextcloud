@@ -29,6 +29,8 @@ final class AlarmReceiptTest extends CalendarTestCase {
 		yield 'unreadable readback' => ['invalid', 'uncertain'];
 		yield 'readback throws' => ['throws', 'uncertain'];
 		yield 'write times out' => ['timeout', 'uncertain'];
+		yield 'override guest changed' => ['guest', 'applied'];
+		yield 'override reminder changed' => ['override', 'partial'];
 		yield 'server error' => ['server', 'uncertain'];
 	}
 
@@ -43,6 +45,9 @@ final class AlarmReceiptTest extends CalendarTestCase {
 		$proposed = new VCalendar();
 		$event = $proposed->add('VEVENT', ['UID' => 'known-uid', 'SUMMARY' => 'x']);
 		$event->add('VALARM', ['ACTION' => 'AUDIO', 'TRIGGER' => '-PT1M']);
+		$override = $proposed->add('VEVENT', ['UID' => 'known-uid', 'RECURRENCE-ID' => '20261202T120000Z']);
+		$override->add('ATTENDEE', 'mailto:guest@example.invalid');
+		$override->add('VALARM', ['ACTION' => 'DISPLAY', 'TRIGGER' => '-PT2M', 'DESCRIPTION' => 'Own reminder']);
 		$before = clone $proposed;
 		EventAlarms::apply($event, ['alarms' => [['minutesBefore' => 60]]]);
 		$written = clone $proposed;
@@ -52,6 +57,11 @@ final class AlarmReceiptTest extends CalendarTestCase {
 			$written->VEVENT->select('VALARM')[1]->DESCRIPTION = 'Server changed text';
 		} elseif ($mode === 'preserved') {
 			$written->VEVENT->select('VALARM')[0]->TRIGGER = '-PT2M';
+		}
+		if ($mode === 'guest') {
+			$written->select('VEVENT')[1]->ATTENDEE['SCHEDULE-STATUS'] = '1.2';
+		} elseif ($mode === 'override') {
+			$written->select('VEVENT')[1]->VALARM->DESCRIPTION = 'Changed override reminder';
 		}
 		$writes = 0;
 		$result = AlarmReceipt::dispatch($proposed, $before, new EventRepository(new FakeCalendarStore(), new Classification()),
@@ -79,7 +89,7 @@ final class AlarmReceiptTest extends CalendarTestCase {
 		self::assertSame($status === 'uncertain', $result['isError'] ?? false);
 		self::assertFalse($data['alarmReceipt']['notificationDeliveryVerified']);
 		if ($status === 'uncertain') {
-			self::assertStringContainsString('Do not repeat the creation', $data['alarmReceipt']['message']);
+			self::assertStringContainsString('Do not repeat the change', $data['alarmReceipt']['message']);
 			self::assertArrayNotHasKey('observed', $data['alarmReceipt']);
 		} else {
 			self::assertSame('fresh', $data['etag']);

@@ -118,13 +118,13 @@ final class EventAlarms {
 
 	/**
 	 * @param VCalendar|null $calendar full object
-	 * @return list<string> canonical override components, including every property
+	 * @return list<string> recurrence identities and their canonical reminders only
 	 */
 	public static function overrides(?VCalendar $calendar): array {
 		$out = [];
 		foreach ($calendar?->select('VEVENT') ?? [] as $event) {
 			if (isset($event->{'RECURRENCE-ID'})) {
-				$out[] = json_encode($event->jsonSerialize(), JSON_THROW_ON_ERROR);
+				$out[] = json_encode([$event->{'RECURRENCE-ID'}->jsonSerialize(), self::eventFingerprints($event, null)], JSON_THROW_ON_ERROR);
 			}
 		}
 		sort($out);
@@ -137,12 +137,21 @@ final class EventAlarms {
 	 * @return list<string> canonical reminder properties, with multiplicity
 	 */
 	public static function fingerprints(?VCalendar $calendar, bool $managed): array {
-		$out = [];
 		$master = $calendar === null ? null : (new StoredEvent(0, '', '', $calendar))->master();
-		foreach ($master?->select('VALARM') ?? [] as $alarm) {
-			if (self::replaceable($alarm) === $managed) {
+		return self::eventFingerprints($master, $managed);
+	}
+
+	/**
+	 * @param VEvent|null $event master or individually changed occurrence
+	 * @param bool|null $managed partition, or null for all reminders
+	 * @return list<string> sorted property fingerprints preserving multiplicity
+	 */
+	private static function eventFingerprints(?VEvent $event, ?bool $managed): array {
+		$out = [];
+		foreach ($event?->select('VALARM') ?? [] as $alarm) {
+			if ($managed === null || self::replaceable($alarm) === $managed) {
 				$value = clone $alarm;
-				if ($managed) {
+				if (self::replaceable($alarm)) {
 					unset($value->TRIGGER);
 					$value->add('TRIGGER', (string)self::offset($alarm), ['RELATED' => 'START']);
 				}

@@ -31,7 +31,7 @@ final class AlarmPlan {
 		return ['alarmChange' => [
 			'scope' => 'master', 'operation' => 'replace-display-start',
 			'before' => $before['managed'], 'after' => $after['managed'], 'preserved' => $before['preserved'],
-			'overridesUnchanged' => count(EventAlarms::overrides($prepared->before?->vcalendar)),
+			'overrideCount' => count(EventAlarms::overrides($prepared->before?->vcalendar)),
 		]];
 	}
 
@@ -50,18 +50,30 @@ final class AlarmPlan {
 				self::listing($change['before'], $zone), self::listing($change['after'], $zone),
 			]),
 			Translator::t('- Reminders kept: %s', [self::listing($change['preserved'], $zone)]),
-			Translator::t('- Reminders are stored on the event; notification delivery is not verified.'),
 		];
-		if ($change['overridesUnchanged'] > 0) {
-			$lines[] = '- ' . AlarmMessages::overrides($change['overridesUnchanged']);
-		}
 		if (($plan['after']['allDay'] ?? false) === true) {
 			$lines[] = Translator::t('- All-day reminders are relative to the start of the day in the calendar client.');
 		}
-		if (($plan['shared'] ?? []) !== []) {
-			$lines[] = Translator::t('- Reminders are stored in the shared event and appear or notify for people using this calendar.');
-		}
 		return $lines;
+	}
+
+	/**
+	 * @param array<string, mixed> $plan fully assembled plan, including scheduling warnings and sharing
+	 * @return array<string, mixed> reminder consequences survive custom-renderer fallback
+	 */
+	public static function withWarnings(array $plan): array {
+		if (!isset($plan['alarmChange'])) {
+			return $plan;
+		}
+		$plan['warnings'][] = ['type' => 'reminder_delivery', 'message' => Translator::t('Reminders are stored on the event; notification delivery is not verified.')];
+		$count = $plan['alarmChange']['overrideCount'];
+		if ($count > 0) {
+			$plan['warnings'][] = ['type' => 'reminder_overrides', 'message' => AlarmMessages::overrides($count)];
+		}
+		if (($plan['shared'] ?? []) !== []) {
+			$plan['warnings'][] = ['type' => 'reminder_shared', 'message' => Translator::t('Reminders are stored in the shared event and appear or notify for people using this calendar.')];
+		}
+		return $plan;
 	}
 
 	/**

@@ -10,8 +10,8 @@ use OCA\Mcp\Db\OAuthClientsMapper;
 use OCA\Mcp\OAuth\Clients\ClientResolver;
 use OCA\Mcp\OAuth\Clients\NativeClient;
 use OCP\IConfig;
-use OCP\Server;
 use OCP\IDBConnection;
+use OCP\Server;
 use PHPUnit\Framework\Assert;
 
 /** Checks the existing upgrade contract without adding a test identity. */

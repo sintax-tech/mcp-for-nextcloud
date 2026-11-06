@@ -11,7 +11,6 @@ use OCA\Mcp\OAuth\Tokens\AccessTokenAuthenticator;
 use OCA\Mcp\Platform\Backups\BackupLocation;
 use OCP\IAppConfig;
 use OCP\Server;
-
 use PHPUnit\Framework\Assert;
 
 /** Checks the existing upgrade contract without adding a test identity. */

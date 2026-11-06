@@ -23,7 +23,6 @@ final class ReleaseUpgradeProbe {
 	public const BACKUP = 'MCP backups/rc-upgrade-original.bak';
 	public const RESOURCE = 'http://localhost/index.php/apps/mcp/';
 
-
 	/**
 	 * @param string $kind credentials or policy, the existing harness checkpoint.
 	 * @param string $output Harness-owned snapshot inside the disposable container.

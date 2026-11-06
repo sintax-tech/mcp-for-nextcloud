@@ -24,6 +24,7 @@ final class LegacyPolicyName {
 		return implode('\\', version_compare($version, '1.3.0-rc.1', '>=')
 			? ['OCA', 'Mcp', 'Access', 'Grants', 'GrantPolicy'] : ['OCA', 'Mcp', 'Service', 'GrantPolicy']);
 	}
+
 	/** @param string $version Installed baseline version. @return class-string Its public policy command service. */
 	public static function writer(string $version): string {
 		return implode('\\', version_compare($version, '1.3.0-rc.1', '>=')

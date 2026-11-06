@@ -128,4 +128,22 @@ abstract class SchemaToolTestCase extends TestCase {
 		$this->assertSame('unverified', json_decode($result['content'][0]['text'], true)['status']);
 	}
 
+	/** @return void Public status follows canonical per-field comparison, regardless of native key order. */
+	public function testCanonicalReceiptStatus(): void {
+		$gateway = $this->createMock(SchemaGateway::class);
+		$expected = ['title' => 'New', 'description' => 'D', 'emoji' => 'X', 'numberDefault' => 5];
+		$gateway->method('prepare')->willReturnCallback(static fn ($action, $args): array => ['arguments' => $args, 'version' => '2.3.2', 'profile' => '2.3.2', 'shared' => false, 'before' => [], 'after' => $expected, 'noop' => false]);
+		$gateway->method('observe')->willReturn(['emoji' => 'X', 'description' => 'D', 'numberDefault' => 5.0, 'title' => 'New']);
+		$config = (new InMemoryConfig())->mock($this);
+		$caps = $this->createMock(TablesWriteCapabilities::class);
+		$caps->method('supports')->willReturn(true);
+		$caps->method('profile')->willReturn('2.3.2');
+		$flow = new SchemaFlow($gateway, new PlanState($config), $this->grants, $this->session, $caps);
+		$plan = $flow->preview(static::ACTION, $this->arguments(), 'alice');
+		$result = $flow->handle(static::ACTION, $this->arguments() + ['confirm' => true, 'plan_state' => $plan['plan_state']], 'alice');
+		$receipt = json_decode($result['content'][0]['text'], true);
+		$this->assertSame('observed', $receipt['status']);
+		$this->assertSame([], $receipt['differentFields']);
+	}
+
 }

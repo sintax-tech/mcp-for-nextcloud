@@ -47,7 +47,7 @@ class SchemaObservation {
 				$orders = array_column($expected, 'order');
 				$expected[] = ['columnId' => $id, 'order' => $orders === [] ? 0 : max($orders) + 1, 'readonly' => false, 'mandatory' => false];
 				$observed['viewsVerified'] = $observed['viewsVerified'] && in_array($id, $view->getColumnIds(), true)
-					&& ($observed['views'][$viewId]['columnSettings'] ?? null) === $expected;
+					&& \OCA\Mcp\Modules\Tables\Writing\SchemaReceiptComparison::same($expected, $observed['views'][$viewId]['columnSettings'] ?? null);
 			}
 		}
 		return $observed;

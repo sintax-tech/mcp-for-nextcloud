@@ -59,13 +59,8 @@ class SchemaFlow {
 		} catch (\Throwable) {
 			return ToolResult::json(['status' => 'unverified', 'message' => SchemaMessages::uncertain()]);
 		}
-		$expected = $p['after']; $actual = array_intersect_key($observed, $expected);
-		$matches = $expected === [] ? $observed === [] : $actual === $expected;
-		$matches = $matches && ($observed['viewsVerified'] ?? true);
-		$different = [];
-		foreach ($expected as $field => $value) if (!array_key_exists($field, $observed) || $observed[$field] !== $value) $different[] = $field;
-		if ($expected === [] && $observed !== []) $different[] = 'share';
-		if (($observed['viewsVerified'] ?? true) === false) $different[] = 'views';
+		$different = SchemaReceiptComparison::differences($p['after'], $observed);
+		$matches = $different === [];
 		return ToolResult::json(['status' => $matches ? 'observed' : 'different', 'differentFields' => $different, 'attemptFailed' => $failed, 'noop' => $p['noop'], 'observed' => $observed, 'notice' => \OCA\Mcp\Modules\Tables\Presentation\TablesMessages::UNTRUSTED_NOTICE]);
 	}
 	/**

@@ -30,7 +30,7 @@ class SchemaSharePolicy {
 		if ($this->shares->sharingDisabledForUser($uid)) throw new ToolFailure(CommonMessages::forbidden());
 		$id = $recipient['id'];
 		if ($recipient['type'] === 'user' ? !$this->users->userExists($id) : !$this->groups->groupExists($id)) throw new ToolFailure(CommonMessages::notFound());
-		if ($recipient['type'] === 'group' && !$this->shares->allowGroupSharing()) throw new ToolFailure(CommonMessages::forbidden());
+		if ($recipient['type'] === 'group' && !$this->shares->allowGroupSharing()) throw new ToolFailure(CommonMessages::notFound());
 		if ($this->shares->shareWithGroupMembersOnly()) {
 			$caller = $this->users->get($uid);
 			if ($caller === null) throw new ToolFailure(CommonMessages::forbidden());
@@ -41,7 +41,7 @@ class SchemaSharePolicy {
 				$user = $this->users->get($id);
 				$allowed = $user !== null && array_intersect($groups, $this->groups->getUserGroupIds($user)) !== [];
 			}
-			if (!$allowed) throw new ToolFailure(CommonMessages::forbidden());
+			if (!$allowed) throw new ToolFailure(CommonMessages::notFound());
 		}
 	}
 }

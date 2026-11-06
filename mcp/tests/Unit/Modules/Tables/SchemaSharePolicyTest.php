@@ -39,7 +39,7 @@ final class SchemaSharePolicyTest extends TestCase {
 				$this->assertContains($case, ['same-group', 'excluded']);
 			} catch (ToolFailure $error) {
 				$this->assertNotContains($case, ['same-group', 'excluded']);
-				$this->assertContains($error->getMessage(), [CommonMessages::forbidden(), CommonMessages::notFound()]);
+				$this->assertSame($case === 'disabled' ? CommonMessages::forbidden() : CommonMessages::notFound(), $error->getMessage());
 			}
 		}
 	}

@@ -87,7 +87,7 @@ final class FilesModuleTest extends TestCase {
 		$plans = new ContentWritePlan($shared, $access);
 		$versionContainer = $this->createMock(\Psr\Container\ContainerInterface::class);
 		$versionBackup = new FileBackup($apps, $users, $time, $appConfig);
-		$versions = new VersionTools($apps, $users, $extractor, $versionBackup, $access, $versionContainer, new OcrSupport($apps),
+		$versions = new VersionTools($apps, $users, $versionBackup, $access, $versionContainer,
 			versionRestore: new VersionRestore($apps, $users, $gate, $access, $versionContainer));
 		$report = new MoveReport($this->createMock(\Psr\Container\ContainerInterface::class), $this->tree->shareManager(), $apps);
 		$reorganization = new Reorganization($access, new SharedWriteGuard($access), $report, $users);

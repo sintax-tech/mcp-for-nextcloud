@@ -152,7 +152,7 @@ final class FileContentTypePolicyTest extends TestCase {
 		$container = $this->createMock(ContainerInterface::class);
 		$container->method('get')->willReturnCallback(fn (string $id): ?object => $id === self::MANAGER ? $this->manager : null);
 		$versionRestore = new VersionRestore($apps, $users, $this->gate, $access, $container, $lockService, null);
-		$versions = new VersionTools($apps, $users, $extractor, $backup, $access, $container, new OcrSupport($apps), $lockService, null, $versionRestore);
+		$versions = new VersionTools($apps, $users, $backup, $access, $container, $lockService, null, $versionRestore);
 		$report = new MoveReport($this->createMock(ContainerInterface::class), $this->tree->shareManager(), $apps);
 		$reorganization = new Reorganization($access, new SharedWriteGuard($access), $report, $users);
 		$imageTools = FilesImageWiring::build(

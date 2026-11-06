@@ -187,7 +187,7 @@ abstract class FilesToolsTestCase extends TestCase {
 			$access,
 			$guard,
 			$checkout,
-			new VersionTools($this->apps, $this->users, $extractor, $backup, $access, $versionContainer, new OcrSupport($this->apps), $locks, null, $versionRestore),
+			new VersionTools($this->apps, $this->users, $backup, $access, $versionContainer, $locks, null, $versionRestore),
 			new Reorganization($access, new SharedWriteGuard($access), $this->report(), $this->users, $this->visibilityGuard, $locks, \OCA\Mcp\Tests\Unit\Tools\Files\CopyMovePolicyFixture::guard($this)),
 			new MovePlanner(new Reorganization($access, new SharedWriteGuard($access), $this->report(), $this->users, $this->visibilityGuard, $locks, \OCA\Mcp\Tests\Unit\Tools\Files\CopyMovePolicyFixture::guard($this)), $access, new SharedWriteGuard($access), $this->visibilityGuard),
 			$this->batchStore ?? $this->batches,

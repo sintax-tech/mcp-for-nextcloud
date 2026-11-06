@@ -38,7 +38,7 @@ final class SnapshotProbe {
 	}
 
 	/**
-	 * @param array<string, list<string>> $catalog GrantPolicy::CATALOG of the release that writes the snapshot
+	 * @param array<string, list<string>> $catalog catalog of the release that writes the snapshot (historically GrantPolicy::CATALOG)
 	 * @return array<string, array<string, string|null>> by uid, the value of each key of the plan; null = absent
 	 */
 	public static function plan(array $catalog): array {

@@ -34,7 +34,7 @@ class GrantMatrix {
 	/** Matrix filters: '' every user, 'eligible' the eligible ones, 'connected' the eligible ones who also connected. */
 	public const FILTERS = ['' => null, 'eligible' => GrantPolicy::ELIGIBLE_KEY, 'connected' => GrantPolicy::CONNECTED_KEY];
 	/**
-	 * Nextcloud app that provides each module of GrantPolicy::CATALOG; '' for a module of the core. The logs column
+	 * Nextcloud app that provides each module of GrantCatalog::CATALOG; '' for a module of the core. The logs column
 	 * follows {@see LogsAccess} instead: offered while the log is a file, and open only to the users of its role.
 	 */
 	public const MODULE_APPS = ['files' => 'files', 'notes' => 'notes', 'deck' => 'deck', 'calendar' => 'calendar', 'talk' => 'spreed', 'contacts' => 'contacts', 'tasks' => 'dav', 'people' => '', 'logs' => '', 'mail' => 'mail', 'tables' => 'tables', 'forms' => 'forms', 'polls' => 'polls'];
@@ -72,7 +72,7 @@ class GrantMatrix {
 		$hasMore = count($users) > self::PAGE_SIZE;
 		$users = array_slice($users, 0, self::PAGE_SIZE);
 		$appsEnabled = $this->appsEnabled();
-		$catalog = array_filter(GrantPolicy::CATALOG, static fn (string $module) => $appsEnabled[$module], ARRAY_FILTER_USE_KEY);
+		$catalog = array_filter(GrantCatalog::CATALOG, static fn (string $module) => $appsEnabled[$module], ARRAY_FILTER_USE_KEY);
 		return [
 			'users' => $this->rows($users),
 			'page' => $page,

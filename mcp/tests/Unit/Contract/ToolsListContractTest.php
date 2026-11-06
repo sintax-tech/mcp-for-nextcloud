@@ -89,7 +89,7 @@ final class ToolsListContractTest extends TestCase {
 	private function handle(string $request, string $version, string $headers = '{}', bool $optionalAppsEnabled = true, ?callable $grants = null): string {
 		$config = new InMemoryConfig();
 		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($config->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
-		foreach (GrantPolicy::CATALOG as $module => $operations) {
+		foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG as $module => $operations) {
 			foreach ($operations as $operation) {
 				$policy->setGrant('alice', $module, $operation, $grants === null || $grants($module, $operation));
 			}

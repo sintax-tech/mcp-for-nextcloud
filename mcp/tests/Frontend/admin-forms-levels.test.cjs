@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Tests of the Forms column of the admin page: GrantPolicy::CATALOG offers Forms reading, results, creating and editing,
+ * Tests of the Forms column of the admin page: GrantCatalog::CATALOG offers Forms reading, results, creating and editing,
  * src/admin/admin-levels.js keeps response reading independent from the writing preset, and every place that
  * names a module names Forms.
  */
@@ -29,11 +29,11 @@ function levels() {
 	return context.McpAdminLevels
 }
 
-/** @return {string[]} GrantPolicy::CATALOG['forms'], read from the PHP source */
+/** @return {string[]} GrantCatalog::CATALOG['forms'], read from the PHP source */
 function formsOperations() {
 	const policy = fs.readFileSync(path.join(root, 'lib/Access/Grants/GrantCatalog.php'), 'utf8')
 	const line = policy.match(/'forms' => \[([^\]]*)\]/)
-	assert.ok(line, 'the Forms entry of GrantPolicy::CATALOG')
+	assert.ok(line, 'the Forms entry of GrantCatalog::CATALOG')
 	return [...line[1].matchAll(/'(\w+)'/g)].map((match) => match[1])
 }
 

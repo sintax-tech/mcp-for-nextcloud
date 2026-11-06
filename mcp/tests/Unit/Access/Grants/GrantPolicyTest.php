@@ -67,7 +67,7 @@ final class GrantPolicyTest extends TestCase {
 	}
 
 	public function testReadStartsAllowedAndWriteStartsDenied(): void {
-		foreach (GrantPolicy::CATALOG as $module => $operations) {
+		foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG as $module => $operations) {
 			foreach ($operations as $operation) {
 				$expected = $operation === 'read' && $module !== 'logs';
 				$this->assertSame($expected, $this->policy->granted('alice', $module, $operation), "$module.$operation");
@@ -81,7 +81,7 @@ final class GrantPolicyTest extends TestCase {
 	 * gets it by omission, and an administrator who turns it on for one user turns it on for that user only.
 	 */
 	public function testLogsReadStartsDeniedAndIsGrantedPerUser(): void {
-		$this->assertSame(['read'], GrantPolicy::CATALOG['logs']);
+		$this->assertSame(['read'], \OCA\Mcp\Access\Grants\GrantCatalog::CATALOG['logs']);
 		$this->assertFalse($this->policy->granted('alice', 'logs', 'read'));
 		$this->policy->setGrant('alice', 'logs', 'read', true);
 		$this->assertTrue($this->policy->granted('alice', 'logs', 'read'));
@@ -93,9 +93,9 @@ final class GrantPolicyTest extends TestCase {
 	}
 
 	public function testCatalogMatchesContractAndUnknownOperationsAreRefused(): void {
-		$this->assertSame(['read', 'edit', 'create', 'move', 'restore', 'share', 'link', 'delete'], GrantPolicy::CATALOG['files']);
-		$this->assertSame(['read', 'create', 'edit', 'move', 'delete', 'transfer'], GrantPolicy::CATALOG['calendar']);
-		$this->assertSame(['read', 'reply', 'attach', 'quote', 'create'], GrantPolicy::CATALOG['talk']);
+		$this->assertSame(['read', 'edit', 'create', 'move', 'restore', 'share', 'link', 'delete'], \OCA\Mcp\Access\Grants\GrantCatalog::CATALOG['files']);
+		$this->assertSame(['read', 'create', 'edit', 'move', 'delete', 'transfer'], \OCA\Mcp\Access\Grants\GrantCatalog::CATALOG['calendar']);
+		$this->assertSame(['read', 'reply', 'attach', 'quote', 'create'], \OCA\Mcp\Access\Grants\GrantCatalog::CATALOG['talk']);
 		$this->expectException(InvalidArgumentException::class);
 		$this->policy->setGrant('alice', 'files', 'destroy', true);
 	}
@@ -128,7 +128,7 @@ final class GrantPolicyTest extends TestCase {
 		$this->policy->canConnect('alice');
 		$this->policy->setEligible('alice', true);
 		$this->policy->setConnected('alice', true);
-		foreach (GrantPolicy::CATALOG as $module => $operations) {
+		foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG as $module => $operations) {
 			foreach ($operations as $operation) {
 				$this->policy->granted('alice', $module, $operation);
 				$this->policy->setGrant('alice', $module, $operation, true);
@@ -149,7 +149,7 @@ final class GrantPolicyTest extends TestCase {
 		$this->policy->setGrant('bob', 'notes', 'delete', true);
 		$this->store->batchCalls = 0; // Measure the read, separately from transactional setters.
 		$state = $this->policy->forUsers(['alice', 'bob', 'carol', 'alice']);
-		$keys = 2 + array_sum(array_map('count', GrantPolicy::CATALOG));
+		$keys = 2 + array_sum(array_map('count', \OCA\Mcp\Access\Grants\GrantCatalog::CATALOG));
 		$this->assertSame($keys, $this->store->batchCalls);
 		$this->assertSame(['alice', 'bob', 'carol'], array_keys($state));
 		$this->assertTrue($state['alice']['eligible']);
@@ -157,7 +157,7 @@ final class GrantPolicyTest extends TestCase {
 		$this->assertTrue($state['bob']['grants']['notes']['delete']);
 		$this->assertSame(['read' => true, 'edit' => false, 'create' => false, 'move' => false, 'restore' => false, 'share' => false, 'link' => false, 'delete' => false], $state['carol']['grants']['files']);
 		foreach (['alice', 'bob', 'carol'] as $uid) {
-			foreach (GrantPolicy::CATALOG as $module => $operations) {
+			foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG as $module => $operations) {
 				foreach ($operations as $operation) {
 					$this->assertSame($this->policy->granted($uid, $module, $operation), $state[$uid]['grants'][$module][$operation]);
 				}

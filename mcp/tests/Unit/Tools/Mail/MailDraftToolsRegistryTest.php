@@ -34,7 +34,7 @@ final class MailDraftToolsRegistryTest extends TestCase {
 	 * @return void
 	 */
 	public function testTheDraftGrantStartsDenied(): void {
-		$this->assertContains('draft', GrantPolicy::CATALOG['mail']);
+		$this->assertContains('draft', \OCA\Mcp\Access\Grants\GrantCatalog::CATALOG['mail']);
 		$this->assertFalse(GrantPolicy::defaultGranted('mail', 'draft'));
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
 		foreach (['read', 'messages', 'attachments', 'flags', 'move'] as $operation) {

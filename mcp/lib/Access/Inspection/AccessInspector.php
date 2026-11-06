@@ -63,7 +63,7 @@ class AccessInspector {
 	public function effective(string $uid): array {
 		return $this->within($uid, static function (PolicyOperationContext $context): array {
 			$operations = [];
-			foreach (GrantPolicy::CATALOG as $module => $names) {
+			foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG as $module => $names) {
 				foreach ($names as $operation) {
 					$result = $context->resolveEffective($module, $operation);
 					$operations[] = [

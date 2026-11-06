@@ -17,8 +17,7 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Runs the {@see ModuleRegistration} of every {@see CatalogModule} of Application::MODULES, in that order, and
- * registers the {@see CapabilityRegistry} with their probes. A legacy module has no registration and is skipped; its
- * services stay where Application registers them until its own ticket migrates it.
+ * registers the {@see CapabilityRegistry} with their probes. Catalogs without a registration contribute no bindings.
  */
 final class ModuleRegistrations {
 	/** Static helper only; never instantiated. */
@@ -28,7 +27,7 @@ final class ModuleRegistrations {
 	/**
 	 * @param IRegistrationContext $context registration context of the app
 	 * @param list<class-string> $modules Application::MODULES
-	 * @throws LogicException when a module names a class that is not a ModuleRegistration
+	 * @throws LogicException when a module is not a CatalogModule or names a class that is not a ModuleRegistration
 	 */
 	public static function register(IRegistrationContext $context, array $modules): void {
 		$probes = [];
@@ -47,12 +46,15 @@ final class ModuleRegistrations {
 	 *
 	 * @param list<class-string> $modules module classes, in order
 	 * @return list<ModuleRegistration> registrations, in module order
-	 * @throws LogicException when a module names a class that is not a ModuleRegistration
+	 * @throws LogicException when a module is not a CatalogModule or names a class that is not a ModuleRegistration
 	 */
 	public static function of(array $modules): array {
 		$registrations = [];
 		foreach ($modules as $module) {
-			$class = is_subclass_of($module, CatalogModule::class) ? $module::registration() : null;
+			if (!is_subclass_of($module, CatalogModule::class)) {
+				throw new LogicException("$module does not extend " . CatalogModule::class);
+			}
+			$class = $module::registration();
 			if ($class === null) {
 				continue;
 			}

@@ -34,7 +34,7 @@ final class MailSendToolsRegistryTest extends TestCase {
 	 * @return void
 	 */
 	public function testTheSendGrantStartsDenied(): void {
-		$this->assertContains('send', GrantPolicy::CATALOG['mail']);
+		$this->assertContains('send', \OCA\Mcp\Access\Grants\GrantCatalog::CATALOG['mail']);
 		$this->assertFalse(GrantPolicy::defaultGranted('mail', 'send'));
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
 		foreach (['read', 'messages', 'attachments', 'flags', 'move', 'draft'] as $operation) {

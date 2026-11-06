@@ -22,7 +22,7 @@ use Psr\Log\LoggerInterface;
 final class TasksOptionalAppTest extends TestCase {
 	public function testTheToolsRemainAvailableWhenDavIsEnabledAndTheTasksUiAppIsAbsent(): void {
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
-		foreach (GrantPolicy::CATALOG['tasks'] as $operation) { $policy->setGrant('alice', 'tasks', $operation, true); }
+		foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG['tasks'] as $operation) { $policy->setGrant('alice', 'tasks', $operation, true); }
 		$apps = $this->createMock(IAppManager::class);
 		$apps->method('isEnabledForUser')->willReturnCallback(static fn (string $app): bool => $app === 'dav');
 		$users = $this->createMock(IUserManager::class);
@@ -32,7 +32,7 @@ final class TasksOptionalAppTest extends TestCase {
 	}
 	public function testExplicitNullStatusIsRejectedByTheRegistryBeforeDispatch(): void {
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
-		foreach (GrantPolicy::CATALOG['tasks'] as $operation) { $policy->setGrant('alice', 'tasks', $operation, true); }
+		foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG['tasks'] as $operation) { $policy->setGrant('alice', 'tasks', $operation, true); }
 		$apps = $this->createMock(IAppManager::class); $apps->method('isEnabledForUser')->willReturn(true);
 		$users = $this->createMock(IUserManager::class); $users->method('get')->willReturn($this->createMock(IUser::class));
 		$registry = new ToolRegistry([(new ModuleBuilder($this))->build(TasksModule::class)], $policy, $apps, $users, $this->createMock(LoggerInterface::class));

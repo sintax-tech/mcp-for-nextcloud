@@ -72,7 +72,7 @@ final class GoldenContractTest extends TestCase {
 
 	/** @return void the grant catalog, its order and the reads that start denied */
 	public function testGrantCatalogIsUnchanged(): void {
-		$this->assertGolden('grant-catalog', ['CATALOG' => GrantPolicy::CATALOG, 'DENIED_READS' => GrantPolicy::DENIED_READS]);
+		$this->assertGolden('grant-catalog', ['CATALOG' => \OCA\Mcp\Access\Grants\GrantCatalog::CATALOG, 'DENIED_READS' => GrantPolicy::DENIED_READS]);
 	}
 
 	/** @return void every route of appinfo/routes.php with the controller method the router derives from its name */

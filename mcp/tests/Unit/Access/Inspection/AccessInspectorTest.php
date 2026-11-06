@@ -62,7 +62,7 @@ final class AccessInspectorTest extends TestCase {
 		$rows = $this->effective();
 
 		$expected = 0;
-		foreach (GrantPolicy::CATALOG as $operations) {
+		foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG as $operations) {
 			$expected += count($operations);
 		}
 		$this->assertCount($expected, $rows);

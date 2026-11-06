@@ -214,7 +214,7 @@ final class GroupGrantsMapperTest extends TestCase {
 	}
 
 	public function testEveryCurrentCatalogPairAndSystemEligibilityCanBeRead(): void {
-		$expected = GrantPolicy::CATALOG;
+		$expected = \OCA\Mcp\Access\Grants\GrantCatalog::CATALOG;
 		$expected['_system'] = ['eligible'];
 		foreach ($expected as $module => &$operations) {
 			foreach ($operations as $operation) {

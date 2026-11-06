@@ -102,7 +102,7 @@ final class ToolRegistryTest extends TestCase {
 	}
 
 	private function assertEveryWriteEnvelope(bool $dependencies): void {
-		foreach (GrantPolicy::CATALOG as $module => $operations) {
+		foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG as $module => $operations) {
 			foreach ($operations as $operation) { $this->policy->setGrant('alice', $module, $operation, true); }
 		}
 		$apps = $this->createMock(IAppManager::class);

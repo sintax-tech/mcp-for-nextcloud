@@ -200,7 +200,7 @@ final class PeopleModuleTest extends TestCase {
 
 	public function testReadGrantIsOnByDefaultAndCanBeDenied(): void {
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
-		self::assertSame(['read'], GrantPolicy::CATALOG['people']);
+		self::assertSame(['read'], \OCA\Mcp\Access\Grants\GrantCatalog::CATALOG['people']);
 		self::assertTrue($policy->granted('alice', 'people', 'read'));
 		$policy->setGrant('alice', 'people', 'read', false);
 		self::assertFalse($policy->granted('alice', 'people', 'read'));

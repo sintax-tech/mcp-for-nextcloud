@@ -8,7 +8,7 @@
  * A level is only a way to show and choose a set of operations; the server never sees it. Each module's operations are
  * split into cumulative tiers (Read, then Edit adds its tier, then Full adds the last one), so a level is the union of
  * the tiers up to it. A set of allowed operations that is no such union is "custom" and is shown and edited operation
- * by operation. The tiers follow GrantPolicy::CATALOG; an operation the tiers do not name (a newer catalog) falls into
+ * by operation. The tiers follow GrantCatalog::CATALOG; an operation the tiers do not name (a newer catalog) falls into
  * the last tier, so it is never hidden and never granted by a lower level.
  *
  * The level functions are pure, with no DOM and no strings: src/admin/matrix/level-cells.js draws the cells and src/admin/matrix/labels.js names the levels.

@@ -15,7 +15,7 @@ final class ThinToolsTest extends ArchitectureCase {
 	public function testEveryFinalToolIsPublishedAndThin(): void {
 		$catalog = [];
 		foreach (Application::MODULES as $module) {
-			if (!is_subclass_of($module, CatalogModule::class)) { continue; }
+			self::assertTrue(is_subclass_of($module, CatalogModule::class), $module);
 			foreach ($module::catalog() as $tool) { self::assertSame([], ToolContracts::reflected($tool), $tool); $catalog[] = $tool; }
 		}
 		$files = [];

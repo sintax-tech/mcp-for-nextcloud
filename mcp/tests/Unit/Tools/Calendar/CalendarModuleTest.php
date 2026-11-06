@@ -19,7 +19,7 @@ final class CalendarModuleTest extends CalendarTestCase {
 		foreach ($this->module->definitions() as $definition) {
 			$this->assertSame(['name', 'description', 'inputSchema', 'module', 'operation', 'app'], array_slice(array_keys($definition), 0, 6));
 			$this->assertSame(['calendar', 'calendar'], [$definition['module'], $definition['app']]);
-			$this->assertContains($definition['operation'], GrantPolicy::CATALOG['calendar']);
+			$this->assertContains($definition['operation'], \OCA\Mcp\Access\Grants\GrantCatalog::CATALOG['calendar']);
 			$this->assertFalse($definition['inputSchema']['additionalProperties']);
 			$this->assertIsObject($definition['inputSchema']['properties']);
 			$operations[$definition['name']] = $definition['operation'];
@@ -68,7 +68,7 @@ final class CalendarModuleTest extends CalendarTestCase {
 
 	public function testWriteGrantNamesRemainAvailableForFutureReactivation(): void {
 		foreach (['create', 'edit', 'move', 'delete', 'transfer'] as $operation) {
-			$this->assertContains($operation, GrantPolicy::CATALOG['calendar']);
+			$this->assertContains($operation, \OCA\Mcp\Access\Grants\GrantCatalog::CATALOG['calendar']);
 		}
 	}
 

@@ -123,7 +123,7 @@ class GroupDirectory {
 	public function detail(string $gid): array {
 		return $this->read(function () use ($gid): array {
 			$policy = $this->states([$gid])[IdentityKey::group($gid)];
-			$policy['catalog'] = ['_system' => ['eligible']] + GrantPolicy::CATALOG;
+			$policy['catalog'] = ['_system' => ['eligible']] + GrantCatalog::CATALOG;
 			$counts = ['members' => null, 'overrides' => null, 'permissions' => null];
 			try {
 				$group = $this->groups->get($gid);
@@ -172,7 +172,7 @@ class GroupDirectory {
 
 	private function statisticsForMembers(array $members): array {
 		$permissions = [];
-		foreach (['_system' => ['eligible']] + GrantPolicy::CATALOG as $module => $operations) {
+		foreach (['_system' => ['eligible']] + GrantCatalog::CATALOG as $module => $operations) {
 			foreach ($operations as $operation) {
 				$permissions[$module][$operation] = ['overrides' => 0, 'different' => 0];
 			}

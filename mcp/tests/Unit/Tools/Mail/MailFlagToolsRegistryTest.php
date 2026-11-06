@@ -36,7 +36,7 @@ final class MailFlagToolsRegistryTest extends TestCase {
 	 * @return void
 	 */
 	public function testTheFlagsGrantStartsDenied(): void {
-		$this->assertContains('flags', GrantPolicy::CATALOG['mail']);
+		$this->assertContains('flags', \OCA\Mcp\Access\Grants\GrantCatalog::CATALOG['mail']);
 		$this->assertFalse(GrantPolicy::defaultGranted('mail', 'flags'));
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
 		foreach (['read', 'messages', 'attachments'] as $operation) {

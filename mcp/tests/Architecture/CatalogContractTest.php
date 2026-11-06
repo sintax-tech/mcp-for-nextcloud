@@ -9,25 +9,22 @@ namespace OCA\Mcp\Tests\Architecture;
 use OCA\Mcp\AppInfo\Application;
 use OCA\Mcp\Mcp\Tools\CatalogModule;
 use OCA\Mcp\Tests\Architecture\Dependencies\ToolContracts;
-use OCA\Mcp\Tests\Unit\Contract\Oracle\ModuleBuilder;
 
 /** Real module IDs, grants, capabilities, global uniqueness and golden publication order. */
 final class CatalogContractTest extends ArchitectureCase {
 	public function testAllModuleDefinitionsMatchThePublishedOrderAndContract(): void {
 		$definitions = []; $capabilities = [];
-		$builder = new ModuleBuilder($this);
 		foreach (Application::MODULES as $class) {
-			if (is_subclass_of($class, CatalogModule::class)) {
-				$namespace = substr($class, 0, (int)strrpos($class, '\\'));
-				$own = array_values(array_filter(array_keys(self::tree()->classes), static fn (string $c): bool => str_starts_with($c, $namespace . '\\')));
-				self::assertSame([], ToolContracts::registration($class::registration(), $own, $namespace, $this->bindings($class::registration())), $class);
-				$probes = $class::registration() === null ? [] : (new ($class::registration())())->probes();
-				foreach ($probes as $probe) {
-					$r = (new \ReflectionClass($probe))->newInstanceWithoutConstructor();
-					$capabilities = [...$capabilities, ...$r->keys()];
-				}
-				$rows = array_map(static fn ($d) => $d->toArray(), $class::toolDefinitions());
-			} else { $rows = $builder->build($class)->definitions(); }
+			self::assertTrue(is_subclass_of($class, CatalogModule::class), $class);
+			$namespace = substr($class, 0, (int)strrpos($class, '\\'));
+			$own = array_values(array_filter(array_keys(self::tree()->classes), static fn (string $c): bool => str_starts_with($c, $namespace . '\\')));
+			self::assertSame([], ToolContracts::registration($class::registration(), $own, $namespace, $this->bindings($class::registration())), $class);
+			$probes = $class::registration() === null ? [] : (new ($class::registration())())->probes();
+			foreach ($probes as $probe) {
+				$r = (new \ReflectionClass($probe))->newInstanceWithoutConstructor();
+				$capabilities = [...$capabilities, ...$r->keys()];
+			}
+			$rows = array_map(static fn ($d) => $d->toArray(), $class::toolDefinitions());
 			self::assertNotEmpty($rows, $class);
 			$definitions = [...$definitions, ...$rows];
 		}

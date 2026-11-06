@@ -37,7 +37,7 @@ final class MailMoveToolsRegistryTest extends TestCase {
 	 * @return void
 	 */
 	public function testTheMoveGrantStartsDenied(): void {
-		$this->assertContains('move', GrantPolicy::CATALOG['mail']);
+		$this->assertContains('move', \OCA\Mcp\Access\Grants\GrantCatalog::CATALOG['mail']);
 		$this->assertFalse(GrantPolicy::defaultGranted('mail', 'move'));
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
 		foreach (['read', 'messages', 'attachments', 'flags'] as $operation) {

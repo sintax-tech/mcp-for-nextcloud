@@ -62,7 +62,7 @@ final class WritePlanContractTest extends TestCase {
 		}
 	}
 
-	/** A catalog module is read-only by its catalog, since its base always answers previews; a legacy module by its interfaces. */
+	/** A catalog module is read-only by its catalog, since its base always answers previews. */
 	public function testReadOnlyIsDecidedByTheCatalogOfACatalogModule(): void {
 		self::assertFalse(self::writes(\OCA\Mcp\Tests\Unit\Mcp\Tools\Catalog\RegisteredProbeModule::class));
 		self::assertTrue(self::writes(\OCA\Mcp\Tests\Unit\Mcp\Tools\Catalog\ProbeModule::class));
@@ -71,13 +71,10 @@ final class WritePlanContractTest extends TestCase {
 
 	/**
 	 * @param class-string $module registered module
-	 * @return bool whether it publishes a write: a write tool in its catalog, or the preview interface of a legacy module
+	 * @return bool whether it publishes a write tool in its catalog
 	 */
 	private static function writes(string $module): bool {
-		if (is_subclass_of($module, CatalogModule::class)) {
-			return array_filter($module::toolDefinitions(), static fn ($definition): bool => WriteGate::isWrite($definition->toArray())) !== [];
-		}
-		return is_subclass_of($module, PreviewsWrites::class);
+		return array_filter($module::toolDefinitions(), static fn ($definition): bool => WriteGate::isWrite($definition->toArray())) !== [];
 	}
 
 	public function testEveryWritingModuleDeclaresItsPlanText(): void {

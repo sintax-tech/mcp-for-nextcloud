@@ -66,7 +66,7 @@ final class MailModuleTest extends TestCase {
 	 * @return void
 	 */
 	public function testTheCatalogOffersReadingMailAndItsWrites(): void {
-		$this->assertSame(['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'], GrantPolicy::CATALOG['mail']);
+		$this->assertSame(['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'], \OCA\Mcp\Access\Grants\GrantCatalog::CATALOG['mail']);
 		$this->assertNotContains('mail', GrantPolicy::DENIED_READS);
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
 		$this->assertTrue($policy->granted('alice', 'mail', 'read'));

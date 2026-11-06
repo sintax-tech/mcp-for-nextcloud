@@ -19,7 +19,7 @@ use PHPUnit\Framework\TestCase;
 final class StoredGroupGrantTest extends TestCase {
 	/** @return void Catalog entries including disabled optional apps remain known, never orphaned. */
 	public function testCurrentCatalogAndSystemEligibilityRemainRecognized(): void {
-		foreach (GrantPolicy::CATALOG + ['_system' => ['eligible']] as $module => $operations) {
+		foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG + ['_system' => ['eligible']] as $module => $operations) {
 			foreach ($operations as $operation) {
 				$grant = new StoredGroupGrant('team', $module, $operation);
 				$this->assertTrue($grant->recognized);

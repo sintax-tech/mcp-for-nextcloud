@@ -51,7 +51,7 @@ final class EffectsGate {
 		$this->data = new InMemoryConfig();
 		$this->config = $this->data->mock($test);
 		$this->policy = InMemoryConfig::policy($this->config, new InMemoryOAuthStore());
-		foreach (GrantPolicy::CATALOG as $module => $operations) {
+		foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG as $module => $operations) {
 			foreach ($operations as $operation) {
 				$this->policy->setGrant(self::USER, $module, $operation, true);
 			}

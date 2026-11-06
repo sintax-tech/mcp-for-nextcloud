@@ -93,7 +93,7 @@ final class TablesModuleTest extends TestCase {
 	 * @return void
 	 */
 	public function testTheCatalogOffersReadingTables(): void {
-		$this->assertSame(['read', 'create', 'edit'], GrantPolicy::CATALOG['tables']);
+		$this->assertSame(['read', 'create', 'edit'], \OCA\Mcp\Access\Grants\GrantCatalog::CATALOG['tables']);
 		$this->assertNotContains('tables', GrantPolicy::DENIED_READS);
 		$this->assertTrue($this->policy->granted('alice', 'tables', 'read'));
 		$this->assertFalse($this->policy->granted('alice', 'tables', 'create'));

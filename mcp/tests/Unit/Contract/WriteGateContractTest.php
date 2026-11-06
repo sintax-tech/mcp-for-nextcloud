@@ -55,7 +55,7 @@ final class WriteGateContractTest extends TestCase {
 	private function registry(array $modules): ToolRegistry {
 		$config = new InMemoryConfig();
 		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($config->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
-		foreach (GrantPolicy::CATALOG as $module => $operations) {
+		foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG as $module => $operations) {
 			foreach ($operations as $operation) {
 				$policy->setGrant('alice', $module, $operation, true);
 			}

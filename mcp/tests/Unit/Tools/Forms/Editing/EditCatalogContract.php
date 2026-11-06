@@ -34,7 +34,7 @@ final class EditCatalogContract {
 			if ($create || $edit) { Assert::assertArrayNotHasKey('grantAnyOf', $definition); Assert::assertFalse($definition['annotations']['idempotentHint']); }
 		}
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($test), new InMemoryOAuthStore());
-		Assert::assertSame(['read', 'results', 'create', 'edit'], GrantPolicy::CATALOG['forms']);
-		foreach (GrantPolicy::CATALOG['forms'] as $operation) { Assert::assertSame($operation === 'read', $policy->granted('alice', 'forms', $operation)); }
+		Assert::assertSame(['read', 'results', 'create', 'edit'], \OCA\Mcp\Access\Grants\GrantCatalog::CATALOG['forms']);
+		foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG['forms'] as $operation) { Assert::assertSame($operation === 'read', $policy->granted('alice', 'forms', $operation)); }
 	}
 }

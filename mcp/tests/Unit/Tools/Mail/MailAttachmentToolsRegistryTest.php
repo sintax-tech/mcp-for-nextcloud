@@ -38,7 +38,7 @@ final class MailAttachmentToolsRegistryTest extends TestCase {
 	 * @return void
 	 */
 	public function testTheAttachmentsGrantStartsDenied(): void {
-		$this->assertContains('attachments', GrantPolicy::CATALOG['mail']);
+		$this->assertContains('attachments', \OCA\Mcp\Access\Grants\GrantCatalog::CATALOG['mail']);
 		$this->assertFalse(GrantPolicy::defaultGranted('mail', 'attachments'));
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
 		$policy->setGrant('alice', 'mail', 'messages', true);

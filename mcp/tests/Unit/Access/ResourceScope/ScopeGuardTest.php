@@ -154,7 +154,7 @@ final class ScopeGuardTest extends TestCase {
 	/** @return array<string, array{string, string}> every catalog cell */
 	public static function cells(): array {
 		$cells = [];
-		foreach (GrantPolicy::CATALOG as $module => $operations) {
+		foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG as $module => $operations) {
 			foreach ($operations as $operation) {
 				$cells["$module $operation"] = [$module, $operation];
 			}

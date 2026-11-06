@@ -258,7 +258,7 @@ class PolicyResolver {
 	/** @return list<string> every user policy key: eligibility, connection and each catalog grant */
 	private static function keys(): array {
 		$keys = [GrantPolicy::ELIGIBLE_KEY, GrantPolicy::CONNECTED_KEY];
-		foreach (GrantPolicy::CATALOG as $module => $operations) {
+		foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG as $module => $operations) {
 			foreach ($operations as $operation) {
 				$keys[] = 'grant_' . $module . '_' . $operation;
 			}

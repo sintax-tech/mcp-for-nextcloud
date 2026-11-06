@@ -56,7 +56,7 @@ final class DiscoveryHarness {
 			$data->groupBackends = [new ArrayGroupBackend(static fn (): array => [DiscoveryScenario::PAUSED_GROUP => [self::USER]])];
 			InMemoryConfig::groupPolicy($config, DiscoveryScenario::PAUSED_GROUP, $scenario->unknownGrants, 'needs_confirm');
 		}
-		foreach (GrantPolicy::CATALOG as $module => $operations) {
+		foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG as $module => $operations) {
 			foreach ($operations as $operation) {
 				$grant = $scenario->grant($module, $operation);
 				if ($grant !== null) {

@@ -30,7 +30,8 @@ final class DiAcyclicTest extends TestCase {
 		$resolver = $this->resolver();
 		$tools = [];
 		foreach (Application::MODULES as $module) {
-			if (is_subclass_of($module, \OCA\Mcp\Mcp\Tools\CatalogModule::class)) { $tools = [...$tools, ...$module::catalog()]; }
+			self::assertTrue(is_subclass_of($module, \OCA\Mcp\Mcp\Tools\CatalogModule::class), $module);
+			$tools = [...$tools, ...$module::catalog()];
 		}
 		// A catalog resolves its tools lazily: building them here proves every work class is autowired or registered.
 		$resolver->resolveAll([...Application::MODULES, ...$tools]);

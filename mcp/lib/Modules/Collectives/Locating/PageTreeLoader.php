@@ -20,12 +20,12 @@ class PageTreeLoader {
 	/**
 	 * @param CollectivesGateway $gateway native Collectives
 	 * @param PageFiles $files which pages MCP may show
-	 * @param MissingIndexCheck $indexes refuses a tree Collectives would complete by writing
+	 * @param PageFileWalk $walk the page files, found through Files without asking Collectives to build the tree
 	 */
 	public function __construct(
 		private CollectivesGateway $gateway,
 		private PageFiles $files,
-		private MissingIndexCheck $indexes,
+		private PageFileWalk $walk,
 	) {
 	}
 
@@ -41,8 +41,7 @@ class PageTreeLoader {
 	public function load(int $cid, string $uid, string $operation): PageTree {
 		$this->gateway->collective($cid, $uid, $operation);
 		$folder = $this->gateway->folder($cid, $uid, $operation);
-		$this->indexes->assertComplete($folder);
-		$pages = array_values(array_filter($this->gateway->pages($cid, $folder, $uid, $operation),
+		$pages = array_values(array_filter($this->gateway->pages($cid, $this->walk->pageIds($folder), $uid, $operation),
 			fn (array $page): bool => $this->files->shows($folder, $page, $uid)));
 		return new PageTree($cid, $folder, $pages);
 	}

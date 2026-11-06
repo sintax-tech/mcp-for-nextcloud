@@ -39,6 +39,8 @@ final class CollectivesScene {
 	public static ?\Closure $afterNative = null;
 	/** @var (\Closure(): void)|null makes the native create fail after running this, before any page of the call exists */
 	public static ?\Closure $failCreate = null;
+	/** @var (\Closure(int): void)|null runs before each native find, to change the tree while a read is under way */
+	public static ?\Closure $beforeFind = null;
 	/** Makes the native move fail after it renamed the file, before the orders change. */
 	public static bool $failMove = false;
 	/** Makes the native move fail after the rename and the orders, before the slug is updated. */
@@ -62,6 +64,7 @@ final class CollectivesScene {
 		self::$slugs = [];
 		self::$afterNative = null;
 		self::$failCreate = null;
+		self::$beforeFind = null;
 		self::$searchHits = [];
 		self::$ids = [];
 		foreach (['Readme.md' => "# Wiki\n", 'Guide.md' => "Guide text\n", 'Team/Readme.md' => "Team\n",
@@ -242,6 +245,27 @@ final class CollectivesScene {
 			}
 		}
 		return $pages;
+	}
+
+	/**
+	 * Native find: the page of a file id, reading only. As upstream getParentPageId, it fails when the Readme.md the
+	 * parent id comes from is missing, and it never creates one.
+	 * @param int $id file id
+	 * @return PageInfo the page
+	 */
+	public static function find(int $id): PageInfo {
+		$relative = array_search($id, self::relativePages(), true);
+		if ($relative === false) {
+			throw new NotFoundException('Page not found: ' . $id);
+		}
+		$dir = dirname($relative) === '.' ? '' : dirname($relative);
+		if (basename($relative) === 'Readme.md') {
+			$dir = $dir === '' ? null : (dirname($dir) === '.' ? '' : dirname($dir));
+		}
+		if ($dir !== null && !isset(self::relativePages()[ltrim($dir . '/Readme.md', '/')])) {
+			throw new NotFoundException('Failed to get index page');
+		}
+		return self::page($id);
 	}
 
 	/** @param string $relative page path @return int its parent page id, 0 for the landing page */

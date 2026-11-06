@@ -19,7 +19,8 @@ require __DIR__ . '/../../../../vendor/autoload.php';
 final class CollectivesFixtureGenerator {
 	/** Native methods recorded per release, by file under lib/. */
 	public const METHODS = [
-		'Service/PageService.php' => ['verifyEditPermissions', 'getPageFile', 'getFolder', 'getPagesFromFolder', 'findAll', 'createBase', 'create', 'move'],
+		'Service/PageService.php' => ['verifyEditPermissions', 'getPageFile', 'getFolder', 'getPagesFromFolder', 'findAll', 'createBase', 'create', 'move',
+			'find', 'getPageByFile', 'getParentPageId', 'getIndexPageFile'],
 		'Service/CollectiveServiceBase.php' => ['getCollective'],
 		'Service/CollectiveService.php' => ['getCollectives'],
 		'Service/SearchService.php' => ['searchCollective'],

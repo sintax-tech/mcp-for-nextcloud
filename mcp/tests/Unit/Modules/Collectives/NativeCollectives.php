@@ -73,6 +73,13 @@ namespace OCA\Collectives\Service {
 			return CollectivesScene::folder();
 		}
 
+		/** @return PageInfo one page, read without writing; its parent's Readme.md must exist (getParentPageId) */
+		public function find(int $collectiveId, int $id, string $userId): PageInfo {
+			$this->cached($collectiveId, $userId);
+			CollectivesScene::$beforeFind === null || (CollectivesScene::$beforeFind)($id);
+			return CollectivesScene::find($id);
+		}
+
 		/** @return list<PageInfo> the pages under the folder, read now */
 		public function getPagesFromFolder(int $collectiveId, Folder $folder, string $userId, bool $recurse = false, bool $forceIndex = false): array {
 			CollectivesScene::$calls[] = 'getPagesFromFolder' . ($forceIndex ? ':forceIndex' : '');

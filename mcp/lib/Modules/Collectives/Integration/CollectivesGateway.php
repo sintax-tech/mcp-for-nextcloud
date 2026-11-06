@@ -18,10 +18,10 @@ use Throwable;
 
 /**
  * The only door to the native Collectives services. Every method admits the call first (see
- * {@see CollectivesAdmission}), resolves the shared native service lazily and passes the actor explicitly. The page
- * tree is always built again through `getPagesFromFolder` without forcing an index page, never through `findAll`,
- * which caches the tree for the request and may create a missing landing page. Trash, copy, ordering, emoji, tags,
- * attachments, templates, members and shares are not reachable from here.
+ * {@see CollectivesAdmission}), resolves the shared native service lazily and passes the actor explicitly. Pages are
+ * read one by one with `find`; the tree builders (`findAll`, `getPagesFromFolder`) are never called, because they may
+ * write a missing index page. Trash, copy, ordering, emoji, tags, attachments, templates, members and shares are not
+ * reachable from here.
  */
 class CollectivesGateway {
 	/**
@@ -72,19 +72,30 @@ class CollectivesGateway {
 	}
 
 	/**
-	 * Builds the page tree; call it only after {@see \OCA\Mcp\Modules\Collectives\Locating\MissingIndexCheck} passed.
+	 * Reads pages one by one with PageService::find, which never writes in a proven release; the tree builders of
+	 * Collectives may create a missing index page and are never called. A page Collectives no longer finds (removed,
+	 * or its index removed meanwhile) is left out.
 	 * @param int $cid collective id
-	 * @param Folder $folder the actor's folder of the collective
+	 * @param list<int> $ids page file ids, as {@see \OCA\Mcp\Modules\Collectives\Locating\PageFileWalk} found them
 	 * @param string $uid authenticated actor
 	 * @param string $operation exact grant of the call
-	 * @return list<array<string, mixed>> every page, built now
-	 * @throws ToolFailure when the collective is unknown to the actor or the call is not admitted
+	 * @return list<array<string, mixed>> the pages Collectives found, read now
+	 * @throws ToolFailure when the call is not admitted, or Collectives fails otherwise than with not found
 	 */
-	public function pages(int $cid, Folder $folder, string $uid, string $operation): array {
+	public function pages(int $cid, array $ids, string $uid, string $operation): array {
 		$this->admission->admit($uid, $operation);
-		$native = $this->call(fn (): array => $this->service(CollectivesSurface::PAGES)->getPagesFromFolder($cid, $folder, $uid, true, false));
-		return array_values(array_map(static fn (object $page): array => PageProjection::page($page),
-			array_filter($native, static fn (mixed $item): bool => is_object($item))));
+		$pages = [];
+		$service = $this->service(CollectivesSurface::PAGES);
+		foreach ($ids as $id) {
+			try {
+				$pages[] = PageProjection::page($service->find($cid, $id, $uid));
+			} catch (Throwable $e) {
+				if (!str_ends_with($e::class, 'NotFoundException')) {
+					throw self::failure($e);
+				}
+			}
+		}
+		return $pages;
 	}
 
 	/**
@@ -155,12 +166,12 @@ class CollectivesGateway {
 	 * @param string|null $title new title, null to keep it
 	 * @param int $index position among the subpages of the new parent
 	 * @param string $uid authenticated actor
-	 * @return int id of the page as Collectives answered it
+	 * @return array<string, mixed> the page as Collectives answered it, slug included (computed by its own slugger)
 	 * @throws Throwable whatever the native call throws, untouched: the caller decides what an attempt means
 	 */
-	public function move(int $cid, int $pageId, ?int $parentId, ?string $title, int $index, string $uid): int {
+	public function move(int $cid, int $pageId, ?int $parentId, ?string $title, int $index, string $uid): array {
 		$this->admission->admit($uid, 'move');
-		return PageProjection::page($this->service(CollectivesSurface::PAGES)->move($cid, $pageId, $parentId, $title, $index, $uid))['id'];
+		return PageProjection::page($this->service(CollectivesSurface::PAGES)->move($cid, $pageId, $parentId, $title, $index, $uid));
 	}
 
 	/**

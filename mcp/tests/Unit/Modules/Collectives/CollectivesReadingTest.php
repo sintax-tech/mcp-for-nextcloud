@@ -62,7 +62,7 @@ final class CollectivesReadingTest extends TestCase {
 		$this->assertSame(['id', 'title', 'slug', 'parent_id', 'emoji', 'last_user', 'timestamp', 'size', 'subpage_order'], array_keys($answer['pages'][0]));
 		$this->assertStringNotContainsString('secret', json_encode($answer));
 		$this->assertStringNotContainsString('Template', json_encode($answer));
-		$this->assertSame(['getPagesFromFolder'], CollectivesScene::$calls, 'the tree is read without forcing an index page');
+		$this->assertSame([], CollectivesScene::$calls, 'no native tree builder is called, so no index page can be written');
 	}
 
 	/** @return void a parent filter keeps its subtree; a cursor continues only the listing that gave it */
@@ -127,6 +127,32 @@ final class CollectivesReadingTest extends TestCase {
 		$this->assertSame($before, CollectivesScene::$tree->nodes, 'nothing was written');
 		$this->assertNotContains('newPage', CollectivesScene::$calls);
 		$this->assertNotContains('getPagesFromFolder', CollectivesScene::$calls, 'Collectives was not asked for the tree');
+	}
+
+	/**
+	 * The Readme.md of a folder is removed by somebody else after the module listed the folder and before Collectives
+	 * reads its pages: nothing is written, at read or plan, and the pages that lost their index are left out.
+	 * @return void
+	 */
+	public function testAnIndexRemovedDuringTheReadIsNeverRecreated(): void {
+		$team = CollectivesScene::ROOT . '/Team/Readme.md';
+		$remove = static function () use ($team): void {
+			unset(CollectivesScene::$tree->nodes[$team]);
+		};
+		CollectivesScene::$beforeFind = $remove;
+		$this->rig->grants = ['read'];
+		$pages = $this->call('collectives_pages', ['collective_id' => 7])['pages'];
+		$this->assertSame(['Landing page', 'Guide'], array_column($pages, 'title'), 'Team and Onboarding lost their index and are left out');
+		$this->assertArrayNotHasKey($team, CollectivesScene::$tree->nodes, 'the index was not written back');
+		$this->assertNotContains('newPage', CollectivesScene::$calls);
+		CollectivesScene::reset($this);
+		$this->rig = new CollectivesRig($this);
+		$before = CollectivesScene::$tree->nodes;
+		unset($before[$team]);
+		CollectivesScene::$beforeFind = $remove;
+		$this->rig->module()->preview('collectives_create', ['collective_id' => 7, 'parent_id' => 0, 'title' => 'X'], 'alice');
+		$this->assertSame($before, CollectivesScene::$tree->nodes, 'the plan wrote nothing either');
+		$this->assertSame([], array_values(array_intersect(['newPage', 'getPagesFromFolder', 'create'], CollectivesScene::$calls)));
 	}
 
 	/** @return void a hidden page leaks nowhere: not in the subpage order nor as the parent of a page shown */

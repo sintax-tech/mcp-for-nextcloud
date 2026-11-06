@@ -64,6 +64,13 @@ final class CollectivesContractTest extends TestCase {
 			$this->assertStringContainsString('$this->allPageInfos', $m['Service/PageService.php::findAll'], $version);
 			$this->assertStringContainsString(', true, true)', $m['Service/PageService.php::findAll'], $version);
 			$this->assertStringNotContainsString('allPageInfos', $m['Service/PageService.php::getPagesFromFolder'], $version);
+			// R1: the module reads pages with find, which only reads: no file, page or index is created on the way.
+			foreach (['find', 'getPageByFile', 'getParentPageId', 'getIndexPageFile'] as $read) {
+				$this->assertDoesNotMatchRegularExpression('/newFile|newPage|createIndexPage|initSubFolder|->insert|->update|updateOrInsert/',
+					$m['Service/PageService.php::' . $read], "$version $read");
+			}
+			$this->assertStringContainsString('getPageByFile($this->nodeHelper->getFileById($folder, $id))', $m['Service/PageService.php::find'], $version);
+			$this->assertStringContainsString('getIndexPageFile', $m['Service/PageService.php::getParentPageId'], $version);
 			// A1: the edit check reads the collective the page service caches; the module also fetches it fresh.
 			$this->assertStringContainsString('canEdit()', $m['Service/PageService.php::verifyEditPermissions'], $version);
 			$this->assertStringContainsString('findByIdAndUser($id, $userId)', $m['Service/CollectiveServiceBase.php::getCollective'], $version);

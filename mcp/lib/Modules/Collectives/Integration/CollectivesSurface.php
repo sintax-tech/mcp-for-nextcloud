@@ -40,7 +40,7 @@ final class CollectivesSurface {
 		[self::COLLECTIVES, 'getCollectives', ['string'], 'array'],
 		[self::COLLECTIVES, 'getCollective', ['int', 'string'], self::COLLECTIVE],
 		[self::PAGES, 'getFolder', ['int', 'int', 'string'], 'OCP\\Files\\Folder'],
-		[self::PAGES, 'getPagesFromFolder', ['int', 'OCP\\Files\\Folder', 'string', 'bool', 'bool'], 'array'],
+		[self::PAGES, 'find', ['int', 'int', 'string'], self::PAGE_INFO],
 		[self::PAGES, 'getPageFile', ['int', 'int', 'string'], 'OCP\\Files\\File'],
 		[self::PAGES, 'verifyEditPermissions', ['int', 'string'], 'void'],
 		[self::PAGES, 'create', ['int', 'int', 'string', '?int', 'string', '?string'], self::PAGE_INFO],

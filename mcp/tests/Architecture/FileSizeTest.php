@@ -30,24 +30,37 @@ final class FileSizeTest extends ArchitectureCase {
 	}
 	public function testMembershipPromotionCeilingsAndTransientGrowthFail(): void {
 		$live = AppTree::json(self::tree()->root . '/scripts/dev/size-inventory.json');
+		self::assertSame([], SizeRules::problems(self::tree(), $live, self::json('size-baseline'), self::json('source-size-baseline'), self::tickets()));
+		$source = array_key_first(array_filter(self::tree()->files, static fn (string $path): bool => str_starts_with($path, 'src/'), ARRAY_FILTER_USE_KEY));
+		$paths = [$source => ['ceiling' => substr_count(self::tree()->files[$source], "\n"), 'expires' => 'RE-28']]; $paths[$source]['ceiling']++;
+		self::assertNotSame([], SizeRules::problems(self::tree(), $live, self::json('size-baseline'), $paths, self::tickets()));
+		// Exercise the historical ratchet locally even after every live exception is retired.
+		$name = 'OCA\\Mcp\\Service\\Policy\\PolicyWriter';
+		$row = ['ceiling' => 1485, 'expires' => 'RE-06d', 'steps' => [
+			['ticket' => 'RE-06', 'ceiling' => 1300], ['ticket' => 'RE-06b', 'ceiling' => 900], ['ticket' => 'RE-06c', 'ceiling' => 500],
+		]];
+		$baseline = self::json('size-baseline');
+		$baseline['transitional'] = [['nameParts' => explode('\\', $name), ...$row]];
+		$live['transitional'] = [['fqcn' => $name, ...$row]];
+		$tickets = new TicketState(self::tickets()->known, array_values(array_diff(self::tickets()->completed, ['RE-06d'])));
+		$files = self::tree()->files; $path = self::tree()->present($name);
+		$files[$path] = str_repeat("// x\n", 500);
+		/** @return list<string> Violations against this test's historical baseline only. */
+		$problems = static fn (array $inventory, array $sources): array => SizeRules::problems(self::tree()->withFiles($sources), $inventory, $baseline, self::json('source-size-baseline'), $tickets);
+		self::assertSame([], $problems($live, $files));
 		$raised = $live; $raised['final'][0]['ceiling']++;
 		$added = $live; $added['final'][] = ['fqcn' => 'OCA\\Mcp\\Platform\\Numbers\\DecimalCounter', 'ceiling' => 500];
 		$swapped = $live; $swapped['final'][0]['fqcn'] = 'OCA\\Mcp\\Platform\\Numbers\\DecimalCounter';
 		$promoted = $live; $promoted['final'][] = array_shift($promoted['transitional']);
 		foreach ($live['final'] as $index => $row) {
-			if (str_ends_with($row['fqcn'], '\\GrantPolicy') || str_ends_with($row['fqcn'], '\\McpProtocol')) { $revived = $live; $revived['final'][$index]['ceiling'] = $row['ceiling'] + 1; self::assertNotSame([], $this->problems($revived)); }
+			if (str_ends_with($row['fqcn'], '\\GrantPolicy') || str_ends_with($row['fqcn'], '\\McpProtocol')) { $revived = $live; $revived['final'][$index]['ceiling'] = $row['ceiling'] + 1; self::assertNotSame([], $problems($revived, $files)); }
 		}
-		self::assertSame([], SizeRules::problems(self::tree(), $live, self::json('size-baseline'), self::json('source-size-baseline'), self::tickets()));
-		$source = array_key_first(array_filter(self::tree()->files, static fn (string $path): bool => str_starts_with($path, 'src/'), ARRAY_FILTER_USE_KEY));
-		$paths = [$source => ['ceiling' => substr_count(self::tree()->files[$source], "\n"), 'expires' => 'RE-28']]; $paths[$source]['ceiling']++;
-		self::assertNotSame([], SizeRules::problems(self::tree(), $live, self::json('size-baseline'), $paths, self::tickets()));
-		foreach ([$raised, $added, $swapped, $promoted] as $mutant) { self::assertNotSame([], $this->problems($mutant)); }
-		$files = self::tree()->files; $path = self::tree()->present($live['transitional'][0]['fqcn']);
-		$files[$path] = str_repeat("// x\n", $live['transitional'][0]['ceiling'] + 1);
-		self::assertNotSame([], $this->problems(files: $files));
+		foreach ([$raised, $added, $swapped, $promoted] as $mutant) { self::assertNotSame([], $problems($mutant, $files)); }
+		$files[$path] .= "// x\n";
+		self::assertNotSame([], $problems($live, $files));
 		foreach (['RE-05b', 'RE-999'] as $ticket) {
 			$expired = $live; $expired['transitional'][0]['expires'] = $ticket;
-			try { $this->problems($expired); self::fail('Expired size exception accepted'); }
+			try { $problems($expired, $files); self::fail('Expired size exception accepted'); }
 			catch (RuntimeException $error) { self::assertStringContainsString('expiration', $error->getMessage()); }
 		}
 	}

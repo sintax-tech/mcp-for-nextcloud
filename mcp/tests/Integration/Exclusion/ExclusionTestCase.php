@@ -48,8 +48,8 @@ abstract class ExclusionTestCase extends IntegrationTestCase {
 
 	private static bool $ready = false;
 	private static int $tagId = 0;
-	/** @var array<string, Credential> */
-	private static array $logins = [];
+	/** @var array<string, Credential> Logins belong to this test; other tests may revoke their credentials. */
+	private array $logins = [];
 
 	protected string $run = '';
 	/** @var list<callable():void> */
@@ -119,8 +119,13 @@ abstract class ExclusionTestCase extends IntegrationTestCase {
 
 	// --- logins and clients -------------------------------------------------------------------------------------
 
+	/**
+	 * @param string $uid Fixture user to authenticate.
+	 * @param string $kind Basic app password or native OAuth bearer.
+	 * @return Credential Login reused only within this test instance.
+	 */
 	protected function login(string $uid, string $kind = 'basic'): Credential {
-		return self::$logins[$uid . '/' . $kind] ??= $kind === 'bearer' ? LoginFactory::bearer($uid) : LoginFactory::basic($uid);
+		return $this->logins[$uid . '/' . $kind] ??= $kind === 'bearer' ? LoginFactory::bearer($uid) : LoginFactory::basic($uid);
 	}
 
 	protected function mcp(string $uid = self::ALICE, string $kind = 'basic'): McpClient {

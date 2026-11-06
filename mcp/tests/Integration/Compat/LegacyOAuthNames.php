@@ -13,13 +13,23 @@ final class LegacyOAuthNames {
 	private function __construct() {
 	}
 
-	/** @return class-string Store declared by the released baseline. */
-	public static function store(): string {
-		return implode('\\', ['OCA', 'Mcp', 'OAuth', 'OAuthStore']);
+	/** @param string $version Installed baseline version; historical callers default to 1.0.8.
+	 * @return class-string Store declared by the released baseline. */
+	public static function store(string $version = '1.0.8'): string {
+		return implode('\\', version_compare($version, '1.3.0-rc.1', '>=')
+			? ['OCA', 'Mcp', 'OAuth', 'Storage', 'OAuthStore'] : ['OCA', 'Mcp', 'OAuth', 'OAuthStore']);
 	}
 
-	/** @return class-string Hasher declared by the released baseline. */
-	public static function hasher(): string {
-		return implode('\\', ['OCA', 'Mcp', 'OAuth', 'TokenHasher']);
+	/** @param string $version Installed baseline version; historical callers default to 1.0.8.
+	 * @return class-string Hasher declared by the released baseline. */
+	public static function hasher(string $version = '1.0.8'): string {
+		return implode('\\', version_compare($version, '1.3.0-rc.1', '>=')
+			? ['OCA', 'Mcp', 'OAuth', 'Storage', 'TokenHasher'] : ['OCA', 'Mcp', 'OAuth', 'TokenHasher']);
+	}
+
+	/** @param string $version Installed baseline. @return class-string Public client admission command service. */
+	public static function clients(string $version = '1.0.8'): string {
+		return implode('\\', version_compare($version, '1.3.0-rc.1', '>=')
+			? ['OCA', 'Mcp', 'OAuth', 'Clients', 'OAuthClientsService'] : ['OCA', 'Mcp', 'OAuth', 'OAuthClientsService']);
 	}
 }

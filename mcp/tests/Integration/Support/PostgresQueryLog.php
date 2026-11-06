@@ -17,9 +17,12 @@ use RuntimeException;
  * inspects (contracts §3.3.6, validation T19/F5). An empty window counts only when both markers were captured.
  */
 final class PostgresQueryLog {
-	private const LINE = '/ mcp-it\[(\d+)\] xid=\d+ ([A-Z]+):\s+(.*)$/';
+	private PostgresLogWindow $window;
 
-	public function __construct(private string $path) {}
+	/** @param string $path Cell statement log; construction marks the start of this test's capture. */
+	public function __construct(private string $path) {
+		$this->window = new PostgresLogWindow($path);
+	}
 
 	/** @return self|null the log configured for this CI cell, or null when the cell has none */
 	public static function fromEnvironment(): ?self {
@@ -70,11 +73,9 @@ final class PostgresQueryLog {
 	public function statementsBetween(int $pid, string $begin, string $end, float $timeout = 10.0): array {
 		$deadline = microtime(true) + $timeout;
 		while (true) {
-			$entries = array_values(array_filter($this->entries(), static fn (array $e): bool => $e['pid'] === $pid));
-			$from = $this->indexOf($entries, $begin);
-			$to = $this->indexOf($entries, $end);
-			if ($from !== null && $to !== null && $to > $from) {
-				return array_map(static fn (array $e): string => $e['text'], array_slice($entries, $from + 1, $to - $from - 1));
+			$statements = $this->window->between($pid, $begin, $end);
+			if ($statements !== null) {
+				return $statements;
 			}
 			if (microtime(true) >= $deadline) {
 				throw new RuntimeException('Markers not captured in ' . $this->path . ' for backend ' . $pid);
@@ -83,47 +84,4 @@ final class PostgresQueryLog {
 		}
 	}
 
-	/**
-	 * @param list<array{pid: int, text: string}> $entries
-	 * @param string $marker marker text
-	 * @return int|null index of the statement carrying the marker
-	 */
-	private function indexOf(array $entries, string $marker): ?int {
-		foreach ($entries as $index => $entry) {
-			if (str_contains($entry['text'], "'" . $marker . "'")) {
-				return $index;
-			}
-		}
-		return null;
-	}
-
-	/** @return list<array{pid: int, text: string}> statements and errors of all sessions, in log order */
-	private function entries(): array {
-		$lines = @file($this->path, FILE_IGNORE_NEW_LINES);
-		if ($lines === false) {
-			throw new RuntimeException('PostgreSQL statement log not readable: ' . $this->path);
-		}
-		$entries = [];
-		$last = null;
-		foreach ($lines as $line) {
-			if (preg_match(self::LINE, $line, $m) === 1) {
-				$last = null;
-				$text = $m[3];
-				if ($m[2] === 'LOG' && preg_match('/^(?:statement|execute [^:]+): (.*)$/s', $text, $statement) === 1) {
-					$text = $statement[1];
-				} elseif ($m[2] === 'ERROR') {
-					$text = 'ERROR: ' . $text;
-				} else {
-					// DETAIL (bound parameters), STATEMENT (repeats a failed statement) and server messages.
-					continue;
-				}
-				$entries[] = ['pid' => (int)$m[1], 'text' => $text];
-				$last = array_key_last($entries);
-			} elseif ($last !== null && str_starts_with($line, "\t")) {
-				// Continuation line of a multi-line statement.
-				$entries[$last]['text'] .= "\n" . substr($line, 1);
-			}
-		}
-		return $entries;
-	}
 }

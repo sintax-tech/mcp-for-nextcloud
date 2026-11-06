@@ -6,12 +6,7 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Compat;
 
-use OCA\Mcp\Db\OAuthClientsMapper;
-use OCA\Mcp\OAuth\Clients\ClientResolver;
-use OCA\Mcp\OAuth\Clients\NativeClient;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
-use OCP\IConfig;
-use OCP\Server;
 
 /**
  * The upgrade from the released baseline carries the native client's switch, which 1.0.8 kept in the app configuration
@@ -28,11 +23,6 @@ final class NativeClientMigrationTest extends IntegrationTestCase {
 	}
 
 	public function testTheNativeSwitchOfTheBaselineIsInTheTableAfterTheUpgrade(): void {
-		$row = (new OAuthClientsMapper($this->openIndependentConnection()))->find(NativeClient::CLIENT_ID);
-		$this->assertNotNull($row, 'the migration imported the switch');
-		$this->assertSame([OAuthClientsMapper::KIND_NATIVE, true, '1'], [$row['kind'], $row['enabled'], $row['gen']]);
-		$this->assertSame('1', ClientResolver::nativeGeneration(Server::get(OAuthClientsMapper::class)));
-		$this->assertSame(NativeClient::CLIENT_ID, Server::get(ClientResolver::class)->resolve(NativeClient::CLIENT_ID)->clientId);
-		$this->assertSame('1', Server::get(IConfig::class)->getAppValue('mcp', NativeClient::CONFIG_KEY), 'the legacy value is left as it was');
+		NativeClientUpgradeProof::assertPreserved($this->openIndependentConnection());
 	}
 }

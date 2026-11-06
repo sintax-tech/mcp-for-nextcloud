@@ -7,20 +7,22 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Compat;
 
-use OCP\{IConfig, IDBConnection, Server};
+use OCP\{IDBConnection, Server};
 use RuntimeException;
 use Throwable;
 
+require_once __DIR__ . '/LegacyNativeClientFixture.php';
+
 /** Uses only the installed baseline's own store/hasher; no remote metadata fetch or code from the candidate release. */
 final class LegacyCredentialFixture {
-	/** @param string $output Private baseline checkpoint, never printed. @return void Trusted and untrusted legacy credentials. */
-	public static function write(string $output): void {
+	/** @param string $output Private baseline checkpoint, never printed. @param string $version Installed baseline. @return void Trusted and untrusted legacy credentials. */
+	public static function write(string $output, string $version = '1.0.8'): void {
 		$uid = 'mcp-it-legacy';
 		$client = 'https://claude.ai/mcp-it-client.json';
 		$redirect = 'https://mcp-it.example/callback';
 		$resource = 'https://mcp-it.example/index.php/apps/mcp/mcp';
-		$hasher = Server::get(LegacyOAuthNames::hasher());
-		$store = Server::get(LegacyOAuthNames::store());
+		$hasher = Server::get(LegacyOAuthNames::hasher($version));
+		$store = Server::get(LegacyOAuthNames::store($version));
 		$db = Server::get(IDBConnection::class);
 		$now = time();
 		$ttl = 6 * 3600;
@@ -54,7 +56,7 @@ final class LegacyCredentialFixture {
 			$db->rollBack();
 			throw $e;
 		}
-		Server::get(IConfig::class)->setAppValue('mcp', 'oauth_native_client_enabled', '1');
+		LegacyNativeClientFixture::enable($version, $output);
 		$rows = [];
 		foreach (['mcp_oauth_codes', 'mcp_oauth_tokens', 'mcp_oauth_spent'] as $table) {
 			$qb = $db->getQueryBuilder();

@@ -1,23 +1,22 @@
 #!/bin/sh
 # SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# Opt-in Forms stage of the official harness. Installs a SHA-checked cached release, creates only synthetic actors,
+# Opt-in Forms stage of the official harness. Installs a SHA-checked pinned release, creates only synthetic actors,
 # and seeds through the official OCS API. It never owns the engine lifecycle.
 set -eu
 NC=${MCP_IT_NC_NAME:?}
 WORK="${RUNNER_TEMP:?}/mcp-it"
 case "$MCP_IT_NC" in
  32) VERSION=5.3.7; SHA=7da964e5c60353b21e0d438d60ceb123f39e5fcf3c16386c1fc93994021ffcbc ;;
- 35) VERSION=5.4.1; SHA=9cfc3776721fce1b284f57ec4a9e165c75927adbb5f06d5b5bfddd14a8f0b42e ;;
+ 33|34|35) VERSION=5.4.1; SHA=9cfc3776721fce1b284f57ec4a9e165c75927adbb5f06d5b5bfddd14a8f0b42e ;;
  *) echo 'No Forms cell pinned for this server'; exit 2 ;;
 esac
 # occ: execute PHP only in the disposable server as its web user.
 occ() { docker exec -u www-data "$NC" php /var/www/html/occ "$@"; }
-# provision: use a caller-provided, already cached official archive; missing cache refuses instead of downloading.
+# provision: obtain the pinned official archive and verify its checksum before installation.
 provision() {
  archive="$WORK/tools/forms-v$VERSION.tar.gz"
- [ -f "$archive" ] || { echo 'Expected cached pinned Forms archive'; return 2; }
- echo "$SHA  $archive" | shasum -a 256 -c -
+ sh "$(dirname "$0")/archive.sh" "$VERSION" "$SHA" "$archive"
  docker exec -u www-data "$NC" tar -xzf "/mcp-it-tools/forms-v$VERSION.tar.gz" -C /var/www/html/custom_apps
  occ app:enable forms
  [ "$(occ config:app:get forms installed_version)" = "$VERSION" ]

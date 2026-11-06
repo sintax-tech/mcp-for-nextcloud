@@ -40,17 +40,19 @@ final class LayeringTest extends ArchitectureCase {
 		self::assertNotSame([], self::fixture('lib/Platform/X.php', 'use NewVendor\\Framework\\Service;'));
 	}
 	public function testLedgerIsExactConsumedAndMonotonic(): void {
+		// This isolated ledger fixture models RE-28 before its completion.
+		$tickets = new TicketState(self::tickets()->known, array_values(array_diff(self::tickets()->completed, ['RE-28'])));
 		$edge = self::fixture('lib/Mcp/X.php', 'use OCA~Mcp~Tools~Notes~NotesModule;')[0];
 		$entry = $edge + ['reason' => 'Replace the legacy edge.', 'expires' => 'RE-28'];
-		self::assertSame([], BoundaryLedger::problems([$edge], [$entry], self::tickets()));
+		self::assertSame([], BoundaryLedger::problems([$edge], [$entry], $tickets));
 		$extra = self::fixture('lib/Mcp/X.php', 'use OCA~Mcp~Tools~Files~FilesModule;')[0];
-		self::assertNotSame([], BoundaryLedger::problems([$edge, $extra], [$entry], self::tickets()));
-		self::assertNotSame([], BoundaryLedger::problems([], [$entry], self::tickets()));
+		self::assertNotSame([], BoundaryLedger::problems([$edge, $extra], [$entry], $tickets));
+		self::assertNotSame([], BoundaryLedger::problems([], [$entry], $tickets));
 		foreach ([['expires' => 'RE-05b'], ['expires' => 'RE-999'], ['source' => 'lib/*'], ['target' => 'OCA~Mcp~Tools\\*']] as $change) {
-			try { BoundaryLedger::problems([$edge], [array_replace($entry, $change)], self::tickets()); self::fail('Invalid exception accepted'); }
+			try { BoundaryLedger::problems([$edge], [array_replace($entry, $change)], $tickets); self::fail('Invalid exception accepted'); }
 			catch (RuntimeException $error) { self::assertNotSame('', $error->getMessage()); }
 		}
-		try { BoundaryLedger::problems([$edge], [$entry, $entry], self::tickets()); self::fail('Duplicate accepted'); }
+		try { BoundaryLedger::problems([$edge], [$entry, $entry], $tickets); self::fail('Duplicate accepted'); }
 		catch (RuntimeException $error) { self::assertStringContainsString('Duplicate', $error->getMessage()); }
 		$this->expectException(RuntimeException::class);
 		new TicketState(self::tickets()->known, array_values(array_diff(self::tickets()->completed, ['RE-05b'])));

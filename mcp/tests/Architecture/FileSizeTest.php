@@ -31,9 +31,11 @@ final class FileSizeTest extends ArchitectureCase {
 	public function testMembershipPromotionCeilingsAndTransientGrowthFail(): void {
 		$live = AppTree::json(self::tree()->root . '/scripts/dev/size-inventory.json');
 		self::assertSame([], SizeRules::problems(self::tree(), $live, self::json('size-baseline'), self::json('source-size-baseline'), self::tickets()));
+		// Keep the invalid source-ceiling control independent of the real RE-28 completion.
+		$sourceTickets = new TicketState(self::tickets()->known, array_values(array_diff(self::tickets()->completed, ['RE-28'])));
 		$source = array_key_first(array_filter(self::tree()->files, static fn (string $path): bool => str_starts_with($path, 'src/'), ARRAY_FILTER_USE_KEY));
 		$paths = [$source => ['ceiling' => substr_count(self::tree()->files[$source], "\n"), 'expires' => 'RE-28']]; $paths[$source]['ceiling']++;
-		self::assertNotSame([], SizeRules::problems(self::tree(), $live, self::json('size-baseline'), $paths, self::tickets()));
+		self::assertNotSame([], SizeRules::problems(self::tree(), $live, self::json('size-baseline'), $paths, $sourceTickets));
 		// Exercise the historical ratchet locally even after every live exception is retired.
 		$name = 'OCA\\Mcp\\Service\\Policy\\PolicyWriter';
 		$row = ['ceiling' => 1485, 'expires' => 'RE-06d', 'steps' => [

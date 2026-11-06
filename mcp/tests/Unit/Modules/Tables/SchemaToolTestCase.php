@@ -32,9 +32,10 @@ abstract class SchemaToolTestCase extends TestCase {
 		$this->gateway = $this->createMock(SchemaGateway::class);
 		$this->session = $this->createMock(TablesSessionGuard::class);
 		$capabilities = $this->createMock(TablesWriteCapabilities::class);
+		$capabilities->method('keys')->willReturn(['tables.native_schema_api', 'tables.native_sharing_api']);
 		$capabilities->method('supports')->willReturn(true); $capabilities->method('profile')->willReturn('2.3.2');
 		$this->gateway->method('prepare')->willReturnCallback(fn ($action, $args): array => ['arguments' => $args, 'profile' => '2.3.2', 'version' => '2.3.2', 'before' => ['title' => 'old'], 'after' => static::ACTION === 'unshare_node' ? [] : ['title' => 'new'], 'shared' => false, 'noop' => false]);
-		$this->flow = new SchemaFlow($this->gateway, new PlanState($config), $this->grants, $this->session, $capabilities);
+		$this->flow = new SchemaFlow($this->gateway, new PlanState($config), $this->grants, $this->session, $capabilities, new \OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry([$capabilities], $this->createMock(\Psr\Log\LoggerInterface::class)));
 	}
 	/** @return bool Whether this tool uses tables.share. */
 	private function sharing(): bool { return in_array(static::ACTION, ['share_node', 'unshare_node'], true); }
@@ -109,9 +110,10 @@ abstract class SchemaToolTestCase extends TestCase {
 		$gateway->expects($this->never())->method('apply');
 		$config = (new InMemoryConfig())->mock($this);
 		$caps = $this->createMock(TablesWriteCapabilities::class);
+		$caps->method('keys')->willReturn(['tables.native_schema_api', 'tables.native_sharing_api']);
 		$caps->method('supports')->willReturn(true);
 		$caps->method('profile')->willReturn('2.3.2');
-		$flow = new SchemaFlow($gateway, new PlanState($config), $this->grants, $this->session, $caps);
+		$flow = new SchemaFlow($gateway, new PlanState($config), $this->grants, $this->session, $caps, new \OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry([$caps], $this->createMock(\Psr\Log\LoggerInterface::class)));
 		$plan = $flow->preview(SchemaActionFixture::of($this, static::ACTION), $this->arguments(), 'alice');
 		$result = $flow->handle(SchemaActionFixture::of($this, static::ACTION), $this->arguments() + ['confirm' => true, 'plan_state' => $plan['plan_state']], 'alice');
 		$this->assertTrue(json_decode($result['content'][0]['text'], true)['requiresConfirmation']);
@@ -136,9 +138,10 @@ abstract class SchemaToolTestCase extends TestCase {
 		$gateway->method('observe')->willReturn(['emoji' => 'X', 'description' => 'D', 'numberDefault' => 5.0, 'title' => 'New']);
 		$config = (new InMemoryConfig())->mock($this);
 		$caps = $this->createMock(TablesWriteCapabilities::class);
+		$caps->method('keys')->willReturn(['tables.native_schema_api', 'tables.native_sharing_api']);
 		$caps->method('supports')->willReturn(true);
 		$caps->method('profile')->willReturn('2.3.2');
-		$flow = new SchemaFlow($gateway, new PlanState($config), $this->grants, $this->session, $caps);
+		$flow = new SchemaFlow($gateway, new PlanState($config), $this->grants, $this->session, $caps, new \OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry([$caps], $this->createMock(\Psr\Log\LoggerInterface::class)));
 		$plan = $flow->preview(SchemaActionFixture::of($this, static::ACTION), $this->arguments(), 'alice');
 		$result = $flow->handle(SchemaActionFixture::of($this, static::ACTION), $this->arguments() + ['confirm' => true, 'plan_state' => $plan['plan_state']], 'alice');
 		$receipt = json_decode($result['content'][0]['text'], true);

@@ -30,7 +30,7 @@ final class SchemaReadablePlans {
 		$gateway = $mock->invoke($test, SchemaGateway::class);
 		$gateway->method('prepare')->willReturnCallback(static fn ($action, $args): array => ['arguments' => $args, 'profile' => '2.3.2', 'version' => '2.3.2', 'before' => [], 'after' => ['title' => 'new'], 'shared' => false, 'noop' => false]);
 		$caps = SchemaCapabilityFixture::of($mock->invoke($test, \OCP\App\IAppManager::class));
-		$flow = new SchemaFlow($gateway, new PlanState($config), $grants, $mock->invoke($test, TablesSessionGuard::class), $caps);
+		$flow = new SchemaFlow($gateway, new PlanState($config), $grants, $mock->invoke($test, TablesSessionGuard::class), $caps, new \OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry([$caps], $mock->invoke($test, \Psr\Log\LoggerInterface::class)));
 		$plans = [];
 		foreach (array_slice(TablesToolCatalog::TOOLS, 6) as $class) {
 			$name = $class::definition()->name;

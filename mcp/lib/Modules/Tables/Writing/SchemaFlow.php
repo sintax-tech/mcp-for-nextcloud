@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Tables\Writing;
 
 use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry;
 use OCA\Mcp\Mcp\Confirmation\{PlanState, PlanChanged};
 use OCA\Mcp\Mcp\Tools\Results\{ToolResult, ToolFailure};
 use OCA\Mcp\Modules\Tables\Integration\{SchemaGateway, SchemaAction, TablesWriteCapabilities};
@@ -23,9 +24,10 @@ class SchemaFlow {
 	 * @param GrantPolicy $grants Grants renewed on every phase.
 	 * @param TablesSessionGuard $session Caller guard, including update_column.
 	 * @param TablesWriteCapabilities $capabilities Fail-closed API profile.
+	 * @param CapabilityRegistry $registry Request-scoped cached capability answers.
 	 */
 	public function __construct(private SchemaGateway $gateway, private PlanState $states, private GrantPolicy $grants,
-		private TablesSessionGuard $session, private TablesWriteCapabilities $capabilities) {}
+		private TablesSessionGuard $session, private TablesWriteCapabilities $capabilities, private CapabilityRegistry $registry) {}
 	/**
 	 * @param SchemaAction $action Tool-specific action.
 	 * @param array<string,mixed> $args Arguments.
@@ -82,7 +84,7 @@ class SchemaFlow {
 		$share = $action->operation() === 'share';
 		if (!$this->grants->granted($uid, 'tables', $share ? 'share' : 'schema')) throw new ToolFailure(CommonMessages::forbidden());
 		$this->session->assertCaller($uid);
-		if (!$this->capabilities->supports($share ? 'tables.native_sharing_api' : 'tables.native_schema_api')) throw new ToolFailure(SchemaMessages::incompatible());
+		if (!$this->registry->supports($share ? 'tables.native_sharing_api' : 'tables.native_schema_api')) throw new ToolFailure(SchemaMessages::incompatible());
 	}
 	/**
 	 * @param SchemaAction $action Tool-specific action.

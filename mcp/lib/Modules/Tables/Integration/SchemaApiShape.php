@@ -9,12 +9,14 @@ namespace OCA\Mcp\Modules\Tables\Integration;
 
 /** Extracted signatures of the five official source pins; no native objects are built. */
 final class SchemaApiShape {
+	/** @var array<string,list<array>>|null Decoded signatures, once in this PHP request. */
+	private static ?array $signatures = null;
 	/**
 	 * @param string $profile Version family.
 	 * @return list<array> Expected native members and their signatures.
 	 */
 	public static function members(string $profile): array {
-		$data = json_decode((string)file_get_contents(__DIR__ . '/schema-api-signatures.json'), true, 64, JSON_THROW_ON_ERROR);
+		$data = self::$signatures ??= json_decode((string)file_get_contents(__DIR__ . '/schema-api-signatures.json'), true, 64, JSON_THROW_ON_ERROR);
 		if (!isset($data[$profile]) || $data[$profile] === []) return [];
 		$members = $data[$profile];
 		foreach (['OCA\\Tables\\Db\\Table' => ['ownership', 'title', 'description', 'emoji', 'archived'],

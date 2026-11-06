@@ -16,6 +16,7 @@ use OCA\Deck\Model\OptionalNullableValue;
 use OCA\Deck\Service\CardService;
 use OCA\Deck\Service\PermissionService;
 use OCA\Mcp\Platform\Time\UserTimezone;
+use OCA\Mcp\Tools\Deck\DeckErrors;
 
 /** Creates, updates, moves and deletes a card. A due date is still formatted only by CardDueDate. */
 final class DeckCardChanges {
@@ -37,7 +38,17 @@ final class DeckCardChanges {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Creates a card owned by the caller at the end of the stack.
+	 *
+	 * @param string $userId UID of the authenticated caller, used as the card owner.
+	 * @param int $stackId Stack that receives the card.
+	 * @param string $title Card title.
+	 * @param string $description Card description, possibly empty.
+	 * @param string|null $duedate Calendar day, account-local time or offset instant; normalized to UTC Z for Deck, or null.
+	 * @param int|null $order Position in the stack, or null to go after the last card.
+	 * @return Card Created card.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 * @see DeckGatewayInterface::createCard()
 	 */
 	public function createCard(string $userId, int $stackId, string $title, string $description, ?string $duedate, ?int $order = null): Card {
 		$this->services->bindUser($userId);
@@ -50,7 +61,17 @@ final class DeckCardChanges {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Writes the full card form, as `CardService::update()` requires it.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param Card $card Card as previously read, source of the fields the caller did not change.
+	 * @param string $title New title.
+	 * @param string $description New description.
+	 * @param string|null $duedate Calendar day, account-local time or offset instant (including the current instant),
+	 *     normalized to UTC Z for Deck, or null to clear it.
+	 * @return Card Updated card.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 * @see DeckGatewayInterface::updateCard()
 	 */
 	public function updateCard(string $userId, Card $card, string $title, string $description, ?string $duedate): Card {
 		$this->services->bindUser($userId);
@@ -113,7 +134,15 @@ final class DeckCardChanges {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Moves a card to another stack, possibly of another board.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param int $cardId Card to move.
+	 * @param int $stackId Destination stack.
+	 * @param int|null $order Target position, or null to append at the end of the destination.
+	 * @return Card Moved card.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 * @see DeckGatewayInterface::moveCard()
 	 */
 	public function moveCard(string $userId, int $cardId, int $stackId, ?int $order): Card {
 		$this->services->bindUser($userId);
@@ -147,7 +176,13 @@ final class DeckCardChanges {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Soft deletes a card, exactly as the Deck web interface does.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param int $cardId Card to delete.
+	 * @return Card Deleted card, still readable by the Deck.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 * @see DeckGatewayInterface::deleteCard()
 	 */
 	public function deleteCard(string $userId, int $cardId): Card {
 		$this->services->bindUser($userId);

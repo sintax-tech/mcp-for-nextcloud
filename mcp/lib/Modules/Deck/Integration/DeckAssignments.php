@@ -29,7 +29,15 @@ final class DeckAssignments {
 	) {
 	}
 
-	/** {@inheritDoc} */
+	/**
+	 * Validates accounts and their board access before a preview or creation.
+	 * @param string $userId Authenticated caller.
+	 * @param int $stackId Destination stack.
+	 * @param list<string> $assignees Account IDs to assign.
+	 * @return list<array{uid: string, displayName: string}> Unique validated accounts.
+	 * @throws \InvalidArgumentException When any account is missing or lacks access.
+	 * @see DeckGatewayInterface::validateAssignees()
+	 */
 	public function validateAssignees(string $userId, int $stackId, array $assignees): array {
 		$this->services->bindUser($userId);
 		/** @var PermissionService $permissions */
@@ -53,7 +61,15 @@ final class DeckAssignments {
 		return $out;
 	}
 
-	/** {@inheritDoc} */
+	/**
+	 * Assigns one validated account through Deck's assignment service.
+	 * @param string $userId Authenticated caller.
+	 * @param int $cardId Created card.
+	 * @param string $assignee Account ID to assign.
+	 * @return \OCA\Deck\Db\Assignment Persisted assignment.
+	 * @throws \Throwable When a concurrent change prevents assignment.
+	 * @see DeckGatewayInterface::assignCardUser()
+	 */
 	public function assignCardUser(string $userId, int $cardId, string $assignee): Assignment {
 		$this->services->bindUser($userId);
 		/** @var AssignmentService $assignments */
@@ -61,7 +77,15 @@ final class DeckAssignments {
 		return $assignments->assignUser($cardId, $assignee);
 	}
 
-	/** {@inheritDoc} */
+	/**
+	 * Removes one account from the assignees of a card through Deck's assignment service.
+	 * @param string $userId Authenticated caller.
+	 * @param int $cardId Card the account leaves.
+	 * @param string $assignee Account ID to unassign.
+	 * @return \OCA\Deck\Db\Assignment Removed assignment.
+	 * @throws \Throwable When Deck refuses or a concurrent change prevents it.
+	 * @see DeckGatewayInterface::unassignCardUser()
+	 */
 	public function unassignCardUser(string $userId, int $cardId, string $assignee): Assignment {
 		$this->services->bindUser($userId);
 		/** @var AssignmentService $assignments */

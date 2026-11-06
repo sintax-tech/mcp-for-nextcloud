@@ -15,6 +15,7 @@ use OCA\Deck\Db\StackMapper;
 use OCA\Deck\NoPermissionException;
 use OCA\Deck\Service\PermissionService;
 use OCA\Deck\Service\StackService;
+use OCA\Mcp\Tools\Deck\DeckErrors;
 
 /** Lists and creates stacks, counts the cards of a stack the caller may manage, and reads a stack back from the trash. */
 final class DeckStacks {
@@ -33,7 +34,13 @@ final class DeckStacks {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Stacks of one board, with their cards embedded by the Deck service.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param int $boardId Board to list.
+	 * @return list<Stack> Stacks of the board.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 * @see DeckGatewayInterface::listStacks()
 	 */
 	public function listStacks(string $userId, int $boardId): array {
 		$this->services->bindUser($userId);
@@ -60,7 +67,15 @@ final class DeckStacks {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Creates a list on a board the caller manages.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param int $boardId Board that receives the list.
+	 * @param string $title List title.
+	 * @param int|null $order Position among the lists, or null to go after the last one.
+	 * @return Stack Created list.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 * @see DeckGatewayInterface::createStack()
 	 */
 	public function createStack(string $userId, int $boardId, string $title, ?int $order): Stack {
 		$this->services->bindUser($userId);
@@ -88,7 +103,13 @@ final class DeckStacks {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Cards a list holds, active and archived (the Deck trash is not counted).
+	 *
+	 * @param string $userId UID of the authenticated caller, who must manage the board of the list.
+	 * @param int $stackId List to count.
+	 * @return int Number of cards.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 * @see DeckGatewayInterface::stackCardCount()
 	 */
 	public function stackCardCount(string $userId, int $stackId): int {
 		$this->services->bindUser($userId);
@@ -105,7 +126,13 @@ final class DeckStacks {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * The active lists of a board, read again from the database (deleted ones left out, no cards embedded).
+	 *
+	 * @param string $userId UID of the authenticated caller, who must be able to read the board.
+	 * @param int $boardId Board to read.
+	 * @return list<Stack> Its lists.
+	 * @throws \Throwable Any Deck failure; the caller treats it as "cannot tell".
+	 * @see DeckGatewayInterface::stacksOf()
 	 */
 	public function stacksOf(string $userId, int $boardId): array {
 		$this->services->bindUser($userId);
@@ -121,10 +148,16 @@ final class DeckStacks {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Whether a list went to the Deck trash, read again from the database.
 	 *
 	 * `StackMapper::find()` keeps the entity of the request in memory, with the `deleted_at` the failed delete set on
 	 * it even when the update never reached the database, so the lists are queried again instead.
+	 *
+	 * @param string $userId UID of the authenticated caller, who must be able to read the board of the list.
+	 * @param int $stackId List to look for.
+	 * @return Stack|null The list as found in the trash, or null when it is still among the active lists.
+	 * @throws \Throwable When it is found nowhere, or any Deck failure; the caller treats it as "cannot tell".
+	 * @see DeckGatewayInterface::deletedStack()
 	 */
 	public function deletedStack(string $userId, int $stackId): ?Stack {
 		$this->services->bindUser($userId);

@@ -15,6 +15,7 @@ use OCA\Deck\Db\CardMapper;
 use OCA\Deck\Db\StackMapper;
 use OCA\Deck\Service\CardService;
 use OCA\Deck\Service\PermissionService;
+use OCA\Mcp\Tools\Deck\DeckErrors;
 use OCP\AppFramework\Utility\ITimeFactory;
 
 /** Reads cards, the board of a card, its assignments and state, and the card a failed creation saved. */
@@ -37,7 +38,18 @@ final class DeckCardQuery {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Active cards of one stack, paginated.
+	 *
+	 * The Deck has no service method for this, so the gateway runs the same explicit
+	 * `PERMISSION_READ` check that `StackService::findAll()` runs before touching the mapper.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param int $stackId Stack to list.
+	 * @param int $limit Maximum number of cards.
+	 * @param int $offset Number of cards to skip.
+	 * @return array{items: list<Card>, boardId: int} Cards and the board they belong to.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 * @see DeckGatewayInterface::listCards()
 	 */
 	public function listCards(string $userId, int $stackId, int $limit, int $offset): array {
 		$this->services->bindUser($userId);
@@ -69,7 +81,13 @@ final class DeckCardQuery {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * One card with references filtered for the caller; native file counts are not public.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param int $cardId Card to read.
+	 * @return Card Enriched card.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 * @see DeckGatewayInterface::findCard()
 	 */
 	public function findCard(string $userId, int $cardId): Card {
 		$this->services->bindUser($userId);
@@ -82,9 +100,15 @@ final class DeckCardQuery {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * One card read again from the database, deleted or not, so a write tool can tell what a failed write left.
 	 *
 	 * `CardMapper::find()` runs a fresh query and, unlike `CardService::find()`, answers a deleted card too.
+	 *
+	 * @param string $userId UID of the authenticated caller, who must be able to read the board of the card.
+	 * @param int $cardId Card to read.
+	 * @return Card The card as stored, without the enrichment of the Deck service.
+	 * @throws \Throwable Any Deck failure; the caller treats it as "cannot tell".
+	 * @see DeckGatewayInterface::cardState()
 	 */
 	public function cardState(string $userId, int $cardId): Card {
 		$this->services->bindUser($userId);
@@ -102,7 +126,16 @@ final class DeckCardQuery {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * The card a creation that threw may have saved: the newest card of the caller in that list with that title,
+	 * created in the last two minutes and not one of `$excludeIds`.
+	 *
+	 * @param string $userId UID of the authenticated caller, the owner of the card.
+	 * @param int $stackId List the card was created in.
+	 * @param string $title Title of the card.
+	 * @param list<int> $excludeIds Cards already accounted for, such as the ones created earlier in the same call.
+	 * @return Card|null The card, or null when there is none.
+	 * @throws \Throwable Any Deck failure; the caller treats it as "cannot tell".
+	 * @see DeckGatewayInterface::findCreatedCard()
 	 */
 	public function findCreatedCard(string $userId, int $stackId, string $title, array $excludeIds = []): ?Card {
 		$this->services->bindUser($userId);
@@ -132,7 +165,13 @@ final class DeckCardQuery {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * The assignments of one card, read again from the database.
+	 *
+	 * @param string $userId UID of the authenticated caller, who must be able to read the card.
+	 * @param int $cardId Card to read.
+	 * @return list<\OCA\Deck\Db\Assignment> Its assignments.
+	 * @throws \Throwable Any Deck failure; the caller treats it as "cannot tell".
+	 * @see DeckGatewayInterface::cardAssignments()
 	 */
 	public function cardAssignments(string $userId, int $cardId): array {
 		$this->services->bindUser($userId);
@@ -148,7 +187,16 @@ final class DeckCardQuery {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Board a card belongs to, after the read check a link to the card needs.
+	 *
+	 * Talk cites a card by its canonical URL, which carries the board id; the check comes first so a
+	 * caller without read access learns nothing, not even which board the card is on.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param int $cardId Card whose board is looked up.
+	 * @return int Board id.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 * @see DeckGatewayInterface::cardBoardId()
 	 */
 	public function cardBoardId(string $userId, int $cardId): int {
 		$this->services->bindUser($userId);

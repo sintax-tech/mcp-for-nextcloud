@@ -14,6 +14,7 @@ use OCA\Deck\Db\StackMapper;
 use OCA\Deck\NoPermissionException;
 use OCA\Deck\Service\BoardService;
 use OCA\Deck\Service\PermissionService;
+use OCA\Mcp\Tools\Deck\DeckErrors;
 
 /** Reads who owns a board, a list or a card after the caller's own permission check. */
 final class DeckOwnership {
@@ -28,7 +29,17 @@ final class DeckOwnership {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Ownership of the board behind a stack, after the edit check the write needs.
+	 *
+	 * The Deck has no owner query for a stack, so the gateway checks `PERMISSION_EDIT` on the board
+	 * the stack belongs to first: a stack the caller may not write is answered as "denied" before
+	 * any owner or title is read, exactly like the write itself would.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param int $stackId Stack whose board is looked up.
+	 * @return array{owner: string, ownerDisplayName: string, name: string} Owner uid, its display name and the board title.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 * @see DeckGatewayInterface::stackOwnership()
 	 */
 	public function stackOwnership(string $userId, int $stackId): array {
 		$this->services->bindUser($userId);
@@ -46,7 +57,16 @@ final class DeckOwnership {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Ownership of the board behind a card, after the edit check the write needs.
+	 *
+	 * Same contract as {@see self::stackOwnership()}, starting from the card: the Deck checks
+	 * `PERMISSION_EDIT` on the board of the card and refuses a card that is already deleted.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param int $cardId Card whose board is looked up.
+	 * @return array{owner: string, ownerDisplayName: string, name: string} Owner uid, its display name and the board title.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 * @see DeckGatewayInterface::cardOwnership()
 	 */
 	public function cardOwnership(string $userId, int $cardId): array {
 		$this->services->bindUser($userId);
@@ -64,7 +84,16 @@ final class DeckOwnership {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Ownership of a board, after the manage check a structure change needs.
+	 *
+	 * Same contract as {@see self::stackOwnership()}, starting from the board: the check comes first, so a
+	 * caller who may not manage it learns neither its owner nor its title.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param int $boardId Board whose owner is looked up.
+	 * @return array{owner: string, ownerDisplayName: string, name: string} Owner uid, its display name and the board title.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 * @see DeckGatewayInterface::boardOwnership()
 	 */
 	public function boardOwnership(string $userId, int $boardId): array {
 		$this->services->bindUser($userId);

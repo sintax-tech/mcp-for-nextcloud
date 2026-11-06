@@ -11,7 +11,9 @@ namespace OCA\Mcp\Modules\Deck\Integration;
 use OCA\Deck\Db\Acl;
 use OCA\Deck\Db\Board;
 use OCA\Deck\Db\BoardMapper;
+use OCA\Deck\Service\BoardService;
 use OCA\Deck\Service\PermissionService;
+use OCA\Mcp\Tools\Deck\DeckErrors;
 
 /** Lists and creates boards, counts the cards of a board the caller may manage, and reads the boards the caller owns. */
 final class DeckBoards {
@@ -28,7 +30,12 @@ final class DeckBoards {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Boards shared with the user, archived ones excluded.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @return list<Board> Boards visible to the caller, unsorted.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 * @see DeckGatewayInterface::listBoards()
 	 */
 	public function listBoards(string $userId): array {
 		/** @var BoardService $boardService */
@@ -39,7 +46,14 @@ final class DeckBoards {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Creates a board owned by the caller, with the default labels Deck gives every new board.
+	 *
+	 * @param string $userId UID of the authenticated caller, the owner of the new board.
+	 * @param string $title Board title, 1 to 100 characters.
+	 * @param string $color Six hexadecimal digits, without `#`.
+	 * @return Board Created board.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 * @see DeckGatewayInterface::createBoard()
 	 */
 	public function createBoard(string $userId, string $title, string $color): Board {
 		$boardService = $this->services->bindUser($userId);
@@ -49,7 +63,13 @@ final class DeckBoards {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Cards a board holds in all its lists, active and archived (the Deck trash is not counted).
+	 *
+	 * @param string $userId UID of the authenticated caller, who must manage the board.
+	 * @param int $boardId Board to count.
+	 * @return int Number of cards.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 * @see DeckGatewayInterface::boardCardCount()
 	 */
 	public function boardCardCount(string $userId, int $boardId): int {
 		$this->services->bindUser($userId);
@@ -63,10 +83,15 @@ final class DeckBoards {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * The boards the caller owns, read again from the database, deleted ones included.
 	 *
 	 * `BoardMapper::findAllByOwner()` is a fresh query; `find()` would answer from the entity cache of the request.
 	 * Only the caller's own boards are read, so no ACL check is needed.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @return list<Board> Their boards.
+	 * @throws \Throwable Any Deck failure; the caller treats it as "cannot tell".
+	 * @see DeckGatewayInterface::ownedBoards()
 	 */
 	public function ownedBoards(string $userId): array {
 		$this->services->bindUser($userId);

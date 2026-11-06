@@ -5728,6 +5728,125 @@
                             "idempotentHint": true,
                             "openWorldHint": false
                         }
+                    },
+                    {
+                        "name": "collectives_create",
+                        "title": "Create collective page",
+                        "description": "Creates an empty page under a parent page of a collective; edit it afterwards to add content.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "collective_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the collective, as collectives_list returns it."
+                                },
+                                "parent_id": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "description": "Id of the parent page; 0 for the landing page of the collective."
+                                },
+                                "title": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 200,
+                                    "description": "Title of the page (1-200 characters)."
+                                },
+                                "plan_state": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                                },
+                                "confirm": {
+                                    "type": "boolean",
+                                    "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "collective_id",
+                                "parent_id",
+                                "title"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Create collective page",
+                            "readOnlyHint": false,
+                            "destructiveHint": false,
+                            "idempotentHint": false,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
+                        "name": "collectives_edit",
+                        "title": "Edit collective page",
+                        "description": "Changes the Markdown of one page with one of: append (add at the end), old/new (replace one unique passage) or content (rewrite it whole), confirmed with the etag and plan_state of the plan.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "collective_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the collective, as collectives_list returns it."
+                                },
+                                "page_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the page, as collectives_pages returns it."
+                                },
+                                "content": {
+                                    "type": "string",
+                                    "maxLength": 262144,
+                                    "description": "New complete Markdown; only to rewrite the whole page."
+                                },
+                                "append": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 65536,
+                                    "description": "Markdown added at the end, on a new line."
+                                },
+                                "old": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 65536,
+                                    "description": "Passage to replace; must appear exactly once."
+                                },
+                                "new": {
+                                    "type": "string",
+                                    "maxLength": 65536,
+                                    "description": "Text that replaces old."
+                                },
+                                "etag": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "ETag read before; when it differs, nothing is changed."
+                                },
+                                "plan_state": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                                },
+                                "confirm": {
+                                    "type": "boolean",
+                                    "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "collective_id",
+                                "page_id"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Edit collective page",
+                            "readOnlyHint": false,
+                            "destructiveHint": true,
+                            "idempotentHint": false,
+                            "openWorldHint": false
+                        }
                     }
                 ]
             }

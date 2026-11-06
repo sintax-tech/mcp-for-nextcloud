@@ -1226,7 +1226,19 @@
 		{"path":"lib/Modules/Collectives/Tools/ListCollectives.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Tools\\ListCollectives","target":"stays","owner":"Modules\\Collectives","ticket":null},
 		{"path":"lib/Modules/Collectives/Tools/ListPages.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Tools\\ListPages","target":"stays","owner":"Modules\\Collectives","ticket":null},
 		{"path":"lib/Modules/Collectives/Tools/ReadPage.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Tools\\ReadPage","target":"stays","owner":"Modules\\Collectives","ticket":null},
-		{"path":"lib/Modules/Collectives/Tools/SearchPages.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Tools\\SearchPages","target":"stays","owner":"Modules\\Collectives","ticket":null}
+		{"path":"lib/Modules/Collectives/Tools/SearchPages.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Tools\\SearchPages","target":"stays","owner":"Modules\\Collectives","ticket":null},
+		{"path":"lib/Modules/Collectives/Creation/CreatePageHandler.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Creation\\CreatePageHandler","target":"stays","owner":"Modules\\Collectives","ticket":null},
+		{"path":"lib/Modules/Collectives/Creation/CreatePagePlan.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Creation\\CreatePagePlan","target":"stays","owner":"Modules\\Collectives","ticket":null},
+		{"path":"lib/Modules/Collectives/Creation/CreatePagePreview.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Creation\\CreatePagePreview","target":"stays","owner":"Modules\\Collectives","ticket":null},
+		{"path":"lib/Modules/Collectives/Editing/EditPageHandler.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Editing\\EditPageHandler","target":"stays","owner":"Modules\\Collectives","ticket":null},
+		{"path":"lib/Modules/Collectives/Editing/EditPagePlan.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Editing\\EditPagePlan","target":"stays","owner":"Modules\\Collectives","ticket":null},
+		{"path":"lib/Modules/Collectives/Editing/EditPagePreview.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Editing\\EditPagePreview","target":"stays","owner":"Modules\\Collectives","ticket":null},
+		{"path":"lib/Modules/Collectives/Editing/PageChange.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Editing\\PageChange","target":"stays","owner":"Modules\\Collectives","ticket":null},
+		{"path":"lib/Modules/Collectives/Presentation/CollectivesPlanRenderer.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Presentation\\CollectivesPlanRenderer","target":"stays","owner":"Modules\\Collectives","ticket":null},
+		{"path":"lib/Modules/Collectives/Tools/CreatePage.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Tools\\CreatePage","target":"stays","owner":"Modules\\Collectives","ticket":null},
+		{"path":"lib/Modules/Collectives/Tools/EditPage.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Tools\\EditPage","target":"stays","owner":"Modules\\Collectives","ticket":null},
+		{"path":"lib/Modules/Collectives/Writing/PageReceipt.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Writing\\PageReceipt","target":"stays","owner":"Modules\\Collectives","ticket":null},
+		{"path":"lib/Modules/Collectives/Writing/PlanConfirmation.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Writing\\PlanConfirmation","target":"stays","owner":"Modules\\Collectives","ticket":null}
 	],
 	"tests": [
 		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\ServerInfoTest","target":"OCA\\Mcp\\Tests\\Unit\\Mcp\\Protocol\\ServerInfoTest"},

@@ -59,6 +59,7 @@
             "OCA\\Mcp\\Modules\\Talk\\Integration\\TalkServices",
             "OCA\\Mcp\\Access\\Guests\\NativeGuests",
             "OCA\\Mcp\\Modules\\Mail\\Creation\\MailDraftHtmlPurifier",
+            "OCA\\Mcp\\Modules\\Collectives\\Integration\\CollectivesMarkdownPolicy",
             "OCA\\Mcp\\Mcp\\Tools\\Discovery\\CapabilityRegistry",
             "OCA\\Mcp\\Mcp\\Tools\\ToolRegistry",
             "OCA\\Mcp\\Mcp\\Resources\\ResourceRegistry",

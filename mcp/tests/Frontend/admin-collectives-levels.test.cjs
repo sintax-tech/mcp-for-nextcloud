@@ -35,11 +35,14 @@ function collectivesOperations() {
 test('Collectives levels follow the catalog and grant nothing implicitly', () => {
 	const Levels = levels()
 	const operations = collectivesOperations()
-	assert.deepEqual(operations, ['read'])
-	assert.deepEqual(plain(Levels.levels('collectives', operations)), ['none', 'read'])
+	assert.deepEqual(operations, ['read', 'create', 'edit'])
+	assert.deepEqual(plain(Levels.levels('collectives', operations)), ['none', 'read', 'full'])
 	assert.deepEqual(plain(Levels.operationsFor('collectives', operations, 'read')), ['read'])
-	assert.equal(Levels.levelOf('collectives', operations, { read: true }), 'read')
-	assert.equal(Levels.levelOf('collectives', operations, { read: false }), 'none')
+	assert.deepEqual(plain(Levels.operationsFor('collectives', operations, 'full')), ['read', 'create', 'edit'])
+	assert.equal(Levels.levelOf('collectives', operations, { read: true, create: false, edit: false }), 'read')
+	assert.equal(Levels.levelOf('collectives', operations, { read: true, create: true, edit: true }), 'full')
+	assert.equal(Levels.levelOf('collectives', operations, { read: false, create: false, edit: false }), 'none')
+	assert.equal(Levels.levelOf('collectives', operations, { read: false, create: true, edit: false }), 'custom', 'writing without reading is shown operation by operation')
 })
 
 test('every module label map names Collectives', () => {

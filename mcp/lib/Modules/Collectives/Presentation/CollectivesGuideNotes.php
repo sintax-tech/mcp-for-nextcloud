@@ -27,6 +27,10 @@ final class CollectivesGuideNotes {
 			'collectives_search with scope content uses the Collectives search index, which may lag behind recent changes; '
 				. 'an empty answer does not prove there is no match.',
 			'Listings return next_cursor while more items remain; pass it back unchanged with the same arguments.',
+			'collectives_create makes an empty page; when the parent has no subpages yet, Collectives turns it into a folder '
+				. 'with a Readme.md (its id stays). Add the content with collectives_edit.',
+			'For a small change use collectives_edit with append or old/new; content rewrites the whole page. Confirm with the '
+				. 'etag and plan_state of the plan. Someone editing the page in the browser at the same time may write over the change.',
 		];
 	}
 }

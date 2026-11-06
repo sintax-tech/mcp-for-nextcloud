@@ -84,7 +84,9 @@
             "create"
         ],
         "collectives": [
-            "read"
+            "read",
+            "create",
+            "edit"
         ]
     },
     "DENIED_READS": [

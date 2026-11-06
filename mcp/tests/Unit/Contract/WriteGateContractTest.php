@@ -33,6 +33,12 @@ final class WriteGateContractTest extends TestCase {
 			$apps->method('isEnabledForAnyone')->willReturn(true);
 			return new \OCA\Mcp\Modules\Deck\Integration\DeckCapabilities($apps, 35, static fn (): bool => true);
 		}
+		if ($class === \OCA\Mcp\Modules\Collectives\Integration\CollectivesCapabilities::class) {
+			$apps = $this->createMock(\OCP\App\IAppManager::class);
+			$apps->method('getAppVersion')->willReturn('4.7.1');
+			$apps->method('isEnabledForAnyone')->willReturn(true);
+			return new \OCA\Mcp\Modules\Collectives\Integration\CollectivesCapabilities($apps, 35, static fn (): bool => true);
+		}
 		if ($class === \OCA\Mcp\Db\LogsGroupsMapper::class) {
 			$db = new \OCA\Mcp\Tests\Unit\SqliteDatabase($this, [new \OCA\Mcp\Migration\Version001002Date20261008000000()]);
 			return new \OCA\Mcp\Db\LogsGroupsMapper($db->connection(), (new \OCA\Mcp\Tests\Unit\InMemoryAppConfig())->worker($this));
@@ -68,6 +74,7 @@ final class WriteGateContractTest extends TestCase {
 		$logger = $this->createMock(LoggerInterface::class);
 		return new ToolRegistry($modules, $policy, $apps, $users, $logger, capabilities: new \OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry([
 			$this->build(\OCA\Mcp\Modules\Deck\Integration\DeckCapabilities::class),
+			$this->build(\OCA\Mcp\Modules\Collectives\Integration\CollectivesCapabilities::class),
 		], $logger));
 	}
 

@@ -150,22 +150,6 @@ class CollectivesGateway {
 	}
 
 	/**
-	 * One native move, never retried; the caller reads the result back on its own.
-	 * @param int $cid collective id
-	 * @param int $pageId page to move
-	 * @param int|null $parentId new parent, null to keep it
-	 * @param string|null $title new title, null to keep it
-	 * @param int $index position among the subpages of the new parent
-	 * @param string $uid authenticated actor
-	 * @return int id of the page as Collectives answered it
-	 * @throws Throwable whatever the native call throws, untouched: the caller decides what an attempt means
-	 */
-	public function move(int $cid, int $pageId, ?int $parentId, ?string $title, int $index, string $uid): int {
-		$this->admission->admit($uid, 'move');
-		return PageProjection::page($this->service(CollectivesSurface::PAGES)->move($cid, $pageId, $parentId, $title, $index, $uid))['id'];
-	}
-
-	/**
 	 * @param string $class one of the CollectivesSurface service classes
 	 * @return object the shared native service
 	 * @throws ToolFailure when the container answers something else

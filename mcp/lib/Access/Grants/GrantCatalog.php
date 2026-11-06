@@ -39,7 +39,8 @@ final class GrantCatalog {
 		'forms' => ['read', 'results', 'create', 'edit'],
 		'polls' => ['read', 'results', 'links', 'create'],
 		// Collectives (#22): 'read' lists collectives and pages, reads and searches them; on by default like every read.
-		'collectives' => ['read'],
+		// 'create' adds an empty page and 'edit' changes the Markdown of one, through Collectives; both start denied.
+		'collectives' => ['read', 'create', 'edit'],
 	];
 
 	/** Prevents instantiation of the immutable catalog. */

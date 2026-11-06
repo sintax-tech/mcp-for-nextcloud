@@ -43,6 +43,8 @@ final class CollectivesRig {
 	/** @var list<int> file ids outside the user's resource scope */
 	public array $outOfScope = [];
 	public ?CollectivesSurface $surface = null;
+	/** The real policy of an effects gate; null uses $this->grants */
+	public ?GrantPolicy $realPolicy = null;
 	/** @var array<class-string, object> instances already built */
 	private array $built = [];
 
@@ -96,7 +98,7 @@ final class CollectivesRig {
 		foreach ((new ReflectionClass($class))->getConstructor()?->getParameters() ?? [] as $parameter) {
 			$type = $parameter->getType();
 			$name = $type instanceof ReflectionNamedType ? $type->getName() : '';
-			$args[] = str_starts_with($name, 'OCA\\Mcp\\') ? $this->build($name)
+			$args[] = str_starts_with($name, 'OCA\\Mcp\\') && (new ReflectionClass($name))->isInstantiable() ? $this->build($name)
 				: ($parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : $this->mock($name));
 		}
 		return new $class(...$args);
@@ -104,6 +106,9 @@ final class CollectivesRig {
 
 	/** @return GrantPolicy grants of $this->grants for alice */
 	private function policy(): GrantPolicy {
+		if ($this->realPolicy !== null) {
+			return $this->realPolicy;
+		}
 		$policy = $this->mock(GrantPolicy::class);
 		$policy->method('granted')->willReturnCallback(fn (string $uid, string $module, string $operation): bool
 			=> $module === 'collectives' && in_array($operation, $this->grants, true));

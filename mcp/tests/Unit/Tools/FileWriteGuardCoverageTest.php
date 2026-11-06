@@ -29,6 +29,8 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Modules/Calendar/Selftest/CalendarSelftestService.php#run:literal-move:3' => 'label: self-test report detail key',
 			'Modules/Calendar/Selftest/CalendarSelftestMessages.php#detail:literal-move:1' => 'label: report message lookup key',
 			'Mcp/Tools/ToolPresentation.php#<global>:literal-move:1' => 'label: destructive-operation presentation catalog',
+			'Modules/Collectives/Integration/CollectivesSurface.php#<global>:literal-move:1' => 'label: proven native PageService::move shape',
+			'Modules/Collectives/Editing/EditPageHandler.php#handle:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Modules\\Collectives\\CollectivesFileTypeBoundaryTest::testFilesKeepsTheAllowlistWhileCollectivesWritesMarkdown',
 			'Modules/Notes/Tools/MoveNote.php#definition:literal-move:1' => 'label: notes_move operation metadata',
 			'Modules/Files/Tools/MoveFile.php#definition:literal-move:1' => 'label: files_move operation metadata',
 			'Modules/Files/Tools/MoveBatch.php#definition:literal-move:1' => 'label: files_move_batch operation metadata',
@@ -108,8 +110,8 @@ final class FileWriteGuardCoverageTest extends TestCase {
 	public function testLiteralLabelsKeepTheOriginalCallInventory(): void {
 		$calls = FileWriteSinkInventory::calls(FileWriteSinkInventory::sources(__DIR__ . '/../../../lib'));
 		$literals = array_values(array_filter($calls, static fn (string $call): bool => str_contains($call, ':literal-')));
-		self::assertCount(21, $literals);
-		self::assertCount(46, array_diff($calls, $literals));
+		self::assertCount(22, $literals);
+		self::assertCount(47, array_diff($calls, $literals));
 		foreach ($calls as $call) {
 			self::assertDoesNotMatchRegularExpression('/:(?:literal-)?(?:writestream|fputs):/', $call);
 		}

@@ -193,6 +193,8 @@ final class ToolPresentation {
 			'collectives_pages' => Translator::t('List collective pages'),
 			'collectives_read' => Translator::t('Read collective page'),
 			'collectives_search' => Translator::t('Search collective pages'),
+			'collectives_create' => Translator::t('Create collective page'),
+			'collectives_edit' => Translator::t('Edit collective page'),
 			// Tables
 			'tables_list_tables' => Translator::t('List tables'),
 			'tables_list_views' => Translator::t('List table views'),

@@ -9,6 +9,7 @@ namespace OCA\Mcp\Modules\Collectives;
 
 use OCA\Mcp\Mcp\Tools\CatalogModule;
 use OCA\Mcp\Modules\Collectives\Presentation\CollectivesGuideNotes;
+use OCA\Mcp\Modules\Collectives\Presentation\CollectivesPlanRenderer;
 
 /**
  * The Collectives module: the tools of {@see CollectivesToolCatalog} over the pages of the collectives a user is a
@@ -35,5 +36,12 @@ final class CollectivesModule extends CatalogModule {
 	 */
 	public function guideNotes(): array {
 		return CollectivesGuideNotes::notes();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function renderPlan(string $tool, array $plan): ?string {
+		return (new CollectivesPlanRenderer())->render($tool, $plan);
 	}
 }

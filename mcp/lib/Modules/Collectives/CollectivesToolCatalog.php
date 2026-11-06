@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Collectives;
 
+use OCA\Mcp\Modules\Collectives\Tools\CreatePage;
+use OCA\Mcp\Modules\Collectives\Tools\EditPage;
 use OCA\Mcp\Modules\Collectives\Tools\ListCollectives;
 use OCA\Mcp\Modules\Collectives\Tools\ListPages;
 use OCA\Mcp\Modules\Collectives\Tools\ReadPage;
@@ -20,6 +22,8 @@ final class CollectivesToolCatalog {
 		ListPages::class,
 		ReadPage::class,
 		SearchPages::class,
+		CreatePage::class,
+		EditPage::class,
 	];
 
 	/** Constant holder only; never instantiated. */

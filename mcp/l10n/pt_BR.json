@@ -1810,6 +1810,11 @@
     "Change observed by reading the collective again." : "Mudança observada ao ler o coletivo de novo.",
     "Collectives answered, but reading the collective again shows only part of the requested change." : "O Coletivos respondeu, mas ler o coletivo de novo mostra só parte da mudança pedida.",
     "The change was sent to Collectives but could not be read back; check the page before trying again. Nothing is retried automatically." : "A mudança foi enviada ao Coletivos, mas não pôde ser lida de volta; confira a página antes de tentar de novo. Nada é repetido automaticamente.",
-    "collectives" : "coletivos"
+    "collectives" : "coletivos",
+    "Create collective page" : "Criar página de um coletivo",
+    "Edit collective page" : "Editar página de um coletivo",
+    "Create page **%s** under *%s*." : "Criar a página **%s** sob *%s*.",
+    "Change page **%s** (%s): %d bytes now, %d after; the diff is in the plan." : "Alterar a página **%s** (%s): %d bytes agora, %d depois; o diff está no plano.",
+    "Move page **%s** under *%s* as **%s**." : "Mover a página **%s** para baixo de *%s* como **%s**."
     },"pluralForm" : "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

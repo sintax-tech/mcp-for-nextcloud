@@ -1,0 +1,757 @@
+{
+    "tool": "collectives_create",
+    "grant": "collectives.create",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "collective_id": 7,
+                "parent_id": 104,
+                "title": "Setup"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create collective page**\n\nCreate page **Setup** under *Guide*.\n\n- The parent page has no subpages yet: Collectives turns it into a folder with a Readme.md, so its file path changes (its id stays).\n- Collectives may notify the members of the collective and update open browsers.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "collectives_create",
+                            "title": "Create collective page",
+                            "action": "collectives_create",
+                            "collective_id": 7,
+                            "parent": {
+                                "id": 104,
+                                "title": "Guide",
+                                "parent_id": 103,
+                                "emoji": null,
+                                "last_user": "Alice",
+                                "timestamp": "<timestamp#1>",
+                                "size": 11,
+                                "subpage_order": []
+                            },
+                            "page_title": "Setup",
+                            "parent_becomes_folder": true,
+                            "title_taken": false,
+                            "content": "",
+                            "recoverable": true,
+                            "notices": [
+                                "The parent page has no subpages yet: Collectives turns it into a folder with a Readme.md, so its file path changes (its id stays).",
+                                "Collectives may notify the members of the collective and update open browsers."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ]
+                },
+                "calls": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "collective_id": 7,
+                "parent_id": 104,
+                "title": "Setup",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ]
+                },
+                "calls": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "collective_id": 7,
+                "parent_id": 104,
+                "title": "Setup",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create collective page**\n\nCreate page **Setup** under *Guide*.\n\n- The parent page has no subpages yet: Collectives turns it into a folder with a Readme.md, so its file path changes (its id stays).\n- Collectives may notify the members of the collective and update open browsers.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "collectives_create",
+                            "title": "Create collective page",
+                            "action": "collectives_create",
+                            "collective_id": 7,
+                            "parent": {
+                                "id": 104,
+                                "title": "Guide",
+                                "parent_id": 103,
+                                "emoji": null,
+                                "last_user": "Alice",
+                                "timestamp": "<timestamp#1>",
+                                "size": 11,
+                                "subpage_order": []
+                            },
+                            "page_title": "Setup",
+                            "parent_becomes_folder": true,
+                            "title_taken": false,
+                            "content": "",
+                            "recoverable": true,
+                            "notices": [
+                                "The parent page has no subpages yet: Collectives turns it into a folder with a Readme.md, so its file path changes (its id stays).",
+                                "Collectives may notify the members of the collective and update open browsers."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ]
+                },
+                "calls": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "arguments": {
+                "collective_id": 7,
+                "parent_id": 104,
+                "title": "Setup",
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create collective page**\n\nCreate page **Setup** under *Guide*.\n\n- Collectives may notify the members of the collective and update open browsers.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "collectives_create",
+                            "title": "Create collective page",
+                            "action": "collectives_create",
+                            "collective_id": 7,
+                            "parent": {
+                                "id": 104,
+                                "title": "Guide",
+                                "parent_id": 103,
+                                "emoji": null,
+                                "last_user": "Alice",
+                                "timestamp": "<timestamp#1>",
+                                "size": 11,
+                                "subpage_order": [
+                                    111
+                                ]
+                            },
+                            "page_title": "Setup",
+                            "parent_becomes_folder": false,
+                            "title_taken": false,
+                            "content": "",
+                            "recoverable": true,
+                            "notices": [
+                                "Collectives may notify the members of the collective and update open browsers."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide/Other.md": {
+                        "id": 111,
+                        "content": ""
+                    },
+                    "Guide/Readme.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ],
+                    "104": [
+                        111
+                    ]
+                },
+                "calls": []
+            }
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "collective_id": 7,
+                "parent_id": 104,
+                "title": "Setup"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create collective page**\n\nCreate page **Setup** under *Guide*.\n\n- Collectives may notify the members of the collective and update open browsers.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "collectives_create",
+                            "title": "Create collective page",
+                            "action": "collectives_create",
+                            "collective_id": 7,
+                            "parent": {
+                                "id": 104,
+                                "title": "Guide",
+                                "parent_id": 103,
+                                "emoji": null,
+                                "last_user": "Alice",
+                                "timestamp": "<timestamp#1>",
+                                "size": 11,
+                                "subpage_order": [
+                                    111
+                                ]
+                            },
+                            "page_title": "Setup",
+                            "parent_becomes_folder": false,
+                            "title_taken": false,
+                            "content": "",
+                            "recoverable": true,
+                            "notices": [
+                                "Collectives may notify the members of the collective and update open browsers."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide/Other.md": {
+                        "id": 111,
+                        "content": ""
+                    },
+                    "Guide/Readme.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ],
+                    "104": [
+                        111
+                    ]
+                },
+                "calls": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "collective_id": 7,
+                "parent_id": 104,
+                "title": "Setup",
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"status\": \"applied\",\n    \"nativeCallAttempted\": true,\n    \"requested\": {\n        \"parent_id\": 104,\n        \"in_parent_order\": true\n    },\n    \"observed\": {\n        \"parent_id\": 104,\n        \"in_parent_order\": true\n    },\n    \"message\": \"Change observed by reading the collective again.\",\n    \"page\": {\n        \"id\": 112,\n        \"title\": \"Setup\",\n        \"parent_id\": 104,\n        \"emoji\": null,\n        \"last_user\": \"Alice\",\n        \"timestamp\": <timestamp#1>,\n        \"size\": 0,\n        \"subpage_order\": []\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide/Other.md": {
+                        "id": 111,
+                        "content": ""
+                    },
+                    "Guide/Readme.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Guide/Setup.md": {
+                        "id": 112,
+                        "content": ""
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ],
+                    "104": [
+                        112,
+                        111
+                    ]
+                },
+                "calls": [
+                    "create"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "collective_id": 7,
+                "parent_id": 104,
+                "title": "Setup",
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide/Other.md": {
+                        "id": 111,
+                        "content": ""
+                    },
+                    "Guide/Readme.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Guide/Setup.md": {
+                        "id": 112,
+                        "content": ""
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ],
+                    "104": [
+                        112,
+                        111
+                    ]
+                },
+                "calls": [
+                    "create"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "collective_id": 7,
+                "parent_id": 104,
+                "title": "Setup"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide/Other.md": {
+                        "id": 111,
+                        "content": ""
+                    },
+                    "Guide/Readme.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Guide/Setup.md": {
+                        "id": 112,
+                        "content": ""
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ],
+                    "104": [
+                        112,
+                        111
+                    ]
+                },
+                "calls": [
+                    "create"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "collective_id": 7,
+                "parent_id": 104,
+                "title": "Setup",
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide/Other.md": {
+                        "id": 111,
+                        "content": ""
+                    },
+                    "Guide/Readme.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Guide/Setup.md": {
+                        "id": 112,
+                        "content": ""
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ],
+                    "104": [
+                        112,
+                        111
+                    ]
+                },
+                "calls": [
+                    "create"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "arguments": {
+                "collective_id": 7,
+                "parent_id": 104,
+                "title": "Setup",
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide/Other.md": {
+                        "id": 111,
+                        "content": ""
+                    },
+                    "Guide/Readme.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Guide/Setup.md": {
+                        "id": 112,
+                        "content": ""
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ],
+                    "104": [
+                        112,
+                        111
+                    ]
+                },
+                "calls": [
+                    "create"
+                ]
+            }
+        }
+    ]
+}

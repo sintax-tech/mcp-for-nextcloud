@@ -89,7 +89,15 @@ final class StructureOperationsTest extends TestCase {
 		$f = new StructureFixture();
 		self::assertContains(StructureMessages::uploadFoldersJob(), $this->plan($f, 'forms_delete_question', ['form_id' => 1, 'question_id' => 4])['effects']);
 		$receipt = $this->apply($f, 'forms_delete_question', ['form_id' => 1, 'question_id' => 4]);
-		self::assertSame(['queuedByNativeDeletion' => true, 'observed' => false], $receipt['uploadFolderJob']);
+		self::assertSame(['expectedForFileQuestion' => true, 'queuedByNativeDeletion' => true, 'observed' => false], $receipt['uploadFolderJob']);
+		self::assertFalse($receipt['filesObserved']);
+		// Review R2: native failed after order=0, before the job was reached; the receipt does not claim the job was queued.
+		$f = new StructureFixture();
+		$f->failAfterWrite = true;
+		$receipt = $this->apply($f, 'forms_delete_question', ['form_id' => 1, 'question_id' => 4]);
+		self::assertSame('partial', $receipt['status']);
+		self::assertFalse($receipt['nativeResponseValid']);
+		self::assertSame(['expectedForFileQuestion' => true, 'queuedByNativeDeletion' => null, 'observed' => false], $receipt['uploadFolderJob']);
 		self::assertFalse($receipt['filesObserved']);
 	}
 

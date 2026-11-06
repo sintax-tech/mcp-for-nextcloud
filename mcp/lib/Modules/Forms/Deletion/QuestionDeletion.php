@@ -79,7 +79,10 @@ final class QuestionDeletion implements StructureOperation {
 		foreach ($e['before'] as $q) {
 			$moved = $moved || (array_key_exists((string)$q['id'], $orders) && $orders[(string)$q['id']] !== $q['order']);
 		}
-		$job = $e['expected']['file'] ? ['queuedByNativeDeletion' => true, 'observed' => false] : null;
+		// The native deleteQuestion adds the job before it renumbers and answers; only its valid answer proves that point was
+		// reached. A failed or unexpected answer leaves the queueing unknown (null), never assumed from the question type.
+		$job = $e['expected']['file'] ? ['expectedForFileQuestion' => true,
+			'queuedByNativeDeletion' => $this->responseValid($response, $r) ? true : null, 'observed' => false] : null;
 		return ['observed' => ['questionActive' => !$gone, 'orders' => $orders], 'complete' => $gone && $orders === $expected,
 			'changed' => $gone || $moved, 'extra' => ['uploadFolderJob' => $job, 'filesObserved' => false]];
 	}

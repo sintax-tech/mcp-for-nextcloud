@@ -15,6 +15,8 @@
 #        run-local.sh --shutdown   (clean this checkout's interrupted runs; leave live runs and Colima alone)
 #   baseline        diagnostics: the released baseline stays installed, never upgraded (use with MCP_IT_PHPUNIT_ARGS)
 #   --prune-images  also removes the images this run pulled (default: kept, they are only files on disk)
+#   MCP_IT_BASELINE_TAG=v1.2.5 optionally selects an existing local release tag for upgrade diagnostics;
+#                   unset keeps the workflow baseline and pins unchanged
 #   MCP_IT_WITH_MAIL=1 (environment) also runs the Mail part of the cell (mail-cell.sh): a throwaway IMAP server and
 #                   the Mail app; without it the IMAP image is never pulled
 #   MCP_IT_WITH_TABLES=1 (environment) also runs the Tables part of the cell (tables/cell.sh): the Tables app, four
@@ -67,7 +69,7 @@ cell_field() {
 
 NC_IMAGE=$(cell_field nc_image)
 DB_IMAGE=$(cell_field db_image)
-BASELINE=$(sed -n 's/^ *MCP_IT_BASELINE: *//p' "$WORKFLOW" | head -n 1)
+BASELINE=$(sh "$HERE/baseline-tag.sh" "$REPO_ROOT" "$(sed -n 's/^ *MCP_IT_BASELINE: *//p' "$WORKFLOW" | head -n 1)")
 if [ -z "$NC_IMAGE" ] || { [ "$CELL_DB" != sqlite ] && [ -z "$DB_IMAGE" ]; }; then
     echo "No cell NC $CELL_NC / $CELL_DB in $WORKFLOW" >&2
     exit 2

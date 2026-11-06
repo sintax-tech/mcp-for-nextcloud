@@ -101,9 +101,9 @@ final class UnknownGroupGrantResolutionTest extends TestCase {
 		$this->logs->method('permits')->willReturn(true);
 		$this->writer = new PolicyWriter($this->db, $this->state, $this->createMock(PolicyEventsMapper::class),
 			$this->config, $this->userConfig, $this->appConfig, $this->users,
-			$this->createMock(\OCP\AppFramework\Utility\ITimeFactory::class), $this->createMock(\OCA\Mcp\Db\AuthUsersMapper::class),
+			$this->createMock(\OCP\AppFramework\Utility\ITimeFactory::class), $credentialAuthUsers = $this->createMock(\OCA\Mcp\Db\AuthUsersMapper::class),
 			$this->createMock(\OCA\Mcp\Db\RecheckMapper::class), $this->createMock(PolicyEventProcessor::class),
-			new \OCA\Mcp\Db\GroupGrantsMapper($this->db), new \OCA\Mcp\Db\GroupLifeMapper($this->db), new \OCA\Mcp\OAuth\Storage\OAuthStore($this->db));
+			new \OCA\Mcp\Db\GroupGrantsMapper($this->db), new \OCA\Mcp\Db\GroupLifeMapper($this->db), new \OCA\Mcp\Access\Policy\Credentials\CredentialHolders(new \OCA\Mcp\OAuth\Storage\OAuthStore($this->db), $credentialAuthUsers));
 		$this->resolver = $this->resolver();
 	}
 

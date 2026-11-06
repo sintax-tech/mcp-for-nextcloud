@@ -70,7 +70,7 @@ final class GrantScenario extends TestCase {
 		$life = $this->createMock(GroupLifeMapper::class);
 		$life->method('forGroups')->willReturnCallback(function ($groups) use ($case, $log): array { $log('lifecycles', $groups); return [['groupId' => 'staff', 'state' => $case === 'inherit-inactive' ? 'pending_delete' : GroupLifeMapper::ACTIVE, 'gen' => str_repeat('a', 32)]]; });
 		$life->method('transition')->willReturnCallback(function (...$args) use ($log): bool { $log('renew', ...$args); return true; });
-		$writer = new PolicyWriter($db, $state, $mapper, $config, $userConfig, $apps, $users, $this->createMock(ITimeFactory::class), $auth, $rechecks, $processor, new GroupGrantsMapper($db), $life, $this->createMock(OAuthStore::class));
+		$writer = new PolicyWriter($db, $state, $mapper, $config, $userConfig, $apps, $users, $this->createMock(ITimeFactory::class), $auth, $rechecks, $processor, new GroupGrantsMapper($db), $life, new \OCA\Mcp\Access\Policy\Credentials\CredentialHolders($this->createMock(OAuthStore::class), $auth));
 		$prepare = function ($observed, $id) use (&$inside, &$ids, $case, $log): string {
 			self::assertFalse($inside); self::assertMatchesRegularExpression('/^[a-f0-9]{32}$/D', $id); $ids[] = $id;
 			$log('prepare', $observed, $id); if ($case === 'external-transaction') { $inside = true; } return 'prepared';

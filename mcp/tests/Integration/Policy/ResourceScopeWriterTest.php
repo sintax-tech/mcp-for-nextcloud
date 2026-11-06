@@ -69,9 +69,9 @@ final class ResourceScopeWriterTest extends IntegrationTestCase {
 		$state = Server::get(PolicyStateMapper::class);
 		$writer = new PolicyWriter($db, $state, Server::get(PolicyEventsMapper::class), Server::get(IConfig::class), Server::get(IUserConfig::class),
 			Server::get(IAppConfig::class), Server::get(IUserManager::class), Server::get(ITimeFactory::class),
-			Server::get(\OCA\Mcp\Db\AuthUsersMapper::class), Server::get(\OCA\Mcp\Db\RecheckMapper::class),
+			$credentialAuthUsers = Server::get(\OCA\Mcp\Db\AuthUsersMapper::class), Server::get(\OCA\Mcp\Db\RecheckMapper::class),
 			Server::get(\OCA\Mcp\Access\Policy\PolicyEventProcessor::class), Server::get(\OCA\Mcp\Db\GroupGrantsMapper::class),
-			Server::get(\OCA\Mcp\Db\GroupLifeMapper::class), Server::get(OAuthStore::class), Server::get(ResourceScopeMapper::class), $resources, new ScopeActivation(['files' => true, 'calendar' => true, 'tasks' => true]));
+			Server::get(\OCA\Mcp\Db\GroupLifeMapper::class), new \OCA\Mcp\Access\Policy\Credentials\CredentialHolders(Server::get(OAuthStore::class), $credentialAuthUsers), Server::get(ResourceScopeMapper::class), $resources, new ScopeActivation(['files' => true, 'calendar' => true, 'tasks' => true]));
 		$before = $state->state();
 		$other = new ResourceScopeMapper($this->openIndependentConnection());
 

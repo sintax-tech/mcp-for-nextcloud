@@ -63,7 +63,7 @@ final class ExecutionScenario extends TestCase {
 		$processor->method('afterCommit')->willReturnCallback(function ($outbox) use ($case, &$inside, $log): bool { self::assertFalse($inside); $log('delivery', $outbox); return $case !== 'cleanup-pending'; });
 		$data = new InMemoryConfig();
 		$config = $data->mock($this); $data->app['mcp']['enabled'] = '0';
-		$writer = new PolicyWriter($db, $state, $mapper, $config, $userConfig, $apps, $this->createMock(IUserManager::class), $this->createMock(ITimeFactory::class), $auth, $rechecks, $processor, new GroupGrantsMapper($db), new GroupLifeMapper($db), $this->createMock(OAuthStore::class));
+		$writer = new PolicyWriter($db, $state, $mapper, $config, $userConfig, $apps, $this->createMock(IUserManager::class), $this->createMock(ITimeFactory::class), $auth, $rechecks, $processor, new GroupGrantsMapper($db), new GroupLifeMapper($db), new \OCA\Mcp\Access\Policy\Credentials\CredentialHolders($this->createMock(OAuthStore::class), $auth));
 		$prepare = function ($observed, $id) use (&$inside, &$ids, $case, $log): string {
 			self::assertFalse($inside); self::assertMatchesRegularExpression('/^[a-f0-9]{32}$/D', $id); $ids[] = $id;
 			$log('prepare', $observed, $id); if ($case === 'external-transaction') { $inside = true; } return 'prepared';

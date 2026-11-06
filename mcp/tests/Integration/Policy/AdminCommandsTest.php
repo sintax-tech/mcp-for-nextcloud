@@ -102,7 +102,7 @@ final class AdminCommandsTest extends IntegrationTestCase {
 		};
 		$writer = new PolicyWriter($db, $state, Server::get(PolicyEventsMapper::class), $config, Server::get(IUserConfig::class),
 			Server::get(IAppConfig::class), Server::get(IUserManager::class), Server::get(ITimeFactory::class), $authUsers,
-			Server::get(\OCA\Mcp\Db\RecheckMapper::class), Server::get(\OCA\Mcp\Access\Policy\PolicyEventProcessor::class), Server::get(\OCA\Mcp\Db\GroupGrantsMapper::class), Server::get(\OCA\Mcp\Db\GroupLifeMapper::class), Server::get(\OCA\Mcp\OAuth\Storage\OAuthStore::class));
+			Server::get(\OCA\Mcp\Db\RecheckMapper::class), Server::get(\OCA\Mcp\Access\Policy\PolicyEventProcessor::class), Server::get(\OCA\Mcp\Db\GroupGrantsMapper::class), Server::get(\OCA\Mcp\Db\GroupLifeMapper::class), new \OCA\Mcp\Access\Policy\Credentials\CredentialHolders(Server::get(\OCA\Mcp\OAuth\Storage\OAuthStore::class), $authUsers));
 		try {
 			$writer->applyCells($revision['revision'], 'admin', 'grants.commands', [
 				['uid' => Fixtures::ALICE, 'key' => 'grant_notes_edit', 'value' => '1'],

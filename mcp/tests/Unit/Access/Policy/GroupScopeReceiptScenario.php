@@ -152,7 +152,7 @@ final class GroupScopeReceiptScenario extends TestCase {
 		$processor->method('afterCommit')->willReturn(true);
 		$closed = in_array($case, ['scope-invalid-actor', 'scope-invalid-module', 'scope-barrier-closed'], true);
 		$writer = new PolicyWriter($db, $state, $events, $iconfig, $userConfig, $apps, $users, $time, $auth,
-			new RecheckMapper($db), $processor, $grants, $life, $oauth, $scopes, $resources,
+			new RecheckMapper($db), $processor, $grants, $life, new \OCA\Mcp\Access\Policy\Credentials\CredentialHolders($oauth, $auth), $scopes, $resources,
 			new ScopeActivation($closed ? ['files' => false, 'calendar' => false, 'tasks' => false] : ScopeActivation::MODULES));
 		$genA = str_repeat('a', 32);
 		$genB = str_repeat('b', 32);

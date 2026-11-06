@@ -71,9 +71,9 @@ final class BackupSettingsRig {
 		$oauth = new InMemoryOAuthStore();
 		$this->state = new Db\PolicyStateMapper($db);
 		$this->writer = new PolicyWriter($db, $this->state, $events, (new InMemoryConfig())->mock($test),
-			$this->mock(\OCP\Config\IUserConfig::class), $config, $users, $time, new Db\AuthUsersMapper($db), new Db\RecheckMapper($db),
+			$this->mock(\OCP\Config\IUserConfig::class), $config, $users, $time, $credentialAuthUsers = new Db\AuthUsersMapper($db), new Db\RecheckMapper($db),
 			new PolicyEventProcessor($events, $oauth, new \Psr\Log\NullLogger(), $time), new Db\GroupGrantsMapper($db),
-			new Db\GroupLifeMapper($db), $oauth);
+			new Db\GroupLifeMapper($db), new \OCA\Mcp\Access\Policy\Credentials\CredentialHolders($oauth, $credentialAuthUsers));
 		$filenames = $this->mock(IFilenameValidator::class);
 		$filenames->method('validateFilename')->willReturnCallback(static function (string $name): void {
 			if ($name === 'core-rejects-this') {

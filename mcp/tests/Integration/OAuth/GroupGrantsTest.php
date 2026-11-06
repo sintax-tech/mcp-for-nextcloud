@@ -425,8 +425,8 @@ final class GroupGrantsTest extends OAuthAccountTestCase {
 		};
 		$writer = new PolicyWriter($this->official(), Server::get(PolicyStateMapper::class), Server::get(\OCA\Mcp\Db\PolicyEventsMapper::class),
 			Server::get(IConfig::class), Server::get(IUserConfig::class), Server::get(\OCP\IAppConfig::class), Server::get(IUserManager::class),
-			Server::get(\OCP\AppFramework\Utility\ITimeFactory::class), Server::get(AuthUsersMapper::class), Server::get(\OCA\Mcp\Db\RecheckMapper::class),
-			Server::get(\OCA\Mcp\Access\Policy\PolicyEventProcessor::class), Server::get(GroupGrantsMapper::class), $life, Server::get(OAuthStore::class));
+			Server::get(\OCP\AppFramework\Utility\ITimeFactory::class), $credentialAuthUsers = Server::get(AuthUsersMapper::class), Server::get(\OCA\Mcp\Db\RecheckMapper::class),
+			Server::get(\OCA\Mcp\Access\Policy\PolicyEventProcessor::class), Server::get(GroupGrantsMapper::class), $life, new \OCA\Mcp\Access\Policy\Credentials\CredentialHolders(Server::get(OAuthStore::class), $credentialAuthUsers));
 		$hooks = [];
 		try {
 			$writer->setGroupGrants($preview['revision'], self::ACTOR, $gid, $preview['grants'], $preview['previewId'], $this->admit($hooks, $attempts));

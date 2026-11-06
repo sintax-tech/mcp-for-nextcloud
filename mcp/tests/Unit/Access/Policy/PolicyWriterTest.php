@@ -68,9 +68,9 @@ final class PolicyWriterTest extends TestCase {
 	 * @return list<object>
 	 */
 	private function tail(IDBConnection $db, \OCA\Mcp\OAuth\Storage\OAuthStore $oauth, ITimeFactory $time): array {
-		return [$time, new \OCA\Mcp\Db\AuthUsersMapper($db), new \OCA\Mcp\Db\RecheckMapper($db),
+		return [$time, $credentialAuthUsers = new \OCA\Mcp\Db\AuthUsersMapper($db), new \OCA\Mcp\Db\RecheckMapper($db),
 			new \OCA\Mcp\Access\Policy\PolicyEventProcessor($this->events($db), $oauth, new \Psr\Log\NullLogger(), $time),
-			new \OCA\Mcp\Db\GroupGrantsMapper($db), new \OCA\Mcp\Db\GroupLifeMapper($db), $oauth];
+			new \OCA\Mcp\Db\GroupGrantsMapper($db), new \OCA\Mcp\Db\GroupLifeMapper($db), new \OCA\Mcp\Access\Policy\Credentials\CredentialHolders($oauth, $credentialAuthUsers)];
 	}
 
 	private function write(int $id): \Closure {
@@ -505,9 +505,9 @@ final class PolicyWriterTest extends TestCase {
 		$apps = $this->createMock(IAppConfig::class);
 		$apps->method('hasKey')->willReturnCallback(fn ($app, $key): bool => array_key_exists($key, $data->app[$app] ?? []));
 		return new PolicyWriter($this->db, $this->state, new PolicyEventsMapper($this->db, $time), $config,
-			$this->createMock(IUserConfig::class), $apps, $users, $time, $authUsers ?? new \OCA\Mcp\Db\AuthUsersMapper($this->db),
+			$this->createMock(IUserConfig::class), $apps, $users, $time, $credentialAuthUsers = $authUsers ?? new \OCA\Mcp\Db\AuthUsersMapper($this->db),
 			new \OCA\Mcp\Db\RecheckMapper($this->db), new PolicyEventProcessor($this->events(), new InMemoryOAuthStore(), new \Psr\Log\NullLogger(), $time),
-			new \OCA\Mcp\Db\GroupGrantsMapper($this->db), new \OCA\Mcp\Db\GroupLifeMapper($this->db), new \OCA\Mcp\OAuth\Storage\OAuthStore($this->db));
+			new \OCA\Mcp\Db\GroupGrantsMapper($this->db), new \OCA\Mcp\Db\GroupLifeMapper($this->db), new \OCA\Mcp\Access\Policy\Credentials\CredentialHolders(new \OCA\Mcp\OAuth\Storage\OAuthStore($this->db), $credentialAuthUsers));
 	}
 
 	/** @return list<array{id:string, kind:string, payload:array}> the stored events, decoded */

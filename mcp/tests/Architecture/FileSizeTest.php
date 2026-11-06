@@ -52,11 +52,24 @@ final class FileSizeTest extends ArchitectureCase {
 		}
 	}
 	public function testCompletedPolicyWriterStepLowersTheEffectiveCeiling(): void {
-		$tickets = new TicketState(self::tickets()->known, array_values(array_unique([...self::tickets()->completed, 'RE-06b', 'RE-06c'])));
-		$files = self::tree()->files; $path = self::tree()->present('OCA\\Mcp\\Service\\Policy\\PolicyWriter');
-		$files[$path] = str_repeat("// x\n", 500);
-		self::assertSame([], $this->problems(files: $files, tickets: $tickets));
+		$live = AppTree::json(self::tree()->root . '/scripts/dev/size-inventory.json');
+		$name = 'OCA\\Mcp\\Service\\Policy\\PolicyWriter';
+		$files = self::tree()->files; $path = self::tree()->present($name);
+		// The real completed tree has no exception: the default 300-line ceiling applies.
+		$files[$path] = str_repeat("// x\n", 300);
+		self::assertSame([], $this->problems(files: $files));
 		$files[$path] .= "// x\n";
-		self::assertNotSame([], $this->problems(files: $files, tickets: $tickets));
+		self::assertNotSame([], $this->problems(files: $files));
+		// Fabricate the historical RE-06c state without reviving an expired live exception.
+		$tickets = new TicketState(self::tickets()->known, array_values(array_diff(self::tickets()->completed, ['RE-06d'])));
+		foreach (self::json('size-baseline')['transitional'] as $row) {
+			if (implode('\\', $row['nameParts']) === $name) {
+				unset($row['nameParts']); $live['transitional'][] = ['fqcn' => $name, ...$row];
+			}
+		}
+		$files[$path] = str_repeat("// x\n", 500);
+		self::assertSame([], $this->problems($live, $files, $tickets));
+		$files[$path] .= "// x\n";
+		self::assertNotSame([], $this->problems($live, $files, $tickets));
 	}
 }

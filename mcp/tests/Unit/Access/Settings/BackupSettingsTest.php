@@ -96,8 +96,8 @@ final class BackupSettingsTest extends TestCase {
 		$oauth = new InMemoryOAuthStore();
 		$writer = new PolicyWriter($db, new Db\PolicyStateMapper($db), $events, (new InMemoryConfig())->mock($this),
 			$this->createMock(\OCP\Config\IUserConfig::class), $config, $users, $time,
-			new Db\AuthUsersMapper($db), new Db\RecheckMapper($db), new PolicyEventProcessor($events, $oauth, new \Psr\Log\NullLogger(), $time),
-			new Db\GroupGrantsMapper($db), new Db\GroupLifeMapper($db), $oauth);
+			$credentialAuthUsers = new Db\AuthUsersMapper($db), new Db\RecheckMapper($db), new PolicyEventProcessor($events, $oauth, new \Psr\Log\NullLogger(), $time),
+			new Db\GroupGrantsMapper($db), new Db\GroupLifeMapper($db), new \OCA\Mcp\Access\Policy\Credentials\CredentialHolders($oauth, $credentialAuthUsers));
 		$filenames = $this->createMock(IFilenameValidator::class);
 		$filenames->method('validateFilename')->willReturnCallback(static function (string $name): void {
 			if ($name === 'core-rejects-this') {

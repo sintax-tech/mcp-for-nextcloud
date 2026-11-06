@@ -228,9 +228,9 @@ final class GroupGrantsWriterTest extends TestCase {
 		$events = new PolicyEventsMapper($this->db, $time);
 		return new PolicyWriter($this->db, $this->state, $events, $this->configData->mock($this),
 			$this->createMock(\OCP\Config\IUserConfig::class), $this->createMock(\OCP\IAppConfig::class),
-			$this->users(), $time, new AuthUsersMapper($this->db), $this->rechecks,
+			$this->users(), $time, $credentialAuthUsers = new AuthUsersMapper($this->db), $this->rechecks,
 			new \OCA\Mcp\Access\Policy\PolicyEventProcessor($events, new OAuthStore($this->db), new \Psr\Log\NullLogger(), $time),
-			$this->grants, $life, new OAuthStore($this->db));
+			$this->grants, $life, new \OCA\Mcp\Access\Policy\Credentials\CredentialHolders(new OAuthStore($this->db), $credentialAuthUsers));
 	}
 
 	private function preview(mixed $grants, string $gid = 'staff', string $actor = 'root'): array {

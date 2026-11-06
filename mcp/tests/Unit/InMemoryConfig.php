@@ -275,7 +275,7 @@ final class InMemoryConfig {
 		self::$processors[$config] = $processor;
 		return self::$writers[$config] = new \OCA\Mcp\Access\Policy\PolicyWriter($db, $state, $events, $config,
 			self::$userConfigs[$config], $appConfig, $users, $time, $authUsers, $rechecks, $processor,
-			new \OCA\Mcp\Db\GroupGrantsMapper($db), new \OCA\Mcp\Db\GroupLifeMapper($db), new \OCA\Mcp\OAuth\Storage\OAuthStore($db));
+			new \OCA\Mcp\Db\GroupGrantsMapper($db), new \OCA\Mcp\Db\GroupLifeMapper($db), new \OCA\Mcp\Access\Policy\Credentials\CredentialHolders(new \OCA\Mcp\OAuth\Storage\OAuthStore($db), $authUsers));
 	}
 
 	/**

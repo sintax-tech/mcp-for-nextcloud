@@ -6,6 +6,7 @@
 set -eu
 NC=${MCP_IT_NC_NAME:?}
 WORK="${RUNNER_TEMP:?}/mcp-it"
+HERE=$(cd "$(dirname "$0")" && pwd)
 # 4.7.1 declares Nextcloud 32 to 35 (appinfo/info.xml), so one release serves every cell.
 VERSION=4.7.1
 SHA=6aef84674527393edbfc2915d58014e4ef72bfb27f3ca606b7c1faf985ae0879

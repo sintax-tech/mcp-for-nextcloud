@@ -135,7 +135,8 @@ final class FileWriteGuardCoverageTest extends TestCase {
 				self::assertStringContainsString(':literal-', $key, 'A label classification cannot waive a detected call.');
 			}
 			if (str_starts_with($classification, 'D3:')) {
-				self::assertMatchesRegularExpression('~\A(?:Tools/Files/FileBackup(?:Copy)?|Modules/Contacts/Backup/ContactBackup)\.php#~', $key);
+				$paths = ['Tools/Files/FileBackup.php', 'Tools/Files/FileBackupCopy.php', 'Modules/Contacts/Backup/ContactBackup.php'];
+				self::assertMatchesRegularExpression('~\A(?:' . implode('|', array_map(static fn (string $path): string => preg_quote($path, '~'), $paths)) . ')#~', $key);
 			}
 		}
 	}

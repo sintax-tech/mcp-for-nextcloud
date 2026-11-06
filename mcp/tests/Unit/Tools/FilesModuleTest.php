@@ -343,7 +343,9 @@ final class FilesModuleTest extends TestCase {
 	}
 
 	public function testFilesCodeNeverDeletesMovesOrRenames(): void {
-		foreach (glob(__DIR__ . '/../../../lib/Tools/Files/*.php') ?: [] as $file) {
+		$files = glob(dirname((new \ReflectionClass(FilesModule::class))->getFileName()) . '/*.php') ?: [];
+		$this->assertNotEmpty($files);
+		foreach ($files as $file) {
 			$code = (string)file_get_contents($file);
 			// Deleting a node is out of the question for Files. BatchStore deletes rows, not files, and the
 			// one allowed Node::delete() lives in Reorganization's undoBatch() — NoFileDeletionTest pins that
@@ -353,7 +355,9 @@ final class FilesModuleTest extends TestCase {
 			}
 			$this->assertDoesNotMatchRegularExpression('/->(rename)\s*\(/', $code, $file);
 		}
-		foreach (glob(__DIR__ . '/../../../lib/Tools/Files/*.php') ?: [] as $file) {
+		$files = glob(dirname((new \ReflectionClass(FilesModule::class))->getFileName()) . '/*.php') ?: [];
+		$this->assertNotEmpty($files);
+		foreach ($files as $file) {
 			if (basename($file) === 'Reorganization.php') {
 				continue;
 			}

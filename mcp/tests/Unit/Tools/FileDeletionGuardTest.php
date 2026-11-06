@@ -44,7 +44,7 @@ final class FileDeletionGuardTest extends TestCase {
 			self::assertSame([$file], $sources);
 			$failure = null;
 			try {
-				FileDeletionGuard::assertNoNodeDeletion($sources, __DIR__ . '/../../../lib/Tools/Files/Reorganization.php');
+				FileDeletionGuard::assertNoNodeDeletion($sources, dirname(__DIR__, 3) . '/lib/Tools/Files/Reorganization.php');
 			} catch (AssertionFailedError $error) {
 				$failure = $error;
 			}

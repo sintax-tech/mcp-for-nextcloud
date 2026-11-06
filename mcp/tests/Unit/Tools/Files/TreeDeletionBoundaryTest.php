@@ -15,6 +15,6 @@ final class TreeDeletionBoundaryTest extends TestCase {
 	 * @return void
 	 */
 	public function testNoNewHandlerMayDeleteAFileOrUndoAnUnrecordedFolder(): void {
-		\OCA\Mcp\Tests\Unit\Tools\Files\Deletion\DeleteSourceBoundary::verify(__DIR__ . '/../../../../lib/Tools/Files');
+		\OCA\Mcp\Tests\Unit\Tools\Files\Deletion\DeleteSourceBoundary::verify(dirname((new \ReflectionClass(\OCA\Mcp\Tools\Files\FilesModule::class))->getFileName()));
 	}
 }

@@ -754,7 +754,7 @@ final class FileContentTypePolicyTest extends TestCase {
 	 * @return void
 	 */
 	public function testFileBackupDoesNotReadThePolicy(): void {
-		$source = (string)file_get_contents(__DIR__ . '/../../../../lib/Tools/Files/FileBackup.php');
+		$source = (string)file_get_contents(dirname(__DIR__, 4) . '/lib/Tools/Files/FileBackup.php');
 		$this->assertStringNotContainsString('FileTypeGuard', $source);
 		$this->assertStringNotContainsString('FileWritePolicy', $source);
 		$this->assertStringNotContainsString('ContentTypeGate', $source);
@@ -767,8 +767,8 @@ final class FileContentTypePolicyTest extends TestCase {
 	 * @return void
 	 */
 	public function testEditReplaceAndRestoreDelegateOutOfTheLargeModules(): void {
-		$files = (string)file_get_contents(__DIR__ . '/../../../../lib/Tools/Files/FilesModule.php');
-		$versions = (string)file_get_contents(__DIR__ . '/../../../../lib/Tools/Files/VersionTools.php');
+		$files = (string)file_get_contents(dirname(__DIR__, 4) . '/lib/Tools/Files/FilesModule.php');
+		$versions = (string)file_get_contents(dirname(__DIR__, 4) . '/lib/Tools/Files/VersionTools.php');
 		$this->assertStringNotContainsString('->putContent', $files);
 		$this->assertStringNotContainsString('->rollback', $files);
 		$this->assertStringNotContainsString('->putContent', $versions);

@@ -17,8 +17,10 @@ final class DeleteSourceBoundary {
 	 * @return void
 	 */
 	public static function verify(string $base): void {
+		$sources = FileDeletionGuard::sources($base);
+		Assert::assertNotEmpty($sources);
 		$found = [];
-		foreach (ApprovedDeleteSink::remaining(FileDeletionGuard::sources($base)) as $path) {
+		foreach (ApprovedDeleteSink::remaining($sources) as $path) {
 			$source = (string)file_get_contents($path);
 			if (!str_contains($source, '->delete()')) {
 				continue;

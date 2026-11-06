@@ -15,7 +15,7 @@ use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
-use OCA\Mcp\Modules\Files\FileBackup;
+use OCA\Mcp\Modules\Files\Backups\FileBackup;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 use OCA\Mcp\Modules\Files\Reading\ReadableFile;
 use OCA\Mcp\Modules\Files\Reading\ReadVersionHandler;

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 declare(strict_types=1);
-namespace OCA\Mcp\Modules\Files\Deletion;
+namespace OCA\Mcp\Modules\Files\Integration;
 
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -73,7 +73,7 @@ class TrashReceiptVerifier {
 	 */
 	public function receipt(string $destination, string $uid, int $id, bool $folder, string $default): array {
 		if ($destination === self::OTHER) {
-			return ['fields' => ['trash' => 'owner_trash_not_checked'], 'message' => $default . ' ' . TrashReceiptMessages::ownerTrash()];
+			return ['fields' => ['trash' => 'owner_trash_not_checked'], 'message' => $default . ' ' . \OCA\Mcp\Modules\Files\Deletion\TrashReceiptMessages::ownerTrash()];
 		}
 		if ($destination !== self::OWN) {
 			return ['fields' => ['trash' => 'not_confirmed'], 'message' => $default];
@@ -83,7 +83,7 @@ class TrashReceiptVerifier {
 			return ['fields' => ['trash' => 'not_confirmed'], 'message' => $default];
 		}
 		return ['fields' => ['status' => 'removed_observed_in_trash', 'trash' => 'observed_in_own_trash', 'trashCheckedAt' => $checkedAt],
-			'message' => ($folder ? TrashReceiptMessages::observedFolder() : TrashReceiptMessages::observedFile()) . ' ' . TrashReceiptMessages::expiry()];
+			'message' => ($folder ? \OCA\Mcp\Modules\Files\Deletion\TrashReceiptMessages::observedFolder() : \OCA\Mcp\Modules\Files\Deletion\TrashReceiptMessages::observedFile()) . ' ' . \OCA\Mcp\Modules\Files\Deletion\TrashReceiptMessages::expiry()];
 	}
 
 	/**

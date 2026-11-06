@@ -22,14 +22,14 @@ final class ContentWritePlan {
 	/**
 	 * @param SharedWriteGuard $shared Confirmation of a write outside the personal scope. Called with confirmed false.
 	 * @param NodeAccessInfo $access Who owns the file and which permissions the viewer has.
-	 * @param BackupPlan|null $backupPlan configured copy policy and plan wording
+	 * @param \OCA\Mcp\Modules\Files\Backups\BackupPlan|null $backupPlan configured copy policy and plan wording
 	 * @param LockAwareWrite|null $locks Lock notice for the plan. Null where files_lock is not wired.
 	 */
 	public function __construct(
 		private SharedWriteGuard $shared,
 		private NodeAccessInfo $access,
 		private ?LockAwareWrite $locks = null,
-		private ?BackupPlan $backupPlan = null,
+		private ?\OCA\Mcp\Modules\Files\Backups\BackupPlan $backupPlan = null,
 	) {
 	}
 
@@ -46,7 +46,7 @@ final class ContentWritePlan {
 	 */
 	public function describe(File $file, string $userId, string $path, array $plan, bool $asUser = true): array {
 		$shared = $this->shared->guard($file, $userId, $path, false);
-		return ($this->backupPlan ?? new BackupPlan())->decorate($plan + [
+		return ($this->backupPlan ?? new \OCA\Mcp\Modules\Files\Backups\BackupPlan())->decorate($plan + [
 			'path' => $path,
 			'etag' => (string)$file->getEtag(),
 			'backup' => '/' . \OCA\Mcp\Platform\Backups\BackupLocation::LEGACY,

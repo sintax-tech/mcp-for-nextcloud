@@ -48,7 +48,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Modules/Files/Presentation/FilesPlanRenderer.php#render:copy:1' => 'render: static plan text, no Files mutation',
 			'Modules/Files/Presentation/FilesPlanRenderer.php#render:move:1' => 'render: static plan text, no Files mutation',
 			'Modules/Files/Images/ImageMetadata.php#originalDimensions:fopen:1' => 'read: original image bytes',
-			'Modules/Files/FileBackupCopy.php#copy:fopen:1' => 'read: original bytes for internal recovery',
+			'Modules/Files/Backups/FileBackupCopy.php#copy:fopen:1' => 'read: original bytes for internal recovery',
 			'Modules/Files/VersionRestore.php#writeVersion:fopen:1' => 'temporary: php temp stream buffer, not a Files node',
 			'Modules/Files/TextExtractor.php#read:fopen:1' => 'read: bounded file content, read-only mode',
 			'Modules/Files/VersionStream.php#open:fopen:1' => 'read: current file bytes of the listed current version, read-only mode',
@@ -80,10 +80,10 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Modules/Notes/Moving/MoveNoteHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testMoveRefusesBeforeCreatingACategory',
 			'Modules/Notes/Editing/NoteContentSink.php#whole:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testWholeEditRefusesADeniedTitleBeforeWritingContent',
 			'Modules/Notes/Editing/NoteContentSink.php#partial:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testPartialWriterRefusesBeforePutContent',
-			'Modules/Files/FileBackup.php#copy:copy:1' => 'D3: delegates to the verified internal recovery copier; never reads file type policy',
-			'Modules/Files/FileBackup.php#prepare:copy:1' => 'D3: internal verified backup delegation; never reads policy',
-			'Modules/Files/FileBackupCopy.php#copy:newfile:1' => 'D3: mandatory internal backup creation; never reads policy',
-			'Modules/Files/FileBackupCopy.php#copy:putcontent:1' => 'D3: mandatory internal backup bytes; never reads policy',
+			'Modules/Files/Backups/FileBackup.php#copy:copy:1' => 'D3: delegates to the verified internal recovery copier; never reads file type policy',
+			'Modules/Files/Backups/FileBackup.php#prepare:copy:1' => 'D3: internal verified backup delegation; never reads policy',
+			'Modules/Files/Backups/FileBackupCopy.php#copy:newfile:1' => 'D3: mandatory internal backup creation; never reads policy',
+			'Modules/Files/Backups/FileBackupCopy.php#copy:putcontent:1' => 'D3: mandatory internal backup bytes; never reads policy',
 			'Modules/Contacts/Backup/ContactBackup.php#save:newfile:1' => 'D3: mandatory internal vCard backup; never reads policy',
 			'Modules/Calendar/Moving/EventRelocator.php#prepare:move:1' => 'DAV: not Files, official CalDAV move',
 			'Access/Policy/Transactions/PolicyTransaction.php#failure:rollback:1' => 'database: not Files, application transaction rollback',
@@ -136,7 +136,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 				self::assertStringContainsString(':literal-', $key, 'A label classification cannot waive a detected call.');
 			}
 			if (str_starts_with($classification, 'D3:')) {
-				$paths = ['Modules/Files/FileBackup.php', 'Modules/Files/FileBackupCopy.php', 'Modules/Contacts/Backup/ContactBackup.php'];
+				$paths = ['Modules/Files/Backups/FileBackup.php', 'Modules/Files/Backups/FileBackupCopy.php', 'Modules/Contacts/Backup/ContactBackup.php'];
 				self::assertMatchesRegularExpression('~\A(?:' . implode('|', array_map(static fn (string $path): string => preg_quote($path, '~'), $paths)) . ')#~', $key);
 			}
 		}

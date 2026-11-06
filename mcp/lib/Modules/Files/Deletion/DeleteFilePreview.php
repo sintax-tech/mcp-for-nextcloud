@@ -9,17 +9,16 @@ namespace OCA\Mcp\Modules\Files\Deletion;
 
 use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\FilesPreviewContext;
-use OCA\Mcp\Modules\Files\Handler;
 
 /** Plans the operation that deletes a file through the guarded deletion handler, without executing the write. */
 final class DeleteFilePreview {
 	/**
 	 * @param FilesPreviewContext $context actor-root admission and node-access mapping
-	 * @param ?Handler\DeleteFileHandler $deleteFile optional guarded file-deletion handler
+	 * @param ?DeleteFileHandler $deleteFile optional guarded file-deletion handler
 	 */
 	public function __construct(
 		private FilesPreviewContext $context,
-		private ?Handler\DeleteFileHandler $deleteFile = null,
+		private ?DeleteFileHandler $deleteFile = null,
 	) {
 	}
 

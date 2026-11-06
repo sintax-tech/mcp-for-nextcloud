@@ -195,7 +195,7 @@ final class FileCreation {
 		if ($path === '/') {
 			throw self::invalidName();
 		}
-		if (FileBackup::isBackupPath($path, $this->backupLocation)) {
+		if (\OCA\Mcp\Modules\Files\Backups\FileBackup::isBackupPath($path, $this->backupLocation)) {
 			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath());
 		}
 		$cut = (int)strrpos($path, '/');

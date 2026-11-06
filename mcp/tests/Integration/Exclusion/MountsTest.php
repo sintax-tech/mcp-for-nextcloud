@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Exclusion;
 
-use OCA\Mcp\Modules\Files\FileBackup;
+use OCA\Mcp\Modules\Files\Backups\FileBackup;
 use OCP\Files\Folder;
 use OCP\Files\Node;
 use OCP\Files\NotFoundException;

@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Files\Editing;
 
 use OCA\Mcp\Modules\Files\Handler\ReplaceFileHandler;
 use OCP\Files\Folder;
-use OCA\Mcp\Modules\Files\FileBackup;
+use OCA\Mcp\Modules\Files\Backups\FileBackup;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 
 /** Runs the operation that replaces a snippet through the guarded replacement handler inside the actor view. */

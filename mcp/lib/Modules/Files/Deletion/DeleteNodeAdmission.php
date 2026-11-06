@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Files\Deletion;
 use OCA\Mcp\Platform\Backups\BackupLocation;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
-use OCA\Mcp\Modules\Files\BackupWriteBoundary;
+use OCA\Mcp\Modules\Files\Backups\BackupWriteBoundary;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 use OCP\Files\Node;
@@ -23,11 +23,11 @@ final class DeleteNodeAdmission {
 	/**
 	 * @param FilesAccessGuard $visibility Effective scope, Guests and exclusion gate.
 	 * @param BackupLocation $backups Fresh reserved names.
-	 * @param DeleteBackendGate $backend Native eligibility through the actor's node.
+	 * @param \OCA\Mcp\Modules\Files\Integration\DeleteBackendGate $backend Native eligibility through the actor's node.
 	 * @param IManager $shares Supported share metadata.
 	 * @param \OCP\Files\IRootFolder|null $roots Canonical owner lookup for local received shares.
 	 */
-	public function __construct(private FilesAccessGuard $visibility, private BackupLocation $backups, private DeleteBackendGate $backend, IManager $shares, ?\OCP\Files\IRootFolder $roots = null) {
+	public function __construct(private FilesAccessGuard $visibility, private BackupLocation $backups, private \OCA\Mcp\Modules\Files\Integration\DeleteBackendGate $backend, IManager $shares, ?\OCP\Files\IRootFolder $roots = null) {
 		$this->sharing = new Sharing\DeleteShareAdmission(new Sharing\DeleteLocalOrigin($backups, $roots), $shares);
 	}
 

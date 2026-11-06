@@ -39,6 +39,6 @@ final class FileDeletionGuard {
 	 */
 	public static function assertNoNodeDeletion(array $files, string $undoOwner): void {
 		\OCA\Mcp\Tests\Architecture\Inventory\FilesDeletionPolicy::assertNodes($files, $undoOwner,
-			\OCA\Mcp\Tests\Architecture\Inventory\FilesSources::sink(dirname(__DIR__, 3), \OCA\Mcp\Modules\Files\Handler\DeleteFileHandler::class));
+			\OCA\Mcp\Tests\Architecture\Inventory\FilesSources::sink(dirname(__DIR__, 3), \OCA\Mcp\Modules\Files\Deletion\DeleteFileHandler::class));
 	}
 }

@@ -10,20 +10,20 @@ use OCA\Mcp\L10n\Translator;
 
 /** Receipt texts for what was observed in the trash bin after deletion; none of them promises future recovery. */
 final class TrashReceiptMessages {
-	/** Plan field value for each destination of TrashReceiptVerifier. */
-	public const PLAN = [TrashReceiptVerifier::OWN => 'own_trash', TrashReceiptVerifier::OTHER => 'owner_trash_not_checked',
-		TrashReceiptVerifier::UNKNOWN => 'not_confirmed'];
+	/** Plan field value for each destination of \OCA\Mcp\Modules\Files\Integration\TrashReceiptVerifier. */
+	public const PLAN = [\OCA\Mcp\Modules\Files\Integration\TrashReceiptVerifier::OWN => 'own_trash', \OCA\Mcp\Modules\Files\Integration\TrashReceiptVerifier::OTHER => 'owner_trash_not_checked',
+		\OCA\Mcp\Modules\Files\Integration\TrashReceiptVerifier::UNKNOWN => 'not_confirmed'];
 
 	/**
 	 * Plan note for a destination, with a leading space, or an empty string for the actor's own trash bin.
 	 *
-	 * @param string|null $destination Destination from TrashReceiptVerifier, or null without a verifier.
+	 * @param string|null $destination Destination from \OCA\Mcp\Modules\Files\Integration\TrashReceiptVerifier, or null without a verifier.
 	 * @return string Text appended to the plan message.
 	 */
 	public static function planNote(?string $destination): string {
 		return match ($destination) {
-			TrashReceiptVerifier::OTHER => ' ' . self::ownerTrash(),
-			TrashReceiptVerifier::UNKNOWN => ' ' . self::unknownTrash(),
+			\OCA\Mcp\Modules\Files\Integration\TrashReceiptVerifier::OTHER => ' ' . self::ownerTrash(),
+			\OCA\Mcp\Modules\Files\Integration\TrashReceiptVerifier::UNKNOWN => ' ' . self::unknownTrash(),
 			default => '',
 		};
 	}

@@ -72,7 +72,7 @@ final class CopyMoveContext {
 	 * @throws ToolFailure when the path is /MCP backups or inside it
 	 */
 	public function notBackup(string $path): string {
-		return BackupWriteBoundary::checked($path, $this->backupLocation);
+		return \OCA\Mcp\Modules\Files\Backups\BackupWriteBoundary::checked($path, $this->backupLocation);
 	}
 
 	/**

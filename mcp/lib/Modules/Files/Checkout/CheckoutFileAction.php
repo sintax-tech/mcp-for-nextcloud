@@ -15,7 +15,7 @@ use OCP\Files\Folder;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Modules\Files\CheckoutService;
 use OCA\Mcp\Modules\Files\FilesCallContext;
-use OCA\Mcp\Modules\Files\BackupPlan;
+use OCA\Mcp\Modules\Files\Backups\BackupPlan;
 use OCA\Mcp\Modules\Files\Handler;
 
 /** Runs the operation that starts the local checkout workflow inside the actor view. */

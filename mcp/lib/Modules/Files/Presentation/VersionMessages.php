@@ -24,7 +24,7 @@ final class VersionMessages {
 
 	/** @return string description of files_version_restore */
 	public static function versionRestoreTool(): string {
-		return \OCA\Mcp\Modules\Files\BackupMessages::versionRestoreTool();
+		return \OCA\Mcp\Modules\Files\Backups\BackupMessages::versionRestoreTool();
 	}
 
 	/** @return string description of the version parameter */
@@ -36,7 +36,7 @@ final class VersionMessages {
 	 * @return string the plan of files_version_restore
 	 */
 	public static function planRestore(): string {
-		return \OCA\Mcp\Modules\Files\BackupMessages::planRestore();
+		return \OCA\Mcp\Modules\Files\Backups\BackupMessages::planRestore();
 	}
 
 	/** @return string versioning is required and not active */

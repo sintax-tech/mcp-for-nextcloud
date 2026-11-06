@@ -13,7 +13,7 @@ use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
-use OCA\Mcp\Modules\Files\FileBackup;
+use OCA\Mcp\Modules\Files\Backups\FileBackup;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\Presentation\FilesPlanRenderer;
 use OCA\Mcp\Modules\Files\TextExtractor;

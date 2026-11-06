@@ -9,17 +9,16 @@ namespace OCA\Mcp\Modules\Files\Deletion;
 
 use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\FilesCallContext;
-use OCA\Mcp\Modules\Files\Handler;
 
 /** Runs the operation that deletes a file through the guarded deletion handler inside the actor view. */
 final class DeleteFileAction {
 	/**
 	 * @param FilesCallContext $context actor-root admission and node-access mapping
-	 * @param ?Handler\DeleteFileHandler $deleteFile optional guarded file-deletion handler
+	 * @param ?DeleteFileHandler $deleteFile optional guarded file-deletion handler
 	 */
 	public function __construct(
 		private FilesCallContext $context,
-		private ?Handler\DeleteFileHandler $deleteFile = null,
+		private ?DeleteFileHandler $deleteFile = null,
 	) {
 	}
 

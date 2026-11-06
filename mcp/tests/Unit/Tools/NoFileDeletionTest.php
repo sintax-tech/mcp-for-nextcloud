@@ -63,7 +63,7 @@ final class NoFileDeletionTest extends TestCase {
 	 */
 	public function testBackupsAreNeverPurgedNorRotated(): void {
 		\OCA\Mcp\Tests\Architecture\Inventory\FilesDeletionPolicy::assertBackups($this->filesSources());
-		$this->assertTrue(class_exists(\OCA\Mcp\Modules\Files\FileBackup::class));
+		$this->assertTrue(class_exists(\OCA\Mcp\Modules\Files\Backups\FileBackup::class));
 	}
 
 	/** The behaviour side: every write path of Files leaves the tree without a single deletion recorded. */

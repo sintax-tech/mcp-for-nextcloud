@@ -10,7 +10,7 @@ use OCA\Mcp\Platform\Backups\BackupLocation;
 use OCA\Mcp\Platform\Backups\BackupSettingsDocument;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Access\ResourceScope\FilesScope;
-use OCA\Mcp\Modules\Files\Deletion\DeleteBackendGate;
+use OCA\Mcp\Modules\Files\Integration\DeleteBackendGate;
 use OCA\Mcp\Modules\Files\Deletion\DeleteNodeAdmission;
 use OCA\Mcp\Modules\Files\Deletion\Folder\DeleteFolderAdmission;
 use OCA\Mcp\Modules\Files\Deletion\Folder\DeleteFolderBoundary;

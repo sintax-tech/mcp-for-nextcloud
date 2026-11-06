@@ -17,7 +17,7 @@ use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Modules\Files\CheckoutService;
-use OCA\Mcp\Modules\Files\FileBackup;
+use OCA\Mcp\Modules\Files\Backups\FileBackup;
 use OCA\Mcp\Modules\Files\Presentation\CheckoutMessages;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;

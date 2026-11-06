@@ -194,7 +194,7 @@ final class DeleteFileTest extends ExclusionTestCase {
 	/** @return void A real Noop provider is refused even if the configured locking switch still says enabled. */
 	public function testActualNoopLockingProviderIsRefused(): void {
 		$file = $this->makeFile('home', 'noop.txt', 'keep');
-		$gate = Server::get(\OCA\Mcp\Modules\Files\Deletion\DeleteBackendGate::class);
+		$gate = Server::get(\OCA\Mcp\Modules\Files\Integration\DeleteBackendGate::class);
 		$property = new \ReflectionProperty($gate, 'locking');
 		$before = $property->getValue($gate);
 		$property->setValue($gate, new \OC\Lock\NoopLockingProvider());

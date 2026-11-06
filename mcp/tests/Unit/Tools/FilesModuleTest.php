@@ -19,7 +19,7 @@ use OCA\Mcp\Tests\Unit\Tools\Files\AbsentFileTypePolicy;
 use OCA\Mcp\Modules\Files\CheckoutService;
 use OCA\Mcp\Modules\Files\ContentCommit;
 use OCA\Mcp\Modules\Files\ContentWritePlan;
-use OCA\Mcp\Modules\Files\FileBackup;
+use OCA\Mcp\Modules\Files\Backups\FileBackup;
 use OCA\Mcp\Modules\Files\Handler\EditFileHandler;
 use OCA\Mcp\Modules\Files\Handler\ReplaceFileHandler;
 use OCA\Mcp\Modules\Files\Handler\RestoreVersionHandler;

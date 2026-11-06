@@ -32,7 +32,7 @@ use OCA\Mcp\Modules\Files\CheckoutService;
 use OCA\Mcp\Modules\Files\ContentCommit;
 use OCA\Mcp\Modules\Files\ContentTypeGate;
 use OCA\Mcp\Modules\Files\ContentWritePlan;
-use OCA\Mcp\Modules\Files\FileBackup;
+use OCA\Mcp\Modules\Files\Backups\FileBackup;
 use OCA\Mcp\Modules\Files\Presentation\EditingMessages;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\Handler\EditFileHandler;
@@ -754,7 +754,7 @@ final class FileContentTypePolicyTest extends TestCase {
 	 * @return void
 	 */
 	public function testFileBackupDoesNotReadThePolicy(): void {
-		$source = (string)file_get_contents(dirname(__DIR__, 4) . '/lib/Modules/Files/FileBackup.php');
+		$source = (string)file_get_contents(dirname(__DIR__, 4) . '/lib/Modules/Files/Backups/FileBackup.php');
 		$this->assertStringNotContainsString('FileTypeGuard', $source);
 		$this->assertStringNotContainsString('FileWritePolicy', $source);
 		$this->assertStringNotContainsString('ContentTypeGate', $source);

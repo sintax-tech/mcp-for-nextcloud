@@ -22,7 +22,7 @@ class DeleteEligibility {
 	/**
 	 * @param FilesAccessGuard $visibility Effective Files scope, Guests and exclusion policy.
 	 * @param BackupLocation $backups Fresh reservation history including NFC identity.
-	 * @param DeleteBackendGate $backend Native trash eligibility checks.
+	 * @param \OCA\Mcp\Modules\Files\Integration\DeleteBackendGate $backend Native trash eligibility checks.
 	 * @param IManager $shares Official share metadata, never raw share tables.
 	 * @param DeleteFolderBoundary|null $folders Complete bounded folder admission; absent collaborators refuse folders.
 	 * @param \OCP\Files\IRootFolder|null $roots Public canonical owner lookup for received shares.
@@ -30,7 +30,7 @@ class DeleteEligibility {
 	public function __construct(
 		private FilesAccessGuard $visibility,
 		private BackupLocation $backups,
-		private DeleteBackendGate $backend,
+		private \OCA\Mcp\Modules\Files\Integration\DeleteBackendGate $backend,
 		private IManager $shares,
 		private ?DeleteFolderBoundary $folders = null,
 		private ?\OCP\Files\IRootFolder $roots = null,

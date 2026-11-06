@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
-use OCA\Mcp\Modules\Files\FileBackup;
+use OCA\Mcp\Modules\Files\Backups\FileBackup;
 use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\SystemTag\ISystemTagObjectMapper;

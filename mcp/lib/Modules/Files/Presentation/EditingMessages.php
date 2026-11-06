@@ -13,12 +13,12 @@ use OCA\Mcp\L10n\Translator;
 final class EditingMessages {
 	/** @return string description of files_edit */
 	public static function editTool(): string {
-		return \OCA\Mcp\Modules\Files\BackupMessages::editTool();
+		return \OCA\Mcp\Modules\Files\Backups\BackupMessages::editTool();
 	}
 
 	/** @return string description of files_replace */
 	public static function replaceTool(): string {
-		return \OCA\Mcp\Modules\Files\BackupMessages::replaceTool();
+		return \OCA\Mcp\Modules\Files\Backups\BackupMessages::replaceTool();
 	}
 
 	/** @return string description of the content parameter of files_edit */
@@ -40,21 +40,21 @@ final class EditingMessages {
 	 * @return string the plan of files_edit
 	 */
 	public static function planEdit(): string {
-		return \OCA\Mcp\Modules\Files\BackupMessages::planEdit();
+		return \OCA\Mcp\Modules\Files\Backups\BackupMessages::planEdit();
 	}
 
 	/**
 	 * @return string the plan of files_replace
 	 */
 	public static function planReplace(): string {
-		return \OCA\Mcp\Modules\Files\BackupMessages::planReplace();
+		return \OCA\Mcp\Modules\Files\Backups\BackupMessages::planReplace();
 	}
 
 	/**
 	 * @return string what the backup taken by a write gives back
 	 */
 	public static function planBackupConsequence(): string {
-		return \OCA\Mcp\Modules\Files\BackupMessages::planBackupConsequence();
+		return \OCA\Mcp\Modules\Files\Backups\BackupMessages::planBackupConsequence();
 	}
 
 	/** @return string a non-text file */
@@ -64,7 +64,7 @@ final class EditingMessages {
 
 	/** @return string an edit inside the backup folder */
 	public static function backupPath(): string {
-		return \OCA\Mcp\Modules\Files\BackupMessages::backupPath();
+		return \OCA\Mcp\Modules\Files\Backups\BackupMessages::backupPath();
 	}
 
 	/**
@@ -80,7 +80,7 @@ final class EditingMessages {
 	 * @return string a failed write, naming where the original still is
 	 */
 	public static function writeFailed(string $backup): string {
-		return \OCA\Mcp\Modules\Files\BackupMessages::writeFailed($backup);
+		return \OCA\Mcp\Modules\Files\Backups\BackupMessages::writeFailed($backup);
 	}
 
 	/**
@@ -88,7 +88,7 @@ final class EditingMessages {
 	 * @return string closing sentence of a lock refusal that came after the backup
 	 */
 	public static function originalKept(string $backup): string {
-		return \OCA\Mcp\Modules\Files\BackupMessages::originalKept($backup);
+		return \OCA\Mcp\Modules\Files\Backups\BackupMessages::originalKept($backup);
 	}
 
 	/** @return string versioning is off for the user */

@@ -49,6 +49,9 @@ final class ReadFileHandler {
 	 * needs to place the text and to know who owns the file.
 	 *
 	 * @return array{content: list<array{type:string, text:string}>}
+	 * @param Folder $root existing operation root
+	 * @param string $userId existing operation userId
+	 * @param string $path existing operation path
 	 */
 	private function read(Folder $root, string $userId, string $path): array {
 		$path = PathGuard::normalize($path);

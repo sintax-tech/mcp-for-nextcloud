@@ -31,7 +31,12 @@ final class NameSearch {
 	) {
 	}
 
-	/** @return list<array{name:string, path:string, isDir:bool, size:int, mtime:string, contentType:string, access:array<string, mixed>}> */
+	/** @return list<array{name:string, path:string, isDir:bool, size:int, mtime:string, contentType:string, access:array<string, mixed>}>
+	 * @param Folder $root existing operation root
+	 * @param string $userId existing operation userId
+	 * @param string $query existing operation query
+	 * @param int $limit existing operation limit
+	 */
 	public function search(Folder $root, string $userId, string $query, int $limit): array {
 		// %, _ and \ in the term are literal: escaped the way core's own file search escapes LIKE terms.
 		$pattern = '%' . $this->db->escapeLikeParameter($query) . '%';

@@ -48,6 +48,11 @@ final class SearchFilesHandler {
 
 	/**
 	 * @return array{search_mode:string, full_text_active:bool, notice?:string, files:list<array{name:string, path:string, isDir:bool, size:int, mtime:string, contentType:string, access:array<string, mixed>, excerpts?:list<string>}>}
+	 * @param Folder $root existing operation root
+	 * @param string $userId existing operation userId
+	 * @param string $query existing operation query
+	 * @param int $limit existing operation limit
+	 * @param string $mode existing operation mode
 	 */
 	private function search(Folder $root, string $userId, string $query, int $limit, string $mode = 'auto'): array {
 		if ($mode === 'name') {

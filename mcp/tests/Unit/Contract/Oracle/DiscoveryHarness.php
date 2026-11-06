@@ -78,7 +78,7 @@ final class DiscoveryHarness {
 		$modules = (new ModuleBuilder($test, $scenario->deckDependencies))->modules(Application::MODULES);
 		$registry = new ToolRegistry($modules, $policy, $apps, $users, $logger, $guests, capabilities: new \OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry([(new ModuleBuilder($test, $scenario->deckDependencies))->build(\OCA\Mcp\Modules\Deck\Integration\DeckCapabilities::class)], $logger));
 		$resources = new ResourceRegistry($registry, $policy, $apps, $users, $this->mock(IRootFolder::class), $this->mock(VisibilityGuard::class),
-			$this->mock(TextExtractor::class), $this->mock(NoteResource::class), $registry->guide(), $this->mock(FilesAccessGuard::class), $guests);
+			new \OCA\Mcp\Modules\Files\ExtractedFileText($this->mock(TextExtractor::class)), $this->mock(NoteResource::class), $registry->guide(), $this->mock(FilesAccessGuard::class), $guests);
 		$installed = $this->mock(IAppManager::class);
 		InstalledApp::mock($installed);
 		$this->protocol = new McpProtocol($registry, new PromptCatalog(), $policy, $logger, $installed, $resources);

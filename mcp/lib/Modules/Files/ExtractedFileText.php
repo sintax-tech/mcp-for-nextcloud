@@ -14,10 +14,19 @@ final class ExtractedFileText implements FileTextResource {
 	/** @param TextExtractor $extractor existing Files text extraction */
 	public function __construct(private TextExtractor $extractor) {
 	}
-	/** {@inheritDoc} */
+	/** {@inheritDoc}
+	 * @param string $name existing operation name
+	 * @param string $mime existing operation mime
+	 */
 	public function canExtract(string $name, string $mime): bool { return TextExtractor::canExtract($name, $mime); }
-	/** {@inheritDoc} */
+	/** {@inheritDoc}
+	 * @param string $name existing operation name
+	 * @param string $mime existing operation mime
+	 */
 	public function textMime(string $name, string $mime): string { return TextExtractor::textMime($name, $mime); }
-	/** {@inheritDoc} */
+	/** {@inheritDoc}
+	 * @param File $file existing operation file
+	 * @param int $maxChars existing operation maxChars
+	 */
 	public function readText(File $file, int $maxChars = self::MAX_CHARS): string { return $this->extractor->readText($file, $maxChars); }
 }

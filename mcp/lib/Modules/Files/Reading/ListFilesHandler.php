@@ -41,7 +41,11 @@ final class ListFilesHandler {
 		return $this->context->run($userId, fn (Folder $root): array => ToolResult::json($this->list($root, $userId, $arguments['path'])));
 	}
 
-	/** @return list<array{name:string, path:string, isDir:bool, size:int, mtime:string, contentType:string, access:array<string, mixed>}> */
+	/** @return list<array{name:string, path:string, isDir:bool, size:int, mtime:string, contentType:string, access:array<string, mixed>}>
+	 * @param Folder $root existing operation root
+	 * @param string $userId existing operation userId
+	 * @param string $path existing operation path
+	 */
 	private function list(Folder $root, string $userId, string $path): array {
 		// With a Files scope that does not hold the root, "/" lists the selected folders at their real paths: the
 		// folders above them are never listed.

@@ -237,7 +237,7 @@ final class ApplicationRegistrationTest extends TestCase {
 			$this->assertFalse($parameter->allowsNull(), 'FileCreation::$' . $parameter->getName() . ' é obrigatório');
 		}
 
-		foreach ([\OCA\Mcp\Modules\Files\FilesModule::class, \OCA\Mcp\Controller\CheckoutController::class] as $class) {
+		foreach ([\OCA\Mcp\Modules\Files\Creation\CreateFileAction::class, \OCA\Mcp\Modules\Files\Creation\UploadFileAction::class, \OCA\Mcp\Controller\CheckoutController::class] as $class) {
 			$parameters = array_column(array_map(
 				static fn (\ReflectionParameter $p): array => ['name' => $p->getName(), 'type' => (string)$p->getType()],
 				(new \ReflectionMethod($class, '__construct'))->getParameters(),

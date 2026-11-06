@@ -10,7 +10,8 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 use OCA\Deck\Db\{Acl, Board, Card, CardMapper, Stack, StackMapper};
 use OCA\Deck\Service\{BoardService, CardService, PermissionService};
 use OCA\Deck\NoPermissionException;
-use OCA\Mcp\Tools\Deck\{DeckServiceGateway, DependencyChange, DeckConflictException, DeckRefusalException};
+use OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway;
+use OCA\Mcp\Tools\Deck\{DependencyChange, DeckConflictException, DeckRefusalException};
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 

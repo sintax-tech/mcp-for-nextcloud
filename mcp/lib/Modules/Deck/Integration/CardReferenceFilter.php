@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Deck;
+namespace OCA\Mcp\Modules\Deck\Integration;
 
 use OCA\Deck\Db\Acl;
 use OCA\Deck\Db\Card;

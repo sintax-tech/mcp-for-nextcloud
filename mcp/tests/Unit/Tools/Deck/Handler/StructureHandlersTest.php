@@ -12,7 +12,7 @@ use OCA\Deck\Db\Stack;
 use OCA\Deck\NoPermissionException;
 use OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestHelpers;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckMessages;
 use OCA\Mcp\Tools\Deck\DeckRefusalException;
 use OCA\Mcp\Tools\Deck\Handler\CreateStackHandler;

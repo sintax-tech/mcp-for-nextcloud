@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Guests;
 
 use OCA\Mcp\Tests\Integration\Deck\DeckFixture as F;
-use OCA\Mcp\Tools\Deck\CardReferenceFilter;
+use OCA\Mcp\Modules\Deck\Integration\CardReferenceFilter;
 use OCA\Deck\Service\BoardService;
 use OCA\Deck\Service\CardService;
 use OCA\Deck\Service\StackService;

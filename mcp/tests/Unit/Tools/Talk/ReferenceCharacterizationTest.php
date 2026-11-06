@@ -14,7 +14,7 @@ use OCA\Mcp\Platform\Dav\Calendar;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\FakeCalendarStore;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use OCA\Mcp\Modules\Talk\ReferenceLinker;
 use OCP\App\IAppManager;
 use OCP\IUserManager;

@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Deck\Handler;
 
 use OCA\Mcp\Tools\Deck\BoardBlueprint;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use Psr\Log\LoggerInterface;
 
 /**

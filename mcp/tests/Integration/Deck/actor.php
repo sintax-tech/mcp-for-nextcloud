@@ -171,7 +171,7 @@ switch ($action) {
 		$out = ['trashed' => true];
 		break;
 	case 'mcp-observe':
-		$gateway = new OCA\Mcp\Tools\Deck\DeckServiceGateway(OC::$server,
+		$gateway = new OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway(OC::$server,
 			Server::get(OCP\AppFramework\Utility\ITimeFactory::class), null, Server::get(OCP\ISession::class));
 		$module = new OCA\Mcp\Tools\Deck\DeckToolModule(OC::$server, $apps, Server::get(Psr\Log\LoggerInterface::class),
 			Server::get(OCP\IURLGenerator::class), Server::get(OCP\AppFramework\Utility\ITimeFactory::class),
@@ -222,7 +222,7 @@ switch ($action) {
 		$out['boards'] = count($boards->findAll(-2, false, true));
 		break;
 	case 'cost-read':
-		$gateway = new OCA\Mcp\Tools\Deck\DeckServiceGateway(OC::$server,
+		$gateway = new OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway(OC::$server,
 			Server::get(OCP\AppFramework\Utility\ITimeFactory::class), null, Server::get(OCP\ISession::class));
 		$log = OCA\Mcp\Tests\Integration\Support\PostgresQueryLog::fromEnvironment();
 		$connection = Server::get(OCP\IDBConnection::class);

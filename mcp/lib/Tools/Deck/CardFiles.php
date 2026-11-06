@@ -12,6 +12,7 @@ use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCP\Files\File;
 use OCP\Files\IRootFolder;
 use OCP\Share\IShare;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 
 /** Files references have their own Files scope, exclusion tags and native READ boundary, even inside Deck. */
 final class CardFiles {

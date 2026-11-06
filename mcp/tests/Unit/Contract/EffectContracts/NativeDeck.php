@@ -22,7 +22,7 @@ require_once __DIR__ . '/../../Tools/Deck/Stubs/deck_stubs.php';
  * {@see NativeDeckServices}: two boards (Comercial of alice, Diretoria of pedro shared with alice for reading and
  * editing), their lists and cards, held as plain rows. Every native write (create, reorder, delete, restore) is
  * recorded with its arguments and the account the services were bound to: the observable effect of the real
- * {@see \OCA\Mcp\Tools\Deck\DeckServiceGateway}. Ids of created cards are sequential and every stamp comes from the
+ * {@see \OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway}. Ids of created cards are sequential and every stamp comes from the
  * fixed {@see self::NOW}, so two runs store the same rows.
  */
 final class NativeDeck {

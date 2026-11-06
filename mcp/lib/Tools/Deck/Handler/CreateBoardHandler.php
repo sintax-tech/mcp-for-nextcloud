@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tools\Deck\Handler;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tools\Deck\BoardBlueprint;
 use OCA\Mcp\Tools\Deck\DeckErrors;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckMessages;
 use OCA\Mcp\Tools\Deck\DeckUnconfirmedException;
 use Psr\Log\LoggerInterface;

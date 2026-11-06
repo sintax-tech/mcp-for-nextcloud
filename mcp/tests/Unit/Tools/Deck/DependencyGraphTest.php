@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use OCA\Deck\Db\Card;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckRefusalException;
 use OCA\Mcp\Tools\Deck\DependencyGraph;
 use OCA\Mcp\Tools\Deck\DependencyNodeSource;

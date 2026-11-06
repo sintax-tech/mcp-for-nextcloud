@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck\Handler;
 use OCA\Deck\NoPermissionException;
 use OCA\Deck\StatusException;
 use OCA\Mcp\Tools\Deck\CardFormatter;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckMessages;
 use OCA\Mcp\Tools\Deck\Handler\DeleteCardHandler;
 use OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestHelpers;

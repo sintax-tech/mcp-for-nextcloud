@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Deck\Handler;
 
 use OCA\Deck\Db\Stack;
 use OCA\Mcp\Tools\Deck\CardFormatter;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use Psr\Log\LoggerInterface;
 
 /**

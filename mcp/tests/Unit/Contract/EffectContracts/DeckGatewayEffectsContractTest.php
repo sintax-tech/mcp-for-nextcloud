@@ -25,7 +25,7 @@ require_once __DIR__ . '/../../Tools/Deck/Stubs/deck_stubs.php';
 
 /**
  * Effect contract of the Deck card and list writes over the REAL gateway (RE-01): the module builds its own
- * {@see \OCA\Mcp\Tools\Deck\DeckServiceGateway} exactly as the container registers it (container, clock, the
+ * {@see \OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway} exactly as the container registers it (container, clock, the
  * caller's timezone, session), and the container hands it native Deck services over an in-memory database
  * ({@see NativeDeck}, {@see NativeDeckServices}). The effect is read on the native side: the rows and every native
  * write with its arguments, so a gateway that called Deck with another id, list or order is caught here.

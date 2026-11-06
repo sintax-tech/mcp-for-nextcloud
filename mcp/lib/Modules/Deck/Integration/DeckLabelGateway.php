@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Deck;
+namespace OCA\Mcp\Modules\Deck\Integration;
 
 use OCA\Deck\Db\Acl;
 use OCA\Deck\Db\Board;
@@ -16,6 +16,10 @@ use OCA\Deck\Db\StackMapper;
 use OCA\Deck\NoPermissionException;
 use OCA\Deck\Service\CardService;
 use OCA\Deck\Service\PermissionService;
+use OCA\Mcp\Tools\Deck\CardLabelChanges;
+use OCA\Mcp\Tools\Deck\DeckConflictException;
+use OCA\Mcp\Tools\Deck\DeckMessages;
+use OCA\Mcp\Tools\Deck\DeckRefusalException;
 
 /** Native board-label reads and incremental card-label associations. */
 final class DeckLabelGateway {

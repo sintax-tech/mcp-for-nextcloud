@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Deck\Handler;
 
 use OCA\Mcp\Tools\Deck\CardFormatter;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckMessages;
 use OCA\Mcp\Tools\Deck\DependencyGraph;
 use Psr\Log\LoggerInterface;

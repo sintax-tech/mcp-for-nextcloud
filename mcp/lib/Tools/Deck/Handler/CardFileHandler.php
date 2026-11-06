@@ -12,7 +12,7 @@ use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Deck\CardFiles;
 use OCA\Mcp\Tools\Deck\CardFormatter;
 use OCA\Mcp\Tools\Deck\DeckConflictException;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckMessages;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use Psr\Log\LoggerInterface;

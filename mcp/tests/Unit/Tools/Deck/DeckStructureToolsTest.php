@@ -13,7 +13,7 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckRefusalException;
 use OCA\Mcp\Tools\Deck\DeckToolModule;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;

@@ -27,11 +27,11 @@ use Psr\Log\LoggerInterface;
 final class WriteGateContractTest extends TestCase {
 	/** Builds a concrete app class with real app collaborators and mocks for everything else. */
 	private function build(string $class): object {
-		if ($class === \OCA\Mcp\Tools\Deck\DeckCapabilities::class) {
+		if ($class === \OCA\Mcp\Modules\Deck\Integration\DeckCapabilities::class) {
 			$apps = $this->createMock(\OCP\App\IAppManager::class);
 			$apps->method('getAppVersion')->willReturn('1.19.0');
 			$apps->method('isEnabledForAnyone')->willReturn(true);
-			return new \OCA\Mcp\Tools\Deck\DeckCapabilities($apps, 35, static fn (): bool => true);
+			return new \OCA\Mcp\Modules\Deck\Integration\DeckCapabilities($apps, 35, static fn (): bool => true);
 		}
 		if ($class === \OCA\Mcp\Db\LogsGroupsMapper::class) {
 			$db = new \OCA\Mcp\Tests\Unit\SqliteDatabase($this, [new \OCA\Mcp\Migration\Version001002Date20261008000000()]);

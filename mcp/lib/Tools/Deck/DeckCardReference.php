@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Deck;
 
 use OCA\Mcp\Access\References\ReadableDeckCard;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use OCA\Mcp\Platform\References\ReferenceRead;
 use Throwable;
 

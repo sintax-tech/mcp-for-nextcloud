@@ -7,7 +7,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Talk;
 
 use OCA\Mcp\Modules\Talk\ReferenceLinker;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckCardReference;
 use OCA\Mcp\Modules\Calendar\CalendarEventReference;
 use OCA\Mcp\Modules\Calendar\Locating\{ScopedCalendarAccess,CalendarStore,EventRepository,Classification};

@@ -12,7 +12,7 @@ use OCA\Deck\Db\Acl;
 use OCA\Deck\Db\Assignment;
 use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Card;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckMessages;
 use OCA\Mcp\Tools\Deck\Handler\FollowupCardsHandler;
 use OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestHelpers;

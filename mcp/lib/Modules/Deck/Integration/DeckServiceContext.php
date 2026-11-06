@@ -5,12 +5,13 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Deck;
+namespace OCA\Mcp\Modules\Deck\Integration;
 
 use OCA\Deck\Service\BoardService;
 use OCP\ISession;
 use OCP\IUserManager;
 use Psr\Container\ContainerInterface;
+use OCA\Mcp\Tools\Deck\DeckSessionException;
 
 /** Request-local lazy native services and caller binding shared by the Deck facade's collaborators. */
 final class DeckServiceContext {

@@ -69,7 +69,7 @@
 			"rule": "native-app",
 			"source": "lib/Modules/Files/VersionTools.php",
 			"target": "OCA\\Files_Versions\\Versions\\IVersionManager",
-			"line": 38,
+			"line": 37,
 			"reason": "Move this native-app reference behind the owning module Integration boundary.",
 			"expires": "RE-23"
 		}

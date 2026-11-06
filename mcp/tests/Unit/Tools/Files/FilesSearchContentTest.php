@@ -183,7 +183,7 @@ final class FilesSearchContentTest extends FilesToolsTestCase {
 				$this->apps,
 				$this->users,
 			),
-			new \OCA\Mcp\Modules\Files\VersionTools($this->apps, $this->users, $extractor, $backup, $access, $this->createMock(\Psr\Container\ContainerInterface::class), new \OCA\Mcp\Modules\Files\Images\OcrSupport($this->apps)),
+			new \OCA\Mcp\Modules\Files\VersionTools($this->apps, $this->users, $backup, $access, $this->createMock(\Psr\Container\ContainerInterface::class)),
 			new \OCA\Mcp\Modules\Files\Reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access), $this->report(), $this->users),
 			new \OCA\Mcp\Modules\Files\MovePlanner(new \OCA\Mcp\Modules\Files\Reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access), $this->report(), $this->users), $access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access)),
 			$this->batches,

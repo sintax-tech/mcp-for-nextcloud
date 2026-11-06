@@ -67,12 +67,6 @@ final class FrozenPathCall {
 		return [$tokens[$i][2], $tokens[$i][1] . ' path not proved'];
 	}
 
-	/** @param list<array{0:int|null,1:string,2:int}> $operand Exact operand. @return string SHA256 of token kinds/texts without lines. */
-	public static function operandHash(array $operand): string {
-		$parts = array_map(static fn (array $t): array => [$t[0] === null ? 'CHAR' : token_name($t[0]), $t[1]], $operand);
-		return hash('sha256', json_encode($parts, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-	}
-
 	/** @param array<string,mixed> $site Reviewed transform. @param list<array{0:int|null,1:string,2:int}> $operand Tokens. @param ImportScope $scope Class imports. @return void @throws RuntimeException Not the frozen parameter/normalization shape. */
 	private static function parameterOperand(array $site, array $operand, ImportScope $scope): void {
 		$text = array_column($operand, 1); $transform = $site['transform'];

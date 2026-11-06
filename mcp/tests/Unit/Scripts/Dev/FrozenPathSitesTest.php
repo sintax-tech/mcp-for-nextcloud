@@ -98,13 +98,20 @@ final class FrozenPathSitesTest extends TestCase {
 		[$before, $after, $map, $pairs, $certificates] = FrozenPathFixture::trees(); $renames = [];
 		foreach ($map->entries as $entry) { if ($entry['target'] !== 'stays') { $renames[$entry['fqcn']] = $entry['target']; } }
 		$index = new SourceTreeIndex($before);
+		$descriptorPath = 'scripts/dev/another-ticket-sites.json';
+		$before[$descriptorPath] = $before[FrozenPathSites::PATH]; $after[$descriptorPath] = $after[FrozenPathSites::PATH];
+		unset($before[FrozenPathSites::PATH], $after[FrozenPathSites::PATH]); $certificates[0]['path'] = $descriptorPath;
 		$proof = new FrozenPathSites($before, $after, $pairs, $renames, $map, $index, new SourceTreeIndex($after), 'RE-21', $certificates);
+		foreach ($proof->problems() as $problem) { self::assertStringStartsWith($descriptorPath . ':', $problem); }
 		self::assertCount(8, $proof->problems()); $path = array_key_first($pairs);
 		$source = (new TokenNormalizer($index))->normalize($before[$path], $renames, $path, $pairs); $diagnostic = $source->located[0];
 		self::assertFalse($proof->accepts(0, $path, $source, [$diagnostic[0], 'other path not proved', $diagnostic[2]]));
 		self::assertTrue($proof->accepts(0, $path, $source, $diagnostic));
 		self::assertFalse($proof->accepts(0, $path, $source, $diagnostic));
 		self::assertCount(7, $proof->problems());
+		$after[$descriptorPath] = '{';
+		$invalid = new FrozenPathSites($before, $after, $pairs, $renames, $map, $index, new SourceTreeIndex($after), 'RE-21', $certificates);
+		self::assertStringStartsWith($descriptorPath . ':', $invalid->problems()[0]);
 	}
 
 	public function testAnUnlistedFifthSourceStillFails(): void {

@@ -13,6 +13,8 @@ final class FrozenPathSites {
 	public const PATH = 'scripts/dev/frozen-path-sites.json';
 	/** @var array<string,bool> Exact physical side plus full occurrence identity, consumed at most once. */
 	private array $allowed = [];
+	/** @var array<string,string> Exact occurrence key to its descriptor manifest path. */
+	private array $certificatePaths = [];
 	/** @var list<string> Certificate errors and missing consumptions. */
 	private array $errors = [];
 	/** @var array<string,string> Physical source to historical map identity. */
@@ -24,7 +26,7 @@ final class FrozenPathSites {
 			// Activation MUST precede even looking up the JSON: no later ticket inherits a production freeze.
 			if ($ticket !== $descriptor['ticket'] || FrozenProduction::pairsHash($pairs) !== $descriptor['pairs_sha256']) { continue; }
 			try { $this->load($descriptor, $before, $after, $pairs, $renames, $map, $oldIndex, $newIndex); }
-			catch (\Throwable $error) { $this->allowed = []; $this->errors[] = self::PATH . ': ' . $error->getMessage(); }
+			catch (\Throwable $error) { $this->allowed = []; $this->errors[] = $descriptor['path'] . ': ' . $error->getMessage(); }
 		}
 	}
 
@@ -55,7 +57,7 @@ final class FrozenPathSites {
 				if (count($matches) !== 1) { throw new \RuntimeException('Expected exactly one refusal per frozen site and side'); }
 				$key = self::key($side, $identity, $matches[0]);
 				if (isset($this->allowed[$key])) { throw new \RuntimeException('Duplicate/overlapping frozen site'); }
-				$this->allowed[$key] = false; $this->identities[$physical] = $identity;
+				$this->allowed[$key] = false; $this->certificatePaths[$key] = $path; $this->identities[$physical] = $identity;
 			}
 		}
 	}
@@ -75,7 +77,7 @@ final class FrozenPathSites {
 	/** @return list<string> Invalid certificate and unused one-to-one authorizations. */
 	public function problems(): array {
 		$result = $this->errors;
-		foreach ($this->allowed as $key => $used) { if (!$used) { $result[] = self::PATH . ': Unconsumed frozen occurrence: ' . $key; } }
+		foreach ($this->allowed as $key => $used) { if (!$used) { $result[] = $this->certificatePaths[$key] . ': Unconsumed frozen occurrence: ' . $key; } }
 		return $result;
 	}
 }

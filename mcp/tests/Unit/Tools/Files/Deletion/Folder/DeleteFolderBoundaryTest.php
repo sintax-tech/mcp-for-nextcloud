@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files\Deletion\Folder;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Access\ResourceScope\FilesScope;
-use OCA\Mcp\Tools\Files\Deletion\Folder\DeleteFolderBoundary;
+use OCA\Mcp\Modules\Files\Deletion\Folder\DeleteFolderBoundary;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 

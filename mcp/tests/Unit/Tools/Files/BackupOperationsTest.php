@@ -10,8 +10,8 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 use OCA\Mcp\Platform\Backups\BackupLocation;
 use OCA\Mcp\Platform\Backups\BackupCopies;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
-use OCA\Mcp\Tools\Files\FileBackup;
-use OCA\Mcp\Tools\Files\BackupPlan;
+use OCA\Mcp\Modules\Files\FileBackup;
+use OCA\Mcp\Modules\Files\BackupPlan;
 use OCA\Mcp\Modules\Contacts\Backup\ContactBackup;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -112,7 +112,7 @@ final class BackupOperationsTest extends FilesToolsTestCase {
 	public function testCopyCannotUseAnyReservedDestination(): void {
 		[$location] = $this->settings('.mcp-backups', false);
 		$access = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo($this->users, $this->tree->shareManager());
-		$service = new \OCA\Mcp\Tools\Files\Reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access), $this->report(), $this->users, backupLocation: $location);
+		$service = new \OCA\Mcp\Modules\Files\Reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access), $this->report(), $this->users, backupLocation: $location);
 		foreach (['MCP backups', '.mcp-backups'] as $folder) {
 			foreach ([false, true] as $write) {
 				try {
@@ -120,7 +120,7 @@ final class BackupOperationsTest extends FilesToolsTestCase {
 						: $service->planCopy($this->tree->rootFolder(), 'alice', '/Documentos/ata.md', '/' . $folder, null);
 					self::fail('Copy destination reservation bypassed');
 				} catch (ToolFailure $error) {
-					self::assertSame(\OCA\Mcp\Tools\Files\FilesMessages::backupPath(), $error->getMessage());
+					self::assertSame(\OCA\Mcp\Modules\Files\FilesMessages::backupPath(), $error->getMessage());
 				}
 			}
 		}
@@ -163,9 +163,9 @@ final class BackupOperationsTest extends FilesToolsTestCase {
 		foreach (['/.mcp-backups/Documentos/a.bak', ''] as $copy) {
 			$backup = $this->createMock(FileBackup::class);
 			$backup->method('assertWritablePath')->willThrowException(new ToolFailure('Reserved path'));
-			try { \OCA\Mcp\Tools\Files\BackupWriteBoundary::afterCopy($backup, '/a', $copy); self::fail('Late refusal bypassed'); }
+			try { \OCA\Mcp\Modules\Files\BackupWriteBoundary::afterCopy($backup, '/a', $copy); self::fail('Late refusal bypassed'); }
 			catch (ToolFailure $error) {
-				self::assertSame('Reserved path ' . \OCA\Mcp\Tools\Files\FilesMessages::originalKept($copy), $error->getMessage());
+				self::assertSame('Reserved path ' . \OCA\Mcp\Modules\Files\FilesMessages::originalKept($copy), $error->getMessage());
 				if ($copy !== '') { self::assertSame(1, substr_count($error->getMessage(), $copy)); }
 				else { self::assertStringNotContainsString('original is kept', $error->getMessage()); }
 			}
@@ -174,7 +174,7 @@ final class BackupOperationsTest extends FilesToolsTestCase {
 		$backup->method('assertWritablePath')->willThrowException(new \RuntimeException('unrelated'));
 		$this->expectException(\RuntimeException::class);
 		$this->expectExceptionMessage('unrelated');
-		\OCA\Mcp\Tools\Files\BackupWriteBoundary::afterCopy($backup, '/a', '/copy');
+		\OCA\Mcp\Modules\Files\BackupWriteBoundary::afterCopy($backup, '/a', '/copy');
 	}
 
 	/** @return void many sibling decisions share one config load; guard invalidation reloads and corruption hides with per-node safe logging */
@@ -240,12 +240,12 @@ final class BackupOperationsTest extends FilesToolsTestCase {
 			$container = $this->createMock(\Psr\Container\ContainerInterface::class);
 			$container->method('get')->willReturn($manager);
 			$access = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo($this->users, $this->tree->shareManager());
-			$restore = new \OCA\Mcp\Tools\Files\VersionRestore($this->apps, $this->users, new \OCA\Mcp\Tools\Files\ContentTypeGate(\OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this)), $access, $container);
+			$restore = new \OCA\Mcp\Modules\Files\VersionRestore($this->apps, $this->users, new \OCA\Mcp\Modules\Files\ContentTypeGate(\OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this)), $access, $container);
 			$file = $this->tree->node('/alice/files/Documentos/ata.md');
 			$before = $file->getContent();
 			try { $restore->restore($this->tree->rootFolder(), $file, '/Documentos/ata.md', '1', 'alice', $backup); self::fail('Late reservation written'); }
 			catch (ToolFailure $error) {
-				self::assertSame(\OCA\Mcp\Tools\Files\FilesMessages::backupPath() . ' ' . \OCA\Mcp\Tools\Files\FilesMessages::originalKept($copy), $error->getMessage());
+				self::assertSame(\OCA\Mcp\Modules\Files\FilesMessages::backupPath() . ' ' . \OCA\Mcp\Modules\Files\FilesMessages::originalKept($copy), $error->getMessage());
 			}
 			self::assertNotContains('rollback', $manager->ops);
 			self::assertSame($before, $file->getContent());
@@ -272,14 +272,14 @@ final class BackupOperationsTest extends FilesToolsTestCase {
 		});
 		$access = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo($this->users, $this->tree->shareManager());
 		$unused = static fn () => throw new \LogicException('Unexpected callback');
-		$handler = new \OCA\Mcp\Tools\Files\Handler\CheckoutWriteHandler($this->visibilityRoot(), null, $backup,
+		$handler = new \OCA\Mcp\Modules\Files\Handler\CheckoutWriteHandler($this->visibilityRoot(), null, $backup,
 			new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access), $access, new \Psr\Log\NullLogger(), null, null, null, null, \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this),
 			$unused, $unused, $unused, static fn () => false, $unused, $unused,
 			static fn (int $status, string $message) => new \OCP\AppFramework\Http\JSONResponse(['error' => $message], $status), $unused);
 		$row = new \OCA\Mcp\Checkout\CheckoutToken(1, 'upload', 'alice', $file->getId(), '/Documentos/ata.md', $file->getEtag(), 'personal', true, PHP_INT_MAX, true);
 		$response = $handler->write($row, $file, '/body-must-not-be-read');
 		self::assertSame(400, $response->getStatus());
-		self::assertSame(['error' => \OCA\Mcp\Tools\Files\FilesMessages::backupPath() . ' ' . \OCA\Mcp\Tools\Files\FilesMessages::originalKept($copy)], $response->getData());
+		self::assertSame(['error' => \OCA\Mcp\Modules\Files\FilesMessages::backupPath() . ' ' . \OCA\Mcp\Modules\Files\FilesMessages::originalKept($copy)], $response->getData());
 		self::assertSame($before, $file->getContent());
 		if ($createCopy) {
 			self::assertNotSame('', $copy);

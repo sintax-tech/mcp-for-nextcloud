@@ -18,7 +18,7 @@ use OCA\Mcp\Access\Logs\LogFileNames;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryAppConfig;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tools\Files\CheckoutService;
+use OCA\Mcp\Modules\Files\CheckoutService;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IDBConnection;

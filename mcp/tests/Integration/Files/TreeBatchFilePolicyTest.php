@@ -13,7 +13,7 @@ use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
 use OCA\Mcp\Access\FileTypes\FileTypeGuard;
 use OCA\Mcp\Platform\FileAccess\{NodeAccessInfo, SharedWriteGuard};
-use OCA\Mcp\Tools\Files\{CopyMoveContext, FileTypePreflight, ListedTreeCopy, MoveReport, Reorganization};
+use OCA\Mcp\Modules\Files\{CopyMoveContext, FileTypePreflight, ListedTreeCopy, MoveReport, Reorganization};
 use OCP\Files\{Folder, IRootFolder};
 use OCP\IAppConfig;
 use OCP\Server;

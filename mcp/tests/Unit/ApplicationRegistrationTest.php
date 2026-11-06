@@ -189,27 +189,27 @@ final class ApplicationRegistrationTest extends TestCase {
 			},
 		);
 
-		$lister = $container->get(\OCA\Mcp\Tools\Files\Sharing\ShareLister::class);
-		$this->assertInstanceOf(\OCA\Mcp\Tools\Files\Sharing\ShareLister::class, $lister);
-		foreach ([\OCA\Mcp\Tools\Files\Sharing\ShareAccess::class, \OCA\Mcp\Tools\Files\Sharing\ShareFormatter::class,
-			\OCA\Mcp\Tools\Files\Sharing\ShareRecipientResolver::class, \OCA\Mcp\Tools\Files\Sharing\ShareWriter::class, \OCA\Mcp\Tools\Files\Sharing\ShareRemover::class,
-			\OCA\Mcp\Tools\Files\Sharing\LinkPassword::class, \OCA\Mcp\Mcp\Confirmation\PlanState::class] as $service) {
+		$lister = $container->get(\OCA\Mcp\Modules\Files\Sharing\ShareLister::class);
+		$this->assertInstanceOf(\OCA\Mcp\Modules\Files\Sharing\ShareLister::class, $lister);
+		foreach ([\OCA\Mcp\Modules\Files\Sharing\ShareAccess::class, \OCA\Mcp\Modules\Files\Sharing\ShareFormatter::class,
+			\OCA\Mcp\Modules\Files\Sharing\ShareRecipientResolver::class, \OCA\Mcp\Modules\Files\Sharing\ShareWriter::class, \OCA\Mcp\Modules\Files\Sharing\ShareRemover::class,
+			\OCA\Mcp\Modules\Files\Sharing\LinkPassword::class, \OCA\Mcp\Mcp\Confirmation\PlanState::class] as $service) {
 			$this->assertInstanceOf($service, $container->get($service));
 		}
 		// Invariant 1: a hidden node is never listed nor shared, so the guard cannot be left out by the container.
-		$guard = (new \ReflectionProperty(\OCA\Mcp\Tools\Files\Sharing\ShareAccess::class, 'visibilityGuard'))
-			->getValue($container->get(\OCA\Mcp\Tools\Files\Sharing\ShareAccess::class));
+		$guard = (new \ReflectionProperty(\OCA\Mcp\Modules\Files\Sharing\ShareAccess::class, 'visibilityGuard'))
+			->getValue($container->get(\OCA\Mcp\Modules\Files\Sharing\ShareAccess::class));
 		$this->assertInstanceOf(\OCA\Mcp\Access\Visibility\VisibilityGuard::class, $guard);
-		$this->assertFalse((new \ReflectionMethod(\OCA\Mcp\Tools\Files\Sharing\ShareAccess::class, '__construct'))
+		$this->assertFalse((new \ReflectionMethod(\OCA\Mcp\Modules\Files\Sharing\ShareAccess::class, '__construct'))
 			->getParameters()[2]->allowsNull(), 'o guard de visibilidade é obrigatório');
 
 		$parameters = array_column(array_map(
 			static fn (\ReflectionParameter $p): array => ['name' => $p->getName(), 'type' => (string)$p->getType()],
-			(new \ReflectionMethod(\OCA\Mcp\Tools\Files\FilesModule::class, '__construct'))->getParameters(),
+			(new \ReflectionMethod(\OCA\Mcp\Modules\Files\FilesModule::class, '__construct'))->getParameters(),
 		), 'type', 'name');
-		$this->assertSame('?' . \OCA\Mcp\Tools\Files\Sharing\ShareLister::class, $parameters['shareLister']);
-		$this->assertSame('?' . \OCA\Mcp\Tools\Files\Sharing\ShareWriter::class, $parameters['shareWriter']);
-		$this->assertSame('?' . \OCA\Mcp\Tools\Files\Sharing\ShareRemover::class, $parameters['shareRemover']);
+		$this->assertSame('?' . \OCA\Mcp\Modules\Files\Sharing\ShareLister::class, $parameters['shareLister']);
+		$this->assertSame('?' . \OCA\Mcp\Modules\Files\Sharing\ShareWriter::class, $parameters['shareWriter']);
+		$this->assertSame('?' . \OCA\Mcp\Modules\Files\Sharing\ShareRemover::class, $parameters['shareRemover']);
 	}
 
 	/**
@@ -227,22 +227,22 @@ final class ApplicationRegistrationTest extends TestCase {
 			},
 		);
 
-		$creation = $container->get(\OCA\Mcp\Tools\Files\FileCreation::class);
-		$this->assertInstanceOf(\OCA\Mcp\Tools\Files\FileCreation::class, $creation);
+		$creation = $container->get(\OCA\Mcp\Modules\Files\FileCreation::class);
+		$this->assertInstanceOf(\OCA\Mcp\Modules\Files\FileCreation::class, $creation);
 		$this->assertInstanceOf(\OCA\Mcp\Access\Visibility\VisibilityGuard::class,
-			(new \ReflectionProperty(\OCA\Mcp\Tools\Files\FileCreation::class, 'visibilityGuard'))->getValue($creation));
+			(new \ReflectionProperty(\OCA\Mcp\Modules\Files\FileCreation::class, 'visibilityGuard'))->getValue($creation));
 		$this->assertInstanceOf(\OCP\Files\IFilenameValidator::class,
-			(new \ReflectionProperty(\OCA\Mcp\Tools\Files\FileCreation::class, 'filenames'))->getValue($creation));
-		foreach ((new \ReflectionMethod(\OCA\Mcp\Tools\Files\FileCreation::class, '__construct'))->getParameters() as $parameter) {
+			(new \ReflectionProperty(\OCA\Mcp\Modules\Files\FileCreation::class, 'filenames'))->getValue($creation));
+		foreach ((new \ReflectionMethod(\OCA\Mcp\Modules\Files\FileCreation::class, '__construct'))->getParameters() as $parameter) {
 			$this->assertFalse($parameter->allowsNull(), 'FileCreation::$' . $parameter->getName() . ' é obrigatório');
 		}
 
-		foreach ([\OCA\Mcp\Tools\Files\FilesModule::class, \OCA\Mcp\Controller\CheckoutController::class] as $class) {
+		foreach ([\OCA\Mcp\Modules\Files\FilesModule::class, \OCA\Mcp\Controller\CheckoutController::class] as $class) {
 			$parameters = array_column(array_map(
 				static fn (\ReflectionParameter $p): array => ['name' => $p->getName(), 'type' => (string)$p->getType()],
 				(new \ReflectionMethod($class, '__construct'))->getParameters(),
 			), 'type', 'name');
-			$this->assertSame('?' . \OCA\Mcp\Tools\Files\FileCreation::class, $parameters['creation'], $class);
+			$this->assertSame('?' . \OCA\Mcp\Modules\Files\FileCreation::class, $parameters['creation'], $class);
 		}
 	}
 

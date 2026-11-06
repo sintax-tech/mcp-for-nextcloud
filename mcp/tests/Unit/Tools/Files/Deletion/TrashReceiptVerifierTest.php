@@ -6,8 +6,8 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files\Deletion;
 
-use OCA\Mcp\Tools\Files\Deletion\TrashReceiptMessages;
-use OCA\Mcp\Tools\Files\Deletion\TrashReceiptVerifier;
+use OCA\Mcp\Modules\Files\Deletion\TrashReceiptMessages;
+use OCA\Mcp\Modules\Files\Deletion\TrashReceiptVerifier;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\File;

@@ -13,11 +13,11 @@ use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
-use OCA\Mcp\Tools\Files\FileBackup;
-use OCA\Mcp\Tools\Files\FilesModule;
-use OCA\Mcp\Tools\Files\FilesPlanRenderer;
-use OCA\Mcp\Tools\Files\TextExtractor;
-use OCA\Mcp\Tools\Files\VersionTools;
+use OCA\Mcp\Modules\Files\FileBackup;
+use OCA\Mcp\Modules\Files\FilesModule;
+use OCA\Mcp\Modules\Files\FilesPlanRenderer;
+use OCA\Mcp\Modules\Files\TextExtractor;
+use OCA\Mcp\Modules\Files\VersionTools;
 use OCA\Mcp\Mcp\Tools\RendersPlans;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -35,7 +35,7 @@ final class FilesPlanRendererTest extends FilesToolsTestCase {
 		$container = $this->createMock(\Psr\Container\ContainerInterface::class);
 		$container->method('get')->willReturnCallback(fn (string $id) => $id === 'OCA\Files_Versions\Versions\IVersionManager' ? $manager : null);
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
-		$versions = new VersionTools($this->apps, $this->users, new TextExtractor($this->temp), $backup, $access, $container, new \OCA\Mcp\Tools\Files\OcrSupport($this->apps));
+		$versions = new VersionTools($this->apps, $this->users, new TextExtractor($this->temp), $backup, $access, $container, new \OCA\Mcp\Modules\Files\OcrSupport($this->apps));
 		$args = [];
 		foreach ((new \ReflectionClass(FilesModule::class))->getConstructor()->getParameters() as $parameter) {
 			$name = $parameter->getName();
@@ -101,8 +101,8 @@ final class FilesPlanRendererTest extends FilesToolsTestCase {
 		$body = $this->body('files_create', ['path' => '/Arquivo/longo.txt', 'content' => str_repeat('a', 3000)]);
 
 		$this->assertStringContainsString('Beginning of the content:', $body);
-		$this->assertStringContainsString(str_repeat('a', \OCA\Mcp\Tools\Files\FileCreation::PREVIEW_CHARS) . '…', $body);
-		$this->assertStringNotContainsString(str_repeat('a', \OCA\Mcp\Tools\Files\FileCreation::PREVIEW_CHARS + 1), $body);
+		$this->assertStringContainsString(str_repeat('a', \OCA\Mcp\Modules\Files\FileCreation::PREVIEW_CHARS) . '…', $body);
+		$this->assertStringNotContainsString(str_repeat('a', \OCA\Mcp\Modules\Files\FileCreation::PREVIEW_CHARS + 1), $body);
 		$this->assertStringContainsString('2.9 KB', $body);
 	}
 

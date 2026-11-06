@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Tools\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\FilesMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Share\Exceptions\GenericShareException;
 use OCP\Share\IShare;

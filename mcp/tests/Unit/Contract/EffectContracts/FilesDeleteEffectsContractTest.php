@@ -10,8 +10,8 @@ namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\CriticalFlow;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\EffectsGate;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\FlowRunner;
-use OCA\Mcp\Tools\Files\Deletion\DeleteMessages;
-use OCA\Mcp\Tools\Files\Deletion\Folder\DeleteFolderMessages;
+use OCA\Mcp\Modules\Files\Deletion\DeleteMessages;
+use OCA\Mcp\Modules\Files\Deletion\Folder\DeleteFolderMessages;
 use PHPUnit\Framework\TestCase;
 
 /**

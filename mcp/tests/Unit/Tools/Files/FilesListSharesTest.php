@@ -9,8 +9,8 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Tools\Files\FilesMessages;
-use OCA\Mcp\Tools\Files\Sharing\ShareAccess;
+use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Sharing\ShareAccess;
 use OCP\Share\IShare;
 
 /** files_list_shares as the model calls it: by path, or every share of the user page by page. */

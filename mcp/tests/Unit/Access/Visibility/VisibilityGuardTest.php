@@ -12,7 +12,7 @@ use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Tools\Files\FileBackup;
+use OCA\Mcp\Modules\Files\FileBackup;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 use OCP\Files\Node;
@@ -77,7 +77,7 @@ final class VisibilityGuardTest extends TestCase {
 				$guard->copyHiddenTags($node, $this->createMock(Node::class));
 				$this->fail('Backup tagging must refuse unresolved ancestry');
 			} catch (ToolFailure $e) {
-				$this->assertSame(\OCA\Mcp\Tools\Files\FilesMessages::backupFailed(), $e->getMessage());
+				$this->assertSame(\OCA\Mcp\Modules\Files\FilesMessages::backupFailed(), $e->getMessage());
 			}
 		}
 	}

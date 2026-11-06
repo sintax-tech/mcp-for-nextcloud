@@ -29,7 +29,7 @@ use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 class MailBodyPreflight {
 	/**
 	 * Largest message, in octets as the server declares them, whose body is read: 1 MiB, the size of the largest inline
-	 * content MCP accepts elsewhere ({@see \OCA\Mcp\Tools\Files\FileCreation::MAX_INLINE_BYTES}).
+	 * content MCP accepts elsewhere ({@see \OCA\Mcp\Modules\Files\FileCreation::MAX_INLINE_BYTES}).
 	 */
 	public const MAX_MESSAGE_BYTES = 1048576;
 

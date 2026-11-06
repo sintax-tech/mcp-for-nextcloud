@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Access\FileTypes\FileWritePolicy;
 use OCA\Mcp\Access\FileTypes\FileTypeDenied;
-use OCA\Mcp\Tools\Files\{Batch, CopyMoveContext, FileTypePreflight, ListedTreeCopy, ReorganizationLimits};
+use OCA\Mcp\Modules\Files\{Batch, CopyMoveContext, FileTypePreflight, ListedTreeCopy, ReorganizationLimits};
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 
@@ -440,7 +440,7 @@ final class TreeBatchPolicyTest extends FilesToolsTestCase {
 			$preflight->inspect($source, '/target.txt', $snapshot);
 			self::fail('Projected work must remain bounded');
 		} catch (ToolFailure $e) {
-			self::assertSame(\OCA\Mcp\Tools\Files\FileTreeMessages::tooManyNodes(ReorganizationLimits::NODES), $e->getMessage());
+			self::assertSame(\OCA\Mcp\Modules\Files\FileTreeMessages::tooManyNodes(ReorganizationLimits::NODES), $e->getMessage());
 			self::assertStringNotContainsString('copied', $e->getMessage());
 		}
 	}

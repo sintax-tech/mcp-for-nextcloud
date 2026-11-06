@@ -77,7 +77,7 @@
             "OCA\\Mcp\\Middleware\\DeferredFlushMiddleware"
         ],
         "MODULES": [
-            "OCA\\Mcp\\Tools\\Files\\FilesModule",
+            "OCA\\Mcp\\Modules\\Files\\FilesModule",
             "OCA\\Mcp\\Modules\\Notes\\NotesModule",
             "OCA\\Mcp\\Modules\\Calendar\\CalendarModule",
             "OCA\\Mcp\\Modules\\Contacts\\ContactsModule",

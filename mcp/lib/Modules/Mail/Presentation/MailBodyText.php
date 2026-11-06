@@ -16,7 +16,7 @@ namespace OCA\Mcp\Modules\Mail\Presentation;
  * bidirectional formatting characters are removed, as in every Mail answer, but line breaks are kept.
  */
 final class MailBodyText {
-	/** Longest body returned, in characters: the limit of files_read ({@see \OCA\Mcp\Tools\Files\TextExtractor::MAX_CHARS}). */
+	/** Longest body returned, in characters: the limit of files_read ({@see \OCA\Mcp\Modules\Files\TextExtractor::MAX_CHARS}). */
 	public const MAX_CHARS = 100_000;
 
 	/**

@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Checkout\CheckoutToken;
-use OCA\Mcp\Tools\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\FilesMessages;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
@@ -324,9 +324,9 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
 
 	public function testTheTwoLinksHaveTheirOwnLifetimes(): void {
 		$out = $this->json('files_checkout', ['path' => '/Documentos/ata.md']);
-		$this->assertSame(1790000000 + \OCA\Mcp\Tools\Files\CheckoutService::UPLOAD_TTL, $this->store->ofKind(CheckoutToken::KIND_UPLOAD)->expiresAt);
-		$this->assertSame(1790000000 + \OCA\Mcp\Tools\Files\CheckoutService::DOWNLOAD_TTL, $this->store->ofKind(CheckoutToken::KIND_DOWNLOAD)->expiresAt);
-		$this->assertSame(gmdate('Y-m-d\TH:i:s\Z', 1790000000 + \OCA\Mcp\Tools\Files\CheckoutService::UPLOAD_TTL), $out['expires_at']);
+		$this->assertSame(1790000000 + \OCA\Mcp\Modules\Files\CheckoutService::UPLOAD_TTL, $this->store->ofKind(CheckoutToken::KIND_UPLOAD)->expiresAt);
+		$this->assertSame(1790000000 + \OCA\Mcp\Modules\Files\CheckoutService::DOWNLOAD_TTL, $this->store->ofKind(CheckoutToken::KIND_DOWNLOAD)->expiresAt);
+		$this->assertSame(gmdate('Y-m-d\TH:i:s\Z', 1790000000 + \OCA\Mcp\Modules\Files\CheckoutService::UPLOAD_TTL), $out['expires_at']);
 	}
 
 	/** A checkout of a shared file only issues links once the user confirmed. */

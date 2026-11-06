@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
-use OCA\Mcp\Tools\Files\FilesMessages;
-use OCA\Mcp\Tools\Files\FilesModule;
-use OCA\Mcp\Tools\Files\OcrSupport;
+use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\FilesModule;
+use OCA\Mcp\Modules\Files\OcrSupport;
 
 /** files_read of a PDF or image without a text layer: a normal answer that says why, and what to do. */
 final class FilesOcrTest extends FilesToolsTestCase {

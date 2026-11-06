@@ -8,9 +8,9 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files\Deletion\Folder;
 
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
-use OCA\Mcp\Tools\Files\Deletion\DeleteEligibility;
-use OCA\Mcp\Tools\Files\Deletion\DeleteTrashVeto;
-use OCA\Mcp\Tools\Files\Handler\DeleteFileHandler;
+use OCA\Mcp\Modules\Files\Deletion\DeleteEligibility;
+use OCA\Mcp\Modules\Files\Deletion\DeleteTrashVeto;
+use OCA\Mcp\Modules\Files\Handler\DeleteFileHandler;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 use PHPUnit\Framework\TestCase;

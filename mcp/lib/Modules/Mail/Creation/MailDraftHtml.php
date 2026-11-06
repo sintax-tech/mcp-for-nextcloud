@@ -101,6 +101,7 @@ final class MailDraftHtml {
 	 * @param string $input source fragment
 	 * @param string $marker unpredictable per-pass marker, never emitted
 	 * @return array{html:string,head:bool,wrappers:int} marked source and explicit wrappers outside discarded subtrees
+	 * @throws ToolFailure when the marker scan fails
 	 */
 	private function conditionalMarkers(string $input, string $marker): array {
 		$head = false;
@@ -156,7 +157,6 @@ final class MailDraftHtml {
 	 * @param list<string> $unwrapped permitted wrappers removed from the fragment
 	 * @param string $marker private marker for revealed conditional tokens
 	 * @return void
-	 * @throws ToolFailure for an unclassified node
 	 */
 	private function filter(DOMNode $parent, array &$removed, array &$urls, array &$unwrapped, string $marker = ''): void {
 		foreach (iterator_to_array($parent->childNodes) as $node) {

@@ -23,7 +23,7 @@ final class MailNativeMessages {
 	private function __construct() {}
 
 	/**
-	 * A new OCA\Mail\Model\NewMessageData for a draft: plain text, no attachment, recipients parsed by
+	 * A new OCA\Mail\Model\NewMessageData for a draft: plain text or sanitized HTML, no attachment, recipients parsed by
 	 * OCA\Mail\AddressList::parse() as the Mail app parses a request.
 	 *
 	 * @param bool $enabled whether the Mail app is enabled for the actor on this call

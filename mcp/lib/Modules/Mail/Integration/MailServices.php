@@ -185,7 +185,7 @@ class MailServices {
 	}
 
 	/**
-	 * A new OCA\Mail\Model\NewMessageData for a draft: plain text, no attachment, recipients parsed by
+	 * A new OCA\Mail\Model\NewMessageData for a draft: plain text or sanitized HTML, no attachment, recipients parsed by
 	 * OCA\Mail\AddressList::parse() as the Mail app parses a request.
 	 *
 	 * @param string $userId authenticated user UID, because app enablement is per user

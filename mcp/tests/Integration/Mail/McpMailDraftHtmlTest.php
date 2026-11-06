@@ -72,7 +72,7 @@ final class McpMailDraftHtmlTest extends IntegrationTestCase {
 		Server::get(GrantPolicy::class)->setGrant(MailActor::ALICE, 'mail', 'draft', true);
 		$account = $this->account(MailActor::ALICE);
 		$args = ['account_id' => $account, 'html' => true, 'bcc' => ['copy@example.com'],
-			'body' => '<p onclick="x()">Olá <strong>ação</strong></p><pre>A  B' . "\n" . ' C</pre><img src="https://track.example/x"><script>x()</script>'];
+			'body' => '<p onclick="x()"><a>Olá</a> <strong>ação</strong></p><pre>A  B' . "\n" . ' C</pre><img src="https://track.example/x"><script>x()</script>'];
 		$imap = $this->imap();
 		try {
 			$before = $imap->state();
@@ -81,6 +81,8 @@ final class McpMailDraftHtmlTest extends IntegrationTestCase {
 			$this->assertFalse($plan['isError'] ?? false, json_encode($plan));
 			$this->assertSame($before, $imap->state(), 'preview never appends');
 			$this->assertTrue($plan['structuredContent']['draft']['html']);
+			$this->assertSame(1, $plan['structuredContent']['draft']['removed']['unwrapped-element']);
+			$this->assertSame(['a'], $plan['structuredContent']['draft']['unwrappedElements']);
 			$done = $this->decoded($this->call($args + ['confirm' => true, 'plan_state' => $plan['structuredContent']['plan_state']]));
 			$this->assertFalse($done['sent']);
 			$after = $imap->state();

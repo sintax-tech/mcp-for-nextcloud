@@ -35,11 +35,14 @@ final class McpMailDraftHtmlHttpTest extends ExclusionTestCase {
 		try {
 			foreach (['basic', 'bearer'] as $kind) {
 				$client = $this->mcp(self::ALICE, $kind);
-				$args = ['account_id' => $account, 'html' => true, 'body' => '<p>Olá <strong>ação</strong></p><img src="https://track.example/x">'];
+				$args = ['account_id' => $account, 'html' => true, 'body' => '<p><a name="x">Olá</a> <strong>ação</strong></p><img src="https://track.example/x">'];
 				$before = $imap->state();
 				$plan = $client->tool('mail_create_draft', $args);
 				$this->assertTrue($plan->ok(), $plan->describe());
 				$this->assertSame($before, $imap->state());
+				$this->assertSame(1, $plan->structured()['draft']['removed']['unwrapped-element']);
+				$this->assertSame(1, $plan->structured()['draft']['removed']['attribute']);
+				$this->assertSame(['a'], $plan->structured()['draft']['unwrappedElements']);
 				$done = $client->tool('mail_create_draft', $args + ['confirm' => true, 'plan_state' => $plan->structured()['plan_state']]);
 				$this->assertTrue($done->ok(), $done->describe());
 				$after = $imap->state();

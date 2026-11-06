@@ -56,8 +56,7 @@ class AuthorizationValidator {
 	/**
 	 * Checks a request kept in the session against what the administrator allows now, before the consent page answers
 	 * anything (allow or deny): the pending request is older than the decision and must not return to a client that was
-	 * turned off, deleted or turned on again since, nor to a redirect URI that was withdrawn. Only the clients the
-	 * administrator manages are checked (the native one and the self-hosted ones); a CIMD document is not fetched again.
+	 * turned off, deleted or turned on again since, nor to a redirect URI that was withdrawn. CIMD host trust/generation is checked locally too; no document is fetched again.
 	 *
 	 * @param AuthorizationRequest $request the pending request restored from the session
 	 * @throws OAuthException invalid_client / invalid_request (never redirectable) when the request no longer stands

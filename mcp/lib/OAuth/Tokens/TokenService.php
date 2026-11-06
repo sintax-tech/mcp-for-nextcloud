@@ -303,7 +303,7 @@ class TokenService {
 	 * whose loader may publish a snapshot older than a withdrawal): the native client must be on, a self-hosted one
 	 * stored and enabled, with the redirect URI and generation of the request when given. CIMD trust is read from the host table with its generation. A stored row that does not validate refuses.
 	 *
-	 * @param string|null $generation generation the consent page was made in; null for a code or a grant
+	 * @param string|null $generation CIMD consent/credential generation; null for managed-client credential checks
 	 * @param string|null $redirectUri redirect URI of the consent or of the code; null for a grant
 	 * @return bool false when the administrator withdrew the client
 	 */

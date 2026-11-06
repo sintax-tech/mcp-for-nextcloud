@@ -90,6 +90,17 @@ final class CimdRevocationTest extends TestCase {
 		self::assertSame([], $this->rig->store->codes);
 	}
 
+	/** @return void Upgrade credentials from a host already absent from trust cannot revive on its first new admission. */
+	public function testAddingAnUnimportedHostNeverAdmitsLegacyGenerationOne(): void {
+		$tokens = $this->rig->issue();
+		foreach ($this->rig->store->tokens as &$row) { $row['client_id'] = 'https://legacy.example/client'; }
+		unset($row);
+		$this->rig->hosts(['claude.ai', 'chatgpt.com', 'legacy.example']);
+		self::assertSame('2', $this->rig->table->mapper->cimdHosts()->find('legacy.example')['gen']);
+		self::assertNull($this->rig->bearer->authenticate('Bearer ' . $tokens['access_token'], CimdRevocationRig::RESOURCE));
+		$this->refused(fn () => $this->rig->tokens->refresh(['client_id' => 'https://legacy.example/client', 'refresh_token' => $tokens['refresh_token']]));
+	}
+
 	/** @return void A stale config cannot override local tombstones and a failed database read fails closed. */
 	public function testBearerDoesNotTrustStaleAppConfigAndFailsClosedOnStorageFailure(): void {
 		$tokens = $this->rig->issue();

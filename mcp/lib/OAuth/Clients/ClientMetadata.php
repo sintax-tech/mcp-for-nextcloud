@@ -16,7 +16,7 @@ class ClientMetadata {
 	 * @param string $name client_name from the document (self-asserted; show it next to the host)
 	 * @param string[] $redirectUris registered redirect URIs
 	 * @param string $generation generation of an administrator's client (native or self-hosted) when the request was
-	 *     made, a canonical counter; '1' for a CIMD client, which has none
+	 *     made, a canonical counter; CIMD uses its authoritative host generation
 	 */
 	public function __construct(
 		public readonly string $clientId,

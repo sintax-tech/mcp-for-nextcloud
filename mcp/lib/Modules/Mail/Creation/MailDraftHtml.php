@@ -73,6 +73,8 @@ final class MailDraftHtml {
 		$this->filter($document, $removed, $urls, $unwrapped, $marker);
 		// Unwrapping may leave adjacent text nodes; compare their serialized semantics, without changing characters.
 		$document->normalizeDocument();
+		// Both inventories use the same fragment parse, including paragraphs inserted around bare text.
+		$document = $this->parse($this->fragment($document));
 		$before = $this->fragment($document);
 		$purified = $this->engine->purify($before);
 		$after = $this->parse($purified);

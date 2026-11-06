@@ -512,5 +512,97 @@
         "unwrappedElements": [],
         "elementTotal": 1,
         "reportChanged": true
+    },
+    {
+        "name": "bare-unsafe-anchor",
+        "input": "<a href=\"javascript:alert(1)\">ok</a>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "unwrappedElements": [
+            "a"
+        ],
+        "elementTotal": 1,
+        "reportChanged": true
+    },
+    {
+        "name": "bare-anchor",
+        "input": "<a>ok</a>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 0,
+            "unwrapped-element": 1
+        },
+        "unwrappedElements": [
+            "a"
+        ],
+        "elementTotal": 1,
+        "reportChanged": true
+    },
+    {
+        "name": "bare-named-anchor",
+        "input": "<a name=\"x\">ok</a>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "attribute": 1,
+            "unwrapped-element": 1
+        },
+        "unwrappedElements": [
+            "a"
+        ],
+        "elementTotal": 1,
+        "reportChanged": true
+    },
+    {
+        "name": "bare-font",
+        "input": "<font>ok</font>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unknown-tag": 1,
+            "unwrapped-element": 0
+        },
+        "unwrappedElements": [],
+        "elementTotal": 1,
+        "reportChanged": true
+    },
+    {
+        "name": "nested-unsafe-anchors",
+        "input": "<a href=\"javascript:alert(1)\">outer<a href=\"data:text/html,evil\">inner</a>end</a>",
+        "refused": true
+    },
+    {
+        "name": "nested-safe-and-unsafe-anchors",
+        "input": "<a href=\"javascript:alert(1)\">outer<a href=\"https://example.com\">inner</a>end</a>",
+        "refused": true
+    },
+    {
+        "name": "bare-unsafe-anchor-and-block",
+        "input": "<p>ok</p><a href=\"javascript:alert(1)\">x</a>",
+        "body": "<p>ok</p>x",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "unwrappedElements": [
+            "a"
+        ],
+        "elementTotal": 1,
+        "reportChanged": true
+    },
+    {
+        "name": "unsafe-anchor-nested-in-inline",
+        "input": "<span>before<a href=\"javascript:alert(1)\"><strong>ok</strong></a>after</span>",
+        "body": "<span>before<strong>ok</strong>after</span>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "unwrappedElements": [
+            "a"
+        ],
+        "elementTotal": 1,
+        "reportChanged": true
     }
 ]

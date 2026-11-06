@@ -20,6 +20,8 @@ The app is organized into capability modules, following the architecture propose
 
 **Updating runs a database migration and the CIMD initialization repair step.** Credentials for hosts that remain allowed survive. Credentials from hosts that were never allowed can no longer authenticate or refresh; an administrator must allow the intended host and the client must sign in again. The existing host allowlist is preserved.
 
+## Earlier updates (1.2.2–1.2.5)
+
 - **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** opt-in message search/reading, attachment text and native links; separate default-denied grants for flags, same-account moves, new drafts (plain text by default, optional sanitized HTML) and plain-text sending. Reading does not mark messages read. Accounts/folders remain available through `mail.read`; message and attachment access need their own grants.
 - **Tables ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** discover tables/views/columns, read authorized rows and create or edit one row. View filters and native ACLs apply; schema and view writes are later work.
 - **Forms ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** discover structure and existing authorized links, read native own/all submissions with `forms.results`, create private forms with initial questions/options and PATCH one existing question or option. Read/results/create/edit are independent; adding, deleting, reordering or changing the type of existing questions/options is outside this release. Creation can have the documented native upload-folder effects; point editing can renew the native lock or clear confirmation-email selection, as shown in its plan.
@@ -79,6 +81,8 @@ O app está organizado em módulos de capacidade, seguindo a arquitetura propost
 - **Atribuição no Deck ([#26](https://github.com/sintax-tech/mcp-for-nextcloud/issues/26)):** investigada sem mudar o código de atribuição; a falha relatada não foi reproduzida, e a issue continua aberta.
 
 **A atualização executa uma migração de banco e o repair step de inicialização CIMD.** Credenciais de hosts que continuam permitidos sobrevivem. Credenciais de hosts que nunca foram permitidos deixam de autenticar ou renovar tokens; o administrador precisa permitir o host desejado e o cliente precisa entrar de novo. A lista existente de hosts permitidos é preservada.
+
+## Atualizações anteriores (1.2.2–1.2.5)
 
 - **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** busca/leitura de mensagens, texto de anexos e links nativos por permissões opcionais; grants separados e negados por padrão para sinalizações, mover na mesma conta, novos rascunhos (texto simples por padrão, HTML sanitizado opcional) e envio em texto simples. Ler não marca mensagens como lidas. Contas/pastas continuam em `mail.read`; mensagens e anexos exigem grants próprios.
 - **Tables ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** descobrir tabelas/views/colunas, ler linhas autorizadas e criar ou editar uma linha. Filtros de view e ACLs nativas continuam; escrita de schema e views fica para depois.
@@ -140,6 +144,8 @@ La aplicación está organizada en módulos de capacidades, siguiendo la arquite
 
 **La actualización ejecuta una migración de base de datos y el paso de reparación de inicialización CIMD.** Las credenciales de los hosts que siguen permitidos sobreviven. Las de hosts que nunca estuvieron permitidos ya no autentican ni renuevan tokens; un administrador debe permitir el host deseado y el cliente debe iniciar sesión de nuevo. La lista existente de hosts permitidos se conserva.
 
+## Actualizaciones anteriores (1.2.2–1.2.5)
+
 - **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** búsqueda/lectura opcional de mensajes, texto de adjuntos y enlaces nativos; permisos separados y denegados por defecto para indicadores, mover en la misma cuenta, borradores nuevos (texto por defecto, HTML saneado opcional) y envío de texto. Leer no marca mensajes como leídos. Cuentas/carpetas siguen bajo `mail.read`; mensajes y adjuntos requieren permisos propios.
 - **Tables ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** descubrir tablas/vistas/columnas, leer filas autorizadas y crear o editar una fila. Se mantienen filtros de vista y ACL nativas; escribir esquemas y vistas queda para después.
 - **Forms ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** descubrir estructura y enlaces existentes autorizados, leer respuestas propias/todas según acceso nativo con `forms.results`, crear formularios privados con preguntas/opciones iniciales y aplicar PATCH a una pregunta u opción existente. Read/results/create/edit son independientes; añadir, eliminar, reordenar o cambiar tipos existentes queda fuera. La creación puede tener los efectos nativos documentados sobre carpetas de archivos; editar puede renovar el bloqueo o limpiar la selección de email de confirmación, según el plan.
@@ -199,6 +205,8 @@ Die App ist in Fähigkeitsmodule gegliedert, nach dem Architekturvorschlag von @
 - **Deck-Zuweisung ([#26](https://github.com/sintax-tech/mcp-for-nextcloud/issues/26)):** ohne Änderung des Zuweisungscodes untersucht; der gemeldete Fehler wurde nicht reproduziert und das Issue bleibt offen.
 
 **Das Update führt eine Datenbankmigration und den CIMD-Initialisierungsschritt aus.** Zugangsdaten weiterhin erlaubter Hosts bleiben gültig. Zugangsdaten nie erlaubter Hosts erlauben keine Anmeldung oder Token-Erneuerung mehr; die Administration muss den gewünschten Host erlauben und der Client sich neu anmelden. Die bestehende Host-Liste bleibt erhalten.
+
+## Frühere Updates (1.2.2–1.2.5)
 
 - **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Nachrichten suchen/lesen, Anhangtext und native Links mit optionalen Berechtigungen; getrennte, standardmäßig verweigerte Grants für Flags, Verschieben im selben Konto, neue Entwürfe (standardmäßig Text, optional bereinigtes HTML) und Textversand. Lesen markiert Nachrichten nicht als gelesen. Konten/Ordner bleiben unter `mail.read`; Nachrichten und Anhänge brauchen eigene Grants.
 - **Tables ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Tabellen/Ansichten/Spalten entdecken, berechtigte Zeilen lesen und eine Zeile erstellen oder bearbeiten. Ansichtsfilter und native ACLs gelten; Schema- und Ansichtsschreibzugriffe folgen später.

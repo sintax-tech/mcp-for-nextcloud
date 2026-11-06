@@ -23,8 +23,10 @@ final class EditCatalogContract {
 	 */
 	public static function check(TestCase $test): void {
 		$module = (new \ReflectionClass(FormsModule::class))->newInstanceWithoutConstructor();
-		Assert::assertSame(['forms_list_forms', 'forms_read_form', 'forms_list_submissions', 'forms_read_submission', 'forms_create_form', 'forms_update_question', 'forms_update_option'], array_column($module->definitions(), 'name'));
-		foreach ($module->definitions() as $definition) {
+		// The seven 1.2.5 tools stay first and unchanged; the structure tools appended after them are checked in tests/Unit/Modules/Forms.
+		$legacy = array_slice($module->definitions(), 0, 7);
+		Assert::assertSame(['forms_list_forms', 'forms_read_form', 'forms_list_submissions', 'forms_read_submission', 'forms_create_form', 'forms_update_question', 'forms_update_option'], array_column($legacy, 'name'));
+		foreach ($legacy as $definition) {
 			$definition['annotations'] = \OCA\Mcp\Mcp\Tools\ToolPresentation::annotations($definition['name'], $definition['operation'], $definition['destructiveHint'] ?? false);
 			$create = $definition['name'] === 'forms_create_form';
 			$edit = str_starts_with($definition['name'], 'forms_update_');

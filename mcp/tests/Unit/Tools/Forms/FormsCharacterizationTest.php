@@ -28,7 +28,8 @@ final class FormsCharacterizationTest extends TestCase {
 		foreach (['success', 'failure'] as $mode) {
 			$this->events = [];
 			$module = $this->module($mode);
-			foreach ($module->definitions() as $definition) {
+			// The 1.2.5 tools only: the structure tools have their own tests in tests/Unit/Modules/Forms.
+			foreach (array_slice($module->definitions(), 0, 7) as $definition) {
 				$name = $definition['name'];
 				$arguments = ['form_id' => 5, 'question_id' => 9, 'option_id' => 2, 'title' => 'A hostile <script>', 'changes' => ['text' => 'new'], 'confirm' => true, 'plan_state' => 'fixed'];
 				$actual[$mode][$name]['call'] = $this->capture(fn () => $module->call($name, $arguments, 'bob'));

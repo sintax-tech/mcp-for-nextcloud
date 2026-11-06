@@ -181,6 +181,13 @@ final class ToolPresentation {
 			'forms_create_form' => Translator::t('Create a form'),
 			'forms_update_question' => Translator::t('Edit a form question'),
 			'forms_update_option' => Translator::t('Edit a form option'),
+			'forms_add_question' => Translator::t('Add a form question'),
+			'forms_reorder_questions' => Translator::t('Reorder form questions'),
+			'forms_add_option' => Translator::t('Add form options'),
+			'forms_reorder_options' => Translator::t('Reorder form options'),
+			'forms_delete_question' => Translator::t('Delete a form question'),
+			'forms_delete_option' => Translator::t('Delete a form option'),
+			'forms_change_question_type' => Translator::t('Change a form question type'),
 			// Polls
 			'polls_list_polls' => Translator::t('List polls'),
 			'polls_read_poll' => Translator::t('Read poll'),

@@ -15,6 +15,6 @@ final class FormsGuideNotes {
 
 	/** @return list<string> original guide notes, in publication order */
 	public static function notes(): array {
-		return [FormsMessages::GUIDE, \OCA\Mcp\Modules\Forms\Presentation\ResultsTools::GUIDE, \OCA\Mcp\Modules\Forms\Presentation\CreateFormMessages::GUIDE, \OCA\Mcp\Modules\Forms\Presentation\EditMessages::GUIDE];
+		return [FormsMessages::GUIDE, \OCA\Mcp\Modules\Forms\Presentation\ResultsTools::GUIDE, \OCA\Mcp\Modules\Forms\Presentation\CreateFormMessages::GUIDE, \OCA\Mcp\Modules\Forms\Presentation\EditMessages::GUIDE, StructureMessages::GUIDE];
 	}
 }

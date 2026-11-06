@@ -18,6 +18,11 @@ final class FormsModule extends CatalogModule {
 		return FormsToolCatalog::TOOLS;
 	}
 
+	/** @return class-string<FormsRegistration> the capability probe of the structure tools */
+	public static function registration(): ?string {
+		return FormsRegistration::class;
+	}
+
 	/** {@inheritDoc} */
 	public function guideNotes(): array {
 		return FormsGuideNotes::notes();

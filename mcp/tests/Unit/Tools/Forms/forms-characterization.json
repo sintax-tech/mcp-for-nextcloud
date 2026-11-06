@@ -1339,7 +1339,7 @@
         {
             "name": "calendar_create_event",
             "title": "Create event",
-            "description": "Creates a simple event (no recurrence) in a writable calendar. Attendees are Nextcloud account IDs; call users_search first if you are not sure of someone's ID. This call may send invitations to other people. If the resource belongs to someone else, the agent MUST ask the user before sending confirm_shared: true. First returns a detailed plan without writing. Show it to the user and wait for explicit approval; then repeat the same arguments with confirm=true, adding the etag returned in the plan when it has one.",
+            "description": "Creates a simple event (no recurrence) in a writable calendar. Attendees are Nextcloud account IDs; call users_search first if you are not sure of someone's ID. Supports optional DISPLAY reminders relative to the start via alarms (up to 5, at most 4 weeks). This call may send invitations to other people. If the resource belongs to someone else, the agent MUST ask the user before sending confirm_shared: true. First returns a detailed plan without writing. Show it to the user and wait for explicit approval; then repeat the same arguments with confirm=true, adding the etag returned in the plan when it has one.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -1390,6 +1390,33 @@
                         "maxLength": 65536,
                         "description": "description"
                     },
+                    "alarms": {
+                        "type": "array",
+                        "minItems": 0,
+                        "maxItems": 5,
+                        "description": "Optional DISPLAY reminders relative to the start (start of day for all-day events), up to 4 weeks. Omit to keep current behavior. On update, replaces only DISPLAY reminders relative to the start; [] removes those reminders. Other reminders and recurrence overrides stay unchanged.",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                                "minutesBefore"
+                            ],
+                            "properties": {
+                                "minutesBefore": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 40320,
+                                    "description": "Minutes before the event starts; 0 means at the start."
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 65536,
+                                    "description": "Reminder text. Omitted or empty uses the final event title, or Event reminder when untitled."
+                                }
+                            }
+                        }
+                    },
                     "attendees": {
                         "type": "array",
                         "items": {
@@ -1435,7 +1462,7 @@
         {
             "name": "calendar_update_event",
             "title": "Edit event",
-            "description": "Updates title, location, description, dates, or attendees (account IDs; call users_search first if unsure) of an event. Recurrent series dates cannot be changed. This call may send invitations to other people. Attendees are only notified with send_invitations: true, depending on server configuration; sending does not confirm receipt. If the resource belongs to someone else, the agent MUST ask the user before sending confirm_shared: true. First returns a detailed plan without writing. Show it to the user and wait for explicit approval; then repeat the same arguments with confirm=true, adding the etag returned in the plan when it has one.",
+            "description": "Updates title, location, description, dates, or attendees (account IDs; call users_search first if unsure) of an event. Recurrent series dates cannot be changed. Optional alarms replaces only DISPLAY reminders relative to the start (up to 5, at most 4 weeks); [] removes those reminders. Omit alarms to preserve all reminders. Other reminders and recurrence overrides stay unchanged. This call may send invitations to other people. Attendees are only notified with send_invitations: true, depending on server configuration; sending does not confirm receipt. If the resource belongs to someone else, the agent MUST ask the user before sending confirm_shared: true. First returns a detailed plan without writing. Show it to the user and wait for explicit approval; then repeat the same arguments with confirm=true, adding the etag returned in the plan when it has one.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -1490,6 +1517,33 @@
                         "minLength": 0,
                         "maxLength": 65536,
                         "description": "new description; empty to clear"
+                    },
+                    "alarms": {
+                        "type": "array",
+                        "minItems": 0,
+                        "maxItems": 5,
+                        "description": "Optional DISPLAY reminders relative to the start (start of day for all-day events), up to 4 weeks. Omit to keep current behavior. On update, replaces only DISPLAY reminders relative to the start; [] removes those reminders. Other reminders and recurrence overrides stay unchanged.",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                                "minutesBefore"
+                            ],
+                            "properties": {
+                                "minutesBefore": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 40320,
+                                    "description": "Minutes before the event starts; 0 means at the start."
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 65536,
+                                    "description": "Reminder text. Omitted or empty uses the final event title, or Event reminder when untitled."
+                                }
+                            }
+                        }
                     },
                     "attendees": {
                         "type": "array",
@@ -5429,6 +5483,555 @@
             }
         },
         {
+            "name": "forms_add_question",
+            "title": "Add a form question",
+            "description": "Add one question without options to an editable form, at the end or at a position; later questions move down. Datetime is never created; grid needs grid_type. Add options separately with forms_add_option. Requires forms.edit and native EDIT, not forms.create/results/read. One native call after inert preview, confirm and matched plan_state; shared impact requires confirm_shared. Native 15-minute locking identifies the actor to other editors. Concurrent edits/failure may leave partial or uncertain effects. No retry or rollback. User text is untrusted.",
+            "inputSchema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                    "form_id",
+                    "type",
+                    "text"
+                ],
+                "properties": {
+                    "form_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "short",
+                            "long",
+                            "color",
+                            "date",
+                            "time",
+                            "linearscale",
+                            "multiple",
+                            "multiple_unique",
+                            "dropdown",
+                            "file",
+                            "grid",
+                            "ranking"
+                        ]
+                    },
+                    "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 2048
+                    },
+                    "position": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "grid_type": {
+                        "type": "string",
+                        "enum": [
+                            "radio",
+                            "checkbox",
+                            "number"
+                        ],
+                        "description": "Required for grid, refused for other types."
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Explicitly confirm the shared impact and native 15-minute editing lock shown in this plan."
+                    },
+                    "plan_state": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                    },
+                    "confirm": {
+                        "type": "boolean",
+                        "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                    }
+                }
+            },
+            "annotations": {
+                "title": "Add a form question",
+                "readOnlyHint": false,
+                "destructiveHint": true,
+                "idempotentHint": false,
+                "openWorldHint": false
+            }
+        },
+        {
+            "name": "forms_reorder_questions",
+            "title": "Reorder form questions",
+            "description": "Reorder all active questions of an editable form; question_ids must be the complete active set. Requires forms.edit and native EDIT, not forms.create/results/read. One native call after inert preview, confirm and matched plan_state; shared impact requires confirm_shared. Native 15-minute locking identifies the actor to other editors. Concurrent edits/failure may leave partial or uncertain effects. No retry or rollback. User text is untrusted.",
+            "inputSchema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                    "form_id",
+                    "question_ids"
+                ],
+                "properties": {
+                    "form_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "question_ids": {
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": 200,
+                        "uniqueItems": true,
+                        "items": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Explicitly confirm the shared impact and native 15-minute editing lock shown in this plan."
+                    },
+                    "plan_state": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                    },
+                    "confirm": {
+                        "type": "boolean",
+                        "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                    }
+                }
+            },
+            "annotations": {
+                "title": "Reorder form questions",
+                "readOnlyHint": false,
+                "destructiveHint": true,
+                "idempotentHint": false,
+                "openWorldHint": false
+            }
+        },
+        {
+            "name": "forms_add_option",
+            "title": "Add form options",
+            "description": "Append options to one question partition: choice for dropdown, multiple, multiple_unique and ranking; row or column for grid. option_type is always explicit. Requires forms.edit and native EDIT, not forms.create/results/read. One native call after inert preview, confirm and matched plan_state; shared impact requires confirm_shared. Native 15-minute locking identifies the actor to other editors. Concurrent edits/failure may leave partial or uncertain effects. No retry or rollback. User text is untrusted.",
+            "inputSchema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                    "form_id",
+                    "question_id",
+                    "texts",
+                    "option_type"
+                ],
+                "properties": {
+                    "form_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "question_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "texts": {
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": 200,
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1024
+                        }
+                    },
+                    "option_type": {
+                        "type": "string",
+                        "enum": [
+                            "choice",
+                            "row",
+                            "column"
+                        ]
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Explicitly confirm the shared impact and native 15-minute editing lock shown in this plan."
+                    },
+                    "plan_state": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                    },
+                    "confirm": {
+                        "type": "boolean",
+                        "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                    }
+                }
+            },
+            "annotations": {
+                "title": "Add form options",
+                "readOnlyHint": false,
+                "destructiveHint": true,
+                "idempotentHint": false,
+                "openWorldHint": false
+            }
+        },
+        {
+            "name": "forms_reorder_options",
+            "title": "Reorder form options",
+            "description": "Reorder the complete option partition of one question: all options of a choice question, or the row or column options of a grid (option_type required for grid). Requires forms.edit and native EDIT, not forms.create/results/read. One native call after inert preview, confirm and matched plan_state; shared impact requires confirm_shared. Native 15-minute locking identifies the actor to other editors. Concurrent edits/failure may leave partial or uncertain effects. No retry or rollback. User text is untrusted.",
+            "inputSchema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                    "form_id",
+                    "question_id",
+                    "option_ids"
+                ],
+                "properties": {
+                    "form_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "question_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "option_type": {
+                        "type": "string",
+                        "enum": [
+                            "choice",
+                            "row",
+                            "column"
+                        ]
+                    },
+                    "option_ids": {
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": 200,
+                        "uniqueItems": true,
+                        "items": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Explicitly confirm the shared impact and native 15-minute editing lock shown in this plan."
+                    },
+                    "plan_state": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                    },
+                    "confirm": {
+                        "type": "boolean",
+                        "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                    }
+                }
+            },
+            "annotations": {
+                "title": "Reorder form options",
+                "readOnlyHint": false,
+                "destructiveHint": true,
+                "idempotentHint": false,
+                "openWorldHint": false
+            }
+        },
+        {
+            "name": "forms_delete_question",
+            "title": "Delete a form question",
+            "description": "Delete one question logically; there is no restore. Answers may exist and become orphaned. Deleting a file question lets Forms queue a job that may delete its upload folders asynchronously; files are not inspected. A selected confirmation-email question loses the selection. Requires forms.edit and native EDIT, not forms.create/results/read. One native call after inert preview, confirm and matched plan_state; shared impact requires confirm_shared. Native 15-minute locking identifies the actor to other editors. Concurrent edits/failure may leave partial or uncertain effects. No retry or rollback. User text is untrusted.",
+            "inputSchema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                    "form_id",
+                    "question_id"
+                ],
+                "properties": {
+                    "form_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "question_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Explicitly confirm the shared impact and native 15-minute editing lock shown in this plan."
+                    },
+                    "plan_state": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                    },
+                    "confirm": {
+                        "type": "boolean",
+                        "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                    }
+                }
+            },
+            "annotations": {
+                "title": "Delete a form question",
+                "readOnlyHint": false,
+                "destructiveHint": true,
+                "idempotentHint": false,
+                "openWorldHint": false
+            }
+        },
+        {
+            "name": "forms_delete_option",
+            "title": "Delete a form option",
+            "description": "Permanently delete one option. Answers may reference it and become orphaned. Forms renumbers all remaining options of the question. Requires forms.edit and native EDIT, not forms.create/results/read. One native call after inert preview, confirm and matched plan_state; shared impact requires confirm_shared. Native 15-minute locking identifies the actor to other editors. Concurrent edits/failure may leave partial or uncertain effects. No retry or rollback. User text is untrusted.",
+            "inputSchema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                    "form_id",
+                    "question_id",
+                    "option_id"
+                ],
+                "properties": {
+                    "form_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "question_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "option_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Explicitly confirm the shared impact and native 15-minute editing lock shown in this plan."
+                    },
+                    "plan_state": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                    },
+                    "confirm": {
+                        "type": "boolean",
+                        "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                    }
+                }
+            },
+            "annotations": {
+                "title": "Delete a form option",
+                "readOnlyHint": false,
+                "destructiveHint": true,
+                "idempotentHint": false,
+                "openWorldHint": false
+            }
+        },
+        {
+            "name": "forms_change_question_type",
+            "title": "Change a form question type",
+            "description": "Change the type of one question (never to datetime or grid) with our validation of the final settings; answers and options are not converted or deleted. Incompatible settings require explicit final settings. A selected confirmation-email question can lose the selection. Requires forms.edit and native EDIT, not forms.create/results/read. One native call after inert preview, confirm and matched plan_state; shared impact requires confirm_shared. Native 15-minute locking identifies the actor to other editors. Concurrent edits/failure may leave partial or uncertain effects. No retry or rollback. User text is untrusted.",
+            "inputSchema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                    "form_id",
+                    "question_id",
+                    "type"
+                ],
+                "properties": {
+                    "form_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "question_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "short",
+                            "long",
+                            "color",
+                            "date",
+                            "time",
+                            "linearscale",
+                            "multiple",
+                            "multiple_unique",
+                            "dropdown",
+                            "file",
+                            "ranking"
+                        ]
+                    },
+                    "settings": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "allowOtherAnswer": {
+                                "type": "boolean"
+                            },
+                            "allowedFileExtensions": {
+                                "type": "array",
+                                "maxItems": 32,
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 16
+                                }
+                            },
+                            "allowedFileTypes": {
+                                "type": "array",
+                                "maxItems": 32,
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "image",
+                                        "x-office/document",
+                                        "x-office/presentation",
+                                        "x-office/spreadsheet"
+                                    ]
+                                }
+                            },
+                            "dateMax": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ]
+                            },
+                            "dateMin": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ]
+                            },
+                            "dateRange": {
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
+                            },
+                            "maxAllowedFilesCount": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200
+                            },
+                            "maxFileSize": {
+                                "type": "integer",
+                                "minimum": 0
+                            },
+                            "optionsHighest": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ],
+                                "minimum": 2,
+                                "maximum": 10
+                            },
+                            "optionsLabelHighest": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "maxLength": 1024
+                            },
+                            "optionsLabelLowest": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "maxLength": 1024
+                            },
+                            "optionsLimitMax": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 200
+                            },
+                            "optionsLimitMin": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 200
+                            },
+                            "optionsLowest": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ],
+                                "minimum": 0,
+                                "maximum": 1
+                            },
+                            "shuffleOptions": {
+                                "type": "boolean"
+                            },
+                            "timeMax": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "maxLength": 1024
+                            },
+                            "timeMin": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "maxLength": 1024
+                            },
+                            "timeRange": {
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
+                            },
+                            "validationRegex": {
+                                "type": "string",
+                                "maxLength": 1024
+                            },
+                            "validationType": {
+                                "type": "string",
+                                "enum": [
+                                    "email",
+                                    "phone",
+                                    "number",
+                                    "regex"
+                                ]
+                            }
+                        },
+                        "description": "Complete final settings for the target type; replaces the current ones. Omit only when the current settings are valid for the target."
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Explicitly confirm the shared impact and native 15-minute editing lock shown in this plan."
+                    },
+                    "plan_state": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                    },
+                    "confirm": {
+                        "type": "boolean",
+                        "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                    }
+                }
+            },
+            "annotations": {
+                "title": "Change a form question type",
+                "readOnlyHint": false,
+                "destructiveHint": true,
+                "idempotentHint": false,
+                "openWorldHint": false
+            }
+        },
+        {
             "name": "polls_list_polls",
             "title": "List polls",
             "description": "List the polls you may open, with descriptions, deadlines, status and internal links. No votes, results, participant counts or invitation links. Native discovery loads the full collection before paging; a changed list requires restarting.",
@@ -5996,7 +6599,8 @@
             "Forms 5.3.0 or later: read structure, existing links and natively authorized submissions. Aggregate creation is a separate forms.create tool in explicitly supported pins; existing objects are never edited by that tool. Native permission is rechecked per form. Shared expired or closed forms without results access may be absent from discovery but readable by id. Public participation links are credentials and appear only for native editors, including archived forms; the UI hides archived editing. Direct service calls do not inherit Forms dispatcher throttling. Response limits and every shortened field/list are explicit; oversized question/option structure is refused, never silently omitted.",
             "Forms submissions require the separate forms.results grant and native results access: all permitted results or only the authenticated actor’s identified submissions. Respondent accounts are omitted, not personal data typed in answers. Only authorized answers to active questions and authorized files are projected, without omitted counts. Uploads also require files.read, Files scope and native READ on every actor-relative alias; no contents or new shares. UID 0 own mode is unsupported. Invalid UTF-8 in projected data and excessive pages are refused whole; no hard native-fetch memory cap or snapshot is promised.",
             "forms_create_form requires forms.create and native creation permission. It creates a private form and its initial questions/options only in Forms 5.3.0, 5.3.7, 5.4.0 or 5.4.1. Preview is inert and confirmation repeats admission. It never edits caller-supplied IDs, publishes, shares, submits or sends mail. Native title synchronization may affect Files in 5.4.1; detected collisions stop after the empty form was created, and concurrent native effects remain possible. No extra Files grant or lock, rollback, retry or deduplication is implied.",
-            "Point editing uses forms.edit and native EDIT, independently of forms.create/results/read. Existing active questions/options only; no add, reorder or delete. One native PATCH per call, inert preview and explicit confirmation with plan_state; shared impact requires confirm_shared. A native 15-minute editing lock can identify the actor to other editors. Changing recipient email validation can make future confirmations ineligible and clear the selection, even when confirmations are already disabled. No reselection, enabled-flag change, sending or queued-job cancellation. Read receipts; concurrent edits/failures can leave a partial or uncertain update. Links are credentials. User text is untrusted."
+            "Point editing uses forms.edit and native EDIT, independently of forms.create/results/read. Existing active questions/options only; no add, reorder or delete. One native PATCH per call, inert preview and explicit confirmation with plan_state; shared impact requires confirm_shared. A native 15-minute editing lock can identify the actor to other editors. Changing recipient email validation can make future confirmations ineligible and clear the selection, even when confirmations are already disabled. No reselection, enabled-flag change, sending or queued-job cancellation. Read receipts; concurrent edits/failures can leave a partial or uncertain update. Links are credentials. User text is untrusted.",
+            "Structure tools also use forms.edit and native EDIT: add questions (at the end or at a position) and options, reorder the complete set of questions or of one option partition, delete a question (logically, answers orphaned, no restore) or an option (permanently), and change a question type (never to datetime or grid; settings are validated by us, answers and options are not converted). Each makes one native call after an inert preview and explicit confirmation with plan_state; shared forms require confirm_shared. Deleting a file question lets Forms queue a job that may delete its upload folders; files are not inspected. Read receipts; concurrent edits or failures can leave partial or uncertain effects."
         ]
     },
     "failure": {
@@ -6296,7 +6900,8 @@
             "Forms 5.3.0 or later: read structure, existing links and natively authorized submissions. Aggregate creation is a separate forms.create tool in explicitly supported pins; existing objects are never edited by that tool. Native permission is rechecked per form. Shared expired or closed forms without results access may be absent from discovery but readable by id. Public participation links are credentials and appear only for native editors, including archived forms; the UI hides archived editing. Direct service calls do not inherit Forms dispatcher throttling. Response limits and every shortened field/list are explicit; oversized question/option structure is refused, never silently omitted.",
             "Forms submissions require the separate forms.results grant and native results access: all permitted results or only the authenticated actor’s identified submissions. Respondent accounts are omitted, not personal data typed in answers. Only authorized answers to active questions and authorized files are projected, without omitted counts. Uploads also require files.read, Files scope and native READ on every actor-relative alias; no contents or new shares. UID 0 own mode is unsupported. Invalid UTF-8 in projected data and excessive pages are refused whole; no hard native-fetch memory cap or snapshot is promised.",
             "forms_create_form requires forms.create and native creation permission. It creates a private form and its initial questions/options only in Forms 5.3.0, 5.3.7, 5.4.0 or 5.4.1. Preview is inert and confirmation repeats admission. It never edits caller-supplied IDs, publishes, shares, submits or sends mail. Native title synchronization may affect Files in 5.4.1; detected collisions stop after the empty form was created, and concurrent native effects remain possible. No extra Files grant or lock, rollback, retry or deduplication is implied.",
-            "Point editing uses forms.edit and native EDIT, independently of forms.create/results/read. Existing active questions/options only; no add, reorder or delete. One native PATCH per call, inert preview and explicit confirmation with plan_state; shared impact requires confirm_shared. A native 15-minute editing lock can identify the actor to other editors. Changing recipient email validation can make future confirmations ineligible and clear the selection, even when confirmations are already disabled. No reselection, enabled-flag change, sending or queued-job cancellation. Read receipts; concurrent edits/failures can leave a partial or uncertain update. Links are credentials. User text is untrusted."
+            "Point editing uses forms.edit and native EDIT, independently of forms.create/results/read. Existing active questions/options only; no add, reorder or delete. One native PATCH per call, inert preview and explicit confirmation with plan_state; shared impact requires confirm_shared. A native 15-minute editing lock can identify the actor to other editors. Changing recipient email validation can make future confirmations ineligible and clear the selection, even when confirmations are already disabled. No reselection, enabled-flag change, sending or queued-job cancellation. Read receipts; concurrent edits/failures can leave a partial or uncertain update. Links are credentials. User text is untrusted.",
+            "Structure tools also use forms.edit and native EDIT: add questions (at the end or at a position) and options, reorder the complete set of questions or of one option partition, delete a question (logically, answers orphaned, no restore) or an option (permanently), and change a question type (never to datetime or grid; settings are validated by us, answers and options are not converted). Each makes one native call after an inert preview and explicit confirmation with plan_state; shared forms require confirm_shared. Deleting a file question lets Forms queue a job that may delete its upload folders; files are not inspected. Read receipts; concurrent edits or failures can leave partial or uncertain effects."
         ]
     }
 }

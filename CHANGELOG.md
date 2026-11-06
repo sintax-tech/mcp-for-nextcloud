@@ -23,6 +23,7 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 ### Changed
 
 - **Capability-module architecture:** The code is reorganized into capability modules (`mcp/lib/Modules`, `mcp/lib/Mcp`, `mcp/lib/Access`, `mcp/lib/OAuth`, `mcp/lib/Platform`) following the architecture proposed by @marcjoancr in [#14](https://github.com/sintax-tech/mcp-for-nextcloud/pull/14).
+- **Forms editing grant now covers structure ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** the existing `forms.edit` grant also allows adding, reordering and deleting questions and options and changing a question type (`forms_add_question`, `forms_reorder_questions`, `forms_add_option`, `forms_reorder_options`, `forms_delete_question`, `forms_delete_option`, `forms_change_question_type`). No new grant is created; administrators who already granted `forms.edit` should review it. The permissions help text says so, without layout changes.
 
 ### Investigated
 

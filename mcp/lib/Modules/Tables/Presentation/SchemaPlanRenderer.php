@@ -23,10 +23,7 @@ final class SchemaPlanRenderer {
 	public static function render(array $plan): string {
 		unset($plan['plan_state']);
 		$json = json_encode($plan, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR);
-		preg_match_all('/~+/', $json, $runs);
-		$length = 3;
-		foreach ($runs[0] as $run) $length = max($length, strlen($run) + 1);
-		$fence = str_repeat('~', $length);
-		return $fence . "json\n" . $json . "\n" . $fence;
+		$inert = preg_replace_callback('/"(?:[^"\\\\]|\\\\.)*"/s', static fn (array $match): string => \OCA\Mcp\Mcp\Confirmation\PlanText::quoted(json_decode($match[0], true, 512, JSON_THROW_ON_ERROR)), $json);
+		return implode("\n", array_map(static fn (string $line): string => '> ' . $line, explode("\n", $inert)));
 	}
 }

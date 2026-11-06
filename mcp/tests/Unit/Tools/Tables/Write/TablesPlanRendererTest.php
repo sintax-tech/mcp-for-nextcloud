@@ -37,8 +37,8 @@ final class TablesPlanRendererTest extends TestCase {
 	public function testEveryTablesWriteHasAReadablePlan(): void {
 		$module = $this->module(WriteScene::app());
 		$writes = array_values(array_column(array_filter($module->definitions(), static fn (array $definition): bool => WriteGate::isWrite($definition)), 'name'));
-		$this->assertSame(['tables_create_row', 'tables_update_row'], $writes);
-		$this->assertEveryWriteToolHasAReadablePlan($module, self::plans($module));
+		$this->assertSame(['tables_create_row', 'tables_update_row', ...array_keys(\OCA\Mcp\Tests\Unit\Modules\Tables\SchemaReadablePlans::of($this))], $writes);
+		$this->assertEveryWriteToolHasAReadablePlan($module, self::plans($module) + \OCA\Mcp\Tests\Unit\Modules\Tables\SchemaReadablePlans::of($this));
 	}
 
 	/**

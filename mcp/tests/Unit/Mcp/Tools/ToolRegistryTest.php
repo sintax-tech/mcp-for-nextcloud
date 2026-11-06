@@ -131,7 +131,7 @@ final class ToolRegistryTest extends TestCase {
 					throw new \LogicException('Unconfirmed writes must not execute');
 				}
 			};
-			$registry = new ToolRegistry([$module], $this->policy, $apps, $users, $this->logger);
+			$registry = new ToolRegistry([$module], $this->policy, $apps, $users, $this->logger, capabilities: \OCA\Mcp\Tests\Unit\Modules\Tables\SchemaCapabilityFixture::registry($this->createMock(IAppManager::class), $this->logger));
 			foreach ($definitions as $definition) {
 				if (!\OCA\Mcp\Mcp\Confirmation\WriteGate::isWrite($definition)) { continue; }
 				foreach ([[], ['confirm' => false]] as $arguments) {

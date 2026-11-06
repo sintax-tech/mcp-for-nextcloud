@@ -47,7 +47,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Controller/CheckoutController.php#inputStream:fopen:1' => 'read: php input stream',
 			'Modules/Files/FilesPlanRenderer.php#render:copy:1' => 'render: static plan text, no Files mutation',
 			'Modules/Files/FilesPlanRenderer.php#render:move:1' => 'render: static plan text, no Files mutation',
-			'Modules/Files/Images/ImageTools.php#originalDimensions:fopen:1' => 'read: original image bytes',
+			'Modules/Files/Images/ImageMetadata.php#originalDimensions:fopen:1' => 'read: original image bytes',
 			'Modules/Files/FileBackupCopy.php#copy:fopen:1' => 'read: original bytes for internal recovery',
 			'Modules/Files/VersionRestore.php#writeVersion:fopen:1' => 'temporary: php temp stream buffer, not a Files node',
 			'Modules/Files/TextExtractor.php#read:fopen:1' => 'read: bounded file content, read-only mode',

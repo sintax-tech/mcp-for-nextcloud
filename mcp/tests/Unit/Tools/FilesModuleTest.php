@@ -93,7 +93,7 @@ final class FilesModuleTest extends TestCase {
 		$reorganization = new Reorganization($access, new SharedWriteGuard($access), $report, $users);
 		$planner = new MovePlanner($reorganization, $access, new SharedWriteGuard($access));
 		$store = new BatchStore($db);
-		$imageTools = new ImageTools(
+		$imageTools = \OCA\Mcp\Tests\Unit\Tools\Files\FilesImageWiring::build(
 			$this->createMock(\OCP\IPreview::class),
 			$access,
 			$appConfig,

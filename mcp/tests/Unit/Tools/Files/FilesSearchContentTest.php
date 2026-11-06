@@ -154,7 +154,7 @@ final class FilesSearchContentTest extends FilesToolsTestCase {
 		$db = $this->createMock(\OCP\IDBConnection::class);
 		$db->method('escapeLikeParameter')->willReturnCallback(fn (string $s) => addcslashes($s, '\\_%'));
 
-		$imageTools = new \OCA\Mcp\Modules\Files\Images\ImageTools(
+		$imageTools = FilesImageWiring::build(
 			$this->previewManager,
 			$access,
 			$this->config->mock($this),

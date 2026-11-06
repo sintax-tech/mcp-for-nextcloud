@@ -166,7 +166,7 @@ abstract class FilesToolsTestCase extends TestCase {
 		$this->filenames = new FakeFilenameValidator();
 		$this->creationLogger = $this->createMock(\Psr\Log\LoggerInterface::class);
 		$checkout = new CheckoutService($urls, $config, $this->time, new TokenHasher($config), $this->store, $this->apps, $this->users);
-		$imageTools = new ImageTools(
+		$imageTools = FilesImageWiring::build(
 			$this->previewManager,
 			$access,
 			$config,

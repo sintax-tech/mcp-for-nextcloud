@@ -155,7 +155,7 @@ final class FileContentTypePolicyTest extends TestCase {
 		$versions = new VersionTools($apps, $users, $extractor, $backup, $access, $container, new OcrSupport($apps), $lockService, null, $versionRestore);
 		$report = new MoveReport($this->createMock(ContainerInterface::class), $this->tree->shareManager(), $apps);
 		$reorganization = new Reorganization($access, new SharedWriteGuard($access), $report, $users);
-		$imageTools = new ImageTools(
+		$imageTools = FilesImageWiring::build(
 			$this->createMock(\OCP\IPreview::class),
 			$access,
 			$iConfig,

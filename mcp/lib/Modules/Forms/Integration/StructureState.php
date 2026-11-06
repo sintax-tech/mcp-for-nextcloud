@@ -111,8 +111,9 @@ class StructureState {
 		if ($row->getFormId() !== $formId || $row->getOrder() <= 0 || !is_array($row->getExtraSettings())) {
 			throw new ToolFailure(StructureMessages::refused());
 		}
+		// Every mutable question field is signed, so a concurrent change of any of them invalidates the plan_state.
 		$q = ['id' => $row->getId(), 'type' => $row->getType(), 'order' => $row->getOrder(), 'text' => $row->getText(),
-			'extraSettings' => $row->getExtraSettings(), 'options' => []];
+			'description' => $row->getDescription(), 'isRequired' => (bool)$row->getIsRequired(), 'extraSettings' => $row->getExtraSettings(), 'options' => []];
 		$options = $c->options->findByQuestion($q['id']);
 		if (count($options) > self::MAX_ITEMS || strlen(EditValues::json($q['extraSettings'])) > 8192) {
 			throw new ToolFailure(StructureMessages::limit());

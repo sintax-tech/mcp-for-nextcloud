@@ -68,7 +68,8 @@ final class StructureFixture {
 
 	/** Adds a stored question. @param int $id id @param int $order order @param string $type type @param string $text text @param array<string,mixed> $settings settings @return void */
 	public function question(int $id, int $order, string $type, string $text, array $settings): void {
-		$this->questions[$id] = new StructureRow(['id' => $id, 'formId' => 1, 'order' => $order, 'type' => $type, 'text' => $text, 'extraSettings' => $settings]);
+		$this->questions[$id] = new StructureRow(['id' => $id, 'formId' => 1, 'order' => $order, 'type' => $type, 'text' => $text, 'description' => '', 'isRequired' => false,
+			'extraSettings' => $settings]);
 	}
 
 	/** Adds a stored option. @param int $id id @param int $question question @param int $order order @param string $text text @param string|null $type option type @return void */

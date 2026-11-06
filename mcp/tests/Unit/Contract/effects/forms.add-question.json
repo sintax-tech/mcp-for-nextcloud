@@ -117,6 +117,8 @@
                         "order": 1,
                         "type": "short",
                         "text": "Email",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": {
                             "validationType": "email"
                         }
@@ -127,6 +129,8 @@
                         "order": 2,
                         "type": "dropdown",
                         "text": "Choice",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     },
                     "4": {
@@ -135,6 +139,8 @@
                         "order": 3,
                         "type": "file",
                         "text": "Upload",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     }
                 },
@@ -192,6 +198,8 @@
                         "order": 1,
                         "type": "short",
                         "text": "Email",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": {
                             "validationType": "email"
                         }
@@ -202,6 +210,8 @@
                         "order": 2,
                         "type": "dropdown",
                         "text": "Choice",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     },
                     "4": {
@@ -210,6 +220,8 @@
                         "order": 3,
                         "type": "file",
                         "text": "Upload",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     }
                 },
@@ -350,6 +362,8 @@
                         "order": 1,
                         "type": "short",
                         "text": "Email",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": {
                             "validationType": "email"
                         }
@@ -360,6 +374,8 @@
                         "order": 2,
                         "type": "dropdown",
                         "text": "Choice",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     },
                     "4": {
@@ -368,6 +384,8 @@
                         "order": 3,
                         "type": "file",
                         "text": "Upload",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     }
                 },
@@ -510,6 +528,8 @@
                         "order": 1,
                         "type": "short",
                         "text": "Email",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": {
                             "validationType": "email"
                         }
@@ -520,6 +540,8 @@
                         "order": 2,
                         "type": "dropdown",
                         "text": "Renamed by another editor",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     },
                     "4": {
@@ -528,6 +550,8 @@
                         "order": 3,
                         "type": "file",
                         "text": "Upload",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     }
                 },
@@ -667,6 +691,8 @@
                         "order": 1,
                         "type": "short",
                         "text": "Email",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": {
                             "validationType": "email"
                         }
@@ -677,6 +703,8 @@
                         "order": 2,
                         "type": "dropdown",
                         "text": "Renamed by another editor",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     },
                     "4": {
@@ -685,6 +713,8 @@
                         "order": 3,
                         "type": "file",
                         "text": "Upload",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     }
                 },
@@ -743,6 +773,8 @@
                         "order": 1,
                         "type": "short",
                         "text": "Email",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": {
                             "validationType": "email"
                         }
@@ -753,6 +785,8 @@
                         "order": 3,
                         "type": "dropdown",
                         "text": "Renamed by another editor",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     },
                     "4": {
@@ -761,6 +795,8 @@
                         "order": 4,
                         "type": "file",
                         "text": "Upload",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     },
                     "100": {
@@ -769,6 +805,8 @@
                         "order": 2,
                         "type": "grid",
                         "text": "Rate",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": {
                             "questionType": "radio"
                         }
@@ -841,6 +879,8 @@
                         "order": 1,
                         "type": "short",
                         "text": "Email",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": {
                             "validationType": "email"
                         }
@@ -851,6 +891,8 @@
                         "order": 3,
                         "type": "dropdown",
                         "text": "Renamed by another editor",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     },
                     "4": {
@@ -859,6 +901,8 @@
                         "order": 4,
                         "type": "file",
                         "text": "Upload",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     },
                     "100": {
@@ -867,6 +911,8 @@
                         "order": 2,
                         "type": "grid",
                         "text": "Rate",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": {
                             "questionType": "radio"
                         }
@@ -937,6 +983,8 @@
                         "order": 1,
                         "type": "short",
                         "text": "Email",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": {
                             "validationType": "email"
                         }
@@ -947,6 +995,8 @@
                         "order": 3,
                         "type": "dropdown",
                         "text": "Renamed by another editor",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     },
                     "4": {
@@ -955,6 +1005,8 @@
                         "order": 4,
                         "type": "file",
                         "text": "Upload",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     },
                     "100": {
@@ -963,6 +1015,8 @@
                         "order": 2,
                         "type": "grid",
                         "text": "Rate",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": {
                             "questionType": "radio"
                         }
@@ -1035,6 +1089,8 @@
                         "order": 1,
                         "type": "short",
                         "text": "Email",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": {
                             "validationType": "email"
                         }
@@ -1045,6 +1101,8 @@
                         "order": 3,
                         "type": "dropdown",
                         "text": "Renamed by another editor",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     },
                     "4": {
@@ -1053,6 +1111,8 @@
                         "order": 4,
                         "type": "file",
                         "text": "Upload",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     },
                     "100": {
@@ -1061,6 +1121,8 @@
                         "order": 2,
                         "type": "grid",
                         "text": "Rate",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": {
                             "questionType": "radio"
                         }

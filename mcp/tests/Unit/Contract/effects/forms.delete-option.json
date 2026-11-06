@@ -96,6 +96,8 @@
                         "order": 1,
                         "type": "short",
                         "text": "Email",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": {
                             "validationType": "email"
                         }
@@ -106,6 +108,8 @@
                         "order": 2,
                         "type": "dropdown",
                         "text": "Choice",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     },
                     "4": {
@@ -114,6 +118,8 @@
                         "order": 3,
                         "type": "file",
                         "text": "Upload",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     }
                 },
@@ -169,6 +175,8 @@
                         "order": 1,
                         "type": "short",
                         "text": "Email",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": {
                             "validationType": "email"
                         }
@@ -179,6 +187,8 @@
                         "order": 2,
                         "type": "dropdown",
                         "text": "Choice",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     },
                     "4": {
@@ -187,6 +197,8 @@
                         "order": 3,
                         "type": "file",
                         "text": "Upload",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     }
                 },
@@ -306,6 +318,8 @@
                         "order": 1,
                         "type": "short",
                         "text": "Email",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": {
                             "validationType": "email"
                         }
@@ -316,6 +330,8 @@
                         "order": 2,
                         "type": "dropdown",
                         "text": "Choice",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     },
                     "4": {
@@ -324,6 +340,8 @@
                         "order": 3,
                         "type": "file",
                         "text": "Upload",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     }
                 },
@@ -445,6 +463,8 @@
                         "order": 1,
                         "type": "short",
                         "text": "Email",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": {
                             "validationType": "email"
                         }
@@ -455,6 +475,8 @@
                         "order": 2,
                         "type": "dropdown",
                         "text": "Choice",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     },
                     "4": {
@@ -463,6 +485,8 @@
                         "order": 3,
                         "type": "file",
                         "text": "Upload",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     }
                 },
@@ -581,6 +605,8 @@
                         "order": 1,
                         "type": "short",
                         "text": "Email",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": {
                             "validationType": "email"
                         }
@@ -591,6 +617,8 @@
                         "order": 2,
                         "type": "dropdown",
                         "text": "Choice",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     },
                     "4": {
@@ -599,6 +627,8 @@
                         "order": 3,
                         "type": "file",
                         "text": "Upload",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     }
                 },
@@ -655,6 +685,8 @@
                         "order": 1,
                         "type": "short",
                         "text": "Email",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": {
                             "validationType": "email"
                         }
@@ -665,6 +697,8 @@
                         "order": 2,
                         "type": "dropdown",
                         "text": "Choice",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     },
                     "4": {
@@ -673,6 +707,8 @@
                         "order": 3,
                         "type": "file",
                         "text": "Upload",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     }
                 },
@@ -731,6 +767,8 @@
                         "order": 1,
                         "type": "short",
                         "text": "Email",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": {
                             "validationType": "email"
                         }
@@ -741,6 +779,8 @@
                         "order": 2,
                         "type": "dropdown",
                         "text": "Choice",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     },
                     "4": {
@@ -749,6 +789,8 @@
                         "order": 3,
                         "type": "file",
                         "text": "Upload",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     }
                 },
@@ -805,6 +847,8 @@
                         "order": 1,
                         "type": "short",
                         "text": "Email",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": {
                             "validationType": "email"
                         }
@@ -815,6 +859,8 @@
                         "order": 2,
                         "type": "dropdown",
                         "text": "Choice",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     },
                     "4": {
@@ -823,6 +869,8 @@
                         "order": 3,
                         "type": "file",
                         "text": "Upload",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     }
                 },
@@ -881,6 +929,8 @@
                         "order": 1,
                         "type": "short",
                         "text": "Email",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": {
                             "validationType": "email"
                         }
@@ -891,6 +941,8 @@
                         "order": 2,
                         "type": "dropdown",
                         "text": "Choice",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     },
                     "4": {
@@ -899,6 +951,8 @@
                         "order": 3,
                         "type": "file",
                         "text": "Upload",
+                        "description": "",
+                        "isRequired": false,
                         "extraSettings": []
                     }
                 },

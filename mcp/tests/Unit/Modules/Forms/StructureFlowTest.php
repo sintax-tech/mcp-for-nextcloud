@@ -132,6 +132,30 @@ final class StructureFlowTest extends TestCase {
 		self::assertSame([], $f->calls);
 	}
 
+	/**
+	 * Review R1: description and required flag are signed too. Changed by another session in the same second (same
+	 * lastUpdated, same lock), either one alone still turns the confirmation into a PlanChanged before any mutator.
+	 *
+	 * @return void
+	 */
+	public function testDescriptionAndRequiredChangesInvalidateThePlan(): void {
+		$op = StructureHarness::operations()['forms_delete_question'];
+		$args = StructureHarness::arguments()['forms_delete_question'];
+		foreach (['description' => 'Changed elsewhere', 'isRequired' => true] as $field => $value) {
+			$f = new StructureFixture();
+			$plan = StructureHarness::flow($this, $f)->preview($op, $args, 'alice');
+			$stamp = [$f->form->fields['lastUpdated'], $f->form->fields['lockedBy'], $f->form->fields['lockedUntil']];
+			$flow = StructureHarness::flow($this, $f, function () use ($f, $field, $value): void { $f->questions[4]->data[$field] = $value; });
+			try {
+				$flow->handle($op, $args + ['confirm' => true, 'plan_state' => $plan['plan_state']], 'alice');
+				self::fail($field . ' change executed a stale plan');
+			} catch (PlanChanged) {
+			}
+			self::assertSame($stamp, [$f->form->fields['lastUpdated'], $f->form->fields['lockedBy'], $f->form->fields['lockedUntil']]);
+			self::assertSame([], $f->calls, $field);
+		}
+	}
+
 	/** Every operation applies once and the receipt is built from the readback. @return void */
 	public function testEveryOperationAppliesOnceWithReadback(): void {
 		foreach (StructureHarness::operations() as $name => $op) {

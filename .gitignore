@@ -36,12 +36,15 @@ extracted/
 attachments/
 # O módulo Deck contém código, inclusive em volumes com ignorecase.
 !mcp/lib/Modules/Deck/Attachments/
+!mcp/lib/Modules/Talk/Attachments/
 
 # ---- Logs ----
 *.log
 logs/
 # O módulo de logs do app é código: no macOS (ignorecase) Logs/ casaria com logs/.
 !mcp/lib/Modules/Logs/
+!mcp/lib/Access/Logs/
+!mcp/src/admin/logs/
 !mcp/tests/Unit/Tools/Logs/
 
 # ---- OS / editores ----

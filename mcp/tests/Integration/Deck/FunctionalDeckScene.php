@@ -15,12 +15,14 @@ use RuntimeException;
 
 /** Isolated real users, policy and native actor processes shared by the two Deck issue proofs. */
 final class FunctionalDeckScene {
-	/** @var array<string,string> Synthetic account IDs and their local login passwords. */
+	/** @var array<string,string> Interactive account IDs and their local login passwords; the automation password is never retained. */
 	public array $accounts = [];
 	/** @var array<string,string> Exact app settings restored after the scenario. */
 	private array $settings = [];
 	/** @var list<array{uid:string,board:int}> Native boards owned by this fixture. */
 	private array $boards = [];
+	/** @var list<string> All fixture accounts, including the credential-only automation control. */
+	private array $uids = [];
 
 	/** Create isolated users through core and grant Deck access through the real policy API. */
 	public function __construct() {
@@ -34,7 +36,9 @@ final class FunctionalDeckScene {
 			$uid = 'mcp-it-dk-' . $role . '-' . bin2hex(random_bytes(4));
 			$password = bin2hex(random_bytes(24));
 			Server::get(IUserManager::class)->createUser($uid, $password);
-			$this->accounts[$uid] = $password;
+			$this->uids[] = $uid;
+			if ($role !== 'service') { $this->accounts[$uid] = $password; }
+			unset($password); // Automation keeps no login secret and never enters DeckBrowser.
 			$policy->setEligible($uid, true);
 			$policy->setConnected($uid, true);
 			foreach (['read', 'create', 'edit'] as $operation) {
@@ -45,7 +49,7 @@ final class FunctionalDeckScene {
 
 	/** @return string UID at a fixed role position: owner, editor, service, outsider. */
 	public function uid(int $index): string {
-		return array_keys($this->accounts)[$index];
+		return $this->uids[$index];
 	}
 
 	/**
@@ -92,7 +96,7 @@ final class FunctionalDeckScene {
 		foreach ($this->boards as $board) {
 			self::run($board['uid'], 'cleanup', $board);
 		}
-		foreach (array_keys($this->accounts) as $uid) {
+		foreach ($this->uids as $uid) {
 			Server::get(IUserManager::class)->get($uid)?->delete();
 		}
 		$config = Server::get(IConfig::class);

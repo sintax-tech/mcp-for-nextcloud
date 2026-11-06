@@ -20,10 +20,15 @@ final class AssignmentLifecycleTest extends IntegrationTestCase {
 		return $reply->structured() ?: $reply->json();
 	}
 
-	/** Prove other-user, own-user and service-user assignment through Bearer and the real cookie CardController. */
+	/** Prove other-user, own-user and Bearer-only automation-account assignment through Bearer and the real cookie CardController. */
 	public function testRealAssignmentsMatchCardControllerWithBothActors(): void {
 		$scene = new FunctionalDeckScene();
 		try {
+			$automation = \OCP\Server::get(\OCP\IUserManager::class)->get($scene->uid(2));
+			self::assertNotNull($automation);
+			self::assertSame(0, $automation->getLastLogin());
+			self::assertArrayNotHasKey($automation->getUID(), $scene->accounts);
+			$automationClient = new McpClient(LoginFactory::bearer($automation->getUID()));
 			foreach ([[0, 1], [1, 0]] as [$owner, $editor]) {
 				$a = $scene->uid($owner); $b = $scene->uid($editor);
 				$f = $scene->seed($a, $b);
@@ -49,10 +54,17 @@ final class AssignmentLifecycleTest extends IntegrationTestCase {
 					self::assertSame([$recipient], $removed['unassigned']);
 					self::assertSame([], FunctionalDeckScene::run($b, 'read', ['card' => $card])['assignees']);
 				}
+				// The automation account also acts through Bearer only, never a browser/password login.
+				$serviceWrite = $this->data($automationClient->write('deck_edit_card', ['cardId' => $f['serviceCard'],
+					'assign' => [$a], 'confirm_shared' => true]));
+				self::assertSame([$a], $serviceWrite['assigned']);
+				self::assertSame([$a], FunctionalDeckScene::run($b, 'read', ['card' => $f['serviceCard']])['assignees']);
 				$refused = $client->write('deck_edit_card', ['cardId' => $f['card'], 'assign' => [$scene->uid(3)], 'confirm_shared' => true]);
 				self::assertFalse($refused->ok());
 				file_put_contents('/tmp/mcp-it-observations.txt', json_encode(['issue26' => 'real Bearer and cookie CardController assignment passed',
 					'actor' => $editor, 'devices' => FunctionalDeckScene::run($a, 'devices', []),
+					'automationAccount' => ['backend' => $automation->getBackendClassName(), 'authentication' => 'Bearer only',
+						'interactiveLogin' => false, 'creationPasswordRetained' => false, 'specializedServiceBackend' => 'not covered'],
 					'serviceDevices' => FunctionalDeckScene::run($scene->uid(2), 'devices', []),
 					'validPushClient' => 'not covered'], JSON_THROW_ON_ERROR) . "\n", FILE_APPEND);
 			}

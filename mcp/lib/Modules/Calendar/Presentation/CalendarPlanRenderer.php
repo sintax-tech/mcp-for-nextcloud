@@ -62,7 +62,7 @@ final class CalendarPlanRenderer implements RendersPlans {
 		}
 		$summary = $this->summary($after);
 		$header = Translator::t('Create event in *%s*: **%s**', [$calendarName, $summary]);
-		$lines = [$header];
+		$lines = [$header, ...AlarmPlan::lines($plan)];
 
 		$timing = $this->formatTiming(
 			$after['start'] ?? null,
@@ -109,7 +109,7 @@ final class CalendarPlanRenderer implements RendersPlans {
 		}
 		$summary = $this->summary($after !== [] ? $after : $before);
 		$header = Translator::t('Update event in *%s*: **%s**', [$calendarName, $summary]);
-		$lines = [$header];
+		$lines = [$header, ...AlarmPlan::lines($plan)];
 
 		// 1. Title change
 		$beforeSummary = $this->text($before['summary'] ?? null);

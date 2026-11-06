@@ -38,6 +38,7 @@ final class CreateEvent implements WriteTool {
 			'calendar_create_event',
 			'create',
 			CalendarMessages::TOOL_CREATE_EVENT
+				. \OCA\Mcp\Modules\Calendar\Presentation\AlarmMessages::CREATE
 				. CalendarMessages::INVITES_OTHERS . CalendarMessages::SHARED_CONFIRMATION_SUFFIX,
 			[
 				'calendar' => CalendarSchema::calendar(),
@@ -48,6 +49,7 @@ final class CreateEvent implements WriteTool {
 				'timeZone' => CalendarSchema::text(CalendarMessages::propertyDescription('timezone'), 1, 64),
 				'location' => CalendarSchema::text(CalendarMessages::propertyDescription('location'), 0, 255),
 				'description' => CalendarSchema::text(CalendarMessages::propertyDescription('description'), 0, 65536),
+				'alarms' => CalendarSchema::alarms(),
 				'attendees' => CalendarSchema::attendees(),
 				'send_invitations' => CalendarSchema::sendInvitations(),
 			],

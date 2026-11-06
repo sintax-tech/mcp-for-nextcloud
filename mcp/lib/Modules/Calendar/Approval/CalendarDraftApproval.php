@@ -124,7 +124,8 @@ final class CalendarDraftApproval {
 			'recoverable' => $deleting, 'consequence' => $deleting ? CalendarMessages::previewTrash() : null,
 			'scheduling' => ['requested' => $notify, 'imipEnabled' => $this->scheduling->imipEnabled(), 'participantsNotified' => false,
 				'message' => $moving ? CalendarMessages::participantsNotNotified() : ($notify ? ($deleting ? CalendarMessages::previewCancel() : CalendarMessages::previewInvitations()) : CalendarMessages::previewSuppressed()),
-				'proofScope' => CalendarMessages::previewInvitationProof()]];
+				'proofScope' => CalendarMessages::previewInvitationProof()]]
+			+ \OCA\Mcp\Modules\Calendar\Presentation\AlarmPlan::extend($name, $prepared, $arguments);
 	}
 
 	/**

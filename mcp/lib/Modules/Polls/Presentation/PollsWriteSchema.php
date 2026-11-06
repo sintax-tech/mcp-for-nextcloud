@@ -25,7 +25,7 @@ final class PollsWriteSchema {
 	/** @param string $tool Exact published name. @return ToolDefinition The new tool only. */
 	public static function definition(string $tool): ToolDefinition {
 		return PollsSchema::definition(name: $tool, operation: self::OPERATIONS[$tool],
-			description: 'Manage an existing poll with native edit permission, a complete plan and explicit confirmation. Share mutations never return credential links. Readback reports observed effects; invitation markers do not prove email delivery.',
+			description: PollsWriteDescriptions::of($tool),
 			inputSchema: self::schema($tool), destructiveHint: $tool !== 'polls_add_option',
 			requires: ['polls.native_mutation_api']);
 	}

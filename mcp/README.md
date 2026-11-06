@@ -321,6 +321,12 @@ Create, update and delete use `send_invitations: false` by default (`x-nc-schedu
 
 **Confirmation before every write (no state on the server).** The five writes, called without `confirm: true`, only return a plan (`requiresConfirmation: true`): current and proposed values, attendees added/removed, destination, consequence for invitations/CANCEL/trash bin and the current `etag`. Nothing is written or scheduled. The assistant must show the plan, ask the user and only after an explicit yes repeat the call with `confirm: true` and the same arguments, resending the `etag` of the plan (optional; if it comes and differs, the write is refused and a new plan is needed). There is no table, token or approval record: the server does not prove the human yes, but permissions, ACL, grants and `confirm_shared` keep applying. The selftest uses the handlers directly and does not go through this flow.
 
+### Card completion and archiving (1.3.0)
+
+`deck_set_card_done` takes `cardId` and `done: true` to complete a card, or `false` to reopen it. `deck_set_card_archived` takes `archived: true` to archive it, or `false` to unarchive it. Both add status changes to the existing **deck.edit** capability; they introduce no grant or administration setting. Preview first, then repeat the returned `plan_state` with `confirm: true` and, on a received board, `confirm_shared: true`. `lastModified` is optional; a changed plan needs a new approval.
+
+The native Deck service chooses the completion time. The returned `done` stays a Unix UTC timestamp or null; the client cannot choose it. On Deck 1.19, newly completing a card can move it to the configured done column shown in the plan. Reopening does not move it back. An already completed card keeps its timestamp and list: this tool does not retry a partial move. Unarchive a card before completing or reopening it. Archiving does not complete or delete it, and unarchiving preserves completion. To complete and archive, confirm the completion, read its result, then preview and confirm archiving separately. The calls are not atomic; native check-to-write races and partial results remain possible. Check the card before retrying an uncertain result. Guests retain native editing permissions.
+
 ### Deck: cards, boards and lists
 
 The Deck writes use the grants `deck.create`, `deck.edit`, `deck.move` and `deck.delete`, all off by default, and `confirm_shared: true` on a board of another owner. The app always confirms with Deck whether the write was saved, even after a Deck error.
@@ -721,7 +727,7 @@ AGPL-3.0-or-later, with the additional section 7(b) attribution term in [NOTICE]
 
 Smalot PdfParser, Symfony Polyfill Mbstring and the Composer autoloader are bundled. See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) for versions, copyright, licenses and separate development credits.
 
-**Contributors.** Thanks to @NightDragon1 ([#5](https://github.com/sintax-tech/mcp-for-nextcloud/pull/5)) for the root visibility check, to @matt-ek ([#10](https://github.com/sintax-tech/mcp-for-nextcloud/issues/10)) for the German translation, to @Zegorax ([#8](https://github.com/sintax-tech/mcp-for-nextcloud/pull/8)) for the OAuth clients registered by the administrator, and to @mturgeonferland ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)) for subtasks in the Tasks tools. The hidden-tags audit followed the report in [#4](https://github.com/sintax-tech/mcp-for-nextcloud/issues/4).
+**Contributors.** Thanks to @NightDragon1 ([#5](https://github.com/sintax-tech/mcp-for-nextcloud/pull/5)) for the root visibility check, to @matt-ek ([#10](https://github.com/sintax-tech/mcp-for-nextcloud/issues/10)) for the German translation, to @Zegorax ([#8](https://github.com/sintax-tech/mcp-for-nextcloud/pull/8)) for the OAuth clients registered by the administrator, and to @mturgeonferland ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)) for subtasks in the Tasks tools. The hidden-tags audit followed the report in [#4](https://github.com/sintax-tech/mcp-for-nextcloud/issues/4). Thanks to @Beluluz for reporting the Deck assignment issue ([#26](https://github.com/sintax-tech/mcp-for-nextcloud/issues/26)) and requesting card completion and archiving ([#27](https://github.com/sintax-tech/mcp-for-nextcloud/issues/27)).
 
 ## About Sintax
 

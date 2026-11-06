@@ -412,3 +412,13 @@ Frontend unit tests need no Nextcloud service: `node --test mcp/tests/Frontend/*
 existing entry points. Fresh/upgrade and database selection are unchanged. `ci/run-local.sh --shutdown` cleans interrupted runs recorded by this checkout and preserves live runs.
 The default Colima profile is shared and is always left running. Artifacts and cached downloads stay outside
 `mcp/`, so recursive unit-test source readers cannot ingest run output; cached archives/images are files, not running services.
+
+### Deck issues 26 and 27
+
+`AssignmentLifecycleTest` creates isolated regular users, tests assignment over real MCP Bearer and cookie/CSRF requests to CardController, reverses the actors and checks fresh native persistence. Its separate disposable notification delivery app uses the real IManager; the induced failure records actual defer/flush phases and must never be described as reproducing the reporter’s exception. No assignment patch is justified when both paths deliver inline. Devices are counted without storing endpoints/keys; a valid push client remains outside this proof. No logs or evidence are requested from the reporter.
+
+`CardStatusPersistenceTest` verifies both status setters, confirmation, stale fingerprints, native completion-column behavior, no-op and UTC persistence. The oracle is the container’s UTC clock and the raw done column read in a new process; account timezones only verify serialization. NC32/MariaDB and NC35/PostgreSQL run serially through run-local.sh; preserve short evidence, use owned --shutdown and verify cleanup.
+
+The issue #26 automation control is a real local Database account whose random creation password is discarded, absent from the browser-login fixture. It is assigned/unassigned as a recipient and also writes through an OAuth Bearer credential only; no interactive login is performed. The test records its actual backend and checks last-login zero before issuing the credential. This models credential-only automation usage, not a specialized service-account backend or the reporter’s unspecified account provisioning. That backend distinction and a valid push client remain outside the proof.
+
+CardStatusPersistenceTest also rereads the persisted native activity stream in a new process for the other board member after each transition. Both pinned Deck versions must emit exactly one card_update_done, card_update_archive, card_update_unarchive and card_update_undone for the corresponding confirmed call, with the actual actor/card/affected account. A no-op must add no activity. This is a read-only DB oracle of native publication, not a claim of push delivery.

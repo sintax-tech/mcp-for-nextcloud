@@ -32,6 +32,8 @@ final class DeckToolCatalog {
 		\OCA\Mcp\Modules\Deck\Tools\ReadCardDependencies::class,
 		\OCA\Mcp\Modules\Deck\Tools\AddCardDependency::class,
 		\OCA\Mcp\Modules\Deck\Tools\RemoveCardDependency::class,
+		\OCA\Mcp\Modules\Deck\Tools\SetCardDone::class,
+		\OCA\Mcp\Modules\Deck\Tools\SetCardArchived::class,
 	];
 
 	/** Constant holder. */

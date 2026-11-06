@@ -137,6 +137,8 @@ final class DeckExecutionContext {
 		$formatter = $this->formatter($userId);
 
 		return match ($name) {
+			\OCA\Mcp\Modules\Deck\Editing\SetCardDoneHandler::TOOL => new \OCA\Mcp\Modules\Deck\Editing\SetCardDoneHandler($this->gateway(), $this->logger, fn (): \OCA\Mcp\Modules\Deck\Integration\CardStatusGatewayInterface => $this->statusGateway(), $formatter, fn (): PlanState => $this->planState()),
+			\OCA\Mcp\Modules\Deck\Editing\SetCardArchivedHandler::TOOL => new \OCA\Mcp\Modules\Deck\Editing\SetCardArchivedHandler($this->gateway(), $this->logger, fn (): \OCA\Mcp\Modules\Deck\Integration\CardStatusGatewayInterface => $this->statusGateway(), $formatter, fn (): PlanState => $this->planState()),
 			LinkCardFileHandler::TOOL => \OCA\Mcp\Modules\Deck\Attachments\CardLinkTool::handler($this->container, $this->gateway(), $this->logger, $this->session),
 			\OCA\Mcp\Modules\Deck\Reading\ListCardFilesHandler::TOOL, \OCA\Mcp\Modules\Deck\Deletion\UnlinkCardFileHandler::TOOL => $this->fileHandler($name, $userId),
 			\OCA\Mcp\Modules\Deck\Dependencies\AddCardDependencyHandler::TOOL, \OCA\Mcp\Modules\Deck\Dependencies\RemoveCardDependencyHandler::TOOL => $this->dependencyHandler($name, $userId),
@@ -268,6 +270,10 @@ final class DeckExecutionContext {
 	/** @return PlanState unchanged lazy instance-secret service */
 	public function planState(): PlanState {
 		return new PlanState($this->config ?? $this->container->get(IConfig::class));
+	}
+	/** @return \OCA\Mcp\Modules\Deck\Integration\CardStatusGatewayInterface lazy focused native status port */
+	public function statusGateway(): \OCA\Mcp\Modules\Deck\Integration\CardStatusGatewayInterface {
+		return $this->container->get(\OCA\Mcp\Modules\Deck\Integration\CardStatusGatewayInterface::class);
 	}
 	/** @return array<string,mixed> original per-operation file link collaborators */
 	public function linkServices(): array {

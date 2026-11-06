@@ -53,6 +53,7 @@
             "OCA\\Mcp\\Modules\\Contacts\\Writing\\ContactDav",
             "OCA\\Mcp\\Modules\\Tasks\\Locating\\TaskStore",
             "OCA\\Mcp\\Modules\\Deck\\Integration\\DeckGatewayInterface",
+            "OCA\\Mcp\\Modules\\Deck\\Integration\\CardStatusGatewayInterface",
             "OCA\\Mcp\\Access\\References\\ReadableDeckCard",
             "OCA\\Mcp\\Modules\\Talk\\Integration\\TalkServices",
             "OCA\\Mcp\\Modules\\Mail\\Creation\\MailDraftHtmlPurifier",

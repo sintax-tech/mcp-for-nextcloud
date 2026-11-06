@@ -148,6 +148,12 @@ A exclusão de tarefas usa a lixeira nativa do calendário e é recusada com `da
 
 **Status de tarefas:** criar e editar aceitam `NEEDS-ACTION`, `IN-PROCESS`, `COMPLETED` e `CANCELLED`, como no app Tasks. O status sozinho conclui em 100% com uma data de conclusão (preservada se a tarefa já estava concluída), reabre tarefas em 100% com 99% e inicia `IN-PROCESS` em 1% quando o progresso era zero ou estava ausente. `CANCELLED` preserva o progresso e a data de conclusão e continua listado. Um `percentComplete` explícito prevalece quando consistente: `COMPLETED` exige 100, `NEEDS-ACTION`/`IN-PROCESS` recusam 100 e `CANCELLED` aceita 0–100. O progresso sozinho mantém o comportamento anterior, inclusive reabrir tarefas canceladas. Os planos de criação/edição mostram as mudanças de status e da data de conclusão no fuso do plano. Status/progresso baseado na PR #29 de Marc-Olivier Turgeon-Ferland (@mturgeonferland): [contribuição](https://github.com/sintax-tech/mcp-for-nextcloud/pull/29).
 
+### Concluir e arquivar cartões (1.3.0)
+
+`deck_set_card_done` recebe `cardId` e `done: true` para concluir ou `false` para reabrir. `deck_set_card_archived` recebe `archived: true` para arquivar ou `false` para desarquivar. As duas acrescentam mudanças de estado ao **deck.edit** existente, sem grant ou configuração de gestão novos. Primeiro faça o preview; depois repita o `plan_state` com `confirm: true` e, em quadro recebido, `confirm_shared: true`. `lastModified` é opcional; plano alterado exige nova aprovação.
+
+O serviço nativo escolhe o horário da conclusão. A saída `done` continua timestamp Unix UTC ou null, sem data escolhida pelo cliente. No Deck 1.19, concluir pode mover para a coluna de concluídos mostrada no plano. Reabrir não devolve à lista anterior. Cartão já concluído preserva timestamp e lista: a ferramenta não repete movimento parcial. Desarquive antes de concluir ou reabrir. Arquivar não conclui nem exclui; desarquivar preserva a conclusão. Para concluir e arquivar, confirme a conclusão, leia o resultado e faça outro preview e confirmação para arquivar. As chamadas não são atômicas; há limites de concorrência e resultados parciais nativos. Consulte o cartão antes de repetir resultado incerto. Guests preserva a permissão nativa de edição.
+
 ## Deck na 1.2.0
 
 Etiquetas, hora de vencimento, dependências nativas e o vínculo nativo de arquivo fazem parte desta versão. O app não imita uma API ausente e não envia, não copia e não apaga o arquivo.
@@ -422,7 +428,7 @@ AGPL-3.0-or-later, com o termo adicional de atribuição da seção 7(b) no [NOT
 
 O pacote inclui Smalot PdfParser, Symfony Polyfill Mbstring e o autoloader do Composer. Consulte versões, licenças, autoria e dependências de desenvolvimento em [THIRD-PARTY-NOTICES.md](mcp/THIRD-PARTY-NOTICES.md).
 
-**Contribuidores.** Agradecimento a @NightDragon1 ([#5](https://github.com/sintax-tech/mcp-for-nextcloud/pull/5)) pela checagem de visibilidade da raiz, a @matt-ek ([#10](https://github.com/sintax-tech/mcp-for-nextcloud/issues/10)) pela tradução para o alemão, a @Zegorax ([#8](https://github.com/sintax-tech/mcp-for-nextcloud/pull/8)) pelos clientes OAuth cadastrados pelo administrador, e a @mturgeonferland ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)) pelas subtarefas nas ferramentas de Tarefas. A auditoria de tags ocultas seguiu o relato em [#4](https://github.com/sintax-tech/mcp-for-nextcloud/issues/4).
+**Contribuidores.** Agradecimento a @NightDragon1 ([#5](https://github.com/sintax-tech/mcp-for-nextcloud/pull/5)) pela checagem de visibilidade da raiz, a @matt-ek ([#10](https://github.com/sintax-tech/mcp-for-nextcloud/issues/10)) pela tradução para o alemão, a @Zegorax ([#8](https://github.com/sintax-tech/mcp-for-nextcloud/pull/8)) pelos clientes OAuth cadastrados pelo administrador, e a @mturgeonferland ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)) pelas subtarefas nas ferramentas de Tarefas. A auditoria de tags ocultas seguiu o relato em [#4](https://github.com/sintax-tech/mcp-for-nextcloud/issues/4). Obrigado a @Beluluz pelo relato do problema de atribuição no Deck ([#26](https://github.com/sintax-tech/mcp-for-nextcloud/issues/26)) e pelo pedido de conclusão e arquivamento de cartões ([#27](https://github.com/sintax-tech/mcp-for-nextcloud/issues/27)).
 
 ## Sobre a Sintax
 

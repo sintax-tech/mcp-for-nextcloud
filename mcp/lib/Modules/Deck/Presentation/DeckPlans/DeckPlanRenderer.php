@@ -29,6 +29,7 @@ final class DeckPlanRenderer extends DeckPlanValues {
 		try {
 			$zone = $this->resolveZone($plan);
 			return match ($tool) {
+				'deck_set_card_done', 'deck_set_card_archived' => (new CardStatusText())->render($plan),
 				'deck_link_card_file' => \OCA\Mcp\Modules\Deck\Attachments\CardLinkPlan::render($plan),
 				'deck_unlink_card_file' => $this->renderUnlinkFile($plan),
 				'deck_add_card_dependency', 'deck_remove_card_dependency' => $this->renderDependency($plan),

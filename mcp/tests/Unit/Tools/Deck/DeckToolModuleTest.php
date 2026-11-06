@@ -156,6 +156,8 @@ final class DeckToolModuleTest extends TestCase {
 			'deck_create_stack',
 			'deck_delete_stack',
 			'deck_delete_board',
+			'deck_set_card_done',
+			'deck_set_card_archived',
 		], array_column(\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::definitions($this->module), 'name'));
 	}
 

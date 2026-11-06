@@ -148,6 +148,12 @@ Task deletion uses native calendar trash and is refused when `dav/calendarRetent
 
 **Task status:** create and edit accept `NEEDS-ACTION`, `IN-PROCESS`, `COMPLETED` and `CANCELLED`, as in the Tasks app. Status alone completes at 100% with a completion time (preserving it if already completed), reopens 100% at 99%, and starts `IN-PROCESS` at 1% when progress was zero or absent. `CANCELLED` preserves progress and the completion date and stays listed. An explicit `percentComplete` wins when consistent: `COMPLETED` requires 100, `NEEDS-ACTION`/`IN-PROCESS` reject 100, and `CANCELLED` accepts 0–100. Progress alone keeps its previous behavior, including reopening cancelled tasks. Create/edit plans show status and completion-date changes in the plan timezone. Status/progress based on PR #29 by Marc-Olivier Turgeon-Ferland (@mturgeonferland): [contribution](https://github.com/sintax-tech/mcp-for-nextcloud/pull/29).
 
+### Card completion and archiving (1.3.0)
+
+`deck_set_card_done` takes `cardId` and `done: true` to complete a card, or `false` to reopen it. `deck_set_card_archived` takes `archived: true` to archive it, or `false` to unarchive it. Both add status changes to the existing **deck.edit** capability; they introduce no grant or administration setting. Preview first, then repeat the returned `plan_state` with `confirm: true` and, on a received board, `confirm_shared: true`. `lastModified` is optional; a changed plan needs a new approval.
+
+The native Deck service chooses the completion time. The returned `done` stays a Unix UTC timestamp or null; the client cannot choose it. On Deck 1.19, newly completing a card can move it to the configured done column shown in the plan. Reopening does not move it back. An already completed card keeps its timestamp and list: this tool does not retry a partial move. Unarchive a card before completing or reopening it. Archiving does not complete or delete it, and unarchiving preserves completion. To complete and archive, confirm the completion, read its result, then preview and confirm archiving separately. The calls are not atomic; native check-to-write races and partial results remain possible. Check the card before retrying an uncertain result. Guests retain native editing permissions.
+
 ## Deck in 1.2.0
 
 Labels, due time, native dependencies and a native file link are part of this release. The app does not imitate an API that is absent, and it does not upload, copy or delete the file.
@@ -422,7 +428,7 @@ AGPL-3.0-or-later, with the additional section 7(b) attribution term in [NOTICE]
 
 The package includes Smalot PdfParser, Symfony Polyfill Mbstring and the Composer autoloader. See versions, licenses, copyright and development dependencies in [THIRD-PARTY-NOTICES.md](mcp/THIRD-PARTY-NOTICES.md).
 
-**Contributors.** Thanks to @NightDragon1 ([#5](https://github.com/sintax-tech/mcp-for-nextcloud/pull/5)) for the root visibility check, to @matt-ek ([#10](https://github.com/sintax-tech/mcp-for-nextcloud/issues/10)) for the German translation, to @Zegorax ([#8](https://github.com/sintax-tech/mcp-for-nextcloud/pull/8)) for the OAuth clients registered by the administrator, and to @mturgeonferland ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)) for subtasks in the Tasks tools. The hidden-tags audit followed the report in [#4](https://github.com/sintax-tech/mcp-for-nextcloud/issues/4).
+**Contributors.** Thanks to @NightDragon1 ([#5](https://github.com/sintax-tech/mcp-for-nextcloud/pull/5)) for the root visibility check, to @matt-ek ([#10](https://github.com/sintax-tech/mcp-for-nextcloud/issues/10)) for the German translation, to @Zegorax ([#8](https://github.com/sintax-tech/mcp-for-nextcloud/pull/8)) for the OAuth clients registered by the administrator, and to @mturgeonferland ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)) for subtasks in the Tasks tools. The hidden-tags audit followed the report in [#4](https://github.com/sintax-tech/mcp-for-nextcloud/issues/4). Thanks to @Beluluz for reporting the Deck assignment issue ([#26](https://github.com/sintax-tech/mcp-for-nextcloud/issues/26)) and requesting card completion and archiving ([#27](https://github.com/sintax-tech/mcp-for-nextcloud/issues/27)).
 
 ## About Sintax
 

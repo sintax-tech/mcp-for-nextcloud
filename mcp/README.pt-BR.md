@@ -322,6 +322,12 @@ Create, update e delete usam `send_invitations: false` por padrão (`x-nc-schedu
 
 **Confirmação antes de toda escrita (sem estado no servidor).** As cinco escritas, chamadas sem `confirm: true`, só devolvem um plano (`requiresConfirmation: true`): valores atuais e propostos, participantes adicionados/removidos, destino, consequência para convites/CANCEL/lixeira e o `etag` atual. Nada é escrito nem agendado. O assistente deve mostrar o plano, perguntar ao usuário e só após um sim explícito repetir a chamada com `confirm: true` e os mesmos argumentos, reenviando o `etag` do plano (opcional; se vier e divergir, a escrita é recusada e um novo plano é necessário). Não há tabela, token nem registro de aprovação: o servidor não prova o sim humano, mas permissões, ACL, grants e `confirm_shared` seguem valendo. O selftest usa os handlers diretamente e não passa por esse fluxo.
 
+### Concluir e arquivar cartões (1.3.0)
+
+`deck_set_card_done` recebe `cardId` e `done: true` para concluir ou `false` para reabrir. `deck_set_card_archived` recebe `archived: true` para arquivar ou `false` para desarquivar. As duas acrescentam mudanças de estado ao **deck.edit** existente, sem grant ou configuração de gestão novos. Primeiro faça o preview; depois repita o `plan_state` com `confirm: true` e, em quadro recebido, `confirm_shared: true`. `lastModified` é opcional; plano alterado exige nova aprovação.
+
+O serviço nativo escolhe o horário da conclusão. A saída `done` continua timestamp Unix UTC ou null, sem data escolhida pelo cliente. No Deck 1.19, concluir pode mover para a coluna de concluídos mostrada no plano. Reabrir não devolve à lista anterior. Cartão já concluído preserva timestamp e lista: a ferramenta não repete movimento parcial. Desarquive antes de concluir ou reabrir. Arquivar não conclui nem exclui; desarquivar preserva a conclusão. Para concluir e arquivar, confirme a conclusão, leia o resultado e faça outro preview e confirmação para arquivar. As chamadas não são atômicas; há limites de concorrência e resultados parciais nativos. Consulte o cartão antes de repetir resultado incerto. Guests preserva a permissão nativa de edição.
+
 ### Deck: cartões, quadros e listas
 
 As escritas do Deck usam os grants `deck.create`, `deck.edit`, `deck.move` e `deck.delete`, todas desligadas por padrão, e `confirm_shared: true` em quadro de outro dono. O app sempre confirma com o Deck se a escrita foi gravada, mesmo depois de um erro do Deck.
@@ -722,7 +728,7 @@ AGPL-3.0-or-later, with the additional section 7(b) attribution term in [NOTICE]
 
 Smalot PdfParser, Symfony Polyfill Mbstring and the Composer autoloader are bundled. See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) for versions, copyright, licenses and separate development credits.
 
-**Contribuidores.** Agradecimento a @NightDragon1 ([#5](https://github.com/sintax-tech/mcp-for-nextcloud/pull/5)) pela checagem de visibilidade da raiz, a @matt-ek ([#10](https://github.com/sintax-tech/mcp-for-nextcloud/issues/10)) pela tradução para o alemão, a @Zegorax ([#8](https://github.com/sintax-tech/mcp-for-nextcloud/pull/8)) pelos clientes OAuth cadastrados pelo administrador, e a @mturgeonferland ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)) pelas subtarefas nas ferramentas de Tarefas. A auditoria de tags ocultas seguiu o relato em [#4](https://github.com/sintax-tech/mcp-for-nextcloud/issues/4).
+**Contribuidores.** Agradecimento a @NightDragon1 ([#5](https://github.com/sintax-tech/mcp-for-nextcloud/pull/5)) pela checagem de visibilidade da raiz, a @matt-ek ([#10](https://github.com/sintax-tech/mcp-for-nextcloud/issues/10)) pela tradução para o alemão, a @Zegorax ([#8](https://github.com/sintax-tech/mcp-for-nextcloud/pull/8)) pelos clientes OAuth cadastrados pelo administrador, e a @mturgeonferland ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)) pelas subtarefas nas ferramentas de Tarefas. A auditoria de tags ocultas seguiu o relato em [#4](https://github.com/sintax-tech/mcp-for-nextcloud/issues/4). Obrigado a @Beluluz pelo relato do problema de atribuição no Deck ([#26](https://github.com/sintax-tech/mcp-for-nextcloud/issues/26)) e pelo pedido de conclusão e arquivamento de cartões ([#27](https://github.com/sintax-tech/mcp-for-nextcloud/issues/27)).
 
 ## Sobre a Sintax
 

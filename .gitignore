@@ -56,6 +56,15 @@ Thumbs.db
 
 # ---- Artefatos internos / de trabalho / assistentes de IA (NAO versionar) ----
 docs/
+# Public development guides; other internal documentation stays ignored.
+!/docs/
+/docs/*
+!/docs/en/
+/docs/en/*
+!/docs/en/architecture.md
+!/docs/en/adding-a-module.md
+!/docs/en/testing.md
+!/docs/en/packaging.md
 .claude/
 .superpowers/
 .remember/

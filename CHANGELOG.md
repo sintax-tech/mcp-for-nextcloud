@@ -4,7 +4,11 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 
 ## Unreleased — 1.3.0
 
+**Database migration on update:** 1.3.0 includes `Version001205Date20261106000000` for CIMD host trust and credential generations ([#28](https://github.com/sintax-tech/mcp-for-nextcloud/issues/28)), the first database migration since 1.1.0. Updating runs this migration through Nextcloud; the effective CIMD host allowlist is preserved.
+
 ### Fixed
+
+- **Reading the current file version:** `files_version_read` now reads the current version listed by `files_versions` when the backend has no separate stored version file, instead of failing with a missing-file error. Other missing historical versions remain refused. This fixes a defect already present in 1.2.5.
 
 - **OAuth host withdrawal (#28):** removing an allowed CIMD host revokes its pending consents, authorization codes, access tokens and refresh tokens. Re-adding the host requires a new sign-in and never restores old credentials. Default hosts, client metadata parsing and registration methods are unchanged. This does not establish Zapia interoperability.
 
@@ -15,6 +19,10 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 - **Deck completion and archiving ([#27](https://github.com/sintax-tech/mcp-for-nextcloud/issues/27)):** `deck_set_card_done` completes/reopens and `deck_set_card_archived` archives/unarchives through the native Deck service, using the existing deck.edit grant. Each requires preview and state-bound confirmation; received boards also require confirm_shared. Completion preserves the native Unix UTC timestamp and can move to the configured done column on Deck 1.19, as shown in the plan. Reopening does not return the card to the previous list, and an already completed card is a no-op, not a retry of a partial move. Unarchive before completing/reopening. Completing and archiving remain separate, non-atomic calls. Thanks to @Beluluz for the request ([#27](https://github.com/sintax-tech/mcp-for-nextcloud/issues/27)).
 
 - **Task status on create and edit:** `status` accepts NEEDS-ACTION, IN-PROCESS, COMPLETED and CANCELLED, following the Tasks app. Status alone completes at 100% with a timestamp (preserving an existing time when already completed), reopens 100% at 99%, and starts IN-PROCESS at 1% from zero or absent progress. CANCELLED preserves progress and the completion date and remains listed. Explicit progress takes precedence when consistent; contradictory pairs are refused before writing. Progress alone retains its previous behavior, including reopening cancelled tasks. Confirmation plans show status and completion-date changes in the plan timezone. Status/progress based on PR #29 by Marc-Olivier Turgeon-Ferland (@mturgeonferland), [contribution #29](https://github.com/sintax-tech/mcp-for-nextcloud/pull/29).
+
+### Changed
+
+- **Capability-module architecture:** The code is reorganized into capability modules (`mcp/lib/Modules`, `mcp/lib/Mcp`, `mcp/lib/Access`, `mcp/lib/OAuth`, `mcp/lib/Platform`) following the architecture proposed by @marcjoancr in [#14](https://github.com/sintax-tech/mcp-for-nextcloud/pull/14).
 
 ### Investigated
 

@@ -412,7 +412,7 @@ composer install
 vendor/bin/phpunit          # unit tests with OCP mocks, no Nextcloud needed
 ```
 
-Code layout: `lib/Tools/<Module>` (one `ToolModule` per app), `lib/OAuth` (authorization server), `lib/Service` (MCP protocol, grant policy), `lib/Controller`, `templates`, `js`, `css`, `l10n`. Detailed technical notes live in [`mcp/README.md`](mcp/README.md).
+Code layout under `mcp/`: `lib/Modules/<App>` (capability modules and tools), `lib/Mcp` (protocol, discovery and confirmation), `lib/Access` (grants, visibility and scopes), `lib/OAuth` (authorization server), `lib/Platform` (shared primitives), plus `lib/Controller`, templates and assets. See the [development documentation in English](docs/en/architecture.md) and detailed technical notes in [`mcp/README.md`](mcp/README.md). Module registration uses `Application::MODULES`; each module lists its tools in `<App>ToolCatalog::TOOLS`.
 
 The original Node.js stdio prototype (read-only) was removed; it remains in the git history up to commit 27739f0 (tag v0.11.0).
 
@@ -428,7 +428,7 @@ AGPL-3.0-or-later, with the additional section 7(b) attribution term in [NOTICE]
 
 The package includes Smalot PdfParser, Symfony Polyfill Mbstring and the Composer autoloader. See versions, licenses, copyright and development dependencies in [THIRD-PARTY-NOTICES.md](mcp/THIRD-PARTY-NOTICES.md).
 
-**Contributors.** Thanks to @NightDragon1 ([#5](https://github.com/sintax-tech/mcp-for-nextcloud/pull/5)) for the root visibility check, to @matt-ek ([#10](https://github.com/sintax-tech/mcp-for-nextcloud/issues/10)) for the German translation, to @Zegorax ([#8](https://github.com/sintax-tech/mcp-for-nextcloud/pull/8)) for the OAuth clients registered by the administrator, and to @mturgeonferland ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)) for subtasks in the Tasks tools. The hidden-tags audit followed the report in [#4](https://github.com/sintax-tech/mcp-for-nextcloud/issues/4). Thanks to @Beluluz for reporting the Deck assignment issue ([#26](https://github.com/sintax-tech/mcp-for-nextcloud/issues/26)) and requesting card completion and archiving ([#27](https://github.com/sintax-tech/mcp-for-nextcloud/issues/27)).
+**Contributors.** Thanks to @NightDragon1 ([#5](https://github.com/sintax-tech/mcp-for-nextcloud/pull/5)) for the root visibility check, to @matt-ek ([#10](https://github.com/sintax-tech/mcp-for-nextcloud/issues/10)) for the German translation, to @Zegorax ([#8](https://github.com/sintax-tech/mcp-for-nextcloud/pull/8)) for the OAuth clients registered by the administrator, and to @mturgeonferland ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)) for subtasks in the Tasks tools. The hidden-tags audit followed the report in [#4](https://github.com/sintax-tech/mcp-for-nextcloud/issues/4). Thanks to @Beluluz for reporting the Deck assignment issue ([#26](https://github.com/sintax-tech/mcp-for-nextcloud/issues/26)) and requesting card completion and archiving ([#27](https://github.com/sintax-tech/mcp-for-nextcloud/issues/27)). Thanks to @mturgeonferland ([#29](https://github.com/sintax-tech/mcp-for-nextcloud/pull/29)) for the code that served as the basis for task status support. HTML mail drafts were suggested by @Beluluz in [#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30). The capability-module architecture follows the proposal by @marcjoancr in [#14](https://github.com/sintax-tech/mcp-for-nextcloud/pull/14).
 
 ## About Sintax
 

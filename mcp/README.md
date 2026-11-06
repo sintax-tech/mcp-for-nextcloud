@@ -719,6 +719,15 @@ vendor/bin/phpunit
 
 The tests are unit tests, with mocks of the OCP interfaces (`nextcloud/ocp` stable33) and an in-memory file tree (`tests/Unit/Tools/FakeTree.php`). They do not replace installation on a real Nextcloud, which is the only place where share ACL, version creation, trash bin and external storage are verified.
 
+The capability-module layout separates `lib/Modules`, `lib/Mcp`, `lib/Access`, `lib/OAuth` and `lib/Platform`; Nextcloud controllers and infrastructure remain under `lib/`. Module registration uses `Application::MODULES`; each module lists its tools in `<App>ToolCatalog::TOOLS`. Development documentation in the repository (English):
+
+- [Architecture](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/docs/en/architecture.md)
+- [Adding a module](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/docs/en/adding-a-module.md)
+- [Testing](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/docs/en/testing.md)
+- [Packaging](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/docs/en/packaging.md)
+
+These guides are not included in the installed archive. They describe repository development; the current repository may differ from an older installed release.
+
 ## License
 
 AGPL-3.0-or-later, with the additional section 7(b) attribution term in [NOTICE](NOTICE). See [LICENSES/AGPL-3.0-or-later.txt](LICENSES/AGPL-3.0-or-later.txt) for the complete license. Preserve the attribution in the administration page, documentation and copyright notices when redistributing or providing modified versions over a network.
@@ -727,7 +736,7 @@ AGPL-3.0-or-later, with the additional section 7(b) attribution term in [NOTICE]
 
 Smalot PdfParser, Symfony Polyfill Mbstring and the Composer autoloader are bundled. See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) for versions, copyright, licenses and separate development credits.
 
-**Contributors.** Thanks to @NightDragon1 ([#5](https://github.com/sintax-tech/mcp-for-nextcloud/pull/5)) for the root visibility check, to @matt-ek ([#10](https://github.com/sintax-tech/mcp-for-nextcloud/issues/10)) for the German translation, to @Zegorax ([#8](https://github.com/sintax-tech/mcp-for-nextcloud/pull/8)) for the OAuth clients registered by the administrator, and to @mturgeonferland ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)) for subtasks in the Tasks tools. The hidden-tags audit followed the report in [#4](https://github.com/sintax-tech/mcp-for-nextcloud/issues/4). Thanks to @Beluluz for reporting the Deck assignment issue ([#26](https://github.com/sintax-tech/mcp-for-nextcloud/issues/26)) and requesting card completion and archiving ([#27](https://github.com/sintax-tech/mcp-for-nextcloud/issues/27)).
+**Contributors.** Thanks to @NightDragon1 ([#5](https://github.com/sintax-tech/mcp-for-nextcloud/pull/5)) for the root visibility check, to @matt-ek ([#10](https://github.com/sintax-tech/mcp-for-nextcloud/issues/10)) for the German translation, to @Zegorax ([#8](https://github.com/sintax-tech/mcp-for-nextcloud/pull/8)) for the OAuth clients registered by the administrator, and to @mturgeonferland ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)) for subtasks in the Tasks tools. The hidden-tags audit followed the report in [#4](https://github.com/sintax-tech/mcp-for-nextcloud/issues/4). Thanks to @Beluluz for reporting the Deck assignment issue ([#26](https://github.com/sintax-tech/mcp-for-nextcloud/issues/26)) and requesting card completion and archiving ([#27](https://github.com/sintax-tech/mcp-for-nextcloud/issues/27)). Thanks to @mturgeonferland ([#29](https://github.com/sintax-tech/mcp-for-nextcloud/pull/29)) for the code that served as the basis for task status support. HTML mail drafts were suggested by @Beluluz in [#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30). The capability-module architecture follows the proposal by @marcjoancr in [#14](https://github.com/sintax-tech/mcp-for-nextcloud/pull/14).
 
 ## About Sintax
 

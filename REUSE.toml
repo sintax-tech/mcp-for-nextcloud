@@ -4,6 +4,10 @@ version = 1
 path = [
   ".gitignore",
   "CHANGELOG.md",
+  "docs/en/architecture.md",
+  "docs/en/adding-a-module.md",
+  "docs/en/testing.md",
+  "docs/en/packaging.md",
   "HISTORY.de.md",
   "HISTORY.es.md",
   "HISTORY.md",

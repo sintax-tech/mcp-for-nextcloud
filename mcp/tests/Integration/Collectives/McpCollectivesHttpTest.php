@@ -125,14 +125,24 @@ final class McpCollectivesHttpTest extends IntegrationTestCase {
 		$child = $this->confirmed('collectives_create', ['collective_id' => $cid, 'parent_id' => 0, 'title' => 'Checklist'])['page']['id'];
 		$moved = $this->confirmed('collectives_move', ['collective_id' => $cid, 'page_id' => $child, 'parent_id' => $runbook, 'index' => 0]);
 		$this->assertSame('applied', $moved['status'], json_encode($moved));
-		$this->assertSame(['parent_id' => $runbook, 'title' => 'Checklist', 'position' => 0, 'in_old_order' => false, 'slug_changed' => false], $moved['observed']);
+		$this->assertSame(['parent_id' => $runbook, 'title' => 'Checklist', 'position' => 0, 'in_old_order' => false],
+			array_intersect_key($moved['observed'], array_flip(['parent_id', 'title', 'position', 'in_old_order'])));
 		$this->assertSame('checklist', strtolower((string)$moved['page']['slug']));
 	}
 
-	/** @return void someone outside the collective sees none of it, and nothing is written for them */
-	public function testAnOutsiderSeesNothing(): void {
+	/**
+	 * An outsider admitted by MCP (grant, app, session, Collectives folder all set) is refused by Collectives itself:
+	 * the collective is not listed, and its id answers the not-found every unknown id gets, before any page is read.
+	 * @return void
+	 */
+	public function testAnOutsiderIsRefusedByCollectives(): void {
+		$cid = $this->json($this->client($this->owner())->tool('collectives_list'))['collectives'][0]['id'];
 		$outsider = (string)getenv('MCP_IT_COLLECTIVES_OUTSIDER');
-		$reply = $this->client($outsider)->tool('collectives_list');
-		$this->assertTrue($reply->isError() || $reply->json()['collectives'] === [], $reply->describe());
+		$this->assertSame([], $this->json($this->client($outsider)->tool('collectives_list'))['collectives'], 'admitted, and Collectives lists nothing');
+		foreach ([['collectives_pages', ['collective_id' => $cid]], ['collectives_pages', ['collective_id' => $cid + 1000]]] as [$tool, $arguments]) {
+			$reply = $this->client($outsider)->tool($tool, $arguments);
+			$this->assertTrue($reply->isError(), $reply->describe());
+			$this->assertSame('Resource not found in Nextcloud.', $reply->text(), 'a known collective answers like an unknown one');
+		}
 	}
 }

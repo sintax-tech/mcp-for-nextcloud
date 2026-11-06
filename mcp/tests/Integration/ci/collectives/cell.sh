@@ -34,7 +34,12 @@ case "${1:-}" in
 		done
 		occ collectives:create 'MCP Wiki' --owner="$OWNER"
 		# What the browser does on the first visit; the MCP tools refuse until it is set (they never write it in a plan).
-		occ user:setting "$OWNER" collectives user_folder /.Collectives
+		# Both accounts have their Collectives folder, so the outsider is admitted by MCP and refused by Collectives itself.
+		for uid in "$OWNER" "$OUTSIDER"; do
+			occ user:setting "$uid" collectives user_folder /.Collectives
+		done
+		# The report names the exact tree this cell tested.
+		echo "collectives cell tree: $(git -C "$HERE" rev-parse HEAD)$(git -C "$HERE" diff --quiet HEAD -- || echo ' (with uncommitted changes)')"
 		;;
 	test-env)
 		printf '%s\n' -e 'MCP_IT_WITH_COLLECTIVES=1' -e "MCP_IT_COLLECTIVES_VERSION=$VERSION" \

@@ -200,9 +200,9 @@ final class CommandRollbackTest extends OAuthAccountTestCase {
 	private function writer(?PolicyEventsMapper $events = null, ?NativeResourceEnumerator $resources = null): PolicyWriter {
 		return new PolicyWriter($this->official(), Server::get(PolicyStateMapper::class), $events ?? Server::get(PolicyEventsMapper::class),
 			Server::get(IConfig::class), Server::get(IUserConfig::class), Server::get(IAppConfig::class), Server::get(IUserManager::class),
-			Server::get(ITimeFactory::class), Server::get(AuthUsersMapper::class), Server::get(\OCA\Mcp\Db\RecheckMapper::class),
+			Server::get(ITimeFactory::class), $credentialAuthUsers = Server::get(AuthUsersMapper::class), Server::get(\OCA\Mcp\Db\RecheckMapper::class),
 			Server::get(\OCA\Mcp\Access\Policy\PolicyEventProcessor::class), Server::get(GroupGrantsMapper::class), Server::get(GroupLifeMapper::class),
-			Server::get(OAuthStore::class), Server::get(ResourceScopeMapper::class), $resources ?? Server::get(NativeResourceEnumerator::class),
+			new \OCA\Mcp\Access\Policy\Credentials\CredentialHolders(Server::get(OAuthStore::class), $credentialAuthUsers), Server::get(ResourceScopeMapper::class), $resources ?? Server::get(NativeResourceEnumerator::class),
 			new ScopeActivation(['files' => true, 'calendar' => true, 'tasks' => true]));
 	}
 

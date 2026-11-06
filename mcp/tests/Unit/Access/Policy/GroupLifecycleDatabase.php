@@ -74,9 +74,9 @@ trait GroupLifecycleDatabase {
 		$this->configData = new InMemoryConfig();
 		$this->writer = new PolicyWriter($this->db, $this->state, $events, $this->configData->mock($this),
 			$this->createMock(IUserConfig::class), $this->createMock(IAppConfig::class), $this->createMock(IUserManager::class),
-			$time, new AuthUsersMapper($this->db), $this->rechecks,
+			$time, $credentialAuthUsers = new AuthUsersMapper($this->db), $this->rechecks,
 			new PolicyEventProcessor($events, new OAuthStore($this->db), new NullLogger(), $time),
-			new \OCA\Mcp\Db\GroupGrantsMapper($this->db), new \OCA\Mcp\Db\GroupLifeMapper($this->db), new \OCA\Mcp\OAuth\Storage\OAuthStore($this->db));
+			new \OCA\Mcp\Db\GroupGrantsMapper($this->db), new \OCA\Mcp\Db\GroupLifeMapper($this->db), new \OCA\Mcp\Access\Policy\Credentials\CredentialHolders(new \OCA\Mcp\OAuth\Storage\OAuthStore($this->db), $credentialAuthUsers));
 		$this->life = new GroupLifeMapper($this->db);
 		$this->grants = new GroupGrantsMapper($this->db);
 		$classifier = $this->createMock(GroupSourceClassifier::class);

@@ -52,7 +52,7 @@ final class InheritedEligibilityResetTest extends TestCase {
 		$this->commands = new PolicyWriter($this->db, $this->state, $events, $this->configData->mock($this),
 			$this->createMock(IUserConfig::class), $this->createMock(IAppConfig::class), $users, $time, $this->authUsers,
 			$this->rechecks, new PolicyEventProcessor($events, new OAuthStore($this->db), new NullLogger(), $time),
-			$this->grants, $this->life, new OAuthStore($this->db));
+			$this->grants, $this->life, new \OCA\Mcp\Access\Policy\Credentials\CredentialHolders(new OAuthStore($this->db), $this->authUsers));
 		$this->staffGen = $this->policy('staff');
 		// alice: individual Allow, connected, one credential (generation 2, the first issued), member of staff.
 		$this->configData->user['alice']['mcp']['eligible'] = '1';

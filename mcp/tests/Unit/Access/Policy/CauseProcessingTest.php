@@ -101,7 +101,7 @@ final class CauseProcessingTest extends TestCase {
 		$this->writer = new PolicyWriter($this->db, $this->state, $events, $config, $this->createMock(IUserConfig::class),
 			$this->createMock(IAppConfig::class), $users, $time, $this->authUsers, $this->rechecks,
 			new PolicyEventProcessor($events, new OAuthStore($this->db), $logger, $time),
-			new \OCA\Mcp\Db\GroupGrantsMapper($this->db), new \OCA\Mcp\Db\GroupLifeMapper($this->db), new \OCA\Mcp\OAuth\Storage\OAuthStore($this->db));
+			new \OCA\Mcp\Db\GroupGrantsMapper($this->db), new \OCA\Mcp\Db\GroupLifeMapper($this->db), new \OCA\Mcp\Access\Policy\Credentials\CredentialHolders(new \OCA\Mcp\OAuth\Storage\OAuthStore($this->db), $this->authUsers));
 		$resolver = $this->createMock(PolicyResolver::class);
 		$resolver->method('begin')->willReturnCallback(function (string $uid, array $added = [], array $removed = [], bool $observe = true): PolicyOperationContext {
 			$this->assertFalse($observe, 'cause classification never persists an observation');

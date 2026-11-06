@@ -55,4 +55,21 @@ final class LayeringTest extends ArchitectureCase {
 		$this->expectException(RuntimeException::class);
 		new TicketState(self::tickets()->known, array_values(array_diff(self::tickets()->completed, ['RE-05b'])));
 	}
+
+	public function testPolicyDatabaseReferencesAreExactPathAndClassPairs(): void {
+		foreach ([
+			'lib/Access/Policy/Transactions/PolicyTransaction.php' => ['Exception', 'Driver~Exception'],
+			'lib/Access/Policy/Transactions/RetryPolicy.php' => ['Exception', 'Driver~Exception', 'Exception~DeadlockException', 'Exception~LockWaitTimeoutException'],
+		] as $path => $classes) {
+			foreach ($classes as $class) { self::assertSame([], self::fixture($path, 'use Doctrine~DBAL~' . $class . ';')); }
+		}
+		foreach ([
+			['lib/Access/Policy/Transactions/Other.php', 'use Doctrine~DBAL~Exception;'],
+			['lib/Access/Policy/Transactions/RetryPolicy.php', 'use Doctrine~DBAL~Exception~UniqueConstraintViolationException;'],
+			['lib/Access/Policy/Transactions/PolicyTransaction.php', 'use Doctrine~DBAL~Exception~DeadlockException;'],
+			['lib/Access/Policy/Transactions/RetryPolicyCopy.php', 'use Doctrine~DBAL~Exception;'],
+			['lib/Access/Policy/PolicyWriter.php', 'use OCA~Mcp~OAuth~Storage~OAuthStore;'],
+			['lib/Access/Policy/Credentials/CredentialCommands.php', 'use OCA~Mcp~OAuth~Tokens~TokenService;'],
+		] as [$path, $source]) { self::assertNotSame([], self::fixture($path, $source)); }
+	}
 }

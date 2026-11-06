@@ -119,7 +119,7 @@ final class GenerationCutTest extends TestCase {
 		$processor = new PolicyEventProcessor($events, $cleanup, new NullLogger(), $time);
 		$this->writer = new PolicyWriter($this->db, $this->state, $events, $config, $userConfig, $apps, $users, $time,
 			$this->authUsers, new RecheckMapper($this->db), $processor,
-			new \OCA\Mcp\Db\GroupGrantsMapper($this->db), new \OCA\Mcp\Db\GroupLifeMapper($this->db), new \OCA\Mcp\OAuth\Storage\OAuthStore($this->db));
+			new \OCA\Mcp\Db\GroupGrantsMapper($this->db), new \OCA\Mcp\Db\GroupLifeMapper($this->db), new \OCA\Mcp\Access\Policy\Credentials\CredentialHolders(new \OCA\Mcp\OAuth\Storage\OAuthStore($this->db), $this->authUsers));
 		$this->policy = new GrantPolicy($config, $userConfig, $this->writer,
 			InMemoryConfig::resolverOver($this, $this->state, $this->writer, $config, $userConfig, $apps, $users, $this->db,
 				fn (): array => [new \OCA\Mcp\Tests\Unit\ArrayGroupBackend(fn (): array => $this->groups, 'Database', function (): void {

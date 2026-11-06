@@ -36,7 +36,7 @@ final class BoundaryRules {
 					if ($to === 'unmapped') { $rule = 'unresolved-class'; }
 					elseif (str_starts_with($owner, 'Modules\\') && str_starts_with($to, 'Modules\\') && $owner !== $to) { $rule = 'module-isolation'; }
 					elseif (!self::allowed($owner, $to, $class, $target, $tree->names[$class]['fqcn'] ?? null)) { $rule = 'layering'; }
-				} elseif (str_contains($target, '\\') && !preg_match('/^(OCP|OC|Psr|Sabre|Smalot|Symfony)\\\\/', $target)) {
+				} elseif (str_contains($target, '\\') && !preg_match('/^(OCP|OC|Psr|Sabre|Smalot|Symfony)\\\\/', $target) && !self::policyDatabaseReference($path, $target)) {
 					$rule = 'external-prefix';
 				}
 				if ($rule !== null) { $found[] = ['rule' => $rule, 'source' => $path, ...$edge, 'owner' => $owner]; }
@@ -62,4 +62,26 @@ final class BoundaryRules {
 
 	/** @param array<string,mixed> $edge Rule/source/target row. @return string Exact exception identity, never a prefix. */
 	public static function key(array $edge): string { return $edge['rule'] . '|' . $edge['source'] . '|' . $edge['target'] . ($edge['rule'] === 'external-prefix' ? ':' . $edge['line'] : ''); }
+
+	/**
+	 * Recognizes the unchanged transaction-boundary classifiers, never a vendor prefix.
+	 *
+	 * @param string $path Exact app source path.
+	 * @param string $target Exact dependency FQCN.
+	 * @return bool Whether this specific policy classifier needs this dependency.
+	 */
+	private static function policyDatabaseReference(string $path, string $target): bool {
+		return in_array($target, [
+			'lib/Access/Policy/Transactions/PolicyTransaction.php' => [
+				'Doctrine\\DBAL\\Exception',
+				'Doctrine\\DBAL\\Driver\\Exception',
+			],
+			'lib/Access/Policy/Transactions/RetryPolicy.php' => [
+				'Doctrine\\DBAL\\Exception',
+				'Doctrine\\DBAL\\Driver\\Exception',
+				'Doctrine\\DBAL\\Exception\\DeadlockException',
+				'Doctrine\\DBAL\\Exception\\LockWaitTimeoutException',
+			],
+		][$path] ?? [], true);
+	}
 }

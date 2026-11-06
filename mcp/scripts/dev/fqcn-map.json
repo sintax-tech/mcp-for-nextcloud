@@ -1244,7 +1244,8 @@
 		{"path":"lib/Modules/Collectives/Moving/MovePagePreview.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Moving\\MovePagePreview","target":"stays","owner":"Modules\\Collectives","ticket":null},
 		{"path":"lib/Modules/Collectives/Tools/MovePage.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Tools\\MovePage","target":"stays","owner":"Modules\\Collectives","ticket":null},
 		{"path":"lib/Modules/Collectives/Integration/ContentSearch.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Integration\\ContentSearch","target":"stays","owner":"Modules\\Collectives","ticket":null},
-		{"path":"lib/Modules/Collectives/Locating/PageFileWalk.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Locating\\PageFileWalk","target":"stays","owner":"Modules\\Collectives","ticket":null}
+		{"path":"lib/Modules/Collectives/Locating/PageFileWalk.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Locating\\PageFileWalk","target":"stays","owner":"Modules\\Collectives","ticket":null},
+		{"path":"lib/Modules/Collectives/Integration/PageReads.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Integration\\PageReads","target":"stays","owner":"Modules\\Collectives","ticket":null}
 	],
 	"tests": [
 		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\ServerInfoTest","target":"OCA\\Mcp\\Tests\\Unit\\Mcp\\Protocol\\ServerInfoTest"},

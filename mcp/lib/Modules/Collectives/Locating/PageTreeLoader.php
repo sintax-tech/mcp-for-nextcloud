@@ -10,6 +10,7 @@ namespace OCA\Mcp\Modules\Collectives\Locating;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Collectives\Integration\CollectivesGateway;
 use OCA\Mcp\Modules\Collectives\Integration\PageFiles;
+use OCA\Mcp\Modules\Collectives\Integration\PageReads;
 use OCP\Files\File;
 
 /**
@@ -21,11 +22,13 @@ class PageTreeLoader {
 	 * @param CollectivesGateway $gateway native Collectives
 	 * @param PageFiles $files which pages MCP may show
 	 * @param PageFileWalk $walk the page files, found through Files without asking Collectives to build the tree
+	 * @param PageReads $reads the pages of those files, read one by one with PageService::find
 	 */
 	public function __construct(
 		private CollectivesGateway $gateway,
 		private PageFiles $files,
 		private PageFileWalk $walk,
+		private PageReads $reads,
 	) {
 	}
 
@@ -41,7 +44,7 @@ class PageTreeLoader {
 	public function load(int $cid, string $uid, string $operation): PageTree {
 		$this->gateway->collective($cid, $uid, $operation);
 		$folder = $this->gateway->folder($cid, $uid, $operation);
-		$pages = array_values(array_filter($this->gateway->pages($cid, $this->walk->pageIds($folder), $uid, $operation),
+		$pages = array_values(array_filter($this->reads->read($cid, $this->walk->pageIds($folder), $uid, $operation),
 			fn (array $page): bool => $this->files->shows($folder, $page, $uid)));
 		return new PageTree($cid, $folder, $pages);
 	}

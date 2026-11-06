@@ -72,30 +72,26 @@ class CollectivesGateway {
 	}
 
 	/**
-	 * Reads pages one by one with PageService::find, which never writes in a proven release; the tree builders of
-	 * Collectives may create a missing index page and are never called. A page Collectives no longer finds (removed,
-	 * or its index removed meanwhile) is left out.
-	 * @param int $cid collective id
-	 * @param list<int> $ids page file ids, as {@see \OCA\Mcp\Modules\Collectives\Locating\PageFileWalk} found them
+	 * Proves what every call of a batch of native reads needs, once, before them (see {@see PageReads}).
 	 * @param string $uid authenticated actor
 	 * @param string $operation exact grant of the call
-	 * @return list<array<string, mixed>> the pages Collectives found, read now
-	 * @throws ToolFailure when the call is not admitted, or Collectives fails otherwise than with not found
+	 * @throws ToolFailure when the call is not admitted
 	 */
-	public function pages(int $cid, array $ids, string $uid, string $operation): array {
+	public function admit(string $uid, string $operation): void {
 		$this->admission->admit($uid, $operation);
-		$pages = [];
-		$service = $this->service(CollectivesSurface::PAGES);
-		foreach ($ids as $id) {
-			try {
-				$pages[] = PageProjection::page($service->find($cid, $id, $uid));
-			} catch (Throwable $e) {
-				if (!str_ends_with($e::class, 'NotFoundException')) {
-					throw self::failure($e);
-				}
-			}
-		}
-		return $pages;
+	}
+
+	/**
+	 * One page read with PageService::find, which never writes in a proven release. Call it only after
+	 * {@see self::admit()}; what it throws is left untouched for the caller to judge.
+	 * @param int $cid collective id
+	 * @param int $id page file id
+	 * @param string $uid authenticated actor
+	 * @return array<string, mixed> the page, projected
+	 * @throws Throwable whatever the native call throws
+	 */
+	public function find(int $cid, int $id, string $uid): array {
+		return PageProjection::page($this->service(CollectivesSurface::PAGES)->find($cid, $id, $uid));
 	}
 
 	/**

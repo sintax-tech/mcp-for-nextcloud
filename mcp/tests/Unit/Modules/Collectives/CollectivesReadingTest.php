@@ -155,6 +155,16 @@ final class CollectivesReadingTest extends TestCase {
 		$this->assertSame([], array_values(array_intersect(['newPage', 'getPagesFromFolder', 'create'], CollectivesScene::$calls)));
 	}
 
+	/** @return void only not found leaves a page out; any other native failure stops the read with the module's answer */
+	public function testOnlyNotFoundLeavesAPageOut(): void {
+		CollectivesScene::$beforeFind = static function (int $id): void {
+			if ($id === CollectivesScene::$ids['Guide.md']) {
+				throw new \RuntimeException('database gone');
+			}
+		};
+		$this->assertSame('Collectives is not available in a supported version.', $this->refusal('collectives_pages', ['collective_id' => 7]));
+	}
+
 	/** @return void a hidden page leaks nowhere: not in the subpage order nor as the parent of a page shown */
 	public function testHiddenPagesLeakNoIdThroughReferences(): void {
 		$guide = CollectivesScene::$ids['Guide.md'];

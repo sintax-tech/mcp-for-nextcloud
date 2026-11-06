@@ -14,7 +14,7 @@ use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Modules\Deck\Structure\BoardBlueprint;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
 use OCA\Mcp\Modules\Deck\Failures\DeckRefusalException;
 use OCA\Mcp\Modules\Deck\Structure\CreateBoardHandler;
 use OCA\Mcp\Mcp\Tools\ToolPresentation;
@@ -33,14 +33,14 @@ final class DeckStructureTranslationTest extends TestCase {
 
 	public function testProbableMessagesAreWordedForThePerson(): void {
 		Translator::use(new JsonL10n('pt_BR'));
-		self::assertSame('Provavelmente criado: confira antes de continuar.', DeckMessages::probablyCreated());
-		self::assertSame('Os responsáveis não foram atribuídos porque o cartão foi apenas provavelmente criado. Confira-o antes.', DeckMessages::probableCardNotAssigned());
-		self::assertSame('Não criado: aquilo a que pertence foi apenas provavelmente criado. Confira e depois crie este.', DeckMessages::probableParentNotBuilt());
+		self::assertSame('Provavelmente criado: confira antes de continuar.', \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::probablyCreated());
+		self::assertSame('Os responsáveis não foram atribuídos porque o cartão foi apenas provavelmente criado. Confira-o antes.', \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::probableCardNotAssigned());
+		self::assertSame('Não criado: aquilo a que pertence foi apenas provavelmente criado. Confira e depois crie este.', \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::probableParentNotBuilt());
 
 		Translator::use(new JsonL10n('es'));
-		self::assertSame('Probablemente creado: compruébelo antes de continuar.', DeckMessages::probablyCreated());
-		self::assertSame('No se asignó a los responsables porque la tarjeta solo se creó probablemente. Compruébela antes.', DeckMessages::probableCardNotAssigned());
-		self::assertSame('No creado: aquello a lo que pertenece solo se creó probablemente. Compruébelo y luego cree este.', DeckMessages::probableParentNotBuilt());
+		self::assertSame('Probablemente creado: compruébelo antes de continuar.', \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::probablyCreated());
+		self::assertSame('No se asignó a los responsables porque la tarjeta solo se creó probablemente. Compruébela antes.', \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::probableCardNotAssigned());
+		self::assertSame('No creado: aquello a lo que pertenece solo se creó probablemente. Compruébelo y luego cree este.', \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::probableParentNotBuilt());
 	}
 
 	public function testRefusalsAreWordedForThePerson(): void {
@@ -67,16 +67,16 @@ final class DeckStructureTranslationTest extends TestCase {
 	/** Re-review of c06b2e0: what a write answers when Deck failed after saving, or nobody can tell. */
 	public function testAfterWriteMessagesAreWordedForThePerson(): void {
 		Translator::use(new JsonL10n('pt_BR'));
-		self::assertSame('Foi gravado; o Deck relatou um erro depois (notificação ou atividade).', DeckMessages::writtenThenFailed());
-		self::assertSame('Não foi possível confirmar se o Deck gravou esta alteração; leia com deck_read_card antes de tentar de novo.', DeckMessages::writeUnconfirmed('deck_read_card'));
-		self::assertSame("Não foi possível confirmar se a lista 'A fazer' foi criada; leia o quadro antes de tentar de novo.", DeckMessages::boardItemUnconfirmed('list', 'A fazer'));
-		self::assertSame("Não foi possível confirmar se o cartão 'Um' foi criado; leia a lista antes de tentar de novo.", DeckMessages::boardItemUnconfirmed('card', 'Um'));
+		self::assertSame('Foi gravado; o Deck relatou um erro depois (notificação ou atividade).', \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::writtenThenFailed());
+		self::assertSame('Não foi possível confirmar se o Deck gravou esta alteração; leia com deck_read_card antes de tentar de novo.', \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::writeUnconfirmed('deck_read_card'));
+		self::assertSame("Não foi possível confirmar se a lista 'A fazer' foi criada; leia o quadro antes de tentar de novo.", \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::boardItemUnconfirmed('list', 'A fazer'));
+		self::assertSame("Não foi possível confirmar se o cartão 'Um' foi criado; leia a lista antes de tentar de novo.", \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::boardItemUnconfirmed('card', 'Um'));
 
 		Translator::use(new JsonL10n('es'));
-		self::assertSame('Se guardó; Deck informó un error después (notificación o actividad).', DeckMessages::writtenThenFailed());
-		self::assertSame('No se pudo confirmar si Deck guardó este cambio; léalo con deck_list_boards antes de volver a intentarlo.', DeckMessages::writeUnconfirmed('deck_list_boards'));
-		self::assertSame("No se pudo confirmar si se creó la lista 'A fazer'; lea el tablero antes de volver a intentarlo.", DeckMessages::boardItemUnconfirmed('list', 'A fazer'));
-		self::assertSame("No se pudo confirmar si se creó la tarjeta 'Um'; lea la lista antes de volver a intentarlo.", DeckMessages::boardItemUnconfirmed('card', 'Um'));
+		self::assertSame('Se guardó; Deck informó un error después (notificación o actividad).', \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::writtenThenFailed());
+		self::assertSame('No se pudo confirmar si Deck guardó este cambio; léalo con deck_list_boards antes de volver a intentarlo.', \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::writeUnconfirmed('deck_list_boards'));
+		self::assertSame("No se pudo confirmar si se creó la lista 'A fazer'; lea el tablero antes de volver a intentarlo.", \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::boardItemUnconfirmed('list', 'A fazer'));
+		self::assertSame("No se pudo confirmar si se creó la tarjeta 'Um'; lea la lista antes de volver a intentarlo.", \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::boardItemUnconfirmed('card', 'Um'));
 	}
 
 	/** A deck_create_board with an item nobody can confirm says so in the summary, in the language of the account. */
@@ -100,9 +100,9 @@ final class DeckStructureTranslationTest extends TestCase {
 				'planCreateBoard', 'planCreateStack', 'planDeleteStack', 'planDeleteBoard',
 				'planDeleteStackConsequence', 'planDeleteBoardConsequence',
 			] as $method) {
-				$text = [DeckMessages::class, $method]();
+				$text = [\OCA\Mcp\Modules\Deck\Presentation\DeckPlanMessages::class, $method]();
 				Translator::reset();
-				$english = [DeckMessages::class, $method]();
+				$english = [\OCA\Mcp\Modules\Deck\Presentation\DeckPlanMessages::class, $method]();
 				Translator::use(new JsonL10n($language));
 				self::assertNotSame($english, $text, $language . ' ' . $method);
 			}

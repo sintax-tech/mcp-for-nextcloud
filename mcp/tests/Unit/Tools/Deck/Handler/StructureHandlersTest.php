@@ -13,7 +13,7 @@ use OCA\Deck\NoPermissionException;
 use OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestHelpers;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
 use OCA\Mcp\Modules\Deck\Failures\DeckRefusalException;
 use OCA\Mcp\Modules\Deck\Structure\CreateStackHandler;
 use OCA\Mcp\Modules\Deck\Structure\DeleteBoardHandler;
@@ -101,7 +101,7 @@ final class StructureHandlersTest extends TestCase {
 		$result = (new CreateStackHandler($gateway, $this->logger))->handle(['boardId' => 4, 'title' => 'Nova', 'confirm' => true], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotFoundOrForbidden(), $this->text($result));
 	}
 
 	public function testDeleteStackDeletesAnEmptyList(): void {
@@ -183,7 +183,7 @@ final class StructureHandlersTest extends TestCase {
 			(new DeleteBoardHandler($gateway, $this->logger))->handle(['boardId' => 4, 'confirm' => true], 'alice'),
 		] as $result) {
 			self::assertTrue($result['isError']);
-			self::assertSame(DeckMessages::errorGeneric(), $this->text($result));
+			self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorGeneric(), $this->text($result));
 		}
 	}
 }

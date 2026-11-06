@@ -15,7 +15,7 @@ use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use OCA\Mcp\Modules\Deck\Failures\DeckRefusalException;
-use OCA\Mcp\Modules\Deck\DeckToolModule;
+use OCA\Mcp\Modules\Deck\DeckModule as DeckToolModule;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\ToolPresentation;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
@@ -67,7 +67,7 @@ final class DeckStructureToolsTest extends TestCase {
 	private function moduleWith(DeckGatewayInterface $gateway, ?IUserManager $users = null): DeckToolModule {
 		$apps = $this->createMock(IAppManager::class);
 		$apps->method('isEnabledForUser')->willReturn(true);
-		$module = new DeckToolModule(
+		$module = \OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::build(
 			$this->createMock(ContainerInterface::class),
 			$apps,
 			$this->createMock(LoggerInterface::class),
@@ -75,7 +75,7 @@ final class DeckStructureToolsTest extends TestCase {
 			$this->createMock(ITimeFactory::class),
 			$users,
 		);
-		(new \ReflectionProperty(DeckToolModule::class, 'gateway'))->setValue($module, $gateway);
+		\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::setGateway($module, $gateway);
 
 		return $module;
 	}
@@ -85,7 +85,7 @@ final class DeckStructureToolsTest extends TestCase {
 	 * @return array<string, mixed> Definition of that tool.
 	 */
 	private function definitionOf(string $name): array {
-		foreach ($this->moduleWith($this->createMock(DeckGatewayInterface::class))->definitions() as $definition) {
+		foreach (\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::definitions($this->moduleWith($this->createMock(DeckGatewayInterface::class))) as $definition) {
 			if ($definition['name'] === $name) {
 				return $definition;
 			}
@@ -95,7 +95,7 @@ final class DeckStructureToolsTest extends TestCase {
 	}
 
 	public function testTheFourToolsFollowTheExistingOnes(): void {
-		$names = array_column($this->moduleWith($this->createMock(DeckGatewayInterface::class))->definitions(), 'name');
+		$names = array_column(\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::definitions($this->moduleWith($this->createMock(DeckGatewayInterface::class))), 'name');
 
 		self::assertSame(['deck_create_board', 'deck_create_stack', 'deck_delete_stack', 'deck_delete_board'], array_slice($names, -4));
 	}

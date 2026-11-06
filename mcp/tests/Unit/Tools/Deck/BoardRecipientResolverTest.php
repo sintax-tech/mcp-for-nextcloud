@@ -13,7 +13,7 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Modules\Deck\Integration\BoardRecipientResolver;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
 use OCA\Mcp\Modules\Deck\Failures\DeckRefusalException;
 use OCA\Mcp\Modules\Deck\Recipients\LinkRecipientContext;
 use OCA\Mcp\Modules\Deck\Recipients\RecipientDirectory;
@@ -537,7 +537,7 @@ final class BoardRecipientResolverTest extends TestCase {
 			$this->resolver->resolve($this->context());
 			self::fail('Inactive source must refuse');
 		} catch (DeckRefusalException $failure) {
-			self::assertSame(DeckMessages::fileSourceInactive(), $failure->getMessage());
+			self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckAttachmentMessages::fileSourceInactive(), $failure->getMessage());
 		}
 		self::assertSame(2, count(array_filter($this->events, static fn ($event): bool => $event === 'source')));
 		self::assertSame(9, $this->grantCalls);
@@ -555,7 +555,7 @@ final class BoardRecipientResolverTest extends TestCase {
 		$marker = DeckRefusalException::inactiveFileSource('actor', 7, 20);
 		$this->sourceFailures = [$marker, $marker];
 		if ($case === 'forged text') {
-			$this->sourceFailures[0] = new DeckRefusalException(DeckMessages::fileSourceInactive());
+			$this->sourceFailures[0] = new DeckRefusalException(\OCA\Mcp\Modules\Deck\Presentation\DeckAttachmentMessages::fileSourceInactive());
 		} elseif ($case === 'recipient failure before source') {
 			$this->sourceFailures[0] = RecipientResolutionException::unsupported();
 		} elseif ($case === 'arbitrary') {
@@ -592,7 +592,7 @@ final class BoardRecipientResolverTest extends TestCase {
 			$this->resolver->resolve($this->context());
 			self::fail('Uncertain source must refuse');
 		} catch (DeckRefusalException $failure) {
-			self::assertSame(DeckMessages::fileUnavailable(), $failure->getMessage());
+			self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckAttachmentMessages::fileUnavailable(), $failure->getMessage());
 		}
 		foreach ($this->logs as [$message, $context]) {
 			self::assertSame('Deck recipient resolution failed.', $message);

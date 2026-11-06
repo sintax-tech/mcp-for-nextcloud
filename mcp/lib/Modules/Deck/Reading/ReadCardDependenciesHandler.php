@@ -9,7 +9,6 @@ namespace OCA\Mcp\Modules\Deck\Reading;
 
 use OCA\Mcp\Modules\Deck\Integration\CardFormatter;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
 use OCA\Mcp\Modules\Deck\Dependencies\DependencyGraph;
 use Psr\Log\LoggerInterface;
 
@@ -26,18 +25,26 @@ final class ReadCardDependenciesHandler extends \OCA\Mcp\Modules\Deck\AbstractHa
 		parent::__construct($gateway, $logger);
 	}
 
-	/** {@inheritDoc} Limits are applied only to readable nodes and edges, never to raw native IDs. */
+	/**
+	 * {@inheritDoc} Limits are applied only to readable nodes and edges, never to raw native IDs.
+	 * @param array $arguments validated tool arguments
+	 * @param string $userId authenticated caller UID
+	 * @return array unchanged result of this operation
+	 */
 	public function handle(array $arguments, string $userId): array {
 		return $this->run(function () use ($arguments, $userId): array {
 			$graph = (new DependencyGraph($this->gateway))->read($userId, (int)$arguments['cardId']);
 			$graph['nodes'] = array_map(fn (array $node): array =>
 				$this->formatter->reference($node['card'], $node['boardId']), $graph['nodes']);
 			return $graph + ['direction' => 'origin.dependentCards contains target',
-				'message' => DeckMessages::dependencyGraphVisibility()];
+				'message' => \OCA\Mcp\Modules\Deck\Presentation\DeckDependencyMessages::dependencyGraphVisibility()];
 		});
 	}
 
-	/** {@inheritDoc} */
+	/**
+	 * {@inheritDoc}
+	 * @return string unchanged result of this operation
+	 */
 	protected function toolName(): string {
 		return self::TOOL;
 	}

@@ -11,7 +11,7 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use OCA\Mcp\Modules\Deck\Attachments\CardFiles; use OCA\Mcp\Modules\Deck\Failures\DeckRefusalException;
-use OCA\Mcp\Modules\Deck\Attachments\CardFileHandler;
+use OCA\Mcp\Modules\Deck\Deletion\UnlinkCardFileHandler as CardFileHandler;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\Files\{File, Folder, IRootFolder};
 use OCP\Share\IShare;
@@ -78,14 +78,15 @@ final class CardFilesTest extends TestCase {
 		$this->gateway->method('cardFileShares')->willReturnCallback(fn (): array => $this->present ? [$this->share] : []);
 	}
 
-	private function handler(bool $unlink = true): CardFileHandler {
+	private function handler(bool $unlink = true): \OCA\Mcp\Modules\Deck\AbstractHandler {
 		$config = $this->createMock(\OCP\IConfig::class);
 		$config->method('getSystemValueString')->willReturn('unit-secret');
-		return new CardFileHandler($this->gateway, $this->createMock(LoggerInterface::class), fn () => $this->files,
-			$this->cardFormatter(), fn () => new PlanState($config), $unlink);
+		$class = $unlink ? \OCA\Mcp\Modules\Deck\Deletion\UnlinkCardFileHandler::class : \OCA\Mcp\Modules\Deck\Reading\ListCardFilesHandler::class;
+		return new $class($this->gateway, $this->createMock(LoggerInterface::class), fn () => $this->files,
+			$this->cardFormatter(), fn () => new PlanState($config));
 	}
 
-	private function confirmed(CardFileHandler $handler): array {
+	private function confirmed(\OCA\Mcp\Modules\Deck\AbstractHandler $handler): array {
 		$args = ['cardId' => 7, 'attachmentId' => 17];
 		$plan = $handler->preview($args, 'alice');
 		return $args + ['confirm' => true, 'plan_state' => $plan['plan_state'], 'file_state' => $plan['file_state']];

@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Deck\Reading;
 
-use OCA\Deck\Db\Stack;
 use OCA\Mcp\Modules\Deck\Integration\CardFormatter;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use Psr\Log\LoggerInterface;
@@ -56,7 +55,7 @@ final class ListStacksHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 			$stacks = array_slice($stacks, 0, self::MAX_STACKS);
 
 			return [
-				'stacks' => array_map(fn (Stack $stack) => $this->formatter->stack($stack), $stacks),
+				'stacks' => array_map(fn (object $stack) => $this->formatter->stack($stack), $stacks),
 				'truncated' => $truncated,
 			];
 		});
@@ -65,6 +64,7 @@ final class ListStacksHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 	/**
 	 * {@inheritDoc}
 	 *
+	 * @return string unchanged result of this operation
 	 */
 	protected function toolName(): string {
 		return self::TOOL;

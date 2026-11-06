@@ -14,10 +14,10 @@ use OCA\Mcp\Modules\Deck\Attachments\CardLinkMessages;
 use OCA\Mcp\Modules\Deck\Attachments\CardLinkPlan;
 use OCA\Mcp\Modules\Deck\Attachments\CardLinkTool;
 use OCA\Mcp\Modules\Deck\Integration\DeckCapabilities;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
 use OCA\Mcp\Modules\Deck\Presentation\DeckPlans\DeckPlanRenderer;
 use OCA\Mcp\Modules\Deck\Failures\DeckRefusalException;
-use OCA\Mcp\Modules\Deck\DeckToolModule;
+use OCA\Mcp\Modules\Deck\DeckModule as DeckToolModule;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\File;
@@ -67,11 +67,11 @@ final class DeckCutPresentationTest extends TestCase {
 	 * @return void
 	 */
 	public function testDependencyToolsFollowTheProvedVersions(): void {
-		$absent = array_column($this->module($this->capabilities(false))->definitions(), 'name');
+		$absent = array_column(\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::definitions($this->module($this->capabilities(false))), 'name');
 		self::assertNotContains('deck_add_card_dependency', $absent);
 		self::assertContains('deck_list_labels', $absent);
 		self::assertContains('deck_list_card_files', $absent);
-		$present = $this->module($this->capabilities(true))->definitions();
+		$present = \OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::definitions($this->module($this->capabilities(true)));
 		$byName = [];
 		foreach ($present as $definition) {
 			$byName[$definition['name']] = $definition['description'];
@@ -123,12 +123,12 @@ final class DeckCutPresentationTest extends TestCase {
 	public function testUncertainOutcomesDoNotClaimSuccess(): void {
 		foreach ([
 			CardLinkMessages::uncertain(),
-			DeckMessages::labelPlanChanged(),
-			DeckMessages::labelsUnconfirmed(),
-			DeckMessages::labelStateObserved(),
-			DeckMessages::filePlanChanged(),
-			DeckMessages::dependencyPlanChanged(),
-			DeckMessages::fileUnlinkObserved(),
+			\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::labelPlanChanged(),
+			\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::labelsUnconfirmed(),
+			\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::labelStateObserved(),
+			\OCA\Mcp\Modules\Deck\Presentation\DeckAttachmentMessages::filePlanChanged(),
+			\OCA\Mcp\Modules\Deck\Presentation\DeckDependencyMessages::dependencyPlanChanged(),
+			\OCA\Mcp\Modules\Deck\Presentation\DeckAttachmentMessages::fileUnlinkObserved(),
 		] as $text) {
 			self::assertStringContainsString('does not prove that the whole request finished', $text);
 			self::assertStringContainsString('not a record of human approval', $text);
@@ -256,7 +256,7 @@ final class DeckCutPresentationTest extends TestCase {
 		$container->method('get')->willThrowException(new \LogicException('Deck must not be resolved here.'));
 		$apps = $this->createMock(IAppManager::class);
 		$apps->method('isEnabledForUser')->willReturn(true);
-		return new DeckToolModule(
+		return \OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::build(
 			$container,
 			$apps,
 			$this->createMock(LoggerInterface::class),

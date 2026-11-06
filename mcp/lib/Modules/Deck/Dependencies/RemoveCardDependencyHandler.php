@@ -11,7 +11,6 @@ use Closure;
 use OCA\Mcp\Modules\Deck\Integration\CardFormatter;
 use OCA\Mcp\Modules\Deck\Failures\DeckConflictException;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
 use OCA\Mcp\Modules\Deck\Dependencies\DependencyChange;
 use OCA\Mcp\Mcp\Confirmation\PlanChanged;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
@@ -19,19 +18,17 @@ use Psr\Log\LoggerInterface;
 use Throwable;
 
 /** Changes one native relation, with a bounded readable cycle check and mandatory state-bound confirmation. */
-final class ChangeCardDependencyHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
-	public const ADD = 'deck_add_card_dependency';
-	public const REMOVE = 'deck_remove_card_dependency';
+final class RemoveCardDependencyHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
+	public const TOOL = 'deck_remove_card_dependency';
 
 	/**
 	 * @param DeckGatewayInterface $gateway Fresh native authorization boundary.
 	 * @param LoggerInterface $logger Logs exception classes, never native messages.
 	 * @param CardFormatter $formatter Safe readable references.
 	 * @param Closure(): PlanState $stateFactory Lazy instance-secret fingerprint service.
-	 * @param bool $assign Add when true; otherwise remove.
 	 */
 	public function __construct(DeckGatewayInterface $gateway, LoggerInterface $logger,
-		private CardFormatter $formatter, private Closure $stateFactory, private bool $assign) {
+		private CardFormatter $formatter, private Closure $stateFactory) {
 		parent::__construct($gateway, $logger);
 	}
 
@@ -45,29 +42,34 @@ final class ChangeCardDependencyHandler extends \OCA\Mcp\Modules\Deck\AbstractHa
 		return $this->plan($this->state($arguments, $userId), $userId);
 	}
 
-	/** {@inheritDoc} The registry alone owns the no-confirm preview gate. */
+	/**
+	 * {@inheritDoc} The registry alone owns the no-confirm preview gate.
+	 * @param array $arguments validated tool arguments
+	 * @param string $userId authenticated caller UID
+	 * @return array unchanged result of this operation
+	 */
 	public function handle(array $arguments, string $userId): array {
 		return $this->run(function () use ($arguments, $userId): array {
 			$state = $this->state($arguments, $userId);
 			$plan = $this->plan($state, $userId);
 			PlanState::require($arguments);
 			if (!PlanState::matches($plan[PlanState::ARGUMENT], $arguments)) {
-				throw new PlanChanged($plan + ['warnings' => [['message' => DeckMessages::dependencyPlanChanged()]]]);
+				throw new PlanChanged($plan + ['warnings' => [['message' => \OCA\Mcp\Modules\Deck\Presentation\DeckDependencyMessages::dependencyPlanChanged()]]]);
 			}
 			$shared = $this->confirmShared($arguments, $userId, $state['board']);
 			if ($shared !== null) {
 				return $shared;
 			}
-			if ($state['present'] === $this->assign) {
+			if ($state['present'] === false) {
 				return $this->result($state, false);
 			}
 			$error = null;
 			try {
 				$this->gateway->changeDependency($userId, (int)$arguments['cardId'], (int)$arguments['targetId'],
-					$this->assign, DependencyChange::snapshot($state));
+					false, DependencyChange::snapshot($state));
 			} catch (DeckConflictException) {
 				throw new PlanChanged($this->preview($arguments, $userId)
-					+ ['warnings' => [['message' => DeckMessages::dependencyPlanChanged()]]]);
+					+ ['warnings' => [['message' => \OCA\Mcp\Modules\Deck\Presentation\DeckDependencyMessages::dependencyPlanChanged()]]]);
 			} catch (Throwable $e) {
 				$error = $e;
 			}
@@ -76,18 +78,18 @@ final class ChangeCardDependencyHandler extends \OCA\Mcp\Modules\Deck\AbstractHa
 			} catch (Throwable $e) {
 				$this->logger->warning('MCP Deck dependency result unknown ({exception})', ['exception' => $e::class]);
 				// Revoked targets are never echoed back from the pre-write snapshot.
-				return ['confirmed' => false, 'message' => DeckMessages::dependencyUnconfirmed()];
+				return ['confirmed' => false, 'message' => \OCA\Mcp\Modules\Deck\Presentation\DeckDependencyMessages::dependencyUnconfirmed()];
 			}
-			if ($observed['present'] !== $this->assign) {
+			if ($observed['present'] !== false) {
 				if ($error !== null && DependencyChange::snapshot($state, false) === DependencyChange::snapshot($observed, false)) {
 					throw $error;
 				}
-				return ['confirmed' => false, 'message' => DeckMessages::dependencyUnconfirmed()];
+				return ['confirmed' => false, 'message' => \OCA\Mcp\Modules\Deck\Presentation\DeckDependencyMessages::dependencyUnconfirmed()];
 			}
 			$result = $this->result($observed, true);
 			if ($error !== null) {
 				$this->logger->warning('MCP Deck dependency state observed after failure ({exception})', ['exception' => $error::class]);
-				$result['warnings'] = [DeckMessages::dependencyStateObserved()];
+				$result['warnings'] = [\OCA\Mcp\Modules\Deck\Presentation\DeckDependencyMessages::dependencyStateObserved()];
 			}
 			return $result;
 		});
@@ -102,7 +104,7 @@ final class ChangeCardDependencyHandler extends \OCA\Mcp\Modules\Deck\AbstractHa
 	 */
 	private function state(array $arguments, string $userId, bool $checkCycle = true): array {
 		return $this->gateway->dependencyChangeState($userId, (int)$arguments['cardId'],
-			(int)$arguments['targetId'], $this->assign, $checkCycle);
+			(int)$arguments['targetId'], false, $checkCycle);
 	}
 
 	/**
@@ -111,11 +113,7 @@ final class ChangeCardDependencyHandler extends \OCA\Mcp\Modules\Deck\AbstractHa
 	 * @return array<string, mixed> Only the requested readable edge is displayed.
 	 */
 	private function plan(array $state, string $userId): array {
-		$board = $state['board'] + ['shared' => $state['board']['owner'] !== $userId];
-		return $this->references($state) + ['action' => $this->toolName(), 'board' => $board,
-			'before' => $state['present'], 'after' => $this->assign, 'shared' => $board['shared'] ? [$board] : [],
-			'message' => DeckMessages::dependencyWriteLimitations(), 'recoverable' => true,
-			PlanState::ARGUMENT => ($this->stateFactory)()->of($this->toolName(), $userId, DependencyChange::snapshot($state))];
+		return RemoveCardDependencyPreview::fromState($state, $userId, $this->formatter, $this->stateFactory);
 	}
 
 	/**
@@ -136,11 +134,14 @@ final class ChangeCardDependencyHandler extends \OCA\Mcp\Modules\Deck\AbstractHa
 	private function result(array $state, bool $changed): array {
 		return $this->references($state) + ['confirmed' => true, 'changed' => $changed,
 			'present' => $state['present'], 'verification' => 'observed-state',
-			'message' => DeckMessages::dependencyWriteLimitations()];
+			'message' => \OCA\Mcp\Modules\Deck\Presentation\DeckDependencyMessages::dependencyWriteLimitations()];
 	}
 
-	/** {@inheritDoc} */
+	/**
+	 * {@inheritDoc}
+	 * @return string unchanged result of this operation
+	 */
 	protected function toolName(): string {
-		return $this->assign ? self::ADD : self::REMOVE;
+		return self::TOOL;
 	}
 }

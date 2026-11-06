@@ -49,7 +49,7 @@ final class CardLinkTool {
 		return ['name' => LinkCardFileHandler::TOOL, 'description' => self::description(),
 			'module' => 'deck', 'operation' => 'edit', 'app' => 'deck',
 			'inputSchema' => ['type' => 'object', 'additionalProperties' => false, 'required' => ['cardId', 'fileId'],
-				'properties' => ['cardId' => ['type' => 'integer', 'minimum' => 1, 'description' => \OCA\Mcp\Modules\Deck\Presentation\DeckMessages::PARAM_CARD_ID],
+				'properties' => ['cardId' => ['type' => 'integer', 'minimum' => 1, 'description' => \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::PARAM_CARD_ID],
 					'fileId' => ['type' => 'integer', 'minimum' => 1, 'description' => 'Id of the existing visible File in your Files scope. Folders are refused.'],
 					'confirm_shared' => ['type' => 'boolean', 'description' => 'Set to true only after the user confirms linking a shared file or changing another user\'s board.'],
 					PlanState::ARGUMENT => PlanState::property()]]];
@@ -66,7 +66,17 @@ final class CardLinkTool {
 	 */
 	public static function handler(ContainerInterface $container, DeckGatewayInterface $gateway,
 		LoggerInterface $logger, ?ISession $session): LinkCardFileHandler {
-		return new LinkCardFileHandler($gateway, $logger, static function () use ($container, $gateway, $logger, $session): array {
+		return new LinkCardFileHandler($gateway, $logger, self::factory($container, $gateway, $logger, $session));
+	}
+	/**
+	 * @param ContainerInterface $container existing lazy container
+	 * @param DeckGatewayInterface $gateway registered native boundary
+	 * @param LoggerInterface $logger class-only logger
+	 * @param ISession|null $session existing caller binding
+	 * @return \Closure():array<string,mixed> unchanged operation service composition
+	 */
+	public static function factory(ContainerInterface $container, DeckGatewayInterface $gateway, LoggerInterface $logger, ?ISession $session): \Closure {
+		return static function () use ($container, $gateway, $logger, $session): array {
 			$services = new DeckServiceContext($container, $session ?? $container->get(ISession::class));
 			$grants = $container->get(GrantPolicy::class);
 			$guard = $container->get(FilesAccessGuard::class);
@@ -83,6 +93,6 @@ final class CardLinkTool {
 				new \OCA\Mcp\Modules\Deck\Attachments\CardFileNodeAccess($guard, $container->get(IRootFolder::class)), $policy, $native, $container->get(NodeAccessInfo::class), $recipients);
 			return ['prepare' => $prepare, 'native' => $native, 'plans' => new \OCA\Mcp\Modules\Deck\Attachments\CardLinkPlan($plans),
 				'shared' => $container->get(SharedWriteGuard::class)];
-		});
+		};
 	}
 }

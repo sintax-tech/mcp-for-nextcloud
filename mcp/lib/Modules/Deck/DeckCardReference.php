@@ -17,7 +17,13 @@ final class DeckCardReference implements ReadableDeckCard {
 	public function __construct(private DeckGatewayInterface $deck) {
 	}
 
-	/** {@inheritDoc} */
+	/**
+	 * {@inheritDoc}
+	 * @param string $userId authenticated caller UID
+	 * @param int $cardId existing card id collaborator or value
+	 * @param ?int $boardId existing board id collaborator or value
+	 * @return ReferenceRead unchanged result of this operation
+	 */
 	public function read(string $userId, int $cardId, ?int $boardId = null): ReferenceRead {
 		try {
 			$card = $this->deck->findCard($userId, $cardId);

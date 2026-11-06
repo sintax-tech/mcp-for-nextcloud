@@ -58,7 +58,7 @@ final class CreateStackHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 			$probable = false;
 			$stack = $this->afterApproximateWrite(
 				fn () => $this->gateway->createStack($userId, $boardId, $title, $order),
-				fn () => self::newStack($this->gateway->stacksOf($userId, $boardId), $title, $before),
+				fn () => \OCA\Mcp\Modules\Deck\Integration\CardFormatter::newStack($this->gateway->stacksOf($userId, $boardId), $title, $before),
 				$warnings,
 				$probable,
 			);
@@ -76,6 +76,7 @@ final class CreateStackHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 	 * {@inheritDoc}
 	 *
 	 * A list is found again among the lists of its board.
+	 * @return string unchanged result of this operation
 	 */
 	protected function readWith(): string {
 		return 'deck_list_stacks';
@@ -83,6 +84,7 @@ final class CreateStackHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 
 	/**
 	 * {@inheritDoc}
+	 * @return string unchanged result of this operation
 	 */
 	protected function toolName(): string {
 		return self::TOOL;

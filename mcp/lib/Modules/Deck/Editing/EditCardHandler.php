@@ -8,8 +8,6 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Deck\Editing;
 
 use InvalidArgumentException;
-use OCA\Deck\Db\Acl;
-use OCA\Deck\Db\Card;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Modules\Deck\Editing\AssigneeChanges;
 use OCA\Mcp\Modules\Deck\Integration\CardCriteria;
@@ -19,7 +17,6 @@ use OCA\Mcp\Modules\Deck\Editing\CardInput;
 use OCA\Mcp\Modules\Deck\Failures\DeckConflictException;
 use OCA\Mcp\Modules\Deck\Integration\DeckErrors;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -67,7 +64,7 @@ final class EditCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 		$changes = AssigneeChanges::fromArguments($arguments);
 		$editsAssignees = $changes['assign'] !== [] || $changes['unassign'] !== [];
 		if ($given === [] && !$editsAssignees) {
-			throw new InvalidArgumentException(DeckMessages::errorNoFieldToEdit());
+			throw new InvalidArgumentException(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNoFieldToEdit());
 		}
 
 		return $this->run(function () use ($arguments, $given, $changes, $editsAssignees, $userId): array {
@@ -86,7 +83,7 @@ final class EditCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 
 			$expected = $arguments['lastModified'] ?? null;
 			if ($expected !== null && (int)$expected !== $card->getLastModified()) {
-				throw new DeckConflictException(DeckMessages::errorConflict());
+				throw new DeckConflictException(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorConflict());
 			}
 
 			// Everything that can be refused is refused here, before the first write.
@@ -132,6 +129,7 @@ final class EditCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 	/**
 	 * {@inheritDoc}
 	 *
+	 * @return string unchanged result of this operation
 	 */
 	protected function toolName(): string {
 		return self::TOOL;
@@ -144,13 +142,13 @@ final class EditCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 	 * mutated in place only for what succeeded, so the payload shows the real assignees.
 	 *
 	 * @param string $userId UID of the authenticated caller.
-	 * @param Card $card Card to report, its assignments updated as each change succeeds.
+	 * @param object $card Card to report, its assignments updated as each change succeeds.
 	 * @param array{add: list<string>, remove: list<string>, alreadyAssigned: list<string>, notAssigned: list<string>} $resolved What to do and what to ignore.
 	 * @param list<string> $warnings Warnings so far (a saved update whose Deck side effects failed); each change that
 	 *     Deck saved before failing adds the same warning once, and the change counts as done.
 	 * @return array{assigned: list<string>, unassigned: list<string>, failed: list<array{uid: string, reason: string}>, warnings?: list<string>}
 	 */
-	private function applyAssignees(string $userId, Card $card, array $resolved, array $warnings = []): array {
+	private function applyAssignees(string $userId, object $card, array $resolved, array $warnings = []): array {
 		$assigned = [];
 		$unassigned = [];
 		$failed = [];
@@ -161,14 +159,11 @@ final class EditCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 			try {
 				$this->afterWrite(
 					fn () => $this->gateway->unassignCardUser($userId, $cardId, $uid),
-					fn () => $this->assignmentOf($userId, $cardId, $uid) === null ? true : null,
+					fn () => \OCA\Mcp\Modules\Deck\Integration\CardFormatter::assignmentOf($this->gateway->cardAssignments($userId, $cardId), $uid) === null ? true : null,
 					$warnings,
 				);
 				$unassigned[] = $uid;
-				$assignments = array_values(array_filter(
-					$assignments,
-					static fn ($assignment): bool => !($assignment->getType() === Acl::PERMISSION_TYPE_USER && (string)$assignment->getParticipant() === $uid),
-				));
+				$assignments = CardFormatter::withoutAssignee($assignments, $uid);
 			} catch (\Throwable $e) {
 				$failed[] = $this->failure($uid, $e);
 			}
@@ -177,7 +172,7 @@ final class EditCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 			try {
 				$assignments[] = $this->afterWrite(
 					fn () => $this->gateway->assignCardUser($userId, $cardId, $uid),
-					fn () => $this->assignmentOf($userId, $cardId, $uid),
+					fn () => \OCA\Mcp\Modules\Deck\Integration\CardFormatter::assignmentOf($this->gateway->cardAssignments($userId, $cardId), $uid),
 					$warnings,
 				);
 				$assigned[] = $uid;
@@ -204,14 +199,14 @@ final class EditCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 	 * passes for a write.
 	 *
 	 * @param string $userId UID of the authenticated caller.
-	 * @param Card $before Card as read before the update.
+	 * @param object $before Card as read before the update.
 	 * @param string $title Title sent.
 	 * @param string $description Description sent.
 	 * @param string|null $duedate Requested deadline; read-back must match its UTC timestamp to the second.
 	 *     The gateway sends UTC Z to native Deck, whose timezone-less column hydrates in UTC.
-	 * @return Card|null The saved card, or null when the update did not happen.
+	 * @return object|null The saved card, or null when the update did not happen.
 	 */
-	private function savedEdit(string $userId, Card $before, string $title, string $description, ?string $duedate): ?Card {
+	private function savedEdit(string $userId, object $before, string $title, string $description, ?string $duedate): ?object {
 		$card = $this->gateway->cardState($userId, (int)$before->getId());
 		$saved = (string)$card->getTitle() === $title
 			&& self::withoutAstral((string)$card->getDescription()) === self::withoutAstral($description)

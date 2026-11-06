@@ -34,7 +34,7 @@ use OCA\Mcp\Modules\Calendar\Scheduling\Scheduling;
 use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
 use OCA\Mcp\Modules\Calendar\Writing\TrashPolicy;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Modules\Deck\DeckToolModule;
+use OCA\Mcp\Modules\Deck\DeckModule as DeckToolModule;
 use OCA\Mcp\Modules\Notes\NotesModule;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
@@ -116,7 +116,7 @@ final class ToolErrorsLanguagesTest extends TestCase {
 			Translator::use(new JsonL10n($language));
 			$gateway = $this->createMock(DeckGatewayInterface::class);
 			$gateway->method('findCard')->willThrowException(new DoesNotExistException('card 7 is gone'));
-			$module = new DeckToolModule(
+			$module = \OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::build(
 				$this->createMock(ContainerInterface::class),
 				$this->appManager(),
 				$this->createMock(LoggerInterface::class),
@@ -124,7 +124,7 @@ final class ToolErrorsLanguagesTest extends TestCase {
 				$this->createMock(\OCP\AppFramework\Utility\ITimeFactory::class),
 				$this->userManager(),
 			);
-			(new \ReflectionProperty(DeckToolModule::class, 'gateway'))->setValue($module, $gateway);
+			\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::setGateway($module, $gateway);
 
 			$this->assertSame($expected, $this->call($module, 'deck_read_card', ['cardId' => 7]), $language);
 		}

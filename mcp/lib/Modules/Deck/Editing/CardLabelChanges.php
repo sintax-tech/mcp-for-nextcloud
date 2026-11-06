@@ -24,16 +24,16 @@ final class CardLabelChanges {
 			$ids = $arguments[$field] ?? [];
 			if (!is_array($ids) || !array_is_list($ids) || count($ids) > self::MAX_LABELS
 				|| array_filter($ids, static fn ($id): bool => !is_int($id) || $id < 1) !== []) {
-				throw new ArgumentValidationException('Invalid argument: ' . $field, $field, \OCA\Mcp\Modules\Deck\Presentation\DeckMessages::errorLabelIds());
+				throw new ArgumentValidationException('Invalid argument: ' . $field, $field, \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorLabelIds());
 			}
 			$out[$field] = array_values(array_unique($ids));
 			sort($out[$field]);
 		}
 		if (array_intersect($out['add'], $out['remove']) !== []) {
-			throw new ArgumentValidationException('Invalid argument: add', 'add', \OCA\Mcp\Modules\Deck\Presentation\DeckMessages::errorLabelOverlap());
+			throw new ArgumentValidationException('Invalid argument: add', 'add', \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorLabelOverlap());
 		}
 		if ($out['add'] === [] && $out['remove'] === []) {
-			throw new ArgumentValidationException('Invalid argument: add', 'add', \OCA\Mcp\Modules\Deck\Presentation\DeckMessages::errorLabelEmpty());
+			throw new ArgumentValidationException('Invalid argument: add', 'add', \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorLabelEmpty());
 		}
 		return $out;
 	}

@@ -173,9 +173,7 @@ switch ($action) {
 	case 'mcp-observe':
 		$gateway = new OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway(OC::$server,
 			Server::get(OCP\AppFramework\Utility\ITimeFactory::class), null, Server::get(OCP\ISession::class));
-		$module = new OCA\Mcp\Modules\Deck\DeckToolModule(OC::$server, $apps, Server::get(Psr\Log\LoggerInterface::class),
-			Server::get(OCP\IURLGenerator::class), Server::get(OCP\AppFramework\Utility\ITimeFactory::class),
-			Server::get(OCP\IUserManager::class), Server::get(OCP\IConfig::class), Server::get(OCP\ISession::class));
+		$module = Server::get(OCA\Mcp\Modules\Deck\DeckModule::class);
 		$source = $gateway->findCard($uid, $in['a']);
 		$out = ['privateReadable' => cardReadable($cards, $in['privateCard']), 'nativeReferences' =>
 			method_exists($cards, 'assignDependentCard') ? dependentIds($cards->find($in['a'])) : []];
@@ -331,28 +329,24 @@ switch ($action) {
 		$out = ['changed' => true];
 		break;
 	case 'mcp-card-files':
-		$module = new OCA\Mcp\Modules\Deck\DeckToolModule(OC::$server, $apps, Server::get(Psr\Log\LoggerInterface::class),
-			Server::get(OCP\IURLGenerator::class), Server::get(OCP\AppFramework\Utility\ITimeFactory::class),
-			Server::get(OCP\IUserManager::class), Server::get(OCP\IConfig::class), Server::get(OCP\ISession::class));
+		$module = Server::get(OCA\Mcp\Modules\Deck\DeckModule::class);
 		$policy = Server::get(OCA\Mcp\Access\Grants\GrantPolicy::class);
 		$policy->setGrant($uid, 'deck', 'read', true);
 		$policy->setGrant($uid, 'deck', 'edit', $in['deckEdit'] ?? true);
 		$policy->setGrant($uid, 'files', 'read', $in['filesRead'] ?? true);
 		$policy->setGrant($uid, 'files', 'share', false); // Unlink reduces exposure and must not require this grant.
 		$registry = new OCA\Mcp\Mcp\Tools\ToolRegistry([$module], $policy, $apps, Server::get(OCP\IUserManager::class),
-			Server::get(Psr\Log\LoggerInterface::class));
+			Server::get(Psr\Log\LoggerInterface::class), capabilities: Server::get(OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry::class));
 		$tool = ($in['unlink'] ?? false) ? 'deck_unlink_card_file' : 'deck_list_card_files';
 		try { $out = ['result' => $policy->within($uid, fn () => $registry->call($tool, $in['arguments'], $uid))]; }
 		catch (InvalidArgumentException) { $out = ['refused' => true]; }
 		break;
 	case 'mcp-dependency':
-		$module = new OCA\Mcp\Modules\Deck\DeckToolModule(OC::$server, $apps, Server::get(Psr\Log\LoggerInterface::class),
-			Server::get(OCP\IURLGenerator::class), Server::get(OCP\AppFramework\Utility\ITimeFactory::class),
-			Server::get(OCP\IUserManager::class), Server::get(OCP\IConfig::class), Server::get(OCP\ISession::class));
+		$module = Server::get(OCA\Mcp\Modules\Deck\DeckModule::class);
 		$policy = Server::get(OCA\Mcp\Access\Grants\GrantPolicy::class);
 		$policy->setGrant($uid, 'deck', 'edit', $in['grant'] ?? true);
 		$registry = new OCA\Mcp\Mcp\Tools\ToolRegistry([$module], $policy, $apps, Server::get(OCP\IUserManager::class),
-			Server::get(Psr\Log\LoggerInterface::class));
+			Server::get(Psr\Log\LoggerInterface::class), capabilities: Server::get(OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry::class));
 		$out = ['tools' => array_column($registry->list($uid), 'name')];
 		$tool = ($in['remove'] ?? false) ? 'deck_remove_card_dependency' : 'deck_add_card_dependency';
 		try { $out['result'] = $registry->call($tool, $in['arguments'], $uid); }
@@ -363,13 +357,11 @@ switch ($action) {
 		}
 		break;
 	case 'dependency-read':
-		$module = new OCA\Mcp\Modules\Deck\DeckToolModule(OC::$server, $apps, Server::get(Psr\Log\LoggerInterface::class),
-			Server::get(OCP\IURLGenerator::class), Server::get(OCP\AppFramework\Utility\ITimeFactory::class),
-			Server::get(OCP\IUserManager::class), Server::get(OCP\IConfig::class), Server::get(OCP\ISession::class));
+		$module = Server::get(OCA\Mcp\Modules\Deck\DeckModule::class);
 		$policy = Server::get(OCA\Mcp\Access\Grants\GrantPolicy::class);
 		$policy->setGrant($uid, 'deck', 'read', $in['grant'] ?? true);
 		$registry = new OCA\Mcp\Mcp\Tools\ToolRegistry([$module], $policy, $apps, Server::get(OCP\IUserManager::class),
-			Server::get(Psr\Log\LoggerInterface::class));
+			Server::get(Psr\Log\LoggerInterface::class), capabilities: Server::get(OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry::class));
 		$out = ['tools' => array_column($registry->list($uid), 'name')];
 		try {
 			$out['result'] = $registry->call('deck_read_card_dependencies', ['cardId' => $in['cardId']], $uid);
@@ -380,9 +372,7 @@ switch ($action) {
 		}
 		break;
 	case 'mcp-labels':
-		$module = new OCA\Mcp\Modules\Deck\DeckToolModule(OC::$server, $apps, Server::get(Psr\Log\LoggerInterface::class),
-			Server::get(OCP\IURLGenerator::class), Server::get(OCP\AppFramework\Utility\ITimeFactory::class),
-			Server::get(OCP\IUserManager::class), Server::get(OCP\IConfig::class), Server::get(OCP\ISession::class));
+		$module = Server::get(OCA\Mcp\Modules\Deck\DeckModule::class);
 		try {
 			if (OCA\Mcp\Mcp\Confirmation\WriteGate::confirmed($in['arguments'])) {
 				$result = $module->call('deck_edit_card_labels', $in['arguments'], $uid);

@@ -18,7 +18,7 @@ use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Modules\Deck\DeckToolModule;
+use OCA\Mcp\Modules\Deck\DeckModule as DeckToolModule;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\File;
@@ -80,10 +80,10 @@ final class DeckEffectsContractTest extends TestCase {
 		$urls->method('linkToRouteAbsolute')->willReturn('https://cloud.example.com/apps/deck/');
 		$session = $this->createMock(ISession::class);
 		$session->method('get')->willReturnCallback(static fn (string $key): ?string => $key === 'user_id' ? EffectsGate::USER : null);
-		$module = new DeckToolModule($this->container($apps, $session), $apps, $this->createMock(LoggerInterface::class), $urls,
+		$module = \OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::build($this->container($apps, $session), $apps, $this->createMock(LoggerInterface::class), $urls,
 			$time, $this->users, $this->gate->config(), $session);
 		// The native Deck services are replaced at their boundary, as the Deck unit tests do.
-		(new ReflectionProperty($module, 'gateway'))->setValue($module, $this->gateway);
+		\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::setGateway($module, $this->gateway);
 		return $module;
 	}
 

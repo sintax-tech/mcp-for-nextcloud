@@ -52,6 +52,7 @@ final class ReadCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 	/**
 	 * {@inheritDoc}
 	 *
+	 * @return string unchanged result of this operation
 	 */
 	protected function toolName(): string {
 		return self::TOOL;

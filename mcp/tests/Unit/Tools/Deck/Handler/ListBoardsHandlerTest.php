@@ -12,7 +12,7 @@ use OCA\Deck\NoPermissionException;
 use OCA\Deck\StatusException;
 use OCA\Mcp\Modules\Deck\Integration\CardFormatter;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
 use OCA\Mcp\Modules\Deck\Reading\ListBoardsHandler;
 use OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestHelpers;
 use PHPUnit\Framework\TestCase;
@@ -82,7 +82,7 @@ final class ListBoardsHandlerTest extends TestCase {
 		$result = $handler->handle([], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotFoundOrForbidden(), $this->text($result));
 		self::assertStringNotContainsString('Permission denied', $this->text($result));
 	}
 
@@ -94,7 +94,7 @@ final class ListBoardsHandlerTest extends TestCase {
 		$result = $handler->handle([], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorNotAllowed(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotAllowed(), $this->text($result));
 	}
 
 	public function testBackendFailureIsLoggedByClassOnly(): void {
@@ -117,6 +117,6 @@ final class ListBoardsHandlerTest extends TestCase {
 		$result = $handler->handle([], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorGeneric(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorGeneric(), $this->text($result));
 	}
 }

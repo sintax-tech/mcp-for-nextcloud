@@ -13,7 +13,7 @@ use OCA\Deck\Db\Assignment;
 use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Card;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
 use OCA\Mcp\Modules\Deck\Reading\FollowupCardsHandler;
 use OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestHelpers;
 use PHPUnit\Framework\TestCase;
@@ -187,7 +187,7 @@ final class FollowupCardsHandlerTest extends TestCase {
 		$handler = new FollowupCardsHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::errorInvalidStatus());
+		$this->expectExceptionMessage(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorInvalidStatus());
 
 		$handler->handle(['status' => 'late'], 'alice');
 	}
@@ -198,7 +198,7 @@ final class FollowupCardsHandlerTest extends TestCase {
 		$handler = new FollowupCardsHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::errorInvalidDueBefore());
+		$this->expectExceptionMessage(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorInvalidDueBefore());
 
 		$handler->handle(['dueBefore' => '31/03/2026'], 'alice');
 	}
@@ -249,6 +249,6 @@ final class FollowupCardsHandlerTest extends TestCase {
 		$result = $handler->handle([], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorGeneric(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorGeneric(), $this->text($result));
 	}
 }

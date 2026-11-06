@@ -8,15 +8,12 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Deck;
 
 use InvalidArgumentException;
-use OCA\Deck\Db\Assignment;
-use OCA\Deck\Db\Stack;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Modules\Deck\Failures\DeckConflictException;
 use OCA\Mcp\Modules\Deck\Integration\DeckErrors;
 use OCA\Mcp\Modules\Deck\Integration\DeckFailureLog;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
 use OCA\Mcp\Modules\Deck\Failures\DeckRefusalException;
 use OCA\Mcp\Modules\Deck\Failures\DeckResult;
 use OCA\Mcp\Modules\Deck\Failures\DeckSessionException;
@@ -95,7 +92,7 @@ abstract class AbstractHandler {
 				'exception' => $e->getPrevious() === null ? $e::class : $e->getPrevious()::class,
 			]);
 
-			return DeckResult::ok(['confirmed' => false, 'message' => DeckMessages::writeUnconfirmed($e->readWith)]);
+			return DeckResult::ok(['confirmed' => false, 'message' => \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::writeUnconfirmed($e->readWith)]);
 		} catch (\Throwable $e) {
 			$context = [
 				'tool' => $this->toolName(),
@@ -121,7 +118,7 @@ abstract class AbstractHandler {
 	 * A refusal of this app ({@see self::RAISED_BY_THE_APP}) is rethrown as it is. Any other exception, Deck's own
 	 * `NoPermissionException` and `BadRequestException` included, is followed by `$verify`, which reads the state
 	 * again by identifier: what it returns is the saved result, and the call goes on as a success with
-	 * {@see DeckMessages::writtenThenFailed()} in `$warnings`; null means nothing was saved and the original exception
+	 * {@see \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::writtenThenFailed()} in `$warnings`; null means nothing was saved and the original exception
 	 * goes on to become the usual error; an exception of `$verify` means nobody can tell, which becomes
 	 * {@see DeckUnconfirmedException}. Only exception classes are logged.
 	 *
@@ -144,7 +141,7 @@ abstract class AbstractHandler {
 	 * moment; a title that was not in the snapshot) and so cannot prove that this call made it.
 	 *
 	 * What `$verify` finds is only probably the item: `$probable` becomes true and `$warnings` gets
-	 * {@see DeckMessages::probablyCreated()} in place of the "saved" warning. The caller must not write anything
+	 * {@see \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::probablyCreated()} in place of the "saved" warning. The caller must not write anything
 	 * else on that item (no assignment, no list or card inside it).
 	 *
 	 * @template T
@@ -191,7 +188,7 @@ abstract class AbstractHandler {
 				'tool' => $this->toolName(),
 				'exception' => $e::class,
 			]);
-			$warning = $approximate ? DeckMessages::probablyCreated() : DeckMessages::writtenThenFailed();
+			$warning = $approximate ? \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::probablyCreated() : \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::writtenThenFailed();
 			$probable = $approximate;
 			if (!in_array($warning, $warnings, true)) {
 				$warnings[] = $warning;
@@ -201,44 +198,7 @@ abstract class AbstractHandler {
 		}
 	}
 
-	/**
-	 * The assignment of one account on a card, read again from Deck.
-	 *
-	 * @param string $userId UID of the authenticated caller.
-	 * @param int $cardId Card to look at.
-	 * @param string $uid Account assigned.
-	 * @return Assignment|null The user assignment of that account, or null when it has none.
-	 */
-	protected function assignmentOf(string $userId, int $cardId, string $uid): ?Assignment {
-		foreach ($this->gateway->cardAssignments($userId, $cardId) as $assignment) {
-			// Type 0 is `Assignment::TYPE_USER` (Deck v1.17.5), the only kind these tools assign.
-			if ((string)$assignment->getParticipant() === $uid && (int)$assignment->getType() === 0) {
-				return $assignment;
-			}
-		}
 
-		return null;
-	}
-
-	/**
-	 * The list a creation added, among the lists read again after it threw.
-	 *
-	 * @param list<Stack> $stacks Active lists of the board now.
-	 * @param string $title Title of the list asked for.
-	 * @param list<int> $known Ids that existed before, or were created earlier in the same call.
-	 * @return Stack|null The newest list with that title that is not one of `$known`, or null.
-	 */
-	protected static function newStack(array $stacks, string $title, array $known): ?Stack {
-		$found = null;
-		foreach ($stacks as $stack) {
-			if (!in_array((int)$stack->getId(), $known, true) && (string)$stack->getTitle() === $title
-				&& ($found === null || (int)$stack->getId() > (int)$found->getId())) {
-				$found = $stack;
-			}
-		}
-
-		return $found;
-	}
 
 	/**
 	 * Tool the answer names when a write cannot be confirmed, so the client reads the item before retrying.
@@ -273,7 +233,7 @@ abstract class AbstractHandler {
 			'owner' => $ownership['owner'],
 			'ownerDisplayName' => $ownership['ownerDisplayName'],
 			'resource' => $ownership['name'],
-			'message' => DeckMessages::sharedConfirmation($ownership['name'], $ownership['ownerDisplayName']),
+			'message' => \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::sharedConfirmation($ownership['name'], $ownership['ownerDisplayName']),
 		];
 	}
 

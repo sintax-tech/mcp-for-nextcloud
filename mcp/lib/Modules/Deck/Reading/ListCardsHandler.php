@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Deck\Reading;
 
-use OCA\Deck\Db\Card;
 use OCA\Mcp\Modules\Deck\Integration\CardFormatter;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use Psr\Log\LoggerInterface;
@@ -58,11 +57,11 @@ final class ListCardsHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 
 			$cards = array_values(array_filter(
 				$page['items'],
-				fn (Card $card) => $this->formatter->isListed($card),
+				fn (object $card) => $this->formatter->isListed($card),
 			));
 
 			return [
-				'cards' => array_map(fn (Card $card) => $this->formatter->card($card, $page['boardId']), $cards),
+				'cards' => array_map(fn (object $card) => $this->formatter->card($card, $page['boardId']), $cards),
 				'limit' => $limit,
 				'offset' => $offset,
 				// Deck skips deleted and archived cards in the query itself, so the offset counts listed cards:
@@ -76,6 +75,7 @@ final class ListCardsHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 	/**
 	 * {@inheritDoc}
 	 *
+	 * @return string unchanged result of this operation
 	 */
 	protected function toolName(): string {
 		return self::TOOL;

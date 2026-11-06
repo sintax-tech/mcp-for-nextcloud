@@ -15,9 +15,9 @@ use OCA\Mcp\Modules\Deck\Failures\DeckConflictException;
 use OCA\Mcp\Modules\Deck\Integration\DeckErrors;
 use OCA\Mcp\Modules\Deck\Integration\DeckFailureLog;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
 use OCA\Mcp\Modules\Deck\Failures\DeckRefusalException;
-use OCA\Mcp\Modules\Deck\DeckToolModule;
+use OCA\Mcp\Modules\Deck\DeckModule as DeckToolModule;
 use OCA\Mcp\Modules\Deck\Failures\DeckUnconfirmedException;
 use OCA\Mcp\Modules\Deck\AbstractHandler;
 use OCA\Mcp\Modules\Deck\Reading\ReadCardHandler;
@@ -79,9 +79,9 @@ final class DeckFailureLogTest extends TestCase {
 		$gateway = $this->createMock(DeckGatewayInterface::class);
 		$gateway->expects(self::once())->method('findCard')->willThrowException($failure);
 		$gateway->expects(self::never())->method('moveCard');
-		$module = new DeckToolModule($this->createMock(ContainerInterface::class), $this->createMock(IAppManager::class),
+		$module = \OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::build($this->createMock(ContainerInterface::class), $this->createMock(IAppManager::class),
 			$logger, $this->createMock(IURLGenerator::class), $this->createMock(ITimeFactory::class));
-		(new \ReflectionProperty(DeckToolModule::class, 'gateway'))->setValue($module, $gateway);
+		\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::setGateway($module, $gateway);
 		try {
 			$module->preview('deck_move_card', ['cardId' => 7, 'stackId' => 10], 'alice');
 			self::fail('The preview must still refuse.');
@@ -185,11 +185,11 @@ final class DeckFailureLogTest extends TestCase {
 		self::assertArrayNotHasKey('isError', $result);
 		$payload = $this->payload($result);
 		if ($phase === 'partial') {
-			self::assertSame(['partial' => true, 'message' => DeckMessages::errorStackReceivedCards(false)], $payload);
+			self::assertSame(['partial' => true, 'message' => \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorStackReceivedCards(false)], $payload);
 		} elseif ($phase === 'uncertain') {
-			self::assertSame(['confirmed' => false, 'message' => DeckMessages::writeUnconfirmed('deck_read_card')], $payload);
+			self::assertSame(['confirmed' => false, 'message' => \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::writeUnconfirmed('deck_read_card')], $payload);
 		} else {
-			self::assertSame(['id' => 7, 'warnings' => [DeckMessages::writtenThenFailed()]], $payload);
+			self::assertSame(['id' => 7, 'warnings' => [\OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::writtenThenFailed()]], $payload);
 		}
 	}
 

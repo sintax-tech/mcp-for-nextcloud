@@ -171,4 +171,53 @@ final class CardFormatter {
 	private function dateToTimestamp(?\DateTime $date): ?int {
 		return $date?->getTimestamp();
 	}
+
+	/**
+	 * The assignment of one account on a card, read again from Deck.
+	 *
+	 * @param list<\OCA\Deck\Db\Assignment> $assignments Assignments read again from Deck.
+	 * @param string $uid Account assigned.
+	 * @return \OCA\Deck\Db\Assignment|null The user assignment of that account, or null when it has none.
+	 */
+	public static function assignmentOf(array $assignments, string $uid): ?\OCA\Deck\Db\Assignment {
+		foreach ($assignments as $assignment) {
+			// Type 0 is `Assignment::TYPE_USER` (Deck v1.17.5), the only kind these tools assign.
+			if ((string)$assignment->getParticipant() === $uid && (int)$assignment->getType() === 0) {
+				return $assignment;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * The list a creation added, among the lists read again after it threw.
+	 *
+	 * @param list<Stack> $stacks Active lists of the board now.
+	 * @param string $title Title of the list asked for.
+	 * @param list<int> $known Ids that existed before, or were created earlier in the same call.
+	 * @return Stack|null The newest list with that title that is not one of `$known`, or null.
+	 */
+	public static function newStack(array $stacks, string $title, array $known): ?Stack {
+		$found = null;
+		foreach ($stacks as $stack) {
+			if (!in_array((int)$stack->getId(), $known, true) && (string)$stack->getTitle() === $title
+				&& ($found === null || (int)$stack->getId() > (int)$found->getId())) {
+				$found = $stack;
+			}
+		}
+
+		return $found;
+	}
+
+	/**
+	 * @param array<\OCA\Deck\Db\Assignment> $assignments assignments after the successful native removal
+	 * @param string $uid account removed from this card
+	 * @return list<\OCA\Deck\Db\Assignment> unchanged remaining assignments
+	 */
+	public static function withoutAssignee(array $assignments, string $uid): array {
+		return array_values(array_filter($assignments,
+			static fn ($assignment): bool => !($assignment->getType() === \OCA\Deck\Db\Acl::PERMISSION_TYPE_USER && (string)$assignment->getParticipant() === $uid),
+		));
+	}
 }

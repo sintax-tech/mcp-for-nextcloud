@@ -40,7 +40,7 @@ final class WritePlanContractTest extends TestCase {
 			\OCA\Mcp\Modules\Polls\PollsModule::class => \OCA\Mcp\Tests\Unit\Tools\Polls\PollsCreatePlanRendererTest::class,
 			\OCA\Mcp\Tools\Files\FilesModule::class => FilesPlanRendererTest::class,
 			\OCA\Mcp\Modules\Notes\NotesModule::class => NotesPlanRendererTest::class,
-			\OCA\Mcp\Modules\Deck\DeckToolModule::class => DeckPlanRendererTest::class,
+			\OCA\Mcp\Modules\Deck\DeckModule::class => DeckPlanRendererTest::class,
 			\OCA\Mcp\Modules\Talk\TalkModule::class => TalkPlanRendererTest::class,
 			\OCA\Mcp\Modules\Contacts\ContactsModule::class => ContactsPlanRendererTest::class,
 			\OCA\Mcp\Modules\Tasks\TasksModule::class => TasksPlanRendererTest::class,

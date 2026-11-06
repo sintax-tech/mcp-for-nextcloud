@@ -58,17 +58,17 @@ final class DeckErrors {
 			return $exception->getMessage();
 		}
 		if ($exception instanceof \OCA\Mcp\Modules\Deck\Failures\DeckUnconfirmedException) {
-			return \OCA\Mcp\Modules\Deck\Presentation\DeckMessages::writeUnconfirmed($exception->readWith);
+			return \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::writeUnconfirmed($exception->readWith);
 		}
 
 		foreach (self::MAPPING as [$classes, $method]) {
 			foreach ($classes as $class) {
 				if (is_a($exception, $class)) {
-					return [\OCA\Mcp\Modules\Deck\Presentation\DeckMessages::class, $method]();
+					return [\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::class, $method]();
 				}
 			}
 		}
 
-		return \OCA\Mcp\Modules\Deck\Presentation\DeckMessages::errorGeneric();
+		return \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorGeneric();
 	}
 }

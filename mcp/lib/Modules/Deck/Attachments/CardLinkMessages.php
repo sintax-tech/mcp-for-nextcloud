@@ -47,7 +47,7 @@ final class CardLinkMessages {
 	 */
 	public static function uncertain(): string {
 		return Translator::t('The file link outcome is uncertain. Inspect the card in Deck before retrying; a visible association alone does not prove which request created it.')
-			. ' ' . \OCA\Mcp\Modules\Deck\Presentation\DeckMessages::doesNotProveTheWholeRequest();
+			. ' ' . \OCA\Mcp\Modules\Deck\Presentation\DeckAttachmentMessages::doesNotProveTheWholeRequest();
 	}
 
 	/**

@@ -47,7 +47,7 @@ final class DeckRefusalException extends RuntimeException {
 	 * @return self Sanitized refusal with a private context marker.
 	 */
 	public static function inactiveFileSource(string $uid, int $cardId, int $boardId): self {
-		$failure = new self(\OCA\Mcp\Modules\Deck\Presentation\DeckMessages::fileSourceInactive());
+		$failure = new self(\OCA\Mcp\Modules\Deck\Presentation\DeckAttachmentMessages::fileSourceInactive());
 		$failure->inactiveSourceUid = $uid;
 		$failure->inactiveSourceCardId = $cardId;
 		$failure->inactiveSourceBoardId = $boardId;
@@ -83,7 +83,7 @@ final class DeckRefusalException extends RuntimeException {
 	 * @return self Refusal worded for a list.
 	 */
 	public static function stackNotEmpty(int $cards): self {
-		return new self(\OCA\Mcp\Modules\Deck\Presentation\DeckMessages::errorStackNotEmpty($cards));
+		return new self(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorStackNotEmpty($cards));
 	}
 
 	/**
@@ -91,7 +91,7 @@ final class DeckRefusalException extends RuntimeException {
 	 * @return self Refusal worded for a board.
 	 */
 	public static function boardNotEmpty(int $cards): self {
-		return new self(\OCA\Mcp\Modules\Deck\Presentation\DeckMessages::errorBoardNotEmpty($cards));
+		return new self(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorBoardNotEmpty($cards));
 	}
 
 	/**
@@ -99,7 +99,7 @@ final class DeckRefusalException extends RuntimeException {
 	 * @return self Refusal for a list that received a card while it was being deleted.
 	 */
 	public static function stackReceivedCards(bool $restored): self {
-		$refusal = new self(\OCA\Mcp\Modules\Deck\Presentation\DeckMessages::errorStackReceivedCards($restored));
+		$refusal = new self(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorStackReceivedCards($restored));
 		$refusal->afterWrite = !$restored;
 
 		return $refusal;
@@ -110,7 +110,7 @@ final class DeckRefusalException extends RuntimeException {
 	 * @return self Refusal for a board that received a card while it was being deleted.
 	 */
 	public static function boardReceivedCards(bool $restored): self {
-		$refusal = new self(\OCA\Mcp\Modules\Deck\Presentation\DeckMessages::errorBoardReceivedCards($restored));
+		$refusal = new self(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorBoardReceivedCards($restored));
 		$refusal->afterWrite = !$restored;
 
 		return $refusal;
@@ -120,6 +120,6 @@ final class DeckRefusalException extends RuntimeException {
 	 * @return self Refusal for a board the caller can manage but does not own.
 	 */
 	public static function boardNotOwned(): self {
-		return new self(\OCA\Mcp\Modules\Deck\Presentation\DeckMessages::errorBoardNotOwned());
+		return new self(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorBoardNotOwned());
 	}
 }

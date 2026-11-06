@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Deck;
+namespace OCA\Mcp\Modules\Deck\Moving;
 
 use OCA\Mcp\Modules\Deck\Integration\CardFormatter;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
@@ -90,6 +90,7 @@ final class MoveCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 	/**
 	 * {@inheritDoc}
 	 *
+	 * @return string unchanged result of this operation
 	 */
 	protected function toolName(): string {
 		return self::TOOL;

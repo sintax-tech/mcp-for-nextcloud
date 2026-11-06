@@ -18,7 +18,7 @@ use OCA\Deck\Service\CardService;
 use OCA\Deck\Service\PermissionService;
 use OCA\Mcp\Modules\Deck\Editing\CardLabelChanges;
 use OCA\Mcp\Modules\Deck\Failures\DeckConflictException;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
 use OCA\Mcp\Modules\Deck\Failures\DeckRefusalException;
 
 /** Native board-label reads and incremental card-label associations. */
@@ -79,12 +79,12 @@ final class DeckLabelGateway {
 			}
 		}
 		if ($board === null || (int)$card->getDeletedAt() !== 0 || $card->getArchived() || $board->getArchived()) {
-			throw new DeckRefusalException(DeckMessages::errorLabelsUnavailable());
+			throw new DeckRefusalException(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorLabelsUnavailable());
 		}
 		$stackIds = array_map(static fn (Stack $s): int => (int)$s->getId(),
 			$this->services->get(StackMapper::class)->findAll($boardId));
 		if (!in_array((int)$card->getStackId(), $stackIds, true)) {
-			throw new DeckRefusalException(DeckMessages::errorLabelsUnavailable());
+			throw new DeckRefusalException(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorLabelsUnavailable());
 		}
 		$catalog = [];
 		foreach ($this->services->get(LabelMapper::class)->findAll($boardId) as $label) {
@@ -99,7 +99,7 @@ final class DeckLabelGateway {
 		// Only explicitly requested labels must belong to this board; foreign links remain HMAC-only state.
 		foreach ($requested as $id) {
 			if (!isset($catalog[$id])) {
-				throw new DeckRefusalException(DeckMessages::errorLabelsUnavailable());
+				throw new DeckRefusalException(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorLabelsUnavailable());
 			}
 		}
 		$select = static function (array $ids) use ($catalog): array {
@@ -131,7 +131,7 @@ final class DeckLabelGateway {
 		array $requested, array $expected): void {
 		$state = $this->cardLabelState($userId, $cardId, $requested);
 		if (!in_array($labelId, $requested, true) || CardLabelChanges::snapshot($state) !== $expected) {
-			throw new DeckConflictException(DeckMessages::labelPlanChanged());
+			throw new DeckConflictException(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::labelPlanChanged());
 		}
 		$cards = $this->services->get(CardService::class);
 		// Deck v1.16.8–v1.19.0: each call changes one link; removeLabel itself lacks the foreign-board guard above.

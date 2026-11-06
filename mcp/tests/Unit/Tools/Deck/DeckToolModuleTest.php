@@ -8,20 +8,20 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use InvalidArgumentException;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
-use OCA\Mcp\Modules\Deck\DeckToolModule;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
+use OCA\Mcp\Modules\Deck\DeckModule as DeckToolModule;
 use OCA\Mcp\Modules\Deck\Structure\CreateBoardHandler;
-use OCA\Mcp\Modules\Deck\CreateCardHandler;
+use OCA\Mcp\Modules\Deck\Creation\CreateCardHandler;
 use OCA\Mcp\Modules\Deck\Structure\CreateStackHandler;
 use OCA\Mcp\Modules\Deck\Structure\DeleteBoardHandler;
-use OCA\Mcp\Modules\Deck\DeleteCardHandler;
+use OCA\Mcp\Modules\Deck\Deletion\DeleteCardHandler;
 use OCA\Mcp\Modules\Deck\Structure\DeleteStackHandler;
 use OCA\Mcp\Modules\Deck\Editing\EditCardHandler;
 use OCA\Mcp\Modules\Deck\Reading\FollowupCardsHandler;
 use OCA\Mcp\Modules\Deck\Reading\ListBoardsHandler;
 use OCA\Mcp\Modules\Deck\Reading\ListCardsHandler;
 use OCA\Mcp\Modules\Deck\Reading\ListStacksHandler;
-use OCA\Mcp\Modules\Deck\MoveCardHandler;
+use OCA\Mcp\Modules\Deck\Moving\MoveCardHandler;
 use OCA\Mcp\Modules\Deck\Reading\ReadCardHandler;
 use OCA\Mcp\Mcp\Tools\ToolModule;
 use OCP\App\IAppManager;
@@ -58,7 +58,7 @@ final class DeckToolModuleTest extends TestCase {
 		LoggerInterface $logger,
 		?\OCP\IUserManager $users = null,
 	): DeckToolModule {
-		return new DeckToolModule(
+		return \OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::build(
 			$container,
 			$appManager,
 			$logger,
@@ -156,11 +156,11 @@ final class DeckToolModuleTest extends TestCase {
 			'deck_create_stack',
 			'deck_delete_stack',
 			'deck_delete_board',
-		], array_column($this->module->definitions(), 'name'));
+		], array_column(\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::definitions($this->module), 'name'));
 	}
 
 	public function testEveryToolBelongsToTheDeckModuleAndToTheDeckApp(): void {
-		foreach ($this->module->definitions() as $definition) {
+		foreach (\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::definitions($this->module) as $definition) {
 			self::assertSame('deck', $definition['module'], $definition['name']);
 			self::assertSame('deck', $definition['app'], $definition['name']);
 			self::assertNotSame('', $definition['description'], $definition['name']);
@@ -206,7 +206,7 @@ final class DeckToolModuleTest extends TestCase {
 	 * @return array<string, mixed> Definition of that tool.
 	 */
 	private function definitionOf(string $name): array {
-		foreach ($this->module->definitions() as $definition) {
+		foreach (\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::definitions($this->module) as $definition) {
 			if ($definition['name'] === $name) {
 				return $definition;
 			}
@@ -335,8 +335,10 @@ final class DeckToolModuleTest extends TestCase {
 	}
 
 	public function testUnknownToolIsRefusedBeforeTouchingDeck(): void {
-		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::errorUnknownTool());
+		self::assertTrue(is_subclass_of(\OCA\Mcp\Mcp\Tools\UnknownToolException::class, \OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException::class));
+		self::assertTrue(is_subclass_of(\OCA\Mcp\Mcp\Tools\UnknownToolException::class, InvalidArgumentException::class));
+		$this->expectException(\OCA\Mcp\Mcp\Tools\UnknownToolException::class);
+		$this->expectExceptionMessage('Unknown tool');
 
 		$this->module->call('deck_everything', [], 'alice');
 	}
@@ -358,7 +360,7 @@ final class DeckToolModuleTest extends TestCase {
 		);
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::errorDeckAppUnavailable());
+		$this->expectExceptionMessage(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorDeckAppUnavailable());
 
 		$module->call(ListBoardsHandler::TOOL, [], 'alice');
 	}
@@ -378,13 +380,13 @@ final class DeckToolModuleTest extends TestCase {
 		);
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::errorDeckAppUnavailable());
+		$this->expectExceptionMessage(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorDeckAppUnavailable());
 
 		$module->call(ListBoardsHandler::TOOL, [], 'alice');
 	}
 
 	public function testEveryDefinitionIsHandled(): void {
-		foreach ($this->module->definitions() as $definition) {
+		foreach (\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::definitions($this->module) as $definition) {
 			$appManager = $this->createMock(IAppManager::class);
 			$appManager->method('isEnabledForUser')->willReturn(false);
 			$module = $this->module(
@@ -398,7 +400,7 @@ final class DeckToolModuleTest extends TestCase {
 				$module->call($definition['name'], [], 'alice');
 				self::fail('Expected the app check to refuse the call.');
 			} catch (InvalidArgumentException $e) {
-				self::assertSame(DeckMessages::errorDeckAppUnavailable(), $e->getMessage());
+				self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorDeckAppUnavailable(), $e->getMessage());
 			}
 		}
 	}

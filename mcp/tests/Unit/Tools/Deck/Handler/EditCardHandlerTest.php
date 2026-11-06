@@ -16,7 +16,7 @@ use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Modules\Deck\DueDates\CardDueDateMessages;
 use OCA\Mcp\Modules\Deck\Integration\CardFormatter;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
 use OCA\Mcp\Modules\Deck\Editing\EditCardHandler;
 use OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestHelpers;
 use PHPUnit\Framework\TestCase;
@@ -123,7 +123,7 @@ final class EditCardHandlerTest extends TestCase {
 		], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorConflict(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorConflict(), $this->text($result));
 	}
 
 	public function testMatchingLastModifiedProceeds(): void {
@@ -149,7 +149,7 @@ final class EditCardHandlerTest extends TestCase {
 		$handler = new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::errorNoFieldToEdit());
+		$this->expectExceptionMessage(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNoFieldToEdit());
 
 		$handler->handle(['cardId' => 7], 'alice');
 	}
@@ -158,7 +158,7 @@ final class EditCardHandlerTest extends TestCase {
 		$handler = $this->handler();
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::errorNoFieldToEdit());
+		$this->expectExceptionMessage(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNoFieldToEdit());
 
 		$handler->handle(['cardId' => 7, 'lastModified' => 1_700_000_000], 'alice');
 	}
@@ -180,21 +180,21 @@ final class EditCardHandlerTest extends TestCase {
 		$result = $handler->handle(['cardId' => 7, 'title' => 'Novo'], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotFoundOrForbidden(), $this->text($result));
 	}
 
 	public function testArchivedBoardBecomesTheNotAllowedMessage(): void {
 		$result = $this->handler([], new StatusException('Operation not allowed. This board is archived.'))
 			->handle(['cardId' => 7, 'title' => 'Novo'], 'alice');
 
-		self::assertSame(DeckMessages::errorNotAllowed(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotAllowed(), $this->text($result));
 	}
 
 	public function testDeckRejectionBecomesTheInvalidMessage(): void {
 		$result = $this->handler([], new BadRequestException('title'))
 			->handle(['cardId' => 7, 'title' => 'Novo'], 'alice');
 
-		self::assertSame(DeckMessages::errorInvalid(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorInvalid(), $this->text($result));
 	}
 
 	public function testBackendFailureBecomesTheGenericMessage(): void {
@@ -202,7 +202,7 @@ final class EditCardHandlerTest extends TestCase {
 			->handle(['cardId' => 7, 'title' => 'Novo'], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorGeneric(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorGeneric(), $this->text($result));
 	}
 
 	public function testSharedBoardWithoutConfirmationUpdatesNothing(): void {
@@ -251,7 +251,7 @@ final class EditCardHandlerTest extends TestCase {
 		$result = $handler->handle(['cardId' => 7, 'title' => 'Novo título'], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotFoundOrForbidden(), $this->text($result));
 	}
 
 	/**
@@ -402,7 +402,7 @@ final class EditCardHandlerTest extends TestCase {
 		$payload = $this->payload($result);
 		self::assertSame(['rosa'], $payload['assigned']);
 		self::assertSame(['luis'], $payload['unassigned']);
-		self::assertSame([['uid' => 'pedro', 'reason' => DeckMessages::errorGeneric()]], $payload['failed']);
+		self::assertSame([['uid' => 'pedro', 'reason' => \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorGeneric()]], $payload['failed']);
 		self::assertSame(['ana', 'rosa'], $this->assignedUids($payload));
 		self::assertStringNotContainsString('secret detail', $this->text($result));
 	}
@@ -436,7 +436,7 @@ final class EditCardHandlerTest extends TestCase {
 		$handler = new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::errorNoFieldToEdit());
+		$this->expectExceptionMessage(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNoFieldToEdit());
 
 		$handler->handle(['cardId' => 7, 'assign' => [], 'unassign' => []], 'alice');
 	}
@@ -449,7 +449,7 @@ final class EditCardHandlerTest extends TestCase {
 
 		$result = $handler->handle(['cardId' => 7, 'assign' => ['pedro'], 'lastModified' => 1], 'alice');
 
-		self::assertSame(DeckMessages::errorConflict(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorConflict(), $this->text($result));
 	}
 
 	public function testPlainFieldEditKeepsThePayloadFreeOfAssigneeKeys(): void {

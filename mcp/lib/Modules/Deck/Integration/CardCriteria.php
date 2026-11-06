@@ -61,7 +61,7 @@ final class CardCriteria {
 	 */
 	public static function matches(Card $card, string $status, ?string $dueBefore, int $now, \DateTimeZone $zone): bool {
 		if (!in_array($status, self::STATUSES, true)) {
-			throw new InvalidArgumentException(\OCA\Mcp\Modules\Deck\Presentation\DeckMessages::errorInvalidStatus());
+			throw new InvalidArgumentException(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorInvalidStatus());
 		}
 
 		if ($dueBefore !== null) {

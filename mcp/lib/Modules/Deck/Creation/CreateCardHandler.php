@@ -5,13 +5,12 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Deck;
+namespace OCA\Mcp\Modules\Deck\Creation;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Modules\Deck\Integration\CardFormatter;
 use OCA\Mcp\Modules\Deck\Editing\CardInput;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -84,7 +83,7 @@ final class CreateCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 			if ($probable) {
 				// Found by likeness, so maybe somebody else's card: nothing is written on it.
 				if ($assignees !== []) {
-					$warnings[] = DeckMessages::probableCardNotAssigned();
+					$warnings[] = \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::probableCardNotAssigned();
 				}
 
 				return ['confirmed' => 'probable'] + $this->formatter->card($card) + ['warnings' => $warnings];
@@ -95,7 +94,7 @@ final class CreateCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 				try {
 					$assignment = $this->afterWrite(
 						fn () => $this->gateway->assignCardUser($userId, (int)$card->getId(), $assignee['uid']),
-						fn () => $this->assignmentOf($userId, (int)$card->getId(), $assignee['uid']),
+						fn () => \OCA\Mcp\Modules\Deck\Integration\CardFormatter::assignmentOf($this->gateway->cardAssignments($userId, (int)$card->getId()), $assignee['uid']),
 						$warnings,
 					);
 					$card->setAssignedUsers([...($card->getAssignedUsers() ?? []), $assignment]);
@@ -116,6 +115,7 @@ final class CreateCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 	 * {@inheritDoc}
 	 *
 	 * A new card is found again among the cards of its list.
+	 * @return string unchanged result of this operation
 	 */
 	protected function readWith(): string {
 		return 'deck_list_cards';
@@ -124,6 +124,7 @@ final class CreateCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 	/**
 	 * {@inheritDoc}
 	 *
+	 * @return string unchanged result of this operation
 	 */
 	protected function toolName(): string {
 		return self::TOOL;

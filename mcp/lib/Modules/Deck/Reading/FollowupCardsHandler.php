@@ -12,7 +12,6 @@ use OCA\Mcp\Modules\Deck\Integration\CardCriteria;
 use OCA\Mcp\Modules\Deck\Integration\CardFormatter;
 use OCA\Mcp\Modules\Deck\Editing\CardInput;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -65,7 +64,7 @@ final class FollowupCardsHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 		return $this->run(function () use ($arguments, $userId): array {
 			$status = (string)($arguments['status'] ?? CardCriteria::STATUS_OVERDUE);
 			if (!in_array($status, CardCriteria::STATUSES, true)) {
-				throw new InvalidArgumentException(DeckMessages::errorInvalidStatus());
+				throw new InvalidArgumentException(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorInvalidStatus());
 			}
 
 			$page = $this->gateway->followupCards(
@@ -89,6 +88,7 @@ final class FollowupCardsHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 
 	/**
 	 * {@inheritDoc}
+	 * @return string unchanged result of this operation
 	 */
 	protected function toolName(): string {
 		return self::TOOL;
@@ -97,7 +97,7 @@ final class FollowupCardsHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 	/**
 	 * Buckets the answer by the people responsible for each card, one bucket per person.
 	 *
-	 * @param list<array{card: \OCA\Deck\Db\Card, boardId: int}> $items Cards the gateway returned.
+	 * @param list<array{card: object, boardId: int}> $items Cards the gateway returned.
 	 * @return array<string, array{assignee: array{uid: string, displayName: string}|null, cards: list<array<string, mixed>>}>
 	 *     Buckets keyed by UID, empty string for the cards nobody is assigned to.
 	 */

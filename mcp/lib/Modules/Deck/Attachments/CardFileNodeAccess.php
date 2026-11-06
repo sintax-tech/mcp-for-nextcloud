@@ -52,7 +52,7 @@ final class CardFileNodeAccess {
 			if (!$node instanceof File || !$this->guard->isVisible($node) || !$node->isReadable()
 				|| (int)$node->getId() !== $fileId || ($share && !$node->isShareable())) {
 				if ($this->onlyAuthorizedFolders($nodes, $fileId)) {
-					throw new \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException(\OCA\Mcp\Modules\Deck\Presentation\DeckMessages::fileFolderRefused());
+					throw new \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException(\OCA\Mcp\Modules\Deck\Presentation\DeckAttachmentMessages::fileFolderRefused());
 				}
 				throw \OCA\Mcp\Modules\Deck\Attachments\CardFiles::unavailable();
 			}

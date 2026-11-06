@@ -112,7 +112,7 @@ final class CardFiles {
 	public function unlink(string $userId, int $cardId, int $attachmentId, array $expected): void {
 		$state = $this->state($userId, $cardId, $attachmentId);
 		if ($state['snapshot'] !== $expected) {
-			throw new \OCA\Mcp\Modules\Deck\Failures\DeckConflictException(\OCA\Mcp\Modules\Deck\Presentation\DeckMessages::filePlanChanged());
+			throw new \OCA\Mcp\Modules\Deck\Failures\DeckConflictException(\OCA\Mcp\Modules\Deck\Presentation\DeckAttachmentMessages::filePlanChanged());
 		}
 		$this->gateway->unlinkCardFile($userId, $cardId, $attachmentId, $state['identity']);
 	}
@@ -160,6 +160,6 @@ final class CardFiles {
 
 	/** @return DeckRefusalException The same public refusal for hidden, missing and invalid receipts. */
 	public static function unavailable(): \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException {
-		return new \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException(\OCA\Mcp\Modules\Deck\Presentation\DeckMessages::fileUnavailable());
+		return new \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException(\OCA\Mcp\Modules\Deck\Presentation\DeckAttachmentMessages::fileUnavailable());
 	}
 }

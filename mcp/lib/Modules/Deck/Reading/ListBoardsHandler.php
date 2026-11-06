@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Deck\Reading;
 
-use OCA\Deck\Db\Board;
 use OCA\Mcp\Modules\Deck\Integration\CardFormatter;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use Psr\Log\LoggerInterface;
@@ -55,7 +54,7 @@ final class ListBoardsHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 			$boards = array_slice($boards, 0, self::MAX_BOARDS);
 
 			return [
-				'boards' => array_map(fn (Board $board) => $this->formatter->board($board), $boards),
+				'boards' => array_map(fn (object $board) => $this->formatter->board($board), $boards),
 				'truncated' => $truncated,
 			];
 		});
@@ -64,6 +63,7 @@ final class ListBoardsHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 	/**
 	 * {@inheritDoc}
 	 *
+	 * @return string unchanged result of this operation
 	 */
 	protected function toolName(): string {
 		return self::TOOL;

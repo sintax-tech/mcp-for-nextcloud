@@ -13,7 +13,7 @@ use OCA\Deck\NoPermissionException;
 use OCA\Deck\StatusException;
 use OCA\Mcp\Modules\Deck\Integration\CardFormatter;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
 use OCA\Mcp\Modules\Deck\Reading\ListStacksHandler;
 use OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestHelpers;
 use PHPUnit\Framework\TestCase;
@@ -96,7 +96,7 @@ final class ListStacksHandlerTest extends TestCase {
 		$result = $handler->handle(['boardId' => 4], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotFoundOrForbidden(), $this->text($result));
 	}
 
 	public function testArchivedBoardBecomesTheNotAllowedMessage(): void {
@@ -104,7 +104,7 @@ final class ListStacksHandlerTest extends TestCase {
 		$gateway->method('listStacks')->willThrowException(new StatusException('Operation not allowed.'));
 		$handler = new ListStacksHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
-		self::assertSame(DeckMessages::errorNotAllowed(), $this->text($handler->handle(['boardId' => 4], 'alice')));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotAllowed(), $this->text($handler->handle(['boardId' => 4], 'alice')));
 	}
 
 	public function testBackendFailureBecomesTheGenericMessage(): void {
@@ -115,6 +115,6 @@ final class ListStacksHandlerTest extends TestCase {
 		$result = $handler->handle(['boardId' => 4], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorGeneric(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorGeneric(), $this->text($result));
 	}
 }

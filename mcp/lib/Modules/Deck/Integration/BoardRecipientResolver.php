@@ -124,7 +124,7 @@ final class BoardRecipientResolver {
 		} catch (Throwable $failure) {
 			if ($inactive && $failure instanceof \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException
 				&& $failure->marksInactiveFileSource($context->actorUid, $context->cardId, $context->boardId)) {
-				throw new \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException(\OCA\Mcp\Modules\Deck\Presentation\DeckMessages::fileSourceInactive());
+				throw new \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException(\OCA\Mcp\Modules\Deck\Presentation\DeckAttachmentMessages::fileSourceInactive());
 			}
 			if (!$failure instanceof \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException && !$failure instanceof \OCA\Mcp\Modules\Deck\Recipients\RecipientResolutionException
 				&& !is_a($failure, 'OCA\\Deck\\NoPermissionException')

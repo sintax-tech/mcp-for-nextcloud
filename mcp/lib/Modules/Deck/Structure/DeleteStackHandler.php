@@ -67,6 +67,7 @@ final class DeleteStackHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 	 * {@inheritDoc}
 	 *
 	 * A deleted list leaves the lists of its board.
+	 * @return string unchanged result of this operation
 	 */
 	protected function readWith(): string {
 		return 'deck_list_stacks';
@@ -74,6 +75,7 @@ final class DeleteStackHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 
 	/**
 	 * {@inheritDoc}
+	 * @return string unchanged result of this operation
 	 */
 	protected function toolName(): string {
 		return self::TOOL;

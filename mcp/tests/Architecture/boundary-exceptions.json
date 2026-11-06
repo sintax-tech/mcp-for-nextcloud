@@ -127,7 +127,7 @@
             "target": "OCA\\Mcp\\Tools\\Files\\Sharing\\SharePermission",
             "line": 71,
             "reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
-            "expires": "RE-27"
+            "expires": "RE-21b"
         },
         {
             "rule": "native-app",
@@ -160,94 +160,6 @@
             "line": 95,
             "reason": "Move this native-app reference behind the owning module Integration boundary.",
             "expires": "RE-28"
-        },
-        {
-            "rule": "native-app",
-            "source": "lib/Modules/Deck/DeckToolModule.php",
-            "target": "OCA\\Deck\\Db\\Card",
-            "line": 871,
-            "reason": "Move this native-app reference behind the owning module Integration boundary.",
-            "expires": "RE-27"
-        },
-        {
-            "rule": "native-app",
-            "source": "lib/Modules/Deck/DeckToolModule.php",
-            "target": "OCA\\Deck\\Db\\Stack",
-            "line": 798,
-            "reason": "Move this native-app reference behind the owning module Integration boundary.",
-            "expires": "RE-27"
-        },
-        {
-            "rule": "native-app",
-            "source": "lib/Modules/Deck/AbstractHandler.php",
-            "target": "OCA\\Deck\\Db\\Assignment",
-            "line": 212,
-            "reason": "Move this native-app reference behind the owning module Integration boundary.",
-            "expires": "RE-27"
-        },
-        {
-            "rule": "native-app",
-            "source": "lib/Modules/Deck/AbstractHandler.php",
-            "target": "OCA\\Deck\\Db\\Stack",
-            "line": 231,
-            "reason": "Move this native-app reference behind the owning module Integration boundary.",
-            "expires": "RE-27"
-        },
-        {
-            "rule": "native-app",
-            "source": "lib/Modules/Deck/Structure/CreateBoardHandler.php",
-            "target": "OCA\\Deck\\Db\\Board",
-            "line": 102,
-            "reason": "Move this native-app reference behind the owning module Integration boundary.",
-            "expires": "RE-27"
-        },
-        {
-            "rule": "native-app",
-            "source": "lib/Modules/Deck/Editing/EditCardHandler.php",
-            "target": "OCA\\Deck\\Db\\Acl",
-            "line": 170,
-            "reason": "Move this native-app reference behind the owning module Integration boundary.",
-            "expires": "RE-27"
-        },
-        {
-            "rule": "native-app",
-            "source": "lib/Modules/Deck/Editing/EditCardHandler.php",
-            "target": "OCA\\Deck\\Db\\Card",
-            "line": 214,
-            "reason": "Move this native-app reference behind the owning module Integration boundary.",
-            "expires": "RE-27"
-        },
-        {
-            "rule": "native-app",
-            "source": "lib/Modules/Deck/Reading/FollowupCardsHandler.php",
-            "target": "OCA\\Deck\\Db\\Card",
-            "line": 97,
-            "reason": "Move this native-app PHPDoc type behind the Deck Integration boundary.",
-            "expires": "RE-27"
-        },
-        {
-            "rule": "native-app",
-            "source": "lib/Modules/Deck/Reading/ListBoardsHandler.php",
-            "target": "OCA\\Deck\\Db\\Board",
-            "line": 58,
-            "reason": "Move this native-app reference behind the owning module Integration boundary.",
-            "expires": "RE-27"
-        },
-        {
-            "rule": "native-app",
-            "source": "lib/Modules/Deck/Reading/ListCardsHandler.php",
-            "target": "OCA\\Deck\\Db\\Card",
-            "line": 65,
-            "reason": "Move this native-app reference behind the owning module Integration boundary.",
-            "expires": "RE-27"
-        },
-        {
-            "rule": "native-app",
-            "source": "lib/Modules/Deck/Reading/ListStacksHandler.php",
-            "target": "OCA\\Deck\\Db\\Stack",
-            "line": 59,
-            "reason": "Move this native-app reference behind the owning module Integration boundary.",
-            "expires": "RE-27"
         },
         {
             "rule": "native-app",

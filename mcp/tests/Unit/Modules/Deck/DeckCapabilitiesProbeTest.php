@@ -110,7 +110,7 @@ final class DeckCapabilitiesProbeTest extends TestCase {
 	public function testRegistrationNamesTheProbeAndIsNotAModule(): void {
 		$registration = new DeckRegistration();
 		$context = $this->createMock(IRegistrationContext::class);
-		$context->expects(self::never())->method('registerService');
+		$context->expects(self::exactly(2))->method('registerService');
 		$registration->register($context);
 		self::assertSame([DeckCapabilities::class], $registration->probes());
 		self::assertNotContains(DeckRegistration::class, Application::MODULES);

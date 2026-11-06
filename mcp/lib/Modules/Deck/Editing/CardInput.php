@@ -55,7 +55,7 @@ final class CardInput {
 	public static function requireTitle(string $title): string {
 		$trimmed = trim($title);
 		if ($trimmed === '') {
-			throw new InvalidArgumentException(\OCA\Mcp\Modules\Deck\Presentation\DeckMessages::errorTitleRequired());
+			throw new InvalidArgumentException(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorTitleRequired());
 		}
 
 		return $trimmed;
@@ -70,7 +70,7 @@ final class CardInput {
 	 */
 	public static function requireDescription(string $description): string {
 		if (mb_strlen($description) > self::MAX_DESCRIPTION_LENGTH) {
-			throw new InvalidArgumentException(\OCA\Mcp\Modules\Deck\Presentation\DeckMessages::errorDescriptionTooLong());
+			throw new InvalidArgumentException(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorDescriptionTooLong());
 		}
 
 		return $description;
@@ -96,7 +96,7 @@ final class CardInput {
 	 * @throws InvalidArgumentException When the string is not a real calendar date.
 	 */
 	public static function dueBefore(mixed $value): ?string {
-		return self::date($value, \OCA\Mcp\Modules\Deck\Presentation\DeckMessages::errorInvalidDueBefore());
+		return self::date($value, \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorInvalidDueBefore());
 	}
 
 	/**

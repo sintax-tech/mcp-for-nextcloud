@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Deck\Attachments;
+namespace OCA\Mcp\Modules\Deck\Deletion;
 
 use Closure;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
@@ -13,15 +13,13 @@ use OCA\Mcp\Modules\Deck\Attachments\CardFiles;
 use OCA\Mcp\Modules\Deck\Integration\CardFormatter;
 use OCA\Mcp\Modules\Deck\Failures\DeckConflictException;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
 /** Lists authorized existing file references, or unlinks exactly one without dispatching legacy deletion. */
-final class CardFileHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
-	public const READ = 'deck_list_card_files';
-	public const UNLINK = 'deck_unlink_card_file';
+final class UnlinkCardFileHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
+	public const TOOL = 'deck_unlink_card_file';
 	private ?CardFiles $access = null;
 
 	/**
@@ -30,10 +28,9 @@ final class CardFileHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 	 * @param Closure(): CardFiles $filesFactory Lazy Files grant/scope/exclusion/READ and association boundary.
 	 * @param CardFormatter $formatter Safe source reference.
 	 * @param Closure(): PlanState $stateFactory Instance-secret HMAC.
-	 * @param bool $unlink False to list; true to unlink.
 	 */
 	public function __construct(DeckGatewayInterface $gateway, LoggerInterface $logger, private Closure $filesFactory,
-		private CardFormatter $formatter, private Closure $stateFactory, private bool $unlink) {
+		private CardFormatter $formatter, private Closure $stateFactory) {
 		parent::__construct($gateway, $logger);
 	}
 
@@ -50,13 +47,15 @@ final class CardFileHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 		return $this->plan($this->files()->state($userId, (int)$arguments['cardId'], (int)$arguments['attachmentId']), $userId);
 	}
 
-	/** {@inheritDoc} The registry owns the mandatory confirm:true gate. */
+	/**
+	 * {@inheritDoc} The registry owns the mandatory confirm:true gate.
+	 * @param array $arguments validated tool arguments
+	 * @param string $userId authenticated caller UID
+	 * @return array unchanged result of this operation
+	 */
 	public function handle(array $arguments, string $userId): array {
 		return $this->run(function () use ($arguments, $userId): array {
 			$cardId = (int)$arguments['cardId'];
-			if (!$this->unlink) {
-				return $this->files()->list($userId, $cardId);
-			}
 			PlanState::require($arguments);
 			$receipt = $arguments['file_state'] ?? null;
 			if (!is_array($receipt) || !isset($receipt['fileId'], $receipt['createdBy'], $receipt['createdAt'])) {
@@ -93,18 +92,18 @@ final class CardFileHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 				$exists = $this->files()->exists($userId, $cardId, $attachmentId, $state['node']);
 			} catch (Throwable $e) {
 				$this->logger->warning('MCP Deck file unlink result unknown ({exception})', ['exception' => $e::class]);
-				return ['confirmed' => false, 'message' => DeckMessages::fileUnconfirmed()];
+				return ['confirmed' => false, 'message' => \OCA\Mcp\Modules\Deck\Presentation\DeckAttachmentMessages::fileUnconfirmed()];
 			}
 			if ($exists) {
 				if ($error !== null) {
 					throw $error;
 				}
-				return ['confirmed' => false, 'message' => DeckMessages::fileUnconfirmed()];
+				return ['confirmed' => false, 'message' => \OCA\Mcp\Modules\Deck\Presentation\DeckAttachmentMessages::fileUnconfirmed()];
 			}
 			$result = ['confirmed' => true, 'unlinked' => true, 'changed' => true, 'verification' => 'observed-state'];
 			if ($error !== null) {
 				$this->logger->warning('MCP Deck file unlink observed after failure ({exception})', ['exception' => $error::class]);
-				$result['warnings'] = [DeckMessages::fileUnlinkObserved()];
+				$result['warnings'] = [\OCA\Mcp\Modules\Deck\Presentation\DeckAttachmentMessages::fileUnlinkObserved()];
 			}
 			// No old file metadata is echoed: losing the last Deck mount is the expected native effect.
 			return $result;
@@ -117,14 +116,7 @@ final class CardFileHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 	 * @return array<string, mixed> Plan and receipt that remain verifiable for a still-visible file after unlink.
 	 */
 	private function plan(array $state, string $userId): array {
-		$context = $state['context'];
-		$board = $context['board'] + ['shared' => $context['board']['owner'] !== $userId];
-		return ['action' => self::UNLINK, 'card' => $this->formatter->reference($context['card'], $context['boardId']),
-			'board' => $board, 'file' => $state['file'], 'attachmentId' => $state['snapshot']['attachmentId'],
-			'createdBy' => $state['file_state']['createdBy'], 'file_state' => $state['file_state'],
-			'shared' => $board['shared'] ? [$board] : [], 'recoverable' => false,
-			'message' => DeckMessages::fileUnlinkWarning(),
-			PlanState::ARGUMENT => ($this->stateFactory)()->of(self::UNLINK, $userId, $state['snapshot'])];
+		return UnlinkCardFilePreview::fromState($state, $userId, $this->formatter, $this->stateFactory);
 	}
 
 	/** @return CardFiles File access resolved only after the module app gate admits the actual operation. */
@@ -132,8 +124,11 @@ final class CardFileHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 		return $this->access ??= ($this->filesFactory)();
 	}
 
-	/** {@inheritDoc} */
+	/**
+	 * {@inheritDoc}
+	 * @return string unchanged result of this operation
+	 */
 	protected function toolName(): string {
-		return $this->unlink ? self::UNLINK : self::READ;
+		return self::TOOL;
 	}
 }

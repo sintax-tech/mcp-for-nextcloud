@@ -11,7 +11,6 @@ use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Modules\Deck\Structure\BoardBlueprint;
 use OCA\Mcp\Modules\Deck\Integration\DeckErrors;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
 use OCA\Mcp\Modules\Deck\Failures\DeckUnconfirmedException;
 use Psr\Log\LoggerInterface;
 
@@ -79,6 +78,7 @@ final class CreateBoardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 	 * {@inheritDoc}
 	 *
 	 * A new board is found again among the boards of the caller.
+	 * @return string unchanged result of this operation
 	 */
 	protected function readWith(): string {
 		return 'deck_list_boards';
@@ -86,6 +86,7 @@ final class CreateBoardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 
 	/**
 	 * {@inheritDoc}
+	 * @return string unchanged result of this operation
 	 */
 	protected function toolName(): string {
 		return self::TOOL;
@@ -97,9 +98,9 @@ final class CreateBoardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 	 * @param string $userId UID of the authenticated caller.
 	 * @param string $title Title asked for.
 	 * @param list<int> $before Ids of the caller's boards before the write.
-	 * @return \OCA\Deck\Db\Board|null The board, or null when there is none.
+	 * @return object|null The board, or null when there is none.
 	 */
-	private function newBoard(string $userId, string $title, array $before): ?\OCA\Deck\Db\Board {
+	private function newBoard(string $userId, string $title, array $before): ?object {
 		$found = null;
 		foreach ($this->gateway->ownedBoards($userId) as $board) {
 			if (!in_array((int)$board->getId(), $before, true) && (string)$board->getTitle() === $title && (int)$board->getDeletedAt() === 0
@@ -132,7 +133,7 @@ final class CreateBoardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 		foreach ($blueprint['stacks'] as $position => $wanted) {
 			if ($probableBoard) {
 				// A board that may be somebody else's call: no list is written in it.
-				$failed[] = ['kind' => 'list', 'title' => $wanted['title'], 'reason' => DeckMessages::probableParentNotBuilt(), 'cardsNotCreated' => count($wanted['cards'])];
+				$failed[] = ['kind' => 'list', 'title' => $wanted['title'], 'reason' => \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::probableParentNotBuilt(), 'cardsNotCreated' => count($wanted['cards'])];
 				continue;
 			}
 			$probableStack = false;
@@ -140,7 +141,7 @@ final class CreateBoardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 				$known = array_column($stacks, 'id');
 				$stack = $this->afterApproximateWrite(
 					fn () => $this->gateway->createStack($userId, $boardId, $wanted['title'], $position),
-					fn () => self::newStack($this->gateway->stacksOf($userId, $boardId), $wanted['title'], $known),
+					fn () => \OCA\Mcp\Modules\Deck\Integration\CardFormatter::newStack($this->gateway->stacksOf($userId, $boardId), $wanted['title'], $known),
 					$warnings,
 					$probableStack,
 				);
@@ -163,7 +164,7 @@ final class CreateBoardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 			foreach ($wanted['cards'] as $order => $card) {
 				if ($probableStack) {
 					// A list that may be somebody else's call: no card is written in it.
-					$failed[] = ['kind' => 'card', 'list' => $wanted['title'], 'title' => $card['title'], 'reason' => DeckMessages::probableParentNotBuilt()];
+					$failed[] = ['kind' => 'card', 'list' => $wanted['title'], 'title' => $card['title'], 'reason' => \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::probableParentNotBuilt()];
 					continue;
 				}
 				$probableCard = false;
@@ -188,7 +189,7 @@ final class CreateBoardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 					$probables++;
 					// Found by likeness, so maybe somebody else's card: nothing is written on it.
 					if ($card['assignees'] !== []) {
-						$warnings[] = DeckMessages::probableCardNotAssigned();
+						$warnings[] = \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::probableCardNotAssigned();
 					}
 					continue;
 				}
@@ -197,7 +198,7 @@ final class CreateBoardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 					try {
 						$this->afterWrite(
 							fn () => $this->gateway->assignCardUser($userId, (int)$created->getId(), $assignee),
-							fn () => $this->assignmentOf($userId, (int)$created->getId(), $assignee),
+							fn () => \OCA\Mcp\Modules\Deck\Integration\CardFormatter::assignmentOf($this->gateway->cardAssignments($userId, (int)$created->getId()), $assignee),
 							$warnings,
 						);
 					} catch (\Throwable $e) {
@@ -211,7 +212,7 @@ final class CreateBoardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 			$stacks[] = ['id' => (int)$stack->getId(), 'title' => $wanted['title']] + ($probableStack ? ['confirmed' => 'probable'] : []) + ['cards' => $cards];
 		}
 
-		$summary = $probableBoard ? DeckMessages::probablyCreated() : $this->summary($boardTitle, count($stacks), $cardTotal, count($failed));
+		$summary = $probableBoard ? \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::probablyCreated() : $this->summary($boardTitle, count($stacks), $cardTotal, count($failed));
 
 		return [
 			'created' => ['board' => ['id' => $boardId, 'title' => $boardTitle] + ($probableBoard ? ['confirmed' => 'probable'] : []), 'stacks' => $stacks],
@@ -237,7 +238,7 @@ final class CreateBoardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 			'exception' => $e->getPrevious() === null ? $e::class : $e->getPrevious()::class,
 		]);
 
-		return DeckMessages::boardItemUnconfirmed($kind, $title);
+		return \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::boardItemUnconfirmed($kind, $title);
 	}
 
 	/**

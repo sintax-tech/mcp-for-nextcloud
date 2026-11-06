@@ -48,13 +48,13 @@ final class DependencyGraph {
 				$key = $id . ':' . $targetId;
 				$edges[$key] = ['originId' => $id, 'targetId' => $targetId];
 				if (count($edges) > $this->maxEdges) {
-					throw new \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException(\OCA\Mcp\Modules\Deck\Presentation\DeckMessages::dependencyGraphLimit());
+					throw new \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException(\OCA\Mcp\Modules\Deck\Presentation\DeckDependencyMessages::dependencyGraphLimit());
 				}
 				if (isset($visited[$targetId])) {
 					continue;
 				}
 				if (count($visited) >= $this->maxNodes || $depth >= $this->maxDepth) {
-					throw new \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException(\OCA\Mcp\Modules\Deck\Presentation\DeckMessages::dependencyGraphLimit());
+					throw new \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException(\OCA\Mcp\Modules\Deck\Presentation\DeckDependencyMessages::dependencyGraphLimit());
 				}
 				$visited[$targetId] = true;
 				$queue[] = [$targetId, $depth + 1];

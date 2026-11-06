@@ -12,7 +12,6 @@ use OCA\Mcp\Modules\Deck\Integration\CardFormatter;
 use OCA\Mcp\Modules\Deck\Editing\CardLabelChanges;
 use OCA\Mcp\Modules\Deck\Failures\DeckConflictException;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
 use OCA\Mcp\Mcp\Confirmation\PlanChanged;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use Psr\Log\LoggerInterface;
@@ -52,19 +51,15 @@ final class EditCardLabelsHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler 
 	* @return array<string, mixed> Confirmation plan without internal foreign label IDs.
 	*/
 	private function plan(array $state, array $changes, string $userId): array {
-		$snapshot = CardLabelChanges::snapshot($state);
-		$delta = CardLabelChanges::delta($state, $changes);
-		$board = $state['board'] + ['shared' => $state['board']['owner'] !== $userId];
-		return ['action' => self::TOOL, 'card' => $snapshot['card'],
-			'board' => $board, 'before' => $state['labels'], 'after' => $delta['after'],
-			'add' => $delta['add'], 'remove' => $delta['remove'], 'unchanged' => $delta['unchanged'],
-			'shared' => $board['owner'] === $userId ? [] : [$board], 'recoverable' => true,
-			'message' => DeckMessages::planLabels(),
-			PlanState::ARGUMENT => ($this->stateFactory)()->of(self::TOOL, $userId,
-				['requested' => $changes, 'state' => $snapshot])];
+		return EditCardLabelsPreview::fromState($state, $changes, $userId, $this->stateFactory);
 	}
 
-	/** {@inheritDoc} The registry owns the no-confirm preview gate. */
+	/**
+	 * {@inheritDoc} The registry owns the no-confirm preview gate.
+	 * @param array $arguments validated tool arguments
+	 * @param string $userId authenticated caller UID
+	 * @return array unchanged result of this operation
+	 */
 	public function handle(array $arguments, string $userId): array {
 		return $this->run(function () use ($arguments, $userId): array {
 			$changes = CardLabelChanges::parse($arguments);
@@ -74,7 +69,7 @@ final class EditCardLabelsHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler 
 			$plan = $this->plan($state, $changes, $userId);
 			PlanState::require($arguments);
 			if (!PlanState::matches($plan[PlanState::ARGUMENT], $arguments)) {
-				$plan['warnings'] = [['message' => DeckMessages::labelPlanChanged()]];
+				$plan['warnings'] = [['message' => \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::labelPlanChanged()]];
 				throw new PlanChanged($plan);
 			}
 			$shared = $this->confirmShared($arguments, $userId, $state['board']);
@@ -95,7 +90,7 @@ final class EditCardLabelsHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler 
 						// Exclusive pre-write refusal; another actor's change is never attributed to this write.
 						if ($report['added'] === [] && $report['removed'] === []) {
 							$fresh = $this->preview($arguments, $userId);
-							$fresh['warnings'] = [['message' => DeckMessages::labelPlanChanged()]];
+							$fresh['warnings'] = [['message' => \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::labelPlanChanged()]];
 							throw new PlanChanged($fresh);
 						}
 						$observed = $this->observe($userId, $cardId, $requested);
@@ -124,7 +119,7 @@ final class EditCardLabelsHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler 
 					if ($error !== null) {
 						$this->logger->warning('MCP Deck label state observed after failure ({exception})', ['exception' => $error::class]);
 						// A concurrent identical assignment can explain this state too; do not claim authorship.
-						$report['warnings'][] = DeckMessages::labelStateObserved();
+						$report['warnings'][] = \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::labelStateObserved();
 					}
 					$expected = $before;
 					$expected['labels'] = CardLabelChanges::delta($state,
@@ -176,11 +171,14 @@ final class EditCardLabelsHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler 
 	private function partial(array $report, array $pending, ?array $observed, array $last): array {
 		return ['confirmed' => false, 'partial' => true, 'labels' => $observed['labels'] ?? null,
 			'labelsCurrent' => $observed !== null, 'lastObservedLabels' => $last['labels'],
-			'message' => $observed === null ? DeckMessages::labelsUnconfirmed() : DeckMessages::labelsPartial()]
+			'message' => $observed === null ? \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::labelsUnconfirmed() : \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::labelsPartial()]
 			+ $this->progress($report, $pending);
 	}
 
-	/** {@inheritDoc} */
+	/**
+	 * {@inheritDoc}
+	 * @return string unchanged result of this operation
+	 */
 	protected function toolName(): string {
 		return self::TOOL;
 	}

@@ -11,8 +11,8 @@ use OCA\Deck\NoPermissionException;
 use OCA\Deck\StatusException;
 use OCA\Mcp\Modules\Deck\Integration\CardFormatter;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
-use OCA\Mcp\Modules\Deck\DeleteCardHandler;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
+use OCA\Mcp\Modules\Deck\Deletion\DeleteCardHandler;
 use OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestHelpers;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -67,14 +67,14 @@ final class DeleteCardHandlerTest extends TestCase {
 			->handle(['cardId' => 7, 'confirm' => true], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotFoundOrForbidden(), $this->text($result));
 	}
 
 	public function testArchivedBoardBecomesTheNotAllowedMessage(): void {
 		$result = $this->handler(new StatusException('Operation not allowed. This board is archived.'))
 			->handle(['cardId' => 7, 'confirm' => true], 'alice');
 
-		self::assertSame(DeckMessages::errorNotAllowed(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotAllowed(), $this->text($result));
 	}
 
 	public function testBackendFailureBecomesTheGenericMessage(): void {
@@ -82,7 +82,7 @@ final class DeleteCardHandlerTest extends TestCase {
 			->handle(['cardId' => 7, 'confirm' => true], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorGeneric(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorGeneric(), $this->text($result));
 	}
 
 	public function testSharedBoardWithoutConfirmationDeletesNothing(): void {
@@ -124,6 +124,6 @@ final class DeleteCardHandlerTest extends TestCase {
 		$result = $handler->handle(['cardId' => 7, 'confirm' => true], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotFoundOrForbidden(), $this->text($result));
 	}
 }

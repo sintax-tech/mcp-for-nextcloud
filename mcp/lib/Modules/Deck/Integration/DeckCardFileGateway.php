@@ -19,7 +19,7 @@ use OCP\Share\Exceptions\ShareNotFound;
 use OCP\Share\IShare;
 use OCA\Mcp\Modules\Deck\Attachments\CardFiles;
 use OCA\Mcp\Modules\Deck\Failures\DeckConflictException;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
 use OCA\Mcp\Modules\Deck\Failures\DeckRefusalException;
 
 /** Native card-file associations; Files visibility remains the responsibility of CardFiles. */
@@ -133,7 +133,7 @@ final class DeckCardFileGateway {
 		$this->cardFileContext($userId, $cardId, true);
 		$share = $this->cardFileShare($userId, $cardId, $attachmentId);
 		if ($share === null || CardFiles::identity($share) !== $expected) {
-			throw new DeckConflictException(DeckMessages::filePlanChanged());
+			throw new DeckConflictException(\OCA\Mcp\Modules\Deck\Presentation\DeckAttachmentMessages::filePlanChanged());
 		}
 		$this->services->get(AttachmentService::class)->delete($cardId, $attachmentId, 'file');
 	}

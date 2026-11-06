@@ -14,7 +14,7 @@ use OCA\Deck\NoPermissionException;
 use OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestHelpers;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Modules\Deck\Presentation\DeckMessages;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
 use OCA\Mcp\Modules\Deck\Structure\CreateBoardHandler;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -124,7 +124,7 @@ final class CreateBoardHandlerTest extends TestCase {
 		$result = $this->handler->handle($this->arguments() + ['confirm' => true], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotFoundOrForbidden(), $this->text($result));
 	}
 
 	public function testAListThatFailsLeavesAPartialResultAndItsCardsAreNotTried(): void {
@@ -149,7 +149,7 @@ final class CreateBoardHandlerTest extends TestCase {
 		self::assertFalse($payload['complete']);
 		self::assertSame(['Briefing', 'Escopo'], $created, 'the cards of the failed list are not written');
 		self::assertSame(['A fazer', 'Feito'], array_column($payload['created']['stacks'], 'title'));
-		self::assertSame([['kind' => 'list', 'title' => 'Em andamento', 'reason' => DeckMessages::errorGeneric(), 'cardsNotCreated' => 1]], $payload['failed']);
+		self::assertSame([['kind' => 'list', 'title' => 'Em andamento', 'reason' => \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorGeneric(), 'cardsNotCreated' => 1]], $payload['failed']);
 		self::assertStringContainsString('Nothing was undone', $payload['summary']);
 		self::assertStringContainsString('Projeto Alfa', $payload['summary']);
 		self::assertStringNotContainsString('secret detail', (string)$result['content'][0]['text']);
@@ -174,7 +174,7 @@ final class CreateBoardHandlerTest extends TestCase {
 		self::assertArrayNotHasKey('isError', $result);
 		$payload = $this->payload($result);
 		self::assertFalse($payload['complete']);
-		self::assertSame([['kind' => 'card', 'list' => 'A fazer', 'title' => 'Briefing', 'reason' => DeckMessages::errorGeneric()]], $payload['failed']);
+		self::assertSame([['kind' => 'card', 'list' => 'A fazer', 'title' => 'Briefing', 'reason' => \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorGeneric()]], $payload['failed']);
 		self::assertSame(['Escopo'], array_column($payload['created']['stacks'][0]['cards'], 'title'));
 		self::assertSame(['Layout'], array_column($payload['created']['stacks'][1]['cards'], 'title'));
 	}

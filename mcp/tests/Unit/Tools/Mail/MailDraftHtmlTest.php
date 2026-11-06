@@ -54,6 +54,16 @@ final class MailDraftHtmlTest extends TestCase {
 		$this->assertSame(0, $xpath->query('//script|//style|//svg|//math|//form|//img|//iframe')->length);
 		$this->assertSame(0, $xpath->query('//@*[starts-with(name(),"on") or name()="style" or name()="src" or name()="srcset"]')->length);
 		$this->assertSame($result['body'], (new MailDraftHtml($engine))->sanitize($result['body'])['body']);
+		foreach ($row['removed'] ?? [] as $category => $count) {
+			$this->assertSame($count, $result['removed'][$category], $category);
+		}
+		if (isset($row['unwrappedElements'])) {
+			$this->assertSame($row['unwrappedElements'], $result['unwrappedElements']);
+		}
+		if (isset($row['elementTotal'])) {
+			$elementTotal = $result['removed']['unknown-tag'] + $result['removed']['wrapper'] + $result['removed']['unwrapped-element'];
+			$this->assertSame($row['elementTotal'], $elementTotal, 'each wrapper is counted in only one element category');
+		}
 	}
 
 	/** @return void */
@@ -126,6 +136,30 @@ final class MailDraftHtmlTest extends TestCase {
 		$this->assertSame(0, $result['removed']['wrapper']);
 		$this->assertSame(1, $result['removed']['comment']);
 		$this->assertSame("\n A  B\n\n", MailDraftHtmlView::fields($result)['preview']);
+	}
+
+	/** @return void */
+	public function testTheEngineCannotSilentlyUnwrapAnotherAllowedElement(): void {
+		$engine = new class implements MailDraftHtmlPurifier {
+			public function purify(string $html): string { return str_replace(['<span>', '</span>'], '', $html); }
+		};
+		$this->expectException(ToolFailure::class);
+		(new MailDraftHtml($engine))->sanitize('<p><span>ok</span></p>');
+	}
+
+	/** @return void */
+	public function testAReportedAnchorWrapperAppearsInTheConfirmation(): void {
+		$engine = new class implements MailDraftHtmlPurifier {
+			public function purify(string $html): string { return $html; }
+		};
+		$result = (new MailDraftHtml($engine))->sanitize('<p><a name="x">ok</a></p>');
+		$fields = MailDraftHtmlView::fields($result);
+		$this->assertSame(['a'], $fields['unwrappedElements']);
+		$render = implode("\n", MailDraftHtmlView::lines(['body' => $result['body']] + $fields));
+		$this->assertStringContainsString('Unwrapped elements:', $render);
+		$this->assertStringContainsString('unwrapped-element', $render);
+		$this->assertStringContainsString(MailDraftMessages::htmlRemoved(), $render);
+		$this->assertStringNotContainsString(MailDraftMessages::htmlUnchanged(), $render);
 	}
 
 }

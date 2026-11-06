@@ -16,7 +16,7 @@ final class MailDraftHtmlAllow {
 		'textarea', 'title', 'head', 'meta', 'link', 'base', 'img', 'picture', 'video', 'audio', 'source', 'canvas'];
 	/** Removal counters; wrapper denotes normalization only. */
 	public const REMOVED = ['subtree' => 0, 'conditional' => 0, 'comment' => 0, 'unknown-tag' => 0,
-		'unsafe-url' => 0, 'attribute' => 0, 'invisible' => 0, 'wrapper' => 0];
+		'unsafe-url' => 0, 'attribute' => 0, 'invisible' => 0, 'wrapper' => 0, 'unwrapped-element' => 0];
 	/** Invisible, directional and disallowed control characters; ZWJ/ZWNJ remain. */
 	public const INVISIBLE = '/[\x{200B}\x{200E}\x{200F}\x{FEFF}\x{202A}-\x{202E}\x{2066}-\x{2069}\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/u';
 

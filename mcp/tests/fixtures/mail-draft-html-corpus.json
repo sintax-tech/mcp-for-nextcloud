@@ -301,5 +301,95 @@
         "name": "wrapper-in-comment",
         "input": "<!--<html><body><head>--><p>ok</p>",
         "body": "<p>ok</p>"
+    },
+    {
+        "name": "anchor-no-href",
+        "input": "<p><a>ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unwrapped-element": 1,
+            "unsafe-url": 0,
+            "unknown-tag": 0,
+            "wrapper": 0
+        },
+        "unwrappedElements": [
+            "a"
+        ],
+        "elementTotal": 1
+    },
+    {
+        "name": "anchor-name-only",
+        "input": "<p><a name=\"x\">ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unwrapped-element": 1,
+            "attribute": 1,
+            "unsafe-url": 0
+        },
+        "unwrappedElements": [
+            "a"
+        ],
+        "elementTotal": 1
+    },
+    {
+        "name": "anchor-unsafe-wrapper",
+        "input": "<p><a href=\"javascript:x()\">ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unwrapped-element": 1,
+            "unsafe-url": 1,
+            "attribute": 0
+        },
+        "unwrappedElements": [
+            "a"
+        ],
+        "elementTotal": 1
+    },
+    {
+        "name": "unknown-font-wrapper",
+        "input": "<p><font color=\"red\">ok</font></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unwrapped-element": 0,
+            "unknown-tag": 1,
+            "attribute": 0
+        },
+        "unwrappedElements": [],
+        "elementTotal": 1
+    },
+    {
+        "name": "unknown-center-wrapper",
+        "input": "<center><p>ok</p></center>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unwrapped-element": 0,
+            "unknown-tag": 1
+        },
+        "unwrappedElements": [],
+        "elementTotal": 1
+    },
+    {
+        "name": "document-wrappers",
+        "input": "<html><body><p>ok</p></body></html>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unwrapped-element": 0,
+            "wrapper": 2,
+            "unknown-tag": 0
+        },
+        "unwrappedElements": [],
+        "elementTotal": 2
+    },
+    {
+        "name": "allowed-span-wrapper",
+        "input": "<p><span>ok</span></p>",
+        "body": "<p><span>ok</span></p>",
+        "removed": {
+            "unwrapped-element": 0,
+            "wrapper": 0,
+            "unknown-tag": 0
+        },
+        "unwrappedElements": [],
+        "elementTotal": 0
     }
 ]

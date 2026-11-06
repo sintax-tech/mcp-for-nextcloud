@@ -24,7 +24,7 @@ final class MailDraftHtml {
 	 * Produces the saved fragment and a complete removal report, then checks a second interpretation and idempotence.
 	 *
 	 * @param string $input valid UTF-8 source, without NUL
-	 * @return array{body:string, removed:array<string,int>, removedUrls:list<string>, sizes:array<string,int>}
+	 * @return array{body:string, removed:array<string,int>, removedUrls:list<string>, unwrappedElements:list<string>, sizes:array<string,int>}
 	 * @throws ToolFailure for unavailable engine, unsafe recovery, unreported loss, empty or oversized output
 	 */
 	public function sanitize(string $input): array {
@@ -49,12 +49,13 @@ final class MailDraftHtml {
 	 * One deterministic pass; all mutable report data belongs to this call.
 	 *
 	 * @param string $input UTF-8 fragment
-	 * @return array{body:string, removed:array<string,int>, removedUrls:list<string>}
+	 * @return array{body:string, removed:array<string,int>, removedUrls:list<string>, unwrappedElements:list<string>}
 	 * @throws ToolFailure for unsafe parsing or an engine change outside the report
 	 */
 	private function pass(string $input): array {
 		$removed = MailDraftHtmlAllow::REMOVED;
 		$urls = [];
+		$unwrapped = [];
 		$marker = 'mcp-conditional-' . bin2hex(random_bytes(16));
 		$source = $this->conditionalMarkers($input, $marker);
 		$document = $this->parse($source['html']);
@@ -65,15 +66,16 @@ final class MailDraftHtml {
 				$head->parentNode->removeChild($head);
 				$removed['subtree']++;
 			} else {
-				$this->filter($head, $removed, $urls, $marker);
+				$this->filter($head, $removed, $urls, $unwrapped, $marker);
 			}
 		}
-		$this->filter($document, $removed, $urls, $marker);
+		$this->filter($document, $removed, $urls, $unwrapped, $marker);
 		$before = $this->fragment($document);
 		$purified = $this->engine->purify($before);
 		$after = $this->parse($purified);
 		$engineRemoved = MailDraftHtmlAllow::REMOVED;
-		$this->filter($after, $engineRemoved, $urls);
+		$engineUnwrapped = [];
+		$this->filter($after, $engineRemoved, $urls, $engineUnwrapped);
 		// Loss by the engine is not silently called normalization: the policy prefilter accounts for every removal.
 		if (array_sum($engineRemoved) !== 0 || $this->inventory($document) !== $this->inventory($after)) {
 			throw new ToolFailure(MailDraftMessages::htmlInvalid());
@@ -82,11 +84,12 @@ final class MailDraftHtml {
 		$check = $this->parse($body);
 		$checkRemoved = MailDraftHtmlAllow::REMOVED;
 		$checkUrls = [];
-		$this->filter($check, $checkRemoved, $checkUrls);
+		$checkUnwrapped = [];
+		$this->filter($check, $checkRemoved, $checkUrls, $checkUnwrapped);
 		if (array_sum($checkRemoved) !== 0 || $this->fragment($check) !== $body) {
 			throw new ToolFailure(MailDraftMessages::htmlInvalid());
 		}
-		return ['body' => $body, 'removed' => $removed, 'removedUrls' => $urls];
+		return ['body' => $body, 'removed' => $removed, 'removedUrls' => $urls, 'unwrappedElements' => $unwrapped];
 	}
 
 	/**
@@ -150,11 +153,12 @@ final class MailDraftHtml {
 	 * @param DOMNode $parent parent to filter
 	 * @param array<string,int> $removed report counters
 	 * @param list<string> $urls removed destinations
+	 * @param list<string> $unwrapped permitted wrappers removed from the fragment
 	 * @param string $marker private marker for revealed conditional tokens
 	 * @return void
 	 * @throws ToolFailure for an unclassified node
 	 */
-	private function filter(DOMNode $parent, array &$removed, array &$urls, string $marker = ''): void {
+	private function filter(DOMNode $parent, array &$removed, array &$urls, array &$unwrapped, string $marker = ''): void {
 		foreach (iterator_to_array($parent->childNodes) as $node) {
 			if ($node->nodeType === XML_COMMENT_NODE) {
 				$parent->removeChild($node);
@@ -179,7 +183,7 @@ final class MailDraftHtml {
 				$parent->removeChild($node);
 				continue;
 			}
-			$this->filter($node, $removed, $urls, $marker);
+			$this->filter($node, $removed, $urls, $unwrapped, $marker);
 			if (in_array($tag, ['html', 'body'], true)) {
 				continue;
 			}
@@ -207,6 +211,8 @@ final class MailDraftHtml {
 				$node->removeAttributeNode($attribute);
 			}
 			if ($tag === 'a' && !$node->hasAttribute('href')) {
+				$removed['unwrapped-element']++;
+				$unwrapped[] = $tag;
 				$this->unwrap($node);
 			}
 		}

@@ -1759,6 +1759,7 @@ OC.L10N.register(
     "Removal counts: %s" : "Contagem de remoções: %s",
     "Link text and destination: %s" : "Texto e destino do link: %s",
     "Removed destination: %s" : "Destino removido: %s",
-    "Sizes in characters (input, saved, preview): %s" : "Tamanhos em caracteres (entrada, salvo, prévia): %s"
+    "Sizes in characters (input, saved, preview): %s" : "Tamanhos em caracteres (entrada, salvo, prévia): %s",
+    "Unwrapped elements: %s" : "Elementos com invólucro removido: %s"
     },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

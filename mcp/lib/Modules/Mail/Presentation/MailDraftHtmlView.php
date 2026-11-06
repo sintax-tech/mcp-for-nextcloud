@@ -55,6 +55,9 @@ final class MailDraftHtmlView {
 		$lines[] = $changed ? MailDraftMessages::htmlRemoved() : ($counts['wrapper'] > 0
 			? MailDraftMessages::htmlNormalized() : MailDraftMessages::htmlUnchanged());
 		$lines[] = Translator::t('Removal counts: %s', [PlanText::quoted(json_encode($counts, JSON_THROW_ON_ERROR))]);
+		if ($draft['unwrappedElements'] !== []) {
+			$lines[] = Translator::t('Unwrapped elements: %s', [PlanText::quoted(implode(', ', $draft['unwrappedElements']))]);
+		}
 		foreach ($draft['links'] as $link) {
 			$lines[] = Translator::t('Link text and destination: %s', [PlanText::quoted(json_encode($link, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR))]);
 		}

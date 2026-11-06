@@ -53,6 +53,16 @@ final class McpMailDraftHtmlTest extends IntegrationTestCase {
 				$this->assertSame($row['body'], $result['body'], $row['name']);
 			}
 			$this->assertSame($result['body'], $sanitizer->sanitize($result['body'])['body'], $row['name']);
+			foreach ($row['removed'] ?? [] as $category => $count) {
+				$this->assertSame($count, $result['removed'][$category], $row['name'] . ': ' . $category);
+			}
+			if (isset($row['unwrappedElements'])) {
+				$this->assertSame($row['unwrappedElements'], $result['unwrappedElements']);
+			}
+			if (isset($row['elementTotal'])) {
+				$this->assertSame($row['elementTotal'], $result['removed']['unknown-tag'] + $result['removed']['wrapper']
+					+ $result['removed']['unwrapped-element'], 'no duplicated element removal: ' . $row['name']);
+			}
 			self::markCell('html-corpus ' . $row['name'] . ' neutralized ' . json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR));
 		}
 	}

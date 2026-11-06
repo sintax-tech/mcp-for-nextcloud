@@ -72,7 +72,7 @@ final class AssignmentLifecycleTest extends IntegrationTestCase {
 	}
 
 	/** Compare native IManager deferral under an induced delivery failure; never label it host reproduction. */
-	public function testInducedLifecycleControlRecordsWhetherDeferralDiffers(): void {
+	public function testInducedLifecycleControlRequiresInlineFailureOnBothRoutes(): void {
 		$scene = new FunctionalDeckScene(); $probe = null; $browser = null;
 		try {
 			$a = $scene->uid(0); $b = $scene->uid(1); $f = $scene->seed($a, $b);
@@ -91,13 +91,17 @@ final class AssignmentLifecycleTest extends IntegrationTestCase {
 			self::assertSame(['mcp', 'deck'], array_column($notify, 'route'));
 			$mcpSaved = FunctionalDeckScene::run($b, 'read', ['card' => $f['faultCard']])['assignees'];
 			$nativeSaved = FunctionalDeckScene::run($b, 'read', ['card' => $f['nativeFaultCard']])['assignees'];
-			foreach ($notify as $index => $phase) {
-				self::assertSame($phase['deferred'] ? [$a] : [], $index === 0 ? $mcpSaved : $nativeSaved);
-			}
+			self::assertSame([false, false], array_column($notify, 'deferred'));
+			self::assertSame([], $mcpSaved);
+			self::assertSame([], $nativeSaved);
+			self::assertSame(200, $response['status']);
+			self::assertSame(500, $native['status']);
+			$deferCandidate = !$notify[0]['deferred'] && $notify[1]['deferred'];
+			self::assertFalse($deferCandidate);
 			file_put_contents('/tmp/mcp-it-observations.txt', json_encode(['issue26' => 'induced lifecycle control, NOT host reproduction',
 				'events' => $events, 'mcpSaved' => $mcpSaved !== [], 'nativeSaved' => $nativeSaved !== [],
 				'mcpHTTP' => $response['status'], 'nativeHTTP' => $native['status'],
-				'deferCandidate' => !$notify[0]['deferred'] && $notify[1]['deferred']], JSON_THROW_ON_ERROR) . "\n", FILE_APPEND);
+				'deferCandidate' => $deferCandidate], JSON_THROW_ON_ERROR) . "\n", FILE_APPEND);
 		} finally {
 			$browser?->close(); $probe?->close(); $scene->close();
 		}

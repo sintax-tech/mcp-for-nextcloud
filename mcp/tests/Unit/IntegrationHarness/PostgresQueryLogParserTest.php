@@ -24,6 +24,8 @@ final class PostgresQueryLogParserTest extends TestCase {
 	}
 
 	public function testReturnsOnlyTheSessionsStatementsBetweenItsMarkers(): void {
+		$this->write(["2026-10-15 11:59:59.999 UTC mcp-it[10] xid=0 LOG:  statement: SELECT 'mcp-it-marker:aa:begin', 'mcp-it-marker:bb:end' AS previous_test"]);
+		$log = new PostgresQueryLog($this->path);
 		$this->write([
 			"2026-10-15 12:00:00.001 UTC mcp-it[10] xid=0 LOG:  statement: SELECT 'mcp-it-marker:aa:begin' AS mcp_it_marker",
 			"2026-10-15 12:00:00.002 UTC mcp-it[20] xid=0 LOG:  statement: SELECT 'other session'",
@@ -35,15 +37,15 @@ final class PostgresQueryLogParserTest extends TestCase {
 			"2026-10-15 12:00:00.007 UTC mcp-it[10] xid=0 LOG:  statement: SELECT 'mcp-it-marker:bb:end' AS mcp_it_marker",
 		]);
 		$this->assertSame(["SELECT a\nFROM b", 'ERROR: relation "missing" does not exist at character 15'],
-			(new PostgresQueryLog($this->path))->statementsBetween(10, 'mcp-it-marker:aa:begin', 'mcp-it-marker:bb:end'));
+			$log->statementsBetween(10, 'mcp-it-marker:aa:begin', 'mcp-it-marker:bb:end'));
 	}
 
 	public function testAnEmptyWindowRequiresBothMarkers(): void {
+		$log = new PostgresQueryLog($this->path);
 		$this->write([
 			"2026-10-15 12:00:00.001 UTC mcp-it[10] xid=0 LOG:  statement: SELECT 'mcp-it-marker:aa:begin' AS mcp_it_marker",
 			"2026-10-15 12:00:00.002 UTC mcp-it[10] xid=0 LOG:  statement: SELECT 'mcp-it-marker:bb:end' AS mcp_it_marker",
 		]);
-		$log = new PostgresQueryLog($this->path);
 		$this->assertSame([], $log->statementsBetween(10, 'mcp-it-marker:aa:begin', 'mcp-it-marker:bb:end'));
 
 		$this->expectException(RuntimeException::class);
@@ -57,6 +59,6 @@ final class PostgresQueryLogParserTest extends TestCase {
 
 	/** @param list<string> $lines */
 	private function write(array $lines): void {
-		file_put_contents($this->path, implode("\n", $lines) . "\n");
+		file_put_contents($this->path, implode("\n", $lines) . "\n", FILE_APPEND);
 	}
 }

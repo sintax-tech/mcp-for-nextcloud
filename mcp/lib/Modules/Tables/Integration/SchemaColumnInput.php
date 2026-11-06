@@ -34,7 +34,7 @@ class SchemaColumnInput {
 			if (($option['name'] ?? '') === 'selectionOptions') {
 				if (!is_array($option['value'] ?? null) || !array_is_list($option['value'])) SchemaRequest::invalid('options');
 				foreach ($option['value'] as $value) {
-				if (!is_array($value) || array_diff(array_keys($value), ['id', 'label'])) SchemaRequest::invalid('options');
+					if (!is_array($value) || array_diff(array_keys($value), ['id', 'label'])) SchemaRequest::invalid('options');
 				}
 			}
 		}

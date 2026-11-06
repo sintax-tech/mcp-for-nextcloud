@@ -44,6 +44,7 @@ class SchemaTargetReader {
 	/**
 	 * @param int $tableId Managed table.
 	 * @param string $uid Caller.
+	 * @param object|null $view Already-authorized native view; null reads the whole managed table.
 	 * @return array<int,array<string,mixed>> Native column snapshots by ID.
 	 */
 	public function columns(int $tableId, string $uid, ?object $view = null): array {

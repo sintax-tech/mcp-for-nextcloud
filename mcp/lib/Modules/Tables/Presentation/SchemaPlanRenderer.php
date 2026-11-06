@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Tables\Presentation;
 
+use OCA\Mcp\Mcp\Confirmation\PlanText;
+
 /** Full bounded JSON plan: nested filters never disappear in the generic renderer's depth limit. */
 final class SchemaPlanRenderer {
 	/**
@@ -23,7 +25,7 @@ final class SchemaPlanRenderer {
 	public static function render(array $plan): string {
 		unset($plan['plan_state']);
 		$json = json_encode($plan, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR);
-		$inert = preg_replace_callback('/"(?:[^"\\\\]|\\\\.)*"/s', static fn (array $match): string => \OCA\Mcp\Mcp\Confirmation\PlanText::quoted(json_decode($match[0], true, 512, JSON_THROW_ON_ERROR)), $json);
+		$inert = preg_replace_callback('/"(?:[^"\\\\]|\\\\.)*"/s', static fn (array $match): string => PlanText::quoted(json_decode($match[0], true, 512, JSON_THROW_ON_ERROR)), $json);
 		return implode("\n", array_map(static fn (string $line): string => '> ' . $line, explode("\n", $inert)));
 	}
 }

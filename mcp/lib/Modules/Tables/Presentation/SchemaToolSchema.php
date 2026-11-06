@@ -24,7 +24,9 @@ final class SchemaToolSchema {
 		$bool = ['type' => 'boolean'];
 		$items = ['type' => 'array', 'maxItems' => 100];
 		$sharing = in_array($action, ['share_node', 'unshare_node'], true);
-		$properties = []; $required = []; $patch = [];
+		$properties = [];
+		$required = [];
+		$patch = [];
 		if ($sharing) {
 			$properties = ['node_type' => ['type' => 'string', 'enum' => ['table', 'view']], 'node_id' => $id];
 			$required = ['node_type', 'node_id'];
@@ -32,11 +34,15 @@ final class SchemaToolSchema {
 				$properties['recipient'] = self::object(['type' => ['type' => 'string', 'enum' => ['user', 'group']], 'id' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 255]], ['type', 'id']);
 				$properties['permissions'] = self::object(array_fill_keys(['read', 'create', 'update', 'delete', 'manage'], $bool), ['read', 'create', 'update', 'delete', 'manage']);
 				$required = [...$required, 'recipient', 'permissions'];
-			} else { $properties['share_id'] = $id; $required[] = 'share_id'; }
+			} else { $properties['share_id'] = $id;
+			$required[] = 'share_id'; }
 		} else {
-			if ($action !== 'create_table') { $properties['table_id'] = $id; $required[] = 'table_id'; }
-			if ($action === 'update_column') { $properties['column_id'] = $id; $required[] = 'column_id'; }
-			if ($action === 'update_view') { $properties['view_id'] = $id; $required[] = 'view_id'; }
+			if ($action !== 'create_table') { $properties['table_id'] = $id;
+			$required[] = 'table_id'; }
+			if ($action === 'update_column') { $properties['column_id'] = $id;
+			$required[] = 'column_id'; }
+			if ($action === 'update_view') { $properties['view_id'] = $id;
+			$required[] = 'view_id'; }
 			$patch = ['title' => $title, 'description' => $text, 'emoji' => $emoji];
 			if (str_ends_with($action, 'column')) {
 				$patch = ['title' => $title, 'description' => $text, 'mandatory' => $bool, 'options' => ['type' => 'array', 'maxItems' => 20, 'description' => 'Unique {name,value} entries. Each value is checked against the column type; no raw JSON.']];
@@ -48,10 +54,12 @@ final class SchemaToolSchema {
 				'sort' => $items + ['items' => self::object(['column_id' => $id, 'mode' => ['type' => 'string', 'enum' => ['ASC', 'DESC']]], ['column_id', 'mode']), 'description' => 'Complete ordered unique sort rules; empty clears sorting. No relation edits.'],
 			];
 			if (str_starts_with($action, 'update_')) {
-				$properties['patch'] = self::object($patch); $required[] = 'patch';
+				$properties['patch'] = self::object($patch);
+				$required[] = 'patch';
 			} else {
 				if ($action === 'create_view') unset($patch['description']);
-				$properties += $patch; $required[] = 'title';
+				$properties += $patch;
+				$required[] = 'title';
 				if ($action === 'create_column') {
 					$properties += ['type' => ['type' => 'string', 'enum' => ['text', 'number', 'selection', 'datetime', 'usergroup']], 'subtype' => ['type' => 'string', 'enum' => ['', 'line', 'long', 'rich', 'link', 'stars', 'progress', 'multi', 'check', 'date', 'time'], 'description' => 'Validated together with type; the empty subtype is explicit.'], 'view_ids' => $items + ['items' => $id, 'description' => 'Unique managed view IDs in this table to include the new column in.']];
 					$required = [...$required, 'type', 'subtype'];

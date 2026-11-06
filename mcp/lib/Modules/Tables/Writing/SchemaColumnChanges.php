@@ -18,17 +18,21 @@ final class SchemaColumnChanges {
 	 * @return array<string,mixed> Native option fields merged with the snapshot.
 	 */
 	public static function of(array $changes, ?array $current, bool $legacyUnlimitedText = false): array {
-		$type = $current['type'] ?? $changes['type']; $subtype = $current['subtype'] ?? $changes['subtype'];
+		$type = $current['type'] ?? $changes['type'];
+		$subtype = $current['subtype'] ?? $changes['subtype'];
 		$subtypes = ['text' => ['', 'line', 'long', 'rich', 'link'], 'number' => ['', 'stars', 'progress'], 'selection' => ['', 'multi', 'check'], 'datetime' => ['', 'date', 'time'], 'usergroup' => ['']];
 		if (!in_array($subtype, $subtypes[$type] ?? [], true)) SchemaRequest::invalid('type');
-		$options = $changes['options'] ?? []; unset($changes['options']);
+		$options = $changes['options'] ?? [];
+		unset($changes['options']);
 		if (!is_array($options) || !array_is_list($options) || count($options) > 20) SchemaRequest::invalid('options');
 		$seen = [];
 		foreach ($options as $option) {
 			if (!is_array($option) || array_diff(array_keys($option), ['name', 'value']) || count($option) !== 2
 				|| !is_string($option['name'] ?? null) || !array_key_exists('value', $option)
 				|| !in_array($option['name'], ColumnOptions::TYPE_FIELDS[$type], true) || isset($seen[$option['name']])) SchemaRequest::invalid('options');
-			$name = $option['name']; $value = $option['value']; $seen[$name] = true;
+			$name = $option['name'];
+			$value = $option['value'];
+			$seen[$name] = true;
 			self::value($name, $value, $subtype, $legacyUnlimitedText);
 			$changes[$name] = $value;
 		}

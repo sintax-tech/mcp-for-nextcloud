@@ -7,6 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Tables\Writing;
 
+use OCA\Mcp\Modules\Tables\Reading\RowsRefusal;
+
+use OCA\Mcp\Modules\Tables\Reading\RowFilterDomain;
+
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 
@@ -26,13 +30,15 @@ final class SchemaViewChanges {
 			$settings = [];
 			$oldSettings = $before['columnSettings'] ?? $before['columns'] ?? [];
 			$byId = [];
-			foreach ($oldSettings as $setting) { $setting = (array)$setting; if (isset($setting['columnId'])) $byId[(int)$setting['columnId']] = $setting; }
+			foreach ($oldSettings as $setting) { $setting = (array)$setting;
+			if (isset($setting['columnId'])) $byId[(int)$setting['columnId']] = $setting; }
 			foreach (SchemaRequest::ids($patch['columns'], 'patch.columns') as $order => $id) {
 				self::column($id, $columns);
 				$settings[] = array_replace($byId[$id] ?? ['columnId' => $id, 'readonly' => false, 'mandatory' => false], ['order' => $order]);
 			}
 			self::relations($settings, $oldSettings, $columns);
-			unset($patch['columns']); $patch['columnSettings'] = $settings;
+			unset($patch['columns']);
+			$patch['columnSettings'] = $settings;
 		}
 		foreach (['filter', 'sort'] as $key) if (array_key_exists($key, $patch)) {
 			if ($key === 'filter') {
@@ -44,7 +50,9 @@ final class SchemaViewChanges {
 			}
 			$groups = $key === 'filter' ? $patch[$key] : [$patch[$key]];
 			if (!array_is_list($groups) || count($groups) > 100) SchemaRequest::invalid('patch.' . $key);
-			$count = 0; $all = []; $seen = [];
+			$count = 0;
+			$all = [];
+			$seen = [];
 			foreach ($groups as $group) {
 				if (!is_array($group) || !array_is_list($group) || ($key === 'filter' && $group === [])) SchemaRequest::invalid('patch.' . $key);
 				$out = [];
@@ -63,9 +71,10 @@ final class SchemaViewChanges {
 							|| (is_float($rule['value']) && !is_finite($rule['value'])) || (is_string($rule['value']) && strlen($rule['value']) > 10000)) SchemaRequest::invalid('patch.filter');
 					}
 					if ($key === 'filter') {
-						try { $rule = (new \OCA\Mcp\Modules\Tables\Reading\RowFilterDomain($profile))->condition($id, $columns[$id], $rule['operator'], $rule['value']); }
-						catch (\OCA\Mcp\Modules\Tables\Reading\RowsRefusal) { SchemaRequest::invalid('patch.filter'); }
-					} else { unset($rule['column_id']); $rule = ['columnId' => $id] + $rule; }
+						try { $rule = (new RowFilterDomain($profile))->condition($id, $columns[$id], $rule['operator'], $rule['value']); }
+						catch (RowsRefusal) { SchemaRequest::invalid('patch.filter'); }
+					} else { unset($rule['column_id']);
+					$rule = ['columnId' => $id] + $rule; }
 					$out[] = $rule;
 				}
 				$all[] = $out;

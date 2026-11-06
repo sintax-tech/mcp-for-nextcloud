@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Tables\Integration;
 
+use OCA\Mcp\Modules\Tables\Writing\SchemaReceiptComparison;
+
 use OCA\Mcp\Modules\Tables\Presentation\{SchemaSnapshot, SchemaMessages};
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
@@ -26,7 +28,8 @@ class SchemaObservation {
 		$a = $p['arguments'];
 		$observed = $this->node($p, $id, $uid);
 		if ( ($a['view_ids'] ?? []) !== []) {
-			$observed['views'] = []; $observed['viewsVerified'] = true;
+			$observed['views'] = [];
+			$observed['viewsVerified'] = true;
 			foreach ($a['view_ids'] as $viewId) {
 				$view = $this->reader->target('view', $viewId, $uid, $a['table_id']);
 				$observed['views'][$viewId] = SchemaSnapshot::of((array)$view->jsonSerialize(), 'view');
@@ -34,7 +37,7 @@ class SchemaObservation {
 				$orders = array_column($expected, 'order');
 				$expected[] = ['columnId' => $id, 'order' => $orders === [] ? 0 : max($orders) + 1, 'readonly' => false, 'mandatory' => false];
 				$observed['viewsVerified'] = $observed['viewsVerified'] && in_array($id, $view->getColumnIds(), true)
-					&& \OCA\Mcp\Modules\Tables\Writing\SchemaReceiptComparison::same($expected, $observed['views'][$viewId]['columnSettings'] ?? null);
+					&& SchemaReceiptComparison::same($expected, $observed['views'][$viewId]['columnSettings'] ?? null);
 			}
 		}
 		return $observed;
@@ -47,14 +50,14 @@ class SchemaObservation {
 	private function shares(array $p, string $uid, bool $revoke): array {
 		$a = $p['arguments'];
 
-			$items = $this->reader->shares($a['node_type'], $a['node_id'], $uid);
-			$found = [];
-			foreach ($items as $share) {
-				if ($revoke ? (int)$share['id'] === $a['share_id']
-					: ($share['receiver'] ?? '') === $a['recipient']['id'] && ($share['receiverType'] ?? '') === $a['recipient']['type']) $found[] = $share;
-			}
-			if ($revoke && $found === []) return [];
-			if (count($found) !== 1) throw new ToolFailure(SchemaMessages::uncertain());
-			return SchemaSnapshot::share($found[0]);
+		$items = $this->reader->shares($a['node_type'], $a['node_id'], $uid);
+		$found = [];
+		foreach ($items as $share) {
+			if ($revoke ? (int)$share['id'] === $a['share_id']
+				: ($share['receiver'] ?? '') === $a['recipient']['id'] && ($share['receiverType'] ?? '') === $a['recipient']['type']) $found[] = $share;
+		}
+		if ($revoke && $found === []) return [];
+		if (count($found) !== 1) throw new ToolFailure(SchemaMessages::uncertain());
+		return SchemaSnapshot::share($found[0]);
 	}
 }

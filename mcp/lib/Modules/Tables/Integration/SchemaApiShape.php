@@ -16,7 +16,7 @@ final class SchemaApiShape {
 	 * @return list<array> Expected native members and their signatures.
 	 */
 	public static function members(string $profile): array {
-		$data = self::$signatures ??= json_decode((string)file_get_contents(__DIR__ . '/schema-api-signatures.json'), true, 64, JSON_THROW_ON_ERROR);
+		$data = self::$signatures ??= json_decode((string)file_get_contents(dirname(__DIR__, 4) . '/appinfo/tables-schema-api-signatures.json'), true, 64, JSON_THROW_ON_ERROR);
 		if (!isset($data[$profile]) || $data[$profile] === []) return [];
 		$members = $data[$profile];
 		foreach (['OCA\\Tables\\Db\\Table' => ['ownership', 'title', 'description', 'emoji', 'archived'],

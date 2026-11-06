@@ -13,6 +13,7 @@ use OCA\Mcp\Mcp\Confirmation\{PlanState, PlanChanged};
 use OCA\Mcp\Mcp\Tools\Results\{ToolResult, ToolFailure};
 use OCA\Mcp\Modules\Tables\Integration\{SchemaGateway, SchemaAction, TablesWriteCapabilities};
 use OCA\Mcp\Modules\Tables\Presentation\SchemaMessages;
+use OCA\Mcp\Modules\Tables\Presentation\TablesMessages;
 use OCA\Mcp\Modules\Tables\TablesSessionGuard;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 
@@ -47,13 +48,18 @@ class SchemaFlow {
 	public function handle(SchemaAction $action, array $args, string $uid): array {
 		if (($args['confirm'] ?? false) !== true) return ToolResult::json($this->preview($action, $args, $uid));
 		PlanState::require($args);
-		$p = $this->prepare($action, $args, $uid); $plan = $this->plan($action, $p, $uid);
+		$p = $this->prepare($action, $args, $uid);
+		$plan = $this->plan($action, $p, $uid);
 		if (!PlanState::matches($plan['plan_state'], $args)) throw new PlanChanged($plan);
 		if ($p['shared'] && ($args['confirm_shared'] ?? false) !== true) return ToolResult::json($plan + ['message' => SchemaMessages::shared()]);
-		$returned = null; $failed = false;
+		$returned = null;
+		$failed = false;
 		if (!$p['noop']) {
-			try { $returned = $this->gateway->apply($action, $p, $uid); }
-			catch (\Throwable) { $failed = true; }
+			try {
+				$returned = $this->gateway->apply($action, $p, $uid);
+			} catch (\Throwable) {
+				$failed = true;
+			}
 		}
 		try {
 			$this->admit($action, $uid);
@@ -63,7 +69,7 @@ class SchemaFlow {
 		}
 		$different = SchemaReceiptComparison::differences($p['after'], $observed);
 		$matches = $different === [];
-		return ToolResult::json(['status' => $matches ? 'observed' : 'different', 'differentFields' => $different, 'attemptFailed' => $failed, 'noop' => $p['noop'], 'observed' => $observed, 'notice' => \OCA\Mcp\Modules\Tables\Presentation\TablesMessages::UNTRUSTED_NOTICE]);
+		return ToolResult::json(['status' => $matches ? 'observed' : 'different', 'differentFields' => $different, 'attemptFailed' => $failed, 'noop' => $p['noop'], 'observed' => $observed, 'notice' => TablesMessages::UNTRUSTED_NOTICE]);
 	}
 	/**
 	 * @param SchemaAction $action Tool-specific action.
@@ -72,7 +78,8 @@ class SchemaFlow {
 	 * @return array<string,mixed> Revalidated preparation.
 	 */
 	private function prepare(SchemaAction $action, array $args, string $uid): array {
-		$args = SchemaRequest::of($action->name(), $args); $this->admit($action, $uid);
+		$args = SchemaRequest::of($action->name(), $args);
+		$this->admit($action, $uid);
 		return $this->gateway->prepare($action, $args, $uid, $this->capabilities->profile() ?? throw new ToolFailure(SchemaMessages::incompatible()));
 	}
 	/**
@@ -93,14 +100,15 @@ class SchemaFlow {
 	 * @return array<string,mixed> Bounded public plan.
 	 */
 	private function plan(SchemaAction $action, array $p, string $uid): array {
-		$intent = $p['arguments']; unset($intent['confirm'], $intent['confirm_shared'], $intent['plan_state']);
+		$intent = $p['arguments'];
+		unset($intent['confirm'], $intent['confirm_shared'], $intent['plan_state']);
 		$shown = ['intent' => $intent, 'version' => $p['version'], 'profile' => $p['profile'], 'shared' => $p['shared'],
 			'before' => $p['before'], 'after' => $p['after'], 'preserved' => $p['preserved'] ?? [], 'views' => $p['views'] ?? [], 'rewrittenFields' => $p['rewrittenFields'] ?? []];
 		if (strlen(json_encode($shown, JSON_THROW_ON_ERROR)) > 60000) SchemaRequest::invalid('patch');
 		$notes = [SchemaMessages::notice(), ...$action->notes()];
 		return ['requiresConfirmation' => true, 'action' => 'tables_' . $action->name(), 'target' => $intent,
 			'before' => $p['before'], 'after' => $p['after'], 'views' => $p['views'] ?? [], 'rewrittenFields' => $p['rewrittenFields'] ?? [], 'shared' => $p['shared'], 'recoveryGuaranteed' => false, 'backupCreated' => false, 'noop' => $p['noop'], 'notes' => $notes,
-			'notice' => \OCA\Mcp\Modules\Tables\Presentation\TablesMessages::UNTRUSTED_NOTICE,
+			'notice' => TablesMessages::UNTRUSTED_NOTICE,
 			'plan_state' => $this->states->of('tables_' . $action->name(), $uid, $shown)];
 	}
 }

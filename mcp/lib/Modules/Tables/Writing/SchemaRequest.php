@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Tables\Writing;
 
+use OCA\Mcp\Modules\Tables\Presentation\SchemaMessages;
+
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Modules\Tables\Presentation\SchemaToolSchema;
@@ -49,6 +51,6 @@ final class SchemaRequest {
 	 * @return never
 	 */
 	public static function invalid(string $path): never {
-		throw new ArgumentValidationException('Invalid argument: ' . $path, $path, \OCA\Mcp\Modules\Tables\Presentation\SchemaMessages::invalidRule());
+		throw new ArgumentValidationException('Invalid argument: ' . $path, $path, SchemaMessages::invalidRule());
 	}
 }

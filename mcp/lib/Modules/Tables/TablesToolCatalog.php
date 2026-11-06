@@ -13,11 +13,34 @@ use OCA\Mcp\Modules\Tables\Tools\ListColumns;
 use OCA\Mcp\Modules\Tables\Tools\ListRows;
 use OCA\Mcp\Modules\Tables\Tools\CreateRow;
 use OCA\Mcp\Modules\Tables\Tools\UpdateRow;
+use OCA\Mcp\Modules\Tables\Tools\CreateTable;
+use OCA\Mcp\Modules\Tables\Tools\UpdateTable;
+use OCA\Mcp\Modules\Tables\Tools\CreateColumn;
+use OCA\Mcp\Modules\Tables\Tools\UpdateColumn;
+use OCA\Mcp\Modules\Tables\Tools\CreateView;
+use OCA\Mcp\Modules\Tables\Tools\UpdateView;
+use OCA\Mcp\Modules\Tables\Tools\ShareNode;
+use OCA\Mcp\Modules\Tables\Tools\UnshareNode;
 
 /** The Tables tools in their published order. */
 final class TablesToolCatalog {
 	/** @var list<class-string<\OCA\Mcp\Mcp\Tools\Tool>> ordered published tools */
-	public const TOOLS = [ListTables::class, ListViews::class, ListColumns::class, ListRows::class, CreateRow::class, UpdateRow::class, \OCA\Mcp\Modules\Tables\Tools\CreateTable::class, \OCA\Mcp\Modules\Tables\Tools\UpdateTable::class, \OCA\Mcp\Modules\Tables\Tools\CreateColumn::class, \OCA\Mcp\Modules\Tables\Tools\UpdateColumn::class, \OCA\Mcp\Modules\Tables\Tools\CreateView::class, \OCA\Mcp\Modules\Tables\Tools\UpdateView::class, \OCA\Mcp\Modules\Tables\Tools\ShareNode::class, \OCA\Mcp\Modules\Tables\Tools\UnshareNode::class];
+	public const TOOLS = [
+		ListTables::class,
+		ListViews::class,
+		ListColumns::class,
+		ListRows::class,
+		CreateRow::class,
+		UpdateRow::class,
+		CreateTable::class,
+		UpdateTable::class,
+		CreateColumn::class,
+		UpdateColumn::class,
+		CreateView::class,
+		UpdateView::class,
+		ShareNode::class,
+		UnshareNode::class,
+	];
 
 	/** Prevents construction of this ordered catalog. */
 	private function __construct() {

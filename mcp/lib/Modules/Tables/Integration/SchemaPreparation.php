@@ -35,7 +35,10 @@ class SchemaPreparation {
 	public function base(string $kind, ?int $id, bool $create, bool $share, array $a, string $uid, string $profile): array {
 		$this->services->get('permissions', $uid)->preCheckUserId($uid, false);
 
-		$node = null; $table = null; $before = []; $shared = false;
+		$node = null;
+		$table = null;
+		$before = [];
+		$shared = false;
 		if ($share || !$create) {
 			$node = $this->reader->target($kind, $id, $uid, !$share && $kind !== 'table' ? $a['table_id'] : null);
 			$before = SchemaNativeSnapshot::of($node);
@@ -60,16 +63,17 @@ class SchemaPreparation {
 		$before = $p['preserved'] ?? [];
 		$changes = $p['changes'];
 		$profile = $p['profile'];
-			$p['views'] = [];
-			foreach ($a['view_ids'] ?? [] as $viewId) {
-				$view = $this->reader->target('view', $viewId, $uid, $a['table_id']);
-				$p['views'][$viewId] = SchemaSnapshot::of((array)$view->jsonSerialize(), 'view');
-			}
-			$column = $this->columns->of($changes, $create ? null : $before, $uid, $profile);
-			$p['rewrittenFields'] = $column['rewrittenFields'];
-			$p['dto'] = $column['dto']; $p['changes'] = SchemaSnapshot::of($column['data'], 'column');
-			// Technical settings are part of confirmation too, even though they never enter the visible plan.
-			$p['preserved'] = $before;
+		$p['views'] = [];
+		foreach ($a['view_ids'] ?? [] as $viewId) {
+			$view = $this->reader->target('view', $viewId, $uid, $a['table_id']);
+			$p['views'][$viewId] = SchemaSnapshot::of((array)$view->jsonSerialize(), 'view');
+		}
+		$column = $this->columns->of($changes, $create ? null : $before, $uid, $profile);
+		$p['rewrittenFields'] = $column['rewrittenFields'];
+		$p['dto'] = $column['dto'];
+		$p['changes'] = SchemaSnapshot::of($column['data'], 'column');
+		// Technical settings are part of confirmation too, even though they never enter the visible plan.
+		$p['preserved'] = $before;
 		$p['after'] = array_replace($p['before'], $p['changes']);
 		return $p;
 	}
@@ -80,10 +84,10 @@ class SchemaPreparation {
 		$before = $p['preserved'];
 		$profile = $p['profile'];
 		$node = $this->reader->target('view', $p['id'], $uid, $a['table_id']);
-			$p['changes'] = SchemaViewChanges::of($changes, $before, $this->reader->columns($a['table_id'], $uid, $node), $profile);
-			SchemaViewInput::of($p['changes'], $profile);
+		$p['changes'] = SchemaViewChanges::of($changes, $before, $this->reader->columns($a['table_id'], $uid, $node), $profile);
+		SchemaViewInput::of($p['changes'], $profile);
 		$p['after'] = array_replace($p['before'], $p['changes']);
-		if ( array_key_exists('columnSettings', $p['changes'])) $p['after']['columns'] = array_column($p['changes']['columnSettings'], 'columnId');
+		if (array_key_exists('columnSettings', $p['changes'])) $p['after']['columns'] = array_column($p['changes']['columnSettings'], 'columnId');
 		return $p;
 	}
 	/** @param array $p Authorized node. @param string $uid Caller. @return array Explicit share intent. */

@@ -19,7 +19,8 @@ final class SchemaViewInput {
 			foreach (['columnSettings', 'filter', 'sort'] as $key) if (isset($patch[$key])) $patch[$key] = json_encode($patch[$key], JSON_THROW_ON_ERROR);
 			return $patch;
 		}
-		$title = 'OCA\\Tables\\Service\\ValueObject\\Title'; $emoji = 'OCA\\Tables\\Service\\ValueObject\\Emoji';
+		$title = 'OCA\\Tables\\Service\\ValueObject\\Title';
+		$emoji = 'OCA\\Tables\\Service\\ValueObject\\Emoji';
 		$args = [];
 		foreach (['title' => $title, 'emoji' => $emoji] as $key => $class) {
 			if (array_key_exists($key, $patch)) { $args[$key] = new $class($patch[$key]); }

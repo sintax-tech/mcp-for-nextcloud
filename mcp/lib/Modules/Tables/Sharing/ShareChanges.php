@@ -20,7 +20,8 @@ class ShareChanges {
 	 * @return array<string,mixed> Share state.
 	 */
 	public function of(bool $revoke, array $p, array $shares): array {
-		$a = $p['arguments']; $matches = [];
+		$a = $p['arguments'];
+		$matches = [];
 		foreach ($shares as $share) {
 			if (($share['nodeType'] ?? '') !== $a['node_type'] || (int)($share['nodeId'] ?? 0) !== $a['node_id']) throw new ToolFailure(CommonMessages::notFound());
 			if ($revoke ? (int)$share['id'] === $a['share_id'] : ($share['receiver'] ?? '') === $a['recipient']['id'] && ($share['receiverType'] ?? '') === $a['recipient']['type']) $matches[] = $share;
@@ -28,7 +29,9 @@ class ShareChanges {
 		if (count($matches) > 1) throw new ToolFailure(SchemaMessages::differentShare());
 		if ($revoke) {
 			if ($matches === [] || !in_array($matches[0]['receiverType'], ['user', 'group'], true)) throw new ToolFailure(CommonMessages::notFound());
-			$p['before'] = SchemaSnapshot::share($matches[0]); $p['after'] = []; $p['changes'] = [];
+			$p['before'] = SchemaSnapshot::share($matches[0]);
+			$p['after'] = [];
+			$p['changes'] = [];
 		} else {
 			$p['before'] = $matches === [] ? [] : SchemaSnapshot::share($matches[0]);
 			$p['changes'] = ['nodeId' => $a['node_id'], 'nodeType' => $a['node_type'], 'recipient' => $a['recipient'], 'permissions' => $a['permissions']];

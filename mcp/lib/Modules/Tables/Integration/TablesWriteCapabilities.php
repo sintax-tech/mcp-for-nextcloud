@@ -24,7 +24,8 @@ class TablesWriteCapabilities implements CapabilityProbe {
 	public function keys(): array { return ['tables.native_schema_api', 'tables.native_sharing_api']; }
 	/** @return string|null Native family proven by source comparisons; unknown/prerelease versions stay closed. */
 	public function profile(): ?string {
-		$version = (string)$this->apps->getAppVersion('tables'); $major = $this->major ?? (int)Util::getVersion()[0];
+		$version = (string)$this->apps->getAppVersion('tables');
+		$major = $this->major ?? (int)Util::getVersion()[0];
 		if (!preg_match('/^\d+\.\d+\.\d+$/D', $version) || !in_array($major, [32, 33, 34, 35], true)) return null;
 		foreach ([['1.0.10', '1.0.11', [32], '1.0.10'], ['2.2.2', '2.2.3', [33, 34, 35], '2.2.2'], ['2.3.1', '2.3.3', [33, 34, 35], '2.3.2']] as [$min, $max, $majors, $profile]) {
 			if (in_array($major, $majors, true) && version_compare($version, $min, '>=') && version_compare($version, $max, '<')) return $profile;
@@ -38,7 +39,8 @@ class TablesWriteCapabilities implements CapabilityProbe {
 	 */
 	public function supports(string $key): bool {
 		if (!in_array($key, $this->keys(), true) || !AppEnablement::forAnyone($this->apps, 'tables')) return false;
-		$profile = $this->profile(); if ($profile === null) return false;
+		$profile = $this->profile();
+		if ($profile === null) return false;
 		$members = SchemaApiShape::members($profile);
 		if ($members === []) return false;
 		foreach ($members as $entry) {

@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Tables;
 
 use OCA\Mcp\Mcp\Tools\CatalogModule;
+use OCA\Mcp\Modules\Tables\Presentation\SchemaPlanRenderer;
 use OCA\Mcp\Modules\Tables\Presentation\TablesGuideNotes;
 use OCA\Mcp\Modules\Tables\Presentation\RowWritePlanRenderer;
 use OCA\Mcp\Modules\Tables\Creation\CreateRowHandler;
@@ -33,7 +34,7 @@ final class TablesModule extends CatalogModule {
 
 	/** {@inheritDoc} */
 	public function renderPlan(string $tool, array $plan): ?string {
-		if (\OCA\Mcp\Modules\Tables\Presentation\SchemaPlanRenderer::supports($tool)) return \OCA\Mcp\Modules\Tables\Presentation\SchemaPlanRenderer::render($plan);
+		if (SchemaPlanRenderer::supports($tool)) return SchemaPlanRenderer::render($plan);
 		return in_array($tool, [CreateRowHandler::TOOL, UpdateRowHandler::TOOL], true) ? (new RowWritePlanRenderer())->render($plan) : null;
 	}
 }

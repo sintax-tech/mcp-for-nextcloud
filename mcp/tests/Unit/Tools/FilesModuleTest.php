@@ -350,7 +350,7 @@ final class FilesModuleTest extends TestCase {
 			// Deleting a node is out of the question for Files. BatchStore deletes rows, not files, and the
 			// one allowed Node::delete() lives in Reorganization's undoBatch() — NoFileDeletionTest pins that
 			// one down; no other file in the namespace may call delete() at all.
-			if (!in_array(basename($file), ['Reorganization.php', 'BatchStore.php'], true)) {
+			if (!in_array(basename($file), [basename('/lib/Tools/Files/Reorganization.php'), basename('/lib/Tools/Files/BatchStore.php')], true)) {
 				$this->assertDoesNotMatchRegularExpression('/->(delete|unlink)\s*\(/', $code, $file);
 			}
 			$this->assertDoesNotMatchRegularExpression('/->(rename)\s*\(/', $code, $file);
@@ -358,7 +358,7 @@ final class FilesModuleTest extends TestCase {
 		$files = glob(dirname((new \ReflectionClass(FilesModule::class))->getFileName()) . '/*.php') ?: [];
 		$this->assertNotEmpty($files);
 		foreach ($files as $file) {
-			if (basename($file) === 'Reorganization.php') {
+			if (basename($file) === basename('/lib/Tools/Files/Reorganization.php')) {
 				continue;
 			}
 			// Delegating to Reorganization is the point; any other receiver moving a node is not.

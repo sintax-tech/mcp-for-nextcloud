@@ -10,7 +10,6 @@ namespace OCA\Mcp\Modules\Collectives\Moving;
 use OCA\Mcp\Mcp\Confirmation\PlanChanged;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Collectives\Integration\CollectivesGateway;
-use OCA\Mcp\Modules\Collectives\Integration\PageProjection;
 use OCA\Mcp\Modules\Collectives\Locating\PageTreeLoader;
 use OCA\Mcp\Modules\Collectives\Writing\PageReceipt;
 use OCA\Mcp\Modules\Collectives\Writing\PlanConfirmation;
@@ -19,7 +18,8 @@ use Throwable;
 /**
  * The confirmed `collectives_move`: the plan is rebuilt from a fresh read and must still be the approved one, the
  * native edit permission is read again, and the page service moves the page once, which renames its file, updates
- * its slug and both subpage orders. The receipt reads the tree again: parent, title, slug and position.
+ * its slug and both subpage orders. The receipt reads the tree again: parent, title, position, the removal from the
+ * old parent's order and, for a rename, the new slug.
  */
 class MovePageHandler {
 	/**
@@ -58,8 +58,11 @@ class MovePageHandler {
 		} catch (Throwable $e) {
 			$error = CollectivesGateway::failure($e)->getMessage();
 		}
-		// The position is only asked for when the parent changes; a rename keeps the page where it is.
-		$requested = ['parent_id' => $built['to'], 'title' => $built['title']] + ($built['moves'] ? ['position' => $built['plan']['to']['position']] : []);
+		// A new parent asks for the position there and the removal from the old order; a new title asks for a new slug.
+		$renamed = $built['title'] !== $built['plan']['from']['title'];
+		$requested = ['parent_id' => $built['to'], 'title' => $built['title']]
+			+ ($built['moves'] ? ['position' => $built['plan']['to']['position'], 'in_old_order' => false] : [])
+			+ ($renamed ? ['slug_changed' => true] : []);
 		$extra = $error === null ? [] : ['native_error' => $error];
 		try {
 			$tree = $this->trees->load($cid, $uid, 'move');
@@ -72,7 +75,9 @@ class MovePageHandler {
 		$page = $tree->page($built['page_id']);
 		$order = $tree->has($built['to']) ? $tree->page($built['to'])['subpage_order'] : [];
 		$position = array_search($built['page_id'], $order, true);
-		$observed = ['parent_id' => $page['parent_id'], 'title' => $page['title'], 'position' => $position === false ? null : $position];
-		return PageReceipt::of($requested, $observed, ['page' => PageProjection::visible($page)] + $extra);
+		$old = $tree->has($built['from']) ? in_array($built['page_id'], $tree->page($built['from'])['subpage_order'], true) : null;
+		$observed = ['parent_id' => $page['parent_id'], 'title' => $page['title'], 'position' => $position === false ? null : $position,
+			'in_old_order' => $old, 'slug_changed' => $page['slug'] !== $built['plan']['page']['slug']];
+		return PageReceipt::of($requested, $observed, ['page' => $tree->visible($page)] + $extra);
 	}
 }

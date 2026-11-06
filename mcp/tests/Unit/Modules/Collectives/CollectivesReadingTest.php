@@ -76,6 +76,8 @@ final class CollectivesReadingTest extends TestCase {
 		$this->assertNull($second['next_cursor']);
 		$this->assertStringContainsString('cursor', $this->refusal('collectives_pages', ['collective_id' => 7, 'parent_id' => $team, 'cursor' => $first['next_cursor']]));
 		$this->assertStringContainsString('cursor', $this->refusal('collectives_pages', ['collective_id' => 7, 'cursor' => '3.forged']));
+		$this->rig->version = '4.5.0';
+		$this->assertStringContainsString('cursor', $this->refusal('collectives_pages', ['collective_id' => 7, 'limit' => 3, 'cursor' => $first['next_cursor']]), 'another version');
 	}
 
 	/** @return void a page is read whole with its etag; a template, a hidden page or an unknown id read as not found */
@@ -127,6 +129,21 @@ final class CollectivesReadingTest extends TestCase {
 		$this->assertNotContains('getPagesFromFolder', CollectivesScene::$calls, 'Collectives was not asked for the tree');
 	}
 
+	/** @return void a hidden page leaks nowhere: not in the subpage order nor as the parent of a page shown */
+	public function testHiddenPagesLeakNoIdThroughReferences(): void {
+		$guide = CollectivesScene::$ids['Guide.md'];
+		$team = CollectivesScene::$ids['Team/Readme.md'];
+		$this->rig->hidden = [$guide, $team];
+		$pages = $this->call('collectives_pages', ['collective_id' => 7])['pages'];
+		$this->assertSame(['Landing page', 'Onboarding'], array_column($pages, 'title'));
+		$this->assertSame([], $pages[0]['subpage_order']);
+		$this->assertNull($pages[1]['parent_id'], 'the parent of Onboarding may not be shown');
+		$landing = $this->call('collectives_read', ['collective_id' => 7, 'page_id' => CollectivesScene::$ids['Readme.md']]);
+		foreach ([$guide, $team] as $id) {
+			$this->assertNotContains($id, $landing['page']['subpage_order']);
+		}
+	}
+
 	/** @return void a page over the limit is refused, never truncated */
 	public function testRefusesAPageOverTheReadLimit(): void {
 		CollectivesScene::$tree->nodes[CollectivesScene::ROOT . '/Guide.md']['content'] = str_repeat('a', 262145);
@@ -143,6 +160,16 @@ final class CollectivesReadingTest extends TestCase {
 		$this->assertCount(1, $answer['notices']);
 		CollectivesScene::$searchHits = array_fill(0, 100, ['file_id' => CollectivesScene::$ids['Guide.md']]);
 		$this->assertCount(2, $this->call('collectives_search', ['collective_id' => 7, 'query' => 'x', 'scope' => 'content'])['notices'], 'a full budget is declared');
+	}
+
+	/** @return void the 4.0.0 shape gets the budget explicitly; hits are deduplicated, filtered and never pass it */
+	public function testTheLegacySearchReceivesTheBudget(): void {
+		$this->rig->surface = new CollectivesSurface(CollectivesSurface::MEMBERS, 'OCA\\Collectives\\Service\\LegacySearchService');
+		CollectivesScene::$searchHits = [...array_fill(0, 30, ['file_id' => CollectivesScene::$ids['Guide.md']]),
+			['file_id' => CollectivesScene::$ids['.templates/Template.md']], ['file_id' => CollectivesScene::$ids['Team/Onboarding.md']]];
+		$answer = $this->call('collectives_search', ['collective_id' => 7, 'query' => 'x', 'scope' => 'content']);
+		$this->assertContains('searchCollective:100', CollectivesScene::$calls);
+		$this->assertSame(['Guide', 'Onboarding'], array_column($answer['pages'], 'title'));
 	}
 
 	/** @return void a version without a proven content search refuses it and keeps the title search */

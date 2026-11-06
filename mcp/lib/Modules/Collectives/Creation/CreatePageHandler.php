@@ -10,7 +10,6 @@ namespace OCA\Mcp\Modules\Collectives\Creation;
 use OCA\Mcp\Mcp\Confirmation\PlanChanged;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Collectives\Integration\CollectivesGateway;
-use OCA\Mcp\Modules\Collectives\Integration\PageProjection;
 use OCA\Mcp\Modules\Collectives\Locating\PageTreeLoader;
 use OCA\Mcp\Modules\Collectives\Writing\PageReceipt;
 use OCA\Mcp\Modules\Collectives\Writing\PlanConfirmation;
@@ -19,7 +18,8 @@ use Throwable;
 /**
  * The confirmed `collectives_create`: the plan is rebuilt from a fresh read and must still be the approved one, then
  * the page service creates the page once, without content. The receipt comes from reading the tree again: the page,
- * its parent and its place in the parent's subpage order. A failure after the attempt is reported, never retried.
+ * its parent and its place in the parent's subpage order. A failure after the attempt is reported, never retried, and
+ * without the id the native call answered the receipt stays uncertain.
  */
 class CreatePageHandler {
 	/**
@@ -50,7 +50,8 @@ class CreatePageHandler {
 		$id = null;
 		$error = null;
 		try {
-			$id = $this->gateway->create($cid, (int)$arguments['parent_id'], (string)$arguments['title'], $uid);
+			// The id the plan resolved: Collectives turns 0 into the landing page for the file, not for the subpage order.
+			$id = $this->gateway->create($cid, $built['parent_id'], (string)$arguments['title'], $uid);
 		} catch (Throwable $e) {
 			$error = CollectivesGateway::failure($e)->getMessage();
 		}
@@ -59,14 +60,11 @@ class CreatePageHandler {
 		} catch (ToolFailure) {
 			return PageReceipt::of(['parent_id' => $built['parent_id'], 'in_parent_order' => true], null, $error === null ? [] : ['native_error' => $error]);
 		}
-		if ($id === null) {
-			$new = array_values(array_diff($tree->children($built['parent_id']), $built['children']));
-			$id = count($new) === 1 ? $new[0] : null;
-		}
+		// Without the id Collectives answered, a new subpage of the parent may be somebody else's: never claim it.
 		$page = $id !== null && $tree->has($id) ? $tree->page($id) : null;
 		$observed = $page === null ? null : ['parent_id' => $page['parent_id'],
 			'in_parent_order' => in_array($id, $tree->has($built['parent_id']) ? $tree->page($built['parent_id'])['subpage_order'] : [], true)];
 		return PageReceipt::of(['parent_id' => $built['parent_id'], 'in_parent_order' => true], $observed,
-			['page' => $page === null ? null : PageProjection::visible($page)] + ($error === null ? [] : ['native_error' => $error]));
+			['page' => $page === null ? null : $tree->visible($page)] + ($error === null ? [] : ['native_error' => $error]));
 	}
 }

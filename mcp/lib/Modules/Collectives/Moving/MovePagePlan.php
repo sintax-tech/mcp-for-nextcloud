@@ -10,7 +10,6 @@ namespace OCA\Mcp\Modules\Collectives\Moving;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Collectives\Integration\CollectivesGateway;
 use OCA\Mcp\Modules\Collectives\Integration\PageFiles;
-use OCA\Mcp\Modules\Collectives\Integration\PageProjection;
 use OCA\Mcp\Modules\Collectives\Locating\PageTreeLoader;
 use OCA\Mcp\Modules\Collectives\Presentation\CollectivesMessages;
 use OCA\Mcp\Modules\Collectives\Writing\PlanConfirmation;
@@ -74,7 +73,7 @@ class MovePagePlan {
 		$leaf = $moves && $target['file_name'] !== 'Readme.md';
 		$notices = $changes ? array_values(array_filter([$leaf ? CollectivesMessages::parentBecomesFolder() : null,
 			CollectivesMessages::linksByPath(), CollectivesMessages::membersNotified()])) : [CollectivesMessages::nothingChanges()];
-		$plan = ['action' => self::TOOL, 'collective_id' => $cid, 'page' => PageProjection::visible($page),
+		$plan = ['action' => self::TOOL, 'collective_id' => $cid, 'page' => $tree->visible($page),
 			'from' => ['parent_id' => $from, 'parent_title' => $tree->page($from)['title'], 'title' => $page['title'], 'position' => $tree->position($from, $id)],
 			'to' => ['parent_id' => $to, 'parent_title' => $target['title'], 'title' => $title, 'position' => $moves ? min($index, count($siblings)) : $tree->position($from, $id)],
 			'changes' => $changes, 'parent_becomes_folder' => $leaf, 'recoverable' => true, 'notices' => $notices];

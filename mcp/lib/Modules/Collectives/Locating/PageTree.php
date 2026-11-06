@@ -101,6 +101,21 @@ final class PageTree {
 	}
 
 	/**
+	 * What a tool answer may carry of a page: no paths, and no reference to a page outside this tree, so the id of a
+	 * hidden or out-of-scope page never leaks through the subpage order or the parent of another one. The complete
+	 * native order stays in the tree for the checks of a write.
+	 * @param array<string, mixed> $page a page of this tree
+	 * @return array{id:int, title:string, slug:?string, parent_id:?int, emoji:?string, last_user:?string, timestamp:int, size:int, subpage_order:list<int>}
+	 *   the page as a tool shows it; parent_id is null when the parent may not be shown
+	 */
+	public function visible(array $page): array {
+		unset($page['file_name'], $page['file_path']);
+		$page['subpage_order'] = array_values(array_filter($page['subpage_order'], fn (int $id): bool => isset($this->pages[$id])));
+		$page['parent_id'] = $page['parent_id'] === 0 || isset($this->pages[$page['parent_id']]) ? $page['parent_id'] : null;
+		return $page;
+	}
+
+	/**
 	 * @param int $parentId parent page id
 	 * @param int $id page id
 	 * @return int|null position of the page among the parent's subpages, null when it is not one of them

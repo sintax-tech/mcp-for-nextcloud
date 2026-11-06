@@ -65,7 +65,7 @@ final class CollectivesMovingTest extends TestCase {
 		$this->assertNotContains('move', CollectivesScene::$calls);
 		$receipt = $this->move(['page_id' => $guide, 'parent_id' => $team, 'index' => 0]);
 		$this->assertSame('applied', $receipt['status']);
-		$this->assertSame(['parent_id' => $team, 'title' => 'Guide', 'position' => 0], $receipt['observed']);
+		$this->assertSame(['parent_id' => $team, 'title' => 'Guide', 'position' => 0, 'in_old_order' => false, 'slug_changed' => false], $receipt['observed']);
 		$this->assertSame('guide', $receipt['page']['slug']);
 		$this->assertArrayHasKey(CollectivesScene::ROOT . '/Team/Guide.md', CollectivesScene::$tree->nodes);
 		$this->assertNotContains($guide, CollectivesScene::$orders[CollectivesScene::$ids['Readme.md']]);
@@ -172,6 +172,16 @@ final class CollectivesMovingTest extends TestCase {
 		} finally {
 			$this->assertNotContains('move', CollectivesScene::$calls);
 		}
+	}
+
+	/** @return void a rename whose slug update fails is partial, though parent and title are already the asked ones */
+	public function testARenameWithoutTheNewSlugIsPartial(): void {
+		CollectivesScene::$failSlug = true;
+		$receipt = $this->move(['page_id' => CollectivesScene::$ids['Guide.md'], 'title' => 'Manual']);
+		$this->assertSame('partial', $receipt['status']);
+		$this->assertSame('Manual', $receipt['observed']['title']);
+		$this->assertFalse($receipt['observed']['slug_changed']);
+		$this->assertArrayHasKey('native_error', $receipt);
 	}
 
 	/** @return void a native failure after the file moved is reported from what is read back, and not retried */

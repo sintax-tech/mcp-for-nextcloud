@@ -36,6 +36,8 @@ final class CollectivesRig {
 	/** @var list<string> granted operations of the collectives module */
 	public array $grants = ['read', 'create', 'edit', 'move'];
 	public bool $appEnabled = true;
+	/** Installed Collectives version the app manager answers. */
+	public string $version = '4.7.1';
 	public string $sessionUser = 'alice';
 	public string $folderSetting = '/.Collectives';
 	/** @var list<int> file ids hidden from MCP by a system tag */
@@ -83,6 +85,7 @@ final class CollectivesRig {
 			'OCA\\Collectives\\Service\\SearchService' => new $class(),
 			ContainerInterface::class => $this->container(),
 			PlanState::class => new PlanState($this->config()),
+			IAppManager::class => $this->apps(),
 			CollectivesAdmission::class => new CollectivesAdmission($this->policy(), $this->apps(), $this->users(), $this->session(),
 				$this->config(), $this->appConfig(), $this->surface ?? new CollectivesSurface()),
 			CollectivesGateway::class => new CollectivesGateway($this->container(), $this->build(CollectivesAdmission::class), $this->surface ?? new CollectivesSurface()),
@@ -98,7 +101,7 @@ final class CollectivesRig {
 		foreach ((new ReflectionClass($class))->getConstructor()?->getParameters() ?? [] as $parameter) {
 			$type = $parameter->getType();
 			$name = $type instanceof ReflectionNamedType ? $type->getName() : '';
-			$args[] = str_starts_with($name, 'OCA\\Mcp\\') && (new ReflectionClass($name))->isInstantiable() ? $this->build($name)
+			$args[] = $name === IAppManager::class || (str_starts_with($name, 'OCA\\Mcp\\') && (new ReflectionClass($name))->isInstantiable()) ? $this->build($name)
 				: ($parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : $this->mock($name));
 		}
 		return new $class(...$args);
@@ -119,7 +122,7 @@ final class CollectivesRig {
 	private function apps(): IAppManager {
 		$apps = $this->mock(IAppManager::class);
 		$apps->method('isEnabledForUser')->willReturnCallback(fn (): bool => $this->appEnabled);
-		$apps->method('getAppVersion')->willReturn('4.7.1');
+		$apps->method('getAppVersion')->willReturnCallback(fn (): string => $this->version);
 		return $apps;
 	}
 

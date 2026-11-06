@@ -97,6 +97,30 @@ final class CollectivesWritingTest extends TestCase {
 			['collective_id' => 7, 'parent_id' => CollectivesScene::$ids['.templates/Template.md'], 'title' => 'X'])));
 	}
 
+	/** @return void parent_id 0 creates under the landing page and in its subpage order, as the plan resolved it */
+	public function testCreatesUnderTheLandingPage(): void {
+		$args = ['collective_id' => 7, 'parent_id' => 0, 'title' => 'Top'];
+		$plan = $this->plan('collectives_create', $args);
+		$receipt = $this->confirm('collectives_create', $args + ['plan_state' => $plan['plan_state']]);
+		$this->assertSame('applied', $receipt['status'], json_encode($receipt));
+		$this->assertSame(CollectivesScene::$ids['Readme.md'], $receipt['page']['parent_id']);
+		$this->assertArrayNotHasKey('native_error', $receipt);
+	}
+
+	/** @return void a failed create next to somebody else's new page is uncertain and never claims that page */
+	public function testAFailedCreateNeverClaimsAConcurrentPage(): void {
+		$args = ['collective_id' => 7, 'parent_id' => CollectivesScene::$ids['Team/Readme.md'], 'title' => 'Mine'];
+		$plan = $this->plan('collectives_create', $args);
+		CollectivesScene::$failCreate = static function (): void {
+			CollectivesScene::$tree->addFile(CollectivesScene::ROOT . '/Team/Theirs.md', '', 'text/markdown');
+		};
+		$receipt = $this->confirm('collectives_create', $args + ['plan_state' => $plan['plan_state']]);
+		$this->assertSame('uncertain', $receipt['status']);
+		$this->assertArrayHasKey('native_error', $receipt);
+		$this->assertNull($receipt['page'] ?? null);
+		$this->assertStringNotContainsString('Theirs', json_encode($receipt));
+	}
+
 	/** @return void a state other than the approved one writes nothing and answers the new plan */
 	public function testCreateWithAStalePlanWritesNothing(): void {
 		$args = ['collective_id' => 7, 'parent_id' => 0, 'title' => 'Fresh'];

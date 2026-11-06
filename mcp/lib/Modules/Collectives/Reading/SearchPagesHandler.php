@@ -10,7 +10,6 @@ namespace OCA\Mcp\Modules\Collectives\Reading;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Collectives\Locating\PageTreeLoader;
 use OCA\Mcp\Modules\Collectives\Integration\CollectivesGateway;
-use OCA\Mcp\Modules\Collectives\Integration\PageProjection;
 use OCA\Mcp\Modules\Collectives\Presentation\CollectivesMessages;
 
 /**
@@ -60,7 +59,7 @@ class SearchPagesHandler {
 			$hits = array_map(static fn (array $page): int => (int)$page['id'], array_values(array_filter($tree->ordered(),
 				static fn (array $page): bool => stripos((string)$page['title'], $query) !== false)));
 		}
-		$page = $this->cursors->page(array_map(static fn (int $id): array => PageProjection::visible($tree->page($id)), $hits),
+		$page = $this->cursors->page(array_map(static fn (int $id): array => $tree->visible($tree->page($id)), $hits),
 			$slice, $arguments, $uid, self::TOOL);
 		return ['collective_id' => $tree->collectiveId, 'pages' => $page['items'], 'next_cursor' => $page['next_cursor']]
 			+ ($notices === [] ? [] : ['notices' => $notices]);

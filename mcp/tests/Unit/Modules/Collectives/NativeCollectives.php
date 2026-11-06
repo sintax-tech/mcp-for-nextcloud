@@ -95,11 +95,20 @@ namespace OCA\Collectives\Service {
 		}
 	}
 
+	/** The shape of SearchService::searchCollective in 4.0.0, for the surface only. */
+	class LegacySearchService {
+		/** @return list<array{file_id:int}> never called */
+		public function searchCollective(Collective $collective, string $term, int $maxResults = 15): array {
+			return [];
+		}
+	}
+
 	/** Double of SearchService of 4.4.0 and later. */
 	class SearchService {
 		/** @return list<array{file_id:int}> the index hits */
 		public function searchCollective(Collective $collective, string $query): array {
-			CollectivesScene::$calls[] = 'searchCollective';
+			// 4.0.0 receives the most results as a third argument; the double records how many it was given.
+			CollectivesScene::$calls[] = 'searchCollective:' . implode(',', array_slice(func_get_args(), 2));
 			return CollectivesScene::$searchHits;
 		}
 	}

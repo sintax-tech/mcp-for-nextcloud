@@ -10,7 +10,6 @@ namespace OCA\Mcp\Modules\Collectives\Editing;
 use OCA\Mcp\Mcp\Confirmation\PlanChanged;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Collectives\Integration\CollectivesGateway;
-use OCA\Mcp\Modules\Collectives\Integration\PageProjection;
 use OCA\Mcp\Modules\Collectives\Locating\PageTreeLoader;
 use OCA\Mcp\Modules\Collectives\Presentation\CollectivesMessages;
 use OCA\Mcp\Modules\Collectives\Writing\PageReceipt;
@@ -59,7 +58,7 @@ class EditPageHandler {
 		$cid = (int)$arguments['collective_id'];
 		$requested = ['content_sha256' => hash('sha256', $built['updated'])];
 		if (!$built['changed']) {
-			return ['status' => 'not_attempted', 'nativeCallAttempted' => false, 'reason' => 'no_change', 'page' => PageProjection::visible($built['page'])];
+			return ['status' => 'not_attempted', 'nativeCallAttempted' => false, 'reason' => 'no_change', 'page' => $built['plan']['page']];
 		}
 		$this->gateway->assertEditable($cid, $uid, 'edit');
 		$file = $built['file'];

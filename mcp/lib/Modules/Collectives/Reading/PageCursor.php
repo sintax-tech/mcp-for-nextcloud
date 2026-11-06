@@ -11,14 +11,19 @@ use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Collectives\Presentation\CollectivesMessages;
 use OCA\Mcp\Modules\Collectives\Presentation\CollectivesSchema;
+use OCP\App\IAppManager;
 
 /**
- * The opaque cursor of the Collectives listings: an offset signed for one user, one tool and one query, so a cursor
- * never continues another listing or another account. Signed with the same server secret as plan states.
+ * The opaque cursor of the Collectives listings: an offset signed for one user, one tool, one query and the installed
+ * Collectives version, so a cursor never continues another listing, another account or a listing an update reordered.
+ * Signed with the same server secret as plan states.
  */
 class PageCursor {
-	/** @param PlanState $states the instance's HMAC */
-	public function __construct(private PlanState $states) {
+	/**
+	 * @param PlanState $states the instance's HMAC
+	 * @param IAppManager $apps the installed Collectives version
+	 */
+	public function __construct(private PlanState $states, private IAppManager $apps) {
 	}
 
 	/**
@@ -68,6 +73,7 @@ class PageCursor {
 	private function sign(int $offset, array $arguments, string $uid, string $tool): string {
 		unset($arguments['cursor'], $arguments['limit']);
 		ksort($arguments);
-		return $this->states->of($tool . '#cursor', $uid, ['offset' => $offset, 'arguments' => $arguments]);
+		return $this->states->of($tool . '#cursor', $uid, ['offset' => $offset, 'arguments' => $arguments,
+			'version' => (string)$this->apps->getAppVersion('collectives')]);
 	}
 }

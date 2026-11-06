@@ -9,7 +9,6 @@ namespace OCA\Mcp\Modules\Collectives\Creation;
 
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Collectives\Integration\CollectivesGateway;
-use OCA\Mcp\Modules\Collectives\Integration\PageProjection;
 use OCA\Mcp\Modules\Collectives\Locating\PageTreeLoader;
 use OCA\Mcp\Modules\Collectives\Presentation\CollectivesMessages;
 use OCA\Mcp\Modules\Collectives\Writing\PlanConfirmation;
@@ -58,7 +57,7 @@ class CreatePagePlan {
 			$taken ? CollectivesMessages::titleMayChange() : null,
 			CollectivesMessages::membersNotified(),
 		]));
-		$plan = ['action' => self::TOOL, 'collective_id' => $cid, 'parent' => PageProjection::visible($parent), 'page_title' => $title,
+		$plan = ['action' => self::TOOL, 'collective_id' => $cid, 'parent' => $tree->visible($parent), 'page_title' => $title,
 			'parent_becomes_folder' => $leaf, 'title_taken' => $taken, 'content' => '', 'recoverable' => true, 'notices' => $notices];
 		$shown = ['collective_id' => $cid, 'parent_id' => (int)$parent['id'], 'title' => $title, 'leaf' => $leaf, 'children' => $children];
 		return ['plan' => $this->confirmation->sign(self::TOOL, $uid, $plan, $shown), 'parent_id' => (int)$parent['id'], 'children' => $children];

@@ -464,7 +464,7 @@
                         "content": [
                             {
                                 "type": "text",
-                                "text": "{\n    \"status\": \"applied\",\n    \"nativeCallAttempted\": true,\n    \"requested\": {\n        \"parent_id\": 106,\n        \"title\": \"Guide\",\n        \"position\": 0\n    },\n    \"observed\": {\n        \"parent_id\": 106,\n        \"title\": \"Guide\",\n        \"position\": 0\n    },\n    \"message\": \"Change observed by reading the collective again.\",\n    \"page\": {\n        \"id\": 104,\n        \"title\": \"Guide\",\n        \"slug\": \"guide\",\n        \"parent_id\": 106,\n        \"emoji\": null,\n        \"last_user\": \"Alice\",\n        \"timestamp\": <timestamp#1>,\n        \"size\": 11,\n        \"subpage_order\": []\n    }\n}"
+                                "text": "{\n    \"status\": \"applied\",\n    \"nativeCallAttempted\": true,\n    \"requested\": {\n        \"parent_id\": 106,\n        \"title\": \"Guide\",\n        \"position\": 0,\n        \"in_old_order\": false\n    },\n    \"observed\": {\n        \"parent_id\": 106,\n        \"title\": \"Guide\",\n        \"position\": 0,\n        \"in_old_order\": false,\n        \"slug_changed\": false\n    },\n    \"message\": \"Change observed by reading the collective again.\",\n    \"page\": {\n        \"id\": 104,\n        \"title\": \"Guide\",\n        \"slug\": \"guide\",\n        \"parent_id\": 106,\n        \"emoji\": null,\n        \"last_user\": \"Alice\",\n        \"timestamp\": <timestamp#1>,\n        \"size\": 11,\n        \"subpage_order\": []\n    }\n}"
                             }
                         ]
                     }

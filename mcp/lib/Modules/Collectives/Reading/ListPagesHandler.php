@@ -9,7 +9,6 @@ namespace OCA\Mcp\Modules\Collectives\Reading;
 
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Collectives\Locating\PageTreeLoader;
-use OCA\Mcp\Modules\Collectives\Integration\PageProjection;
 
 /** Backs `collectives_pages`: the admitted pages of a collective, or of one page's subtree, sliced by cursor. */
 class ListPagesHandler {
@@ -41,7 +40,7 @@ class ListPagesHandler {
 		} else {
 			$pages = $tree->ordered();
 		}
-		$page = $this->cursors->page(array_map(static fn (array $page): array => PageProjection::visible($page), $pages),
+		$page = $this->cursors->page(array_map(static fn (array $page): array => $tree->visible($page), $pages),
 			$slice, $arguments, $uid, self::TOOL);
 		return ['collective_id' => $tree->collectiveId, 'pages' => $page['items'], 'next_cursor' => $page['next_cursor']];
 	}

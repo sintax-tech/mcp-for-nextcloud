@@ -10,7 +10,6 @@ namespace OCA\Mcp\Modules\Collectives\Editing;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Collectives\Integration\CollectivesGateway;
 use OCA\Mcp\Modules\Collectives\Integration\CollectivesMarkdownPolicy;
-use OCA\Mcp\Modules\Collectives\Integration\PageProjection;
 use OCA\Mcp\Modules\Collectives\Locating\PageTreeLoader;
 use OCA\Mcp\Modules\Collectives\Presentation\CollectivesMessages;
 use OCA\Mcp\Modules\Collectives\Writing\PlanConfirmation;
@@ -66,7 +65,7 @@ class EditPagePlan {
 		$this->markdown->assertWritable($file, $updated);
 		$etag = trim((string)$file->getEtag(), '"');
 		$diff = UnifiedDiff::between($current, $updated);
-		$plan = ['action' => self::TOOL, 'collective_id' => $cid, 'page' => PageProjection::visible($page), 'mode' => $mode, 'etag' => $etag,
+		$plan = ['action' => self::TOOL, 'collective_id' => $cid, 'page' => $tree->visible($page), 'mode' => $mode, 'etag' => $etag,
 			'changed' => $updated !== $current, 'bytes_before' => strlen($current), 'bytes_after' => strlen($updated),
 			'diff' => strlen($diff) <= self::MAX_DIFF ? $diff : null, 'diff_omitted' => strlen($diff) > self::MAX_DIFF, 'recoverable' => true,
 			'notices' => [CollectivesMessages::noTextCoordination(), CollectivesMessages::membersNotified()]] + $this->locks->planNotice($file, $uid);

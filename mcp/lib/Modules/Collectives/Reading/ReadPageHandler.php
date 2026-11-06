@@ -10,7 +10,6 @@ namespace OCA\Mcp\Modules\Collectives\Reading;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Collectives\Locating\PageTreeLoader;
 use OCA\Mcp\Modules\Collectives\Integration\CollectivesMarkdownPolicy;
-use OCA\Mcp\Modules\Collectives\Integration\PageProjection;
 use OCA\Mcp\Modules\Collectives\Presentation\CollectivesMessages;
 
 /** Backs `collectives_read`: one admitted page, whole, with its etag. */
@@ -40,7 +39,7 @@ class ReadPageHandler {
 		if (strlen($content) > CollectivesMarkdownPolicy::MAX_BYTES) {
 			throw new ToolFailure(CollectivesMessages::pageTooLarge(CollectivesMarkdownPolicy::MAX_BYTES));
 		}
-		return ['collective_id' => $tree->collectiveId, 'page' => PageProjection::visible($tree->page($id)),
+		return ['collective_id' => $tree->collectiveId, 'page' => $tree->visible($tree->page($id)),
 			'etag' => (string)$file->getEtag(), 'content' => $content];
 	}
 }

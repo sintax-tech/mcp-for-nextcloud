@@ -37,8 +37,14 @@ final class CollectivesScene {
 	public static array $searchHits = [];
 	/** @var (\Closure(): void)|null runs at the end of a native create or move, to change the world during the attempt */
 	public static ?\Closure $afterNative = null;
+	/** @var (\Closure(): void)|null makes the native create fail after running this, before any page of the call exists */
+	public static ?\Closure $failCreate = null;
 	/** Makes the native move fail after it renamed the file, before the orders change. */
 	public static bool $failMove = false;
+	/** Makes the native move fail after the rename and the orders, before the slug is updated. */
+	public static bool $failSlug = false;
+	/** @var array<int, string> slugs Collectives stored, by page id; a page without one has the slug of its name */
+	public static array $slugs = [];
 	/** @var array<string, int> page ids by path relative to ROOT */
 	public static array $ids = [];
 
@@ -52,7 +58,10 @@ final class CollectivesScene {
 		self::$collectives = [self::CID => ['name' => 'Wiki', 'members' => ['alice'], 'canEdit' => true]];
 		self::$calls = [];
 		self::$failMove = false;
+		self::$failSlug = false;
+		self::$slugs = [];
 		self::$afterNative = null;
+		self::$failCreate = null;
 		self::$searchHits = [];
 		self::$ids = [];
 		foreach (['Readme.md' => "# Wiki\n", 'Guide.md' => "Guide text\n", 'Team/Readme.md' => "Team\n",
@@ -121,7 +130,7 @@ final class CollectivesScene {
 			$name = basename($relative);
 			$isIndex = $name === 'Readme.md';
 			$pages[] = new PageInfo(['id' => $id, 'title' => $isIndex ? ($dir === '' ? 'Landing page' : basename($dir)) : basename($name, '.md'),
-				'slug' => strtolower(preg_replace('/\W+/', '-', $isIndex ? ($dir === '' ? 'landing' : basename($dir)) : basename($name, '.md'))),
+				'slug' => self::$slugs[$id] ?? strtolower(preg_replace('/\W+/', '-', $isIndex ? ($dir === '' ? 'landing' : basename($dir)) : basename($name, '.md'))),
 				'parentId' => self::parentOf($relative), 'fileName' => $name, 'filePath' => $dir, 'emoji' => null,
 				'lastUserDisplayName' => 'Alice', 'timestamp' => 1759200000, 'size' => strlen(self::$tree->nodes[self::ROOT . '/' . $relative]['content']),
 				'subpageOrder' => self::$orders[$id] ?? [], 'shareToken' => 'page-token-secret', 'collectivePath' => '/appdata/collectives/7']);
@@ -132,13 +141,21 @@ final class CollectivesScene {
 	/** @return PageInfo the created page; a leaf parent becomes a folder with a Readme.md first */
 	public static function create(int $cid, int $parentId, string $title, ?int $templateId, string $uid): PageInfo {
 		self::$calls[] = 'create';
+		if (self::$failCreate !== null) {
+			(self::$failCreate)();
+			throw new \RuntimeException('native create failed');
+		}
 		$folder = self::folderOf($parentId === 0 ? self::$ids['Readme.md'] : $parentId);
 		$name = $title;
 		for ($n = 2; isset(self::$tree->nodes[self::ROOT . '/' . ltrim($folder . '/' . $name . '.md', '/')]); $n++) {
 			$name = $title . ' (' . $n . ')';
 		}
 		$id = self::$tree->addFile(self::ROOT . '/' . ltrim($folder . '/' . $name . '.md', '/'), '', 'text/markdown');
-		$parent = $parentId === 0 ? self::$ids['Readme.md'] : $parentId;
+		if ($parentId === 0) {
+			// Upstream createBase resolves 0 for the file only: the page exists, then addToSubpageOrder looks up file id 0 and fails.
+			throw new NotFoundException('File not found: 0');
+		}
+		$parent = $parentId;
 		self::$orders[$parent] ??= [];
 		array_unshift(self::$orders[$parent], $id);
 		$page = self::page($id);
@@ -156,6 +173,7 @@ final class CollectivesScene {
 		$source = $isIndex ? dirname($relative) : $relative;
 		$base = $title ?? ($isIndex ? basename(dirname($relative)) : basename($relative, '.md'));
 		$target = ltrim(self::folderOf($parent) . '/' . $base . ($isIndex ? '' : '.md'), '/');
+		self::$slugs[$id] = (string)self::page($id)->jsonSerialize()['slug'];
 		self::rename($source, $target);
 		if (self::$failMove) {
 			throw new \RuntimeException('native failure after the rename');
@@ -165,6 +183,10 @@ final class CollectivesScene {
 			self::$orders[$parent] ??= [];
 			array_splice(self::$orders[$parent], min($index, count(self::$orders[$parent] ?? [])), 0, [$id]);
 		}
+		if (self::$failSlug) {
+			throw new \RuntimeException('native slug update failed');
+		}
+		unset(self::$slugs[$id]);
 		$page = self::page($id);
 		self::$afterNative === null || (self::$afterNative)();
 		return $page;

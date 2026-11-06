@@ -54,13 +54,4 @@ final class PageProjection {
 		];
 	}
 
-	/**
-	 * @param array<string, mixed> $page a page of {@see self::page()}
-	 * @return array{id:int, title:string, slug:?string, parent_id:int, emoji:?string, last_user:?string, timestamp:int, size:int, subpage_order:list<int>}
-	 *   what a tool answer may carry
-	 */
-	public static function visible(array $page): array {
-		unset($page['file_name'], $page['file_path']);
-		return $page;
-	}
 }

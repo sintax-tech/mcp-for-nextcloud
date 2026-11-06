@@ -14,10 +14,10 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\Tool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_image_search tool. */
+/** Publishes files_image_search and delegates to the component that searches image candidates through the image service. */
 final class SearchImages implements Tool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Reading\SearchImagesHandler $handler existing effect composition
+	 * @param \OCA\Mcp\Modules\Files\Reading\SearchImagesHandler $handler executor that searches image candidates through the image service
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Reading\SearchImagesHandler $handler) {
 	}

@@ -25,11 +25,11 @@ final class ImageMetadata {
 	/** Service id of the Files Metadata manager; resolved lazily so the app loads without it. */
 	private const METADATA_SERVICE = 'OCP\\FilesMetadata\\IFilesMetadataManager';
 	/**
-	 * @param NodeAccessInfo $accessInfo Existing request-scoped collaborator.
+	 * @param NodeAccessInfo $accessInfo Actor access metadata for returned images.
 	 * @param ContainerInterface $container Container used only for lazy optional image metadata.
-	 * @param ISystemTagManager $tagManager Existing request-scoped collaborator.
-	 * @param ISystemTagObjectMapper $tagMapper Existing request-scoped collaborator.
-	 * @param IUserManager $userManager Existing request-scoped collaborator.
+	 * @param ISystemTagManager $tagManager System-tag definition lookup.
+	 * @param ISystemTagObjectMapper $tagMapper System-tag assignments for file objects.
+	 * @param IUserManager $userManager Actor lookup for user-scoped image searches.
 	 */
 	public function __construct(
 		private NodeAccessInfo $accessInfo,

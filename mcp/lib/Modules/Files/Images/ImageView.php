@@ -15,9 +15,9 @@ use OCP\Files\Folder;
 /** Returns one admitted image preview and its metadata. */
 final class ImageView {
 	/**
-	 * @param ImageFileAccess $files Existing request-scoped collaborator.
-	 * @param ImagePreview $preview Existing request-scoped collaborator.
-	 * @param ImageMetadata $metadata Existing request-scoped collaborator.
+	 * @param ImageFileAccess $files Visible image file resolution and validation.
+	 * @param ImagePreview $preview Native image preview provider and byte-budget checks.
+	 * @param ImageMetadata $metadata Image metadata and actor access formatter.
 	 */
 	public function __construct(
 		private ImageFileAccess $files,

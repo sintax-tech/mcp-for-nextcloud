@@ -11,11 +11,11 @@ use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\Reorganization;
 use OCA\Mcp\Modules\Files\FilesPreviewContext;
 
-/** Preserves the existing Files MkdirPreview behavior. */
+/** Plans the operation that creates a guarded directory, without executing the write. */
 final class MkdirPreview {
 	/**
-	 * @param FilesPreviewContext $context existing context collaborator
-	 * @param Reorganization $reorganization existing reorganization collaborator
+	 * @param FilesPreviewContext $context actor-root admission and node-access mapping
+	 * @param Reorganization $reorganization guarded folder, copy and move operations
 	 */
 	public function __construct(
 		private FilesPreviewContext $context,
@@ -29,7 +29,6 @@ final class MkdirPreview {
 	 * @return array<string,mixed> unchanged read-only plan
 	 */
 	public function plan(array $arguments, string $userId): array {
-		$etag = $arguments['etag'] ?? null;
 		return $this->context->run($userId, fn (Folder $root): array => $this->reorganization->planMkdir($root, $userId, $arguments['path']));
 	}
 }

@@ -37,10 +37,10 @@ final class ImageTools {
 	/** Object type used by the Tags app for files. */
 	public const TAG_OBJECT_TYPE = ImageLimits::TAG_OBJECT_TYPE;
 	/**
-	 * @param ImageView $view Existing request-scoped collaborator.
-	 * @param ImageBatch $batch Existing request-scoped collaborator.
-	 * @param ImageSearchHandler $search Existing request-scoped collaborator.
-	 * @param ImageMetadata $metadata Existing request-scoped collaborator.
+	 * @param ImageView $view Single-image content and metadata workflow.
+	 * @param ImageBatch $batch Multi-image selection and shared byte-budget workflow.
+	 * @param ImageSearchHandler $search Image query admission and search dispatch.
+	 * @param ImageMetadata $metadata Image metadata and actor access formatter.
 	 */
 	public function __construct(
 		private ImageView $view,

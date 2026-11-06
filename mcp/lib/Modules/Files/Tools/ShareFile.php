@@ -16,11 +16,11 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_share tool. */
+/** Publishes files_share and delegates to the component that creates or updates an actor-owned share. */
 final class ShareFile implements WriteTool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Sharing\ShareFileHandler $handler existing effect composition
-	 * @param \OCA\Mcp\Modules\Files\Sharing\ShareFilePreview $plans distinct plan composition
+	 * @param \OCA\Mcp\Modules\Files\Sharing\ShareFileHandler $handler executor that creates or updates an actor-owned share
+	 * @param \OCA\Mcp\Modules\Files\Sharing\ShareFilePreview $plans read-only planner for this write operation
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Sharing\ShareFileHandler $handler, private \OCA\Mcp\Modules\Files\Sharing\ShareFilePreview $plans) {
 	}

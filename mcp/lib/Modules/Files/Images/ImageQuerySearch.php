@@ -23,9 +23,9 @@ use OCP\IUserManager;
 /** Runs the existing paged image query with its visibility and inspection limits. */
 final class ImageQuerySearch {
 	/**
-	 * @param IDBConnection $db Existing request-scoped collaborator.
-	 * @param IUserManager $userManager Existing request-scoped collaborator.
-	 * @param ?FilesAccessGuard $visibilityGuard Existing optional Files visibility guard.
+	 * @param IDBConnection $db Database-specific escaping for image filename queries.
+	 * @param IUserManager $userManager Actor lookup for user-scoped image searches.
+	 * @param ?FilesAccessGuard $visibilityGuard Optional resource-scope visibility guard.
 	 */
 	public function __construct(
 		private IDBConnection $db,
@@ -44,7 +44,7 @@ final class ImageQuerySearch {
 	 * @param int|null $after Lower mtime bound.
 	 * @param int|null $before Upper mtime bound.
 	 * @param int $limit Maximum returned entries.
-	 * @param \Closure(Folder, string, File): array<string, mixed> $entry Existing metadata builder.
+	 * @param \Closure(Folder, string, File): array<string, mixed> $entry Formats a visible image entry with actor access metadata.
 	 * @return list<array<string, mixed>> Image metadata.
 	 * @throws ToolFailure When the filter cannot be resolved.
 	 * @throws \Throwable Backend, policy and lock failures handled by execute.

@@ -14,15 +14,15 @@ use OCA\Mcp\Modules\Files\TextExtractor;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 use OCA\Mcp\Modules\Files\Images\OcrSupport;
 
-/** Preserves the existing Files ReadFileHandler behavior. */
+/** Runs the operation that reads visible file text with metadata and optional OCR inside the actor view. */
 final class ReadFileHandler {
 	/**
-	 * @param FilesCallContext $context existing context collaborator
-	 * @param ReadableFile $readable existing readable collaborator
-	 * @param NodeAccessInfo $accessInfo existing accessInfo collaborator
-	 * @param TextExtractor $extractor existing extractor collaborator
-	 * @param OcrSupport $ocr existing ocr collaborator
-	 * @param FileTextResult $texts existing texts collaborator
+	 * @param FilesCallContext $context actor-root admission and node-access mapping
+	 * @param ReadableFile $readable visible file resolver
+	 * @param NodeAccessInfo $accessInfo node access metadata formatter
+	 * @param TextExtractor $extractor document text extractor
+	 * @param OcrSupport $ocr image text extraction support
+	 * @param FileTextResult $texts text and metadata response formatter
 	 */
 	public function __construct(
 		private FilesCallContext $context,
@@ -40,7 +40,6 @@ final class ReadFileHandler {
 	 * @return array<string,mixed> unchanged tool result
 	 */
 	public function handle(array $arguments, string $userId): array {
-		$confirmed = (bool)($arguments['confirm_shared'] ?? false);
 		return $this->context->run($userId, fn (Folder $root): array => $this->read($root, $userId, $arguments['path']));
 	}
 
@@ -49,9 +48,9 @@ final class ReadFileHandler {
 	 * needs to place the text and to know who owns the file.
 	 *
 	 * @return array{content: list<array{type:string, text:string}>}
-	 * @param Folder $root existing operation root
-	 * @param string $userId existing operation userId
-	 * @param string $path existing operation path
+	 * @param Folder $root actor folder used to resolve relative paths
+	 * @param string $userId authenticated actor identifier
+	 * @param string $path user-relative file path
 	 */
 	private function read(Folder $root, string $userId, string $path): array {
 		$path = PathGuard::normalize($path);

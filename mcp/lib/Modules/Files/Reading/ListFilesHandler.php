@@ -17,12 +17,12 @@ use OCP\Files\Node;
 use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 
-/** Preserves the existing Files ListFilesHandler behavior. */
+/** Runs the operation that lists directory entries and their access metadata inside the actor view. */
 final class ListFilesHandler {
 	/**
-	 * @param FilesCallContext $context existing context collaborator
-	 * @param FileEntry $entries existing entries collaborator
-	 * @param ?FilesAccessGuard $visibilityGuard existing visibilityGuard collaborator
+	 * @param FilesCallContext $context actor-root admission and node-access mapping
+	 * @param FileEntry $entries node listing entry formatter
+	 * @param ?FilesAccessGuard $visibilityGuard optional resource-scope admission guard
 	 */
 	public function __construct(
 		private FilesCallContext $context,
@@ -37,14 +37,13 @@ final class ListFilesHandler {
 	 * @return array<string,mixed> unchanged tool result
 	 */
 	public function handle(array $arguments, string $userId): array {
-		$confirmed = (bool)($arguments['confirm_shared'] ?? false);
 		return $this->context->run($userId, fn (Folder $root): array => ToolResult::json($this->list($root, $userId, $arguments['path'])));
 	}
 
 	/** @return list<array{name:string, path:string, isDir:bool, size:int, mtime:string, contentType:string, access:array<string, mixed>}>
-	 * @param Folder $root existing operation root
-	 * @param string $userId existing operation userId
-	 * @param string $path existing operation path
+	 * @param Folder $root actor folder used to resolve relative paths
+	 * @param string $userId authenticated actor identifier
+	 * @param string $path user-relative file path
 	 */
 	private function list(Folder $root, string $userId, string $path): array {
 		// With a Files scope that does not hold the root, "/" lists the selected folders at their real paths: the

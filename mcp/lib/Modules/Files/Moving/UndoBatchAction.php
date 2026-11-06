@@ -14,13 +14,13 @@ use OCA\Mcp\Modules\Files\Reorganization;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 use OCA\Mcp\Modules\Files\BatchStore;
 
-/** Preserves the existing Files UndoBatchAction behavior. */
+/** Runs the operation that undoes a recorded batch move inside the actor view. */
 final class UndoBatchAction {
 	/**
-	 * @param FilesCallContext $context existing context collaborator
-	 * @param Reorganization $reorganization existing reorganization collaborator
-	 * @param BatchStore $batches existing batches collaborator
-	 * @param ITimeFactory $time existing time collaborator
+	 * @param FilesCallContext $context actor-root admission and node-access mapping
+	 * @param Reorganization $reorganization guarded folder, copy and move operations
+	 * @param BatchStore $batches batch move and undo persistence
+	 * @param ITimeFactory $time clock for batch timestamps
 	 */
 	public function __construct(
 		private FilesCallContext $context,
@@ -36,7 +36,6 @@ final class UndoBatchAction {
 	 * @return array<string,mixed> unchanged tool result
 	 */
 	public function handle(array $arguments, string $userId): array {
-		$confirmed = (bool)($arguments['confirm_shared'] ?? false);
 		return $this->context->run($userId, fn (Folder $root): array => ToolResult::json($this->reorganization->undoBatch(
 				$root,
 				$userId,

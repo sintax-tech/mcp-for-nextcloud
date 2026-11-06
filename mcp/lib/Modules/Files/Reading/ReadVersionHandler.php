@@ -32,9 +32,9 @@ final class ReadVersionHandler {
 	public const MAX_CHARS = 100000;
 
 	/**
-	 * @param FilesCallContext $context existing context collaborator
-	 * @param VersionTools $versions existing versions collaborator
-	 * @param ReadableFile $readable existing readable collaborator
+	 * @param FilesCallContext $context actor-root admission and node-access mapping
+	 * @param VersionTools $versions version listing and content access
+	 * @param ReadableFile $readable visible file resolver
 	 * @param TextExtractor $extractor Turns the version bytes into text.
 	 * @param OcrSupport $ocr Notice and state of the OCR for a version without text.
 	 */

@@ -7,8 +7,6 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files;
 
-
-
 /** Files tools in their existing discovery order. */
 final class FilesToolCatalog {
 	/** @var list<class-string<\OCA\Mcp\Mcp\Tools\Tool>> ordered public tools */

@@ -26,8 +26,8 @@ use OCP\IUserManager;
 /** Selects explicit or folder image candidates without merging their admission rules. */
 final class ImageSelection {
 	/**
-	 * @param IUserManager $userManager Existing request-scoped collaborator.
-	 * @param ?FilesAccessGuard $visibilityGuard Existing optional Files visibility guard.
+	 * @param IUserManager $userManager Actor lookup for user-scoped image searches.
+	 * @param ?FilesAccessGuard $visibilityGuard Optional resource-scope visibility guard.
 	 */
 	public function __construct(
 		private IUserManager $userManager,

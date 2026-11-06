@@ -10,11 +10,11 @@ namespace OCA\Mcp\Modules\Files\Sharing;
 use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\FilesPreviewContext;
 
-/** Preserves the existing Files UnshareFilePreview behavior. */
+/** Plans the operation that removes an actor-owned share, without executing the write. */
 final class UnshareFilePreview {
 	/**
-	 * @param FilesPreviewContext $context existing context collaborator
-	 * @param ?ShareRemover $shareRemover existing shareRemover collaborator
+	 * @param FilesPreviewContext $context actor-root admission and node-access mapping
+	 * @param ?ShareRemover $shareRemover optional owner-share removal service
 	 */
 	public function __construct(
 		private FilesPreviewContext $context,
@@ -28,7 +28,6 @@ final class UnshareFilePreview {
 	 * @return array<string,mixed> unchanged read-only plan
 	 */
 	public function plan(array $arguments, string $userId): array {
-		$etag = $arguments['etag'] ?? null;
 		return $this->context->run($userId, fn (Folder $root): array => ($this->shareRemover ?? throw new \LogicException('ShareRemover is not wired'))->plan($root, $userId, $arguments));
 	}
 }

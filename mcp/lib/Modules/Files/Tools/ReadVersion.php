@@ -14,10 +14,10 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\Tool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_version_read tool. */
+/** Publishes files_version_read and delegates to the component that reads historical file text with version metadata. */
 final class ReadVersion implements Tool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Reading\ReadVersionHandler $handler existing effect composition
+	 * @param \OCA\Mcp\Modules\Files\Reading\ReadVersionHandler $handler executor that reads historical file text with version metadata
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Reading\ReadVersionHandler $handler) {
 	}

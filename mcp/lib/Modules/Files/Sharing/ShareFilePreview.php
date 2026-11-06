@@ -10,11 +10,11 @@ namespace OCA\Mcp\Modules\Files\Sharing;
 use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\FilesPreviewContext;
 
-/** Preserves the existing Files ShareFilePreview behavior. */
+/** Plans the operation that creates or updates an actor-owned share, without executing the write. */
 final class ShareFilePreview {
 	/**
-	 * @param FilesPreviewContext $context existing context collaborator
-	 * @param ?ShareWriter $shareWriter existing shareWriter collaborator
+	 * @param FilesPreviewContext $context actor-root admission and node-access mapping
+	 * @param ?ShareWriter $shareWriter optional share creation and update service
 	 */
 	public function __construct(
 		private FilesPreviewContext $context,
@@ -28,7 +28,6 @@ final class ShareFilePreview {
 	 * @return array<string,mixed> unchanged read-only plan
 	 */
 	public function plan(array $arguments, string $userId): array {
-		$etag = $arguments['etag'] ?? null;
 		return $this->context->run($userId, fn (Folder $root): array => ($this->shareWriter ?? throw new \LogicException('ShareWriter is not wired'))->plan($root, $userId, $arguments));
 	}
 }

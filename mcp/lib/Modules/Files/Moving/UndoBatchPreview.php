@@ -13,13 +13,13 @@ use OCA\Mcp\Modules\Files\Reorganization;
 use OCA\Mcp\Modules\Files\FilesPreviewContext;
 use OCA\Mcp\Modules\Files\BatchStore;
 
-/** Preserves the existing Files UndoBatchPreview behavior. */
+/** Plans the operation that undoes a recorded batch move, without executing the write. */
 final class UndoBatchPreview {
 	/**
-	 * @param FilesPreviewContext $context existing context collaborator
-	 * @param Reorganization $reorganization existing reorganization collaborator
-	 * @param BatchStore $batches existing batches collaborator
-	 * @param ITimeFactory $time existing time collaborator
+	 * @param FilesPreviewContext $context actor-root admission and node-access mapping
+	 * @param Reorganization $reorganization guarded folder, copy and move operations
+	 * @param BatchStore $batches batch move and undo persistence
+	 * @param ITimeFactory $time clock for batch timestamps
 	 */
 	public function __construct(
 		private FilesPreviewContext $context,
@@ -35,7 +35,6 @@ final class UndoBatchPreview {
 	 * @return array<string,mixed> unchanged read-only plan
 	 */
 	public function plan(array $arguments, string $userId): array {
-		$etag = $arguments['etag'] ?? null;
 		return $this->context->run($userId, fn (Folder $root): array => $this->reorganization->planUndoBatch($root, $userId, $arguments['batch_id'], $this->batches, $this->time->getTime()));
 	}
 }

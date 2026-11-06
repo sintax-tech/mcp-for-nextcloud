@@ -13,10 +13,10 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\Tool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_search tool. */
+/** Publishes files_search and delegates to the component that searches indexed text with a filename fallback. */
 final class SearchFiles implements Tool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Reading\SearchFilesHandler $handler existing effect composition
+	 * @param \OCA\Mcp\Modules\Files\Reading\SearchFilesHandler $handler executor that searches indexed text with a filename fallback
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Reading\SearchFilesHandler $handler) {
 	}

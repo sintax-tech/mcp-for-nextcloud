@@ -22,10 +22,10 @@ use Psr\Log\LoggerInterface;
 /** Normalizes image search and preserves its scope and exception boundaries. */
 final class ImageSearchHandler {
 	/**
-	 * @param ImageTagSearch $tags Existing request-scoped collaborator.
-	 * @param ImageQuerySearch $query Existing request-scoped collaborator.
-	 * @param LoggerInterface $logger Existing request-scoped collaborator.
-	 * @param ?FilesAccessGuard $visibilityGuard Existing optional Files visibility guard.
+	 * @param ImageTagSearch $tags System-tag image search with visibility filtering.
+	 * @param ImageQuerySearch $query Filename, folder and date image search.
+	 * @param LoggerInterface $logger Safe diagnostics for failed image operations.
+	 * @param ?FilesAccessGuard $visibilityGuard Optional resource-scope visibility guard.
 	 */
 	public function __construct(
 		private ImageTagSearch $tags,
@@ -41,7 +41,7 @@ final class ImageSearchHandler {
 	 * @param Folder $root the user's folder
 	 * @param string $userId authenticated user
 	 * @param array{query?:string, folder?:string, modified_after?:string, modified_before?:string, tag?:string, limit:int} $args Validated tool arguments.
-	 * @param \Closure(Folder, string, File): array<string, mixed> $entry Existing metadata builder.
+	 * @param \Closure(Folder, string, File): array<string, mixed> $entry Formats a visible image entry with actor access metadata.
 	 * @return list<array<string, mixed>>
 	 * @throws ToolFailure For an invalid folder, date, unresolved tag or backend failure.
 	 * @throws PolicyUnavailable When the visibility policy cannot be read.

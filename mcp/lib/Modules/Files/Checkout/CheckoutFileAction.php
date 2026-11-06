@@ -18,18 +18,18 @@ use OCA\Mcp\Modules\Files\FilesCallContext;
 use OCA\Mcp\Modules\Files\BackupPlan;
 use OCA\Mcp\Modules\Files\Handler;
 
-/** Preserves the existing Files CheckoutFileAction behavior. */
+/** Runs the operation that starts the local checkout workflow inside the actor view. */
 final class CheckoutFileAction {
 	/**
-	 * @param FilesCallContext $context existing context collaborator
-	 * @param CheckoutService $checkout existing checkout collaborator
-	 * @param NodeAccessInfo $accessInfo existing accessInfo collaborator
-	 * @param SharedWriteGuard $guard existing guard collaborator
-	 * @param ?FilesAccessGuard $visibilityGuard existing visibilityGuard collaborator
-	 * @param ?LockAwareWrite $locks existing locks collaborator
-	 * @param ?\OCA\Mcp\Access\FileTypes\FileTypeGuard $fileTypes existing fileTypes collaborator
-	 * @param ?\OCA\Mcp\Platform\Backups\BackupLocation $backupLocation existing backupLocation collaborator
-	 * @param ?BackupPlan $backupPlan existing backupPlan collaborator
+	 * @param FilesCallContext $context actor-root admission and node-access mapping
+	 * @param CheckoutService $checkout checkout token and content workflow
+	 * @param NodeAccessInfo $accessInfo node access metadata formatter
+	 * @param SharedWriteGuard $guard shared-write confirmation guard
+	 * @param ?FilesAccessGuard $visibilityGuard optional resource-scope admission guard
+	 * @param ?LockAwareWrite $locks optional native file-lock guard
+	 * @param ?\OCA\Mcp\Access\FileTypes\FileTypeGuard $fileTypes optional file-type policy guard
+	 * @param ?\OCA\Mcp\Platform\Backups\BackupLocation $backupLocation optional backup destination policy
+	 * @param ?BackupPlan $backupPlan optional backup impact planner
 	 */
 	public function __construct(
 		private FilesCallContext $context,

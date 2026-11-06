@@ -12,11 +12,11 @@ use OCA\Mcp\Modules\Files\FileCreation;
 use OCA\Mcp\Modules\Files\FilesPreviewContext;
 use OCA\Mcp\Modules\Files\Handler;
 
-/** Preserves the existing Files UploadFilePreview behavior. */
+/** Plans the operation that creates a file from an upload link, without executing the write. */
 final class UploadFilePreview {
 	/**
-	 * @param FilesPreviewContext $context existing context collaborator
-	 * @param ?FileCreation $creation existing creation collaborator
+	 * @param FilesPreviewContext $context actor-root admission and node-access mapping
+	 * @param ?FileCreation $creation optional inline and upload file creation service
 	 */
 	public function __construct(
 		private FilesPreviewContext $context,
@@ -30,7 +30,6 @@ final class UploadFilePreview {
 	 * @return array<string,mixed> unchanged read-only plan
 	 */
 	public function plan(array $arguments, string $userId): array {
-		$etag = $arguments['etag'] ?? null;
 		return $this->context->run($userId, fn (Folder $root): array => (new Handler\UploadFileHandler(($this->creation ?? throw new \LogicException('FileCreation is not wired'))))->plan($root, $userId, $arguments['path'], $arguments['size'] ?? null));
 	}
 }

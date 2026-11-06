@@ -12,10 +12,10 @@ use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCP\Files\Folder;
 use OCP\Files\Node;
 
-/** Preserves the existing Files FileEntry behavior. */
+/** Formats directory entries with relative paths, file metadata and actor access details. */
 final class FileEntry {
 	/**
-	 * @param NodeAccessInfo $accessInfo existing accessInfo collaborator
+	 * @param NodeAccessInfo $accessInfo node access metadata formatter
 	 */
 	public function __construct(
 		private NodeAccessInfo $accessInfo,

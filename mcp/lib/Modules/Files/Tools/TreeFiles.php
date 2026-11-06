@@ -14,10 +14,10 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\Tool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_tree tool. */
+/** Publishes files_tree and delegates to the component that reads a bounded directory tree. */
 final class TreeFiles implements Tool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Reading\TreeFilesHandler $handler existing effect composition
+	 * @param \OCA\Mcp\Modules\Files\Reading\TreeFilesHandler $handler executor that reads a bounded directory tree
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Reading\TreeFilesHandler $handler) {
 	}

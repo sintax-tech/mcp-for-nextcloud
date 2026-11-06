@@ -13,11 +13,11 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_undo_batch tool. */
+/** Publishes files_undo_batch and delegates to the component that undoes a recorded batch move. */
 final class UndoBatch implements WriteTool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Moving\UndoBatchAction $handler existing effect composition
-	 * @param \OCA\Mcp\Modules\Files\Moving\UndoBatchPreview $plans distinct plan composition
+	 * @param \OCA\Mcp\Modules\Files\Moving\UndoBatchAction $handler executor that undoes a recorded batch move
+	 * @param \OCA\Mcp\Modules\Files\Moving\UndoBatchPreview $plans read-only planner for this write operation
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Moving\UndoBatchAction $handler, private \OCA\Mcp\Modules\Files\Moving\UndoBatchPreview $plans) {
 	}

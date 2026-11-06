@@ -14,10 +14,10 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\Tool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_images_view tool. */
+/** Publishes files_images_view and delegates to the component that returns a batch of images through the image service. */
 final class ViewImages implements Tool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Reading\ViewImagesHandler $handler existing effect composition
+	 * @param \OCA\Mcp\Modules\Files\Reading\ViewImagesHandler $handler executor that returns a batch of images through the image service
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Reading\ViewImagesHandler $handler) {
 	}

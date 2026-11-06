@@ -12,11 +12,11 @@ use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\Reorganization;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 
-/** Preserves the existing Files CopyFileHandler behavior. */
+/** Runs the operation that copies a node through reorganization guards inside the actor view. */
 final class CopyFileHandler {
 	/**
-	 * @param FilesCallContext $context existing context collaborator
-	 * @param Reorganization $reorganization existing reorganization collaborator
+	 * @param FilesCallContext $context actor-root admission and node-access mapping
+	 * @param Reorganization $reorganization guarded folder, copy and move operations
 	 */
 	public function __construct(
 		private FilesCallContext $context,

@@ -13,11 +13,11 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_checkout tool. */
+/** Publishes files_checkout and delegates to the component that starts the local checkout workflow. */
 final class CheckoutFile implements WriteTool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Checkout\CheckoutFileAction $handler existing effect composition
-	 * @param \OCA\Mcp\Modules\Files\Checkout\CheckoutFilePreview $plans distinct plan composition
+	 * @param \OCA\Mcp\Modules\Files\Checkout\CheckoutFileAction $handler executor that starts the local checkout workflow
+	 * @param \OCA\Mcp\Modules\Files\Checkout\CheckoutFilePreview $plans read-only planner for this write operation
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Checkout\CheckoutFileAction $handler, private \OCA\Mcp\Modules\Files\Checkout\CheckoutFilePreview $plans) {
 	}

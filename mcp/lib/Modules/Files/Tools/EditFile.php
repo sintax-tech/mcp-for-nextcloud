@@ -13,11 +13,11 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_edit tool. */
+/** Publishes files_edit and delegates to the component that replaces file content through the guarded edit handler. */
 final class EditFile implements WriteTool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Editing\EditFileAction $handler existing effect composition
-	 * @param \OCA\Mcp\Modules\Files\Editing\EditFilePreview $plans distinct plan composition
+	 * @param \OCA\Mcp\Modules\Files\Editing\EditFileAction $handler executor that replaces file content through the guarded edit handler
+	 * @param \OCA\Mcp\Modules\Files\Editing\EditFilePreview $plans read-only planner for this write operation
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Editing\EditFileAction $handler, private \OCA\Mcp\Modules\Files\Editing\EditFilePreview $plans) {
 	}

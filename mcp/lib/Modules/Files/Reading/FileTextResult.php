@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Files\Reading;
 
 
 
-/** Preserves the existing Files FileTextResult behavior. */
+/** Builds the text-content response with a separate JSON metadata block. */
 final class FileTextResult {
 	/**
 	 * @param string $text the file text, unchanged

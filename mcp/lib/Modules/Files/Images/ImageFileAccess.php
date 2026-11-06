@@ -16,7 +16,7 @@ use OCP\Files\Folder;
 /** Admits readable image nodes through the existing Files visibility guard. */
 final class ImageFileAccess {
 	/**
-	 * @param ?FilesAccessGuard $visibilityGuard Existing optional Files visibility guard.
+	 * @param ?FilesAccessGuard $visibilityGuard Optional resource-scope visibility guard.
 	 */
 	public function __construct(
 		private ?FilesAccessGuard $visibilityGuard = null,

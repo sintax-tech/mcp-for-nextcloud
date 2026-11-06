@@ -23,11 +23,11 @@ use Psr\Log\LoggerInterface;
 /** Resolves a visible system tag and filters its image nodes in the existing order. */
 final class ImageTagSearch {
 	/**
-	 * @param ISystemTagManager $tagManager Existing request-scoped collaborator.
-	 * @param ISystemTagObjectMapper $tagMapper Existing request-scoped collaborator.
-	 * @param IUserManager $userManager Existing request-scoped collaborator.
-	 * @param LoggerInterface $logger Existing request-scoped collaborator.
-	 * @param ?FilesAccessGuard $visibilityGuard Existing optional Files visibility guard.
+	 * @param ISystemTagManager $tagManager System-tag definition lookup.
+	 * @param ISystemTagObjectMapper $tagMapper System-tag assignments for file objects.
+	 * @param IUserManager $userManager Actor lookup for user-scoped image searches.
+	 * @param LoggerInterface $logger Safe diagnostics for failed image operations.
+	 * @param ?FilesAccessGuard $visibilityGuard Optional resource-scope visibility guard.
 	 */
 	public function __construct(
 		private ISystemTagManager $tagManager,
@@ -49,7 +49,7 @@ final class ImageTagSearch {
 	 * @param int|null $before Upper mtime bound.
 	 * @param int $limit Maximum returned entries.
 	 * @param string $tagName Exact visible tag name.
-	 * @param \Closure(Folder, string, File): array<string, mixed> $entry Existing metadata builder.
+	 * @param \Closure(Folder, string, File): array<string, mixed> $entry Formats a visible image entry with actor access metadata.
 	 * @return list<array<string, mixed>> Image metadata.
 	 * @throws ToolFailure When the filter cannot be resolved.
 	 * @throws \Throwable Backend, policy and lock failures handled by execute.

@@ -13,11 +13,11 @@ use OCA\Mcp\Modules\Files\FilesCallContext;
 use OCA\Mcp\Modules\Files\FileCreation;
 use OCA\Mcp\Modules\Files\Handler;
 
-/** Preserves the existing Files UploadFileAction behavior. */
+/** Runs the operation that creates a file from an upload link inside the actor view. */
 final class UploadFileAction {
 	/**
-	 * @param FilesCallContext $context existing context collaborator
-	 * @param ?FileCreation $creation existing creation collaborator
+	 * @param FilesCallContext $context actor-root admission and node-access mapping
+	 * @param ?FileCreation $creation optional inline and upload file creation service
 	 */
 	public function __construct(
 		private FilesCallContext $context,

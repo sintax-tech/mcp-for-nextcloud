@@ -13,11 +13,11 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_move tool. */
+/** Publishes files_move and delegates to the component that moves a node through reorganization guards. */
 final class MoveFile implements WriteTool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Moving\MoveFileHandler $handler existing effect composition
-	 * @param \OCA\Mcp\Modules\Files\Moving\MoveFilePreview $plans distinct plan composition
+	 * @param \OCA\Mcp\Modules\Files\Moving\MoveFileHandler $handler executor that moves a node through reorganization guards
+	 * @param \OCA\Mcp\Modules\Files\Moving\MoveFilePreview $plans read-only planner for this write operation
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Moving\MoveFileHandler $handler, private \OCA\Mcp\Modules\Files\Moving\MoveFilePreview $plans) {
 	}

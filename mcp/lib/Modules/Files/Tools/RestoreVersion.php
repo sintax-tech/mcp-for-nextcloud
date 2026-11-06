@@ -14,11 +14,11 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_version_restore tool. */
+/** Publishes files_version_restore and delegates to the component that restores historical content through the guarded restore handler. */
 final class RestoreVersion implements WriteTool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Editing\RestoreVersionAction $handler existing effect composition
-	 * @param \OCA\Mcp\Modules\Files\Editing\RestoreVersionPreview $plans distinct plan composition
+	 * @param \OCA\Mcp\Modules\Files\Editing\RestoreVersionAction $handler executor that restores historical content through the guarded restore handler
+	 * @param \OCA\Mcp\Modules\Files\Editing\RestoreVersionPreview $plans read-only planner for this write operation
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Editing\RestoreVersionAction $handler, private \OCA\Mcp\Modules\Files\Editing\RestoreVersionPreview $plans) {
 	}

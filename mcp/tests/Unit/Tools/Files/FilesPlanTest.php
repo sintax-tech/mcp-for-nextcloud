@@ -57,7 +57,8 @@ final class FilesPlanTest extends FilesToolsTestCase {
 	private function rebuilt(array $replace): FilesModule {
 		$overrides = [];
 		foreach ($replace as $name => $value) {
-			$type = $name === 'backup' ? FileBackup::class : VersionTools::class;
+			$type = ['backup' => FileBackup::class, 'versions' => VersionTools::class][$name]
+				?? throw new \LogicException('Unknown Files collaborator: ' . $name);
 			$overrides[$type] = $value;
 		}
 		return FilesCatalogWiring::replacing($this->module, $overrides);

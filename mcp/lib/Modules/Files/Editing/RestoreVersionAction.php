@@ -12,12 +12,12 @@ use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 use OCA\Mcp\Modules\Files\VersionTools;
 
-/** Preserves the existing Files RestoreVersionAction behavior. */
+/** Runs the operation that restores historical content through the guarded restore handler inside the actor view. */
 final class RestoreVersionAction {
 	/**
-	 * @param FilesCallContext $context existing context collaborator
-	 * @param VersionTools $versions existing versions collaborator
-	 * @param ?RestoreVersionHandler $restoreVersion existing restoreVersion collaborator
+	 * @param FilesCallContext $context actor-root admission and node-access mapping
+	 * @param VersionTools $versions version listing and content access
+	 * @param ?RestoreVersionHandler $restoreVersion optional guarded version-restore handler
 	 */
 	public function __construct(
 		private FilesCallContext $context,

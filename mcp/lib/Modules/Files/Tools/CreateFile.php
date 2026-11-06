@@ -13,11 +13,11 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_create tool. */
+/** Publishes files_create and delegates to the component that creates a file from inline text. */
 final class CreateFile implements WriteTool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Creation\CreateFileAction $handler existing effect composition
-	 * @param \OCA\Mcp\Modules\Files\Creation\CreateFilePreview $plans distinct plan composition
+	 * @param \OCA\Mcp\Modules\Files\Creation\CreateFileAction $handler executor that creates a file from inline text
+	 * @param \OCA\Mcp\Modules\Files\Creation\CreateFilePreview $plans read-only planner for this write operation
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Creation\CreateFileAction $handler, private \OCA\Mcp\Modules\Files\Creation\CreateFilePreview $plans) {
 	}

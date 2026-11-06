@@ -13,10 +13,10 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\Tool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_read tool. */
+/** Publishes files_read and delegates to the component that reads visible file text with metadata and optional OCR. */
 final class ReadFile implements Tool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Reading\ReadFileHandler $handler existing effect composition
+	 * @param \OCA\Mcp\Modules\Files\Reading\ReadFileHandler $handler executor that reads visible file text with metadata and optional OCR
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Reading\ReadFileHandler $handler) {
 	}

@@ -13,11 +13,11 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 
-/** Publishes the unchanged files_mkdir tool. */
+/** Publishes files_mkdir and delegates to the component that creates a guarded directory. */
 final class Mkdir implements WriteTool {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\Creation\MkdirHandler $handler existing effect composition
-	 * @param \OCA\Mcp\Modules\Files\Creation\MkdirPreview $plans distinct plan composition
+	 * @param \OCA\Mcp\Modules\Files\Creation\MkdirHandler $handler executor that creates a guarded directory
+	 * @param \OCA\Mcp\Modules\Files\Creation\MkdirPreview $plans read-only planner for this write operation
 	 */
 	public function __construct(private \OCA\Mcp\Modules\Files\Creation\MkdirHandler $handler, private \OCA\Mcp\Modules\Files\Creation\MkdirPreview $plans) {
 	}

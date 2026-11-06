@@ -12,12 +12,12 @@ use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\FileBackup;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 
-/** Preserves the existing Files ReplaceFileAction behavior. */
+/** Runs the operation that replaces a snippet through the guarded replacement handler inside the actor view. */
 final class ReplaceFileAction {
 	/**
-	 * @param FilesCallContext $context existing context collaborator
-	 * @param FileBackup $backup existing backup collaborator
-	 * @param ?ReplaceFileHandler $replaceFile existing replaceFile collaborator
+	 * @param FilesCallContext $context actor-root admission and node-access mapping
+	 * @param FileBackup $backup pre-write backup service
+	 * @param ?ReplaceFileHandler $replaceFile optional guarded snippet-replacement handler
 	 */
 	public function __construct(
 		private FilesCallContext $context,

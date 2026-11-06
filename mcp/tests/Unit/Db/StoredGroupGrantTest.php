@@ -8,7 +8,7 @@ namespace OCA\Mcp\Tests\Unit\Db;
 
 use OCA\Mcp\Db\GroupGrantRows;
 use OCA\Mcp\Db\StoredGroupGrant;
-use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCP\DB\IResult;
 use OCP\DB\QueryBuilder\IParameter;
 use OCP\DB\QueryBuilder\IQueryBuilder;
@@ -19,7 +19,7 @@ use PHPUnit\Framework\TestCase;
 final class StoredGroupGrantTest extends TestCase {
 	/** @return void Catalog entries including disabled optional apps remain known, never orphaned. */
 	public function testCurrentCatalogAndSystemEligibilityRemainRecognized(): void {
-		foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG + ['_system' => ['eligible']] as $module => $operations) {
+		foreach (GrantCatalog::CATALOG + ['_system' => ['eligible']] as $module => $operations) {
 			foreach ($operations as $operation) {
 				$grant = new StoredGroupGrant('team', $module, $operation);
 				$this->assertTrue($grant->recognized);

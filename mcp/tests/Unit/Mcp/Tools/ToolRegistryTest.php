@@ -10,6 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Mcp\Tools;
 use OCA\Mcp\Access\Policy\GrantUnknown;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\ToolModule;
@@ -102,7 +103,7 @@ final class ToolRegistryTest extends TestCase {
 	}
 
 	private function assertEveryWriteEnvelope(bool $dependencies): void {
-		foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG as $module => $operations) {
+		foreach (GrantCatalog::CATALOG as $module => $operations) {
 			foreach ($operations as $operation) { $this->policy->setGrant('alice', $module, $operation, true); }
 		}
 		$apps = $this->createMock(IAppManager::class);

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools;
 
-use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
@@ -229,7 +229,7 @@ final class NotesPreviewTest extends TestCase {
 
 	private function registry(): ToolRegistry {
 		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
-		foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG['notes'] as $operation) {
+		foreach (GrantCatalog::CATALOG['notes'] as $operation) {
 			$policy->setGrant('alice', 'notes', $operation, true);
 		}
 		$apps = $this->createMock(IAppManager::class);

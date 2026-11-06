@@ -17,7 +17,6 @@ use OCA\Mcp\Tests\Unit\Tools\Tables\Write\TablesPlanRendererTest;
 use OCA\Mcp\Tests\Unit\Tools\Talk\TalkPlanRendererTest;
 use OCA\Mcp\Tests\Unit\Tools\Tasks\TasksPlanRendererTest;
 use OCA\Mcp\Mcp\Confirmation\WriteGate;
-use OCA\Mcp\Mcp\Tools\CatalogModule;
 use OCA\Mcp\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Mcp\Tools\RendersPlans;
 use PHPUnit\Framework\TestCase;

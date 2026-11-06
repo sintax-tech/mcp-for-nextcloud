@@ -9,6 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Contract\Oracle;
 
 use OCA\Mcp\AppInfo\Application;
 use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Mcp\Protocol\McpProtocol;
 use OCA\Mcp\Mcp\Prompts\PromptCatalog;
@@ -56,7 +57,7 @@ final class DiscoveryHarness {
 			$data->groupBackends = [new ArrayGroupBackend(static fn (): array => [DiscoveryScenario::PAUSED_GROUP => [self::USER]])];
 			InMemoryConfig::groupPolicy($config, DiscoveryScenario::PAUSED_GROUP, $scenario->unknownGrants, 'needs_confirm');
 		}
-		foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG as $module => $operations) {
+		foreach (GrantCatalog::CATALOG as $module => $operations) {
 			foreach ($operations as $operation) {
 				$grant = $scenario->grant($module, $operation);
 				if ($grant !== null) {

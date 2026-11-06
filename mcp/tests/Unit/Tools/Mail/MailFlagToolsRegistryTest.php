@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 
 use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
@@ -36,7 +37,7 @@ final class MailFlagToolsRegistryTest extends TestCase {
 	 * @return void
 	 */
 	public function testTheFlagsGrantStartsDenied(): void {
-		$this->assertContains('flags', \OCA\Mcp\Access\Grants\GrantCatalog::CATALOG['mail']);
+		$this->assertContains('flags', GrantCatalog::CATALOG['mail']);
 		$this->assertFalse(GrantPolicy::defaultGranted('mail', 'flags'));
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
 		foreach (['read', 'messages', 'attachments'] as $operation) {

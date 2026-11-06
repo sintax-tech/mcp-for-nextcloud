@@ -18,6 +18,7 @@ use OCA\Mcp\Migration\Version001100Date20261015020000;
 use OCA\Mcp\Db\ResourceScopeMapper;
 use OCA\Mcp\Access\ResourceScope\ScopeGuard;
 use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Access\Logs\LogsAccess;
 use OCA\Mcp\Access\Policy\GroupSourceClassifier;
 use OCA\Mcp\Access\Policy\GroupTrustObserver;
@@ -287,7 +288,7 @@ final class ResolutionCoreTest extends TestCase {
 	}
 
 	public static function truthTable(): iterable {
-		foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG as $module => $operations) {
+		foreach (GrantCatalog::CATALOG as $module => $operations) {
 			foreach ($operations as $op) {
 				foreach (['inherit', '0', '1', 'bad', 1] as $raw) {
 					foreach ([false, true] as $group) {
@@ -304,7 +305,7 @@ final class ResolutionCoreTest extends TestCase {
 		$context = new PolicyOperationContext('0', $this->writer,
 			['grant_' . $module . '_' . $op => $raw === 'inherit' ? ['present' => false] : ['present' => true, 'value' => $raw]],
 			$group ? [['groupId' => 'team', 'grants' => [$module => [$op]], 'trusted' => true, 'state' => 'active']] : [],
-			true, true, array_fill_keys(array_keys(\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG), true), true, true,
+			true, true, array_fill_keys(array_keys(GrantCatalog::CATALOG), true), true, true,
 			ScopeGuard::read(new ResourceScopeMapper($this->db), 'alice'));
 		$expected = $raw === 'inherit' ? ($group || GrantPolicy::defaultGranted($module, $op)) : $raw === '1';
 		$this->assertSame($expected, $context->granted($module, $op)->allowed);
@@ -504,7 +505,7 @@ final class ResolutionCoreTest extends TestCase {
 			finally { $context->close(); }
 		}
 		$elapsed = (hrtime(true) - $started) / 1e6;
-		$cells = array_sum(array_map('count', \OCA\Mcp\Access\Grants\GrantCatalog::CATALOG)) + 2;
+		$cells = array_sum(array_map('count', GrantCatalog::CATALOG)) + 2;
 		$this->assertSame(50 * $cells, $this->data->batchCalls);
 		// Four policy SELECTs per unit plus the one resource scope read of B4.
 		$this->assertSame(250, $this->database->queryCount);

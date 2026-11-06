@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Access\Inspection;
 
-use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 
 use InvalidArgumentException;
@@ -63,7 +63,7 @@ class AccessInspector {
 	public function effective(string $uid): array {
 		return $this->within($uid, static function (PolicyOperationContext $context): array {
 			$operations = [];
-			foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG as $module => $names) {
+			foreach (GrantCatalog::CATALOG as $module => $names) {
 				foreach ($names as $operation) {
 					$result = $context->resolveEffective($module, $operation);
 					$operations[] = [

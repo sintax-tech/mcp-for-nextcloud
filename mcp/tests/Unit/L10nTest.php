@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit;
 
-use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -21,7 +21,7 @@ use PHPUnit\Framework\TestCase;
  * because that is the file the browser actually loads.
  *
  * A call whose first argument is not a literal cannot be resolved from the source. While
- * one exists, the module and operation names of \OCA\Mcp\Access\Grants\GrantCatalog::CATALOG (the dynamic values
+ * one exists, the module and operation names of GrantCatalog::CATALOG (the dynamic values
  * of the admin grant table) are treated as used and therefore must be translated too.
  */
 final class L10nTest extends TestCase {
@@ -244,8 +244,8 @@ final class L10nTest extends TestCase {
 	 * @return list<string>
 	 */
 	private function catalogKeys(): array {
-		$keys = array_keys(\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG);
-		foreach (\OCA\Mcp\Access\Grants\GrantCatalog::CATALOG as $operations) {
+		$keys = array_keys(GrantCatalog::CATALOG);
+		foreach (GrantCatalog::CATALOG as $operations) {
 			$keys = array_merge($keys, $operations);
 		}
 		return array_values(array_unique($keys));

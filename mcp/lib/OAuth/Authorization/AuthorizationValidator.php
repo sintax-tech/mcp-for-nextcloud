@@ -65,6 +65,7 @@ class AuthorizationValidator {
 	public function revalidate(AuthorizationRequest $request): void {
 		$id = $request->client->clientId;
 		if ($id !== NativeClient::CLIENT_ID && !CustomClient::owns($id)) {
+			$this->resolver->revalidateCimd($request->client);
 			return;
 		}
 		$client = $this->resolver->resolve($id);

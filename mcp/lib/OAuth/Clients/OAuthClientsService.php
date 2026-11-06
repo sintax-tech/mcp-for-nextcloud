@@ -55,6 +55,7 @@ class OAuthClientsService {
 				$next = $custom === null ? null : CustomClient::validate($custom, $before);
 				$changed = false;
 				if ($hosts !== null) {
+					$changed = (new CimdHostsUpdate($this->clients->cimdHosts(), $this->oauth))->apply($hosts) || $changed;
 					$changed = $this->writeHosts($hosts) || $changed;
 				}
 				if ($native !== null) {

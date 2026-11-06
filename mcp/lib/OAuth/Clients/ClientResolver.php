@@ -47,7 +47,15 @@ class ClientResolver {
 			}
 			return CustomClient::metadata($client);
 		}
-		return $this->fetcher->fetch($clientId);
+		return ClientAdmission::metadata($this->fetcher->fetch($clientId), $this->clients);
+	}
+
+
+	/** @param ClientMetadata $client Pending CIMD identity. @return void Refuses a withdrawn generation without HTTP. */
+	public function revalidateCimd(ClientMetadata $client): void {
+		if (!ClientAdmission::admits($this->clients, $client->clientId, $client->generation)) {
+			throw new OAuthException('invalid_client', 'Unknown or not allowed client');
+		}
 	}
 
 	/**
@@ -58,6 +66,7 @@ class ClientResolver {
 	public static function nativeEnabled(OAuthClientsMapper $clients): bool {
 		return self::nativeGeneration($clients) !== null;
 	}
+
 
 	/**
 	 * @param OAuthClientsMapper $clients the authoritative table, read from the database
@@ -73,6 +82,7 @@ class ClientResolver {
 		}
 		return $row !== null && $row['enabled'] ? $row['gen'] : null;
 	}
+
 
 	/**
 	 * @param OAuthClientsMapper $clients the authoritative table, read from the database

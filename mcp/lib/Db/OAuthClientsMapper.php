@@ -36,6 +36,9 @@ class OAuthClientsMapper {
 
 	public function __construct(private IDBConnection $db) {}
 
+	/** @return CimdHostsMapper Host trust on the same official database connection. */
+	public function cimdHosts(): CimdHostsMapper { return new CimdHostsMapper($this->db); }
+
 	/**
 	 * @param string $clientId client_id of a request or a stored grant
 	 * @return array{clientId:string, kind:string, name:string, enabled:bool, redirectUris:list<string>, gen:string, position:int}|null

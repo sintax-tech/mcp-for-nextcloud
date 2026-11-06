@@ -4,6 +4,10 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 
 ## Unreleased — 1.3.0
 
+### Fixed
+
+- **OAuth host withdrawal (#28):** removing an allowed CIMD host revokes its pending consents, authorization codes, access tokens and refresh tokens. Re-adding the host requires a new sign-in and never restores old credentials. Default hosts, client metadata parsing and registration methods are unchanged. This does not establish Zapia interoperability.
+
 ### Added
 
 - **Task status on create and edit:** `status` accepts NEEDS-ACTION, IN-PROCESS, COMPLETED and CANCELLED, following the Tasks app. Status alone completes at 100% with a timestamp (preserving an existing time when already completed), reopens 100% at 99%, and starts IN-PROCESS at 1% from zero or absent progress. CANCELLED preserves progress and the completion date and remains listed. Explicit progress takes precedence when consistent; contradictory pairs are refused before writing. Progress alone retains its previous behavior, including reopening cancelled tasks. Confirmation plans show status and completion-date changes in the plan timezone. Status/progress based on PR #29 by Marc-Olivier Turgeon-Ferland (@mturgeonferland), [contribution #29](https://github.com/sintax-tech/mcp-for-nextcloud/pull/29).

@@ -84,6 +84,13 @@ final class InMemoryOAuthStore extends OAuthStore {
 		$this->spent = array_filter($this->spent, $keep);
 	}
 
+	/** @param string $host Exact withdrawn host. @return void Mirrors the production cut. */
+	public function deleteForHost(string $host): void {
+		foreach (['codes', 'tokens', 'spent'] as $rows) {
+			$this->$rows = array_filter($this->$rows, static fn (array $row): bool => \OCA\Mcp\OAuth\Clients\ClientAdmission::host($row['client_id']) !== $host);
+		}
+	}
+
 	public function deleteToken(int $id): void {
 		unset($this->tokens[$id]);
 		$this->spent = array_filter($this->spent, fn (array $r) => $r['grant_id'] !== $id);

@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\SharingMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Share\Exceptions\GenericShareException;
 use OCP\Share\IShare;
@@ -201,8 +201,8 @@ final class FilesUnshareTest extends FilesToolsTestCase {
 	public function testATalkAttachmentOfYoursIsRefusedWithTheTalkMessage(): void {
 		$room = $this->share(['type' => IShare::TYPE_ROOM, 'with' => 'room1', 'withName' => 'Diretoria']);
 
-		self::assertSame(FilesMessages::shareTypeUnsupported(), $this->planFailure(['shareId' => $room->getFullId()]));
-		self::assertSame(FilesMessages::shareTypeUnsupported(), $this->confirmFailure(['shareId' => $room->getFullId()]));
+		self::assertSame(SharingMessages::shareTypeUnsupported(), $this->planFailure(['shareId' => $room->getFullId()]));
+		self::assertSame(SharingMessages::shareTypeUnsupported(), $this->confirmFailure(['shareId' => $room->getFullId()]));
 		self::assertSame([], $this->shares->writes);
 	}
 
@@ -237,17 +237,17 @@ final class FilesUnshareTest extends FilesToolsTestCase {
 
 		$this->sharePolicy->setGrant('alice', 'files', 'share', false);
 		$this->sharePolicy->setGrant('alice', 'files', 'link', true);
-		self::assertSame(FilesMessages::shareNotGranted(), $this->planFailure(['shareId' => $user->getFullId()]));
-		self::assertSame(FilesMessages::shareNotGranted(), $this->planFailure(['shareId' => $group->getFullId()]));
-		self::assertSame(FilesMessages::shareNotGranted(), $this->confirmFailure(['path' => '/Documentos/ata.md', 'with' => 'user:bruno']));
+		self::assertSame(SharingMessages::shareNotGranted(), $this->planFailure(['shareId' => $user->getFullId()]));
+		self::assertSame(SharingMessages::shareNotGranted(), $this->planFailure(['shareId' => $group->getFullId()]));
+		self::assertSame(SharingMessages::shareNotGranted(), $this->confirmFailure(['path' => '/Documentos/ata.md', 'with' => 'user:bruno']));
 		self::assertSame('link', $this->plan('files_unshare', ['shareId' => $link->getFullId()])['with']['type']);
 
 		$this->sharePolicy->setGrant('alice', 'files', 'share', true);
 		$this->sharePolicy->setGrant('alice', 'files', 'link', false);
 		self::assertSame('user', $this->plan('files_unshare', ['shareId' => $user->getFullId()])['with']['type']);
 		self::assertSame('group', $this->plan('files_unshare', ['shareId' => $group->getFullId()])['with']['type']);
-		self::assertSame(FilesMessages::shareNotGranted(), $this->planFailure(['shareId' => $link->getFullId()]));
-		self::assertSame(FilesMessages::shareNotGranted(), $this->confirmFailure(['path' => '/Documentos/ata.md', 'with' => 'link']));
+		self::assertSame(SharingMessages::shareNotGranted(), $this->planFailure(['shareId' => $link->getFullId()]));
+		self::assertSame(SharingMessages::shareNotGranted(), $this->confirmFailure(['path' => '/Documentos/ata.md', 'with' => 'link']));
 		self::assertSame([], $this->shares->writes);
 	}
 
@@ -263,8 +263,8 @@ final class FilesUnshareTest extends FilesToolsTestCase {
 		$state = [\OCA\Mcp\Mcp\Confirmation\PlanState::ARGUMENT => $this->stateOf('files_unshare', ['shareId' => $share->getFullId()])];
 
 		$this->sharePolicy->setGrant('alice', 'files', 'share', false);
-		self::assertSame(FilesMessages::shareNotGranted(), $this->confirmFailure(['shareId' => $share->getFullId()] + $state));
-		self::assertSame(FilesMessages::shareNotGranted(), $this->confirmFailure(['path' => '/Documentos/ata.md', 'with' => 'user:bruno'] + $state));
+		self::assertSame(SharingMessages::shareNotGranted(), $this->confirmFailure(['shareId' => $share->getFullId()] + $state));
+		self::assertSame(SharingMessages::shareNotGranted(), $this->confirmFailure(['path' => '/Documentos/ata.md', 'with' => 'user:bruno'] + $state));
 
 		$this->sharePolicy->setGrant('alice', 'files', 'share', true);
 		$this->shares->shares = [];
@@ -308,7 +308,7 @@ final class FilesUnshareTest extends FilesToolsTestCase {
 			$this->confirm(['shareId' => $share->getFullId()]);
 			self::fail('no failure');
 		} catch (ToolFailure $e) {
-			self::assertSame(FilesMessages::unshareRefused(), $e->getMessage());
+			self::assertSame(SharingMessages::unshareRefused(), $e->getMessage());
 			self::assertStringNotContainsString('secret', $e->getMessage());
 		}
 		self::assertSame([], $this->tree->ops);
@@ -341,7 +341,7 @@ final class FilesUnshareTest extends FilesToolsTestCase {
 	}
 
 	public function testTheRootAndAMissingPathAreRefused(): void {
-		self::assertSame(FilesMessages::shareRootRefused(), $this->planFailure(['path' => '/', 'with' => 'user:bruno']));
+		self::assertSame(SharingMessages::shareRootRefused(), $this->planFailure(['path' => '/', 'with' => 'user:bruno']));
 		self::assertSame(CommonMessages::notFound(), $this->planFailure(['path' => '/nada.md', 'with' => 'user:bruno']));
 	}
 }

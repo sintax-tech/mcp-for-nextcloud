@@ -120,7 +120,7 @@ final class BackupOperationsTest extends FilesToolsTestCase {
 						: $service->planCopy($this->tree->rootFolder(), 'alice', '/Documentos/ata.md', '/' . $folder, null);
 					self::fail('Copy destination reservation bypassed');
 				} catch (ToolFailure $error) {
-					self::assertSame(\OCA\Mcp\Modules\Files\FilesMessages::backupPath(), $error->getMessage());
+					self::assertSame(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath(), $error->getMessage());
 				}
 			}
 		}
@@ -165,7 +165,7 @@ final class BackupOperationsTest extends FilesToolsTestCase {
 			$backup->method('assertWritablePath')->willThrowException(new ToolFailure('Reserved path'));
 			try { \OCA\Mcp\Modules\Files\BackupWriteBoundary::afterCopy($backup, '/a', $copy); self::fail('Late refusal bypassed'); }
 			catch (ToolFailure $error) {
-				self::assertSame('Reserved path ' . \OCA\Mcp\Modules\Files\FilesMessages::originalKept($copy), $error->getMessage());
+				self::assertSame('Reserved path ' . \OCA\Mcp\Modules\Files\Presentation\EditingMessages::originalKept($copy), $error->getMessage());
 				if ($copy !== '') { self::assertSame(1, substr_count($error->getMessage(), $copy)); }
 				else { self::assertStringNotContainsString('original is kept', $error->getMessage()); }
 			}
@@ -245,7 +245,7 @@ final class BackupOperationsTest extends FilesToolsTestCase {
 			$before = $file->getContent();
 			try { $restore->restore($this->tree->rootFolder(), $file, '/Documentos/ata.md', '1', 'alice', $backup); self::fail('Late reservation written'); }
 			catch (ToolFailure $error) {
-				self::assertSame(\OCA\Mcp\Modules\Files\FilesMessages::backupPath() . ' ' . \OCA\Mcp\Modules\Files\FilesMessages::originalKept($copy), $error->getMessage());
+				self::assertSame(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath() . ' ' . \OCA\Mcp\Modules\Files\Presentation\EditingMessages::originalKept($copy), $error->getMessage());
 			}
 			self::assertNotContains('rollback', $manager->ops);
 			self::assertSame($before, $file->getContent());
@@ -279,7 +279,7 @@ final class BackupOperationsTest extends FilesToolsTestCase {
 		$row = new \OCA\Mcp\Checkout\CheckoutToken(1, 'upload', 'alice', $file->getId(), '/Documentos/ata.md', $file->getEtag(), 'personal', true, PHP_INT_MAX, true);
 		$response = $handler->write($row, $file, '/body-must-not-be-read');
 		self::assertSame(400, $response->getStatus());
-		self::assertSame(['error' => \OCA\Mcp\Modules\Files\FilesMessages::backupPath() . ' ' . \OCA\Mcp\Modules\Files\FilesMessages::originalKept($copy)], $response->getData());
+		self::assertSame(['error' => \OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath() . ' ' . \OCA\Mcp\Modules\Files\Presentation\EditingMessages::originalKept($copy)], $response->getData());
 		self::assertSame($before, $file->getContent());
 		if ($createCopy) {
 			self::assertNotSame('', $copy);

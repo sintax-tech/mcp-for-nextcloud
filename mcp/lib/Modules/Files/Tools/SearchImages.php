@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Tools;
 
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\ImageMessages;
 use OCA\Mcp\Modules\Files\Images\ImageTools;
 use OCA\Mcp\Modules\Files\Presentation\FilesSchema;
 use OCA\Mcp\Mcp\Tools\ToolDefinition;
@@ -25,13 +25,13 @@ final class SearchImages implements Tool {
 	/** @return ToolDefinition unchanged static definition */
 	public static function definition(): ToolDefinition {
 		return FilesSchema::definition(['name' => 'files_image_search', 'module' => 'files', 'operation' => 'read',
-				'description' => FilesMessages::imageSearchTool(),
+				'description' => ImageMessages::imageSearchTool(),
 				'inputSchema' => FilesSchema::schema([
-					'query' => ['type' => 'string', 'description' => FilesMessages::imageQuery()],
-					'folder' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::imageFolder()],
-					'modified_after' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::imageModifiedAfter()],
-					'modified_before' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::imageModifiedBefore()],
-					'tag' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::imageTag()],
+					'query' => ['type' => 'string', 'description' => ImageMessages::imageQuery()],
+					'folder' => ['type' => 'string', 'minLength' => 1, 'description' => ImageMessages::imageFolder()],
+					'modified_after' => ['type' => 'string', 'minLength' => 1, 'description' => ImageMessages::imageModifiedAfter()],
+					'modified_before' => ['type' => 'string', 'minLength' => 1, 'description' => ImageMessages::imageModifiedBefore()],
+					'tag' => ['type' => 'string', 'minLength' => 1, 'description' => ImageMessages::imageTag()],
 					'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => ImageTools::SEARCH_MAX_LIMIT,
 						'default' => ImageTools::SEARCH_DEFAULT_LIMIT],
 				])]);

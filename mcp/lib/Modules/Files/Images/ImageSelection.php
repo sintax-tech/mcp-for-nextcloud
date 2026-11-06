@@ -11,7 +11,7 @@ use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\NameSearchQuery;
 use OCA\Mcp\Modules\Files\SearchComparison;
 use OCA\Mcp\Modules\Files\SearchOrder;
@@ -78,11 +78,11 @@ final class ImageSelection {
 			try {
 				$node = NodeAccess::get($root, $path, $this->visibilityGuard);
 				if (!$node instanceof File) {
-					$out[] = [$path, null, FilesMessages::notAnImage()];
+					$out[] = [$path, null, \OCA\Mcp\Modules\Files\Presentation\ImageMessages::notAnImage()];
 					continue;
 				}
 				if (!ImageFileAccess::looksLikeImage((string)$node->getMimetype())) {
-					$out[] = [$path, null, FilesMessages::notAnImage()];
+					$out[] = [$path, null, \OCA\Mcp\Modules\Files\Presentation\ImageMessages::notAnImage()];
 					continue;
 				}
 				$out[] = [$path, $node, null];

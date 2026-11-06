@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Tools;
 
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\Presentation\FilesSchema;
 use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\Tool;
@@ -25,7 +25,7 @@ final class ReadFile implements Tool {
 	public static function definition(): ToolDefinition {
 		$path = ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::path()];
 		return FilesSchema::definition(['name' => 'files_read', 'module' => 'files', 'operation' => 'read',
-				'description' => FilesMessages::readTool(),
+				'description' => \OCA\Mcp\Modules\Files\Presentation\ReadingMessages::readTool(),
 				'inputSchema' => FilesSchema::schema(['path' => $path], ['path'])]);
 	}
 

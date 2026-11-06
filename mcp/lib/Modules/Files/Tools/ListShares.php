@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Files\Tools;
 
 use OCA\Mcp\Modules\Files\Sharing\ShareAccess;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\SharingMessages;
 use OCA\Mcp\Modules\Files\Presentation\FilesSchema;
 use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\Tool;
@@ -25,11 +25,11 @@ final class ListShares implements Tool {
 	/** @return ToolDefinition unchanged static definition */
 	public static function definition(): ToolDefinition {
 		return FilesSchema::definition(['name' => 'files_list_shares', 'module' => 'files', 'operation' => 'read',
-				'description' => FilesMessages::listSharesTool(),
+				'description' => SharingMessages::listSharesTool(),
 				'inputSchema' => FilesSchema::schema([
-					'path' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::listSharesPath()],
+					'path' => ['type' => 'string', 'minLength' => 1, 'description' => SharingMessages::listSharesPath()],
 					'offset' => ['type' => 'integer', 'minimum' => 0, 'maximum' => ShareAccess::MAX_OFFSET, 'default' => 0,
-						'description' => FilesMessages::listSharesOffset()],
+						'description' => SharingMessages::listSharesOffset()],
 				])]);
 	}
 

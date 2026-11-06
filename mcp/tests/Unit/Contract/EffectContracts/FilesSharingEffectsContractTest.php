@@ -14,7 +14,7 @@ use OCA\Mcp\Tests\Unit\Contract\Oracle\GoldenFile;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\VolatileFields;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\Files\Sharing\FakeShares;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\SharingMessages;
 use OCP\Constants;
 use OCP\Share\IShare;
 use PHPUnit\Framework\TestCase;
@@ -113,7 +113,7 @@ final class FilesSharingEffectsContractTest extends TestCase {
 		];
 		foreach ($answers as $answer) {
 			self::assertTrue($answer->result->isError ?? false, json_encode($answer));
-			self::assertSame(FilesMessages::shareNotGranted(), $answer->result->content[0]->text);
+			self::assertSame(SharingMessages::shareNotGranted(), $answer->result->content[0]->text);
 		}
 		self::assertSame([], $this->shares->writes, 'no link was created or removed with the share grant alone');
 		self::assertSame([$link], $this->shares->shares);

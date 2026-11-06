@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Handler;
 
-use OCA\Mcp\Modules\Files\{CopyMoveContext, BatchStore, Batch, FileTypePreflight, FolderExposureGate, FilesMessages};
+use OCA\Mcp\Modules\Files\{CopyMoveContext, BatchStore, Batch, FileTypePreflight, FolderExposureGate, Presentation\FilesMessages};
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
@@ -40,10 +40,10 @@ final class UndoBatchHandler {
 		// A batch of somebody else and one past its lifetime answer the same way, so nothing leaks about
 		// which ids ever existed.
 		if ($batch === null || $batch->createdAt < $now - BatchStore::LIFETIME_SECONDS) {
-			throw new ToolFailure(FilesMessages::batchNotFound());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::batchNotFound());
 		}
 		if ($batch->isUndone()) {
-			throw new ToolFailure(FilesMessages::batchAlreadyUndone());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::batchAlreadyUndone());
 		}
 		// Before the conflicts: they carry paths and reasons, and none may be published for a hidden item.
 		$this->context->reorganization->assertFolderMoves($root, $batch->moves, undo: true);
@@ -81,7 +81,7 @@ final class UndoBatchHandler {
 				$this->context->reorganization->assertUndoVisible($root, $batch);
 				return ['batch_id' => $batchId, 'undone' => $undone, 'removed_dirs' => [], 'kept_dirs' => [],
 					'conflicts' => [['from' => $move['from'], 'to' => $move['to'],
-						'reason' => $e instanceof ToolFailure ? $e->getMessage() : FilesMessages::moveFailed()]]];
+						'reason' => $e instanceof ToolFailure ? $e->getMessage() : \OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::moveFailed()]]];
 			}
 		}
 		// All moves have returned; a later privacy refusal must not leave them
@@ -131,10 +131,10 @@ final class UndoBatchHandler {
 	public function planUndoBatch(Folder $root, string $userId, int $batchId, BatchStore $store, int $now): array {
 		$batch = $store->find($batchId, $userId);
 		if ($batch === null || $batch->createdAt < $now - BatchStore::LIFETIME_SECONDS) {
-			throw new ToolFailure(FilesMessages::batchNotFound());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::batchNotFound());
 		}
 		if ($batch->isUndone()) {
-			throw new ToolFailure(FilesMessages::batchAlreadyUndone());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::batchAlreadyUndone());
 		}
 		$this->context->reorganization->assertFolderMoves($root, $batch->moves, undo: true);
 		$this->context->reorganization->assertUndoVisible($root, $batch);
@@ -159,7 +159,7 @@ final class UndoBatchHandler {
 			'conflicts' => $conflicts,
 			'ok' => $conflicts === [],
 			'recoverable' => true,
-			'message' => FilesMessages::planUndoBatch(),
+			'message' => \OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::planUndoBatch(),
 		];
 	}
 

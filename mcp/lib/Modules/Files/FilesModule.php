@@ -39,6 +39,6 @@ final class FilesModule extends CatalogModule {
 	 * The words live in {@see FilesPlanRenderer}; this module only hands the plan over.
 	 */
 	public function renderPlan(string $tool, array $plan): ?string {
-		return FilesPlanRenderer::render($tool, $plan);
+		return \OCA\Mcp\Modules\Files\Presentation\FilesPlanRenderer::render($tool, $plan);
 	}
 }

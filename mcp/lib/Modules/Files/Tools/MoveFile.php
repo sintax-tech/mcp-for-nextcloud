@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Tools;
 
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\Presentation\FilesSchema;
 use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;
@@ -27,7 +27,7 @@ final class MoveFile implements WriteTool {
 		$etag = ['type' => 'string', 'description' => FilesMessages::etag()];
 		$confirmShared = ['type' => 'boolean', 'description' => FilesMessages::confirmShared()];
 		return FilesSchema::definition(['name' => 'files_move', 'module' => 'files', 'operation' => 'move',
-				'description' => FilesMessages::moveTool(),
+				'description' => \OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::moveTool(),
 				'inputSchema' => FilesSchema::schema([
 					'from' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::path()],
 					'to' => ['type' => 'string', 'minLength' => 1, 'description' => 'Destination path, e.g. /2026/plan.md'],

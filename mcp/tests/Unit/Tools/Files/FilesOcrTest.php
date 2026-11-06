@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\ImageMessages;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\Images\OcrSupport;
 
@@ -38,7 +38,7 @@ final class FilesOcrTest extends FilesToolsTestCase {
 	public function testPdfWithoutTextWarnsToInstallOcrWhenTheAppIsInactive(): void {
 		$this->tree->addFile('/alice/files/scan.pdf', self::blankPdf(), 'application/pdf');
 		[$text, $meta] = $this->read('/scan.pdf');
-		$this->assertSame(FilesMessages::noTextOcrInactive(), $text);
+		$this->assertSame(ImageMessages::noTextOcrInactive(), $text);
 		$this->assertFalse($meta['text_layer']);
 		$this->assertFalse($meta['ocr_active']);
 		$this->assertSame($text, $meta['notice']);
@@ -49,7 +49,7 @@ final class FilesOcrTest extends FilesToolsTestCase {
 		$this->ocrActive = true;
 		$this->tree->addFile('/alice/files/scan.pdf', self::blankPdf(), 'application/pdf');
 		[$text, $meta] = $this->read('/scan.pdf');
-		$this->assertSame(FilesMessages::noTextOcrActive(), $text);
+		$this->assertSame(ImageMessages::noTextOcrActive(), $text);
 		$this->assertTrue($meta['ocr_active']);
 		$this->assertFalse($meta['text_layer']);
 	}

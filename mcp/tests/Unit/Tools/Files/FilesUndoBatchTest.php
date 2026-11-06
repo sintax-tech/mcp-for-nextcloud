@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Modules\Files\Batch;
 use OCA\Mcp\Modules\Files\BatchStore;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
@@ -202,13 +202,13 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
 		$id = $this->batches->insert(new Batch(null, 'bob', 1790000000,
 			[['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md', 'toId' => 1]], [], null));
 		$this->expectException(\OCA\Mcp\Mcp\Tools\Results\ToolFailure::class);
-		$this->expectExceptionMessage(FilesMessages::batchNotFound());
+		$this->expectExceptionMessage(ReorganizationMessages::batchNotFound());
 		$this->tool('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
 	}
 
 	public function testABatchThatDoesNotExistIsNotFound(): void {
 		$this->expectException(\OCA\Mcp\Mcp\Tools\Results\ToolFailure::class);
-		$this->expectExceptionMessage(FilesMessages::batchNotFound());
+		$this->expectExceptionMessage(ReorganizationMessages::batchNotFound());
 		$this->tool('files_undo_batch', ['batch_id' => 9999, 'confirm' => true]);
 	}
 
@@ -217,14 +217,14 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
 		$id = $this->runBatch();
 		$this->batches->rows[$id]['created_at'] = 1790000000 - BatchStore::LIFETIME_SECONDS - 1;
 		$this->expectException(\OCA\Mcp\Mcp\Tools\Results\ToolFailure::class);
-		$this->expectExceptionMessage(FilesMessages::batchNotFound());
+		$this->expectExceptionMessage(ReorganizationMessages::batchNotFound());
 		$this->tool('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
 	}
 
 	public function testABatchCannotBeUndoneTwice(): void {
 		$id = $this->runBatch();
 		$this->json('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
-		$this->assertSame(FilesMessages::batchAlreadyUndone(), $this->failure('files_undo_batch', ['batch_id' => $id, 'confirm' => true]));
+		$this->assertSame(ReorganizationMessages::batchAlreadyUndone(), $this->failure('files_undo_batch', ['batch_id' => $id, 'confirm' => true]));
 	}
 
 	/** Something else now sits at the original path: undoing would overwrite what the user did after. */
@@ -234,7 +234,7 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
 		$out = $this->json('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
 		$this->assertSame(0, $out['undone']);
 		$this->assertSame([['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md',
-			'reason' => FilesMessages::destinationExists()]], $out['conflicts']);
+			'reason' => \OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists()]], $out['conflicts']);
 		$this->assertSame('versão nova', $this->tree->nodes['/alice/files/Documentos/ata.md']['content']);
 		$this->assertArrayHasKey('/alice/files/Arquivado/ata.md', $this->tree->nodes, 'nada foi movido de volta');
 	}
@@ -248,7 +248,7 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
 		], JSON_THROW_ON_ERROR);
 		$out = $this->json('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
 		$this->assertSame(0, $out['undone']);
-		$this->assertSame(FilesMessages::notTheBatchNode(), $out['conflicts'][0]['reason']);
+		$this->assertSame(ReorganizationMessages::notTheBatchNode(), $out['conflicts'][0]['reason']);
 		$this->assertSame(2, count($out['conflicts']), 'todo item é conferido, não só o primeiro');
 	}
 
@@ -351,7 +351,7 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
 		$first = $this->json('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
 
 		$this->assertSame(1, $first['undone']);
-		$this->assertSame(FilesMessages::moveFailed(), $first['conflicts'][0]['reason'], 'the message is the generic one');
+		$this->assertSame(ReorganizationMessages::moveFailed(), $first['conflicts'][0]['reason'], 'the message is the generic one');
 		$this->assertStringNotContainsString('secret', json_encode($first));
 		$this->assertSame(['/Documentos/ata.md', '/Documentos/plano.md'],
 			array_column($this->batches->find($id, 'alice')->moves, 'from'), 'the row keeps only what did not go back');
@@ -406,7 +406,7 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
 	public function testAFinishedBatchCannotBeUndoneAgain(): void {
 		$id = $this->runBatch();
 		$this->json('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
-		$this->assertSame(FilesMessages::batchAlreadyUndone(),
+		$this->assertSame(ReorganizationMessages::batchAlreadyUndone(),
 			$this->failure('files_undo_batch', ['batch_id' => $id, 'confirm' => true]));
 	}
 
@@ -473,7 +473,7 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
 		$this->assertArrayNotHasKey('/alice/files/file', $this->tree->nodes);
 		$this->assertNull($this->batches->rows[$id]['undone_at'], 'o lote não é dado como desfeito');
 		foreach ([$planned, $ran] as $message) {
-			$this->assertSame(FilesMessages::batchHasHiddenItem(), $message);
+			$this->assertSame(ReorganizationMessages::batchHasHiddenItem(), $message);
 			$this->assertStringNotContainsString('secret', $message);
 			$this->assertStringNotContainsString('file', $message);
 		}
@@ -490,8 +490,8 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
 
 		$this->assertArrayHasKey('/alice/files/secret', $this->tree->nodes);
 		$this->assertSame([], $this->tree->ops, 'nenhuma pasta apagada');
-		$this->assertSame(FilesMessages::batchHasHiddenItem(), $planned);
-		$this->assertSame(FilesMessages::batchHasHiddenItem(), $ran);
+		$this->assertSame(ReorganizationMessages::batchHasHiddenItem(), $planned);
+		$this->assertSame(ReorganizationMessages::batchHasHiddenItem(), $ran);
 	}
 
 	/** The way back lands in a folder that is hidden now: moving the item there is refused as a whole. */
@@ -507,8 +507,8 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
 
 		$this->assertArrayHasKey('/alice/files/Arquivado/ata.md', $this->tree->nodes);
 		$this->assertArrayHasKey('/alice/files/Arquivado/plano.md', $this->tree->nodes);
-		$this->assertSame(FilesMessages::batchHasHiddenItem(), $planned);
-		$this->assertSame(FilesMessages::batchHasHiddenItem(), $ran);
+		$this->assertSame(ReorganizationMessages::batchHasHiddenItem(), $planned);
+		$this->assertSame(ReorganizationMessages::batchHasHiddenItem(), $ran);
 	}
 
 	/**
@@ -527,7 +527,7 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
 
 		$this->assertArrayNotHasKey('/alice/files/Hidden/New', $this->tree->nodes, 'a pasta não é recriada dentro da oculta');
 		$this->assertArrayHasKey('/alice/files/Arquivado/plano.md', $this->tree->nodes);
-		$this->assertSame(FilesMessages::batchHasHiddenItem(), $ran);
+		$this->assertSame(ReorganizationMessages::batchHasHiddenItem(), $ran);
 	}
 
 	/** With hidden tags configured, an undo that touches nothing hidden runs as before. */
@@ -586,8 +586,8 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
 		$this->assertSame([], $this->tree->ops, 'nada movido nem apagado');
 		$this->assertSame(array_keys($before), array_keys($this->tree->nodes));
 		$this->assertNull($this->batches->rows[$id]['undone_at']);
-		$this->assertSame(FilesMessages::batchHasHiddenItem(), $planned);
-		$this->assertSame(FilesMessages::batchHasHiddenItem(), $ran);
+		$this->assertSame(ReorganizationMessages::batchHasHiddenItem(), $planned);
+		$this->assertSame(ReorganizationMessages::batchHasHiddenItem(), $ran);
 	}
 
 	/** A visible folder named "0", created by the batch and gone, comes back and receives its item. */

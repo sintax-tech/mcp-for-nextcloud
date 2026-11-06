@@ -216,7 +216,7 @@ final class FilesPlanTest extends FilesToolsTestCase {
 		$this->tree->addFile('/alice/files/Documentos/contrato.docx', 'PK', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
 		$plan = $this->plan('files_checkout', ['path' => '/Documentos/contrato.docx']);
 		$guide = implode("\n", $this->module->guideNotes());
-		foreach ([$plan['message'], \OCA\Mcp\Modules\Files\FilesMessages::checkoutTool(), $guide] as $text) {
+		foreach ([$plan['message'], \OCA\Mcp\Modules\Files\Presentation\CheckoutMessages::checkoutTool(), $guide] as $text) {
 			$this->assertStringContainsString('any file', $text);
 			$this->assertStringContainsString('files_edit', $text);
 			$this->assertStringContainsString('files_replace', $text);
@@ -232,7 +232,7 @@ final class FilesPlanTest extends FilesToolsTestCase {
 			$this->plan('files_checkout', ['path' => '/MCP backups/contrato.docx.20260921-141320.bak']);
 			$this->fail('a checkout of the backup folder must not be planned');
 		} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
-			$this->assertSame(\OCA\Mcp\Modules\Files\FilesMessages::backupPath(), $e->getMessage());
+			$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath(), $e->getMessage());
 		}
 		$this->assertNothingWritten();
 	}
@@ -246,7 +246,7 @@ final class FilesPlanTest extends FilesToolsTestCase {
 			$this->plan('files_checkout', ['path' => '/Documentos/ata.md']);
 			$this->fail('a checkout without files_versions must not be planned');
 		} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
-			$this->assertSame(\OCA\Mcp\Modules\Files\FilesMessages::versionsOff(), $e->getMessage());
+			$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionsOff(), $e->getMessage());
 		}
 		$this->assertNothingWritten();
 	}

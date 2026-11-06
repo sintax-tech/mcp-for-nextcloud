@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Tools;
 
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\Presentation\FilesSchema;
 use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;
@@ -28,10 +28,10 @@ final class EditFile implements WriteTool {
 		$etag = ['type' => 'string', 'description' => FilesMessages::etag()];
 		$confirmShared = ['type' => 'boolean', 'description' => FilesMessages::confirmShared()];
 		return FilesSchema::definition(['name' => 'files_edit', 'module' => 'files', 'operation' => 'edit',
-				'description' => FilesMessages::editTool(),
+				'description' => \OCA\Mcp\Modules\Files\Presentation\EditingMessages::editTool(),
 				'inputSchema' => FilesSchema::schema([
 					'path' => $path,
-					'content' => ['type' => 'string', 'description' => FilesMessages::content()],
+					'content' => ['type' => 'string', 'description' => \OCA\Mcp\Modules\Files\Presentation\EditingMessages::content()],
 					'etag' => $etag,
 					'confirm_shared' => $confirmShared,
 				], ['path', 'content'])]);

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Tools;
 
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\VersionTools;
 use OCA\Mcp\Modules\Files\Presentation\FilesSchema;
 use OCA\Mcp\Mcp\Tools\ToolDefinition;
@@ -25,9 +25,9 @@ final class ReadVersion implements Tool {
 	/** @return ToolDefinition unchanged static definition */
 	public static function definition(): ToolDefinition {
 		$path = ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::path()];
-		$version = ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::version()];
+		$version = ['type' => 'string', 'minLength' => 1, 'description' => \OCA\Mcp\Modules\Files\Presentation\VersionMessages::version()];
 		return FilesSchema::definition(['name' => 'files_version_read', 'module' => 'files', 'operation' => 'read', 'app' => VersionTools::APP,
-				'description' => FilesMessages::versionReadTool(),
+				'description' => \OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionReadTool(),
 				'inputSchema' => FilesSchema::schema(['path' => $path, 'version' => $version], ['path', 'version'])]);
 	}
 

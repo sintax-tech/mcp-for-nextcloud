@@ -17,7 +17,7 @@ use OCA\Mcp\Modules\Files\ContentCommit;
 use OCA\Mcp\Modules\Files\ContentTypeGate;
 use OCA\Mcp\Modules\Files\ContentWritePlan;
 use OCA\Mcp\Modules\Files\FileBackup;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\EditingMessages;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\TextExtractor;
 use OCA\Mcp\Platform\Text\UnifiedDiff;
@@ -73,7 +73,7 @@ final class EditFileHandler {
 		$path = PathGuard::normalize($path);
 		$this->assertEditable($root, $path);
 		if (strlen($content) > FilesModule::MAX_EDIT_BYTES) {
-			throw new ToolFailure(FilesMessages::editTooLarge(FilesModule::MAX_EDIT_BYTES));
+			throw new ToolFailure(EditingMessages::editTooLarge(FilesModule::MAX_EDIT_BYTES));
 		}
 		$file = $this->file($root, $path);
 		NodeAccess::checkEtag($file, $etag);
@@ -83,7 +83,7 @@ final class EditFileHandler {
 			'action' => 'files_edit',
 			'size' => ['before' => (int)$file->getSize(), 'after' => strlen($content)],
 			'diff' => $diff,
-			'message' => FilesMessages::planEdit(),
+			'message' => EditingMessages::planEdit(),
 		]);
 	}
 
@@ -106,7 +106,7 @@ final class EditFileHandler {
 		$path = PathGuard::normalize($path);
 		$this->assertEditable($root, $path);
 		if (strlen($content) > FilesModule::MAX_EDIT_BYTES) {
-			throw new ToolFailure(FilesMessages::editTooLarge(FilesModule::MAX_EDIT_BYTES));
+			throw new ToolFailure(EditingMessages::editTooLarge(FilesModule::MAX_EDIT_BYTES));
 		}
 		$file = $this->file($root, $path);
 		$this->locks?->assertWritable($file, $userId, $path);
@@ -128,10 +128,10 @@ final class EditFileHandler {
 	 */
 	private function assertEditable(Folder $root, string $path): void {
 		if (FileBackup::isBackupPath($path, $this->backupLocation)) {
-			throw new ToolFailure(FilesMessages::backupPath());
+			throw new ToolFailure(EditingMessages::backupPath());
 		}
 		if (!TextExtractor::isText($this->file($root, $path))) {
-			throw new ToolFailure(FilesMessages::notText());
+			throw new ToolFailure(EditingMessages::notText());
 		}
 	}
 

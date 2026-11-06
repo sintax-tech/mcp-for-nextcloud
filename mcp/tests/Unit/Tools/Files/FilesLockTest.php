@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 use OCA\Mcp\Tests\Unit\Platform\FileAccess\FakeLock;
 use OCA\Mcp\Tests\Unit\Platform\FileAccess\FakeLockManager;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages;
 use OCP\Files\Lock\ILock;
 
 /**
@@ -115,7 +115,7 @@ final class FilesLockTest extends FilesToolsTestCase {
 		$this->assertFalse($plan['ok']);
 		$this->assertSame('/Documentos/plano.md', $plan['denied'][0]['from']);
 		$this->assertStringContainsString('is locked by Text', $plan['denied'][0]['reason']);
-		$this->assertSame(FilesMessages::batchNotOk(0, 1), $this->failure('files_move_batch', $arguments));
+		$this->assertSame(ReorganizationMessages::batchNotOk(0, 1), $this->failure('files_move_batch', $arguments));
 		$this->assertSame([], $this->tree->ops, 'no folder created, nothing moved');
 	}
 
@@ -157,7 +157,7 @@ final class FilesLockTest extends FilesToolsTestCase {
 		$this->tree->backupWriteFailure = new \OCP\Lock\ManuallyLockedException('/alice/files/MCP backups/x', null, 'files_lock/b', 'pedro', -1);
 		$e = $this->refused('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'novo']);
 		$this->assertStringContainsString('is locked, and Nextcloud does not say by whom.', $e->getMessage());
-		$this->assertStringEndsWith(FilesMessages::backupFailed(), $e->getMessage());
+		$this->assertStringEndsWith(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::backupFailed(), $e->getMessage());
 		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
 	}
 
@@ -178,7 +178,7 @@ final class FilesLockTest extends FilesToolsTestCase {
 		$arguments = ['moves' => [['from' => '/Documentos', 'to' => '/Arquivo']]];
 		$plan = $this->plan('files_move_batch', $arguments);
 		$this->assertStringContainsString('“/Documentos/ata.md” is locked by Paulo Exemplo', $plan['denied'][0]['reason']);
-		$this->assertSame(FilesMessages::batchNotOk(0, 1), $this->failure('files_move_batch', $arguments));
+		$this->assertSame(ReorganizationMessages::batchNotOk(0, 1), $this->failure('files_move_batch', $arguments));
 		$this->assertSame([], $this->tree->ops);
 	}
 
@@ -244,7 +244,7 @@ final class FilesLockTest extends FilesToolsTestCase {
 		};
 		$e = $this->refused('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'novo']);
 		$this->assertStringContainsString('It was locked through a WebDAV client', $e->getMessage());
-		$this->assertStringEndsWith(FilesMessages::backupFailed(), $e->getMessage());
+		$this->assertStringEndsWith(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::backupFailed(), $e->getMessage());
 		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
 		$this->assertNotContains('write /alice/files/Documentos/ata.md', $this->tree->ops);
 	}
@@ -255,12 +255,12 @@ final class FilesLockTest extends FilesToolsTestCase {
 	 */
 	public function testNoPlanPromisesAVersionUnconditionally(): void {
 		$plan = $this->plan('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'novo']);
-		foreach ([$plan['consequence'], FilesMessages::planRestore(), FilesMessages::versionRestoreTool(),
+		foreach ([$plan['consequence'], \OCA\Mcp\Modules\Files\Presentation\VersionMessages::planRestore(), \OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionRestoreTool(),
 			implode(' ', $this->module->guideNotes())] as $text) {
 			$this->assertDoesNotMatchRegularExpression('/new version is created|keeps the new content as a version|a new version in Nextcloud|restores content as a new version/', $text);
 		}
 		$this->assertStringContainsString('backup folder', $plan['consequence']);
-		$this->assertStringContainsString('backup folder', FilesMessages::planRestore());
+		$this->assertStringContainsString('backup folder', \OCA\Mcp\Modules\Files\Presentation\VersionMessages::planRestore());
 	}
 
 	public function testWithoutFilesLockEverythingWorksAsBefore(): void {

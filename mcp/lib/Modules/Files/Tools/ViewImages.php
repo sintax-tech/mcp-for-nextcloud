@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Tools;
 
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\ImageMessages;
 use OCA\Mcp\Modules\Files\Images\ImageTools;
 use OCA\Mcp\Modules\Files\Presentation\FilesSchema;
 use OCA\Mcp\Mcp\Tools\ToolDefinition;
@@ -25,15 +25,15 @@ final class ViewImages implements Tool {
 	/** @return ToolDefinition unchanged static definition */
 	public static function definition(): ToolDefinition {
 		return FilesSchema::definition(['name' => 'files_images_view', 'module' => 'files', 'operation' => 'read',
-				'description' => FilesMessages::imagesViewTool(),
+				'description' => ImageMessages::imagesViewTool(),
 				'inputSchema' => FilesSchema::schema([
 					'paths' => ['type' => 'array', 'minItems' => 1, 'maxItems' => ImageTools::BATCH_MAX_ITEMS,
-						'items' => ['type' => 'string', 'minLength' => 1], 'description' => FilesMessages::imagePaths()],
-					'folder' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::imageFolder()],
+						'items' => ['type' => 'string', 'minLength' => 1], 'description' => ImageMessages::imagePaths()],
+					'folder' => ['type' => 'string', 'minLength' => 1, 'description' => ImageMessages::imageFolder()],
 					'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => ImageTools::BATCH_MAX_ITEMS,
 						'default' => ImageTools::BATCH_MAX_ITEMS],
 					'max_size' => ['type' => 'integer', 'minimum' => ImageTools::MIN_MAX_SIZE, 'maximum' => ImageTools::MAX_MAX_SIZE,
-						'default' => ImageTools::DEFAULT_MAX_SIZE, 'description' => FilesMessages::imageMaxSize()],
+						'default' => ImageTools::DEFAULT_MAX_SIZE, 'description' => ImageMessages::imageMaxSize()],
 				])]);
 	}
 

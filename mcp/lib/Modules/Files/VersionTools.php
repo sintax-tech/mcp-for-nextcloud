@@ -93,7 +93,7 @@ final class VersionTools {
 		$version = $this->find($user, $file, $revision);
 		$handle = VersionStream::open($this->manager(), $version, $file);
 		if (!is_resource($handle)) {
-			throw new ToolFailure(FilesMessages::versionUnreadable());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionUnreadable());
 		}
 		try {
 			$bytes = (string)stream_get_contents($handle, TextExtractor::MAX_BYTES + 1);
@@ -101,7 +101,7 @@ final class VersionTools {
 			fclose($handle);
 		}
 		if (strlen($bytes) > TextExtractor::MAX_BYTES) {
-			throw new ToolFailure(FilesMessages::readTooLarge(TextExtractor::MAX_BYTES));
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReadingMessages::readTooLarge(TextExtractor::MAX_BYTES));
 		}
 		$mime = $version->getMimeType();
 		$name = $version->getSourceFileName() ?: $path;
@@ -117,7 +117,7 @@ final class VersionTools {
 			'version' => $revision,
 			'size' => strlen($bytes),
 			'mime' => $mime,
-			'text' => mb_strlen($text) > self::MAX_CHARS ? mb_substr($text, 0, self::MAX_CHARS) . "\n\n" . FilesMessages::textTruncated() : $text,
+			'text' => mb_strlen($text) > self::MAX_CHARS ? mb_substr($text, 0, self::MAX_CHARS) . "\n\n" . \OCA\Mcp\Modules\Files\Presentation\ReadingMessages::textTruncated() : $text,
 			'truncated' => mb_strlen($text) > self::MAX_CHARS,
 		];
 	}
@@ -170,7 +170,7 @@ final class VersionTools {
 	private function requireVersioning(string $viewerUid): IUser {
 		$user = $this->userManager->get($viewerUid);
 		if ($user === null || !$this->appManager->isEnabledForUser(self::APP, $user)) {
-			throw new ToolFailure(FilesMessages::versionsOff());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionsOff());
 		}
 		return $user;
 	}
@@ -188,7 +188,7 @@ final class VersionTools {
 				return $version;
 			}
 		}
-		throw new ToolFailure(FilesMessages::versionMissing($revision));
+		throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionMissing($revision));
 	}
 
 	/**
@@ -202,7 +202,7 @@ final class VersionTools {
 			$manager = null;
 		}
 		if (!is_object($manager)) {
-			throw new ToolFailure(FilesMessages::versionsOff());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionsOff());
 		}
 		return $manager;
 	}

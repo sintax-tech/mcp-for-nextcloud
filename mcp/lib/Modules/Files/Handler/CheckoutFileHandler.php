@@ -14,7 +14,7 @@ use OCP\Files\NotFoundException;
 use OCA\Mcp\Modules\Files\CheckoutService;
 use OCA\Mcp\Modules\Files\FileBackup;
 use OCA\Mcp\Modules\Files\FileWriteBoundary;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\EditingMessages;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
@@ -61,7 +61,7 @@ final class CheckoutFileHandler {
 	public function plan(Folder $root, string $userId, string $path, ?string $etag): array {
 		$path = PathGuard::normalize($path);
 		if (FileBackup::isBackupPath($path, $this->backupLocation)) {
-			throw new ToolFailure(FilesMessages::backupPath());
+			throw new ToolFailure(EditingMessages::backupPath());
 		}
 		$file = $this->file($root, $path);
 		FileWriteBoundary::check($this->fileTypes, $file->getName());
@@ -84,8 +84,8 @@ final class CheckoutFileHandler {
 			'requiresSharedConfirmation' => $shared !== null,
 			'recoverable' => true,
 			'linksAfterConfirmation' => true,
-			'consequence' => FilesMessages::planCheckoutConsequence(),
-			'message' => FilesMessages::planCheckout(),
+			'consequence' => \OCA\Mcp\Modules\Files\Presentation\CheckoutMessages::planCheckoutConsequence(),
+			'message' => \OCA\Mcp\Modules\Files\Presentation\CheckoutMessages::planCheckout(),
 		] + ($this->locks?->planNotice($file, $userId, $path, false) ?? []), $userId);
 	}
 
@@ -105,7 +105,7 @@ final class CheckoutFileHandler {
 	public function execute(Folder $root, string $userId, string $path, ?string $etag, bool $confirmed): array {
 		$path = PathGuard::normalize($path);
 		if (FileBackup::isBackupPath($path, $this->backupLocation)) {
-			throw new ToolFailure(FilesMessages::backupPath());
+			throw new ToolFailure(EditingMessages::backupPath());
 		}
 		$file = $this->file($root, $path);
 		FileWriteBoundary::check($this->fileTypes, $file->getName());

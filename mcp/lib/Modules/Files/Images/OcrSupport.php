@@ -43,6 +43,6 @@ class OcrSupport {
 
 	/** @return string notice for a file without text, depending on whether Workflow OCR is active */
 	public function noTextNotice(): string {
-		return $this->isActive() ? \OCA\Mcp\Modules\Files\FilesMessages::noTextOcrActive() : \OCA\Mcp\Modules\Files\FilesMessages::noTextOcrInactive();
+		return $this->isActive() ? \OCA\Mcp\Modules\Files\Presentation\ImageMessages::noTextOcrActive() : \OCA\Mcp\Modules\Files\Presentation\ImageMessages::noTextOcrInactive();
 	}
 }

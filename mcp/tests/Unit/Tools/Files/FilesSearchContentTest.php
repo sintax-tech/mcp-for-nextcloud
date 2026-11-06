@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\ReadingMessages;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCP\Files\IRootFolder;
 use OCP\FullTextSearch\IFullTextSearchManager;
@@ -59,7 +59,7 @@ final class FilesSearchContentTest extends FilesToolsTestCase {
 		$res = $this->json('files_search', ['query' => 'Ata']);
 		$this->assertSame('name_only', $res['search_mode']);
 		$this->assertFalse($res['full_text_active']);
-		$this->assertSame(FilesMessages::searchNameOnlyNotice(), $res['notice']);
+		$this->assertSame(ReadingMessages::searchNameOnlyNotice(), $res['notice']);
 		$this->assertSame(['/Documentos/ata.md'], array_column($res['files'], 'path'));
 	}
 
@@ -80,7 +80,7 @@ final class FilesSearchContentTest extends FilesToolsTestCase {
 		$res = $this->json('files_search', ['query' => 'Ata']);
 		$this->assertSame('name_only', $res['search_mode']);
 		$this->assertFalse($res['full_text_active']);
-		$this->assertSame(FilesMessages::searchFallbackNotice(), $res['notice']);
+		$this->assertSame(ReadingMessages::searchFallbackNotice(), $res['notice']);
 		$this->assertSame(['/Documentos/ata.md'], array_column($res['files'], 'path'));
 	}
 

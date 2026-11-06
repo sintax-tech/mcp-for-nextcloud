@@ -26,7 +26,7 @@ use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Modules\Files\CheckoutService;
 use OCA\Mcp\Modules\Files\FileBackup;
 use OCA\Mcp\Modules\Files\FileCreation;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\CheckoutMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
@@ -137,7 +137,7 @@ class CheckoutController extends Controller {
 		}
 		$handle = $file->fopen('r');
 		if ($handle === false) {
-			return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenInvalid());
+			return $this->refuse(Http::STATUS_NOT_FOUND, CheckoutMessages::tokenInvalid());
 		}
 		// filename*=UTF-8'' is the form that survives a name with spaces or accents; the plain filename
 		// is the percent-encoded fallback for clients that only understand RFC 6266.
@@ -165,7 +165,7 @@ class CheckoutController extends Controller {
 		try {
 			return $this->policy->within($row->userId, $work);
 		} catch (PolicyUnavailable) {
-			return $this->refuse(Http::STATUS_SERVICE_UNAVAILABLE, FilesMessages::checkoutUnavailable());
+			return $this->refuse(Http::STATUS_SERVICE_UNAVAILABLE, CheckoutMessages::checkoutUnavailable());
 		}
 	}
 
@@ -197,7 +197,7 @@ class CheckoutController extends Controller {
 			}
 			$token = $this->routeToken();
 			if ($token === null) {
-				return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenInvalid());
+				return $this->refuse(Http::STATUS_NOT_FOUND, CheckoutMessages::tokenInvalid());
 			}
 			// Decided from the prefix because the store is not read before the headers pass; the stored kind still rules.
 			$create = CheckoutService::isCreateToken($token);
@@ -214,7 +214,7 @@ class CheckoutController extends Controller {
 			$body = $this->storeBody($limit);
 			// A body that could not be kept (larger than declared, or unreadable) is never written, and costs no link.
 			if ($body === null) {
-				return $this->refuse(Http::STATUS_REQUEST_ENTITY_TOO_LARGE, FilesMessages::uploadTooLarge($limit));
+				return $this->refuse(Http::STATUS_REQUEST_ENTITY_TOO_LARGE, CheckoutMessages::uploadTooLarge($limit));
 			}
 			try {
 				return $this->asOwner($row, fn (): Response => $create ? $this->create($row, $body) : $this->replace($row, $body));
@@ -235,7 +235,7 @@ class CheckoutController extends Controller {
 	private function checkBodyType(): ?Response {
 		$type = strtolower(trim(explode(';', $this->request->getHeader('Content-Type'))[0]));
 		if ($type === 'multipart/form-data') {
-			return $this->refuse(Http::STATUS_BAD_REQUEST, FilesMessages::uploadMultipart());
+			return $this->refuse(Http::STATUS_BAD_REQUEST, CheckoutMessages::uploadMultipart());
 		}
 		return null;
 	}
@@ -248,10 +248,10 @@ class CheckoutController extends Controller {
 	private function checkBody(int $limit, bool $allowEmpty = false): ?Response {
 		$declared = (int)$this->request->getHeader('Content-Length');
 		if ($declared === 0 && !$allowEmpty) {
-			return $this->refuse(Http::STATUS_BAD_REQUEST, FilesMessages::uploadEmpty());
+			return $this->refuse(Http::STATUS_BAD_REQUEST, CheckoutMessages::uploadEmpty());
 		}
 		if ($declared > $limit) {
-			return $this->refuse(Http::STATUS_REQUEST_ENTITY_TOO_LARGE, FilesMessages::uploadTooLarge($limit));
+			return $this->refuse(Http::STATUS_REQUEST_ENTITY_TOO_LARGE, CheckoutMessages::uploadTooLarge($limit));
 		}
 		return null;
 	}
@@ -298,19 +298,19 @@ class CheckoutController extends Controller {
 	 */
 	private function checkLink(?CheckoutToken $row, string $kind): ?Response {
 		if ($row === null || $row->kind !== $kind) {
-			return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenWrongKind());
+			return $this->refuse(Http::STATUS_NOT_FOUND, CheckoutMessages::tokenWrongKind());
 		}
 		$session = $this->userSession->getUser();
 		if ($session !== null && $session->getUID() !== $row->userId) {
-			return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenInvalid());
+			return $this->refuse(Http::STATUS_NOT_FOUND, CheckoutMessages::tokenInvalid());
 		}
 		// The account is asked before the body is read, so a disabled one costs neither a temporary file nor the link.
 		if (!$this->ownerUsable($row->userId)) {
-			return $this->refuse(Http::STATUS_FORBIDDEN, FilesMessages::checkoutRevoked());
+			return $this->refuse(Http::STATUS_FORBIDDEN, CheckoutMessages::checkoutRevoked());
 		}
 		// A spent or expired link says so before anything else, even when the file of a create link now exists.
 		if ($row->used || $row->expiresAt <= $this->time->getTime()) {
-			return $this->refuse(Http::STATUS_GONE, $kind === CheckoutToken::KIND_CREATE ? FilesMessages::createTokenSpent() : FilesMessages::tokenSpent());
+			return $this->refuse(Http::STATUS_GONE, $kind === CheckoutToken::KIND_CREATE ? \OCA\Mcp\Modules\Files\Presentation\CreationMessages::createTokenSpent() : CheckoutMessages::tokenSpent());
 		}
 		return null;
 	}
@@ -349,7 +349,7 @@ class CheckoutController extends Controller {
 	private function lockRefusal(LockWriteFailure $e, string $copy): Response {
 		return $this->refuse(Http::STATUS_LOCKED, implode(' ', array_filter([
 			$e->getMessage(),
-			$copy === '' ? '' : FilesMessages::originalKept($copy),
+			$copy === '' ? '' : \OCA\Mcp\Modules\Files\Presentation\EditingMessages::originalKept($copy),
 			LockMessages::newCheckoutNeeded(),
 		])));
 	}
@@ -387,15 +387,15 @@ class CheckoutController extends Controller {
 		// unknown link, so the answer tells nothing about the link.
 		$owner = $this->userManager?->get($uid);
 		if ($owner !== null && $this->guests !== null && !$this->guests->applyToOwner($owner)) {
-			return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenInvalid());
+			return $this->refuse(Http::STATUS_NOT_FOUND, CheckoutMessages::tokenInvalid());
 		}
 		try {
 			$allowed = $this->ownerUsable($uid) && $this->policy->within($uid,
 				fn (): bool => $this->policy->canConnect($uid) && $this->policy->granted($uid, self::MODULE, $operation));
 		} catch (PolicyUnavailable) {
-			return $this->refuse(Http::STATUS_SERVICE_UNAVAILABLE, FilesMessages::checkoutUnavailable());
+			return $this->refuse(Http::STATUS_SERVICE_UNAVAILABLE, CheckoutMessages::checkoutUnavailable());
 		}
-		return $allowed ? null : $this->refuse(Http::STATUS_FORBIDDEN, FilesMessages::checkoutRevoked());
+		return $allowed ? null : $this->refuse(Http::STATUS_FORBIDDEN, CheckoutMessages::checkoutRevoked());
 	}
 
 	/**
@@ -408,7 +408,7 @@ class CheckoutController extends Controller {
 		try {
 			$this->visibilityGuard?->assertScopeReadable();
 		} catch (PolicyUnavailable) {
-			return $this->refuse(Http::STATUS_SERVICE_UNAVAILABLE, FilesMessages::checkoutUnavailable());
+			return $this->refuse(Http::STATUS_SERVICE_UNAVAILABLE, CheckoutMessages::checkoutUnavailable());
 		}
 		return null;
 	}
@@ -457,12 +457,12 @@ class CheckoutController extends Controller {
 	 */
 	private function resolve(?CheckoutToken $row, string $kind): array|Response {
 		if ($row === null || $row->kind !== $kind) {
-			return $this->refuse(Http::STATUS_NOT_FOUND, $kind === CheckoutToken::KIND_UPLOAD ? FilesMessages::tokenWrongKind() : FilesMessages::tokenInvalid());
+			return $this->refuse(Http::STATUS_NOT_FOUND, $kind === CheckoutToken::KIND_UPLOAD ? CheckoutMessages::tokenWrongKind() : CheckoutMessages::tokenInvalid());
 		}
 		// A link is the credential, so the session may only ever agree with it.
 		$session = $this->userSession->getUser();
 		if ($session !== null && $session->getUID() !== $row->userId) {
-			return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenInvalid());
+			return $this->refuse(Http::STATUS_NOT_FOUND, CheckoutMessages::tokenInvalid());
 		}
 		$uid = $row->userId;
 		if (($refusal = $this->admit($uid, self::OPERATION) ?? $this->scopeReadable()) !== null) {
@@ -480,7 +480,7 @@ class CheckoutController extends Controller {
 			return $this->refuse(Http::STATUS_NOT_FOUND, CommonMessages::notFound());
 		}
 		if ((int)$file->getId() !== $row->fileId) {
-			return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenInvalid());
+			return $this->refuse(Http::STATUS_NOT_FOUND, CheckoutMessages::tokenInvalid());
 		}
 		if ($this->visibilityGuard !== null && !$this->visibilityGuard->isVisible($file)) {
 			return $this->refuse(Http::STATUS_NOT_FOUND, CommonMessages::notFound());
@@ -494,7 +494,7 @@ class CheckoutController extends Controller {
 	 * @return Response|null 410 when another request spent it first, which is what makes the token single use
 	 */
 	private function spend(CheckoutToken $row, ?string $spent = null): ?Response {
-		return $this->store->consume($row, $this->time->getTime()) ? null : $this->refuse(Http::STATUS_GONE, $spent ?? FilesMessages::tokenSpent());
+		return $this->store->consume($row, $this->time->getTime()) ? null : $this->refuse(Http::STATUS_GONE, $spent ?? CheckoutMessages::tokenSpent());
 	}
 
 	/**

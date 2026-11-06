@@ -10,7 +10,7 @@ namespace OCA\Mcp\Modules\Files\Tools;
 use OCA\Mcp\Platform\FileAccess\SharePermission;
 use OCA\Mcp\Modules\Files\Sharing\ShareWriter;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\Presentation\FilesSchema;
 use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;
@@ -30,15 +30,15 @@ final class ShareFile implements WriteTool {
 		$path = ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::path()];
 		return FilesSchema::definition(['name' => 'files_share', 'module' => 'files', 'operation' => 'share', 'grantAnyOf' => ['share', 'link'],
 				'destructiveHint' => true,
-				'description' => FilesMessages::shareTool(),
+				'description' => \OCA\Mcp\Modules\Files\Presentation\SharingMessages::shareTool(),
 				'inputSchema' => FilesSchema::schema([
 					'path' => $path,
-					'with' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::shareWithParam()],
+					'with' => ['type' => 'string', 'minLength' => 1, 'description' => \OCA\Mcp\Modules\Files\Presentation\SharingMessages::shareWithParam()],
 					'permission' => ['type' => 'string', 'enum' => SharePermission::LEVELS, 'default' => SharePermission::VIEW,
-						'description' => FilesMessages::sharePermissionParam()],
-					'expires' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::shareExpiresParam()],
-					'note' => ['type' => 'string', 'maxLength' => ShareWriter::NOTE_MAX, 'description' => FilesMessages::shareNoteParam()],
-					'password' => ['type' => 'boolean', 'description' => FilesMessages::sharePasswordParam()],
+						'description' => \OCA\Mcp\Modules\Files\Presentation\SharingMessages::sharePermissionParam()],
+					'expires' => ['type' => 'string', 'minLength' => 1, 'description' => \OCA\Mcp\Modules\Files\Presentation\SharingMessages::shareExpiresParam()],
+					'note' => ['type' => 'string', 'maxLength' => ShareWriter::NOTE_MAX, 'description' => \OCA\Mcp\Modules\Files\Presentation\SharingMessages::shareNoteParam()],
+					'password' => ['type' => 'boolean', 'description' => \OCA\Mcp\Modules\Files\Presentation\SharingMessages::sharePasswordParam()],
 					PlanState::ARGUMENT => PlanState::property(),
 				], ['path', 'with'])]);
 	}

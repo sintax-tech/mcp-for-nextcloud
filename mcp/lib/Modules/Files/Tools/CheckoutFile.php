@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Tools;
 
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\Presentation\FilesSchema;
 use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;
@@ -28,7 +28,7 @@ final class CheckoutFile implements WriteTool {
 		$etag = ['type' => 'string', 'description' => FilesMessages::etag()];
 		$confirmShared = ['type' => 'boolean', 'description' => FilesMessages::confirmShared()];
 		return FilesSchema::definition(['name' => 'files_checkout', 'module' => 'files', 'operation' => 'edit',
-				'description' => FilesMessages::checkoutTool(),
+				'description' => \OCA\Mcp\Modules\Files\Presentation\CheckoutMessages::checkoutTool(),
 				'inputSchema' => FilesSchema::schema(['path' => $path, 'etag' => $etag, 'confirm_shared' => $confirmShared], ['path'])]);
 	}
 

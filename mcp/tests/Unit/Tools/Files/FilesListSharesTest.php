@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\SharingMessages;
 use OCA\Mcp\Modules\Files\Sharing\ShareAccess;
 use OCP\Share\IShare;
 
@@ -60,7 +60,7 @@ final class FilesListSharesTest extends FilesToolsTestCase {
 
 	public function testANodeOfAnotherOwnerIsRefused(): void {
 		$this->tree->addFile('/alice/files/Recebido.pdf', 'x', 'application/pdf', ['scope' => 'shared']);
-		self::assertSame(FilesMessages::shareNotOwner(), $this->failure('files_list_shares', ['path' => '/Recebido.pdf']));
+		self::assertSame(SharingMessages::shareNotOwner(), $this->failure('files_list_shares', ['path' => '/Recebido.pdf']));
 	}
 
 	public function testAMissingPathIsNotFound(): void {

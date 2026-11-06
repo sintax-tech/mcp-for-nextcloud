@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Images;
 
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\ImageMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCP\Files\Folder;
@@ -42,10 +42,10 @@ final class ImageBatch {
 	 */
 	public function viewMany(Folder $root, string $userId, ?array $paths, ?string $folder, int $limit, int $maxSize): array {
 		if ($paths === null && $folder === null) {
-			throw new ToolFailure(FilesMessages::imagesNoTarget());
+			throw new ToolFailure(ImageMessages::imagesNoTarget());
 		}
 		if ($paths !== null && $folder !== null) {
-			throw new ToolFailure(FilesMessages::imagesConflict());
+			throw new ToolFailure(ImageMessages::imagesConflict());
 		}
 		$selected = $paths !== null
 			? $this->selection->selectPaths($root, $paths)

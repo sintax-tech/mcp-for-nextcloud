@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\SharingMessages;
 use OCA\Mcp\Mcp\Confirmation\PlanChanged;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
@@ -47,7 +47,7 @@ final class FilesSharePlanStateTest extends FilesToolsTestCase {
 	}
 
 	private function assertChanged(array $plan): void {
-		self::assertSame(FilesMessages::sharePlanChanged(), $plan['warnings'][0]['message'], 'o aviso vem primeiro');
+		self::assertSame(SharingMessages::sharePlanChanged(), $plan['warnings'][0]['message'], 'o aviso vem primeiro');
 		self::assertSame([], $this->shares->writes, 'nada é gravado');
 	}
 
@@ -215,7 +215,7 @@ final class FilesSharePlanStateTest extends FilesToolsTestCase {
 		self::assertArrayNotHasKey('isError', $again);
 		self::assertTrue($again['structuredContent']['requiresConfirmation']);
 		self::assertSame('update', $again['structuredContent']['action']);
-		self::assertStringContainsString(FilesMessages::sharePlanChanged(), $again['content'][0]['text']);
+		self::assertStringContainsString(SharingMessages::sharePlanChanged(), $again['content'][0]['text']);
 		$newState = $again['structuredContent'][PlanState::ARGUMENT];
 		self::assertStringContainsString('repeat the call with plan_state `' . $newState . '`', $again['content'][0]['text']);
 		self::assertSame([], $this->shares->writes);

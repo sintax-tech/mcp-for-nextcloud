@@ -164,7 +164,7 @@ final class CheckoutService {
 	public function assertAvailable(string $userId): void {
 		$user = $this->userManager->get($userId);
 		if ($user === null || !$this->appManager->isEnabledForUser(self::VERSIONS_APP, $user)) {
-			throw new ToolFailure(FilesMessages::versionsOff());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionsOff());
 		}
 	}
 

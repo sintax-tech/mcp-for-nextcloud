@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Tools;
 
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\Presentation\FilesSchema;
 use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;
@@ -26,10 +26,10 @@ final class CreateFile implements WriteTool {
 	public static function definition(): ToolDefinition {
 		$confirmShared = ['type' => 'boolean', 'description' => FilesMessages::confirmShared()];
 		return FilesSchema::definition(['name' => 'files_create', 'module' => 'files', 'operation' => 'create',
-				'description' => FilesMessages::createTool(),
+				'description' => \OCA\Mcp\Modules\Files\Presentation\CreationMessages::createTool(),
 				'inputSchema' => FilesSchema::schema([
-					'path' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::newFilePath()],
-					'content' => ['type' => 'string', 'description' => FilesMessages::createContent()],
+					'path' => ['type' => 'string', 'minLength' => 1, 'description' => \OCA\Mcp\Modules\Files\Presentation\CreationMessages::newFilePath()],
+					'content' => ['type' => 'string', 'description' => \OCA\Mcp\Modules\Files\Presentation\CreationMessages::createContent()],
 					'confirm_shared' => $confirmShared,
 				], ['path', 'content'])]);
 	}

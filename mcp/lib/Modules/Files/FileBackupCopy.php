@@ -67,17 +67,17 @@ final class FileBackupCopy {
 			}
 			$valid = $copy->getSize() === $file->getSize();
 		} catch (LockWriteFailure $e) {
-			throw $e->withNote(FilesMessages::backupFailed());
+			throw $e->withNote(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::backupFailed());
 		} catch (ManuallyLockedException $e) {
 			// A backup folder locked by files_lock is a lock, and stays one: the checkout answers it with 423.
 			$failure = $this->locks?->failure($e, $target, $userId) ?? NodeAccess::lockFailure($e);
 			throw ($failure instanceof LockWriteFailure ? $failure : new LockWriteFailure(LockMessages::lockedWithoutDetails()))
-				->withNote(FilesMessages::backupFailed());
+				->withNote(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::backupFailed());
 		} catch (\Throwable) {
 			$valid = false;
 		}
 		if (!$valid) {
-			throw new ToolFailure(FilesMessages::backupFailed());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::backupFailed());
 		}
 		return $root->getRelativePath($copy->getPath()) ?? '';
 	}

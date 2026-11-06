@@ -13,7 +13,7 @@ use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\SharingMessages;
 use OCA\Mcp\Mcp\Confirmation\PlanChanged;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
@@ -103,7 +103,7 @@ final class ShareWriter {
 	private function planOf(array $change, string $uid, bool $changed = false): array {
 		$warnings = $change['warnings'];
 		if ($changed) {
-			array_unshift($warnings, FilesMessages::sharePlanChanged());
+			array_unshift($warnings, SharingMessages::sharePlanChanged());
 		}
 		return [
 			'action' => $change['action'],
@@ -117,7 +117,7 @@ final class ShareWriter {
 			'notifies' => $change['action'] === self::CREATE && $change['recipient']->kind !== ShareRecipient::LINK,
 			'timezone' => $change['timezone']->getName(),
 			'warnings' => array_map(static fn (string $message): array => ['message' => $message], $warnings),
-			'message' => $change['action'] === self::NONE ? FilesMessages::planShareNothing() : CommonMessages::planNothingChanged(),
+			'message' => $change['action'] === self::NONE ? SharingMessages::planShareNothing() : CommonMessages::planNothingChanged(),
 			PlanState::ARGUMENT => $this->stateOf($change, $uid),
 		] + ($change['passwordPlan'] === null ? [] : ['password' => $change['passwordPlan']]);
 	}
@@ -196,12 +196,12 @@ final class ShareWriter {
 		} catch (\Throwable $e) {
 			// A password may exist by now: nothing unexpected reaches the registry, whose log keeps the message.
 			$this->logger->warning('MCP share result failed', ['app' => 'mcp', 'exception_class' => $e::class]);
-			throw new ToolFailure(FilesMessages::shareRefused());
+			throw new ToolFailure(SharingMessages::shareRefused());
 		}
 		$result = ['action' => $change['action'], 'changed' => $change['action'] !== self::NONE] + $item;
 		if ($password !== null) {
 			$result['password'] = $password;
-			$result['passwordNotice'] = FilesMessages::linkPasswordShownOnce();
+			$result['passwordNotice'] = SharingMessages::linkPasswordShownOnce();
 		}
 		return $result;
 	}
@@ -229,17 +229,17 @@ final class ShareWriter {
 		$node = $this->access->ownNode($userFolder, $uid, (string)$arguments['path']);
 		$this->access->assertFolderExposure($node);
 		if ($recipient->kind === ShareRecipient::USER && $recipient->id === $uid) {
-			throw new ToolFailure(FilesMessages::shareWithSelf());
+			throw new ToolFailure(SharingMessages::shareWithSelf());
 		}
 		$this->assertServerAllows($uid, $recipient);
 		$folder = NodeAccess::isFolder($node);
 		$level = (string)($arguments['permission'] ?? \OCA\Mcp\Platform\FileAccess\SharePermission::VIEW);
 		$bits = \OCA\Mcp\Platform\FileAccess\SharePermission::bits($level, $folder);
 		if (!$node->isShareable()) {
-			throw new ToolFailure(FilesMessages::shareNodeNotShareable());
+			throw new ToolFailure(SharingMessages::shareNodeNotShareable());
 		}
 		if (($bits & ~(int)$node->getPermissions()) !== 0) {
-			throw new ToolFailure(FilesMessages::shareAboveOwnPermissions());
+			throw new ToolFailure(SharingMessages::shareAboveOwnPermissions());
 		}
 		$zone = $this->zones->forUser($uid);
 		$expires = isset($arguments['expires']) ? $this->expiry((string)$arguments['expires'], $zone) : null;
@@ -317,7 +317,7 @@ final class ShareWriter {
 			throw new ArgumentValidationException('Invalid argument: permission', 'permission', Translator::t('only view for a public link'));
 		}
 		if (!$node->isShareable()) {
-			throw new ToolFailure(FilesMessages::shareNodeNotShareable());
+			throw new ToolFailure(SharingMessages::shareNodeNotShareable());
 		}
 		$folder = NodeAccess::isFolder($node);
 		$existing = $this->access->findExisting($uid, $node, $recipient);
@@ -375,7 +375,7 @@ final class ShareWriter {
 			'after' => $after,
 			'expiresSource' => $source,
 			'timezone' => $zone,
-			'warnings' => [FilesMessages::linkPublicWarning()],
+			'warnings' => [SharingMessages::linkPublicWarning()],
 			'generatePassword' => $generate,
 			'passwordPlan' => [
 				'before' => $hadPassword,
@@ -395,13 +395,13 @@ final class ShareWriter {
 	 */
 	private function assertLinksAllowed(string $uid): void {
 		if (!$this->shareManager->shareApiEnabled()) {
-			throw new ToolFailure(FilesMessages::shareDisabled());
+			throw new ToolFailure(SharingMessages::shareDisabled());
 		}
 		if ($this->shareManager->sharingDisabledForUser($uid)) {
-			throw new ToolFailure(FilesMessages::shareDisabledForYou());
+			throw new ToolFailure(SharingMessages::shareDisabledForYou());
 		}
 		if (!$this->shareManager->shareApiAllowLinks($this->userManager->get($uid))) {
-			throw new ToolFailure(FilesMessages::shareLinksDisabled());
+			throw new ToolFailure(SharingMessages::shareLinksDisabled());
 		}
 	}
 
@@ -415,13 +415,13 @@ final class ShareWriter {
 	 */
 	private function assertServerAllows(string $uid, ShareRecipient $recipient): void {
 		if (!$this->shareManager->shareApiEnabled()) {
-			throw new ToolFailure(FilesMessages::shareDisabled());
+			throw new ToolFailure(SharingMessages::shareDisabled());
 		}
 		if ($this->shareManager->sharingDisabledForUser($uid)) {
-			throw new ToolFailure(FilesMessages::shareDisabledForYou());
+			throw new ToolFailure(SharingMessages::shareDisabledForYou());
 		}
 		if ($recipient->kind === ShareRecipient::GROUP && !$this->shareManager->allowGroupSharing()) {
-			throw new ToolFailure(FilesMessages::shareGroupsDisabled());
+			throw new ToolFailure(SharingMessages::shareGroupsDisabled());
 		}
 		if (!$this->shareManager->shareWithGroupMembersOnly()) {
 			return;
@@ -431,7 +431,7 @@ final class ShareWriter {
 		if ($recipient->kind === ShareRecipient::GROUP) {
 			$group = $this->groupManager->get($recipient->id);
 			if ($sharer === null || $group === null || in_array($recipient->id, $excluded, true) || !$group->inGroup($sharer)) {
-				throw new ToolFailure(FilesMessages::shareOnlyOwnGroups());
+				throw new ToolFailure(SharingMessages::shareOnlyOwnGroups());
 			}
 			return;
 		}
@@ -441,7 +441,7 @@ final class ShareWriter {
 			$excluded,
 		);
 		if ($common === []) {
-			throw new ToolFailure(FilesMessages::shareOnlyGroupMembers());
+			throw new ToolFailure(SharingMessages::shareOnlyGroupMembers());
 		}
 	}
 
@@ -489,10 +489,10 @@ final class ShareWriter {
 	private function warnings(ShareRecipient $recipient, bool $folder, string $level): array {
 		$warnings = [];
 		if ($recipient->kind === ShareRecipient::GROUP) {
-			$warnings[] = FilesMessages::shareGroupWarning($recipient->displayName);
+			$warnings[] = SharingMessages::shareGroupWarning($recipient->displayName);
 		}
 		if ($folder && $level === \OCA\Mcp\Platform\FileAccess\SharePermission::EDIT) {
-			$warnings[] = FilesMessages::shareFolderEditWarning($recipient->displayName);
+			$warnings[] = SharingMessages::shareFolderEditWarning($recipient->displayName);
 		}
 		return $warnings;
 	}
@@ -548,7 +548,7 @@ final class ShareWriter {
 			return $this->shareManager->createShare($share);
 		} catch (\Throwable $e) {
 			ShareFailureLog::record($this->logger, 'MCP share refused by Nextcloud', $e);
-			throw new ToolFailure($e instanceof AlreadySharedException ? FilesMessages::shareAlreadyHasAccess() : FilesMessages::shareRefused());
+			throw new ToolFailure($e instanceof AlreadySharedException ? SharingMessages::shareAlreadyHasAccess() : SharingMessages::shareRefused());
 		}
 	}
 }

@@ -14,7 +14,7 @@ use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Platform\FileAccess\BinaryResourceMessages;
 use OCA\Mcp\Mcp\Resources\FileTextResource;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Guide\ToolGuide;
@@ -244,11 +244,11 @@ class ResourceRegistry {
 
 			$size = (int)$node->getSize();
 			if ($size > self::MAX_BLOB_BYTES) {
-				throw new ToolFailure(FilesMessages::binaryResourceTooLarge(self::MAX_BLOB_BYTES));
+				throw new ToolFailure(BinaryResourceMessages::binaryResourceTooLarge(self::MAX_BLOB_BYTES));
 			}
 			$bytes = (string)$node->getContent();
 			if (strlen($bytes) > self::MAX_BLOB_BYTES) {
-				throw new ToolFailure(FilesMessages::binaryResourceTooLarge(self::MAX_BLOB_BYTES));
+				throw new ToolFailure(BinaryResourceMessages::binaryResourceTooLarge(self::MAX_BLOB_BYTES));
 			}
 			return [
 				'contents' => [

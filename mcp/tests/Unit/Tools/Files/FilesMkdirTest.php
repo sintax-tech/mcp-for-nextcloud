@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
@@ -71,7 +71,7 @@ final class FilesMkdirTest extends FilesToolsTestCase {
 		} catch (\InvalidArgumentException $e) {
 			$this->assertSame('Invalid argument: path', $e->getMessage());
 		}
-		$this->assertSame(FilesMessages::backupPath(), $this->failure('files_mkdir', ['path' => '/MCP backups/2026']));
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath(), $this->failure('files_mkdir', ['path' => '/MCP backups/2026']));
 		$this->assertSame([], $this->tree->ops);
 	}
 

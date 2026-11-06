@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Tools;
 
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\ReadingMessages;
 use OCA\Mcp\Modules\Files\Presentation\FilesSchema;
 use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\Tool;
@@ -24,8 +24,8 @@ final class ListFiles implements Tool {
 	/** @return ToolDefinition unchanged static definition */
 	public static function definition(): ToolDefinition {
 		return FilesSchema::definition(['name' => 'files_list', 'module' => 'files', 'operation' => 'read',
-				'description' => FilesMessages::listTool(),
-				'inputSchema' => FilesSchema::schema(['path' => ['type' => 'string', 'default' => '/', 'description' => FilesMessages::path()]])]);
+				'description' => ReadingMessages::listTool(),
+				'inputSchema' => FilesSchema::schema(['path' => ['type' => 'string', 'default' => '/', 'description' => \OCA\Mcp\Modules\Files\Presentation\FilesMessages::path()]])]);
 	}
 
 	/**

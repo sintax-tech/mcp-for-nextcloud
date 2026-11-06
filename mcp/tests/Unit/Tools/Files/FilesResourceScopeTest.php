@@ -12,7 +12,7 @@ use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\Access\ResourceScope\FilesScopes;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\CreationMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\SystemTag\ISystemTagObjectMapper;
 
@@ -179,8 +179,8 @@ final class FilesResourceScopeTest extends FilesToolsTestCase {
 			$this->assertSame(CommonMessages::notFound(), $this->failure($name, $arguments + ['confirm_shared' => true]), "$name " . json_encode($arguments));
 		}
 		foreach (['/Other/new.md', '/Fresh/new.md', '/A/new.md'] as $path) {
-			$this->assertSame(FilesMessages::createFolderMissing(), $this->failure('files_create', ['path' => $path, 'content' => 'x']), $path);
-			$this->assertSame(FilesMessages::createFolderMissing(), $this->failure('files_upload', ['path' => $path]), $path);
+			$this->assertSame(CreationMessages::createFolderMissing(), $this->failure('files_create', ['path' => $path, 'content' => 'x']), $path);
+			$this->assertSame(CreationMessages::createFolderMissing(), $this->failure('files_upload', ['path' => $path]), $path);
 		}
 		$batch = ['moves' => [['from' => '/Projects/plan.md', 'to' => '/Other/z/plan.md']], 'mkdirs' => ['/Other/z']];
 		$this->assertNotSame([], array_filter($this->plan('files_move_batch', $batch)['mkdirs'], static fn (array $dir): bool => isset($dir['reason'])));
@@ -250,7 +250,7 @@ final class FilesResourceScopeTest extends FilesToolsTestCase {
 		}
 		$this->assertSame([], $this->tree->ops);
 		// Inside the scope a file in the way is reachable, so it is named as before.
-		$this->assertSame(FilesMessages::destinationExists(), $this->plan('files_move_batch',
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists(), $this->plan('files_move_batch',
 			['moves' => [['from' => '/Projects/plan.md', 'to' => '/Projects/kept.md']], 'mkdirs' => ['/Projects/plan.md/x']])['mkdirs'][0]['reason']);
 	}
 

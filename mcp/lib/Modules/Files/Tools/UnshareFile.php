@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Files\Tools;
 
 use OCA\Mcp\Mcp\Confirmation\PlanState;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\SharingMessages;
 use OCA\Mcp\Modules\Files\Presentation\FilesSchema;
 use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;
@@ -27,11 +27,11 @@ final class UnshareFile implements WriteTool {
 	public static function definition(): ToolDefinition {
 		return FilesSchema::definition(['name' => 'files_unshare', 'module' => 'files', 'operation' => 'share', 'grantAnyOf' => ['share', 'link'],
 				'destructiveHint' => true,
-				'description' => FilesMessages::unshareTool(),
+				'description' => SharingMessages::unshareTool(),
 				'inputSchema' => FilesSchema::schema([
-					'shareId' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 128, 'description' => FilesMessages::unshareIdParam()],
-					'path' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::unsharePathParam()],
-					'with' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::unshareWithParam()],
+					'shareId' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 128, 'description' => SharingMessages::unshareIdParam()],
+					'path' => ['type' => 'string', 'minLength' => 1, 'description' => SharingMessages::unsharePathParam()],
+					'with' => ['type' => 'string', 'minLength' => 1, 'description' => SharingMessages::unshareWithParam()],
 					PlanState::ARGUMENT => PlanState::property(),
 				])]);
 	}

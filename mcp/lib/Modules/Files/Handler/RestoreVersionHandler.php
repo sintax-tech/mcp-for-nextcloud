@@ -17,7 +17,7 @@ use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Modules\Files\ContentTypeGate;
 use OCA\Mcp\Modules\Files\FileBackup;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\EditingMessages;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\VersionTools;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
@@ -74,7 +74,7 @@ final class RestoreVersionHandler {
 	public function plan(Folder $root, string $userId, string $path, string $version, VersionTools $versions, ?UserTimezone $timezone): array {
 		$path = PathGuard::normalize($path);
 		if (FileBackup::isBackupPath($path, $this->backupLocation)) {
-			throw new ToolFailure(FilesMessages::backupPath());
+			throw new ToolFailure(EditingMessages::backupPath());
 		}
 		$file = $this->file($root, $path);
 		// A missing version is reported before the type check, so an allowed name keeps that message.
@@ -92,8 +92,8 @@ final class RestoreVersionHandler {
 			'shared' => $shared === null ? [] : [$shared],
 			'requiresSharedConfirmation' => $shared !== null,
 			'recoverable' => true,
-			'consequence' => FilesMessages::planBackupConsequence(),
-			'message' => FilesMessages::planRestore(),
+			'consequence' => EditingMessages::planBackupConsequence(),
+			'message' => \OCA\Mcp\Modules\Files\Presentation\VersionMessages::planRestore(),
 		] + ($this->locks?->planNotice($file, $userId, $path) ?? []), $userId);
 	}
 
@@ -115,7 +115,7 @@ final class RestoreVersionHandler {
 	public function execute(Folder $root, string $userId, string $path, string $version, bool $confirmed, VersionTools $versions): array {
 		$path = PathGuard::normalize($path);
 		if (FileBackup::isBackupPath($path, $this->backupLocation)) {
-			throw new ToolFailure(FilesMessages::backupPath());
+			throw new ToolFailure(EditingMessages::backupPath());
 		}
 		$file = $this->file($root, $path);
 		$this->locks?->assertWritable($file, $userId, $path);

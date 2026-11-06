@@ -16,7 +16,7 @@ use OCA\Mcp\Modules\Files\CopyMoveContext;
 use OCA\Mcp\Modules\Files\FileTypePreflight;
 use OCA\Mcp\Modules\Files\ListedTreeCopy;
 use OCA\Mcp\Modules\Files\FolderExposureGate;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages;
 
 /** Owns files_copy planning and confirmation, preserving native authorization and receipts. */
 final class CopyHandler {
@@ -112,7 +112,7 @@ final class CopyHandler {
 			'access' => $this->context->access->describe($source, $userId),
 			'shared' => $this->context->sharedOf($userId, $source, $destination),
 			'recoverable' => true,
-			'message' => FilesMessages::planCopy(),
+			'message' => ReorganizationMessages::planCopy(),
 		];
 	}
 }

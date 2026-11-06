@@ -14,7 +14,7 @@ use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Modules\Files\CheckoutService;
 use OCA\Mcp\Modules\Files\FileCreation;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\CreationMessages;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCA\Mcp\Mcp\Tools\UnknownToolException;
 use OCP\IUser;
@@ -122,10 +122,10 @@ final class FilesCreateTest extends FilesToolsTestCase {
 	public function testAnExistingNameIsRefusedAndPointsToCheckout(): void {
 		foreach (['files_upload' => [], 'files_create' => ['content' => 'x']] as $tool => $extra) {
 			$arguments = ['path' => '/Documentos/ata.md'] + $extra;
-			$this->assertSame(FilesMessages::fileExists(), $this->planFailure($tool, $arguments), $tool);
-			$this->assertSame(FilesMessages::fileExists(), $this->failure($tool, $arguments), $tool);
+			$this->assertSame(CreationMessages::fileExists(), $this->planFailure($tool, $arguments), $tool);
+			$this->assertSame(CreationMessages::fileExists(), $this->failure($tool, $arguments), $tool);
 		}
-		$this->assertStringContainsString('files_checkout', FilesMessages::fileExists());
+		$this->assertStringContainsString('files_checkout', CreationMessages::fileExists());
 		$this->assertSame("# Ata\nolá", $this->tree->nodes['/alice/files/Documentos/ata.md']['content']);
 		$this->assertNull($this->createToken());
 		$this->assertSame([], $this->tree->ops);
@@ -133,22 +133,22 @@ final class FilesCreateTest extends FilesToolsTestCase {
 
 	/** An existing folder with the same name is as taken as a file. */
 	public function testAFolderWithTheSameNameIsAlsoTaken(): void {
-		$this->assertSame(FilesMessages::fileExists(), $this->failure('files_upload', ['path' => '/Documentos']));
+		$this->assertSame(CreationMessages::fileExists(), $this->failure('files_upload', ['path' => '/Documentos']));
 	}
 
 	public function testAMissingFolderIsRefusedWithTheAdviceToCreateIt(): void {
 		foreach (['files_upload' => [], 'files_create' => ['content' => 'x']] as $tool => $extra) {
-			$this->assertSame(FilesMessages::createFolderMissing(), $this->failure($tool, ['path' => '/Nao/Existe/novo.md'] + $extra), $tool);
+			$this->assertSame(CreationMessages::createFolderMissing(), $this->failure($tool, ['path' => '/Nao/Existe/novo.md'] + $extra), $tool);
 		}
-		$this->assertStringContainsString('files_mkdir', FilesMessages::createFolderMissing());
+		$this->assertStringContainsString('files_mkdir', CreationMessages::createFolderMissing());
 		// A hidden folder must not be told apart from a missing one, so the message is the generic not-found first.
-		$this->assertStringStartsWith(CommonMessages::notFound(), FilesMessages::createFolderMissing());
+		$this->assertStringStartsWith(CommonMessages::notFound(), CreationMessages::createFolderMissing());
 		$this->assertNull($this->createToken());
 		$this->assertSame([], $this->tree->ops);
 	}
 
 	public function testAFileInTheMiddleOfThePathIsNotAFolder(): void {
-		$this->assertSame(FilesMessages::notAFolder(), $this->failure('files_upload', ['path' => '/Documentos/ata.md/novo.docx']));
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::notAFolder(), $this->failure('files_upload', ['path' => '/Documentos/ata.md/novo.docx']));
 	}
 
 	public function testAFolderThatDoesNotAcceptNewFilesIsForbidden(): void {
@@ -162,8 +162,8 @@ final class FilesCreateTest extends FilesToolsTestCase {
 
 	public function testTheBackupFolderIsRefused(): void {
 		$this->tree->addFolder('/alice/files/MCP backups');
-		$this->assertSame(FilesMessages::backupPath(), $this->failure('files_upload', ['path' => '/MCP backups/novo.docx']));
-		$this->assertSame(FilesMessages::backupPath(), $this->failure('files_create', ['path' => '/MCP backups/novo.md', 'content' => 'x']));
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath(), $this->failure('files_upload', ['path' => '/MCP backups/novo.docx']));
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath(), $this->failure('files_create', ['path' => '/MCP backups/novo.md', 'content' => 'x']));
 	}
 
 	/**
@@ -190,8 +190,8 @@ final class FilesCreateTest extends FilesToolsTestCase {
 	/** A declared size over the limit is refused before any link exists: the upload would be a 413 anyway. */
 	public function testADeclaredSizeOverTheLimitIsRefusedInThePlanAndTheConfirmation(): void {
 		$this->config->app['mcp'][CheckoutService::MAX_BYTES_KEY] = '1000';
-		$this->assertSame(FilesMessages::uploadTooLarge(1000), $this->planFailure('files_upload', ['path' => '/novo.docx', 'size' => 1001]));
-		$this->assertSame(FilesMessages::uploadTooLarge(1000), $this->failure('files_upload', ['path' => '/novo.docx', 'size' => 1001]));
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\CheckoutMessages::uploadTooLarge(1000), $this->planFailure('files_upload', ['path' => '/novo.docx', 'size' => 1001]));
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\CheckoutMessages::uploadTooLarge(1000), $this->failure('files_upload', ['path' => '/novo.docx', 'size' => 1001]));
 		$this->assertNull($this->createToken());
 		$this->assertSame(1000, $this->plan('files_upload', ['path' => '/novo.docx', 'size' => 1000])['size']);
 	}
@@ -292,9 +292,9 @@ final class FilesCreateTest extends FilesToolsTestCase {
 	public function testInlineContentIsCappedAtOneMegabyte(): void {
 		$limit = FileCreation::MAX_INLINE_BYTES;
 		$this->assertSame(1024 * 1024, $limit);
-		$this->assertSame(FilesMessages::createTooLarge($limit), $this->planFailure('files_create', ['path' => '/grande.txt', 'content' => str_repeat('a', $limit + 1)]));
-		$this->assertSame(FilesMessages::createTooLarge($limit), $this->failure('files_create', ['path' => '/grande.txt', 'content' => str_repeat('a', $limit + 1)]));
-		$this->assertStringContainsString('files_upload', FilesMessages::createTooLarge($limit));
+		$this->assertSame(CreationMessages::createTooLarge($limit), $this->planFailure('files_create', ['path' => '/grande.txt', 'content' => str_repeat('a', $limit + 1)]));
+		$this->assertSame(CreationMessages::createTooLarge($limit), $this->failure('files_create', ['path' => '/grande.txt', 'content' => str_repeat('a', $limit + 1)]));
+		$this->assertStringContainsString('files_upload', CreationMessages::createTooLarge($limit));
 		$this->assertArrayNotHasKey('/alice/files/grande.txt', $this->tree->nodes);
 		$this->assertSame($limit, $this->json('files_create', ['path' => '/grande.txt', 'content' => str_repeat('a', $limit)])['size']);
 	}
@@ -307,7 +307,7 @@ final class FilesCreateTest extends FilesToolsTestCase {
 		$this->tree->beforeCreate = function (string $path): void {
 			$this->tree->addFile($path, 'do outro', 'text/plain');
 		};
-		$this->assertSame(FilesMessages::fileExists(), $this->failure('files_create', ['path' => '/Documentos/notas.md', 'content' => 'meu']));
+		$this->assertSame(CreationMessages::fileExists(), $this->failure('files_create', ['path' => '/Documentos/notas.md', 'content' => 'meu']));
 		$this->assertSame('do outro', $this->tree->nodes['/alice/files/Documentos/notas.md']['content']);
 		$this->assertNotContains('write /alice/files/Documentos/notas.md', $this->tree->ops);
 	}
@@ -359,7 +359,7 @@ final class FilesCreateTest extends FilesToolsTestCase {
 					$this->tree->nodes[$path]['etag'] .= '+';
 				}
 			};
-			$this->assertSame(FilesMessages::fileExists(), $this->failure('files_create', ['path' => '/Documentos/' . $label . '.md', 'content' => 'meu']), $label);
+			$this->assertSame(CreationMessages::fileExists(), $this->failure('files_create', ['path' => '/Documentos/' . $label . '.md', 'content' => 'meu']), $label);
 			$this->assertSame($content, $this->tree->nodes[$path]['content'], $label);
 			$this->assertNotContains('write ' . $path, $this->tree->ops, $label);
 		}
@@ -375,7 +375,7 @@ final class FilesCreateTest extends FilesToolsTestCase {
 		$this->tree->writeFailure = new \RuntimeException('disk /alice/files/segredo.md broke');
 		$this->creationLogger->expects($this->once())->method('error')->with('MCP new file write failed',
 			['app' => 'mcp', 'exception_class' => \RuntimeException::class]);
-		$this->assertSame(FilesMessages::createFailed(), $this->failure('files_create', ['path' => '/falha.md', 'content' => 'x']));
+		$this->assertSame(CreationMessages::createFailed(), $this->failure('files_create', ['path' => '/falha.md', 'content' => 'x']));
 	}
 	public function testCreateDoesNotPublishNewlyHiddenReceipt(): void {
 		$hidden = [];

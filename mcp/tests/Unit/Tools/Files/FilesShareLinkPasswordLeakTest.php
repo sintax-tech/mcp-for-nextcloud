@@ -109,7 +109,7 @@ final class FilesShareLinkPasswordLeakTest extends FilesToolsTestCase {
 		$result = $this->confirmed(['path' => self::FILE, 'with' => 'link', 'password' => true]);
 
 		self::assertTrue($result['isError'] ?? false);
-		self::assertSame(\OCA\Mcp\Modules\Files\FilesMessages::linkPasswordRefused(), $result['content'][0]['text']);
+		self::assertSame(\OCA\Mcp\Modules\Files\Presentation\SharingMessages::linkPasswordRefused(), $result['content'][0]['text']);
 		$this->assertNoPassword('erro', self::all($result));
 		$this->assertNoPassword('log', self::all($this->logged));
 		self::assertSame([], $this->shares->writes, 'nada é gravado');
@@ -123,7 +123,7 @@ final class FilesShareLinkPasswordLeakTest extends FilesToolsTestCase {
 		$result = $this->confirmed(['path' => self::FILE, 'with' => 'link', 'password' => true]);
 
 		self::assertTrue($result['isError'] ?? false);
-		self::assertSame(\OCA\Mcp\Modules\Files\FilesMessages::shareRefused(), $result['content'][0]['text']);
+		self::assertSame(\OCA\Mcp\Modules\Files\Presentation\SharingMessages::shareRefused(), $result['content'][0]['text']);
 		$this->assertNoPassword('erro', self::all($result));
 		$this->assertNoPassword('log', self::all($this->logged));
 		self::assertSame([['app' => 'mcp', 'exception_class' => \TypeError::class]], array_column($this->logged, 1));

@@ -18,9 +18,15 @@ final class ForbiddenDirectoriesTest extends ArchitectureCase {
 		self::assertSame([], DirectoryRules::problems($paths));
 	}
 	public function testForbiddenSegmentsAndSingleWorkFolderFail(): void {
-		foreach (['Services', 'Helpers', 'Utils'] as $directory) { self::assertNotSame([], DirectoryRules::problems(['lib/Modules/Notes/' . $directory . '/X.php'])); }
+		foreach (['Services', 'Helpers', 'Utils', 'Handler'] as $directory) { self::assertNotSame([], DirectoryRules::problems(['lib/Modules/Notes/' . $directory . '/X.php'])); }
 		self::assertSame([], DirectoryRules::problems(['lib/Modules/Example/Example.php']));
-		self::assertNotSame([], DirectoryRules::problems(['lib/Modules/Notes/Reading/X.php']));
-		self::assertSame([], DirectoryRules::problems(['lib/Modules/Notes/Reading/X.php', 'lib/Modules/Notes/Reading/Y.php']));
+		foreach (['Reading', 'Creation', 'Editing', 'Deletion', 'Sharing', 'Moving', 'Reorganization', 'Checkout', 'Writing', 'Searching', 'Extraction', 'Locating', 'Composing', 'Scheduling', 'Sending', 'Attaching', 'Batching', 'Messaging', 'Quoting', 'Replying', 'Completion', 'Planning', 'Selftest', 'Admission'] as $verb) {
+			self::assertNotSame([], DirectoryRules::problems(['lib/Modules/Example/' . $verb . '/X.php']));
+			self::assertSame([], DirectoryRules::problems(['lib/Modules/Example/' . $verb . '/X.php', 'lib/Modules/Example/' . $verb . '/Y.php']));
+		}
+		self::assertNotSame([], DirectoryRules::problems(['lib/Modules/Files/ContentCommit.php']));
+		foreach (['FilesModule', 'FilesToolCatalog', 'FilesRegistration', 'FilesCallContext', 'FilesPreviewContext'] as $name) { self::assertSame([], DirectoryRules::problems(['lib/Modules/Files/' . $name . '.php'])); }
+		self::assertSame([], DirectoryRules::problems(['lib/Modules/People/Integration/Guests.php', 'lib/Modules/People/Tools/SearchUsers.php']));
+		self::assertSame([], DirectoryRules::problems(['lib/Platform/Handler/Example.php']));
 	}
 }

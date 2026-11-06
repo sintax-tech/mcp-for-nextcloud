@@ -12,11 +12,13 @@ final class DirectoryRules {
 	public static function problems(array $paths): array {
 		$errors = [];
 		foreach ($paths as $path) {
+			if (str_starts_with($path, 'lib/Modules/') && in_array('Handler', explode('/', $path), true)) { $errors[] = 'Forbidden module directory: ' . $path; }
+			if (preg_match('#^lib/Modules/Files/([^/]+)\.php$#D', $path, $match) && !in_array($match[1], ['FilesModule', 'FilesToolCatalog', 'FilesRegistration', 'FilesCallContext', 'FilesPreviewContext'], true)) { $errors[] = 'Unassigned Files root work: ' . $path; }
 			if (array_intersect(explode('/', dirname($path . '/.')), ['Services', 'Helpers', 'Utils']) !== []) { $errors[] = 'Forbidden directory: ' . $path; }
 		}
 		$verbs = [];
 		foreach ($paths as $path) {
-			if (preg_match('#^lib/Modules/[^/]+/(Reading|Creation|Editing|Deletion|Sharing|Moving|Reorganization|Checkout)/[^/]+\.php$#', $path)) { $verbs[dirname($path)][] = $path; }
+			if (preg_match('#^lib/Modules/[^/]+/(Reading|Creation|Editing|Deletion|Sharing|Moving|Reorganization|Checkout|Writing|Searching|Extraction|Locating|Composing|Scheduling|Sending|Attaching|Batching|Messaging|Quoting|Replying|Completion|Planning|Selftest|Admission)/[^/]+\.php$#', $path)) { $verbs[dirname($path)][] = $path; }
 		}
 		foreach ($verbs as $directory => $members) { if (count($members) < 2) { $errors[] = 'Single class in work directory: ' . $directory; } }
 		return $errors;

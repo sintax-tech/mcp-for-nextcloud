@@ -7,7 +7,7 @@
 			"target": "OCA\\Mcp\\Modules\\Files\\FilesMessages",
 			"line": 251,
 			"reason": "Invert this legacy upward dependency through a lower-layer contract.",
-			"expires": "RE-21"
+			"expires": "RE-21c"
 		},
 		{
 			"rule": "layering",
@@ -15,7 +15,7 @@
 			"target": "OCA\\Mcp\\Modules\\Files\\FilesModule",
 			"line": 48,
 			"reason": "Invert this legacy upward dependency through a lower-layer contract.",
-			"expires": "RE-21"
+			"expires": "RE-21b"
 		},
 		{
 			"rule": "layering",
@@ -23,7 +23,7 @@
 			"target": "OCA\\Mcp\\Modules\\Files\\TextExtractor",
 			"line": 238,
 			"reason": "Invert this legacy upward dependency through a lower-layer contract.",
-			"expires": "RE-21"
+			"expires": "RE-21b"
 		},
 		{
 			"rule": "layering",
@@ -127,7 +127,7 @@
 			"target": "OCA\\Files_Versions\\Versions\\IVersionManager",
 			"line": 42,
 			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-21"
+			"expires": "RE-23"
 		},
 		{
 			"rule": "native-app",
@@ -135,7 +135,7 @@
 			"target": "OCA\\Files_Versions\\Versions\\IVersionManager",
 			"line": 38,
 			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-21"
+			"expires": "RE-23"
 		}
 	]
 }

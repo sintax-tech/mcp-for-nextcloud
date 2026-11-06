@@ -116,13 +116,11 @@ final class PollsMutationSnapshot {
 	private function optionValue(array $r, object $poll, bool $nine): array {
 		$o = $r['option']; $text = $o['text'] ?? ''; $stamp = $o['timestamp'] ?? 0; $duration = $o['duration'] ?? 0;
 		$value = new \OCA\Polls\Db\Option();
-		if ($nine) { $value->setPoll($r['poll_id']); } else { $value->setPollId($r['poll_id']); }
+		(new \OCA\Mcp\Modules\Polls\Creation\CreateNormalizer())->parent($value, $r['poll_id'], $nine);
 		if ($r['tool'] === 'polls_add_option') {
 			$simple = \OCA\Polls\Model\SimpleOption::fromArray(['text' => $text, 'timestamp' => $stamp, 'duration' => $duration]);
 			if ($nine) { $value->setFromSimpleOption($simple, $poll->getType()); } else { $value->setFromSimpleOption($simple); }
-		} elseif (!$nine) { $value->setOption($stamp, $duration, $text); }
-		elseif ($poll->getType() === 'textPoll') { $value->setText($text); }
-		else { $value->setDateTime(new \OCA\Polls\Model\DateTimeImmutable('@' . $stamp)); $value->setInterval(new \OCA\Polls\Model\DateInterval('PT' . $duration . 'S')); }
+		} else { PollsOptionValues::update($value, $o, $nine, $poll->getType()); }
 		return ['text' => $value->getPollOptionText(), 'timestamp' => $value->getTimestamp(), 'duration' => $value->getDuration()];
 	}
 }

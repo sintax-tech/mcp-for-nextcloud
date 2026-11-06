@@ -13,11 +13,10 @@ final class Polls9Adapter {
 	public function updateOption(object $options, array $r): void {
 		$o = $r['option'];
 		$options->update($r['option_id'], $o['text'] ?? '',
-			isset($o['timestamp']) ? new \OCA\Polls\Model\DateTimeImmutable('@' . $o['timestamp']) : null, new \OCA\Polls\Model\DateInterval('PT' . ($o['duration'] ?? 0) . 'S'));
+			isset($o['timestamp']) ? PollsOptionValues::date($o['timestamp']) : null, PollsOptionValues::interval($o['duration'] ?? 0));
 	}
 	/** @param object $shares Fresh native service. @param array<string,mixed> $r Validated input. @param object|null $user Typed recipient, absent for public. @return void */
 	public function addShare(object $shares, array $r, ?object $user): void {
-		if ($r['type'] === 'public') { $shares->createPublicShare($r['poll_id']); }
-		else { $shares->createShare($r['poll_id'], $user, 'poll'); }
+		PollsShareCreator::create($shares, $r, $user, true);
 	}
 }

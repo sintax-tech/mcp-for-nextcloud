@@ -26,7 +26,7 @@ final class ModuleRegistrationsTest extends TestCase {
 	/** Legacy modules and catalogs without a registration contribute nothing. */
 	public function testOnlyRegistrationsOfCatalogModulesRun(): void {
 		self::assertSame([\OCA\Mcp\Modules\Files\FilesRegistration::class, \OCA\Mcp\Modules\Notes\NotesRegistration::class, \OCA\Mcp\Modules\Calendar\CalendarRegistration::class, \OCA\Mcp\Modules\Contacts\ContactsRegistration::class, \OCA\Mcp\Modules\Tasks\TasksRegistration::class, \OCA\Mcp\Modules\Deck\DeckRegistration::class,
-			\OCA\Mcp\Modules\Talk\TalkRegistration::class, \OCA\Mcp\Modules\People\PeopleRegistration::class, \OCA\Mcp\Modules\Mail\MailRegistration::class], array_map(static fn (object $registration): string => $registration::class, ModuleRegistrations::of(Application::MODULES)));
+			\OCA\Mcp\Modules\Talk\TalkRegistration::class, \OCA\Mcp\Modules\People\PeopleRegistration::class, \OCA\Mcp\Modules\Mail\MailRegistration::class, \OCA\Mcp\Modules\Polls\PollsRegistration::class], array_map(static fn (object $registration): string => $registration::class, ModuleRegistrations::of(Application::MODULES)));
 		self::assertSame([], ModuleRegistrations::of([ProbeModule::class]));
 		$registrations = ModuleRegistrations::of([ProbeModule::class, RegisteredProbeModule::class]);
 		self::assertCount(1, $registrations);

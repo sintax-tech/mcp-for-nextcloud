@@ -2,6 +2,8 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Modules/Polls/Integration/PollsShareCreator.php","fqcn":"OCA\\Mcp\\Modules\\Polls\\Integration\\PollsShareCreator","target":"stays","owner":"Modules\\Polls","ticket":null},
+		{"path":"lib/Modules/Polls/Integration/PollsOptionValues.php","fqcn":"OCA\\Mcp\\Modules\\Polls\\Integration\\PollsOptionValues","target":"stays","owner":"Modules\\Polls","ticket":null},
 		{"path":"lib/Modules/Polls/Presentation/PollsWriteDescriptions.php","fqcn":"OCA\\Mcp\\Modules\\Polls\\Presentation\\PollsWriteDescriptions","target":"stays","owner":"Modules\\Polls","ticket":null},
 		{"path":"lib/Modules/Polls/Admission/PollsWriteAdmission.php","fqcn":"OCA\\Mcp\\Modules\\Polls\\Admission\\PollsWriteAdmission","target":"stays","owner":"Modules\\Polls","ticket":null},
 		{"path":"lib/Modules/Polls/Contracts/PollWriteNative.php","fqcn":"OCA\\Mcp\\Modules\\Polls\\Contracts\\PollWriteNative","target":"stays","owner":"Modules\\Polls","ticket":null},

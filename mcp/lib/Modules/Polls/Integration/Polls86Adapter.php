@@ -16,8 +16,6 @@ final class Polls86Adapter {
 	}
 	/** @param object $shares Fresh native service. @param array<string,mixed> $r Validated input. @param object|null $user Typed recipient, absent for public. @return void */
 	public function addShare(object $shares, array $r, ?object $user): void {
-		$v = $r['recipient'] ?? [];
-		$shares->add($r['poll_id'], $r['type'], $v['user_id'] ?? $v['group_id'] ?? $v['email_address'] ?? $v['contact_id'] ?? '',
-			$v['display_name'] ?? '', $v['email_address'] ?? '', 'poll');
+		PollsShareCreator::create($shares, $r, $user, false);
 	}
 }

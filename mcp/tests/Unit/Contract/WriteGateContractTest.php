@@ -68,6 +68,7 @@ final class WriteGateContractTest extends TestCase {
 		$logger = $this->createMock(LoggerInterface::class);
 		return new ToolRegistry($modules, $policy, $apps, $users, $logger, capabilities: new \OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry([
 			$this->build(\OCA\Mcp\Modules\Deck\Integration\DeckCapabilities::class),
+			\OCA\Mcp\Tests\Unit\Modules\Polls\PollsDiscoveryProbe::build($this),
 		], $logger));
 	}
 

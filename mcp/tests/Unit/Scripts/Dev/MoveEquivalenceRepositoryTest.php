@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Scripts\Dev;
 
 use OCA\Mcp\Scripts\Dev\FqcnMap;
+use OCA\Mcp\Scripts\Dev\FrozenPathCertificates;
 use OCA\Mcp\Scripts\Dev\MoveEquivalence;
 use OCA\Mcp\Scripts\Dev\PathRewrites;
 use OCA\Mcp\Scripts\Dev\SourceTrees;
@@ -191,7 +192,10 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 		}
 		$fqcn = static fn (array $segments, string $glue): string => implode($glue, ['OCA', 'Mcp', ...$segments]);
 		$moved = [];
+		$certificates = array_column(FrozenPathCertificates::all(), 'path');
 		foreach ($tree as $path => $content) {
+			// Historical certificates are opaque evidence, never rewritten by a simulated move.
+			if (in_array($path, $certificates, true)) { $moved[$path] = $content; continue; }
 			$moved[$path] = str_replace([$fqcn($class, '\\'), $fqcn($class, '\\\\')], [$fqcn($target, '\\'), $fqcn($target, '\\\\')], $content);
 			$pairs = [self::lib($class) => self::lib($target), self::path('tests/Unit', $test) => self::path('tests/Unit', $targetTest)];
 			$moved[$path] = str_ends_with($path, '.php')

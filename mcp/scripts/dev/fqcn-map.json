@@ -1070,7 +1070,19 @@
 		{"path":"lib/Modules/Deck/Presentation/DeckPlanMessages.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Presentation\\DeckPlanMessages","target":"stays","owner":"Modules\\Deck","ticket":null},
 		{"path":"lib/Modules/Deck/Presentation/DeckPlans/CardPlanText.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Presentation\\DeckPlans\\CardPlanText","target":"stays","owner":"Modules\\Deck","ticket":null},
 		{"path":"lib/Modules/Deck/Presentation/DeckPlans/StructurePlanText.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Presentation\\DeckPlans\\StructurePlanText","target":"stays","owner":"Modules\\Deck","ticket":null},
-		{"path":"lib/Modules/Deck/Presentation/DeckPlans/DeckPlanValues.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Presentation\\DeckPlans\\DeckPlanValues","target":"stays","owner":"Modules\\Deck","ticket":null}
+		{"path":"lib/Modules/Deck/Presentation/DeckPlans/DeckPlanValues.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Presentation\\DeckPlans\\DeckPlanValues","target":"stays","owner":"Modules\\Deck","ticket":null},
+		{"path":"lib/Modules/Deck/Editing/CardStatusPlan.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Editing\\CardStatusPlan","target":"stays","owner":"Modules\\Deck","ticket":null},
+		{"path":"lib/Modules/Deck/Editing/CardStatusResult.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Editing\\CardStatusResult","target":"stays","owner":"Modules\\Deck","ticket":null},
+		{"path":"lib/Modules/Deck/Editing/SetCardArchivedHandler.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Editing\\SetCardArchivedHandler","target":"stays","owner":"Modules\\Deck","ticket":null},
+		{"path":"lib/Modules/Deck/Editing/SetCardArchivedPreview.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Editing\\SetCardArchivedPreview","target":"stays","owner":"Modules\\Deck","ticket":null},
+		{"path":"lib/Modules/Deck/Editing/SetCardDoneHandler.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Editing\\SetCardDoneHandler","target":"stays","owner":"Modules\\Deck","ticket":null},
+		{"path":"lib/Modules/Deck/Editing/SetCardDonePreview.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Editing\\SetCardDonePreview","target":"stays","owner":"Modules\\Deck","ticket":null},
+		{"path":"lib/Modules/Deck/Integration/CardStatusGateway.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Integration\\CardStatusGateway","target":"stays","owner":"Modules\\Deck","ticket":null},
+		{"path":"lib/Modules/Deck/Integration/CardStatusGatewayInterface.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Integration\\CardStatusGatewayInterface","target":"stays","owner":"Modules\\Deck","ticket":null},
+		{"path":"lib/Modules/Deck/Presentation/DeckPlans/CardStatusText.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Presentation\\DeckPlans\\CardStatusText","target":"stays","owner":"Modules\\Deck","ticket":null},
+		{"path":"lib/Modules/Deck/Presentation/DeckStatusMessages.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Presentation\\DeckStatusMessages","target":"stays","owner":"Modules\\Deck","ticket":null},
+		{"path":"lib/Modules/Deck/Tools/SetCardArchived.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Tools\\SetCardArchived","target":"stays","owner":"Modules\\Deck","ticket":null},
+		{"path":"lib/Modules/Deck/Tools/SetCardDone.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Tools\\SetCardDone","target":"stays","owner":"Modules\\Deck","ticket":null}
 	],
 	"tests": [
 		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\ServerInfoTest","target":"OCA\\Mcp\\Tests\\Unit\\Mcp\\Protocol\\ServerInfoTest"},

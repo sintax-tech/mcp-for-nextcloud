@@ -36,6 +36,24 @@ final class FunctionalDeckNative {
 			}
 			return $out;
 		}
+		if ($action === 'column') {
+			$supported = method_exists($stacks, 'setDoneStack');
+			if ($supported) { $stacks->setDoneStack($in['doneStack'], $in['board'], $in['enabled']); }
+			return ['supported' => $supported];
+		}
+		if ($action === 'native-status') {
+			match ($in['method']) {
+				'done' => $cards->done($in['card']), 'undone' => $cards->undone($in['card']),
+				'archive' => $cards->archive($in['card']), 'unarchive' => $cards->unarchive($in['card']),
+			};
+			return ['applied' => true];
+		}
+		if ($action === 'read-only') {
+			foreach (Server::get(\OCA\Deck\Db\AclMapper::class)->findAll($in['board']) as $acl) {
+				if ($acl->getParticipant() === $in['editor']) { $boards->updateAcl($acl->getId(), (bool)($in['edit'] ?? false), false, false); }
+			}
+			return ['applied' => true];
+		}
 		if ($action === 'cleanup') {
 			$boards->delete($in['board']);
 			return ['cleaned' => true];

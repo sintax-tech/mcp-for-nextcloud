@@ -145,6 +145,8 @@ final class ToolPresentation {
 			'deck_create_stack' => Translator::t('Create list in Deck'),
 			'deck_delete_stack' => Translator::t('Delete Deck list'),
 			'deck_delete_board' => Translator::t('Delete Deck board'),
+			'deck_set_card_done' => Translator::t('Change Deck card completion'),
+			'deck_set_card_archived' => Translator::t('Change Deck card archive state'),
 			// Talk
 			'talk_list_conversations' => Translator::t('List Talk conversations'),
 			'talk_read_messages' => Translator::t('Read Talk messages'),

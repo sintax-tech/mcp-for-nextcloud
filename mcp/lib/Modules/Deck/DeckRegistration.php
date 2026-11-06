@@ -33,6 +33,9 @@ final class DeckRegistration implements ModuleRegistration {
 			new UserTimezone($c->get(IConfig::class)),
 			$c->get(\OCP\ISession::class),
 		));
+		$context->registerService(\OCA\Mcp\Modules\Deck\Integration\CardStatusGatewayInterface::class, static fn (ContainerInterface $c): \OCA\Mcp\Modules\Deck\Integration\CardStatusGatewayInterface => new \OCA\Mcp\Modules\Deck\Integration\CardStatusGateway(
+			new \OCA\Mcp\Modules\Deck\Integration\DeckServiceContext($c, $c->get(\OCP\ISession::class)), $c->get(IConfig::class),
+		));
 		$context->registerService(\OCA\Mcp\Access\References\ReadableDeckCard::class, static fn (ContainerInterface $c): \OCA\Mcp\Access\References\ReadableDeckCard => $c->get(\OCA\Mcp\Modules\Deck\DeckCardReference::class));
 	}
 

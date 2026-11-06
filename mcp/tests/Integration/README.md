@@ -412,3 +412,9 @@ Frontend unit tests need no Nextcloud service: `node --test mcp/tests/Frontend/*
 existing entry points. Fresh/upgrade and database selection are unchanged. `ci/run-local.sh --shutdown` cleans interrupted runs recorded by this checkout and preserves live runs.
 The default Colima profile is shared and is always left running. Artifacts and cached downloads stay outside
 `mcp/`, so recursive unit-test source readers cannot ingest run output; cached archives/images are files, not running services.
+
+### Deck issues 26 and 27
+
+`AssignmentLifecycleTest` creates isolated regular users, tests assignment over real MCP Bearer and cookie/CSRF requests to CardController, reverses the actors and checks fresh native persistence. Its separate disposable notification delivery app uses the real IManager; the induced failure records actual defer/flush phases and must never be described as reproducing the reporter’s exception. No assignment patch is justified when both paths deliver inline. Devices are counted without storing endpoints/keys; a valid push client remains outside this proof. No logs or evidence are requested from the reporter.
+
+`CardStatusPersistenceTest` verifies both status setters, confirmation, stale fingerprints, native completion-column behavior, no-op and UTC persistence. The oracle is the container’s UTC clock and the raw done column read in a new process; account timezones only verify serialization. NC32/MariaDB and NC35/PostgreSQL run serially through run-local.sh; preserve short evidence, use owned --shutdown and verify cleanup.

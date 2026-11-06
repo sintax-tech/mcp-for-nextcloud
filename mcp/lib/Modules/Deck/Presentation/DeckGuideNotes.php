@@ -47,6 +47,7 @@ final class DeckGuideNotes {
 		if ($this->capabilities->dependencies()) {
 			$notes[] = \OCA\Mcp\Modules\Deck\Presentation\DeckDescriptions::TOOL_READ_DEPENDENCIES_DESCRIPTION;
 		}
+		$notes[] = 'deck_set_card_done (done true/false) completes or reopens a card; deck_set_card_archived (archived true/false) archives or unarchives it. Both use the existing deck.edit grant, preview then confirm with plan_state, and confirm_shared for received boards. Unarchive before completing or reopening. done is the native UTC Unix timestamp, never supplied by the client. Deck1.19 may move a newly completed card to its configured done column; reopening does not restore the old list. An already completed card is a no-op, not a retry of a partial move. Complete and archive in separate confirmed calls, with a fresh read/plan between them. Native check-to-write races and partial outcomes remain possible; read before retrying.';
 		return $notes;
 	}
 

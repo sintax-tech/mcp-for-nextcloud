@@ -1,0 +1,741 @@
+{
+    "tool": "deck_set_card_archived",
+    "grant": "deck.edit",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "cardId": 7,
+                "archived": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Change Deck card archive state**\n\n**Change card status in Deck**\n\nArchive the card without completing or deleting it.\nCard: Status \\<card\\>\nBoard: Board\nCurrent list: Todo\nDone column: Completed\nCurrent completion (Unix UTC): `null`\nCurrent archived state: `false`\nShared board owner: Owner\n\n- Nothing was changed. Confirm the shown state before writing. Native permissions and the plan are checked again, but another client can still change the card or done column between the final check and the native write. Completing and archiving are separate operations.\n\nNothing was changed. Confirm to execute.\n\n*Archive the card without completing or deleting it.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_set_card_archived",
+                            "title": "Change Deck card archive state",
+                            "action": "deck_set_card_archived",
+                            "card": {
+                                "id": 7,
+                                "boardId": 2,
+                                "title": "Status <card>",
+                                "stackId": 3,
+                                "done": null,
+                                "archived": false,
+                                "deletedAt": 0,
+                                "lastModified": 12
+                            },
+                            "board": {
+                                "id": 2,
+                                "name": "Board",
+                                "owner": "owner",
+                                "ownerDisplayName": "Owner",
+                                "archived": false,
+                                "shared": true
+                            },
+                            "field": "archived",
+                            "before": false,
+                            "after": true,
+                            "changed": true,
+                            "currentList": {
+                                "id": 3,
+                                "title": "Todo",
+                                "isDoneColumn": false
+                            },
+                            "doneColumn": {
+                                "id": 4,
+                                "title": "Completed"
+                            },
+                            "automaticMove": false,
+                            "lastModified": {
+                                "current": 12,
+                                "sent": null
+                            },
+                            "shared": [
+                                {
+                                    "id": 2,
+                                    "name": "Board",
+                                    "owner": "owner",
+                                    "ownerDisplayName": "Owner",
+                                    "archived": false,
+                                    "shared": true
+                                }
+                            ],
+                            "recoverable": true,
+                            "message": "Archive the card without completing or deleting it.",
+                            "limitations": "Nothing was changed. Confirm the shown state before writing. Native permissions and the plan are checked again, but another client can still change the card or done column between the final check and the native write. Completing and archiving are separate operations.",
+                            "noDestination": null,
+                            "plan_state": "<plan_state#1>",
+                            "timezone": "UTC"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "card": {
+                    "id": 7,
+                    "boardId": 2,
+                    "title": "Status <card>",
+                    "stackId": 3,
+                    "done": null,
+                    "archived": false,
+                    "deletedAt": 0,
+                    "lastModified": 12
+                },
+                "board": {
+                    "id": 2,
+                    "name": "Board",
+                    "owner": "owner",
+                    "ownerDisplayName": "Owner",
+                    "archived": false
+                },
+                "list": {
+                    "id": 3,
+                    "title": "Todo",
+                    "isDoneColumn": false
+                },
+                "autoMove": {
+                    "supported": true,
+                    "destination": {
+                        "id": 4,
+                        "title": "Completed"
+                    }
+                },
+                "version": "1.19.0"
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "cardId": 7,
+                "archived": true,
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "card": {
+                    "id": 7,
+                    "boardId": 2,
+                    "title": "Status <card>",
+                    "stackId": 3,
+                    "done": null,
+                    "archived": false,
+                    "deletedAt": 0,
+                    "lastModified": 12
+                },
+                "board": {
+                    "id": 2,
+                    "name": "Board",
+                    "owner": "owner",
+                    "ownerDisplayName": "Owner",
+                    "archived": false
+                },
+                "list": {
+                    "id": 3,
+                    "title": "Todo",
+                    "isDoneColumn": false
+                },
+                "autoMove": {
+                    "supported": true,
+                    "destination": {
+                        "id": 4,
+                        "title": "Completed"
+                    }
+                },
+                "version": "1.19.0"
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "cardId": 7,
+                "archived": true,
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Change Deck card archive state**\n\n**Change card status in Deck**\n\nArchive the card without completing or deleting it.\nCard: Status \\<card\\>\nBoard: Board\nCurrent list: Todo\nDone column: Completed\nCurrent completion (Unix UTC): `null`\nCurrent archived state: `false`\nShared board owner: Owner\n\n- Nothing was changed. Confirm the shown state before writing. Native permissions and the plan are checked again, but another client can still change the card or done column between the final check and the native write. Completing and archiving are separate operations.\n\nNothing was changed. Confirm to execute.\n\n*Archive the card without completing or deleting it.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_set_card_archived",
+                            "title": "Change Deck card archive state",
+                            "action": "deck_set_card_archived",
+                            "card": {
+                                "id": 7,
+                                "boardId": 2,
+                                "title": "Status <card>",
+                                "stackId": 3,
+                                "done": null,
+                                "archived": false,
+                                "deletedAt": 0,
+                                "lastModified": 12
+                            },
+                            "board": {
+                                "id": 2,
+                                "name": "Board",
+                                "owner": "owner",
+                                "ownerDisplayName": "Owner",
+                                "archived": false,
+                                "shared": true
+                            },
+                            "field": "archived",
+                            "before": false,
+                            "after": true,
+                            "changed": true,
+                            "currentList": {
+                                "id": 3,
+                                "title": "Todo",
+                                "isDoneColumn": false
+                            },
+                            "doneColumn": {
+                                "id": 4,
+                                "title": "Completed"
+                            },
+                            "automaticMove": false,
+                            "lastModified": {
+                                "current": 12,
+                                "sent": null
+                            },
+                            "shared": [
+                                {
+                                    "id": 2,
+                                    "name": "Board",
+                                    "owner": "owner",
+                                    "ownerDisplayName": "Owner",
+                                    "archived": false,
+                                    "shared": true
+                                }
+                            ],
+                            "recoverable": true,
+                            "message": "Archive the card without completing or deleting it.",
+                            "limitations": "Nothing was changed. Confirm the shown state before writing. Native permissions and the plan are checked again, but another client can still change the card or done column between the final check and the native write. Completing and archiving are separate operations.",
+                            "noDestination": null,
+                            "plan_state": "<plan_state#1>",
+                            "timezone": "UTC"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "card": {
+                    "id": 7,
+                    "boardId": 2,
+                    "title": "Status <card>",
+                    "stackId": 3,
+                    "done": null,
+                    "archived": false,
+                    "deletedAt": 0,
+                    "lastModified": 12
+                },
+                "board": {
+                    "id": 2,
+                    "name": "Board",
+                    "owner": "owner",
+                    "ownerDisplayName": "Owner",
+                    "archived": false
+                },
+                "list": {
+                    "id": 3,
+                    "title": "Todo",
+                    "isDoneColumn": false
+                },
+                "autoMove": {
+                    "supported": true,
+                    "destination": {
+                        "id": 4,
+                        "title": "Completed"
+                    }
+                },
+                "version": "1.19.0"
+            }
+        },
+        {
+            "step": "plan-changed",
+            "arguments": {
+                "cardId": 7,
+                "archived": true,
+                "confirm": true,
+                "confirm_shared": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Change Deck card archive state**\n\n**Change card status in Deck**\n\nArchive the card without completing or deleting it.\nCard: Changed after preview\nBoard: Board\nCurrent list: Todo\nDone column: Completed\nCurrent completion (Unix UTC): `null`\nCurrent archived state: `false`\nShared board owner: Owner\n\n- Nothing was changed. Confirm the shown state before writing. Native permissions and the plan are checked again, but another client can still change the card or done column between the final check and the native write. Completing and archiving are separate operations.\n\nNothing was changed. Confirm to execute.\n\n*Archive the card without completing or deleting it.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_set_card_archived",
+                            "title": "Change Deck card archive state",
+                            "action": "deck_set_card_archived",
+                            "card": {
+                                "id": 7,
+                                "boardId": 2,
+                                "title": "Changed after preview",
+                                "stackId": 3,
+                                "done": null,
+                                "archived": false,
+                                "deletedAt": 0,
+                                "lastModified": 12
+                            },
+                            "board": {
+                                "id": 2,
+                                "name": "Board",
+                                "owner": "owner",
+                                "ownerDisplayName": "Owner",
+                                "archived": false,
+                                "shared": true
+                            },
+                            "field": "archived",
+                            "before": false,
+                            "after": true,
+                            "changed": true,
+                            "currentList": {
+                                "id": 3,
+                                "title": "Todo",
+                                "isDoneColumn": false
+                            },
+                            "doneColumn": {
+                                "id": 4,
+                                "title": "Completed"
+                            },
+                            "automaticMove": false,
+                            "lastModified": {
+                                "current": 12,
+                                "sent": null
+                            },
+                            "shared": [
+                                {
+                                    "id": 2,
+                                    "name": "Board",
+                                    "owner": "owner",
+                                    "ownerDisplayName": "Owner",
+                                    "archived": false,
+                                    "shared": true
+                                }
+                            ],
+                            "recoverable": true,
+                            "message": "Archive the card without completing or deleting it.",
+                            "limitations": "Nothing was changed. Confirm the shown state before writing. Native permissions and the plan are checked again, but another client can still change the card or done column between the final check and the native write. Completing and archiving are separate operations.",
+                            "noDestination": null,
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "card": {
+                    "id": 7,
+                    "boardId": 2,
+                    "title": "Changed after preview",
+                    "stackId": 3,
+                    "done": null,
+                    "archived": false,
+                    "deletedAt": 0,
+                    "lastModified": 12
+                },
+                "board": {
+                    "id": 2,
+                    "name": "Board",
+                    "owner": "owner",
+                    "ownerDisplayName": "Owner",
+                    "archived": false
+                },
+                "list": {
+                    "id": 3,
+                    "title": "Todo",
+                    "isDoneColumn": false
+                },
+                "autoMove": {
+                    "supported": true,
+                    "destination": {
+                        "id": 4,
+                        "title": "Completed"
+                    }
+                },
+                "version": "1.19.0"
+            }
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "cardId": 7,
+                "archived": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Change Deck card archive state**\n\n**Change card status in Deck**\n\nArchive the card without completing or deleting it.\nCard: Changed after preview\nBoard: Board\nCurrent list: Todo\nDone column: Completed\nCurrent completion (Unix UTC): `null`\nCurrent archived state: `false`\nShared board owner: Owner\n\n- Nothing was changed. Confirm the shown state before writing. Native permissions and the plan are checked again, but another client can still change the card or done column between the final check and the native write. Completing and archiving are separate operations.\n\nNothing was changed. Confirm to execute.\n\n*Archive the card without completing or deleting it.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_set_card_archived",
+                            "title": "Change Deck card archive state",
+                            "action": "deck_set_card_archived",
+                            "card": {
+                                "id": 7,
+                                "boardId": 2,
+                                "title": "Changed after preview",
+                                "stackId": 3,
+                                "done": null,
+                                "archived": false,
+                                "deletedAt": 0,
+                                "lastModified": 12
+                            },
+                            "board": {
+                                "id": 2,
+                                "name": "Board",
+                                "owner": "owner",
+                                "ownerDisplayName": "Owner",
+                                "archived": false,
+                                "shared": true
+                            },
+                            "field": "archived",
+                            "before": false,
+                            "after": true,
+                            "changed": true,
+                            "currentList": {
+                                "id": 3,
+                                "title": "Todo",
+                                "isDoneColumn": false
+                            },
+                            "doneColumn": {
+                                "id": 4,
+                                "title": "Completed"
+                            },
+                            "automaticMove": false,
+                            "lastModified": {
+                                "current": 12,
+                                "sent": null
+                            },
+                            "shared": [
+                                {
+                                    "id": 2,
+                                    "name": "Board",
+                                    "owner": "owner",
+                                    "ownerDisplayName": "Owner",
+                                    "archived": false,
+                                    "shared": true
+                                }
+                            ],
+                            "recoverable": true,
+                            "message": "Archive the card without completing or deleting it.",
+                            "limitations": "Nothing was changed. Confirm the shown state before writing. Native permissions and the plan are checked again, but another client can still change the card or done column between the final check and the native write. Completing and archiving are separate operations.",
+                            "noDestination": null,
+                            "plan_state": "<plan_state#2>",
+                            "timezone": "UTC"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "card": {
+                    "id": 7,
+                    "boardId": 2,
+                    "title": "Changed after preview",
+                    "stackId": 3,
+                    "done": null,
+                    "archived": false,
+                    "deletedAt": 0,
+                    "lastModified": 12
+                },
+                "board": {
+                    "id": 2,
+                    "name": "Board",
+                    "owner": "owner",
+                    "ownerDisplayName": "Owner",
+                    "archived": false
+                },
+                "list": {
+                    "id": 3,
+                    "title": "Todo",
+                    "isDoneColumn": false
+                },
+                "autoMove": {
+                    "supported": true,
+                    "destination": {
+                        "id": 4,
+                        "title": "Completed"
+                    }
+                },
+                "version": "1.19.0"
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "cardId": 7,
+                "archived": true,
+                "confirm": true,
+                "confirm_shared": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"confirmed\": true,\n    \"changed\": true,\n    \"id\": 7,\n    \"stackId\": 3,\n    \"boardId\": null,\n    \"title\": \"Changed after preview\",\n    \"description\": \"Kept\",\n    \"type\": \"note\",\n    \"owner\": \"owner\",\n    \"order\": 0,\n    \"archived\": true,\n    \"done\": null,\n    \"duedate\": null,\n    \"dueAt\": null,\n    \"lastModified\": 12,\n    \"assignedUsers\": [],\n    \"overdue\": false,\n    \"url\": null\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "card": {
+                    "id": 7,
+                    "boardId": 2,
+                    "title": "Changed after preview",
+                    "stackId": 3,
+                    "done": null,
+                    "archived": true,
+                    "deletedAt": 0,
+                    "lastModified": 12
+                },
+                "board": {
+                    "id": 2,
+                    "name": "Board",
+                    "owner": "owner",
+                    "ownerDisplayName": "Owner",
+                    "archived": false
+                },
+                "list": {
+                    "id": 3,
+                    "title": "Todo",
+                    "isDoneColumn": false
+                },
+                "autoMove": {
+                    "supported": true,
+                    "destination": {
+                        "id": 4,
+                        "title": "Completed"
+                    }
+                },
+                "version": "1.19.0"
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "cardId": 7,
+                "archived": false,
+                "confirm": true,
+                "confirm_shared": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "card": {
+                    "id": 7,
+                    "boardId": 2,
+                    "title": "Changed after preview",
+                    "stackId": 3,
+                    "done": null,
+                    "archived": true,
+                    "deletedAt": 0,
+                    "lastModified": 12
+                },
+                "board": {
+                    "id": 2,
+                    "name": "Board",
+                    "owner": "owner",
+                    "ownerDisplayName": "Owner",
+                    "archived": false
+                },
+                "list": {
+                    "id": 3,
+                    "title": "Todo",
+                    "isDoneColumn": false
+                },
+                "autoMove": {
+                    "supported": true,
+                    "destination": {
+                        "id": 4,
+                        "title": "Completed"
+                    }
+                },
+                "version": "1.19.0"
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "cardId": 7,
+                "archived": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "card": {
+                    "id": 7,
+                    "boardId": 2,
+                    "title": "Changed after preview",
+                    "stackId": 3,
+                    "done": null,
+                    "archived": true,
+                    "deletedAt": 0,
+                    "lastModified": 12
+                },
+                "board": {
+                    "id": 2,
+                    "name": "Board",
+                    "owner": "owner",
+                    "ownerDisplayName": "Owner",
+                    "archived": false
+                },
+                "list": {
+                    "id": 3,
+                    "title": "Todo",
+                    "isDoneColumn": false
+                },
+                "autoMove": {
+                    "supported": true,
+                    "destination": {
+                        "id": 4,
+                        "title": "Completed"
+                    }
+                },
+                "version": "1.19.0"
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "cardId": 7,
+                "archived": false,
+                "confirm": true,
+                "confirm_shared": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "card": {
+                    "id": 7,
+                    "boardId": 2,
+                    "title": "Changed after preview",
+                    "stackId": 3,
+                    "done": null,
+                    "archived": true,
+                    "deletedAt": 0,
+                    "lastModified": 12
+                },
+                "board": {
+                    "id": 2,
+                    "name": "Board",
+                    "owner": "owner",
+                    "ownerDisplayName": "Owner",
+                    "archived": false
+                },
+                "list": {
+                    "id": 3,
+                    "title": "Todo",
+                    "isDoneColumn": false
+                },
+                "autoMove": {
+                    "supported": true,
+                    "destination": {
+                        "id": 4,
+                        "title": "Completed"
+                    }
+                },
+                "version": "1.19.0"
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "Deck has native READ/EDIT permissions; it has no MCP file visibility filter. Native denial is covered by CardStatusGatewayTest."
+        }
+    ]
+}

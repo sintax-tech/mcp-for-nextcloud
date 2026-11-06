@@ -139,6 +139,12 @@ A exclusão de tarefas usa a lixeira nativa do calendário e é recusada com `da
 
 **Status de tarefas:** criar e editar aceitam `NEEDS-ACTION`, `IN-PROCESS`, `COMPLETED` e `CANCELLED`, como no app Tasks. O status sozinho conclui em 100% com uma data de conclusão (preservada se a tarefa já estava concluída), reabre tarefas em 100% com 99% e inicia `IN-PROCESS` em 1% quando o progresso era zero ou estava ausente. `CANCELLED` preserva o progresso e a data de conclusão e continua listado. Um `percentComplete` explícito prevalece quando consistente: `COMPLETED` exige 100, `NEEDS-ACTION`/`IN-PROCESS` recusam 100 e `CANCELLED` aceita 0–100. O progresso sozinho mantém o comportamento anterior, inclusive reabrir tarefas canceladas. Os planos de criação/edição mostram as mudanças de status e da data de conclusão no fuso do plano. Status/progresso baseado na PR #29 de Marc-Olivier Turgeon-Ferland (@mturgeonferland): [contribuição](https://github.com/sintax-tech/mcp-for-nextcloud/pull/29).
 
+### Concluir e arquivar cartões (1.3.0)
+
+`deck_set_card_done` recebe `cardId` e `done: true` para concluir ou `false` para reabrir. `deck_set_card_archived` recebe `archived: true` para arquivar ou `false` para desarquivar. As duas acrescentam mudanças de estado ao **deck.edit** existente, sem grant ou configuração de gestão novos. Primeiro faça o preview; depois repita o `plan_state` com `confirm: true` e, em quadro recebido, `confirm_shared: true`. `lastModified` é opcional; plano alterado exige nova aprovação.
+
+O serviço nativo escolhe o horário da conclusão. A saída `done` continua timestamp Unix UTC ou null, sem data escolhida pelo cliente. No Deck 1.19, concluir pode mover para a coluna de concluídos mostrada no plano. Reabrir não devolve à lista anterior. Cartão já concluído preserva timestamp e lista: a ferramenta não repete movimento parcial. Desarquive antes de concluir ou reabrir. Arquivar não conclui nem exclui; desarquivar preserva a conclusão. Para concluir e arquivar, confirme a conclusão, leia o resultado e faça outro preview e confirmação para arquivar. As chamadas não são atômicas; há limites de concorrência e resultados parciais nativos. Consulte o cartão antes de repetir resultado incerto. Guests preserva a permissão nativa de edição.
+
 ## Deck na 1.2.0
 
 Etiquetas, hora de vencimento, dependências nativas e o vínculo nativo de arquivo fazem parte desta versão. O app não imita uma API ausente e não envia, não copia e não apaga o arquivo.

@@ -3390,6 +3390,106 @@
                         }
                     },
                     {
+                        "name": "deck_set_card_done",
+                        "title": "Change Deck card completion",
+                        "description": "Sets a Deck card completed or open through its native service. Requires existing deck.edit and native EDIT. Preview first; confirm:true must repeat plan_state and confirm_shared:true for a received board. done:true uses the server completion time; done:false clears it and does not return the card to its previous list. On Deck 1.19 completion can automatically move to the done column shown in the plan. An already completed card is a no-op, never a retry of a partial move. Unarchive an archived card first. The final check-to-write race and partial native failures remain possible; read before retrying. Does not archive the card.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "cardId": {
+                                    "type": "integer",
+                                    "description": "Id of the Deck card.",
+                                    "minimum": 1
+                                },
+                                "done": {
+                                    "type": "boolean",
+                                    "description": "true completes the card at the native server time; false reopens it without restoring its previous list"
+                                },
+                                "lastModified": {
+                                    "type": "integer",
+                                    "description": "lastModified of the card at the time it was read; if it has changed, the edit is refused.",
+                                    "minimum": 0
+                                },
+                                "confirm_shared": {
+                                    "type": "boolean",
+                                    "description": "Set to true only after the user has confirmed the change on somebody else's board."
+                                },
+                                "plan_state": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                                },
+                                "confirm": {
+                                    "type": "boolean",
+                                    "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "cardId",
+                                "done"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Change Deck card completion",
+                            "readOnlyHint": false,
+                            "destructiveHint": true,
+                            "idempotentHint": false,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
+                        "name": "deck_set_card_archived",
+                        "title": "Change Deck card archive state",
+                        "description": "Sets a Deck card archived or active through its native service, preserving completion. Requires existing deck.edit and native EDIT. Preview first; confirm:true must repeat plan_state and confirm_shared:true for a received board. Archive removes the card from active lists without deleting it. Unarchive is explicit. An already requested state is a no-op. Archived boards and deleted cards are refused. Completing and archiving require separate confirmed calls; there is no atomic combined operation. The final check-to-write race remains possible; read before retrying.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "cardId": {
+                                    "type": "integer",
+                                    "description": "Id of the Deck card.",
+                                    "minimum": 1
+                                },
+                                "archived": {
+                                    "type": "boolean",
+                                    "description": "true archives the card without completing or deleting it; false unarchives it without reopening it"
+                                },
+                                "lastModified": {
+                                    "type": "integer",
+                                    "description": "lastModified of the card at the time it was read; if it has changed, the edit is refused.",
+                                    "minimum": 0
+                                },
+                                "confirm_shared": {
+                                    "type": "boolean",
+                                    "description": "Set to true only after the user has confirmed the change on somebody else's board."
+                                },
+                                "plan_state": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                                },
+                                "confirm": {
+                                    "type": "boolean",
+                                    "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "cardId",
+                                "archived"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Change Deck card archive state",
+                            "readOnlyHint": false,
+                            "destructiveHint": true,
+                            "idempotentHint": false,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
                         "name": "talk_list_conversations",
                         "title": "List Talk conversations",
                         "description": "Lists the Talk conversations the authenticated user takes part in, with the number of unread messages. It changes no state: it does not mark anything as read, does not touch notifications and does not touch activity.",

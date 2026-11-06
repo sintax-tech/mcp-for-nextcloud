@@ -493,6 +493,16 @@ final class NextcloudApiUsage {
 	 * @var array<string, array{missing: list<string>, fallback?: string, by: string, omittedField?: string, pins?: array<string,string>, elsewhere?: array<string, string>}>
 	 */
 	public const VERSION_GATED = [
+		'OCA\\Deck\\Db\\Stack::getIsDoneColumn' => [
+			'missing' => ['31', '32', '33'],
+			'fallback' => 'OCA\\Deck\\Db\\Stack::getId',
+			'by' => \OCA\Mcp\Modules\Deck\Integration\CardStatusGateway::class,
+		],
+		'OCA\\Deck\\Db\\StackMapper::findDoneColumnForBoard' => [
+			'missing' => ['31', '32', '33'],
+			'fallback' => 'OCA\\Deck\\Db\\Stack::getId',
+			'by' => \OCA\Mcp\Modules\Deck\Integration\CardStatusGateway::class,
+		],
 		...Polls\PollsContentApiUsage::VERSION_GATED,
 		...Polls\PollsCreateApiUsage::VERSION_GATED,
 		// Mail 5.5 made the folder query group by thread by default; 5.0.0 (Nextcloud 31 and 32 pins) has neither the

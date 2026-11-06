@@ -13,6 +13,9 @@ require dirname(__DIR__) . '/bootstrap.php';
 if (!str_starts_with($uid, 'mcp-it-dk-')) {
 	throw new RuntimeException('Not an owned functional Deck actor');
 }
+if (Server::get(OCP\App\IAppManager::class)->isEnabledForAnyone('guests')) {
+	OCA\Mcp\Tests\Integration\Guests\GuestDeckParityProbe::registerBackend(Server::get(OCP\App\IAppManager::class));
+}
 Server::get(OCP\IUserSession::class)->setUser(Server::get(OCP\IUserManager::class)->get($uid));
 Server::get(OCP\ISession::class)->set('user_id', $uid);
 OC_Util::setupFS($uid);

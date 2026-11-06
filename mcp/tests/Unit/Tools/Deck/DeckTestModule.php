@@ -61,6 +61,8 @@ final class DeckTestModule {
 		$container->tools[\OCA\Mcp\Modules\Deck\Tools\ReadCardDependencies::class] = new \OCA\Mcp\Modules\Deck\Tools\ReadCardDependencies($context);
 		$container->tools[\OCA\Mcp\Modules\Deck\Tools\AddCardDependency::class] = new \OCA\Mcp\Modules\Deck\Tools\AddCardDependency($context, new \OCA\Mcp\Modules\Deck\Dependencies\AddCardDependencyPreview($context));
 		$container->tools[\OCA\Mcp\Modules\Deck\Tools\RemoveCardDependency::class] = new \OCA\Mcp\Modules\Deck\Tools\RemoveCardDependency($context, new \OCA\Mcp\Modules\Deck\Dependencies\RemoveCardDependencyPreview($context));
+		$container->tools[\OCA\Mcp\Modules\Deck\Tools\SetCardDone::class] = new \OCA\Mcp\Modules\Deck\Tools\SetCardDone($context, new \OCA\Mcp\Modules\Deck\Editing\SetCardDonePreview($context));
+		$container->tools[\OCA\Mcp\Modules\Deck\Tools\SetCardArchived::class] = new \OCA\Mcp\Modules\Deck\Tools\SetCardArchived($context, new \OCA\Mcp\Modules\Deck\Editing\SetCardArchivedPreview($context));
 		$module = new DeckModule($container, new DeckGuideNotes($capabilities));
 		self::$contexts ??= new \WeakMap();
 		self::$contexts[$module] = $context;

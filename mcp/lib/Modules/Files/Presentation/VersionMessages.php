@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Files\Presentation;
 
 use OCA\Mcp\L10n\Translator;
 
-/** Formats version messages. */
+/** Tool descriptions, parameter descriptions and user messages for Files version. */
 final class VersionMessages {
 	/** @return string description of files_versions_list */
 	public static function versionsListTool(): string {
@@ -61,5 +61,4 @@ final class VersionMessages {
 	public static function versionRestoreFailed(): string {
 		return Translator::t('Could not restore this version.');
 	}
-
 }

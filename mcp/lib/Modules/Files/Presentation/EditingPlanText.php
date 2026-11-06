@@ -9,9 +9,13 @@ namespace OCA\Mcp\Modules\Files\Presentation;
 
 use OCA\Mcp\L10n\Translator;
 
-/** Formats editing plan text. */
+/** Renders the recorded Files editing plan as Markdown lines. */
 final class EditingPlanText {
-	/** @return list<string>|null @param string $tool tool @param array<string, mixed> $plan plan */
+	/**
+	 * @return list<string>|null
+	 * @param string $tool tool
+	 * @param array<string, mixed> $plan plan
+	 */
 	public static function content(string $tool, array $plan): ?array {
 		$path = PlanFormatting::text($plan, 'path');
 		if ($path === null || !isset($plan['diff']) || !is_string($plan['diff'])) {
@@ -58,5 +62,4 @@ final class EditingPlanText {
 		}
 		return [array_values(array_filter($removed, 'strlen')), array_values(array_filter($added, 'strlen'))];
 	}
-
 }

@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Files\Presentation;
 
 use OCA\Mcp\L10n\Translator;
 
-/** Formats sharing messages. */
+/** Tool descriptions, parameter descriptions and user messages for Files sharing. */
 final class SharingMessages {
 	/** @return string description of files_list_shares */
 	public static function listSharesTool(): string {
@@ -221,5 +221,4 @@ final class SharingMessages {
 	public static function shareFolderEditWarning(string $recipient): string {
 		return Translator::t('With edit on a folder, %s can also delete files inside it.', [$recipient]);
 	}
-
 }

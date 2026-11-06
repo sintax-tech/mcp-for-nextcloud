@@ -9,9 +9,12 @@ namespace OCA\Mcp\Modules\Files\Presentation;
 
 use OCA\Mcp\L10n\Translator;
 
-/** Formats version plan text. */
+/** Renders the recorded Files version plan as Markdown lines. */
 final class VersionPlanText {
-	/** @return list<string>|null @param array<string, mixed> $plan plan */
+	/**
+	 * @return list<string>|null
+	 * @param array<string, mixed> $plan plan
+	 */
 	public static function restore(array $plan): ?array {
 		$path = PlanFormatting::text($plan, 'path');
 		$version = $plan['version'] ?? null;
@@ -29,5 +32,4 @@ final class VersionPlanText {
 		$lines[] = '- ' . Translator::t('The current content is replaced by that version.');
 		return array_merge($lines, PlanConsequences::backup($plan), PlanConsequences::sharing($plan));
 	}
-
 }

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Presentation;
 
-/** Formats files plan renderer. */
+/** Dispatches Files confirmation plans and joins their Markdown lines, falling back on incomplete plans. */
 final class FilesPlanRenderer {
 	/** Prevents instantiation of this static dispatcher. */
 	private function __construct() {
@@ -41,5 +41,4 @@ final class FilesPlanRenderer {
 		}
 		return $lines === null ? null : implode("\n", $lines);
 	}
-
 }

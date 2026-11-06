@@ -9,7 +9,7 @@ namespace OCA\Mcp\Platform\FileAccess;
 
 use OCA\Mcp\L10n\Translator;
 
-/** Formats binary resource messages. */
+/** Describes the size refusal for a binary file resource. */
 final class BinaryResourceMessages {
 	/**
 	 * @param int $limit binary read limit in bytes
@@ -18,5 +18,4 @@ final class BinaryResourceMessages {
 	public static function binaryResourceTooLarge(int $limit): string {
 		return Translator::t('Resource exceeds the binary read limit of %s bytes.', [(string)$limit]);
 	}
-
 }

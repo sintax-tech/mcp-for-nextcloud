@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Files\Presentation;
 
 use OCA\Mcp\L10n\Translator;
 
-/** Formats reading messages. */
+/** Tool descriptions, parameter descriptions and user messages for Files reading. */
 final class ReadingMessages {
 	/** @return string description of files_list */
 	public static function listTool(): string {
@@ -93,5 +93,4 @@ final class ReadingMessages {
 	public static function textTruncated(): string {
 		return Translator::t('[content truncated]');
 	}
-
 }

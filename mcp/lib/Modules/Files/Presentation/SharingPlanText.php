@@ -10,14 +10,14 @@ namespace OCA\Mcp\Modules\Files\Presentation;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Mcp\Confirmation\PlanText;
 
-/** Formats sharing plan text. */
+/** Renders the recorded Files sharing plan as Markdown lines. */
 final class SharingPlanText {
 	/**
 	 * The plan of files_share: who receives what, before → after on an update, and what the person must know. A
 	 * re-share right the update takes away is said in words, since a share made on the web carries it.
 	 *
 	 * @return list<string>|null
-	 	 * @param array<string, mixed> $plan plan
+	 * @param array<string, mixed> $plan plan
 	 */
 	public static function share(array $plan): ?array {
 		$path = PlanFormatting::text($plan, 'path');
@@ -140,7 +140,7 @@ final class SharingPlanText {
 	 * The plan of files_unshare: who loses access to what, in words by kind of recipient, and that the file stays.
 	 *
 	 * @return list<string>|null
-	 	 * @param array<string, mixed> $plan plan
+	 * @param array<string, mixed> $plan plan
 	 */
 	public static function unshare(array $plan): ?array {
 		$path = PlanFormatting::text($plan, 'path');
@@ -160,7 +160,11 @@ final class SharingPlanText {
 			: Translator::t('Nothing is deleted: the file stays exactly as it is.'))];
 	}
 
-	/** @return string what a share level lets the recipient do, in words @param mixed $level level @param bool $isDir is dir */
+	/**
+	 * @return string what a share level lets the recipient do, in words
+	 * @param mixed $level level
+	 * @param bool $isDir is dir
+	 */
 	private static function access(mixed $level, bool $isDir): string {
 		return match ($level) {
 			'view' => Translator::t('can view and download'),
@@ -170,7 +174,10 @@ final class SharingPlanText {
 		};
 	}
 
-	/** @return string the last day of a share as the person reads it, or that there is none @param mixed $date date */
+	/**
+	 * @return string the last day of a share as the person reads it, or that there is none
+	 * @param mixed $date date
+	 */
 	private static function until(mixed $date): string {
 		if (!is_string($date) || $date === '') {
 			return Translator::t('no end date');
@@ -178,5 +185,4 @@ final class SharingPlanText {
 		$parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', $date);
 		return $parsed === false || $parsed->format('Y-m-d') !== $date ? PlanText::inline($date) : $parsed->format(Translator::t('m/d/Y'));
 	}
-
 }

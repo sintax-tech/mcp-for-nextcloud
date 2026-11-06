@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Files\Presentation;
 
 use OCA\Mcp\L10n\Translator;
 
-/** Formats editing messages. */
+/** Tool descriptions, parameter descriptions and user messages for Files editing. */
 final class EditingMessages {
 	/** @return string description of files_edit */
 	public static function editTool(): string {
@@ -113,5 +113,4 @@ final class EditingMessages {
 	public static function snippetAmbiguous(): string {
 		return \OCA\Mcp\Platform\Text\SnippetMessages::ambiguous();
 	}
-
 }

@@ -10,7 +10,7 @@ namespace OCA\Mcp\Modules\Files\Presentation;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 
-/** Formats files messages. */
+/** Common path, node and exposure messages shared within Files. */
 final class FilesMessages {
 	/** Folder in the user's root that receives a copy of every file before an edit writes it. */
 	public const BACKUP_FOLDER = \OCA\Mcp\Modules\Files\FileBackup::FOLDER;
@@ -55,5 +55,4 @@ final class FilesMessages {
 	public static function destinationExists(): string {
 		return Translator::t('A file or folder already exists at this destination.');
 	}
-
 }

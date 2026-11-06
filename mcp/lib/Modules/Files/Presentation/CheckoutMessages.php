@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Files\Presentation;
 
 use OCA\Mcp\L10n\Translator;
 
-/** Formats checkout messages. */
+/** Tool descriptions, parameter descriptions and user messages for Files checkout. */
 final class CheckoutMessages {
 	/** @return string description of files_checkout */
 	public static function checkoutTool(): string {
@@ -105,5 +105,4 @@ final class CheckoutMessages {
 			? Translator::t('Failed to write file.')
 			: Translator::t('Failed to write file; original preserved in %s.', [$backup]);
 	}
-
 }

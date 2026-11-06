@@ -9,9 +9,12 @@ namespace OCA\Mcp\Modules\Files\Presentation;
 
 use OCA\Mcp\L10n\Translator;
 
-/** Formats checkout plan text. */
+/** Renders the recorded Files checkout plan as Markdown lines. */
 final class CheckoutPlanText {
-	/** @return list<string>|null @param array<string, mixed> $plan plan */
+	/**
+	 * @return list<string>|null
+	 * @param array<string, mixed> $plan plan
+	 */
 	public static function checkout(array $plan): ?array {
 		$path = PlanFormatting::text($plan, 'path');
 		if ($path === null) {
@@ -33,5 +36,4 @@ final class CheckoutPlanText {
 		$lines[] = '- ' . Translator::t('Nothing is changed until the new version is uploaded.');
 		return array_merge($lines, PlanConsequences::backup($plan), PlanConsequences::sharing($plan));
 	}
-
 }

@@ -9,9 +9,12 @@ namespace OCA\Mcp\Modules\Files\Presentation;
 
 use OCA\Mcp\L10n\Translator;
 
-/** Formats reorganization plan text. */
+/** Renders the recorded Files reorganization plan as Markdown lines. */
 final class ReorganizationPlanText {
-	/** @return list<string>|null @param array<string, mixed> $plan plan */
+	/**
+	 * @return list<string>|null
+	 * @param array<string, mixed> $plan plan
+	 */
 	public static function copy(array $plan): ?array {
 		$from = PlanFormatting::text($plan, 'from');
 		$to = PlanFormatting::text($plan, 'to');
@@ -25,7 +28,10 @@ final class ReorganizationPlanText {
 		return array_merge($lines, PlanConsequences::sharing($plan));
 	}
 
-	/** @return list<string>|null @param array<string, mixed> $plan plan */
+	/**
+	 * @return list<string>|null
+	 * @param array<string, mixed> $plan plan
+	 */
 	public static function mkdir(array $plan): ?array {
 		$path = PlanFormatting::text($plan, 'path');
 		if ($path === null) {
@@ -42,7 +48,10 @@ final class ReorganizationPlanText {
 		return array_merge($lines, PlanConsequences::sharing($plan));
 	}
 
-	/** @return list<string>|null @param array<string, mixed> $plan plan */
+	/**
+	 * @return list<string>|null
+	 * @param array<string, mixed> $plan plan
+	 */
 	public static function move(array $plan): ?array {
 		$from = PlanFormatting::text($plan, 'from');
 		$to = PlanFormatting::text($plan, 'to');
@@ -58,7 +67,10 @@ final class ReorganizationPlanText {
 		return array_merge($lines, PlanConsequences::sharing($plan));
 	}
 
-	/** @return list<string>|null @param array<string, mixed> $plan plan */
+	/**
+	 * @return list<string>|null
+	 * @param array<string, mixed> $plan plan
+	 */
 	public static function batch(array $plan): ?array {
 		$order = $plan['order'] ?? $plan['moves'] ?? null;
 		if (!is_array($order)) {
@@ -140,7 +152,10 @@ final class ReorganizationPlanText {
 		return $lines;
 	}
 
-	/** @return list<string>|null @param array<string, mixed> $plan plan */
+	/**
+	 * @return list<string>|null
+	 * @param array<string, mixed> $plan plan
+	 */
 	public static function undo(array $plan): ?array {
 		if (!isset($plan['undo']) || !is_array($plan['undo'])) {
 			return null;
@@ -167,5 +182,4 @@ final class ReorganizationPlanText {
 		}
 		return $lines;
 	}
-
 }

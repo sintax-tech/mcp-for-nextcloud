@@ -10,13 +10,13 @@ namespace OCA\Mcp\Modules\Files\Presentation;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Mcp\Confirmation\PlanText;
 
-/** Formats creation plan text. */
+/** Renders the recorded Files creation plan as Markdown lines. */
 final class CreationPlanText {
 	/**
 	 * The plan of files_upload: the new file, where it goes, how long the link lasts and what it may weigh.
 	 *
 	 * @return list<string>|null
-	 	 * @param array<string, mixed> $plan plan
+	 * @param array<string, mixed> $plan plan
 	 */
 	public static function upload(array $plan): ?array {
 		$path = PlanFormatting::text($plan, 'path');
@@ -34,7 +34,7 @@ final class CreationPlanText {
 		if (isset($plan['uploadMaxBytes'])) {
 			$lines[] = '- ' . Translator::t('The file can weigh up to %s.', [PlanFormatting::bytes((int)$plan['uploadMaxBytes'])]);
 		}
-		$lines[] = '- ' . \OCA\Mcp\Modules\Files\Presentation\CreationMessages::planNewFileConsequence();
+		$lines[] = '- ' . CreationMessages::planNewFileConsequence();
 		return array_merge($lines, PlanConsequences::sharing($plan));
 	}
 
@@ -42,7 +42,7 @@ final class CreationPlanText {
 	 * The plan of files_create: the new text file, where it goes, its size and the beginning of its text as a quote.
 	 *
 	 * @return list<string>|null
-	 	 * @param array<string, mixed> $plan plan
+	 * @param array<string, mixed> $plan plan
 	 */
 	public static function create(array $plan): ?array {
 		$path = PlanFormatting::text($plan, 'path');
@@ -54,7 +54,7 @@ final class CreationPlanText {
 		if (isset($plan['size'])) {
 			$lines[] = '- ' . Translator::t('Size: %s', [PlanFormatting::bytes((int)$plan['size'])]);
 		}
-		$lines[] = '- ' . \OCA\Mcp\Modules\Files\Presentation\CreationMessages::planNewFileConsequence();
+		$lines[] = '- ' . CreationMessages::planNewFileConsequence();
 		$lines = array_merge($lines, PlanConsequences::sharing($plan));
 		$preview = is_string($plan['preview'] ?? null) ? PlanText::quote($plan['preview'], \OCA\Mcp\Modules\Files\FileCreation::PREVIEW_CHARS) : '';
 		if ($preview === '') {
@@ -67,10 +67,12 @@ final class CreationPlanText {
 		return $lines;
 	}
 
-	/** @return list<string> the folder that receives a new file, when the plan names it @param array<string, mixed> $plan plan */
+	/**
+	 * @return list<string> the folder that receives a new file, when the plan names it
+	 * @param array<string, mixed> $plan plan
+	 */
 	private static function folderLine(array $plan): array {
 		$folder = PlanFormatting::text($plan, 'folder');
 		return $folder === null ? [] : ['- ' . Translator::t('Inside: %s', [PlanFormatting::bold($folder)])];
 	}
-
 }

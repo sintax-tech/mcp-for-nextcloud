@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Files\Presentation;
 
 use OCA\Mcp\L10n\Translator;
 
-/** Formats image messages. */
+/** Tool descriptions, parameter descriptions and user messages for Files image. */
 final class ImageMessages {
 	/** @return string description of files_image_view */
 	public static function imageViewTool(): string {
@@ -112,5 +112,4 @@ final class ImageMessages {
 	public static function noTextOcrActive(): string {
 		return Translator::t('This file still has no text. Workflow OCR processes files in the background, following the rule the administrator configured.');
 	}
-
 }

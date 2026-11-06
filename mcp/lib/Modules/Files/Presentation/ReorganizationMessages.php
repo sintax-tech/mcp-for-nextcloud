@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Files\Presentation;
 
 use OCA\Mcp\L10n\Translator;
 
-/** Formats reorganization messages. */
+/** Tool descriptions, parameter descriptions and user messages for Files reorganization. */
 final class ReorganizationMessages {
 	/** @return string description of files_move_batch */
 	public static function batchTool(): string {
@@ -154,5 +154,4 @@ final class ReorganizationMessages {
 	public static function copyTooLarge(int $limit): string {
 		return Translator::t('The copy would exceed %s bytes; nothing was copied. Choose a smaller folder.', [(string)$limit]);
 	}
-
 }

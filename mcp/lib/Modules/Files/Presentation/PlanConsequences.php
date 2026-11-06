@@ -10,7 +10,7 @@ namespace OCA\Mcp\Modules\Files\Presentation;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 
-/** Formats plan consequences. */
+/** Renders the backup and sharing consequences already recorded in a Files plan. */
 final class PlanConsequences {
 	/**
 	 * @param array<string, mixed> $plan plan of a tool that copies the file before writing
@@ -47,5 +47,4 @@ final class PlanConsequences {
 		}
 		return $lines;
 	}
-
 }

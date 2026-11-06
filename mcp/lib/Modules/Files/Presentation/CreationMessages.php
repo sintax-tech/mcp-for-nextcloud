@@ -10,7 +10,7 @@ namespace OCA\Mcp\Modules\Files\Presentation;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 
-/** Formats creation messages. */
+/** Tool descriptions, parameter descriptions and user messages for Files creation. */
 final class CreationMessages {
 	/** @return string description of files_upload, read by the model and therefore fixed English */
 	public static function uploadTool(): string {
@@ -118,5 +118,4 @@ final class CreationMessages {
 		return Translator::t('files_create only writes text files (%s); use files_upload for any other type', [implode(', ', array_map(
 			static fn (string $extension): string => '.' . $extension, \OCA\Mcp\Modules\Files\FileCreation::TEXT_EXTENSIONS))]);
 	}
-
 }

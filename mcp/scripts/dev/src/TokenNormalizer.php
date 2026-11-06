@@ -113,10 +113,10 @@ final class TokenNormalizer {
 				$namespaces[] = [$line, rtrim($scope->qualify(''), '\\')];
 			}
 			if (($reason = LocationSensitiveCalls::unproved($tokens, $i, $scope, $this->index)) !== null) {
-				$located[] = [$line, $reason];
+				$located[] = [$line, $reason, count($stream)];
 			}
 			if ($path !== null && ($reason = PathSafety::unproved($tokens, $i, $path, $scope, $this->index)) !== null) {
-				$located[] = [$line, $reason];
+				$located[] = [$line, $reason, count($stream)];
 			}
 			if (in_array($id, self::NAMES, true)) {
 				$attributeName = $attribute === [1, 0] && in_array($tokens[$i - 1][1], ['#[', ','], true);

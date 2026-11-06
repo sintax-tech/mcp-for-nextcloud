@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
-use OCA\Mcp\Tools\Files\FilesMessages;
-use OCA\Mcp\Tools\Files\FilesModule;
+use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\FilesModule;
 use OCP\Files\IRootFolder;
 use OCP\FullTextSearch\IFullTextSearchManager;
 use OCP\FullTextSearch\Model\IIndexDocument;
@@ -148,13 +148,13 @@ final class FilesSearchContentTest extends FilesToolsTestCase {
 		IFullTextSearchManager $ftsManager,
 		?\OCA\Mcp\Access\ResourceScope\FilesAccessGuard $guard = null,
 	): FilesModule {
-		$extractor = new \OCA\Mcp\Tools\Files\TextExtractor($this->temp);
-		$backup = new \OCA\Mcp\Tools\Files\FileBackup($this->apps, $this->users, $this->time, $this->config->mock($this));
+		$extractor = new \OCA\Mcp\Modules\Files\TextExtractor($this->temp);
+		$backup = new \OCA\Mcp\Modules\Files\FileBackup($this->apps, $this->users, $this->time, $this->config->mock($this));
 		$access = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo(\OCA\Mcp\Tests\Unit\Tools\FakeUsers::manager($this, \OCA\Mcp\Tests\Unit\Tools\FakeUsers::DEFAULTS), $this->tree->shareManager());
 		$db = $this->createMock(\OCP\IDBConnection::class);
 		$db->method('escapeLikeParameter')->willReturnCallback(fn (string $s) => addcslashes($s, '\\_%'));
 
-		$imageTools = new \OCA\Mcp\Tools\Files\ImageTools(
+		$imageTools = new \OCA\Mcp\Modules\Files\ImageTools(
 			$this->previewManager,
 			$access,
 			$this->config->mock($this),
@@ -174,7 +174,7 @@ final class FilesSearchContentTest extends FilesToolsTestCase {
 			$db,
 			$access,
 			new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access),
-			new \OCA\Mcp\Tools\Files\CheckoutService(
+			new \OCA\Mcp\Modules\Files\CheckoutService(
 				$this->createMock(\OCP\IURLGenerator::class),
 				$this->config->mock($this),
 				$this->time,
@@ -183,13 +183,13 @@ final class FilesSearchContentTest extends FilesToolsTestCase {
 				$this->apps,
 				$this->users,
 			),
-			new \OCA\Mcp\Tools\Files\VersionTools($this->apps, $this->users, $extractor, $backup, $access, $this->createMock(\Psr\Container\ContainerInterface::class), new \OCA\Mcp\Tools\Files\OcrSupport($this->apps)),
-			new \OCA\Mcp\Tools\Files\Reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access), $this->report(), $this->users),
-			new \OCA\Mcp\Tools\Files\MovePlanner(new \OCA\Mcp\Tools\Files\Reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access), $this->report(), $this->users), $access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access)),
+			new \OCA\Mcp\Modules\Files\VersionTools($this->apps, $this->users, $extractor, $backup, $access, $this->createMock(\Psr\Container\ContainerInterface::class), new \OCA\Mcp\Modules\Files\OcrSupport($this->apps)),
+			new \OCA\Mcp\Modules\Files\Reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access), $this->report(), $this->users),
+			new \OCA\Mcp\Modules\Files\MovePlanner(new \OCA\Mcp\Modules\Files\Reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access), $this->report(), $this->users), $access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access)),
 			$this->batches,
 			$this->time,
 			$imageTools,
-			new \OCA\Mcp\Tools\Files\OcrSupport($this->apps),
+			new \OCA\Mcp\Modules\Files\OcrSupport($this->apps),
 			$guard,
 			$this->apps,
 			$ftsManager,

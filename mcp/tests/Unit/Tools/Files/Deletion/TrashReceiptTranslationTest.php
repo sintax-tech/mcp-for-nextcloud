@@ -8,8 +8,8 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files\Deletion;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
-use OCA\Mcp\Tools\Files\Deletion\DeleteMessages;
-use OCA\Mcp\Tools\Files\Deletion\TrashReceiptMessages;
+use OCA\Mcp\Modules\Files\Deletion\DeleteMessages;
+use OCA\Mcp\Modules\Files\Deletion\TrashReceiptMessages;
 use PHPUnit\Framework\TestCase;
 
 /** "Try the trash bin first" and the trash receipt read the same way in en, de, es and pt_BR, never as trash-only. */

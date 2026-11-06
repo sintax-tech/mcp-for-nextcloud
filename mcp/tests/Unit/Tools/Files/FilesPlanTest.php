@@ -13,10 +13,10 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
-use OCA\Mcp\Tools\Files\FileBackup;
-use OCA\Mcp\Tools\Files\FilesModule;
-use OCA\Mcp\Tools\Files\TextExtractor;
-use OCA\Mcp\Tools\Files\VersionTools;
+use OCA\Mcp\Modules\Files\FileBackup;
+use OCA\Mcp\Modules\Files\FilesModule;
+use OCA\Mcp\Modules\Files\TextExtractor;
+use OCA\Mcp\Modules\Files\VersionTools;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Container\ContainerInterface;
@@ -46,7 +46,7 @@ final class FilesPlanTest extends FilesToolsTestCase {
 		$container = $this->createMock(ContainerInterface::class);
 		$container->method('get')->willReturnCallback(fn (string $id) => $id === 'OCA\Files_Versions\Versions\IVersionManager' ? $manager : null);
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
-		$versions = new VersionTools($this->apps, $this->users, new TextExtractor($this->temp), $backup, $access, $container, new \OCA\Mcp\Tools\Files\OcrSupport($this->apps));
+		$versions = new VersionTools($this->apps, $this->users, new TextExtractor($this->temp), $backup, $access, $container, new \OCA\Mcp\Modules\Files\OcrSupport($this->apps));
 		$this->module = $this->rebuilt(['backup' => $backup, 'versions' => $versions]);
 	}
 
@@ -216,7 +216,7 @@ final class FilesPlanTest extends FilesToolsTestCase {
 		$this->tree->addFile('/alice/files/Documentos/contrato.docx', 'PK', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
 		$plan = $this->plan('files_checkout', ['path' => '/Documentos/contrato.docx']);
 		$guide = implode("\n", $this->module->guideNotes());
-		foreach ([$plan['message'], \OCA\Mcp\Tools\Files\FilesMessages::checkoutTool(), $guide] as $text) {
+		foreach ([$plan['message'], \OCA\Mcp\Modules\Files\FilesMessages::checkoutTool(), $guide] as $text) {
 			$this->assertStringContainsString('any file', $text);
 			$this->assertStringContainsString('files_edit', $text);
 			$this->assertStringContainsString('files_replace', $text);
@@ -232,7 +232,7 @@ final class FilesPlanTest extends FilesToolsTestCase {
 			$this->plan('files_checkout', ['path' => '/MCP backups/contrato.docx.20260921-141320.bak']);
 			$this->fail('a checkout of the backup folder must not be planned');
 		} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
-			$this->assertSame(\OCA\Mcp\Tools\Files\FilesMessages::backupPath(), $e->getMessage());
+			$this->assertSame(\OCA\Mcp\Modules\Files\FilesMessages::backupPath(), $e->getMessage());
 		}
 		$this->assertNothingWritten();
 	}
@@ -246,7 +246,7 @@ final class FilesPlanTest extends FilesToolsTestCase {
 			$this->plan('files_checkout', ['path' => '/Documentos/ata.md']);
 			$this->fail('a checkout without files_versions must not be planned');
 		} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
-			$this->assertSame(\OCA\Mcp\Tools\Files\FilesMessages::versionsOff(), $e->getMessage());
+			$this->assertSame(\OCA\Mcp\Modules\Files\FilesMessages::versionsOff(), $e->getMessage());
 		}
 		$this->assertNothingWritten();
 	}

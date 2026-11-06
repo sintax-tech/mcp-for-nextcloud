@@ -15,7 +15,7 @@ use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
-use OCA\Mcp\Tools\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\FilesMessages;
 use OCA\Mcp\Platform\Text\UnifiedDiff;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Modules\Notes\Editing\NoteChangePlan;

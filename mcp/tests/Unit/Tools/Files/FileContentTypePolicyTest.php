@@ -27,25 +27,25 @@ use OCA\Mcp\Access\FileTypes\FileTypeMessages;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
-use OCA\Mcp\Tools\Files\BatchStore;
-use OCA\Mcp\Tools\Files\CheckoutService;
-use OCA\Mcp\Tools\Files\ContentCommit;
-use OCA\Mcp\Tools\Files\ContentTypeGate;
-use OCA\Mcp\Tools\Files\ContentWritePlan;
-use OCA\Mcp\Tools\Files\FileBackup;
-use OCA\Mcp\Tools\Files\FilesMessages;
-use OCA\Mcp\Tools\Files\FilesModule;
-use OCA\Mcp\Tools\Files\Handler\EditFileHandler;
-use OCA\Mcp\Tools\Files\Handler\ReplaceFileHandler;
-use OCA\Mcp\Tools\Files\Handler\RestoreVersionHandler;
-use OCA\Mcp\Tools\Files\ImageTools;
-use OCA\Mcp\Tools\Files\MovePlanner;
-use OCA\Mcp\Tools\Files\MoveReport;
-use OCA\Mcp\Tools\Files\OcrSupport;
-use OCA\Mcp\Tools\Files\Reorganization;
-use OCA\Mcp\Tools\Files\TextExtractor;
-use OCA\Mcp\Tools\Files\VersionRestore;
-use OCA\Mcp\Tools\Files\VersionTools;
+use OCA\Mcp\Modules\Files\BatchStore;
+use OCA\Mcp\Modules\Files\CheckoutService;
+use OCA\Mcp\Modules\Files\ContentCommit;
+use OCA\Mcp\Modules\Files\ContentTypeGate;
+use OCA\Mcp\Modules\Files\ContentWritePlan;
+use OCA\Mcp\Modules\Files\FileBackup;
+use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\FilesModule;
+use OCA\Mcp\Modules\Files\Handler\EditFileHandler;
+use OCA\Mcp\Modules\Files\Handler\ReplaceFileHandler;
+use OCA\Mcp\Modules\Files\Handler\RestoreVersionHandler;
+use OCA\Mcp\Modules\Files\ImageTools;
+use OCA\Mcp\Modules\Files\MovePlanner;
+use OCA\Mcp\Modules\Files\MoveReport;
+use OCA\Mcp\Modules\Files\OcrSupport;
+use OCA\Mcp\Modules\Files\Reorganization;
+use OCA\Mcp\Modules\Files\TextExtractor;
+use OCA\Mcp\Modules\Files\VersionRestore;
+use OCA\Mcp\Modules\Files\VersionTools;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
@@ -754,7 +754,7 @@ final class FileContentTypePolicyTest extends TestCase {
 	 * @return void
 	 */
 	public function testFileBackupDoesNotReadThePolicy(): void {
-		$source = (string)file_get_contents(__DIR__ . '/../../../../lib/Tools/Files/FileBackup.php');
+		$source = (string)file_get_contents(dirname(__DIR__, 4) . '/lib/Modules/Files/FileBackup.php');
 		$this->assertStringNotContainsString('FileTypeGuard', $source);
 		$this->assertStringNotContainsString('FileWritePolicy', $source);
 		$this->assertStringNotContainsString('ContentTypeGate', $source);
@@ -767,8 +767,8 @@ final class FileContentTypePolicyTest extends TestCase {
 	 * @return void
 	 */
 	public function testEditReplaceAndRestoreDelegateOutOfTheLargeModules(): void {
-		$files = (string)file_get_contents(__DIR__ . '/../../../../lib/Tools/Files/FilesModule.php');
-		$versions = (string)file_get_contents(__DIR__ . '/../../../../lib/Tools/Files/VersionTools.php');
+		$files = (string)file_get_contents(dirname(__DIR__, 4) . '/lib/Modules/Files/FilesModule.php');
+		$versions = (string)file_get_contents(dirname(__DIR__, 4) . '/lib/Modules/Files/VersionTools.php');
 		$this->assertStringNotContainsString('->putContent', $files);
 		$this->assertStringNotContainsString('->rollback', $files);
 		$this->assertStringNotContainsString('->putContent', $versions);

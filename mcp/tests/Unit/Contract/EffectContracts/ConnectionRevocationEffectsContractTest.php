@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 use OCA\Mcp\Controller\ConnectionsController;
 use OCA\Mcp\Controller\MyConnectionsController;
 use OCA\Mcp\Controller\SettingsController;
-use OCA\Mcp\Tools\Files\Batch;
+use OCA\Mcp\Modules\Files\Batch;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Response;
 use PHPUnit\Framework\TestCase;

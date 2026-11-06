@@ -17,23 +17,23 @@ use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
-use OCA\Mcp\Tools\Files\CheckoutService;
-use OCA\Mcp\Tools\Files\ContentCommit;
-use OCA\Mcp\Tools\Files\ContentWritePlan;
-use OCA\Mcp\Tools\Files\FileBackup;
-use OCA\Mcp\Tools\Files\FileCreation;
-use OCA\Mcp\Tools\Files\Handler\EditFileHandler;
-use OCA\Mcp\Tools\Files\Handler\ReplaceFileHandler;
-use OCA\Mcp\Tools\Files\Handler\RestoreVersionHandler;
-use OCA\Mcp\Tools\Files\ImageTools;
-use OCA\Mcp\Tools\Files\MovePlanner;
-use OCA\Mcp\Tools\Files\MoveReport;
-use OCA\Mcp\Tools\Files\Reorganization;
-use OCA\Mcp\Tools\Files\FilesModule;
-use OCA\Mcp\Tools\Files\OcrSupport;
-use OCA\Mcp\Tools\Files\TextExtractor;
-use OCA\Mcp\Tools\Files\VersionRestore;
-use OCA\Mcp\Tools\Files\VersionTools;
+use OCA\Mcp\Modules\Files\CheckoutService;
+use OCA\Mcp\Modules\Files\ContentCommit;
+use OCA\Mcp\Modules\Files\ContentWritePlan;
+use OCA\Mcp\Modules\Files\FileBackup;
+use OCA\Mcp\Modules\Files\FileCreation;
+use OCA\Mcp\Modules\Files\Handler\EditFileHandler;
+use OCA\Mcp\Modules\Files\Handler\ReplaceFileHandler;
+use OCA\Mcp\Modules\Files\Handler\RestoreVersionHandler;
+use OCA\Mcp\Modules\Files\ImageTools;
+use OCA\Mcp\Modules\Files\MovePlanner;
+use OCA\Mcp\Modules\Files\MoveReport;
+use OCA\Mcp\Modules\Files\Reorganization;
+use OCA\Mcp\Modules\Files\FilesModule;
+use OCA\Mcp\Modules\Files\OcrSupport;
+use OCA\Mcp\Modules\Files\TextExtractor;
+use OCA\Mcp\Modules\Files\VersionRestore;
+use OCA\Mcp\Modules\Files\VersionTools;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use OCP\App\IAppManager;
@@ -68,7 +68,7 @@ abstract class FilesToolsTestCase extends TestCase {
 	protected ITimeFactory $time;
 	protected InMemoryBatchStore $batches;
 	/** The store the module records batches in, when a test needs the production one instead of {@see self::$batches}. */
-	protected ?\OCA\Mcp\Tools\Files\BatchStore $batchStore = null;
+	protected ?\OCA\Mcp\Modules\Files\BatchStore $batchStore = null;
 	protected ITempManager $temp;
 	protected \OCA\Mcp\Tests\Unit\InMemoryConfig $config;
 	protected IPreview $previewManager;
@@ -212,7 +212,7 @@ abstract class FilesToolsTestCase extends TestCase {
 	 * The accounts and groups they know are {@see self::$people} and {@see self::$groups}, read at call time so a test
 	 * can add one; the grants are in {@see self::$sharePolicy}, all denied but read, as on a fresh install.
 	 *
-	 * @return array{shareLister: \OCA\Mcp\Tools\Files\Sharing\ShareLister, shareWriter: \OCA\Mcp\Tools\Files\Sharing\ShareWriter, shareRemover: \OCA\Mcp\Tools\Files\Sharing\ShareRemover}
+	 * @return array{shareLister: \OCA\Mcp\Modules\Files\Sharing\ShareLister, shareWriter: \OCA\Mcp\Modules\Files\Sharing\ShareWriter, shareRemover: \OCA\Mcp\Modules\Files\Sharing\ShareRemover}
 	 */
 	private function sharing(IURLGenerator $urls): array {
 		$this->shares = new \OCA\Mcp\Tests\Unit\Tools\Files\Sharing\FakeShares($this);
@@ -241,16 +241,16 @@ abstract class FilesToolsTestCase extends TestCase {
 		$groups->method('getUserGroupIds')->willReturnCallback(fn (IUser $user): array => array_keys(array_filter(
 			$this->groups, fn (array $group): bool => in_array($user->getUID(), $group['members'], true))));
 		$manager = $this->shares->manager();
-		$access = new \OCA\Mcp\Tools\Files\Sharing\ShareAccess($manager, $this->sharePolicy, $this->visibilityGuard ?? $this->shares->guardShowingAll());
-		$recipients = new \OCA\Mcp\Tools\Files\Sharing\ShareRecipientResolver($accounts, $groups);
-		$formatter = new \OCA\Mcp\Tools\Files\Sharing\ShareFormatter($recipients, $urls);
+		$access = new \OCA\Mcp\Modules\Files\Sharing\ShareAccess($manager, $this->sharePolicy, $this->visibilityGuard ?? $this->shares->guardShowingAll());
+		$recipients = new \OCA\Mcp\Modules\Files\Sharing\ShareRecipientResolver($accounts, $groups);
+		$formatter = new \OCA\Mcp\Modules\Files\Sharing\ShareFormatter($recipients, $urls);
 		$this->shareLogger = $this->createMock(\Psr\Log\LoggerInterface::class);
 		$states = new \OCA\Mcp\Mcp\Confirmation\PlanState($this->config->mock($this));
 		return [
-			'shareLister' => new \OCA\Mcp\Tools\Files\Sharing\ShareLister($access, $formatter),
-			'shareWriter' => new \OCA\Mcp\Tools\Files\Sharing\ShareWriter($access, $recipients, $formatter, $manager, $accounts, $groups,
+			'shareLister' => new \OCA\Mcp\Modules\Files\Sharing\ShareLister($access, $formatter),
+			'shareWriter' => new \OCA\Mcp\Modules\Files\Sharing\ShareWriter($access, $recipients, $formatter, $manager, $accounts, $groups,
 				new \OCA\Mcp\Platform\Time\UserTimezone($this->config->mock($this)), $this->time, $this->shareLogger, $this->linkPassword(), $states),
-			'shareRemover' => new \OCA\Mcp\Tools\Files\Sharing\ShareRemover($access, $recipients, $manager, $this->shareLogger, $states),
+			'shareRemover' => new \OCA\Mcp\Modules\Files\Sharing\ShareRemover($access, $recipients, $manager, $this->shareLogger, $states),
 		];
 	}
 
@@ -259,7 +259,7 @@ abstract class FilesToolsTestCase extends TestCase {
 	 * {@see self::$passwordPolicyFailure}, read at call time, with a reproducible ISecureRandom as the fallback and the
 	 * logger of the share writer.
 	 */
-	private function linkPassword(): \OCA\Mcp\Tools\Files\Sharing\LinkPassword {
+	private function linkPassword(): \OCA\Mcp\Modules\Files\Sharing\LinkPassword {
 		$events = $this->createMock(\OCP\EventDispatcher\IEventDispatcher::class);
 		$events->method('dispatchTyped')->willReturnCallback(function (object $event): void {
 			if ($event instanceof \OCP\Security\Events\GenerateSecurePasswordEvent && $this->linkPasswords !== []) {
@@ -272,7 +272,7 @@ abstract class FilesToolsTestCase extends TestCase {
 				throw new \OCP\HintException('Password is too weak', 'Password is too weak');
 			}
 		});
-		return new \OCA\Mcp\Tools\Files\Sharing\LinkPassword($events, new \OCA\Mcp\Tests\Unit\Tools\Files\Sharing\FakeSecureRandom(), $this->shareLogger);
+		return new \OCA\Mcp\Modules\Files\Sharing\LinkPassword($events, new \OCA\Mcp\Tests\Unit\Tools\Files\Sharing\FakeSecureRandom(), $this->shareLogger);
 	}
 
 	/** The post-condition report, wired against the same version and share doubles the module uses. */

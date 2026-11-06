@@ -26,14 +26,7 @@ final class SourceTrees {
 	public static function fromGit(string $repository, string $revision, string $appFolder): array {
 		$prefix = trim($appFolder, '/') . '/';
 		$listing = self::run(['git', '-C', $repository, 'ls-tree', '-r', '-z', '--full-tree', $revision, '--', $prefix], '');
-		$blobs = [];
-		foreach (array_filter(explode("\0", $listing)) as $line) {
-			[$meta, $path] = explode("\t", $line, 2);
-			[, $type, $object] = explode(' ', $meta);
-			if ($type === 'blob') {
-				$blobs[substr($path, strlen($prefix))] = $object;
-			}
-		}
+		$blobs = self::blobsFromListing($listing, $prefix);
 		$output = self::run(['git', '-C', $repository, 'cat-file', '--batch'], implode("\n", $blobs) . "\n");
 		$files = [];
 		$offset = 0;
@@ -48,6 +41,30 @@ final class SourceTrees {
 		}
 		ksort($files, SORT_STRING);
 		return $files;
+	}
+
+	/**
+	 * Parses the NUL-separated recursive Git listing before any object content is read.
+	 *
+	 * @param string $listing Output of git ls-tree -r -z --full-tree
+	 * @param string $prefix App folder prefix including its trailing slash
+	 * @return array<string,string> Relative file paths and blob object IDs
+	 * @throws RuntimeException When an entry is not a regular file blob
+	 */
+	public static function blobsFromListing(string $listing, string $prefix): array {
+		$blobs = [];
+		foreach (array_filter(explode("\0", $listing)) as $line) {
+			[$meta, $path] = explode("\t", $line, 2);
+			[$mode, $type, $object] = explode(' ', $meta);
+			if ($type !== 'blob') {
+				throw new RuntimeException("Unsupported Git entry type $type (mode $mode): $path");
+			}
+			if (!in_array($mode, ['100644', '100755'], true)) {
+				throw new RuntimeException("Unsupported Git file mode $mode: $path");
+			}
+			$blobs[substr($path, strlen($prefix))] = $object;
+		}
+		return $blobs;
 	}
 
 	/**

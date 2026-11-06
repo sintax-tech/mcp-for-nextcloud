@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\EffectsGate;
 use OCA\Mcp\Tests\Unit\Tools\BrokenTextSamples;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
-use OCA\Mcp\Tools\Files\TextExtractor;
+use OCA\Mcp\Modules\Files\TextExtractor;
 use OCP\ITempManager;
 use PHPUnit\Framework\TestCase;
 use Smalot\PdfParser\Parser;

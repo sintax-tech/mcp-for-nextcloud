@@ -16,9 +16,9 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
-use OCA\Mcp\Tools\Files\CheckoutService;
-use OCA\Mcp\Tools\Files\FileBackup;
-use OCA\Mcp\Tools\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\CheckoutService;
+use OCA\Mcp\Modules\Files\FileBackup;
+use OCA\Mcp\Modules\Files\FilesMessages;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
@@ -786,7 +786,7 @@ final class CheckoutControllerTest extends TestCase {
 		$this->tree->backupWriteFailure = new \OCP\Lock\ManuallyLockedException('/alice/files/MCP backups/x', null, 'files_lock/b', 'pedro', -1);
 		$response = $this->controller->upload();
 		$this->assertSame(423, $this->code($response));
-		$this->assertStringContainsString(\OCA\Mcp\Tools\Files\FilesMessages::backupFailed(), (string)$response->render());
+		$this->assertStringContainsString(\OCA\Mcp\Modules\Files\FilesMessages::backupFailed(), (string)$response->render());
 		$this->assertSame('# Ata', $this->tree->nodes[self::FILE]['content']);
 	}
 
@@ -972,7 +972,7 @@ final class CheckoutControllerTest extends TestCase {
 		$items = false;
 		$unavailable = $controller->$method();
 		$this->assertSame(503, $this->code($unavailable));
-		$this->assertSame(\OCA\Mcp\Tools\Files\FilesMessages::checkoutUnavailable(), $unavailable->getData());
+		$this->assertSame(\OCA\Mcp\Modules\Files\FilesMessages::checkoutUnavailable(), $unavailable->getData());
 
 		$items = [(string)$this->tree->nodes['/alice/files/Documentos']['id']];
 		$this->assertSame(200, $this->code($controller->$method()), 'no refusal spent the link');

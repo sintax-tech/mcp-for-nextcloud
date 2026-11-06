@@ -19,7 +19,7 @@ use OCA\Mcp\Tests\Unit\ArrayGroupBackend;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\InstalledApp;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
-use OCA\Mcp\Tools\Files\TextExtractor;
+use OCA\Mcp\Modules\Files\TextExtractor;
 use OCA\Mcp\Mcp\Resources\NoteResource;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;

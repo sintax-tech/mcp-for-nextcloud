@@ -659,7 +659,7 @@
 		{"path":"lib/Tools/Files/MimeLikeComparison.php","fqcn":"OCA\\Mcp\\Tools\\Files\\MimeLikeComparison","target":"OCA\\Mcp\\Modules\\Files\\MimeLikeComparison","owner":"Modules\\Files","ticket":"RE-21"},
 		{"path":"lib/Tools/Files/MoveBatchPlanner.php","fqcn":"OCA\\Mcp\\Tools\\Files\\MoveBatchPlanner","target":"OCA\\Mcp\\Modules\\Files\\MoveBatchPlanner","owner":"Modules\\Files","ticket":"RE-21"},
 		{"path":"lib/Tools/Files/MoveConflict.php","fqcn":"OCA\\Mcp\\Tools\\Files\\MoveConflict","target":"OCA\\Mcp\\Modules\\Files\\MoveConflict","owner":"Modules\\Files","ticket":"RE-21"},
-		{"path":"lib/Tools/Files/MovePlanner.php","fqcn":"OCA\\Mcp\\Tools\\Files\\MovePlanner","target":"OCA\\Mcp\\Modules\\Files\\MovePlanner","owner":"Modules\\Files","ticket":"RE-21","companions":["OCA\\Mcp\\Tools\\Files\\MovePlan"]},
+		{"path":"lib/Tools/Files/MovePlanner.php","fqcn":"OCA\\Mcp\\Tools\\Files\\MovePlanner","target":"OCA\\Mcp\\Modules\\Files\\MovePlanner","owner":"Modules\\Files","ticket":"RE-21","companions":["OCA\\Mcp\\Tools\\Files\\MovePlan","OCA\\Mcp\\Modules\\Files\\MovePlan"]},
 		{"path":"lib/Tools/Files/MoveReport.php","fqcn":"OCA\\Mcp\\Tools\\Files\\MoveReport","target":"OCA\\Mcp\\Modules\\Files\\MoveReport","owner":"Modules\\Files","ticket":"RE-21"},
 		{"path":"lib/Tools/Files/NameLikeComparison.php","fqcn":"OCA\\Mcp\\Tools\\Files\\NameLikeComparison","target":"OCA\\Mcp\\Modules\\Files\\NameLikeComparison","owner":"Modules\\Files","ticket":"RE-21"},
 		{"path":"lib/Tools/Files/NameSearchQuery.php","fqcn":"OCA\\Mcp\\Tools\\Files\\NameSearchQuery","target":"OCA\\Mcp\\Modules\\Files\\NameSearchQuery","owner":"Modules\\Files","ticket":"RE-21"},

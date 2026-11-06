@@ -16,24 +16,24 @@ use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Tests\Unit\Tools\Files\AbsentFileTypePolicy;
-use OCA\Mcp\Tools\Files\CheckoutService;
-use OCA\Mcp\Tools\Files\ContentCommit;
-use OCA\Mcp\Tools\Files\ContentWritePlan;
-use OCA\Mcp\Tools\Files\FileBackup;
-use OCA\Mcp\Tools\Files\Handler\EditFileHandler;
-use OCA\Mcp\Tools\Files\Handler\ReplaceFileHandler;
-use OCA\Mcp\Tools\Files\Handler\RestoreVersionHandler;
-use OCA\Mcp\Tools\Files\ImageTools;
-use OCA\Mcp\Tools\Files\BatchStore;
-use OCA\Mcp\Tools\Files\MovePlanner;
-use OCA\Mcp\Tools\Files\MoveReport;
-use OCA\Mcp\Tools\Files\Reorganization;
-use OCA\Mcp\Tools\Files\FilesMessages;
-use OCA\Mcp\Tools\Files\FilesModule;
-use OCA\Mcp\Tools\Files\OcrSupport;
-use OCA\Mcp\Tools\Files\TextExtractor;
-use OCA\Mcp\Tools\Files\VersionRestore;
-use OCA\Mcp\Tools\Files\VersionTools;
+use OCA\Mcp\Modules\Files\CheckoutService;
+use OCA\Mcp\Modules\Files\ContentCommit;
+use OCA\Mcp\Modules\Files\ContentWritePlan;
+use OCA\Mcp\Modules\Files\FileBackup;
+use OCA\Mcp\Modules\Files\Handler\EditFileHandler;
+use OCA\Mcp\Modules\Files\Handler\ReplaceFileHandler;
+use OCA\Mcp\Modules\Files\Handler\RestoreVersionHandler;
+use OCA\Mcp\Modules\Files\ImageTools;
+use OCA\Mcp\Modules\Files\BatchStore;
+use OCA\Mcp\Modules\Files\MovePlanner;
+use OCA\Mcp\Modules\Files\MoveReport;
+use OCA\Mcp\Modules\Files\Reorganization;
+use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\FilesModule;
+use OCA\Mcp\Modules\Files\OcrSupport;
+use OCA\Mcp\Modules\Files\TextExtractor;
+use OCA\Mcp\Modules\Files\VersionRestore;
+use OCA\Mcp\Modules\Files\VersionTools;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
@@ -343,18 +343,22 @@ final class FilesModuleTest extends TestCase {
 	}
 
 	public function testFilesCodeNeverDeletesMovesOrRenames(): void {
-		foreach (glob(__DIR__ . '/../../../lib/Tools/Files/*.php') ?: [] as $file) {
+		$files = glob(dirname((new \ReflectionClass(FilesModule::class))->getFileName()) . '/*.php') ?: [];
+		$this->assertNotEmpty($files);
+		foreach ($files as $file) {
 			$code = (string)file_get_contents($file);
 			// Deleting a node is out of the question for Files. BatchStore deletes rows, not files, and the
 			// one allowed Node::delete() lives in Reorganization's undoBatch() — NoFileDeletionTest pins that
 			// one down; no other file in the namespace may call delete() at all.
-			if (!in_array(basename($file), ['Reorganization.php', 'BatchStore.php'], true)) {
+			if (!in_array(basename($file), [basename('/lib/Modules/Files/Reorganization.php'), basename('/lib/Modules/Files/BatchStore.php')], true)) {
 				$this->assertDoesNotMatchRegularExpression('/->(delete|unlink)\s*\(/', $code, $file);
 			}
 			$this->assertDoesNotMatchRegularExpression('/->(rename)\s*\(/', $code, $file);
 		}
-		foreach (glob(__DIR__ . '/../../../lib/Tools/Files/*.php') ?: [] as $file) {
-			if (basename($file) === 'Reorganization.php') {
+		$files = glob(dirname((new \ReflectionClass(FilesModule::class))->getFileName()) . '/*.php') ?: [];
+		$this->assertNotEmpty($files);
+		foreach ($files as $file) {
+			if (basename($file) === basename('/lib/Modules/Files/Reorganization.php')) {
 				continue;
 			}
 			// Delegating to Reorganization is the point; any other receiver moving a node is not.

@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Tools\Files\FilesMessages;
-use OCA\Mcp\Tools\Files\ReorganizationLimits;
+use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\ReorganizationLimits;
 
 /**
  * files_copy and files_move: the two operations that put a node somewhere else.
@@ -124,12 +124,12 @@ final class FilesCopyMoveTest extends FilesToolsTestCase {
 	}
 
 	/** Everything the two operations share, built the way the module builds it. */
-	private function reorganization(): \OCA\Mcp\Tools\Files\Reorganization {
+	private function reorganization(): \OCA\Mcp\Modules\Files\Reorganization {
 		$access = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo(
 			\OCA\Mcp\Tests\Unit\Tools\FakeUsers::manager($this, \OCA\Mcp\Tests\Unit\Tools\FakeUsers::DEFAULTS),
 			$this->tree->shareManager(),
 		);
-		return new \OCA\Mcp\Tools\Files\Reorganization(
+		return new \OCA\Mcp\Modules\Files\Reorganization(
 			$access,
 			new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access),
 			$this->report(),

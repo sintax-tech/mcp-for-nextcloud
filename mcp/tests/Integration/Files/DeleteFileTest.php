@@ -10,7 +10,7 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Exclusion\ExclusionTestCase;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
 use OCA\Mcp\Tests\Integration\Support\McpClient;
-use OCA\Mcp\Tools\Files\Deletion\DeleteMessages;
+use OCA\Mcp\Modules\Files\Deletion\DeleteMessages;
 use OCP\IAppConfig;
 use OCP\IUserManager;
 use OCP\IUserSession;
@@ -194,7 +194,7 @@ final class DeleteFileTest extends ExclusionTestCase {
 	/** @return void A real Noop provider is refused even if the configured locking switch still says enabled. */
 	public function testActualNoopLockingProviderIsRefused(): void {
 		$file = $this->makeFile('home', 'noop.txt', 'keep');
-		$gate = Server::get(\OCA\Mcp\Tools\Files\Deletion\DeleteBackendGate::class);
+		$gate = Server::get(\OCA\Mcp\Modules\Files\Deletion\DeleteBackendGate::class);
 		$property = new \ReflectionProperty($gate, 'locking');
 		$before = $property->getValue($gate);
 		$property->setValue($gate, new \OC\Lock\NoopLockingProvider());

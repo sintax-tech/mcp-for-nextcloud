@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files\Sharing;
 
-use OCA\Mcp\Tools\Files\Sharing\ShareFormatter;
-use OCA\Mcp\Tools\Files\Sharing\ShareRecipientResolver;
+use OCA\Mcp\Modules\Files\Sharing\ShareFormatter;
+use OCA\Mcp\Modules\Files\Sharing\ShareRecipientResolver;
 use OCP\Constants;
 use OCP\IGroupManager;
 use OCP\IURLGenerator;

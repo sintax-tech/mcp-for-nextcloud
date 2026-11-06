@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Tests\Unit\Tools\BrokenTextSamples;
-use OCA\Mcp\Tools\Files\TextExtractor;
+use OCA\Mcp\Modules\Files\TextExtractor;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 
 /**

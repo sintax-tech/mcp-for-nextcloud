@@ -38,7 +38,7 @@ final class WritePlanContractTest extends TestCase {
 	private static function contractTests(): array {
 		return [
 			\OCA\Mcp\Modules\Polls\PollsModule::class => \OCA\Mcp\Tests\Unit\Tools\Polls\PollsCreatePlanRendererTest::class,
-			\OCA\Mcp\Tools\Files\FilesModule::class => FilesPlanRendererTest::class,
+			\OCA\Mcp\Modules\Files\FilesModule::class => FilesPlanRendererTest::class,
 			\OCA\Mcp\Modules\Notes\NotesModule::class => NotesPlanRendererTest::class,
 			\OCA\Mcp\Modules\Deck\DeckModule::class => DeckPlanRendererTest::class,
 			\OCA\Mcp\Modules\Talk\TalkModule::class => TalkPlanRendererTest::class,
@@ -99,7 +99,7 @@ final class WritePlanContractTest extends TestCase {
 
 	/** The new file tools are named here, so the test that proves their names inert cannot disappear unnoticed. */
 	public function testTheNewFileToolsHaveAHostileNameTest(): void {
-		$files = (new \ReflectionClass(\OCA\Mcp\Tools\Files\FilesModule::class))->newInstanceWithoutConstructor();
+		$files = (new \ReflectionClass(\OCA\Mcp\Modules\Files\FilesModule::class))->newInstanceWithoutConstructor();
 		$writes = array_column(array_filter($files->definitions(), static fn (array $d): bool => \OCA\Mcp\Mcp\Confirmation\WriteGate::isWrite($d)), 'name');
 		foreach (self::HOSTILE_NAME_TESTS as $tool => [$test, $method]) {
 			self::assertContains($tool, $writes, $tool . ' is no longer a write of the Files module');

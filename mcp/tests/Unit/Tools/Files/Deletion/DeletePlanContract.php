@@ -8,9 +8,9 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files\Deletion;
 
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
-use OCA\Mcp\Tools\Files\Deletion\DeleteEligibility;
-use OCA\Mcp\Tools\Files\Deletion\DeleteTrashVeto;
-use OCA\Mcp\Tools\Files\Handler\DeleteFileHandler;
+use OCA\Mcp\Modules\Files\Deletion\DeleteEligibility;
+use OCA\Mcp\Modules\Files\Deletion\DeleteTrashVeto;
+use OCA\Mcp\Modules\Files\Handler\DeleteFileHandler;
 use PHPUnit\Framework\TestCase;
 
 /** Adds the new handler's actual plan to the pre-existing readability fixture without altering old write fixtures. */

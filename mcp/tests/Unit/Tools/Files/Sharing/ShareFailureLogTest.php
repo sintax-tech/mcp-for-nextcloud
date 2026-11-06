@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files\Sharing;
 
-use OCA\Mcp\Tools\Files\Sharing\ShareFailureLog;
+use OCA\Mcp\Modules\Files\Sharing\ShareFailureLog;
 use OCP\Share\Exceptions\AlreadySharedException;
 use OCP\Share\Exceptions\GenericShareException;
 use OCP\Share\IShare;

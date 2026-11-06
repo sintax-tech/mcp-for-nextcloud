@@ -17,18 +17,20 @@ final class DeleteSourceBoundary {
 	 * @return void
 	 */
 	public static function verify(string $base): void {
+		$sources = FileDeletionGuard::sources($base);
+		Assert::assertNotEmpty($sources);
 		$found = [];
-		foreach (ApprovedDeleteSink::remaining(FileDeletionGuard::sources($base)) as $path) {
+		foreach (ApprovedDeleteSink::remaining($sources) as $path) {
 			$source = (string)file_get_contents($path);
 			if (!str_contains($source, '->delete()')) {
 				continue;
 			}
 			$found[] = basename($path);
-			Assert::assertSame('UndoBatchHandler.php', basename($path));
+			Assert::assertSame(basename('/lib/Modules/Files/Handler/UndoBatchHandler.php'), basename($path));
 			Assert::assertSame(1, substr_count($source, '->delete()'));
 			Assert::assertStringContainsString('$this->context->reorganization->byDepth($batch->dirs)', $source);
 			Assert::assertStringContainsString('!$folder instanceof Folder || !$folder->isDeletable() || $folder->getDirectoryListing() !== []', $source);
 		}
-		Assert::assertSame(['UndoBatchHandler.php'], $found);
+		Assert::assertSame([basename('/lib/Modules/Files/Handler/UndoBatchHandler.php')], $found);
 	}
 }

@@ -61,7 +61,22 @@ final class SourceTreesTest extends TestCase {
 			file_put_contents($this->dir . '/mcp/lib/Sub/A.php', "<?php\nclass Changed {}\n");
 			$files = SourceTrees::fromGit($this->dir, 'HEAD', 'mcp');
 			$this->assertSame(['lib/Sub/A.php' => "<?php\nclass A {}\n", 'tests/ATest.php' => "<?php\n"], $files);
+
 		});
+	}
+
+	/** Unsupported Git entries must fail before content reads, including where Git is unavailable. */
+	public function testUnsupportedEntriesCannotDisappearFromTheListing(): void {
+		$object = str_repeat('a', 40); $path = 'mcp/lib/Sub/A.php';
+		$this->assertSame(['lib/Sub/A.php' => $object], SourceTrees::blobsFromListing("100644 blob $object\t$path\0", 'mcp/'));
+		foreach ([['120000', 'blob', 'Unsupported Git file mode 120000'], ['160000', 'commit', 'Unsupported Git entry type commit (mode 160000)']] as [$mode, $type, $message]) {
+			try {
+				SourceTrees::blobsFromListing("$mode $type $object\t$path\0", 'mcp/');
+				$this->fail("Unsupported entry $mode must not disappear");
+			} catch (\RuntimeException $error) {
+				$this->assertSame("$message: $path", $error->getMessage());
+			}
+		}
 	}
 
 	/** Host Git routing/config is ignored for the test and restored for the caller afterwards. */

@@ -166,7 +166,7 @@ final class FilesSearchContentTest extends FilesToolsTestCase {
 			$db,
 		);
 
-		return new FilesModule(
+		return \OCA\Mcp\Tests\Unit\Tools\Files\FilesCatalogWiring::module(
 			$root,
 			$extractor,
 			$backup,

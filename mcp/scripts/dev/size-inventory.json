@@ -83,11 +83,6 @@
 			"expires": "RE-21c"
 		},
 		{
-			"fqcn": "OCA\\Mcp\\Tools\\Files\\FilesModule",
-			"ceiling": 755,
-			"expires": "RE-21b"
-		},
-		{
 			"fqcn": "OCA\\Mcp\\Tools\\Files\\FilesPlanRenderer",
 			"ceiling": 612,
 			"expires": "RE-21c"

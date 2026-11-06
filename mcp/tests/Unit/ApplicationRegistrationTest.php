@@ -203,13 +203,17 @@ final class ApplicationRegistrationTest extends TestCase {
 		$this->assertFalse((new \ReflectionMethod(\OCA\Mcp\Modules\Files\Sharing\ShareAccess::class, '__construct'))
 			->getParameters()[2]->allowsNull(), 'o guard de visibilidade é obrigatório');
 
-		$parameters = array_column(array_map(
-			static fn (\ReflectionParameter $p): array => ['name' => $p->getName(), 'type' => (string)$p->getType()],
-			(new \ReflectionMethod(\OCA\Mcp\Modules\Files\FilesModule::class, '__construct'))->getParameters(),
-		), 'type', 'name');
-		$this->assertSame('?' . \OCA\Mcp\Modules\Files\Sharing\ShareLister::class, $parameters['shareLister']);
-		$this->assertSame('?' . \OCA\Mcp\Modules\Files\Sharing\ShareWriter::class, $parameters['shareWriter']);
-		$this->assertSame('?' . \OCA\Mcp\Modules\Files\Sharing\ShareRemover::class, $parameters['shareRemover']);
+		foreach ([
+			\OCA\Mcp\Modules\Files\Sharing\ListSharesHandler::class => ['shareLister', \OCA\Mcp\Modules\Files\Sharing\ShareLister::class],
+			\OCA\Mcp\Modules\Files\Sharing\ShareFileHandler::class => ['shareWriter', \OCA\Mcp\Modules\Files\Sharing\ShareWriter::class],
+			\OCA\Mcp\Modules\Files\Sharing\UnshareFileHandler::class => ['shareRemover', \OCA\Mcp\Modules\Files\Sharing\ShareRemover::class],
+		] as $class => [$name, $type]) {
+			$parameters = array_column(array_map(
+				static fn (\ReflectionParameter $p): array => ['name' => $p->getName(), 'type' => (string)$p->getType()],
+				(new \ReflectionMethod($class, '__construct'))->getParameters(),
+			), 'type', 'name');
+			$this->assertSame('?' . $type, $parameters[$name], $class);
+		}
 	}
 
 	/**
@@ -237,7 +241,7 @@ final class ApplicationRegistrationTest extends TestCase {
 			$this->assertFalse($parameter->allowsNull(), 'FileCreation::$' . $parameter->getName() . ' é obrigatório');
 		}
 
-		foreach ([\OCA\Mcp\Modules\Files\FilesModule::class, \OCA\Mcp\Controller\CheckoutController::class] as $class) {
+		foreach ([\OCA\Mcp\Modules\Files\Creation\CreateFileAction::class, \OCA\Mcp\Modules\Files\Creation\UploadFileAction::class, \OCA\Mcp\Controller\CheckoutController::class] as $class) {
 			$parameters = array_column(array_map(
 				static fn (\ReflectionParameter $p): array => ['name' => $p->getName(), 'type' => (string)$p->getType()],
 				(new \ReflectionMethod($class, '__construct'))->getParameters(),

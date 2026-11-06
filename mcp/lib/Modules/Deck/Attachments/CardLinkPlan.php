@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Deck\Attachments;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
-use OCA\Mcp\Modules\Files\Sharing\SharePermission;
+use OCA\Mcp\Platform\FileAccess\SharePermission;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Confirmation\PlanText;
 use OCP\Share\IShare;

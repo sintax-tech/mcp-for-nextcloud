@@ -92,7 +92,7 @@ final class ResourceRegistryTest extends TestCase {
 			$this->userManager,
 			$this->rootFolder,
 			$this->visibilityGuard,
-			$this->extractor,
+			new \OCA\Mcp\Modules\Files\ExtractedFileText($this->extractor),
 			new NoteResourceReader($this->notesRepo, $this->visibilityGuard),
 			new ToolGuide([]),
 			$this->visibilityGuard,
@@ -270,7 +270,7 @@ final class ResourceRegistryTest extends TestCase {
 		$guests = $this->createMock(GuestRestrictions::class);
 		$guests->method('allowsApp')->willReturnCallback(static fn (string $uid, string $app): bool => $app !== 'notes');
 		$registry = new ResourceRegistry($this->toolRegistry, $this->policy, $this->appManager, $this->userManager, $this->rootFolder,
-			$this->visibilityGuard, $this->extractor, new NoteResourceReader($this->notesRepo, $this->visibilityGuard), new ToolGuide([]), $this->visibilityGuard, $guests);
+			$this->visibilityGuard, new \OCA\Mcp\Modules\Files\ExtractedFileText($this->extractor), new NoteResourceReader($this->notesRepo, $this->visibilityGuard), new ToolGuide([]), $this->visibilityGuard, $guests);
 		$this->assertSame(['nc://files/{path}'], array_column($registry->templates('alice')['resourceTemplates'], 'uriTemplate'));
 		$this->expectException(ToolFailure::class);
 		$this->expectExceptionMessage(CommonMessages::notFound());
@@ -323,7 +323,7 @@ final class ResourceRegistryTest extends TestCase {
 			$this->userManager,
 			$this->rootFolder,
 			$guard,
-			$this->extractor,
+			new \OCA\Mcp\Modules\Files\ExtractedFileText($this->extractor),
 			new NoteResourceReader($this->notesRepo, $guard),
 			new ToolGuide([]),
 			$guard,
@@ -477,7 +477,7 @@ final class ResourceRegistryTest extends TestCase {
 			$this->userManager,
 			$this->rootFolder,
 			$guard,
-			$this->extractor,
+			new \OCA\Mcp\Modules\Files\ExtractedFileText($this->extractor),
 			new NoteResourceReader($this->notesRepo, $guard),
 			new ToolGuide([]),
 			$guard,
@@ -534,7 +534,7 @@ final class ResourceRegistryTest extends TestCase {
 
 	private function registryWith(\OCA\Mcp\Access\ResourceScope\FilesAccessGuard $guard): ResourceRegistry {
 		return new ResourceRegistry($this->toolRegistry, $this->policy, $this->appManager, $this->userManager, $this->rootFolder,
-			$guard, $this->extractor, new NoteResourceReader($this->notesRepo, $guard), new ToolGuide([]), $guard);
+			$guard, new \OCA\Mcp\Modules\Files\ExtractedFileText($this->extractor), new NoteResourceReader($this->notesRepo, $guard), new ToolGuide([]), $guard);
 	}
 
 	private function assertNotFound(callable $read): void {
@@ -676,7 +676,7 @@ final class ResourceRegistryTest extends TestCase {
 		$files = new \OCA\Mcp\Access\ResourceScope\FilesAccessGuard($this->config->mock($this), $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class),
 			$this->tree->filesystemRoot(), null, null, null, $scope);
 		$registry = new ResourceRegistry($this->toolRegistry, $this->policy, $this->appManager, $this->userManager, $this->rootFolder,
-			$plain, $this->extractor, new NoteResourceReader($this->notesRepo, $plain), new ToolGuide([]), $files);
+			$plain, new \OCA\Mcp\Modules\Files\ExtractedFileText($this->extractor), new NoteResourceReader($this->notesRepo, $plain), new ToolGuide([]), $files);
 		$this->tree->addFile('/alice/files/Projects/plan.txt', 'inside', 'text/plain');
 
 		$this->assertSame('inside', $registry->read('nc://files/Projects/plan.txt', 'alice')['contents'][0]['text']);

@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Mcp\Resources;
 
+
 use OCA\Mcp\Access\Policy\GrantUnknown;
 use InvalidArgumentException;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
@@ -14,8 +15,7 @@ use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCA\Mcp\Modules\Files\FilesMessages;
-use OCA\Mcp\Modules\Files\FilesModule;
-use OCA\Mcp\Modules\Files\TextExtractor;
+use OCA\Mcp\Mcp\Resources\FileTextResource;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Guide\ToolGuide;
 use OCA\Mcp\Mcp\Tools\ToolPresentation;
@@ -45,7 +45,7 @@ class ResourceRegistry {
 	/** Maximum size for binary blobs returned via resources/read (512 KiB). */
 	public const MAX_BLOB_BYTES = 512 * 1024;
 	/** Maximum characters returned for extracted text before truncation. */
-	public const MAX_TEXT_CHARS = FilesModule::MAX_CHARS;
+	public const MAX_TEXT_CHARS = FileTextResource::MAX_CHARS;
 
 	public function __construct(
 		private ToolRegistry $tools,
@@ -54,7 +54,7 @@ class ResourceRegistry {
 		private IUserManager $userManager,
 		private IRootFolder $rootFolder,
 		private VisibilityGuard $visibilityGuard,
-		private TextExtractor $textExtractor,
+		private FileTextResource $textExtractor,
 		private NoteResource $notes,
 		private ToolGuide $guide,
 		private FilesAccessGuard $filesGuard,
@@ -229,13 +229,13 @@ class ResourceRegistry {
 			$mime = (string)$node->getMimetype();
 			$name = $node->getName();
 
-			if (TextExtractor::canExtract($name, $mime)) {
+			if ($this->textExtractor->canExtract($name, $mime)) {
 				$text = $this->textExtractor->readText($node, self::MAX_TEXT_CHARS);
 				return [
 					'contents' => [
 						[
 							'uri' => $uri,
-							'mimeType' => TextExtractor::textMime($name, $mime),
+							'mimeType' => $this->textExtractor->textMime($name, $mime),
 							'text' => $text,
 						],
 					],

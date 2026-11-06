@@ -49,7 +49,6 @@ final class FrozenPathSitesTest extends TestCase {
 			['builtin override', 'class Reorganization', 'function dirname($p) { return $p; } class Reorganization'],
 			['PathGuard alias', 'Platform\\FileAccess\\PathGuard;', 'Other\\PathGuard;'],
 		] as [$label, $find, $replace]) { yield 'RE-23 ' . $label => [$find, $replace, 'RE-23']; }
-
 	}
 
 	/**
@@ -272,7 +271,6 @@ final class FrozenPathSitesTest extends TestCase {
 		$problems = implode("\n", (new MoveEquivalence($before, $after, $map, $certificates))->check($ticket));
 		self::assertStringContainsString('path not proved', $problems);
 	}
-
 
 	/** @return iterable<string,array{string}> Existing mutation controls run with both reviewed transition shapes. */
 	public static function certifiedTickets(): iterable {

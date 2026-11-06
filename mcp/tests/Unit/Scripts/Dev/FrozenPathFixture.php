@@ -10,7 +10,10 @@ use OCA\Mcp\Scripts\Dev\{FqcnMap, SourceTreeIndex, FrozenProduction, FrozenPathO
 
 /** Small four-site trees keep gate mutations independent of the production manifest generator. */
 final class FrozenPathFixture {
-	/** @param string $ticket Reviewed transition. @return array{array<string,string>,array<string,string>,FqcnMap,array<string,string>,array} Old/new trees, map and real pairs. */
+	/**
+	 * @param string $ticket Reviewed transition.
+	 * @return array{array<string,string>,array<string,string>,FqcnMap,array<string,string>,array} Old/new trees, map and real pairs.
+	 */
 	public static function trees(string $ticket = 'RE-21'): array {
 		if ($ticket === 'RE-23') { return self::re23(); }
 		$prefix = implode('\\', ['OCA', 'Mcp']); $entries = []; $before = []; $after = []; $pairs = []; $specs = [];

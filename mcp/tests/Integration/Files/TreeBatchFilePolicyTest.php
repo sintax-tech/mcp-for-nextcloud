@@ -17,7 +17,10 @@ use OCA\Mcp\Modules\Files\Reorganization\CopyMoveContext;
 use OCA\Mcp\Modules\Files\Reorganization\FileTypePreflight;
 use OCA\Mcp\Modules\Files\Reorganization\ListedTreeCopy;
 use OCA\Mcp\Modules\Files\Integration\MoveReport;
-use OCA\Mcp\Modules\Files\Reorganization\Reorganization;
+use OCA\Mcp\Modules\Files\Reorganization\{
+	BatchDirectories, BatchVisibility, FolderBoundary, FolderCreator, FolderLevels,
+	MoveDestination, MoveGuards, MoveInspection, MoveLocks, MoveReceipt, TreeEntries, TreeMeasure, UndoConflicts,
+};
 use OCP\Files\{Folder, IRootFolder};
 use OCP\IAppConfig;
 use OCP\Server;
@@ -55,9 +58,37 @@ final class TreeBatchFilePolicyTest extends IntegrationTestCase {
 		$shares = Server::get(\OCP\Share\IManager::class);
 		$access = new NodeAccessInfo($users, $shares);
 		$report = new MoveReport(\OC::$server, $shares, Server::get(\OCP\App\IAppManager::class));
-		$this->context = (\OCA\Mcp\Tests\Unit\Tools\Files\FilesCatalogWiring::reorganization($access, new SharedWriteGuard($access), $report, $users,
-			fileTypes: Server::get(FileTypeGuard::class)))->copyMoveContext();
+		$this->context = $this->copyMoveContext($access, $report, $users, Server::get(FileTypeGuard::class));
 		Server::get(FileWritePolicy::class)->save('allowlist', ['txt'], false);
+	}
+
+	/**
+	 * Compose native rules locally without depending on the unit-test autoloader.
+	 *
+	 * @param NodeAccessInfo $access Native ownership descriptions.
+	 * @param MoveReport $report Native versions and shares reporting.
+	 * @param \OCP\IUserManager $users Native user lookup.
+	 * @param FileTypeGuard $fileTypes Real persisted final-name policy guard.
+	 * @return CopyMoveContext The same native collaborators and null optional services as before.
+	 */
+	private function copyMoveContext(NodeAccessInfo $access, MoveReport $report, \OCP\IUserManager $users, FileTypeGuard $fileTypes): CopyMoveContext {
+		$guard = new SharedWriteGuard($access);
+		$destination = new MoveDestination();
+		$moveLocks = new MoveLocks();
+		$boundary = new FolderBoundary();
+		$rules = new MoveGuards(
+			new MoveInspection($destination),
+			$moveLocks,
+			new BatchVisibility(),
+			new UndoConflicts($moveLocks, $destination),
+			new BatchDirectories(),
+			new FolderCreator(new FolderLevels(), $guard, $boundary),
+			$boundary,
+			new TreeMeasure(new TreeEntries($access)),
+			$destination,
+			new MoveReceipt($guard, $access, $report, $users),
+		);
+		return new CopyMoveContext($rules, $access, $report, null, null, $fileTypes);
 	}
 
 	/** Restore only app configuration; the official harness destroys fixture containers and volumes.

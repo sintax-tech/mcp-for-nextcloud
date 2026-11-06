@@ -246,10 +246,15 @@ abstract class FilesToolsTestCase extends TestCase {
 		$formatter = new \OCA\Mcp\Modules\Files\Sharing\ShareFormatter($recipients, $urls);
 		$this->shareLogger = $this->createMock(\Psr\Log\LoggerInterface::class);
 		$states = new \OCA\Mcp\Mcp\Confirmation\PlanState($this->config->mock($this));
+		$zones = new \OCA\Mcp\Platform\Time\UserTimezone($this->config->mock($this));
+		$rules = new \OCA\Mcp\Modules\Files\Sharing\ShareServerRules($manager, $accounts, $groups);
+		$expiry = new \OCA\Mcp\Modules\Files\Sharing\ShareExpiry($manager, $this->time);
 		return [
 			'shareLister' => new \OCA\Mcp\Modules\Files\Sharing\ShareLister($access, $formatter),
-			'shareWriter' => new \OCA\Mcp\Modules\Files\Sharing\ShareWriter($access, $recipients, $formatter, $manager, $accounts, $groups,
-				new \OCA\Mcp\Platform\Time\UserTimezone($this->config->mock($this)), $this->time, $this->shareLogger, $this->linkPassword(), $states),
+			'shareWriter' => new \OCA\Mcp\Modules\Files\Sharing\ShareWriter($access, $recipients, $formatter, $this->shareLogger, $this->linkPassword(), $states,
+				new \OCA\Mcp\Modules\Files\Sharing\RecipientShareChange($access, $rules, $expiry, $manager, $zones),
+				new \OCA\Mcp\Modules\Files\Sharing\LinkShareChange($access, $rules, $expiry, $manager, $zones),
+				new \OCA\Mcp\Modules\Files\Sharing\ShareCoreWrite($manager, $this->shareLogger)),
 			'shareRemover' => new \OCA\Mcp\Modules\Files\Sharing\ShareRemover($access, $recipients, $manager, $this->shareLogger, $states),
 		];
 	}

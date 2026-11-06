@@ -50,6 +50,8 @@ Native app PHP namespaces belong only under the owning module's `Integration/`. 
 
 ## Grants and presentation
 
+Declare the module's access levels in `mcp/src/admin/access/levels/<app>.js` ([level definitions](../../mcp/src/admin/access/levels/)). The [`src/admin.manifest`](../../mcp/src/admin.manifest) includes them in the existing `admin` bundle; do not add a standalone script or a new `addScript` call. Keep the permission matrix layout and its None/Read/Edit/Full presentation unchanged.
+
 The registry checks capabilities, grants, Guests restrictions and optional app enablement. If `grantAnyOf` allows entry under more than one operation, the work class must check the alternative actually requested before both planning and writing. An unavailable policy or optional service must not silently allow access.
 
 Put descriptions, parameter text, workflow notes and plan rendering in the module's `Presentation/` classes. The module delegates guide notes and optional rendering. Source text is English; user-facing additions need the repository's supported translations in the same release. Use shared errors and response envelopes rather than introducing inconsistent refusal behavior.

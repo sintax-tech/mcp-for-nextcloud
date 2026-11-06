@@ -11,7 +11,7 @@ use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-/** Discriminates a final description from the previous RC in every store locale. */
+/** Keeps public store descriptions distinct from technical prerelease identifiers in every locale. */
 final class FinalStoreLocaleContractTest extends TestCase {
 	/**
 	 * Provide all supported store locales.
@@ -25,18 +25,18 @@ final class FinalStoreLocaleContractTest extends TestCase {
 	}
 
 	/**
-	 * Accept the final version in each locale.
+	 * Accept the public version series in each locale; retain the historical test identity.
 	 *
 	 * @param string $locale Store locale.
 	 * @return void
 	 */
 	#[DataProvider('locales')]
 	public function testFinalVersionIsAccepted(string $locale): void {
-		FinalStoreLocaleContract::descriptions([$locale => '1.2.5']);
+		FinalStoreLocaleContract::descriptions([$locale => FinalStoreLocaleContract::displayVersion()]);
 	}
 
 	/**
-	 * Refuse the old RC even though it contains the final version as a substring.
+	 * Refuse a technical RC identifier even though it contains the public version series as a substring.
 	 *
 	 * @param string $locale Store locale.
 	 * @return void
@@ -44,6 +44,6 @@ final class FinalStoreLocaleContractTest extends TestCase {
 	#[DataProvider('locales')]
 	public function testReleaseCandidateIsRefused(string $locale): void {
 		$this->expectException(AssertionFailedError::class);
-		FinalStoreLocaleContract::descriptions([$locale => '1.2.5-rc.1']);
+		FinalStoreLocaleContract::descriptions([$locale => FinalStoreLocaleContract::displayVersion() . '-rc.1']);
 	}
 }

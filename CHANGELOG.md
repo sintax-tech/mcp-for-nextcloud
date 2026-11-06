@@ -2,13 +2,15 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
-## Unreleased — 1.3.0
+## 1.3.0-rc.1 — 2026-11-06
 
-**Database migration on update:** 1.3.0 includes `Version001205Date20261106000000` for CIMD host trust and credential generations ([#28](https://github.com/sintax-tech/mcp-for-nextcloud/issues/28)), the first database migration since 1.1.0. Updating runs this migration through Nextcloud; the effective CIMD host allowlist is preserved.
+**Database migration on update:** this version includes `Version001205Date20261106000000` for CIMD host trust and credential generations ([#28](https://github.com/sintax-tech/mcp-for-nextcloud/issues/28)), the first database migration since 1.1.0. Nextcloud runs the migration and the `CimdHostsSeedStep` post-migration repair step. The effective CIMD host allowlist is preserved. Credentials issued to hosts that remain allowed survive with `client_gen = 1`. Credentials from a host that was never allowed no longer authenticate or refresh; an administrator must allow the intended host and the client must sign in again.
+
+This release candidate contains the capability-module restructuring and the changes below. It does not claim publication or validation on a user instance.
 
 ### Fixed
 
-- **Reading the current file version:** `files_version_read` now reads the current version listed by `files_versions` when the backend has no separate stored version file, instead of failing with a missing-file error. Other missing historical versions remain refused. This fixes a defect already present in 1.2.5.
+- **Reading the current file version:** `files_version_read` now reads the current version listed by `files_versions_list` when the backend has no separate stored version file, instead of failing with a missing-file error. Other missing historical versions remain refused. This fixes a defect already present in 1.2.5.
 
 - **OAuth host withdrawal (#28):** removing an allowed CIMD host revokes its pending consents, authorization codes, access tokens and refresh tokens. Re-adding the host requires a new sign-in and never restores old credentials. Default hosts, client metadata parsing and registration methods are unchanged. This does not establish Zapia interoperability.
 

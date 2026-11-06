@@ -16,6 +16,9 @@ use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Modules\Files\FileBackup;
+use OCA\Mcp\Modules\Files\FilesCallContext;
+use OCA\Mcp\Modules\Files\Reading\ReadableFile;
+use OCA\Mcp\Modules\Files\Reading\ReadVersionHandler;
 use OCA\Mcp\Modules\Files\TextExtractor;
 use OCA\Mcp\Modules\Files\Presentation\VersionMessages;
 use OCA\Mcp\Modules\Files\VersionRestore;
@@ -48,6 +51,7 @@ final class VersionToolsTest extends TestCase {
 	private IUserManager $users;
 	private IUser $user;
 	private FileBackup $backup;
+	private ReadVersionHandler $reader;
 
 	protected function setUp(): void {
 		require_once __DIR__ . '/Stubs/versions_api.php';
@@ -72,9 +76,11 @@ final class VersionToolsTest extends TestCase {
 		$config = (new \OCA\Mcp\Tests\Unit\InMemoryConfig())->mock($this);
 		$this->backup = new FileBackup($this->apps, $this->users, $time, $config);
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
-		$this->tools = new VersionTools($this->apps, $this->users, new TextExtractor($temp), $this->backup,
-			$access, $container, new \OCA\Mcp\Modules\Files\Images\OcrSupport($this->apps),
+		$this->tools = new VersionTools($this->apps, $this->users, $this->backup,
+			$access, $container,
 			versionRestore: $this->wiredRestore($access, $container, null, null));
+		$this->reader = new ReadVersionHandler(new FilesCallContext($this->createMock(\OCP\Files\IRootFolder::class)), $this->tools, new ReadableFile(),
+			new TextExtractor($temp), new \OCA\Mcp\Modules\Files\Images\OcrSupport($this->apps));
 	}
 
 	private function file(): \OCP\Files\File {
@@ -100,8 +106,8 @@ final class VersionToolsTest extends TestCase {
 	public function testVersionsRequireTheAppAndTheUser(): void {
 		$apps = $this->createMock(IAppManager::class);
 		$apps->method('isEnabledForUser')->willReturn(false);
-		$tools = new VersionTools($apps, $this->users, $this->createMock(TextExtractor::class), $this->backup,
-			new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager()), $this->createMock(ContainerInterface::class), new \OCA\Mcp\Modules\Files\Images\OcrSupport($apps));
+		$tools = new VersionTools($apps, $this->users, $this->backup,
+			new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager()), $this->createMock(ContainerInterface::class));
 		$this->expectException(ToolFailure::class);
 		$this->expectExceptionMessage(VersionMessages::versionsOff());
 		$tools->list($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', 50, 'alice');
@@ -115,8 +121,8 @@ final class VersionToolsTest extends TestCase {
 			$seen[] = $user;
 			return true;
 		});
-		$tools = new VersionTools($apps, $this->users, $this->createMock(TextExtractor::class), $this->backup,
-			new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager()), $this->createMock(ContainerInterface::class), new \OCA\Mcp\Modules\Files\Images\OcrSupport($apps));
+		$tools = new VersionTools($apps, $this->users, $this->backup,
+			new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager()), $this->createMock(ContainerInterface::class));
 		try {
 			$tools->list($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', 50, 'alice');
 		} catch (ToolFailure) {
@@ -128,7 +134,7 @@ final class VersionToolsTest extends TestCase {
 
 	public function testReadExtractsTheStoredVersionText(): void {
 		$this->manager->versions[0]->withContent('versão antiga');
-		$out = $this->tools->read($this->file(), '/Documentos/ata.md', '1759200000', 'alice');
+		$out = $this->reader->read($this->file(), '/Documentos/ata.md', '1759200000', 'alice');
 		$this->assertSame('versão antiga', $out['text']);
 		$this->assertSame('1759200000', $out['version']);
 		$this->assertFalse($out['truncated']);
@@ -140,7 +146,7 @@ final class VersionToolsTest extends TestCase {
 		$this->manager->versions[0]->withContent("\xFF\xD8");
 		$this->manager->versions[0] = new FakeVersion(1759200000, 1759200000, 2, 'image/jpeg', 'foto.jpg');
 		$this->manager->versions[0]->withContent("\xFF\xD8");
-		$out = $this->tools->read($this->file(), '/Documentos/foto.jpg', '1759200000', 'alice');
+		$out = $this->reader->read($this->file(), '/Documentos/foto.jpg', '1759200000', 'alice');
 		$this->assertFalse($out['text_layer']);
 		$this->assertFalse($out['ocr_active']);
 		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\ImageMessages::noTextOcrInactive(), $out['notice']);
@@ -149,7 +155,7 @@ final class VersionToolsTest extends TestCase {
 
 	public function testReadRefusesAnUnknownVersion(): void {
 		try {
-			$this->tools->read($this->file(), '/Documentos/ata.md', 'nope', 'alice');
+			$this->reader->read($this->file(), '/Documentos/ata.md', 'nope', 'alice');
 			$this->fail('an unknown revision must not resolve');
 		} catch (ToolFailure $e) {
 			$this->assertSame(VersionMessages::versionMissing('nope'), $e->getMessage());
@@ -159,7 +165,7 @@ final class VersionToolsTest extends TestCase {
 	public function testReadReportsAVersionThatCannotBeOpened(): void {
 		$this->expectException(ToolFailure::class);
 		$this->expectExceptionMessage(VersionMessages::versionUnreadable());
-		$this->tools->read($this->file(), '/Documentos/ata.md', '1759200000', 'alice');
+		$this->reader->read($this->file(), '/Documentos/ata.md', '1759200000', 'alice');
 	}
 
 	public function testReadOfTheListedCurrentVersionReturnsTheFileAndOtherMissingVersionsStayMissing(): void {
@@ -167,11 +173,11 @@ final class VersionToolsTest extends TestCase {
 		$this->manager->versions[0] = new FakeVersion($current, (int)$current, 9, 'text/markdown', 'ata.md');
 		$this->manager->versions[0]->noStoredFile = true;
 		$this->manager->versions[1]->noStoredFile = true;
-		$out = $this->tools->read($this->file(), '/Documentos/ata.md', $current, 'alice');
+		$out = $this->reader->read($this->file(), '/Documentos/ata.md', $current, 'alice');
 		$this->assertSame("# Ata\nolá", $out['text']);
 		$this->assertSame($current, $out['version']);
 		$this->expectException(\OCP\Files\NotFoundException::class);
-		$this->tools->read($this->file(), '/Documentos/ata.md', '1759100000', 'alice');
+		$this->reader->read($this->file(), '/Documentos/ata.md', '1759100000', 'alice');
 	}
 
 	public function testRestoreBacksUpThenRollsBack(): void {
@@ -211,8 +217,8 @@ final class VersionToolsTest extends TestCase {
 		$container->method('get')->willReturn($this->manager);
 		$locks = $locked ? (new FakeLockManager())->service($this) : null;
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
-		$tools = new VersionTools($this->apps, $this->users, $this->createMock(TextExtractor::class), $this->backup,
-			$access, $container, new \OCA\Mcp\Modules\Files\Images\OcrSupport($this->apps), $locks, $guard,
+		$tools = new VersionTools($this->apps, $this->users, $this->backup,
+			$access, $container, $locks, $guard,
 			$this->wiredRestore($access, $container, $locks, $guard));
 		try {
 			$tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
@@ -235,8 +241,8 @@ final class VersionToolsTest extends TestCase {
 		$this->apps->method('isEnabledForUser')->willReturn(false);
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
 		$container = $this->createMock(ContainerInterface::class);
-		$tools = new VersionTools($this->apps, $this->users, $this->createMock(TextExtractor::class), $this->backup,
-			$access, $container, new \OCA\Mcp\Modules\Files\Images\OcrSupport($this->apps),
+		$tools = new VersionTools($this->apps, $this->users, $this->backup,
+			$access, $container,
 			versionRestore: $this->wiredRestore($access, $container, null, null, $this->apps));
 		try {
 			$tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
@@ -267,9 +273,9 @@ final class VersionToolsTest extends TestCase {
 		$container->method('get')->willReturnCallback(fn (string $id) => $id === self::MANAGER ? $this->manager : null);
 		$service = $locks->service($this);
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
-		return new VersionTools($this->apps, $this->users, $this->createMock(TextExtractor::class),
+		return new VersionTools($this->apps, $this->users,
 			new FileBackup($this->apps, $this->users, $time, $config, null, $service),
-			$access, $container, new \OCA\Mcp\Modules\Files\Images\OcrSupport($this->apps), $service,
+			$access, $container, $service,
 			versionRestore: $this->wiredRestore($access, $container, $service, null));
 	}
 

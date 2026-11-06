@@ -35,7 +35,7 @@ final class FilesPlanRendererTest extends FilesToolsTestCase {
 		$container = $this->createMock(\Psr\Container\ContainerInterface::class);
 		$container->method('get')->willReturnCallback(fn (string $id) => $id === 'OCA\Files_Versions\Versions\IVersionManager' ? $manager : null);
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
-		$versions = new VersionTools($this->apps, $this->users, new TextExtractor($this->temp), $backup, $access, $container, new \OCA\Mcp\Modules\Files\Images\OcrSupport($this->apps));
+		$versions = new VersionTools($this->apps, $this->users, $backup, $access, $container);
 		$this->module = FilesCatalogWiring::replacing($this->module, [VersionTools::class => $versions]);
 	}
 

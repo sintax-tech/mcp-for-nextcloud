@@ -19,7 +19,8 @@ use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 /**
- * The three version tools, built on the files_versions app.
+ * The version tools, built on the files_versions app. files_version_read is answered by
+ * {@see Reading\ReadVersionHandler}, which opens the version through {@see self::open()}.
  *
  * Nextcloud 33 exposes no OCP for versions (`lib/public/Files/` has no `Versions/`), so the internal
  * `OCA\Files_Versions\Versions\IVersionManager` is resolved through the container — injecting it in a
@@ -32,19 +33,15 @@ final class VersionTools {
 	public const APP = 'files_versions';
 	/** Versions returned when the caller asks for no limit. */
 	public const DEFAULT_LIMIT = 50;
-	/** Characters returned by files_version_read before the text is truncated. */
-	public const MAX_CHARS = 100000;
 	/** Class resolved lazily; a string so this file autoloads with files_versions absent. */
 	private const MANAGER = 'OCA\Files_Versions\Versions\IVersionManager';
 
 	public function __construct(
 		private IAppManager $appManager,
 		private IUserManager $userManager,
-		private TextExtractor $extractor,
 		private FileBackup $backup,
 		private NodeAccessInfo $access,
 		private ContainerInterface $container,
-		private Images\OcrSupport $ocr,
 		private ?LockAwareWrite $locks = null,
 		private ?\OCA\Mcp\Access\ResourceScope\FilesAccessGuard $visibilityGuard = null,
 		private ?VersionRestore $versionRestore = null,
@@ -81,45 +78,18 @@ final class VersionTools {
 	}
 
 	/**
+	 * Opens one listed version for reading, after the versioning check and the lookup of the listed version.
+	 *
 	 * @param File $file file the version belongs to
-	 * @param string $path normalized user-relative path of $file
 	 * @param string $revision version identifier as returned by list()
 	 * @param string $viewerUid authenticated user
-	 * @return array{path:string, version:string, size:int, mime:string, text:string, truncated:bool, text_layer?:bool, ocr_active?:bool, notice?:string}
-	 * @throws ToolFailure when versioning is off, the version does not exist or cannot be read
+	 * @return array{0: object, 1: resource|false} the IVersion and its stream, which the caller closes
+	 * @throws ToolFailure when versioning is off or no version carries that identifier
+	 * @throws \OCP\Files\NotFoundException when files_versions has no stored file for a version other than the current one
 	 */
-	public function read(File $file, string $path, string $revision, string $viewerUid): array {
-		$user = $this->requireVersioning($viewerUid);
-		$version = $this->find($user, $file, $revision);
-		$handle = VersionStream::open($this->manager(), $version, $file);
-		if (!is_resource($handle)) {
-			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionUnreadable());
-		}
-		try {
-			$bytes = (string)stream_get_contents($handle, TextExtractor::MAX_BYTES + 1);
-		} finally {
-			fclose($handle);
-		}
-		if (strlen($bytes) > TextExtractor::MAX_BYTES) {
-			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReadingMessages::readTooLarge(TextExtractor::MAX_BYTES));
-		}
-		$mime = $version->getMimeType();
-		$name = $version->getSourceFileName() ?: $path;
-		$scannable = Images\OcrSupport::canLackText($name, $mime);
-		$text = $scannable && str_starts_with(strtolower($mime), 'image/') ? '' : $this->extractor->extractBytes($bytes, $name, $mime);
-		if ($scannable && trim($text) === '') {
-			$notice = $this->ocr->noTextNotice();
-			return ['path' => $path, 'version' => $revision, 'size' => strlen($bytes), 'mime' => $mime, 'text' => $notice,
-				'truncated' => false, 'text_layer' => false, 'ocr_active' => $this->ocr->isActive(), 'notice' => $notice];
-		}
-		return [
-			'path' => $path,
-			'version' => $revision,
-			'size' => strlen($bytes),
-			'mime' => $mime,
-			'text' => mb_strlen($text) > self::MAX_CHARS ? mb_substr($text, 0, self::MAX_CHARS) . "\n\n" . \OCA\Mcp\Modules\Files\Presentation\ReadingMessages::textTruncated() : $text,
-			'truncated' => mb_strlen($text) > self::MAX_CHARS,
-		];
+	public function open(File $file, string $revision, string $viewerUid): array {
+		$version = $this->find($this->requireVersioning($viewerUid), $file, $revision);
+		return [$version, VersionStream::open($this->manager(), $version, $file)];
 	}
 
 	/**

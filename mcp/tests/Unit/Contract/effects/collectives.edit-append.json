@@ -30,6 +30,7 @@
                             "page": {
                                 "id": 104,
                                 "title": "Guide",
+                                "slug": "guide",
                                 "parent_id": 103,
                                 "emoji": null,
                                 "last_user": "Alice",
@@ -171,6 +172,7 @@
                             "page": {
                                 "id": 104,
                                 "title": "Guide",
+                                "slug": "guide",
                                 "parent_id": 103,
                                 "emoji": null,
                                 "last_user": "Alice",
@@ -259,6 +261,7 @@
                             "page": {
                                 "id": 104,
                                 "title": "Guide",
+                                "slug": "guide",
                                 "parent_id": 103,
                                 "emoji": null,
                                 "last_user": "Alice",
@@ -344,6 +347,7 @@
                             "page": {
                                 "id": 104,
                                 "title": "Guide",
+                                "slug": "guide",
                                 "parent_id": 103,
                                 "emoji": null,
                                 "last_user": "Alice",

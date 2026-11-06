@@ -1817,6 +1817,7 @@ OC.L10N.register(
     "Edit collective page" : "Seite eines Kollektivs bearbeiten",
     "Create page **%s** under *%s*." : "Seite **%s** unter *%s* erstellen.",
     "Change page **%s** (%s): %d bytes now, %d after; the diff is in the plan." : "Seite **%s** ändern (%s): jetzt %d Bytes, danach %d; der Diff steht im Plan.",
-    "Move page **%s** under *%s* as **%s**." : "Seite **%s** unter *%s* als **%s** verschieben."
+    "Move page **%s** under *%s* as **%s**." : "Seite **%s** unter *%s* als **%s** verschieben.",
+    "Move collective page" : "Seite eines Kollektivs verschieben"
     },
 "nplurals=2; plural=(n != 1);");

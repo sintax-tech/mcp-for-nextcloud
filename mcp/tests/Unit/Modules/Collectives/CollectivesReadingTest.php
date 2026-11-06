@@ -59,7 +59,7 @@ final class CollectivesReadingTest extends TestCase {
 		$answer = $this->call('collectives_pages', ['collective_id' => 7]);
 		$this->assertSame(['Landing page', 'Team', 'Onboarding', 'Guide'], array_column($answer['pages'], 'title'));
 		$this->assertSame(0, $answer['pages'][0]['parent_id']);
-		$this->assertSame(['id', 'title', 'parent_id', 'emoji', 'last_user', 'timestamp', 'size', 'subpage_order'], array_keys($answer['pages'][0]));
+		$this->assertSame(['id', 'title', 'slug', 'parent_id', 'emoji', 'last_user', 'timestamp', 'size', 'subpage_order'], array_keys($answer['pages'][0]));
 		$this->assertStringNotContainsString('secret', json_encode($answer));
 		$this->assertStringNotContainsString('Template', json_encode($answer));
 		$this->assertSame(['getPagesFromFolder'], CollectivesScene::$calls, 'the tree is read without forcing an index page');
@@ -93,6 +93,17 @@ final class CollectivesReadingTest extends TestCase {
 		$this->rig->hidden = [];
 		$this->rig->outOfScope = [$guide];
 		$this->assertSame($notFound, $this->refusal('collectives_read', ['collective_id' => 7, 'page_id' => $guide]));
+	}
+
+	/** @return void only a .md outside every dotted folder is a page, whatever the tree says */
+	public function testOnlyMarkdownOutsideDottedFoldersIsAPage(): void {
+		$page = static fn (string $path, string $name): array => ['file_path' => $path, 'file_name' => $name];
+		$this->assertSame('Readme.md', \OCA\Mcp\Modules\Collectives\Integration\PageFiles::relativePath($page('', 'Readme.md')));
+		$this->assertSame('Team/Guide.md', \OCA\Mcp\Modules\Collectives\Integration\PageFiles::relativePath($page('Team', 'Guide.md')));
+		foreach ([$page('.templates', 'Template.md'), $page('Team/.attachments.12', 'Note.md'), $page('', '.hidden.md'),
+			$page('Team/../..', 'Guide.md'), $page('Team', 'Guide.txt')] as $outside) {
+			$this->assertSame('', \OCA\Mcp\Modules\Collectives\Integration\PageFiles::relativePath($outside), json_encode($outside));
+		}
 	}
 
 	/** @return void a page over the limit is refused, never truncated */

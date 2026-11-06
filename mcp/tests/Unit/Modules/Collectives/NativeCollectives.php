@@ -42,11 +42,16 @@ namespace OCA\Collectives\Service {
 		}
 	}
 
-	/** Double of PageService. */
+	/** Double of PageService; like upstream it keeps the collective it read for the rest of the request (v4.7.1 :77-84). */
 	class PageService {
+		private ?Collective $collective = null;
+
 		/** @param int $collectiveId collective @param string $userId actor */
 		public function verifyEditPermissions(int $collectiveId, string $userId): void {
-			if (!CollectivesScene::collective($collectiveId, $userId)->canEdit()) {
+			if ($this->collective === null || $this->collective->jsonSerialize()['id'] !== $collectiveId) {
+				$this->collective = CollectivesScene::collective($collectiveId, $userId);
+			}
+			if (!$this->collective->canEdit()) {
 				throw new NotPermittedException('Not allowed to edit collective');
 			}
 		}

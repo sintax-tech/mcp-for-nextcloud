@@ -11,6 +11,7 @@ use OCA\Mcp\Modules\Collectives\Tools\CreatePage;
 use OCA\Mcp\Modules\Collectives\Tools\EditPage;
 use OCA\Mcp\Modules\Collectives\Tools\ListCollectives;
 use OCA\Mcp\Modules\Collectives\Tools\ListPages;
+use OCA\Mcp\Modules\Collectives\Tools\MovePage;
 use OCA\Mcp\Modules\Collectives\Tools\ReadPage;
 use OCA\Mcp\Modules\Collectives\Tools\SearchPages;
 
@@ -24,6 +25,7 @@ final class CollectivesToolCatalog {
 		SearchPages::class,
 		CreatePage::class,
 		EditPage::class,
+		MovePage::class,
 	];
 
 	/** Constant holder only; never instantiated. */

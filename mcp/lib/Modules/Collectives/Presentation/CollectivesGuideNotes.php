@@ -31,6 +31,9 @@ final class CollectivesGuideNotes {
 				. 'with a Readme.md (its id stays). Add the content with collectives_edit.',
 			'For a small change use collectives_edit with append or old/new; content rewrites the whole page. Confirm with the '
 				. 'etag and plan_state of the plan. Someone editing the page in the browser at the same time may write over the change.',
+			'collectives_move keeps the current parent when parent_id is omitted; to move a page to the top level, give the id of '
+				. 'the landing page. index only places the page under a new parent: reordering under the same parent is not supported. '
+				. 'The landing page cannot move, nor can a page move under itself or into another collective.',
 		];
 	}
 }

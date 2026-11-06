@@ -30,6 +30,15 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Modules/Calendar/Selftest/CalendarSelftestMessages.php#detail:literal-move:1' => 'label: report message lookup key',
 			'Mcp/Tools/ToolPresentation.php#<global>:literal-move:1' => 'label: destructive-operation presentation catalog',
 			'Modules/Collectives/Integration/CollectivesSurface.php#<global>:literal-move:1' => 'label: proven native PageService::move shape',
+			'Access/Grants/GrantCatalog.php#<global>:literal-move:6' => 'label: collectives operation catalog entry',
+			'Modules/Collectives/Integration/CollectivesGateway.php#move:literal-move:1' => 'label: collectives.move grant the admission re-reads',
+			'Modules/Collectives/Integration/CollectivesGateway.php#move:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Modules\\Collectives\\CollectivesMovingTest::testRefusesWhatCollectivesWouldBreakOrNotDo',
+			'Modules/Collectives/Moving/MovePageHandler.php#handle:literal-move:1' => 'label: collectives.move grant the edit permission re-reads',
+			'Modules/Collectives/Moving/MovePageHandler.php#handle:literal-move:2' => 'label: collectives.move grant of the read-back',
+			'Modules/Collectives/Moving/MovePageHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Modules\\Collectives\\CollectivesMovingTest::testRevocationAndChangedTreeMoveNothing',
+			'Modules/Collectives/Moving/MovePagePlan.php#build:literal-move:1' => 'label: collectives.move grant of the plan permission check',
+			'Modules/Collectives/Moving/MovePagePlan.php#build:literal-move:2' => 'label: collectives.move grant of the plan tree read',
+			'Modules/Collectives/Tools/MovePage.php#definition:literal-move:1' => 'label: collectives_move operation metadata',
 			'Modules/Collectives/Editing/EditPageHandler.php#handle:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Modules\\Collectives\\CollectivesFileTypeBoundaryTest::testFilesKeepsTheAllowlistWhileCollectivesWritesMarkdown',
 			'Modules/Notes/Tools/MoveNote.php#definition:literal-move:1' => 'label: notes_move operation metadata',
 			'Modules/Files/Tools/MoveFile.php#definition:literal-move:1' => 'label: files_move operation metadata',
@@ -110,8 +119,8 @@ final class FileWriteGuardCoverageTest extends TestCase {
 	public function testLiteralLabelsKeepTheOriginalCallInventory(): void {
 		$calls = FileWriteSinkInventory::calls(FileWriteSinkInventory::sources(__DIR__ . '/../../../lib'));
 		$literals = array_values(array_filter($calls, static fn (string $call): bool => str_contains($call, ':literal-')));
-		self::assertCount(22, $literals);
-		self::assertCount(47, array_diff($calls, $literals));
+		self::assertCount(29, $literals);
+		self::assertCount(49, array_diff($calls, $literals));
 		foreach ($calls as $call) {
 			self::assertDoesNotMatchRegularExpression('/:(?:literal-)?(?:writestream|fputs):/', $call);
 		}

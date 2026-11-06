@@ -30,6 +30,7 @@
                             "parent": {
                                 "id": 104,
                                 "title": "Guide",
+                                "slug": "guide",
                                 "parent_id": 103,
                                 "emoji": null,
                                 "last_user": "Alice",
@@ -168,6 +169,7 @@
                             "parent": {
                                 "id": 104,
                                 "title": "Guide",
+                                "slug": "guide",
                                 "parent_id": 103,
                                 "emoji": null,
                                 "last_user": "Alice",
@@ -252,6 +254,7 @@
                             "parent": {
                                 "id": 104,
                                 "title": "Guide",
+                                "slug": "guide",
                                 "parent_id": 103,
                                 "emoji": null,
                                 "last_user": "Alice",
@@ -342,6 +345,7 @@
                             "parent": {
                                 "id": 104,
                                 "title": "Guide",
+                                "slug": "guide",
                                 "parent_id": 103,
                                 "emoji": null,
                                 "last_user": "Alice",
@@ -422,7 +426,7 @@
                         "content": [
                             {
                                 "type": "text",
-                                "text": "{\n    \"status\": \"applied\",\n    \"nativeCallAttempted\": true,\n    \"requested\": {\n        \"parent_id\": 104,\n        \"in_parent_order\": true\n    },\n    \"observed\": {\n        \"parent_id\": 104,\n        \"in_parent_order\": true\n    },\n    \"message\": \"Change observed by reading the collective again.\",\n    \"page\": {\n        \"id\": 112,\n        \"title\": \"Setup\",\n        \"parent_id\": 104,\n        \"emoji\": null,\n        \"last_user\": \"Alice\",\n        \"timestamp\": <timestamp#1>,\n        \"size\": 0,\n        \"subpage_order\": []\n    }\n}"
+                                "text": "{\n    \"status\": \"applied\",\n    \"nativeCallAttempted\": true,\n    \"requested\": {\n        \"parent_id\": 104,\n        \"in_parent_order\": true\n    },\n    \"observed\": {\n        \"parent_id\": 104,\n        \"in_parent_order\": true\n    },\n    \"message\": \"Change observed by reading the collective again.\",\n    \"page\": {\n        \"id\": 112,\n        \"title\": \"Setup\",\n        \"slug\": \"setup\",\n        \"parent_id\": 104,\n        \"emoji\": null,\n        \"last_user\": \"Alice\",\n        \"timestamp\": <timestamp#1>,\n        \"size\": 0,\n        \"subpage_order\": []\n    }\n}"
                             }
                         ]
                     }

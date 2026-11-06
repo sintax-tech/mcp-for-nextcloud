@@ -5847,6 +5847,65 @@
                             "idempotentHint": false,
                             "openWorldHint": false
                         }
+                    },
+                    {
+                        "name": "collectives_move",
+                        "title": "Move collective page",
+                        "description": "Moves a page under another parent page of the same collective, renames it, or both.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "collective_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the collective, as collectives_list returns it."
+                                },
+                                "page_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the page, as collectives_pages returns it."
+                                },
+                                "parent_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the new parent page of the same collective; omit to keep the current parent. To move to the top level, give the id of the landing page."
+                                },
+                                "title": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 200,
+                                    "description": "New title; omit to keep the current one."
+                                },
+                                "index": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10000,
+                                    "description": "Position among the subpages of the new parent (0 = first, the default); only with a new parent."
+                                },
+                                "plan_state": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                                },
+                                "confirm": {
+                                    "type": "boolean",
+                                    "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "collective_id",
+                                "page_id"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Move collective page",
+                            "readOnlyHint": false,
+                            "destructiveHint": true,
+                            "idempotentHint": false,
+                            "openWorldHint": false
+                        }
                     }
                 ]
             }

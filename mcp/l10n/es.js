@@ -1817,6 +1817,7 @@ OC.L10N.register(
     "Edit collective page" : "Editar página de un colectivo",
     "Create page **%s** under *%s*." : "Crear la página **%s** bajo *%s*.",
     "Change page **%s** (%s): %d bytes now, %d after; the diff is in the plan." : "Cambiar la página **%s** (%s): %d bytes ahora, %d después; el diff está en el plan.",
-    "Move page **%s** under *%s* as **%s**." : "Mover la página **%s** bajo *%s* como **%s**."
+    "Move page **%s** under *%s* as **%s**." : "Mover la página **%s** bajo *%s* como **%s**.",
+    "Move collective page" : "Mover página de un colectivo"
     },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

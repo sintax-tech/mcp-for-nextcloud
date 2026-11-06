@@ -1815,6 +1815,7 @@
     "Edit collective page" : "Editar página de um coletivo",
     "Create page **%s** under *%s*." : "Criar a página **%s** sob *%s*.",
     "Change page **%s** (%s): %d bytes now, %d after; the diff is in the plan." : "Alterar a página **%s** (%s): %d bytes agora, %d depois; o diff está no plano.",
-    "Move page **%s** under *%s* as **%s**." : "Mover a página **%s** para baixo de *%s* como **%s**."
+    "Move page **%s** under *%s* as **%s**." : "Mover a página **%s** para baixo de *%s* como **%s**.",
+    "Move collective page" : "Mover página de um coletivo"
     },"pluralForm" : "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

@@ -33,7 +33,7 @@ final class PageProjection {
 
 	/**
 	 * @param object $page native PageInfo
-	 * @return array{id:int, title:string, parent_id:int, emoji:?string, last_user:?string, timestamp:int, size:int, subpage_order:list<int>, file_name:string, file_path:string}
+	 * @return array{id:int, title:string, slug:?string, parent_id:int, emoji:?string, last_user:?string, timestamp:int, size:int, subpage_order:list<int>, file_name:string, file_path:string}
 	 *   the page; file_name and file_path are relative to the collective and only used inside the module
 	 */
 	public static function page(object $page): array {
@@ -42,6 +42,7 @@ final class PageProjection {
 		return [
 			'id' => (int)($data['id'] ?? 0),
 			'title' => (string)($data['title'] ?? ''),
+			'slug' => isset($data['slug']) && is_string($data['slug']) && $data['slug'] !== '' ? $data['slug'] : null,
 			'parent_id' => (int)($data['parentId'] ?? 0),
 			'emoji' => isset($data['emoji']) && is_string($data['emoji']) && $data['emoji'] !== '' ? $data['emoji'] : null,
 			'last_user' => isset($data['lastUserDisplayName']) && is_string($data['lastUserDisplayName']) ? $data['lastUserDisplayName'] : null,
@@ -55,7 +56,7 @@ final class PageProjection {
 
 	/**
 	 * @param array<string, mixed> $page a page of {@see self::page()}
-	 * @return array{id:int, title:string, parent_id:int, emoji:?string, last_user:?string, timestamp:int, size:int, subpage_order:list<int>}
+	 * @return array{id:int, title:string, slug:?string, parent_id:int, emoji:?string, last_user:?string, timestamp:int, size:int, subpage_order:list<int>}
 	 *   what a tool answer may carry
 	 */
 	public static function visible(array $page): array {

@@ -1238,7 +1238,11 @@
 		{"path":"lib/Modules/Collectives/Tools/CreatePage.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Tools\\CreatePage","target":"stays","owner":"Modules\\Collectives","ticket":null},
 		{"path":"lib/Modules/Collectives/Tools/EditPage.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Tools\\EditPage","target":"stays","owner":"Modules\\Collectives","ticket":null},
 		{"path":"lib/Modules/Collectives/Writing/PageReceipt.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Writing\\PageReceipt","target":"stays","owner":"Modules\\Collectives","ticket":null},
-		{"path":"lib/Modules/Collectives/Writing/PlanConfirmation.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Writing\\PlanConfirmation","target":"stays","owner":"Modules\\Collectives","ticket":null}
+		{"path":"lib/Modules/Collectives/Writing/PlanConfirmation.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Writing\\PlanConfirmation","target":"stays","owner":"Modules\\Collectives","ticket":null},
+		{"path":"lib/Modules/Collectives/Moving/MovePageHandler.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Moving\\MovePageHandler","target":"stays","owner":"Modules\\Collectives","ticket":null},
+		{"path":"lib/Modules/Collectives/Moving/MovePagePlan.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Moving\\MovePagePlan","target":"stays","owner":"Modules\\Collectives","ticket":null},
+		{"path":"lib/Modules/Collectives/Moving/MovePagePreview.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Moving\\MovePagePreview","target":"stays","owner":"Modules\\Collectives","ticket":null},
+		{"path":"lib/Modules/Collectives/Tools/MovePage.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Tools\\MovePage","target":"stays","owner":"Modules\\Collectives","ticket":null}
 	],
 	"tests": [
 		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\ServerInfoTest","target":"OCA\\Mcp\\Tests\\Unit\\Mcp\\Protocol\\ServerInfoTest"},

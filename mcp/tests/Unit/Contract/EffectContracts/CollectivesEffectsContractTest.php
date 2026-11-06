@@ -70,6 +70,22 @@ final class CollectivesEffectsContractTest extends TestCase {
 		(new FlowRunner($this, $this->gate, 'collectives'))->run($flow);
 	}
 
+	/** @return void collectives_move of a leaf under another parent: plan, strict confirm, PlanChanged, effect and refusals */
+	public function testMovingAPage(): void {
+		$guide = CollectivesScene::$ids['Guide.md'];
+		$team = CollectivesScene::$ids['Team/Readme.md'];
+		$flow = (new CriticalFlow('move', 'collectives_move', 'collectives', 'move',
+			// After the effect the page is under Team: later steps move it back, so their plan is still a real move.
+			static fn (): array => ['collective_id' => 7, 'page_id' => $guide, 'index' => 0, 'parent_id' => isset(CollectivesScene::$tree->nodes[CollectivesScene::ROOT . '/Team/Guide.md'])
+				? CollectivesScene::$ids['Readme.md'] : $team], fn (): array => $this->state()))
+			// A subpage appears under the destination between the plan and the confirmation: the position meant another place.
+			->changing(static function (): void {
+				CollectivesScene::$tree->addFile(CollectivesScene::ROOT . '/Team/Late.md', '', 'text/markdown');
+			})
+			->hiding(fn () => $this->rig->hidden = [$team], fn () => $this->rig->hidden = []);
+		(new FlowRunner($this, $this->gate, 'collectives'))->run($flow);
+	}
+
 	/** @return void collectives_edit by append: plan with diff and etag, strict confirm, PlanChanged, effect and refusals */
 	public function testEditingAPage(): void {
 		$guide = CollectivesScene::$ids['Guide.md'];

@@ -76,6 +76,16 @@ final class CollectivesCapabilitiesTest extends TestCase {
 		$this->assertNull((new CollectivesSurface(CollectivesSurface::MEMBERS, 'OCA\\Collectives\\Service\\Nothing'))->searchArity());
 	}
 
+	/** @return void a member with another return or parameter type is not the proven shape */
+	public function testOtherTypesAreNotTheProvenShape(): void {
+		CollectivesScene::reset($this);
+		$page = CollectivesSurface::PAGE_INFO;
+		$this->assertTrue((new CollectivesSurface([[$page, 'jsonSerialize', [], 'array']]))->supported());
+		$this->assertFalse((new CollectivesSurface([[$page, 'jsonSerialize', [], 'string']]))->supported());
+		$this->assertFalse((new CollectivesSurface([[CollectivesSurface::PAGES, 'getPageFile', ['int', 'int', 'int'], 'OCP\\Files\\File']]))->supported());
+		$this->assertFalse((new CollectivesSurface([[CollectivesSurface::PAGES, 'move', ['int', 'int', 'int', '?string', 'int', 'string'], $page]]))->supported(), 'nullability counts');
+	}
+
 	/** @return void a probe that throws is false for the request, logged once */
 	public function testThrowingProbeIsFalse(): void {
 		$logger = $this->createMock(LoggerInterface::class);

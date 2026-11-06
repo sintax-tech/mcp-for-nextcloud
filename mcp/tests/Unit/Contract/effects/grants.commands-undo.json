@@ -956,7 +956,8 @@
                                     "collectives": {
                                         "read": true,
                                         "create": false,
-                                        "edit": false
+                                        "edit": false,
+                                        "move": false
                                     }
                                 },
                                 "origins": {
@@ -1231,6 +1232,10 @@
                                             "edit": {
                                                 "source": "default",
                                                 "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
                                             }
                                         }
                                     }
@@ -1359,7 +1364,8 @@
                                     "collectives": {
                                         "read": true,
                                         "create": false,
-                                        "edit": false
+                                        "edit": false,
+                                        "move": false
                                     }
                                 },
                                 "origins": {
@@ -1632,6 +1638,10 @@
                                                 "groupIds": []
                                             },
                                             "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
                                                 "source": "default",
                                                 "groupIds": []
                                             }
@@ -2089,7 +2099,8 @@
                                     "collectives": {
                                         "read": true,
                                         "create": false,
-                                        "edit": false
+                                        "edit": false,
+                                        "move": false
                                     }
                                 },
                                 "origins": {
@@ -2364,6 +2375,10 @@
                                             "edit": {
                                                 "source": "default",
                                                 "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
                                             }
                                         }
                                     }
@@ -2492,7 +2507,8 @@
                                     "collectives": {
                                         "read": true,
                                         "create": false,
-                                        "edit": false
+                                        "edit": false,
+                                        "move": false
                                     }
                                 },
                                 "origins": {
@@ -2765,6 +2781,10 @@
                                                 "groupIds": []
                                             },
                                             "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
                                                 "source": "default",
                                                 "groupIds": []
                                             }

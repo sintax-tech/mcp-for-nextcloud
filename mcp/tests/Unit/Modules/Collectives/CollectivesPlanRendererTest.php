@@ -22,6 +22,8 @@ final class CollectivesPlanRendererTest extends TestCase {
 		$this->assertEveryWriteToolHasAReadablePlan($module, [
 			'collectives_create' => $module->preview('collectives_create', ['collective_id' => 7, 'parent_id' => $guide, 'title' => 'Setup'], 'alice'),
 			'collectives_edit' => $module->preview('collectives_edit', ['collective_id' => 7, 'page_id' => $guide, 'append' => 'More'], 'alice'),
+			'collectives_move' => $module->preview('collectives_move', ['collective_id' => 7, 'page_id' => $guide,
+				'parent_id' => CollectivesScene::$ids['Team/Readme.md'], 'title' => 'Manual'], 'alice'),
 		]);
 	}
 }

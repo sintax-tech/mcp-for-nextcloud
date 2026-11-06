@@ -35,6 +35,8 @@ final class CollectivesScene {
 	public static array $calls = [];
 	/** @var list<array{file_id:int}> what the content index answers */
 	public static array $searchHits = [];
+	/** Makes the native move fail after it renamed the file, before the orders change. */
+	public static bool $failMove = false;
 	/** @var array<string, int> page ids by path relative to ROOT */
 	public static array $ids = [];
 
@@ -47,6 +49,7 @@ final class CollectivesScene {
 		self::$tree = new FakeTree($test);
 		self::$collectives = [self::CID => ['name' => 'Wiki', 'members' => ['alice'], 'canEdit' => true]];
 		self::$calls = [];
+		self::$failMove = false;
 		self::$searchHits = [];
 		self::$ids = [];
 		foreach (['Readme.md' => "# Wiki\n", 'Guide.md' => "Guide text\n", 'Team/Readme.md' => "Team\n",
@@ -103,6 +106,7 @@ final class CollectivesScene {
 			$name = basename($relative);
 			$isIndex = $name === 'Readme.md';
 			$pages[] = new PageInfo(['id' => $id, 'title' => $isIndex ? ($dir === '' ? 'Landing page' : basename($dir)) : basename($name, '.md'),
+				'slug' => strtolower(preg_replace('/\W+/', '-', $isIndex ? ($dir === '' ? 'landing' : basename($dir)) : basename($name, '.md'))),
 				'parentId' => self::parentOf($relative), 'fileName' => $name, 'filePath' => $dir, 'emoji' => null,
 				'lastUserDisplayName' => 'Alice', 'timestamp' => 1759200000, 'size' => strlen(self::$tree->nodes[self::ROOT . '/' . $relative]['content']),
 				'subpageOrder' => self::$orders[$id] ?? [], 'shareToken' => 'page-token-secret', 'collectivePath' => '/appdata/collectives/7']);
@@ -120,6 +124,7 @@ final class CollectivesScene {
 		}
 		$id = self::$tree->addFile(self::ROOT . '/' . ltrim($folder . '/' . $name . '.md', '/'), '', 'text/markdown');
 		$parent = $parentId === 0 ? self::$ids['Readme.md'] : $parentId;
+		self::$orders[$parent] ??= [];
 		array_unshift(self::$orders[$parent], $id);
 		return self::page($id);
 	}
@@ -135,8 +140,12 @@ final class CollectivesScene {
 		$base = $title ?? ($isIndex ? basename(dirname($relative)) : basename($relative, '.md'));
 		$target = ltrim(self::folderOf($parent) . '/' . $base . ($isIndex ? '' : '.md'), '/');
 		self::rename($source, $target);
+		if (self::$failMove) {
+			throw new \RuntimeException('native failure after the rename');
+		}
 		if ($old !== $parent) {
 			self::$orders[$old] = array_values(array_diff(self::$orders[$old] ?? [], [$id]));
+			self::$orders[$parent] ??= [];
 			array_splice(self::$orders[$parent], min($index, count(self::$orders[$parent] ?? [])), 0, [$id]);
 		}
 		return self::page($id);

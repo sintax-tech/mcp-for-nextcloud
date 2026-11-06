@@ -19,7 +19,22 @@ Claude und andere MCP-Clients arbeiten mit deinen Dateien, Notizen, Kalendern, K
 
 ---
 
-## Neu in 1.2.2–1.2.5
+## Neu in 1.3.0
+
+Die App ist in Fähigkeitsmodule gegliedert, nach dem Architekturvorschlag von @marcjoancr in [#14](https://github.com/sintax-tech/mcp-for-nextcloud/pull/14). Bestehende Berechtigungen sowie Verwaltungs- und persönliche Seiten behalten ihr Verhalten.
+
+- **OAuth-Host entfernen ([#28](https://github.com/sintax-tech/mcp-for-nextcloud/issues/28)):** Wird ein CIMD-Host entfernt, werden seine ausstehenden Zustimmungen, Codes und Tokens widerrufen. Erneutes Hinzufügen stellt Zugangsdaten nicht wieder her: Eine neue Anmeldung ist nötig. Dies belegt keine Zapia-Interoperabilität.
+- **HTML-Mailentwürfe ([#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30)):** `mail_create_draft` akzeptiert `html: true`; Klartext bleibt der Standard. Der Plan zeigt bereinigtes HTML; die Bestätigung speichert einen Entwurf ohne Signatur und ohne Mailversand.
+- **Deck-Abschluss und Archivierung ([#27](https://github.com/sintax-tech/mcp-for-nextcloud/issues/27)):** Karten abschließen/wieder öffnen und archivieren/entarchivieren sind getrennte bestätigte Vorgänge mit der bestehenden Berechtigung `deck.edit`.
+- **Aufgabenstatus ([PR #29](https://github.com/sintax-tech/mcp-for-nextcloud/pull/29)):** Erstellen/Bearbeiten akzeptiert `NEEDS-ACTION`, `IN-PROCESS`, `COMPLETED` und `CANCELLED` mit Konsistenzprüfung zum Fortschritt.
+- **Aktuelle Dateiversion lesen:** `files_version_read` liest die aufgelistete aktuelle Version, wenn keine separate historische Datei existiert. Dies behebt einen bereits in 1.2.5 vorhandenen Fehler. Andere fehlende Versionen werden weiterhin abgelehnt.
+- **Deck-Zuweisung ([#26](https://github.com/sintax-tech/mcp-for-nextcloud/issues/26)):** ohne Änderung des Zuweisungscodes untersucht; der gemeldete Fehler wurde nicht reproduziert und das Issue bleibt offen.
+
+**Das Update führt eine Datenbankmigration und den CIMD-Initialisierungsschritt aus.** Zugangsdaten weiterhin erlaubter Hosts bleiben gültig. Zugangsdaten nie erlaubter Hosts erlauben keine Anmeldung oder Token-Erneuerung mehr; die Administration muss den gewünschten Host erlauben und der Client sich neu anmelden. Die bestehende Host-Liste bleibt erhalten.
+
+[Alle Änderungen](CHANGELOG.md).
+
+## Frühere Updates (1.2.2–1.2.5)
 
 Alle Änderungen stehen im [Changelog](CHANGELOG.md#125--2026-10-31).
 
@@ -339,7 +354,7 @@ Unter *Verwaltungseinstellungen → MCP for Cloud → Zugriff und Berechtigungen
   3. **Backend-Quelle wechselt weg und zurück zwischen Beobachtungen:** wechselt das Backend einer Gruppe zu einer nicht vertrauenswürdigen Quelle und zurück zu `'Database'`, bevor die App es beobachtet, wird die Zwischenänderung nicht erkannt (jeder beobachtete Vertrauensverlust setzt die Gruppe auf „wartet auf Bestätigung“).
   4. **Speicher-Caches in langlebigen Prozessen (`occ` / Worker):** `Database::groupExists` von Nextcloud hält einen positiven Cache, `AppManager` hält einen eigenen Cache aktivierter Apps, und `IUserManager::get` liefert gemerkte `IUser`-Objekte. Normale Webanfragen nutzen einen frischen PHP-Prozess pro Anfrage und sind nicht betroffen, während langlebige CLI- oder Worker-Prozesse einen veralteten Zustand sehen können, bis sie enden.
   5. **Entschiedene Ausnahme beim Widerruf von OAuth-Verbindungen bei unsicheren Benutzerereignissen:** im Zweifel, ob eine Person die Berechtigung verloren hat (oder wenn ein Konto gelöscht wird), widerruft die App standardmäßig die OAuth-Verbindungen der Person und verlangt eine neue Anmeldung. Die einzige absichtliche Ausnahme ist, wenn ein Benutzerereignis innerhalb einer offenen Datenbanktransaktion eines anderen Aufrufers erfasst wird (wo die App nie SQL ausführt, weil ein SQL-Fehler auf PostgreSQL die eigene Transaktion von Nextcloud abbrechen würde) und die Person zu dem Zeitpunkt, an dem die App die eingereihte Nachprüfung ohne Ereigniszeitstempel verarbeitet, noch berechtigt ist: dann werden weder alte noch neue Zugangsdaten widerrufen, eine weiter berechtigte Person wird also nicht unnötig getrennt.
-  6. **Kosten auf großen Installationen (gemessen, 1.1.0):** eine Gruppe zu löschen und *Verbindung möglich* von einer Gruppe zu nehmen kostet Zeit proportional zur Zahl der Benutzer, die schon einen MCP-Client verbunden haben (nicht zur Größe der Gruppe): bei etwa 1.000 davon grob 9 bis 19 Sekunden in einer Anfrage, und die Vorschau, *Verbindung möglich* zu entziehen, etwa genauso; eine Gruppe mit 5.000 Mitgliedern zu öffnen dauert 1,5 bis 2 Sekunden. Zahlen gemessen auf einem Rechner mit lokaler Datenbank; auf langsamerer Hardware oder einer entfernten Datenbank wachsen sie proportional. Eine Optimierung ist für 1.3.0 geplant.
+  6. **Kosten auf großen Installationen (gemessen, 1.1.0):** eine Gruppe zu löschen und *Verbindung möglich* von einer Gruppe zu nehmen kostet Zeit proportional zur Zahl der Benutzer, die schon einen MCP-Client verbunden haben (nicht zur Größe der Gruppe): bei etwa 1.000 davon grob 9 bis 19 Sekunden in einer Anfrage, und die Vorschau, *Verbindung möglich* zu entziehen, etwa genauso; eine Gruppe mit 5.000 Mitgliedern zu öffnen dauert 1,5 bis 2 Sekunden. Zahlen gemessen auf einem Rechner mit lokaler Datenbank; auf langsamerer Hardware oder einer entfernten Datenbank wachsen sie proportional.
 
 ### Individuelle Ausnahmen, Zurücksetzen und die Zugriffsprüfung
 

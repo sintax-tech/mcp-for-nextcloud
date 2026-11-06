@@ -19,7 +19,22 @@ Deja que Claude y otros clientes MCP trabajen con tus archivos, notas, calendari
 
 ---
 
-## Novedades de la 1.2.2–1.2.5
+## Novedades de la 1.3.0
+
+La aplicación está organizada en módulos de capacidades, siguiendo la arquitectura propuesta por @marcjoancr en [#14](https://github.com/sintax-tech/mcp-for-nextcloud/pull/14). Los permisos existentes y las pantallas de administración y personal mantienen su comportamiento.
+
+- **Retirada de un host OAuth ([#28](https://github.com/sintax-tech/mcp-for-nextcloud/issues/28)):** retirar un host CIMD revoca sus consentimientos pendientes, códigos y tokens. Volver a añadirlo no restaura las credenciales: hay que iniciar sesión de nuevo. Esto no demuestra interoperabilidad con Zapia.
+- **Borradores de correo HTML ([#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30)):** `mail_create_draft` acepta `html: true`; el texto sin formato sigue siendo el predeterminado. El plan muestra el HTML saneado y la confirmación guarda un borrador sin firma ni envío de correo.
+- **Finalización y archivado en Deck ([#27](https://github.com/sintax-tech/mcp-for-nextcloud/issues/27)):** completar/reabrir y archivar/desarchivar tarjetas mediante operaciones confirmadas separadas, con el permiso `deck.edit` existente.
+- **Estado de tareas ([PR #29](https://github.com/sintax-tech/mcp-for-nextcloud/pull/29)):** crear/editar acepta `NEEDS-ACTION`, `IN-PROCESS`, `COMPLETED` y `CANCELLED`, comprobando su coherencia con el progreso.
+- **Lectura de la versión actual del archivo:** `files_version_read` lee la versión actual listada cuando no hay un archivo histórico separado, corrigiendo un defecto de la 1.2.5. Otras versiones ausentes siguen rechazándose.
+- **Asignación en Deck ([#26](https://github.com/sintax-tech/mcp-for-nextcloud/issues/26)):** investigada sin cambiar el código de asignación; el fallo comunicado no se reprodujo y la incidencia sigue abierta.
+
+**La actualización ejecuta una migración de base de datos y el paso de reparación de inicialización CIMD.** Las credenciales de los hosts que siguen permitidos sobreviven. Las de hosts que nunca estuvieron permitidos ya no autentican ni renuevan tokens; un administrador debe permitir el host deseado y el cliente debe iniciar sesión de nuevo. La lista existente de hosts permitidos se conserva.
+
+[Cambios completos](CHANGELOG.md).
+
+## Actualizaciones anteriores (1.2.2–1.2.5)
 
 Consulta [el changelog](CHANGELOG.md#125--2026-10-31) con los cambios completos.
 
@@ -339,7 +354,7 @@ En *Ajustes de administración → MCP for Cloud → Acceso y permisos → Permi
   3. **La fuente del backend cambia y vuelve entre observaciones:** si el backend de un grupo pasa a una fuente no fiable y vuelve a `'Database'` antes de que la aplicación lo observe, el cambio intermedio no se detecta (cualquier pérdida de confianza observada suspende el grupo en espera de confirmación).
   4. **Cachés en memoria en procesos de larga duración (`occ` / workers):** `Database::groupExists` de Nextcloud mantiene una caché positiva, `AppManager` mantiene su propia caché de aplicaciones activadas, e `IUserManager::get` devuelve objetos `IUser` memorizados. Las peticiones web normales usan un proceso PHP nuevo por petición y no se ven afectadas, mientras que los procesos CLI o worker de larga duración pueden observar un estado obsoleto hasta que terminan.
   5. **Excepción decidida al revocar conexiones OAuth en eventos de usuario inciertos:** de forma predeterminada, ante la duda de si una persona perdió la elegibilidad (o cuando se elimina una cuenta), la aplicación revoca las conexiones OAuth de la persona y exige iniciar sesión de nuevo. La única excepción intencionada es cuando un evento de usuario se captura dentro de una transacción de base de datos abierta de otro llamador (donde la aplicación nunca ejecuta SQL, porque un error SQL en PostgreSQL abortaría la propia transacción de Nextcloud) y, para cuando la aplicación procesa la reevaluación en cola sin marca de tiempo del evento, la persona sigue siendo elegible: en ese caso no se revocan ni las credenciales antiguas ni las nuevas, así que una persona que siguió siendo elegible no se desconecta sin necesidad.
-  6. **Coste en instalaciones grandes (medido, 1.1.0):** eliminar un grupo y quitar *Puede conectar* de un grupo cuesta un tiempo proporcional al número de usuarios que ya han conectado un cliente MCP (no al tamaño del grupo): con unos 1.000, unos 9 a 19 segundos en una petición, y la vista previa de quitar *Puede conectar* más o menos lo mismo; abrir un grupo de 5.000 miembros tarda de 1,5 a 2 segundos. Cifras medidas en una máquina con base de datos local; en hardware más lento o una base de datos remota crecen en proporción. Hay una optimización prevista para 1.3.0.
+  6. **Coste en instalaciones grandes (medido, 1.1.0):** eliminar un grupo y quitar *Puede conectar* de un grupo cuesta un tiempo proporcional al número de usuarios que ya han conectado un cliente MCP (no al tamaño del grupo): con unos 1.000, unos 9 a 19 segundos en una petición, y la vista previa de quitar *Puede conectar* más o menos lo mismo; abrir un grupo de 5.000 miembros tarda de 1,5 a 2 segundos. Cifras medidas en una máquina con base de datos local; en hardware más lento o una base de datos remota crecen en proporción.
 
 ### Excepciones individuales, restablecimiento y el inspector de acceso
 

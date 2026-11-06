@@ -16,7 +16,7 @@ The repository root holds user READMEs, the CHANGELOG, legal documents and these
 - `lib/OAuth/` owns authorization, clients, tokens and connection management. Its `Storage/` boundary is shared with access policy where required.
 - `lib/Platform/` supplies lower-level ports and compatibility, file-access, backup and time primitives.
 - `lib/AppInfo/`, `Controller/`, `Db/`, `Migration/`, `Listener/`, `Middleware/` and `Settings/` retain Nextcloud bootstrap, HTTP, persistence and lifecycle responsibilities.
-- `templates/`, `src/`, `js/`, `css/`, `img/` and `l10n/` hold UI templates, authored assets, committed bundles, styles, images and translations.
+- `templates/`, `src/`, `js/`, `css/`, `img/` and `l10n/` hold UI templates, authored assets, committed bundles, styles, images and translations. Module access levels live in [`src/admin/access/levels/`](../../mcp/src/admin/access/levels/), included in the `admin` bundle by [`src/admin.manifest`](../../mcp/src/admin.manifest).
 
 There is no `lib/Tools/` or `lib/Service/` compatibility tree. A module's own `Tools/` directory lives under `lib/Modules/<App>/`; shared protocol tools live under `lib/Mcp/Tools/`.
 
@@ -50,7 +50,7 @@ The registry adds confirmation metadata for non-read operations. Without confirm
 
 This does not promise that every preview has no platform effects. Files previews can use a lazy native root; a qualifying native NotFound can trigger actor setup and one retry. Mount setup can normalize received-share targets, and the lazy preview view can differ from the fully initialized confirmed-call view. Preserve these documented limits when splitting the workflow; see [`FilesPreviewContext`](../../mcp/lib/Modules/Files/FilesPreviewContext.php).
 
-Files work is grouped under `Reading/`, `Creation/`, `Editing/`, `Moving/`, `Sharing/`, `Images/`, `Backups/`, `Deletion/`, `Reorganization/` and `Checkout/`, with presentation in `Presentation/` and native boundaries in `Integration/`. For example, [`VersionStream`](../../mcp/lib/Modules/Files/Integration/VersionStream.php) owns the native version stream, while [`CheckoutWriter`](../../mcp/lib/Modules/Files/Checkout/CheckoutWriter.php) owns checkout writes and [`Reorganization`](../../mcp/lib/Modules/Files/Reorganization/Reorganization.php) delegates folder and move work.
+Files work is grouped under `Reading/`, `Creation/`, `Editing/`, `Moving/`, `Sharing/`, `Images/`, `Backups/`, `Deletion/`, `Reorganization/`, `Checkout/`, `Writing/`, `Searching/` and `Extraction/`, with presentation in `Presentation/` and native boundaries in `Integration/`. Creation and upload handlers belong in `Creation/`; edit, replace and restore handlers belong in `Editing/`. Shared commits and write plans live in `Writing/`, search comparisons and queries in `Searching/`, and text extraction in `Extraction/`. The module root retains only `FilesModule`, `FilesToolCatalog`, `FilesRegistration`, `FilesCallContext` and `FilesPreviewContext`; there is no catch-all `Handler/` directory. For example, [`VersionStream`](../../mcp/lib/Modules/Files/Integration/VersionStream.php) owns the native version stream, while [`CheckoutWriter`](../../mcp/lib/Modules/Files/Checkout/CheckoutWriter.php) owns checkout writes and [`Reorganization`](../../mcp/lib/Modules/Files/Reorganization/Reorganization.php) delegates folder and move work.
 
 ## Assets and packaging boundaries
 

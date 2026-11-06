@@ -19,7 +19,22 @@ English · [Português (Brasil)](README.pt-BR.md) · [Deutsch](README.de.md) · 
 
 ---
 
-## What's new in 1.2.2–1.2.5
+## What's new in 1.3.0
+
+The app is organized into capability modules, following the architecture proposed by @marcjoancr in [#14](https://github.com/sintax-tech/mcp-for-nextcloud/pull/14). Existing permissions and the administration and personal screens keep their behavior.
+
+- **OAuth host withdrawal ([#28](https://github.com/sintax-tech/mcp-for-nextcloud/issues/28)):** removing a CIMD host revokes its pending consents, codes and tokens. Re-adding it does not restore credentials: sign in again. This does not establish Zapia interoperability.
+- **HTML mail drafts ([#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30)):** `mail_create_draft` accepts `html: true`; plain text remains the default. The plan shows sanitized HTML, and confirmation saves a draft without a signature or sending mail.
+- **Deck completion and archiving ([#27](https://github.com/sintax-tech/mcp-for-nextcloud/issues/27)):** complete/reopen and archive/unarchive cards through separate confirmed operations, using the existing `deck.edit` grant.
+- **Task status ([PR #29](https://github.com/sintax-tech/mcp-for-nextcloud/pull/29)):** create/edit accepts `NEEDS-ACTION`, `IN-PROCESS`, `COMPLETED` and `CANCELLED`, with consistency checks against progress.
+- **Reading the current file version:** `files_version_read` reads the listed current version when there is no separate historical file, fixing a defect present in 1.2.5. Other missing versions remain refused.
+- **Deck assignment ([#26](https://github.com/sintax-tech/mcp-for-nextcloud/issues/26)):** investigated without an assignment code change; the reported failure was not reproduced, and the issue remains open.
+
+**Updating runs a database migration and the CIMD initialization repair step.** Credentials for hosts that remain allowed survive. Credentials from hosts that were never allowed can no longer authenticate or refresh; an administrator must allow the intended host and the client must sign in again. The existing host allowlist is preserved.
+
+[Full changes](CHANGELOG.md).
+
+## Earlier updates (1.2.2–1.2.5)
 
 See [the changelog](CHANGELOG.md#125--2026-10-31) for the full changes.
 
@@ -339,7 +354,7 @@ In *Administration settings → MCP for Cloud → Access and permissions → Gro
   3. **Backend source changing away and back between observations:** if a group's backend changes to an untrusted source and changes back to `'Database'` before the app observes it, the intermediate change is not detected (any observed loss of trust suspends the group into awaiting confirmation).
   4. **In-memory caches in long-running processes (`occ` / workers):** Nextcloud's `Database::groupExists` keeps a positive cache, `AppManager` keeps its own cache of enabled apps, and `IUserManager::get` returns memoized `IUser` objects. Normal web requests use a fresh PHP process per request and are unaffected, whereas long-running CLI or worker processes may observe stale state until they finish.
   5. **Decided exception when revoking OAuth connections on uncertain user events:** by default, when in doubt about whether a user lost eligibility (or when an account is deleted), the app revokes the user's OAuth connections and requires signing in again. The single intentional exception is when a user event is captured inside another caller's open database transaction (where the app never runs SQL, because a SQL error on PostgreSQL would abort Nextcloud's own transaction) and, by the time the app processes the queued recheck without an event timestamp, the user is still eligible: in that case, neither old nor new credentials are revoked, so a user who remained eligible is not unnecessarily disconnected.
-  6. **Cost on large installations (measured, 1.1.0):** deleting a group and taking *Can connect* from a group cost time proportional to the number of users who have already connected an MCP client (not to the size of the group): with about 1,000 of them, roughly 9 to 19 seconds in one request, and the preview of taking *Can connect* away about the same; opening a group of 5,000 members takes 1.5 to 2 seconds. Figures measured on one machine with a local database; on slower hardware or a remote database they grow in proportion. An optimization is planned for 1.3.0.
+  6. **Cost on large installations (measured, 1.1.0):** deleting a group and taking *Can connect* from a group cost time proportional to the number of users who have already connected an MCP client (not to the size of the group): with about 1,000 of them, roughly 9 to 19 seconds in one request, and the preview of taking *Can connect* away about the same; opening a group of 5,000 members takes 1.5 to 2 seconds. Figures measured on one machine with a local database; on slower hardware or a remote database they grow in proportion.
 
 ### Individual overrides, reset and the access inspector
 

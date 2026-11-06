@@ -19,6 +19,7 @@ final class PollsCreateCatalogAssertions {
 	 * @return list<array<string,mixed>> original read definitions
 	 */
 	public static function separate(TestCase $test, array $tools): array {
+		$tools = \OCA\Mcp\Tests\Unit\Modules\Polls\PollsMutationCases::legacy($tools);
 		$write = array_values(array_filter($tools,static fn(array $d):bool=>WriteGate::isWrite($d)));
 		$test->assertCount(1,$write); $test->assertSame('polls_create_poll',$write[0]['name']);
 		$test->assertSame(['polls','create','polls'],[$write[0]['module'],$write[0]['operation'],$write[0]['app']]);

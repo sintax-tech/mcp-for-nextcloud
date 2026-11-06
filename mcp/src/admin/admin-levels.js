@@ -14,7 +14,8 @@
  * The level functions are pure, with no DOM and no strings: src/admin/matrix/level-cells.js draws the cells and src/admin/matrix/labels.js names the levels.
  * The tiers of each module live in its own file, src/admin/access/levels/<app>.js, which registers them in
  * window.OCA.Mcp.Admin.levelCatalog before this file runs (src/admin.manifest lists them first). Polls has named presets
- * instead of tiers (src/admin/access/levels/polls.js, window.OCA.Mcp.Admin.pollsGrants) and Mail adds its write warnings
+ * instead of tiers, unchanged from 1.2.5; targets preserve untiered grants (src/admin/access/levels/polls.js,
+ * window.OCA.Mcp.Admin.pollsGrants). Mail adds its write warnings
  * (src/admin/access/levels/mail.js, window.OCA.Mcp.Admin.mailGrants); the other admin scripts read both.
  */
 (function (root) {

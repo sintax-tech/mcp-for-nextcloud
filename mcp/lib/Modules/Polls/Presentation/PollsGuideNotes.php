@@ -9,6 +9,10 @@ namespace OCA\Mcp\Modules\Polls\Presentation;
 
 /** What the Polls schemas cannot say: untrusted content, native costs, link credentials and creation effects. */
 final class PollsGuideNotes {
+	/** @return list<string> Existing guidance followed by the approved mutation limits. */
+	public static function withMutations(): array {
+		return [...self::notes(), ...PollsWriteMessages::notes(), PollsWriteMessages::sharing(), PollsWriteMessages::delegation()];
+	}
 	/** Static helper only; never instantiated. */
 	private function __construct() {
 	}

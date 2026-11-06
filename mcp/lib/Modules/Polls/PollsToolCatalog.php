@@ -24,6 +24,16 @@ final class PollsToolCatalog {
 		ReadResults::class,
 		ListLinks::class,
 		CreatePoll::class,
+		Tools\UpdatePoll::class,
+		Tools\SetPollState::class,
+		Tools\AddOption::class,
+		Tools\UpdateOption::class,
+		Tools\ReorderOptions::class,
+		Tools\RemoveOption::class,
+		Tools\RestoreOption::class,
+		Tools\AddShare::class,
+		Tools\UpdateShare::class,
+		Tools\InviteShare::class,
 	];
 
 	/** Constant holder only; never instantiated. */

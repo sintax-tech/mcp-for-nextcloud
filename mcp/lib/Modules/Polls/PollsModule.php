@@ -24,17 +24,22 @@ final class PollsModule extends CatalogModule {
 		return PollsToolCatalog::TOOLS;
 	}
 
+	/** @return class-string<\OCA\Mcp\Mcp\Tools\ModuleRegistration> Mutation port and lazy capability probe. */
+	public static function registration(): ?string {
+		return PollsRegistration::class;
+	}
+
 	/**
 	 * @return list<string> what the schemas cannot say: untrusted content, native costs, link credentials and creation effects
 	 */
 	public function guideNotes(): array {
-		return PollsGuideNotes::notes();
+		return PollsGuideNotes::withMutations();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public function renderPlan(string $tool, array $plan): ?string {
-		return (new PollsPlanRenderer())->render($tool, $plan);
+		return (new Presentation\PollsWritePlanRenderer())->render($tool, $plan) ?? (new PollsPlanRenderer())->render($tool, $plan);
 	}
 }

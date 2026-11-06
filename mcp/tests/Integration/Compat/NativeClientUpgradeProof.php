@@ -20,7 +20,7 @@ final class NativeClientUpgradeProof {
 	public static function assertPreserved(IDBConnection $database): void {
 		$generation = '1';
 		$version = UpgradeBaseline::version();
-		if ($version === '1.2.5' || str_starts_with($version, '1.3.0-rc.')) {
+		if (UpgradeBaseline::isModern($version)) {
 			$path = (string)getenv('MCP_IT_LEGACY') . '.release.json';
 			Assert::assertFileExists($path);
 			$sidecar = json_decode((string)file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);

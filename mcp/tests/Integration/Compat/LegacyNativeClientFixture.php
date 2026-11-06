@@ -12,6 +12,8 @@ use OCA\Mcp\Db\PolicyStateMapper;
 use OCP\IConfig;
 use OCP\Server;
 
+require_once __DIR__ . '/UpgradeBaseline.php';
+
 /** Prepares the native switch through the installed release's own admission command. */
 final class LegacyNativeClientFixture {
 	/**
@@ -21,7 +23,7 @@ final class LegacyNativeClientFixture {
 	 */
 	public static function enable(string $version, string $output): void {
 		Server::get(IConfig::class)->setAppValue('mcp', 'oauth_native_client_enabled', '1');
-		if ($version !== '1.2.5' && preg_match('/^1\.3\.0-rc\.[0-9]+$/D', $version) !== 1) {
+		if (!UpgradeBaseline::isModern($version)) {
 			return;
 		}
 		$revision = Server::get(PolicyStateMapper::class)->state()['revision'];

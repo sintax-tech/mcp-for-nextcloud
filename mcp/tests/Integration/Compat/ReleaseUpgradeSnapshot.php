@@ -34,8 +34,8 @@ final class ReleaseUpgradeSnapshot {
 				$result->closeCursor();
 			}
 			foreach ($rows as &$row) {
-				if ($table === 'mcp_oauth_tokens' && $version !== '1.2.0') {
-					if ((!$baseline || str_starts_with($version, '1.3.0-rc.')) && (string)($row['client_gen'] ?? '') !== '1') {
+				if ($table === 'mcp_oauth_tokens' && UpgradeBaseline::isModern($version)) {
+					if ((!$baseline || $version !== '1.2.5') && (string)($row['client_gen'] ?? '') !== '1') {
 						throw new \UnexpectedValueException('The trusted probe token must retain client generation 1');
 					}
 					unset($row['client_gen']);
@@ -54,7 +54,7 @@ final class ReleaseUpgradeSnapshot {
 			'eligible' => $policy->eligible(ReleaseUpgradeProbe::UID), 'connected' => $policy->connected(ReleaseUpgradeProbe::UID),
 			'edit' => $policy->granted(ReleaseUpgradeProbe::UID, 'files', 'edit'), 'share' => $policy->granted(ReleaseUpgradeProbe::UID, 'files', 'share'),
 			'backup_sha256' => hash('sha256', $root->get(ReleaseUpgradeProbe::BACKUP)->getContent())];
-		if ($version !== '1.2.0') {
+		if (UpgradeBaseline::isModern($version)) {
 			$snapshot['receipts'] = self::receipts($database);
 		}
 		return $snapshot;

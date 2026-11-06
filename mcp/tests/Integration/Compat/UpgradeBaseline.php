@@ -26,7 +26,7 @@ final class UpgradeBaseline {
 			return '1.0.8';
 		}
 		if (self::isRelease($snapshot['baseline'] ?? null) && !isset($snapshot['appVersion']) && is_array($snapshot['snapshot'] ?? null)) {
-			foreach (($snapshot['baseline'] === '1.2.0' ? ['rows', 'auth'] : ['rows', 'auth', 'receipts']) as $key) {
+			foreach ((self::isModern($snapshot['baseline']) ? ['rows', 'auth', 'receipts'] : ['rows', 'auth']) as $key) {
 				if (!is_array($snapshot['snapshot'][$key] ?? null)) {
 					throw new \UnexpectedValueException('Malformed release upgrade snapshot');
 				}
@@ -38,8 +38,15 @@ final class UpgradeBaseline {
 
 	/** @param mixed $version Candidate baseline identity. @return bool Whether the container-era probe supports it. */
 	public static function isRelease(mixed $version): bool {
-		return is_string($version) && (in_array($version, ['1.2.0', '1.2.5'], true)
-			|| preg_match('/^1\.3\.0-rc\.[0-9]+$/D', $version) === 1);
+		return is_string($version) && ($version === '1.2.0' || self::isModern($version));
+	}
+
+	/**
+	 * @param string $version Baseline identity to classify.
+	 * @return bool Whether it uses the modern sidecar, native-client preservation and receipt probe.
+	 */
+	public static function isModern(string $version): bool {
+		return $version === '1.2.5' || preg_match('/^1\.3\.0-rc\.[0-9]+$/D', $version) === 1;
 	}
 
 	/** @return string Recognized installed baseline from the harness checkpoint. */

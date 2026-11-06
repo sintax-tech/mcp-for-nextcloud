@@ -13,7 +13,23 @@ use OCA\Mcp\Modules\Files\Presentation\CheckoutMessages;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Response;
 
-/** Preserves HTTP checkout ordering across focused services. */
+/**
+ * The two routes a checkout hands to an agent: GET downloads the file, PUT/POST uploads the edited one. The
+ * PUT/POST route also spends the create link of files_upload, which creates one new file at the path it remembers.
+ *
+ * Both are public pages without CSRF because the 256-bit token in the path IS the credential: it is
+ * single use, expires in minutes and is bound to one user, one file id and one ETag. Nothing about the
+ * session is trusted — a logged-in user other than the one the token was issued to gets 404 — and the
+ * service switch, the eligibility, the connection and the files.edit grant are re-read on every request,
+ * so revoking access takes effect on the next request even for a token issued earlier.
+ *
+ * The order of the checks is itself the contract: refuse what the headers and the token alone can refuse before a
+ * byte of the body reaches the disk, keep the body, re-read the policy, resolve the node, spend the token, re-check
+ * the ETag, take the backup and only then write. A create link follows the same order with its own checks.
+ *
+ * A file locked by files_lock (open in Text or Office, locked by another person or a WebDAV client) is a 423. When the
+ * lock is there before the link is spent, the link stays usable; a lock met after that asks for a new checkout.
+ */
 final class CheckoutFlow {
 	/**
 	 * @param CheckoutLanguage $language Early owner language.
@@ -42,8 +58,8 @@ final class CheckoutFlow {
 	/**
 	 * Streams the file the checkout was issued for, spending the download token.
 	 *
-	 * @return Response the raw bytes, or 404/410/403 without a body
 	 * @param \Closure(): ?string $routeToken Route-only token lookup.
+	 * @return Response the raw bytes, or 404/410/403 without a body
 	 */
 	public function download(\Closure $routeToken): Response {
 		try {
@@ -69,11 +85,11 @@ final class CheckoutFlow {
 	 * JSON or urlencoded body into the same parameter array (lib/private/AppFramework/Http/Request.php:388-425),
 	 * so an argument would let a body choose which file it writes.
 	 *
-	 * @return Response the JSON receipt (201 for a created file), or 409 for a conflict or a taken name, 403 for a
-	 *         refused write, and 400/404/410/413/500 for the rest
 	 * @param \Closure(string): string $readHeader Raw HTTP header lookup.
 	 * @param \Closure(): ?string $routeToken Route-only token lookup.
-	 * @param \Closure $openInput Raw input opener.
+	 * @param \Closure(): (resource|false) $openInput Raw input opener.
+	 * @return Response the JSON receipt (201 for a created file), or 409 for a conflict or a taken name, 403 for a
+	 *         refused write, and 400/404/410/413/500 for the rest
 	 */
 	public function upload(\Closure $readHeader, \Closure $routeToken, \Closure $openInput): Response {
 		try {

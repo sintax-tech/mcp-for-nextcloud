@@ -16,7 +16,6 @@ use OCP\AppFramework\Http\Response;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IUserManager;
 use OCP\IUserSession;
-use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 
 /** Admission, scope and atomic use of checkout capabilities. */
 final class CheckoutPolicy {
@@ -149,7 +148,10 @@ final class CheckoutPolicy {
 		return null;
 	}
 
-	/** @param string $uid Link owner. @return bool Whether that account is enabled. */
+	/**
+	 * @param string $uid Link owner.
+	 * @return bool Whether that account is enabled.
+	 */
 	private function ownerUsable(string $uid): bool {
 		$user = $this->userManager?->get($uid);
 		return $user !== null && $user->isEnabled();

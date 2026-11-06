@@ -59,7 +59,10 @@ final class CheckoutLanguage {
 		}
 	}
 
-	/** @param string $uid Token owner. @return void */
+	/**
+	 * @param string $uid Token owner.
+	 * @return void
+	 */
 	public function forOwner(string $uid): void {
 		if ($this->l10n !== null && $this->userManager !== null && ($user = $this->userManager->get($uid)) !== null) {
 			Translator::use($this->l10n->forUser($user));

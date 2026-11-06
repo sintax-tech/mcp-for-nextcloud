@@ -14,7 +14,6 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Response;
 use OCP\Files\File;
 use OCP\Files\IRootFolder;
-use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 
 /** Resolves the same visible node after current policy admission. */
 final class CheckoutResolver {

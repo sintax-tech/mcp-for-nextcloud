@@ -31,8 +31,8 @@ final class BodyReader {
 	 * Accept raw file bytes regardless of the advertised MIME type, including a missing header.
 	 * Multipart forms still need a targeted refusal because their envelope is not file content.
 	 *
-	 * @return Response|null the refusal, or null when the body type is acceptable
 	 * @param string $contentType Raw Content-Type header.
+	 * @return Response|null the refusal, or null when the body type is acceptable
 	 */
 	public function checkBodyType(string $contentType): ?Response {
 		$type = strtolower(trim(explode(';', $contentType)[0]));
@@ -43,10 +43,10 @@ final class BodyReader {
 	}
 
 	/**
+	 * @param string $contentLength Raw Content-Length header.
 	 * @param int $limit effective upload limit in bytes
 	 * @param bool $allowEmpty whether an empty body is a valid upload, true only for a create link
 	 * @return Response|null the refusal, or null when the body is usable
-	 * @param string $contentLength Raw Content-Length header.
 	 */
 	public function checkBody(string $contentLength, int $limit, bool $allowEmpty = false): ?Response {
 		$declared = (int)$contentLength;
@@ -63,8 +63,8 @@ final class BodyReader {
 	 * Copies the request body into a temporary file without ever holding more than the limit in memory.
 	 *
 	 * @param int $limit effective upload limit in bytes
+	 * @param \Closure(): (resource|false) $openInput Opens raw input at the original point.
 	 * @return string|null the temporary path, or null when the body is over the limit or unreadable
-	 * @param \Closure $openInput Opens raw input at the original point.
 	 */
 	private function storeBody(int $limit, \Closure $openInput): ?string {
 		$path = $this->tempManager->getTemporaryFile('.mcp-upload');
@@ -92,7 +92,7 @@ final class BodyReader {
 
 	/**
 	 * @param int $limit Effective byte limit.
-	 * @param \Closure $openInput Opens the raw request body at the original point.
+	 * @param \Closure(): (resource|false) $openInput Opens the raw request body at the original point.
 	 * @param \Closure(string): Response $work Uses the stored body.
 	 * @param \Closure(): Response $failure Reports a body that could not be stored.
 	 * @return Response The work result or the same oversized/unreadable refusal.

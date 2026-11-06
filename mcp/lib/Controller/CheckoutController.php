@@ -16,7 +16,7 @@ use OCP\AppFramework\Http\Attribute\PublicPage;
 use OCP\AppFramework\Http\Response;
 use OCP\IRequest;
 
-/** Public single-use checkout routes; request data stays at this HTTP boundary. */
+/** Public single-use checkout routes; request data stays at this HTTP boundary. See {@see CheckoutFlow}. */
 class CheckoutController extends Controller {
 	/** Compatibility alias for consumers of the public create operation. */
 	public const OPERATION_CREATE = CheckoutPolicy::OPERATION_CREATE;

@@ -412,7 +412,7 @@ composer install
 vendor/bin/phpunit          # unit tests with OCP mocks, no Nextcloud needed
 ```
 
-Aufbau des Codes: `lib/Tools/<Module>` (ein `ToolModule` pro App), `lib/OAuth` (Authorization-Server), `lib/Service` (MCP-Protokoll, Berechtigungsrichtlinie), `lib/Controller`, `templates`, `js`, `css`, `l10n`. Ausführliche technische Notizen stehen in [`mcp/README.md`](mcp/README.md).
+Codeaufbau unter `mcp/`: `lib/Modules/<App>` (Capability-Module und Werkzeuge), `lib/Mcp` (Protokoll, Erkennung und Bestätigung), `lib/Access` (Berechtigungen, Sichtbarkeit und Bereiche), `lib/OAuth` (Authorization-Server), `lib/Platform` (gemeinsame Grundbausteine), dazu `lib/Controller`, Templates und Assets. Siehe die [Entwicklungsdokumentation auf Englisch](docs/en/architecture.md) und die ausführlichen technischen Notizen in [`mcp/README.md`](mcp/README.md). Die Leitfäden für 1.3.0 benennen die vor der Veröffentlichung noch ausstehenden Strukturprüfungen.
 
 Der ursprüngliche Node.js-stdio-Prototyp (nur lesen) wurde entfernt; er bleibt in der Git-Geschichte bis zum Commit 27739f0 (Tag v0.11.0).
 

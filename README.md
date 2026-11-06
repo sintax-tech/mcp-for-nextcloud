@@ -412,7 +412,7 @@ composer install
 vendor/bin/phpunit          # unit tests with OCP mocks, no Nextcloud needed
 ```
 
-Code layout: `lib/Tools/<Module>` (one `ToolModule` per app), `lib/OAuth` (authorization server), `lib/Service` (MCP protocol, grant policy), `lib/Controller`, `templates`, `js`, `css`, `l10n`. Detailed technical notes live in [`mcp/README.md`](mcp/README.md).
+Code layout under `mcp/`: `lib/Modules/<App>` (capability modules and tools), `lib/Mcp` (protocol, discovery and confirmation), `lib/Access` (grants, visibility and scopes), `lib/OAuth` (authorization server), `lib/Platform` (shared primitives), plus `lib/Controller`, templates and assets. See the [development documentation in English](docs/en/architecture.md) and detailed technical notes in [`mcp/README.md`](mcp/README.md). The 1.3.0 guides identify the remaining layout checks before release.
 
 The original Node.js stdio prototype (read-only) was removed; it remains in the git history up to commit 27739f0 (tag v0.11.0).
 

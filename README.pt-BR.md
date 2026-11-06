@@ -412,7 +412,7 @@ composer install
 vendor/bin/phpunit          # testes unitários com mocks do OCP, sem precisar de Nextcloud
 ```
 
-Organização: `lib/Tools/<Módulo>` (um `ToolModule` por app), `lib/OAuth` (servidor de autorização), `lib/Service` (protocolo MCP, política de permissões), `lib/Controller`, `templates`, `js`, `css` e `l10n`. As notas técnicas detalhadas ficam em [`mcp/README.pt-BR.md`](mcp/README.pt-BR.md).
+Organização em `mcp/`: `lib/Modules/<App>` (módulos por capacidades e ferramentas), `lib/Mcp` (protocolo, descoberta e confirmação), `lib/Access` (permissões, visibilidade e escopos), `lib/OAuth` (servidor de autorização), `lib/Platform` (primitivas compartilhadas), além de `lib/Controller`, templates e assets. Veja a [documentação de desenvolvimento em inglês](docs/en/architecture.md) e as notas técnicas detalhadas em [`mcp/README.pt-BR.md`](mcp/README.pt-BR.md). Os guias da 1.3.0 identificam as verificações de estrutura pendentes antes da release.
 
 O protótipo original em Node.js via stdio (só leitura) foi removido; continua no histórico do git até o commit 27739f0 (tag v0.11.0).
 

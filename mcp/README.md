@@ -719,6 +719,15 @@ vendor/bin/phpunit
 
 The tests are unit tests, with mocks of the OCP interfaces (`nextcloud/ocp` stable33) and an in-memory file tree (`tests/Unit/Tools/FakeTree.php`). They do not replace installation on a real Nextcloud, which is the only place where share ACL, version creation, trash bin and external storage are verified.
 
+The capability-module layout separates `lib/Modules`, `lib/Mcp`, `lib/Access`, `lib/OAuth` and `lib/Platform`; Nextcloud controllers and infrastructure remain under `lib/`. Development documentation in the repository (English):
+
+- [Architecture](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/docs/en/architecture.md)
+- [Adding a module](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/docs/en/adding-a-module.md)
+- [Testing](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/docs/en/testing.md)
+- [Packaging](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/docs/en/packaging.md)
+
+These guides are not included in the installed archive. They describe repository development and flag the remaining 1.3.0 layout checks; the current repository may differ from an older installed release.
+
 ## License
 
 AGPL-3.0-or-later, with the additional section 7(b) attribution term in [NOTICE](NOTICE). See [LICENSES/AGPL-3.0-or-later.txt](LICENSES/AGPL-3.0-or-later.txt) for the complete license. Preserve the attribution in the administration page, documentation and copyright notices when redistributing or providing modified versions over a network.

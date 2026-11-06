@@ -19,38 +19,6 @@
         },
         {
             "rule": "native-app",
-            "source": "lib/Access/Guests/GuestRestrictions.php",
-            "target": "OCA\\Guests\\AppWhitelist",
-            "line": 133,
-            "reason": "Move this native-app reference behind the owning module Integration boundary.",
-            "expires": "RE-28"
-        },
-        {
-            "rule": "native-app",
-            "source": "lib/Access/Guests/GuestRestrictions.php",
-            "target": "OCA\\Guests\\Config",
-            "line": 162,
-            "reason": "Move this native-app reference behind the owning module Integration boundary.",
-            "expires": "RE-28"
-        },
-        {
-            "rule": "native-app",
-            "source": "lib/Access/Guests/GuestRestrictions.php",
-            "target": "OCA\\Guests\\GuestManager",
-            "line": 161,
-            "reason": "Move this native-app reference behind the owning module Integration boundary.",
-            "expires": "RE-28"
-        },
-        {
-            "rule": "native-app",
-            "source": "lib/Access/Guests/GuestRestrictions.php",
-            "target": "OCA\\Guests\\RestrictionManager",
-            "line": 95,
-            "reason": "Move this native-app reference behind the owning module Integration boundary.",
-            "expires": "RE-28"
-        },
-        {
-            "rule": "native-app",
             "source": "lib/Modules/Files/Deletion/DeleteBackendGate.php",
             "target": "OCA\\Files_Trashbin\\Storage",
             "line": 69,

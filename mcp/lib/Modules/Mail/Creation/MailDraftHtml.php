@@ -70,6 +70,8 @@ final class MailDraftHtml {
 			}
 		}
 		$this->filter($document, $removed, $urls, $unwrapped, $marker);
+		// Unwrapping may leave adjacent text nodes; compare their serialized semantics, without changing characters.
+		$document->normalizeDocument();
 		$before = $this->fragment($document);
 		$purified = $this->engine->purify($before);
 		$after = $this->parse($purified);

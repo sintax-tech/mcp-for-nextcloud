@@ -391,5 +391,42 @@
         },
         "unwrappedElements": [],
         "elementTotal": 0
+    },
+    {
+        "name": "adjacent-anchor-no-href",
+        "input": "<p><a>Olá</a> <strong>ação</strong></p>",
+        "body": "<p>Olá <strong>ação</strong></p>",
+        "removed": {
+            "unwrapped-element": 1,
+            "unsafe-url": 0
+        },
+        "unwrappedElements": [
+            "a"
+        ],
+        "elementTotal": 1
+    },
+    {
+        "name": "adjacent-anchor-name",
+        "input": "<p><a name=\"x\">Olá</a> <strong>ação</strong></p>",
+        "body": "<p>Olá <strong>ação</strong></p>",
+        "removed": {
+            "unwrapped-element": 1,
+            "attribute": 1
+        },
+        "unwrappedElements": [
+            "a"
+        ],
+        "elementTotal": 1
+    },
+    {
+        "name": "adjacent-unknown-font",
+        "input": "<p><font>Olá</font> <strong>ação</strong></p>",
+        "body": "<p>Olá <strong>ação</strong></p>",
+        "removed": {
+            "unwrapped-element": 0,
+            "unknown-tag": 1
+        },
+        "unwrappedElements": [],
+        "elementTotal": 1
     }
 ]

@@ -31,7 +31,7 @@ final class ShareFormatter {
 	 * @param bool $removable whether files_unshare may remove it ({@see ShareAccess::isRemovable()})
 	 * @return array{shareId:string, type:string, with:array{id:string, displayName:string}, permission:string, reshare:bool, expires:string|null, hasPassword:bool, url?:string|null, removable:bool, path:string}
 	 *   `shareId` is the full id files_unshare takes; `permission` is view, edit or custom
-	 *   ({@see SharePermission::classify()}); `reshare` is the SHARE bit, which on a link means outgoing
+	 *   ({@see \OCA\Mcp\Platform\FileAccess\SharePermission::classify()}); `reshare` is the SHARE bit, which on a link means outgoing
 	 *   federation and not a re-share; `expires` is Y-m-d or null; `url` normally exists for a link only,
 	 *   and is null for a folder link while D7 suppresses capabilities
 	 * @param bool $hideUrl D7: folder links publish url:null without reading the token
@@ -45,8 +45,8 @@ final class ShareFormatter {
 			'shareId' => (string)$share->getFullId(),
 			'type' => $recipient->kind,
 			'with' => ['id' => $recipient->id, 'displayName' => $recipient->displayName],
-			'permission' => SharePermission::classify($bits, $share->getNodeType() === 'folder'),
-			'reshare' => SharePermission::reshare($bits),
+			'permission' => \OCA\Mcp\Platform\FileAccess\SharePermission::classify($bits, $share->getNodeType() === 'folder'),
+			'reshare' => \OCA\Mcp\Platform\FileAccess\SharePermission::reshare($bits),
 			'expires' => $share->getExpirationDate()?->format('Y-m-d'),
 			'hasPassword' => $password !== null && $password !== '',
 		];

@@ -5,7 +5,11 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files;
+namespace OCA\Mcp\Modules\Files\Presentation;
+use OCA\Mcp\Modules\Files\CheckoutService;
+use OCA\Mcp\Modules\Files\Deletion;
+use OCA\Mcp\Modules\Files\Reorganization;
+use OCA\Mcp\Modules\Files\ReorganizationLimits;
 
 /** Workflow guidance that describes configured backups without promising an unconditional copy. */
 final class FilesGuideNotes {

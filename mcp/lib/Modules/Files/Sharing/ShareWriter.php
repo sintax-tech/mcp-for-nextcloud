@@ -156,7 +156,7 @@ final class ShareWriter {
 	 */
 	private static function requested(array $arguments): array {
 		return [
-			'permission' => (string)($arguments['permission'] ?? SharePermission::VIEW),
+			'permission' => (string)($arguments['permission'] ?? \OCA\Mcp\Platform\FileAccess\SharePermission::VIEW),
 			'expires' => isset($arguments['expires']) ? (string)$arguments['expires'] : null,
 			'note' => isset($arguments['note']) ? (string)$arguments['note'] : null,
 			'password' => isset($arguments['password']) ? $arguments['password'] === true : null,
@@ -233,8 +233,8 @@ final class ShareWriter {
 		}
 		$this->assertServerAllows($uid, $recipient);
 		$folder = NodeAccess::isFolder($node);
-		$level = (string)($arguments['permission'] ?? SharePermission::VIEW);
-		$bits = SharePermission::bits($level, $folder);
+		$level = (string)($arguments['permission'] ?? \OCA\Mcp\Platform\FileAccess\SharePermission::VIEW);
+		$bits = \OCA\Mcp\Platform\FileAccess\SharePermission::bits($level, $folder);
 		if (!$node->isShareable()) {
 			throw new ToolFailure(FilesMessages::shareNodeNotShareable());
 		}
@@ -247,8 +247,8 @@ final class ShareWriter {
 		$existing = $this->access->findExisting($uid, $node, $recipient);
 
 		$before = $existing === null ? null : [
-			'permission' => SharePermission::classify((int)$existing->getPermissions(), $folder),
-			'reshare' => SharePermission::reshare((int)$existing->getPermissions()),
+			'permission' => \OCA\Mcp\Platform\FileAccess\SharePermission::classify((int)$existing->getPermissions(), $folder),
+			'reshare' => \OCA\Mcp\Platform\FileAccess\SharePermission::reshare((int)$existing->getPermissions()),
 			'expires' => $existing->getExpirationDate()?->format('Y-m-d'),
 			'note' => (string)$existing->getNote(),
 		];
@@ -312,8 +312,8 @@ final class ShareWriter {
 		$node = $this->access->ownNode($userFolder, $uid, (string)$arguments['path']);
 		$this->access->assertFolderExposure($node);
 		$this->assertLinksAllowed($uid);
-		$level = (string)($arguments['permission'] ?? SharePermission::VIEW);
-		if ($level !== SharePermission::VIEW) {
+		$level = (string)($arguments['permission'] ?? \OCA\Mcp\Platform\FileAccess\SharePermission::VIEW);
+		if ($level !== \OCA\Mcp\Platform\FileAccess\SharePermission::VIEW) {
 			throw new ArgumentValidationException('Invalid argument: permission', 'permission', Translator::t('only view for a public link'));
 		}
 		if (!$node->isShareable()) {
@@ -322,8 +322,8 @@ final class ShareWriter {
 		$folder = NodeAccess::isFolder($node);
 		$existing = $this->access->findExisting($uid, $node, $recipient);
 		$current = $existing === null ? null : (int)$existing->getPermissions();
-		$bits = $current !== null && SharePermission::classify($current, $folder) === SharePermission::VIEW
-			? $current : SharePermission::bits(SharePermission::VIEW, $folder);
+		$bits = $current !== null && \OCA\Mcp\Platform\FileAccess\SharePermission::classify($current, $folder) === \OCA\Mcp\Platform\FileAccess\SharePermission::VIEW
+			? $current : \OCA\Mcp\Platform\FileAccess\SharePermission::bits(\OCA\Mcp\Platform\FileAccess\SharePermission::VIEW, $folder);
 
 		$zone = $this->zones->forUser($uid);
 		$expires = isset($arguments['expires']) ? $this->expiry((string)$arguments['expires'], $zone, true) : null;
@@ -333,8 +333,8 @@ final class ShareWriter {
 		$generate = ($arguments['password'] ?? false) === true || ($required && $hadPassword !== true);
 
 		$before = $existing === null ? null : [
-			'permission' => SharePermission::classify($current, $folder),
-			'reshare' => SharePermission::reshare($current),
+			'permission' => \OCA\Mcp\Platform\FileAccess\SharePermission::classify($current, $folder),
+			'reshare' => \OCA\Mcp\Platform\FileAccess\SharePermission::reshare($current),
 			'expires' => $existing->getExpirationDate()?->format('Y-m-d'),
 			'note' => (string)$existing->getNote(),
 		];
@@ -351,8 +351,8 @@ final class ShareWriter {
 			$expires = new \DateTime($afterExpires . ' ' . self::EXPIRY_HOUR, $zone);
 		}
 		$after = [
-			'permission' => SharePermission::VIEW,
-			'reshare' => SharePermission::reshare($bits),
+			'permission' => \OCA\Mcp\Platform\FileAccess\SharePermission::VIEW,
+			'reshare' => \OCA\Mcp\Platform\FileAccess\SharePermission::reshare($bits),
 			'expires' => $afterExpires,
 			'note' => $note ?? $before['note'] ?? null,
 		];
@@ -491,7 +491,7 @@ final class ShareWriter {
 		if ($recipient->kind === ShareRecipient::GROUP) {
 			$warnings[] = FilesMessages::shareGroupWarning($recipient->displayName);
 		}
-		if ($folder && $level === SharePermission::EDIT) {
+		if ($folder && $level === \OCA\Mcp\Platform\FileAccess\SharePermission::EDIT) {
 			$warnings[] = FilesMessages::shareFolderEditWarning($recipient->displayName);
 		}
 		return $warnings;

@@ -18,7 +18,7 @@ use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Modules\Files\Sharing\ShareAccess;
 use OCA\Mcp\Modules\Files\Sharing\ShareLister;
 use OCA\Mcp\Modules\Files\Sharing\ShareRemover;
-use OCA\Mcp\Modules\Files\Sharing\SharePermission;
+use OCA\Mcp\Platform\FileAccess\SharePermission;
 use OCA\Mcp\Modules\Files\Sharing\ShareWriter;
 use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
@@ -296,7 +296,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
 	 * @return list<string>
 	 */
 	public function guideNotes(): array {
-		return FilesGuideNotes::notes();
+		return \OCA\Mcp\Modules\Files\Presentation\FilesGuideNotes::notes();
 	}
 
 	/**

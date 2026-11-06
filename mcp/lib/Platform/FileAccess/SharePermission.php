@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files\Sharing;
+namespace OCA\Mcp\Platform\FileAccess;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;

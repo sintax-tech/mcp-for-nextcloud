@@ -9,6 +9,7 @@ namespace OCA\Mcp\Modules\Polls;
 
 use OCA\Mcp\Mcp\Tools\ModuleRegistration;
 use OCA\Mcp\Modules\Polls\Contracts\PollWriteNative;
+use OCA\Mcp\Modules\Polls\Contracts\PollWriteReader;
 use OCA\Mcp\Modules\Polls\Integration\PollsNativeAdapter;
 use OCA\Mcp\Modules\Polls\Integration\PollsMutationProbe;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
@@ -18,6 +19,7 @@ use Psr\Container\ContainerInterface;
 final class PollsRegistration implements ModuleRegistration {
 	/** {@inheritDoc} */
 	public function register(IRegistrationContext $context): void {
+		$context->registerService(PollWriteReader::class, static fn (ContainerInterface $c): PollWriteReader => $c->get(PollsNativeAdapter::class));
 		$context->registerService(PollWriteNative::class, static fn (ContainerInterface $c): PollWriteNative => $c->get(PollsNativeAdapter::class));
 	}
 	/** {@inheritDoc} */

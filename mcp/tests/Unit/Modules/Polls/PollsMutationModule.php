@@ -31,7 +31,7 @@ final class PollsMutationModule {
 			$arguments = [];
 			foreach ((new \ReflectionClass($class))->getConstructor()->getParameters() as $parameter) {
 				$worker = $parameter->getType()->getName();
-				$arguments[] = new $worker($flow);
+				$arguments[] = new $worker(str_ends_with($worker, 'Preview') ? $flow->preview : $flow->effect);
 			}
 			$tools[$class] = new $class(...$arguments);
 		}

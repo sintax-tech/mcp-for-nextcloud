@@ -7,14 +7,17 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Polls\Options;
 
-use OCA\Mcp\Modules\Polls\Writing\PollWriteFlow;
+use OCA\Mcp\Modules\Polls\Writing\PollWritePreviewFlow;
+use OCA\Mcp\Modules\Polls\Writing\PollWriteRequest;
+use OCA\Mcp\Modules\Polls\Contracts\PollMutation;
 
 /** Effect-free preview of polls_remove_option; shared guards remain in the mutation flow. */
 final class RemoveOptionPreview {
-	/** @param PollWriteFlow $flow Fresh guarded mutation flow. */
-	public function __construct(private PollWriteFlow $flow) {}
+	/** @param PollWritePreviewFlow $flow Fresh guarded mutation flow. */
+	public function __construct(private PollWritePreviewFlow $flow) {}
 	/** @param array<string,mixed> $arguments Tool arguments. @param string $uid Authenticated actor. @return array<string,mixed> Complete signed plan. */
 	public function plan(array $arguments, string $uid): array {
-		return $this->flow->run('polls_remove_option', $arguments, $uid, true);
+		$request = PollWriteRequest::of(PollMutation::RemoveOption->value, $arguments);
+		return $this->flow->plan($request, $uid);
 	}
 }

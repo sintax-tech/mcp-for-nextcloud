@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Polls\Writing;
 
 use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Modules\Polls\Contracts\{PollMutation, PollMutationKind};
 use OCA\Mcp\Modules\Polls\Editing\PollConfiguration;
 use OCA\Mcp\Modules\Polls\Options\OptionChanges;
 use OCA\Mcp\Modules\Polls\Sharing\PollShareChanges;
@@ -19,10 +20,10 @@ final class PollWritePlan {
 	public function __construct(private PlanState $states) {}
 	/** @param array<string,mixed> $r Request. @param array<string,mixed> $s Fresh snapshot. @return array<string,mixed> Pure effect. */
 	public function effect(array $r, array $s): array {
-		return match (true) {
-			isset($r['changes']), isset($r['state']) => PollConfiguration::effect($r, $s),
-			str_contains($r['tool'], 'option') => OptionChanges::effect($r, $s),
-			default => PollShareChanges::effect($r, $s),
+		return match (PollMutation::from($r['tool'])->kind()) {
+			PollMutationKind::Configuration => PollConfiguration::effect($r, $s),
+			PollMutationKind::Options => OptionChanges::effect($r, $s),
+			PollMutationKind::Shares => PollShareChanges::effect($r, $s),
 		};
 	}
 	/** @param string $uid Actor. @param array<string,mixed> $r Request. @param array<string,mixed> $s Snapshot. @return array<string,mixed> Safe complete plan. */
@@ -38,10 +39,10 @@ final class PollWritePlan {
 	/** @param array<string,mixed> $r Request. @param array<string,mixed> $before Approved snapshot. @param array<string,mixed> $now Fresh readback. @return bool Complete observable effect. */
 	public function matches(array $r, array $before, array $now): bool {
 		if ($now['poll']['id'] !== $before['poll']['id']) { return false; }
-		return match (true) {
-			isset($r['changes']), isset($r['state']) => PollConfiguration::matches($r, $before, $now),
-			str_contains($r['tool'], 'option') => OptionChanges::matches($r, $before, $now),
-			default => PollShareChanges::matches($r, $before, $now),
+		return match (PollMutation::from($r['tool'])->kind()) {
+			PollMutationKind::Configuration => PollConfiguration::matches($r, $before, $now),
+			PollMutationKind::Options => OptionChanges::matches($r, $before, $now),
+			PollMutationKind::Shares => PollShareChanges::matches($r, $before, $now),
 		};
 	}
 	/** @param array<string,mixed> $r Request. @param array<string,mixed> $before Approved state. @param array<string,mixed> $now Fresh state. @return string Partial only when a requested changed field is actually observed. */

@@ -7,14 +7,17 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Polls\Options;
 
-use OCA\Mcp\Modules\Polls\Writing\PollWriteFlow;
+use OCA\Mcp\Modules\Polls\Writing\PollWriteEffectFlow;
+use OCA\Mcp\Modules\Polls\Writing\PollWriteRequest;
+use OCA\Mcp\Modules\Polls\Contracts\PollMutation;
 
 /** Confirmed effect of polls_add_option; shared guards remain in the mutation flow. */
 final class AddOptionHandler {
-	/** @param PollWriteFlow $flow Fresh guarded mutation flow. */
-	public function __construct(private PollWriteFlow $flow) {}
+	/** @param PollWriteEffectFlow $flow Fresh guarded mutation flow. */
+	public function __construct(private PollWriteEffectFlow $flow) {}
 	/** @param array<string,mixed> $arguments Tool arguments. @param string $uid Authenticated actor. @return array<string,mixed> Honest observed receipt. */
 	public function handle(array $arguments, string $uid): array {
-		return $this->flow->run('polls_add_option', $arguments, $uid, false);
+		$request = PollWriteRequest::of(PollMutation::AddOption->value, $arguments);
+		return $this->flow->execute($request, $arguments, $uid);
 	}
 }

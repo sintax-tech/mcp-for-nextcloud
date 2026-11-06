@@ -10,6 +10,7 @@ namespace OCA\Mcp\Modules\Polls\Integration;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Modules\Polls\Writing\PollWriteRequest;
+use OCA\Mcp\Modules\Polls\Contracts\{PollMutation, PollMutationKind};
 use OCA\Mcp\Modules\Polls\PollsRefusal;
 
 /** Fresh complete edit-authorized metadata, including deleted children, without result or credential reads. */
@@ -41,7 +42,7 @@ final class PollsMutationSnapshot {
 			throw new ToolFailure(\OCA\Mcp\L10n\Translator::t('Updating this poll would lock anonymity, which this tool does not allow.'));
 		}
 		if (isset($r['changes'])) { $s['configuration'] = array_intersect_key(PollsWriteProjection::configuration($p), $r['changes']); }
-		if (str_contains($r['tool'], 'option')) {
+		if (PollMutation::from($r['tool'])->kind() === PollMutationKind::Options) {
 			if (isset($r['option']) && (($p->getType() === 'textPoll') !== isset($r['option']['text']))) { PollWriteRequest::invalid('option'); }
 			$rows = $this->factory->make(PollsMutationSurface::OPTION_MAPPER, $session)->findByPoll($r['poll_id'], true, true);
 			$s['options'] = [];
@@ -60,7 +61,7 @@ final class PollsMutationSnapshot {
 				}
 			}
 		}
-		if (str_contains($r['tool'], 'share')) {
+		if (PollMutation::from($r['tool'])->kind() === PollMutationKind::Shares) {
 			$s['shares'] = [];
 			foreach ($this->shares($session, $r['poll_id']) as $row) {
 				if (isset($r['share_id']) && $row->getId() !== $r['share_id']) { continue; }

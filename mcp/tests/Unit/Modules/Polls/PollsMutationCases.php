@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Modules\Polls;
 
-use OCA\Mcp\Modules\Polls\Writing\PollWriteFlow;
 use OCA\Mcp\Modules\Polls\Writing\PollWritePlan;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
@@ -28,9 +27,9 @@ final class PollsMutationCases {
 		yield 'update share' => ['polls_update_share', ['poll_id' => 1, 'share_id' => 20, 'action' => 'set_admin']];
 		yield 'invite' => ['polls_invite_share', ['poll_id' => 1, 'share_id' => 20]];
 	}
-	/** @param TestCase $test Mock owner. @param PollsMutationScene $scene Native port scene. @return PollWriteFlow Real shared flow and plans. */
-	public static function flow(TestCase $test, PollsMutationScene $scene): PollWriteFlow {
-		return new PollWriteFlow($scene, new PollWritePlan(new PlanState((new InMemoryConfig())->mock($test))));
+	/** @param TestCase $test Mock owner. @param PollsMutationScene $scene Native port scene. @return PollsMutationFlows Separate preview and effect production workers. */
+	public static function flow(TestCase $test, PollsMutationScene $scene): PollsMutationFlows {
+		return new PollsMutationFlows($scene, new PollWritePlan(new PlanState((new InMemoryConfig())->mock($test))));
 	}
 	/** @param TestCase $test Mock owner. @return array<string,array<string,mixed>> Actual preview plans for the global readability contract. */
 	public static function plans(TestCase $test): array {

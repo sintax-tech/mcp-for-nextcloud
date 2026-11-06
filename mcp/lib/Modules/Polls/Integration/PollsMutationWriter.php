@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Polls\Integration;
 
 use OCA\Mcp\Modules\Polls\PollsRefusal;
+use OCA\Mcp\Modules\Polls\Contracts\{PollMutation, PollMutationKind};
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 
@@ -18,8 +19,8 @@ final class PollsMutationWriter {
 		private Polls86Adapter $legacy, private Polls9Adapter $modern) {}
 	/** @param object $session Checked native session. @param array<string,mixed> $r Request. @param bool $nine Native signature line. @param \Closure $beforeSink Final reauthorization and attempted marker. @return void */
 	public function write(object $session, array $r, bool $nine, \Closure $beforeSink): void {
-		$tool = $r['tool']; $pollId = $r['poll_id'];
-		if (isset($r['changes']) || isset($r['state'])) {
+		$tool = PollMutation::from($r['tool']); $pollId = $r['poll_id'];
+		if ($tool->kind() === PollMutationKind::Configuration) {
 			$service = $this->factory->make(PollsSurface::POLLS, $session);
 			$beforeSink();
 			if (isset($r['changes'])) { $service->update($pollId, $r['changes']); }
@@ -27,21 +28,21 @@ final class PollsMutationWriter {
 				'archived', 'unarchived' => $service->toggleArchive($pollId) }; }
 			return;
 		}
-		if (str_contains($tool, 'option')) {
+		if ($tool->kind() === PollMutationKind::Options) {
 			$service = $this->factory->make(PollsSurface::OPTIONS, $session);
-			$simple = $tool === 'polls_add_option' ? \OCA\Polls\Model\SimpleOption::fromArray([
+			$simple = $tool === PollMutation::AddOption ? \OCA\Polls\Model\SimpleOption::fromArray([
 				'text' => $r['option']['text'] ?? '', 'timestamp' => $r['option']['timestamp'] ?? 0, 'duration' => $r['option']['duration'] ?? 0]) : null;
 			$beforeSink();
 			match ($tool) {
-				'polls_add_option' => $service->add($pollId, $simple, false),
-				'polls_update_option' => ($nine ? $this->modern : $this->legacy)->updateOption($service, $r),
-				'polls_reorder_options' => $service->reorder($pollId, array_map(static fn (int $id): array => ['id' => $id], $r['option_ids'])),
-				'polls_remove_option', 'polls_restore_option' => $service->delete($r['option_id'], $tool === 'polls_restore_option'),
+				PollMutation::AddOption => $service->add($pollId, $simple, false),
+				PollMutation::UpdateOption => ($nine ? $this->modern : $this->legacy)->updateOption($service, $r),
+				PollMutation::ReorderOptions => $service->reorder($pollId, array_map(static fn (int $id): array => ['id' => $id], $r['option_ids'])),
+				PollMutation::RemoveOption, PollMutation::RestoreOption => $service->delete($r['option_id'], $tool === PollMutation::RestoreOption),
 			};
 			return;
 		}
 		$service = $this->factory->make(PollsMutationSurface::SHARES, $session);
-		if ($tool === 'polls_add_share') {
+		if ($tool === PollMutation::AddShare) {
 			$user = $r['type'] === 'public' ? null : $this->snapshots->user($session, $r, $nine);
 			$beforeSink();
 			($nine ? $this->modern : $this->legacy)->addShare($service, $r, $user);
@@ -56,7 +57,7 @@ final class PollsMutationWriter {
 		$token = $share->getToken();
 		if (!is_string($token) || $token === '') { throw PollsRefusal::unavailable(); }
 		$beforeSink();
-		if ($tool === 'polls_invite_share') {
+		if ($tool === PollMutation::InviteShare) {
 			// 8.6 returns ?SentResult; 9.x returns SentResult. Neither is proof of persistence or delivery.
 			$service->sendInvitation($share);
 			return;

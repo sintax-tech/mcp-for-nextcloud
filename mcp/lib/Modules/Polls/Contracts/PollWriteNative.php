@@ -8,13 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Polls\Contracts;
 
 /** Guarded native boundary; only sanitized scalar snapshots escape Integration. */
-interface PollWriteNative {
-	/** @param string $uid Actor. @param string $operation Exact grant. @return void */
-	public function open(string $uid, string $operation): void;
-	/** @param string $uid Actor. @param array<string,mixed> $request Validated arguments. @return array<string,mixed> Fresh authorized projection. */
-	public function snapshot(string $uid, array $request): array;
+interface PollWriteNative extends PollWriteReader {
 	/** @param string $uid Actor. @param array<string,mixed> $request Validated arguments. @param array<string,mixed> $before Guarded latest projection. @param \Closure $attempted Called immediately before the sink. @return void */
 	public function mutate(string $uid, array $request, array $before, \Closure $attempted): void;
-	/** @return void Release native session state, including on failure. */
-	public function close(): void;
 }

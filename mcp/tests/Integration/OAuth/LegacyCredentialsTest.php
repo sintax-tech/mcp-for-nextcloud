@@ -63,7 +63,7 @@ final class LegacyCredentialsTest extends IntegrationTestCase {
 		$legacy = $this->legacy;
 		$this->assertSame(Fixtures::LEGACY, $legacy['uid']);
 		$this->assertCount(1, $legacy['rows']['mcp_oauth_codes']);
-		$this->assertCount(2, $legacy['rows']['mcp_oauth_tokens']);
+		$this->assertCount(3, $legacy['rows']['mcp_oauth_tokens']);
 		$this->assertCount(1, $legacy['rows']['mcp_oauth_spent']);
 		foreach ($legacy['rows'] as $table => $before) {
 			$after = $this->rows($table);
@@ -88,6 +88,13 @@ final class LegacyCredentialsTest extends IntegrationTestCase {
 		$tokens = Server::get(TokenService::class);
 		$bearer = fn (string $token) => $authenticator->authenticate('Bearer ' . $token, $legacy['resource'])?->getUID();
 
+		$this->assertNull($bearer($legacy['tokens']['untrusted']['access']), 'The old fixture host was never trusted; the previous implementation admitted it only through the CIMD gap');
+		try {
+			$tokens->refresh(['refresh_token' => $legacy['tokens']['untrusted']['refresh'], 'client_id' => $legacy['untrusted_client']]);
+			$this->fail('An untrusted legacy host refreshed after upgrade');
+		} catch (OAuthException $e) {
+			$this->assertSame('invalid_grant', $e->error);
+		}
 		$this->assertSame(Fixtures::LEGACY, $bearer($legacy['tokens']['rotated']['access']));
 		$this->assertSame(Fixtures::LEGACY, $bearer($legacy['tokens']['plain']['access']));
 		$exchanged = $tokens->exchangeCode(['code' => $legacy['code'], 'code_verifier' => $legacy['verifier'],
@@ -106,6 +113,6 @@ final class LegacyCredentialsTest extends IntegrationTestCase {
 		}
 		$this->assertNull($bearer($legacy['tokens']['rotated']['access']));
 		$this->assertNull($bearer((string)$refreshed['access_token']));
-		$this->assertSame([], $this->rows('mcp_oauth_tokens'));
+		$this->assertSame([$legacy['untrusted_client']], array_column($this->rows('mcp_oauth_tokens'), 'client_id'), 'Only the unusable untrusted fixture remains until teardown');
 	}
 }

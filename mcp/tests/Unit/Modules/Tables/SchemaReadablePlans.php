@@ -45,7 +45,7 @@ final class SchemaReadablePlans {
 				'share_node' => ['node_type' => 'table', 'node_id' => 1, 'recipient' => ['type' => 'user', 'id' => 'bob'], 'permissions' => ['read' => true, 'create' => false, 'update' => false, 'delete' => false, 'manage' => false]],
 				'unshare_node' => ['node_type' => 'view', 'node_id' => 1, 'share_id' => 2],
 			};
-			$plans[$name] = $flow->preview($action, $args, 'alice');
+			$plans[$name] = $flow->preview(SchemaActionFixture::of($test, $action), $args, 'alice');
 		}
 		return $plans;
 	}

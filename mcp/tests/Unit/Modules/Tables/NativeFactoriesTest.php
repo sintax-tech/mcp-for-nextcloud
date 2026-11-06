@@ -95,7 +95,7 @@ final class NativeFactoriesTest extends TestCase {
 		$shareServices = $this->createMock(SchemaServices::class); $shareServices->method('get')->willReturn($shareService);
 		$writer = new \OCA\Mcp\Modules\Tables\Integration\SchemaNativeWriter($shareServices);
 		$bits = ['read' => false, 'create' => true, 'update' => false, 'delete' => true, 'manage' => true];
-		$this->assertSame(42, $writer->apply('share_node', ['arguments' => ['node_id' => 3, 'node_type' => 'view', 'recipient' => ['id' => 'bob', 'type' => 'user'], 'permissions' => $bits], 'changes' => [], 'profile' => $pin], 'alice'));
+		$this->assertSame(42, $writer->shareNode(['arguments' => ['node_id' => 3, 'node_type' => 'view', 'recipient' => ['id' => 'bob', 'type' => 'user'], 'permissions' => $bits], 'changes' => [], 'profile' => $pin], 'alice'));
 		if (in_array($pin, ['1.0.0', '2.0.0'], true)) $this->assertSame([3, 'view', 'bob', 'user', false, true, false, true, true, 0], $shareService->captured);
 		else foreach ($bits as $bit => $expected) $this->assertSame($expected, $shareService->captured[0]->{'getPermission' . ucfirst($bit)}());
 		$view = SchemaViewInput::of(['filter' => [], 'sort' => [], 'columnSettings' => []], $pin);

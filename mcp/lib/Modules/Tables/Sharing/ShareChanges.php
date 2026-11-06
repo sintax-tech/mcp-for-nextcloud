@@ -14,19 +14,19 @@ use OCA\Mcp\Platform\FileAccess\CommonMessages;
 /** Pure recipient/node binding, explicit bits and no implicit privilege updates. */
 class ShareChanges {
 	/**
-	 * @param string $action Share action.
+	 * @param bool $revoke Explicit revocation intent.
 	 * @param array<string,mixed> $p Prepared target.
 	 * @param list<array<string,mixed>> $shares Authorized native share snapshots.
 	 * @return array<string,mixed> Share state.
 	 */
-	public function of(string $action, array $p, array $shares): array {
+	public function of(bool $revoke, array $p, array $shares): array {
 		$a = $p['arguments']; $matches = [];
 		foreach ($shares as $share) {
 			if (($share['nodeType'] ?? '') !== $a['node_type'] || (int)($share['nodeId'] ?? 0) !== $a['node_id']) throw new ToolFailure(CommonMessages::notFound());
-			if ($action === 'unshare_node' ? (int)$share['id'] === $a['share_id'] : ($share['receiver'] ?? '') === $a['recipient']['id'] && ($share['receiverType'] ?? '') === $a['recipient']['type']) $matches[] = $share;
+			if ($revoke ? (int)$share['id'] === $a['share_id'] : ($share['receiver'] ?? '') === $a['recipient']['id'] && ($share['receiverType'] ?? '') === $a['recipient']['type']) $matches[] = $share;
 		}
 		if (count($matches) > 1) throw new ToolFailure(SchemaMessages::differentShare());
-		if ($action === 'unshare_node') {
+		if ($revoke) {
 			if ($matches === [] || !in_array($matches[0]['receiverType'], ['user', 'group'], true)) throw new ToolFailure(CommonMessages::notFound());
 			$p['before'] = SchemaSnapshot::share($matches[0]); $p['after'] = []; $p['changes'] = [];
 		} else {

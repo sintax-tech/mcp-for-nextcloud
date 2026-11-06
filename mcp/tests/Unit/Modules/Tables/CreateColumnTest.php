@@ -14,6 +14,6 @@ final class CreateColumnTest extends SchemaToolTestCase {
 	public function testViewIdsHaveNoCoercion(): void {
 		$this->gateway->expects($this->never())->method('prepare');
 		$this->expectException(\InvalidArgumentException::class);
-		$this->flow->preview(static::ACTION, $this->arguments() + ['view_ids' => ['2']], 'alice');
+		$this->flow->preview(SchemaActionFixture::of($this, static::ACTION), $this->arguments() + ['view_ids' => ['2']], 'alice');
 	}
 }

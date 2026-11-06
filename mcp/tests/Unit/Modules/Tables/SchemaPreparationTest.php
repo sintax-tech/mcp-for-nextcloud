@@ -30,16 +30,16 @@ final class SchemaPreparationTest extends TestCase {
 	#[DataProvider('actions')]
 	public function testRealPreparationRequiresReadAndManageAndKeepsShared(string $action, string $resource, array $args): void {
 		$scene = new SchemaPreparationScene($this);
-		$this->assertTrue($scene->preparation->prepare($action, $args, 'alice', '2.3.2')['shared']);
+		$this->assertTrue($scene->prepare($action, $args, 'alice', '2.3.2')['shared']);
 		$scene->manage[$resource] = false;
-		try { $scene->preparation->prepare($action, $args, 'alice', '2.3.2'); $this->fail('Manage bypassed'); }
+		try { $scene->prepare($action, $args, 'alice', '2.3.2'); $this->fail('Manage bypassed'); }
 		catch (ToolFailure $error) { $this->assertSame(CommonMessages::forbidden(), $error->getMessage()); }
 		$scene->read[$resource] = false;
-		try { $scene->preparation->prepare($action, $args, 'alice', '2.3.2'); $this->fail('Read bypassed'); }
+		try { $scene->prepare($action, $args, 'alice', '2.3.2'); $this->fail('Read bypassed'); }
 		catch (ToolFailure $error) { $this->assertSame(CommonMessages::notFound(), $error->getMessage()); }
 		[$kind, $id] = explode(':', $resource);
 		unset($scene->entities[$kind][(int)$id]);
-		try { $scene->preparation->prepare($action, $args, 'alice', '2.3.2'); $this->fail('Missing target accepted'); }
+		try { $scene->prepare($action, $args, 'alice', '2.3.2'); $this->fail('Missing target accepted'); }
 		catch (ToolFailure $error) { $this->assertSame(CommonMessages::notFound(), $error->getMessage()); }
 	}
 	/** @return void Every nested view must be readable, managed and bound to the table. */
@@ -50,7 +50,7 @@ final class SchemaPreparationTest extends TestCase {
 			if ($failure === 'unreadable') $scene->read['view:3'] = false;
 			if ($failure === 'unmanaged') $scene->manage['view:3'] = false;
 			$args = ['table_id' => 1, 'title' => 'New', 'type' => 'text', 'subtype' => 'line', 'view_ids' => [$id]];
-			try { $scene->preparation->prepare('create_column', $args, 'alice', '2.3.2'); $this->fail('Nested ID bypassed: ' . $failure); }
+			try { $scene->prepare('create_column', $args, 'alice', '2.3.2'); $this->fail('Nested ID bypassed: ' . $failure); }
 			catch (ToolFailure $error) { $this->assertSame($failure === 'unmanaged' ? CommonMessages::forbidden() : CommonMessages::notFound(), $error->getMessage()); }
 		}
 	}
@@ -60,7 +60,7 @@ final class SchemaPreparationTest extends TestCase {
 			foreach (['missing', 'foreign'] as $failure) {
 				$scene = new SchemaPreparationScene($this);
 				$id = $failure === 'missing' ? 999 : ($field === 'column_id' ? 2 : 3);
-				try { $scene->preparation->prepare($action, ['table_id' => 99, $field => $id, 'patch' => ['title' => 'New']], 'alice', '2.3.2'); $this->fail('Foreign target accepted'); }
+				try { $scene->prepare($action, ['table_id' => 99, $field => $id, 'patch' => ['title' => 'New']], 'alice', '2.3.2'); $this->fail('Foreign target accepted'); }
 				catch (ToolFailure $error) { $this->assertSame(CommonMessages::notFound(), $error->getMessage()); }
 			}
 		}
@@ -71,6 +71,6 @@ final class SchemaPreparationTest extends TestCase {
 		$scene->disabled = true;
 		$args = iterator_to_array(self::actions())['share_node'][2];
 		$this->expectExceptionMessage(CommonMessages::forbidden());
-		$scene->preparation->prepare('share_node', $args, 'alice', '2.3.2');
+		$scene->prepare('share_node', $args, 'alice', '2.3.2');
 	}
 }

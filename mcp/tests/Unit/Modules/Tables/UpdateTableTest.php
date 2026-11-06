@@ -13,6 +13,6 @@ final class UpdateTableTest extends SchemaToolTestCase {
 	/** @return void A schema grant does not require the MCP read grant. */
 	public function testWriteDoesNotRequireTheReadToolGrant(): void {
 		$this->grants->setGrant('alice', 'tables', 'read', false);
-		$this->assertTrue($this->flow->preview(static::ACTION, $this->arguments(), 'alice')['requiresConfirmation']);
+		$this->assertTrue($this->flow->preview(SchemaActionFixture::of($this, static::ACTION), $this->arguments(), 'alice')['requiresConfirmation']);
 	}
 }

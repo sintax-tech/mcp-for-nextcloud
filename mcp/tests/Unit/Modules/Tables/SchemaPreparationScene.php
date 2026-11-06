@@ -33,7 +33,7 @@ final class SchemaPreparationScene {
 	/**
 	 * @param TestCase $test Mock owner.
 	 */
-	public function __construct(TestCase $test) {
+	public function __construct(private TestCase $test) {
 		$mock = new \ReflectionMethod($test, 'createMock');
 		$fixture = json_decode(file_get_contents(__DIR__ . '/../../../fixtures/nextcloud-api/tables/schema-api.json'), true, 512, JSON_THROW_ON_ERROR);
 		foreach ($fixture['factorySources']['2.3.2'] as $source) {
@@ -76,6 +76,11 @@ final class SchemaPreparationScene {
 		$columns = new SchemaColumnInput($this->services, $mock->invoke($test, UsergroupWhitelist::class));
 		$this->preparation = new SchemaPreparation($this->services, new SchemaTargetReader($this->services), $columns, new SchemaSharePolicy($shares, $users, $groups), new ShareChanges());
 	}
+	/** @param string $action Tool suffix. @param array $args Intent. @param string $uid Caller. @param string $profile API. @return array Real preparation through the typed action. */
+	public function prepare(string $action, array $args, string $uid, string $profile): array {
+		return SchemaActionFixture::of($this->test, $action, $this->preparation)->prepare($args, $uid, $profile);
+	}
+
 	/** @param string $uid Caller. @param bool $cli Native flag. @return void */
 	public function preCheckUserId(string $uid, bool $cli): void {}
 	/** @param int $id Parent. @param string $uid Caller. @return bool */

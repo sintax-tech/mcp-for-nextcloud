@@ -14,31 +14,18 @@ use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 class SchemaObservation {
 	/** @param SchemaTargetReader $reader Uncached native metadata boundary. */
 	public function __construct(private SchemaTargetReader $reader) {}
-	/**
-	 * @param string $action Attempted operation.
-	 * @param array<string,mixed> $p Preparation.
-	 * @param int|null $returned Native ID.
-	 * @param string $uid Caller.
-	 * @return array<string,mixed> Fresh authorized observation.
-	 */
-	public function observe(string $action, array $p, ?int $returned, string $uid): array {
+	/** @param array $p Prepared node. @param int|null $id Native target ID. @param string $uid Caller. @return array Fresh authorized metadata. */
+	public function node(array $p, ?int $id, string $uid): array {
 		$a = $p['arguments'];
-		if (in_array($action, ['share_node', 'unshare_node'], true)) {
-			$items = $this->reader->shares($a['node_type'], $a['node_id'], $uid);
-			$found = [];
-			foreach ($items as $share) {
-				if ($action === 'unshare_node' ? (int)$share['id'] === $a['share_id']
-					: ($share['receiver'] ?? '') === $a['recipient']['id'] && ($share['receiverType'] ?? '') === $a['recipient']['type']) $found[] = $share;
-			}
-			if ($action === 'unshare_node' && $found === []) return [];
-			if (count($found) !== 1) throw new ToolFailure(SchemaMessages::uncertain());
-			return SchemaSnapshot::share($found[0]);
-		}
-		$id = str_starts_with($action, 'create_') ? $returned : $p['id'];
 		if ($id === null) throw new ToolFailure(SchemaMessages::uncertain());
 		$node = $this->reader->target($p['kind'], $id, $uid, $p['kind'] !== 'table' ? $a['table_id'] : null);
-		$observed = SchemaSnapshot::of((array)$node->jsonSerialize(), $p['kind']);
-		if ($action === 'create_column' && ($a['view_ids'] ?? []) !== []) {
+		return SchemaSnapshot::of(SchemaNativeSnapshot::of($node), $p['kind']);
+	}
+	/** @param array $p New column intent. @param int|null $id Native new ID. @param string $uid Caller. @return array Column plus view-membership verification. */
+	public function columnCreated(array $p, ?int $id, string $uid): array {
+		$a = $p['arguments'];
+		$observed = $this->node($p, $id, $uid);
+		if ( ($a['view_ids'] ?? []) !== []) {
 			$observed['views'] = []; $observed['viewsVerified'] = true;
 			foreach ($a['view_ids'] as $viewId) {
 				$view = $this->reader->target('view', $viewId, $uid, $a['table_id']);
@@ -51,5 +38,23 @@ class SchemaObservation {
 			}
 		}
 		return $observed;
+	}
+	/** @param array $p Share intent. @param string $uid Caller. @return array Fresh share. */
+	public function sharing(array $p, string $uid): array { return $this->shares($p, $uid, false); }
+	/** @param array $p Revocation intent. @param string $uid Caller. @return array Empty only when the share is gone. */
+	public function revocation(array $p, string $uid): array { return $this->shares($p, $uid, true); }
+	/** @param array $p Authorized intent. @param string $uid Caller. @param bool $revoke Revocation. @return array Whitelisted observed share. */
+	private function shares(array $p, string $uid, bool $revoke): array {
+		$a = $p['arguments'];
+
+			$items = $this->reader->shares($a['node_type'], $a['node_id'], $uid);
+			$found = [];
+			foreach ($items as $share) {
+				if ($revoke ? (int)$share['id'] === $a['share_id']
+					: ($share['receiver'] ?? '') === $a['recipient']['id'] && ($share['receiverType'] ?? '') === $a['recipient']['type']) $found[] = $share;
+			}
+			if ($revoke && $found === []) return [];
+			if (count($found) !== 1) throw new ToolFailure(SchemaMessages::uncertain());
+			return SchemaSnapshot::share($found[0]);
 	}
 }

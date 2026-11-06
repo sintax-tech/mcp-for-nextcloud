@@ -54,20 +54,20 @@ abstract class SchemaToolTestCase extends TestCase {
 	/** @return void Preview never calls a native mutator. */
 	public function testPreviewHasNoEffect(): void {
 		$this->gateway->expects($this->never())->method('apply');
-		$this->assertTrue($this->flow->preview(static::ACTION, $this->arguments(), 'alice')['requiresConfirmation']);
+		$this->assertTrue($this->flow->preview(SchemaActionFixture::of($this, static::ACTION), $this->arguments(), 'alice')['requiresConfirmation']);
 	}
 	/** @return void No write operation inherits read/create grants. */
 	public function testGrantDeniedBeforeNativeLookup(): void {
 		$this->grants->setGrant('alice', 'tables', $this->sharing() ? 'share' : 'schema', false);
 		$this->gateway->expects($this->never())->method('prepare');
 		$this->expectException(ToolFailure::class);
-		$this->flow->preview(static::ACTION, $this->arguments(), 'alice');
+		$this->flow->preview(SchemaActionFixture::of($this, static::ACTION), $this->arguments(), 'alice');
 	}
 	/** @return void Closed schema rejects extras before native lookup. */
 	public function testClosedSchema(): void {
 		$this->gateway->expects($this->never())->method('prepare');
 		$this->expectException(\InvalidArgumentException::class);
-		$this->flow->preview(static::ACTION, $this->arguments() + ['uuid' => 'hidden'], 'alice');
+		$this->flow->preview(SchemaActionFixture::of($this, static::ACTION), $this->arguments() + ['uuid' => 'hidden'], 'alice');
 	}
 	/** @return void Confirm is strictly boolean; string true cannot cross the gate. */
 	public function testNoCoercion(): void {
@@ -79,15 +79,15 @@ abstract class SchemaToolTestCase extends TestCase {
 	public function testDivergentState(): void {
 		$this->gateway->expects($this->never())->method('apply');
 		$this->expectException(PlanChanged::class);
-		$this->flow->handle(static::ACTION, $this->arguments() + ['confirm' => true, 'plan_state' => 'wrong'], 'alice');
+		$this->flow->handle(SchemaActionFixture::of($this, static::ACTION), $this->arguments() + ['confirm' => true, 'plan_state' => 'wrong'], 'alice');
 	}
 	/** @return void A confirmed call executes once and observes after an exception too. */
 	public function testSingleAttemptAndReadbackAfterFailure(): void {
-		$plan = $this->flow->preview(static::ACTION, $this->arguments(), 'alice');
+		$plan = $this->flow->preview(SchemaActionFixture::of($this, static::ACTION), $this->arguments(), 'alice');
 		$journal = []; $afterPreview = $journal;
 		$this->gateway->expects($this->once())->method('apply')->willReturnCallback(static function () use (&$journal): never { $journal[] = 'attempt'; throw new \RuntimeException('secret native error'); });
 		$this->gateway->expects($this->once())->method('observe')->willReturnCallback(static function () use (&$journal): array { $journal[] = 'readback'; return static::ACTION === 'unshare_node' ? [] : ['title' => 'new']; });
-		$r = $this->flow->handle(static::ACTION, $this->arguments() + ['confirm' => true, 'plan_state' => $plan['plan_state']], 'alice');
+		$r = $this->flow->handle(SchemaActionFixture::of($this, static::ACTION), $this->arguments() + ['confirm' => true, 'plan_state' => $plan['plan_state']], 'alice');
 		$text = $r['content'][0]['text']; $this->assertStringNotContainsString('secret native error', $text);
 		$this->assertSame('observed', json_decode($text, true)['status']);
 		\OCA\Mcp\Tests\Unit\Contract\Oracle\GoldenFile::assertMatches($this, __DIR__ . '/../../Contract/effects/tables.' . str_replace('_', '-', static::ACTION) . '.json',
@@ -95,10 +95,10 @@ abstract class SchemaToolTestCase extends TestCase {
 	}
 	/** @return void Failed or denied observation never fabricates success. */
 	public function testReadbackFailureIsUnverified(): void {
-		$plan = $this->flow->preview(static::ACTION, $this->arguments(), 'alice');
+		$plan = $this->flow->preview(SchemaActionFixture::of($this, static::ACTION), $this->arguments(), 'alice');
 		$this->gateway->expects($this->once())->method('apply')->willReturn(3);
 		$this->gateway->method('observe')->willThrowException(new ToolFailure('private payload'));
-		$r = $this->flow->handle(static::ACTION, $this->arguments() + ['confirm' => true, 'plan_state' => $plan['plan_state']], 'alice');
+		$r = $this->flow->handle(SchemaActionFixture::of($this, static::ACTION), $this->arguments() + ['confirm' => true, 'plan_state' => $plan['plan_state']], 'alice');
 		$this->assertSame('unverified', json_decode($r['content'][0]['text'], true)['status']);
 		$this->assertStringNotContainsString('private payload', $r['content'][0]['text']);
 	}
@@ -112,19 +112,19 @@ abstract class SchemaToolTestCase extends TestCase {
 		$caps->method('supports')->willReturn(true);
 		$caps->method('profile')->willReturn('2.3.2');
 		$flow = new SchemaFlow($gateway, new PlanState($config), $this->grants, $this->session, $caps);
-		$plan = $flow->preview(static::ACTION, $this->arguments(), 'alice');
-		$result = $flow->handle(static::ACTION, $this->arguments() + ['confirm' => true, 'plan_state' => $plan['plan_state']], 'alice');
+		$plan = $flow->preview(SchemaActionFixture::of($this, static::ACTION), $this->arguments(), 'alice');
+		$result = $flow->handle(SchemaActionFixture::of($this, static::ACTION), $this->arguments() + ['confirm' => true, 'plan_state' => $plan['plan_state']], 'alice');
 		$this->assertTrue(json_decode($result['content'][0]['text'], true)['requiresConfirmation']);
 	}
 	/** @return void Revoking the grant during the native attempt prevents private readback. */
 	public function testReadbackRenewsTheGrant(): void {
-		$plan = $this->flow->preview(static::ACTION, $this->arguments(), 'alice');
+		$plan = $this->flow->preview(SchemaActionFixture::of($this, static::ACTION), $this->arguments(), 'alice');
 		$this->gateway->method('apply')->willReturnCallback(function (): ?int {
 			$this->grants->setGrant('alice', 'tables', $this->sharing() ? 'share' : 'schema', false);
 			return 3;
 		});
 		$this->gateway->expects($this->never())->method('observe');
-		$result = $this->flow->handle(static::ACTION, $this->arguments() + ['confirm' => true, 'plan_state' => $plan['plan_state']], 'alice');
+		$result = $this->flow->handle(SchemaActionFixture::of($this, static::ACTION), $this->arguments() + ['confirm' => true, 'plan_state' => $plan['plan_state']], 'alice');
 		$this->assertSame('unverified', json_decode($result['content'][0]['text'], true)['status']);
 	}
 
@@ -139,8 +139,8 @@ abstract class SchemaToolTestCase extends TestCase {
 		$caps->method('supports')->willReturn(true);
 		$caps->method('profile')->willReturn('2.3.2');
 		$flow = new SchemaFlow($gateway, new PlanState($config), $this->grants, $this->session, $caps);
-		$plan = $flow->preview(static::ACTION, $this->arguments(), 'alice');
-		$result = $flow->handle(static::ACTION, $this->arguments() + ['confirm' => true, 'plan_state' => $plan['plan_state']], 'alice');
+		$plan = $flow->preview(SchemaActionFixture::of($this, static::ACTION), $this->arguments(), 'alice');
+		$result = $flow->handle(SchemaActionFixture::of($this, static::ACTION), $this->arguments() + ['confirm' => true, 'plan_state' => $plan['plan_state']], 'alice');
 		$receipt = json_decode($result['content'][0]['text'], true);
 		$this->assertSame('observed', $receipt['status']);
 		$this->assertSame([], $receipt['differentFields']);

@@ -37,7 +37,7 @@ final class SchemaObservationTest extends TestCase {
 		};
 		$reader = $this->createMock(SchemaTargetReader::class);
 		$reader->method('target')->willReturnCallback(static fn ($kind): object => $kind === 'column' ? $column : $view);
-		$observed = (new SchemaObservation($reader))->observe('create_column', ['arguments' => ['table_id' => 1, 'view_ids' => [7]], 'kind' => 'column', 'views' => [7 => ['columnSettings' => [$old]]]], 2, 'alice');
+		$observed = (new SchemaObservation($reader))->columnCreated(['arguments' => ['table_id' => 1, 'view_ids' => [7]], 'kind' => 'column', 'views' => [7 => ['columnSettings' => [$old]]]], 2, 'alice');
 		$this->assertSame(!$lost, $observed['viewsVerified']);
 	}
 }

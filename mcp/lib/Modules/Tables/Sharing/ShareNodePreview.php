@@ -8,15 +8,16 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Tables\Sharing;
 
 use OCA\Mcp\Modules\Tables\Writing\SchemaFlow;
+use OCA\Mcp\Modules\Tables\Integration\ShareNodeAction;
 
 /** ShareNode effect-free plan. */
 final class ShareNodePreview {
-	/** @param SchemaFlow $flow Shared authorization and observation protocol. */
-	public function __construct(private SchemaFlow $flow) {}
+	/** @param SchemaFlow $flow Common protocol. @param ShareNodeAction $action Tool-specific authorized intent. */
+	public function __construct(private SchemaFlow $flow, private ShareNodeAction $action) {}
 	/**
 	 * @param array<string,mixed> $args Tool arguments.
 	 * @param string $uid Caller.
 	 * @return array<string,mixed> MCP plan.
 	 */
-	public function preview(array $args, string $uid): array { return $this->flow->preview('share_node', $args, $uid); }
+	public function preview(array $args, string $uid): array { return $this->flow->preview($this->action, $args, $uid); }
 }

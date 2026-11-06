@@ -15,13 +15,13 @@ final class UpdateColumnTest extends SchemaToolTestCase {
 		$this->session->method('assertCaller')->willThrowException(new \RuntimeException('session mismatch'));
 		$this->gateway->expects($this->never())->method('prepare');
 		$this->expectException(\RuntimeException::class);
-		$this->flow->preview(static::ACTION, $this->arguments(), 'alice');
+		$this->flow->preview(SchemaActionFixture::of($this, static::ACTION), $this->arguments(), 'alice');
 	}
 	/** @return void Type and subtype are never accepted as update fields. */
 	public function testTypeChangeRefusesTheWholePatch(): void {
 		$args = $this->arguments(); $args['patch']['type'] = 'text';
 		$this->gateway->expects($this->never())->method('prepare');
 		$this->expectException(\InvalidArgumentException::class);
-		$this->flow->preview(static::ACTION, $args, 'alice');
+		$this->flow->preview(SchemaActionFixture::of($this, static::ACTION), $args, 'alice');
 	}
 }

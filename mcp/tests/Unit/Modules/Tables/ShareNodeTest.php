@@ -15,6 +15,6 @@ final class ShareNodeTest extends SchemaToolTestCase {
 		$this->session->method('assertCaller')->willThrowException(new \RuntimeException('session mismatch'));
 		$this->gateway->expects($this->never())->method('prepare');
 		$this->expectException(\RuntimeException::class);
-		$this->flow->preview(static::ACTION, $this->arguments(), 'alice');
+		$this->flow->preview(SchemaActionFixture::of($this, static::ACTION), $this->arguments(), 'alice');
 	}
 }

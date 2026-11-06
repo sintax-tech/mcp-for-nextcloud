@@ -29,4 +29,4 @@ require_once __DIR__ . '/../Compat/ReleaseUpgradeProbe.php';
 Server::get(\OCP\App\IAppManager::class)->loadApp('mcp');
 
 require_once __DIR__ . '/../Compat/LegacyCredentialFixture.php';
-\OCA\Mcp\Tests\Integration\Compat\LegacyCredentialFixture::write($argv[1]);
+\OCA\Mcp\Tests\Integration\Compat\LegacyCredentialFixture::write($argv[1], Server::get(\OCP\IAppConfig::class)->getValueString('mcp', 'installed_version'));

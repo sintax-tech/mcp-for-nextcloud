@@ -10,8 +10,8 @@ if [ "${MCP_IT_BASELINE_TAG+x}" != x ]; then
 	exit 0
 fi
 candidate=$MCP_IT_BASELINE_TAG
-if ! printf '%s\n' "$candidate" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
-	echo 'MCP_IT_BASELINE_TAG must have the form v<major>.<minor>.<patch>.' >&2
+if ! printf '%s\n' "$candidate" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$'; then
+	echo 'MCP_IT_BASELINE_TAG must have the form v<major>.<minor>.<patch>, optionally followed by -rc.<number>.' >&2
 	exit 2
 fi
 if ! git -C "$repo" rev-parse --verify --quiet "refs/tags/$candidate" >/dev/null; then

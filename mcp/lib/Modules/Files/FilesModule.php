@@ -27,7 +27,7 @@ final class FilesModule extends CatalogModule {
 	/** Maximum size of the new content accepted by files_edit and files_replace, in bytes. */
 	public const MAX_EDIT_BYTES = 10 * 1024 * 1024;
 	/** Folder in the user's root that receives a copy of every file before an edit writes it. */
-	public const BACKUP_FOLDER = FileBackup::FOLDER;
+	public const BACKUP_FOLDER = \OCA\Mcp\Modules\Files\Backups\FileBackup::FOLDER;
 	/** Extra rows fetched by files_search to make up for unreadable matches filtered out afterwards. */
 	public const SEARCH_OVERFETCH = 10;
 

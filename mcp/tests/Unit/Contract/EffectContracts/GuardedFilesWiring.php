@@ -26,7 +26,7 @@ use OCA\Mcp\Access\FileTypes\FileTypeGuard;
 use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Platform\FileAccess\ActorRoot;
 use OCA\Mcp\Modules\Files\ContentTypeGate;
-use OCA\Mcp\Modules\Files\Deletion\DeleteBackendGate;
+use OCA\Mcp\Modules\Files\Integration\DeleteBackendGate;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;

@@ -22,7 +22,7 @@ use OCA\Mcp\Platform\Text\UnifiedDiff;
  * Backup, write and report for files_edit and files_replace.
  *
  * The backup service is an argument so a test that replaces the module's backup is the one that runs.
- * {@see FileBackup} does not read the file-type policy. This class asks {@see ContentTypeGate} before
+ * {@see \OCA\Mcp\Modules\Files\Backups\FileBackup} does not read the file-type policy. This class asks {@see ContentTypeGate} before
  * the backup and again immediately before the write.
  */
 final class ContentCommit {
@@ -44,7 +44,7 @@ final class ContentCommit {
 	 * Copies the original, then writes `$content`. A refusal before the copy leaves no backup.
 	 * A refusal after the copy keeps the backup and reports the same partial state as a failed write.
 	 *
-	 * @param FileBackup $backup Backup of the module that is executing, not one captured earlier.
+	 * @param \OCA\Mcp\Modules\Files\Backups\FileBackup $backup Backup of the module that is executing, not one captured earlier.
 	 * @param Folder $root The user's folder.
 	 * @param string $userId Authenticated user.
 	 * @param File $file File about to be overwritten.
@@ -55,7 +55,7 @@ final class ContentCommit {
 	 * @return array{path:string, size:int, etag:string, access:array<string, mixed>, backup:string, diff:string}
 	 * @throws ToolFailure When the preparation or the write fails, or the type policy refuses the name.
 	 */
-	public function commit(FileBackup $backup, Folder $root, string $userId, File $file, string $path, string $content, ?string $etag, string $before): array {
+	public function commit(\OCA\Mcp\Modules\Files\Backups\FileBackup $backup, Folder $root, string $userId, File $file, string $path, string $content, ?string $etag, string $before): array {
 		// Before the copy: a refused name must not create a backup.
 		$this->types->assertCurrentName($file);
 		$copy = $backup->prepare($root, $file, $path, $userId, $etag);

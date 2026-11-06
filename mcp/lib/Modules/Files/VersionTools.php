@@ -39,7 +39,7 @@ final class VersionTools {
 	public function __construct(
 		private IAppManager $appManager,
 		private IUserManager $userManager,
-		private FileBackup $backup,
+		private \OCA\Mcp\Modules\Files\Backups\FileBackup $backup,
 		private NodeAccessInfo $access,
 		private ContainerInterface $container,
 		private ?LockAwareWrite $locks = null,

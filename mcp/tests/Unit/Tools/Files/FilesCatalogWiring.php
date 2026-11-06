@@ -17,7 +17,7 @@ final class FilesCatalogWiring implements ContainerInterface {
 	private const TYPES = [
 		'rootFolder' => \OCP\Files\IRootFolder::class,
 		'extractor' => \OCA\Mcp\Modules\Files\TextExtractor::class,
-		'backup' => \OCA\Mcp\Modules\Files\FileBackup::class,
+		'backup' => \OCA\Mcp\Modules\Files\Backups\FileBackup::class,
 		'userManager' => \OCP\IUserManager::class,
 		'db' => \OCP\IDBConnection::class,
 		'accessInfo' => \OCA\Mcp\Platform\FileAccess\NodeAccessInfo::class,
@@ -44,7 +44,7 @@ final class FilesCatalogWiring implements ContainerInterface {
 		'replaceFile' => \OCA\Mcp\Modules\Files\Handler\ReplaceFileHandler::class,
 		'restoreVersion' => \OCA\Mcp\Modules\Files\Handler\RestoreVersionHandler::class,
 		'backupLocation' => \OCA\Mcp\Platform\Backups\BackupLocation::class,
-		'backupPlan' => \OCA\Mcp\Modules\Files\BackupPlan::class,
+		'backupPlan' => \OCA\Mcp\Modules\Files\Backups\BackupPlan::class,
 		'deleteFile' => \OCA\Mcp\Modules\Files\Handler\DeleteFileHandler::class,
 		'actorRoot' => \OCA\Mcp\Platform\FileAccess\ActorRoot::class,
 	];
@@ -54,7 +54,7 @@ final class FilesCatalogWiring implements ContainerInterface {
 	public static function module(
 		\OCP\Files\IRootFolder $rootFolder,
 		\OCA\Mcp\Modules\Files\TextExtractor $extractor,
-		\OCA\Mcp\Modules\Files\FileBackup $backup,
+		\OCA\Mcp\Modules\Files\Backups\FileBackup $backup,
 		\OCP\IUserManager $userManager,
 		\OCP\IDBConnection $db,
 		\OCA\Mcp\Platform\FileAccess\NodeAccessInfo $accessInfo,
@@ -81,7 +81,7 @@ final class FilesCatalogWiring implements ContainerInterface {
 		?\OCA\Mcp\Modules\Files\Handler\ReplaceFileHandler $replaceFile = null,
 		?\OCA\Mcp\Modules\Files\Handler\RestoreVersionHandler $restoreVersion = null,
 		?\OCA\Mcp\Platform\Backups\BackupLocation $backupLocation = null,
-		?\OCA\Mcp\Modules\Files\BackupPlan $backupPlan = null,
+		?\OCA\Mcp\Modules\Files\Backups\BackupPlan $backupPlan = null,
 		?\OCA\Mcp\Modules\Files\Handler\DeleteFileHandler $deleteFile = null,
 		?\OCA\Mcp\Platform\FileAccess\ActorRoot $actorRoot = null
 	): FilesModule {

@@ -13,7 +13,7 @@ use OCA\Mcp\Tests\Unit\Platform\FileAccess\FakeLockManager;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
-use OCA\Mcp\Modules\Files\FileBackupPreparation;
+use OCA\Mcp\Modules\Files\Backups\FileBackupPreparation;
 use OCA\Mcp\Modules\Files\Reorganization;
 use OCP\App\IAppManager;
 use OCP\Files\Lock\ILock;

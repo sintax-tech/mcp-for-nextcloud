@@ -125,7 +125,7 @@ final class Reorganization {
 		if ($path === '/') {
 			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists());
 		}
-		if (FileBackup::isBackupPath($path, $this->backupLocation)) {
+		if (\OCA\Mcp\Modules\Files\Backups\FileBackup::isBackupPath($path, $this->backupLocation)) {
 			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath());
 		}
 		$relPath = ltrim($path, '/');
@@ -399,7 +399,7 @@ final class Reorganization {
 		if ($path === '/') {
 			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists());
 		}
-		if (FileBackup::isBackupPath($path, $this->backupLocation)) {
+		if (\OCA\Mcp\Modules\Files\Backups\FileBackup::isBackupPath($path, $this->backupLocation)) {
 			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath());
 		}
 		$rel = ltrim($path, '/');
@@ -922,7 +922,7 @@ final class Reorganization {
 	 * @throws ToolFailure when the path is /MCP backups or inside it
 	 */
 	public static function notBackup(string $path, ?\OCA\Mcp\Platform\Backups\BackupLocation $location = null): string {
-		return BackupWriteBoundary::checked($path, $location);
+		return \OCA\Mcp\Modules\Files\Backups\BackupWriteBoundary::checked($path, $location);
 	}
 
 	/**

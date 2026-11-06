@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Files\Editing;
 
 use OCA\Mcp\Modules\Files\Handler\EditFileHandler;
 use OCP\Files\Folder;
-use OCA\Mcp\Modules\Files\FileBackup;
+use OCA\Mcp\Modules\Files\Backups\FileBackup;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 
 /** Runs the operation that replaces file content through the guarded edit handler inside the actor view. */

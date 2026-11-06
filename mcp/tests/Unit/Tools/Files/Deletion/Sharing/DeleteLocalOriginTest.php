@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files\Deletion\Sharing;
 use OCA\Mcp\Platform\Backups\BackupLocation;
 use OCA\Mcp\Platform\Backups\BackupSettingsDocument;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
-use OCA\Mcp\Modules\Files\Deletion\DeleteBackendGate;
+use OCA\Mcp\Modules\Files\Integration\DeleteBackendGate;
 use OCA\Mcp\Modules\Files\Deletion\DeleteEligibility;
 use OCA\Mcp\Modules\Files\Deletion\Sharing\DeleteLocalOrigin;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;

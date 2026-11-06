@@ -12,7 +12,7 @@ use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCP\Files\NotFoundException;
 use OCA\Mcp\Modules\Files\CheckoutService;
-use OCA\Mcp\Modules\Files\FileBackup;
+use OCA\Mcp\Modules\Files\Backups\FileBackup;
 use OCA\Mcp\Modules\Files\FileWriteBoundary;
 use OCA\Mcp\Modules\Files\Presentation\EditingMessages;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
@@ -30,7 +30,7 @@ use OCP\Files\File;
 /** Owns files_checkout planning and link emission for the resolved current node. */
 final class CheckoutFileHandler {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\BackupPlan|null $backupPlan effective plan fields
+	 * @param \OCA\Mcp\Modules\Files\Backups\BackupPlan|null $backupPlan effective plan fields
 	 * @param CheckoutService $checkout Link service.
 	 * @param NodeAccessInfo $accessInfo Existing access description.
 	 * @param SharedWriteGuard $guard Existing shared-write confirmation.
@@ -43,7 +43,7 @@ final class CheckoutFileHandler {
 		private SharedWriteGuard $guard, private ?FilesAccessGuard $visibilityGuard,
 		private ?LockAwareWrite $locks, private ?FileTypeGuard $fileTypes,
 		private ?\OCA\Mcp\Platform\Backups\BackupLocation $backupLocation = null,
-		private ?\OCA\Mcp\Modules\Files\BackupPlan $backupPlan = null) {
+		private ?\OCA\Mcp\Modules\Files\Backups\BackupPlan $backupPlan = null) {
 	}
 
 	/**
@@ -69,7 +69,7 @@ final class CheckoutFileHandler {
 		$shared = $this->guard->guard($file, $userId, $path, false);
 		// The same refusal the mint gives, so the plan cannot promise links the upload would not honour.
 		$this->checkout->assertAvailable($userId);
-		return ($this->backupPlan ?? new \OCA\Mcp\Modules\Files\BackupPlan())->decorate([
+		return ($this->backupPlan ?? new \OCA\Mcp\Modules\Files\Backups\BackupPlan())->decorate([
 			'action' => 'files_checkout',
 			'path' => $path,
 			'etag' => (string)$file->getEtag(),

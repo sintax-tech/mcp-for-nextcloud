@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 declare(strict_types=1);
-namespace OCA\Mcp\Modules\Files\Deletion;
+namespace OCA\Mcp\Modules\Files\Integration;
 
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
@@ -76,7 +76,7 @@ class DeleteBackendGate {
 				throw new \RuntimeException('Unknown or insufficient trash allowance');
 			}
 		} catch (\Throwable) {
-			throw new ToolFailure(DeleteMessages::unavailable());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Deletion\DeleteMessages::unavailable());
 		}
 	}
 }

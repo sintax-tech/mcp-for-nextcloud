@@ -27,7 +27,7 @@ use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
-use OCA\Mcp\Modules\Files\FileBackup;
+use OCA\Mcp\Modules\Files\Backups\FileBackup;
 use OCA\Mcp\Modules\Files\FileCreation;
 use OCA\Mcp\Modules\Files\FileExists;
 use OCA\Mcp\Modules\Files\Presentation\CheckoutMessages;
@@ -132,7 +132,7 @@ final class CheckoutWriteHandler {
 			$copy = $this->backup->prepare($root, $file, $row->path, $row->userId, $row->etag, $asUser);
 			$this->visibilityGuard?->assertVisible($file);
 			FileWriteBoundary::check($this->fileTypes, $file->getName());
-			\OCA\Mcp\Modules\Files\BackupWriteBoundary::afterCopy($this->backup, $row->path, $copy);
+			\OCA\Mcp\Modules\Files\Backups\BackupWriteBoundary::afterCopy($this->backup, $row->path, $copy);
 			$write = static fn () => $file->putContent((string)file_get_contents($body));
 			// Checked again right before the write: the backup took time, and files_lock does not refuse every lock.
 			NodeAccess::mutate(fn () => $this->locks === null ? $write() : $this->locks->run($write, $file, $row->userId, $row->path, $asUser), $this->visibilityGuard);

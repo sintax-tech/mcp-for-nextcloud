@@ -16,7 +16,7 @@ use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Modules\Files\ContentTypeGate;
-use OCA\Mcp\Modules\Files\FileBackup;
+use OCA\Mcp\Modules\Files\Backups\FileBackup;
 use OCA\Mcp\Modules\Files\Presentation\EditingMessages;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\VersionTools;
@@ -35,7 +35,7 @@ use OCP\Files\NotFoundException;
  */
 final class RestoreVersionHandler {
 	/**
-	 * @param \OCA\Mcp\Modules\Files\BackupPlan|null $backupPlan effective plan fields
+	 * @param \OCA\Mcp\Modules\Files\Backups\BackupPlan|null $backupPlan effective plan fields
 	 * @param NodeAccessInfo $access Access description of the file on the plan.
 	 * @param SharedWriteGuard $shared Confirmation of a write outside the personal scope.
 	 * @param ContentTypeGate $types Current-name policy, one snapshot per boundary.
@@ -50,7 +50,7 @@ final class RestoreVersionHandler {
 		private ?LockAwareWrite $locks = null,
 		private ?FilesAccessGuard $visibilityGuard = null,
 		private ?\OCA\Mcp\Platform\Backups\BackupLocation $backupLocation = null,
-		private ?\OCA\Mcp\Modules\Files\BackupPlan $backupPlan = null,
+		private ?\OCA\Mcp\Modules\Files\Backups\BackupPlan $backupPlan = null,
 	) {
 	}
 
@@ -81,7 +81,7 @@ final class RestoreVersionHandler {
 		$described = $versions->describe($file, $version, $userId);
 		$this->types->assertCurrentName($file);
 		$shared = $this->shared->guard($file, $userId, $path, false);
-		return ($this->backupPlan ?? new \OCA\Mcp\Modules\Files\BackupPlan())->decorate([
+		return ($this->backupPlan ?? new \OCA\Mcp\Modules\Files\Backups\BackupPlan())->decorate([
 			'action' => 'files_version_restore',
 			'path' => $path,
 			'version' => $described,

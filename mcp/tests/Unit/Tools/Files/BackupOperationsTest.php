@@ -10,8 +10,8 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 use OCA\Mcp\Platform\Backups\BackupLocation;
 use OCA\Mcp\Platform\Backups\BackupCopies;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
-use OCA\Mcp\Modules\Files\FileBackup;
-use OCA\Mcp\Modules\Files\BackupPlan;
+use OCA\Mcp\Modules\Files\Backups\FileBackup;
+use OCA\Mcp\Modules\Files\Backups\BackupPlan;
 use OCA\Mcp\Modules\Contacts\Backup\ContactBackup;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -163,7 +163,7 @@ final class BackupOperationsTest extends FilesToolsTestCase {
 		foreach (['/.mcp-backups/Documentos/a.bak', ''] as $copy) {
 			$backup = $this->createMock(FileBackup::class);
 			$backup->method('assertWritablePath')->willThrowException(new ToolFailure('Reserved path'));
-			try { \OCA\Mcp\Modules\Files\BackupWriteBoundary::afterCopy($backup, '/a', $copy); self::fail('Late refusal bypassed'); }
+			try { \OCA\Mcp\Modules\Files\Backups\BackupWriteBoundary::afterCopy($backup, '/a', $copy); self::fail('Late refusal bypassed'); }
 			catch (ToolFailure $error) {
 				self::assertSame('Reserved path ' . \OCA\Mcp\Modules\Files\Presentation\EditingMessages::originalKept($copy), $error->getMessage());
 				if ($copy !== '') { self::assertSame(1, substr_count($error->getMessage(), $copy)); }
@@ -174,7 +174,7 @@ final class BackupOperationsTest extends FilesToolsTestCase {
 		$backup->method('assertWritablePath')->willThrowException(new \RuntimeException('unrelated'));
 		$this->expectException(\RuntimeException::class);
 		$this->expectExceptionMessage('unrelated');
-		\OCA\Mcp\Modules\Files\BackupWriteBoundary::afterCopy($backup, '/a', '/copy');
+		\OCA\Mcp\Modules\Files\Backups\BackupWriteBoundary::afterCopy($backup, '/a', '/copy');
 	}
 
 	/** @return void many sibling decisions share one config load; guard invalidation reloads and corruption hides with per-node safe logging */

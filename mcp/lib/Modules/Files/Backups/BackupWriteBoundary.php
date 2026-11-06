@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files;
+namespace OCA\Mcp\Modules\Files\Backups;
 
 use OCA\Mcp\Platform\Backups\BackupLocation;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;

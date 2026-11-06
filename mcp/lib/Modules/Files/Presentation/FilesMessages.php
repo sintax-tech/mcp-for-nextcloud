@@ -13,7 +13,7 @@ use OCA\Mcp\Platform\FileAccess\CommonMessages;
 /** Common path, node and exposure messages shared within Files. */
 final class FilesMessages {
 	/** Folder in the user's root that receives a copy of every file before an edit writes it. */
-	public const BACKUP_FOLDER = \OCA\Mcp\Modules\Files\FileBackup::FOLDER;
+	public const BACKUP_FOLDER = \OCA\Mcp\Modules\Files\Backups\FileBackup::FOLDER;
 
 	/** D7 refusal for folder operations that could expose an unverified subtree. @return string message text */
 	public static function folderExposureRefused(): string {

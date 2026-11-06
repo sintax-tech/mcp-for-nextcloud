@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files\Deletion\Sharing;
 
-use OCA\Mcp\Modules\Files\Deletion\DeleteBackendGate;
+use OCA\Mcp\Modules\Files\Integration\DeleteBackendGate;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\IUser;
 use PHPUnit\Framework\TestCase;

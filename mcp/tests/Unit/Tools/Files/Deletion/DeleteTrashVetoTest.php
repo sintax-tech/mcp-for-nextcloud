@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files\Deletion;
 
-use OCA\Mcp\Modules\Files\Deletion\DeleteTrashVeto;
+use OCA\Mcp\Modules\Files\Integration\DeleteTrashVeto;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Exceptions\AbortedEventException;

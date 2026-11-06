@@ -13,7 +13,7 @@ use OCA\Mcp\L10n\Translator;
 final class CheckoutMessages {
 	/** @return string description of files_checkout */
 	public static function checkoutTool(): string {
-		return \OCA\Mcp\Modules\Files\BackupMessages::checkoutTool();
+		return \OCA\Mcp\Modules\Files\Backups\BackupMessages::checkoutTool();
 	}
 
 	/**
@@ -27,7 +27,7 @@ final class CheckoutMessages {
 	 * @return string what the links of a checkout mean
 	 */
 	public static function planCheckoutConsequence(): string {
-		return \OCA\Mcp\Modules\Files\BackupMessages::planCheckoutConsequence();
+		return \OCA\Mcp\Modules\Files\Backups\BackupMessages::planCheckoutConsequence();
 	}
 
 	/**

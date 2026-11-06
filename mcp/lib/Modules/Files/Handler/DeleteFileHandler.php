@@ -12,7 +12,7 @@ use OCA\Mcp\Modules\Files\Deletion\DeleteEligibility;
 use OCA\Mcp\Modules\Files\Deletion\DeleteMessages;
 use OCA\Mcp\Modules\Files\Deletion\DeleteOutcome;
 use OCA\Mcp\Modules\Files\Deletion\TrashReceiptMessages;
-use OCA\Mcp\Modules\Files\Deletion\TrashReceiptVerifier;
+use OCA\Mcp\Modules\Files\Integration\TrashReceiptVerifier;
 use OCP\Files\Folder;
 use OCA\Mcp\Modules\Files\Deletion\Sharing\DeleteSharedConfirmation;
 
@@ -21,11 +21,11 @@ final class DeleteFileHandler {
 	/**
 	 * @param DeleteEligibility $eligibility Fresh scope, identity, native ACL and backend admission.
 	 * @param LockAwareWrite $locks Existing lock-awareness, with its documented native/token-lock race limits.
-	 * @param \OCA\Mcp\Modules\Files\Deletion\DeleteTrashVeto $veto Refuses observed native opt-outs.
+	 * @param \OCA\Mcp\Modules\Files\Integration\DeleteTrashVeto $veto Refuses observed native opt-outs.
 	 * @param \Psr\Log\LoggerInterface $logger Logs only the failure class, without resource data.
 	 * @param TrashReceiptVerifier|null $receipts Reads only the actor's own trash bin after a removal; absent means no trash receipt.
 	 */
-	public function __construct(private DeleteEligibility $eligibility, private LockAwareWrite $locks, private \Psr\Log\LoggerInterface $logger, private \OCA\Mcp\Modules\Files\Deletion\DeleteTrashVeto $veto, private ?TrashReceiptVerifier $receipts = null) {
+	public function __construct(private DeleteEligibility $eligibility, private LockAwareWrite $locks, private \Psr\Log\LoggerInterface $logger, private \OCA\Mcp\Modules\Files\Integration\DeleteTrashVeto $veto, private ?TrashReceiptVerifier $receipts = null) {
 	}
 
 	/**

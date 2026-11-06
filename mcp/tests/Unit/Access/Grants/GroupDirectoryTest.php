@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Access\Grants;
 
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Controller\GroupDirectoryController;
 use OCA\Mcp\Db\GroupGrantsMapper;
 use OCA\Mcp\Db\GroupLifeMapper;
@@ -184,7 +185,7 @@ final class GroupDirectoryTest extends TestCase {
 		$this->assertSame(['overrides' => 1000, 'different' => 0], $counts['permissions']['_system']['eligible']);
 		// Two reads for the group header, then two group/lifecycle SELECTs per block of 200. No scope SQL/member.
 		$this->assertSame(12, $database->queryCount);
-		$this->assertSame(5 * (array_sum(array_map('count', \OCA\Mcp\Access\Grants\GrantPolicy::CATALOG)) + 2), $this->data->batchCalls);
+		$this->assertSame(5 * (array_sum(array_map('count', GrantCatalog::CATALOG)) + 2), $this->data->batchCalls);
 		fwrite(STDERR, sprintf("T17 group 1000: %d app SELECTs, %d official config batch calls, %.3f ms (SQLite memory + directory/config doubles; state reads mocked)\n",
 			$database->queryCount, $this->data->batchCalls, $ms));
 	}

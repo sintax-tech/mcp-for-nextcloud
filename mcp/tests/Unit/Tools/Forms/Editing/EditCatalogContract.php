@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Forms\Editing;
 
-use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Modules\Forms\FormsModule;
@@ -34,7 +34,7 @@ final class EditCatalogContract {
 			if ($create || $edit) { Assert::assertArrayNotHasKey('grantAnyOf', $definition); Assert::assertFalse($definition['annotations']['idempotentHint']); }
 		}
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($test), new InMemoryOAuthStore());
-		Assert::assertSame(['read', 'results', 'create', 'edit'], GrantPolicy::CATALOG['forms']);
-		foreach (GrantPolicy::CATALOG['forms'] as $operation) { Assert::assertSame($operation === 'read', $policy->granted('alice', 'forms', $operation)); }
+		Assert::assertSame(['read', 'results', 'create', 'edit'], GrantCatalog::CATALOG['forms']);
+		foreach (GrantCatalog::CATALOG['forms'] as $operation) { Assert::assertSame($operation === 'read', $policy->granted('alice', 'forms', $operation)); }
 	}
 }

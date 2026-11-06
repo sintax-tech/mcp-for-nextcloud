@@ -12,7 +12,7 @@ use OCA\Mcp\Tests\Unit\Access\Grants\MatrixFixture;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use InvalidArgumentException;
 use OCA\Mcp\Access\Grants\GrantMatrix;
-use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use PHPUnit\Framework\TestCase;
 
 final class GrantMatrixTest extends TestCase {
@@ -95,7 +95,7 @@ final class GrantMatrixTest extends TestCase {
 		$this->fx->policy->setGrant('ana', 'notes', 'edit', true);
 		$this->fx->config->batchCalls = 0;
 		$page = $this->fx->matrix()->page('', '', 1);
-		$this->assertSame(2 + array_sum(array_map('count', GrantPolicy::CATALOG)), $this->fx->config->batchCalls);
+		$this->assertSame(2 + array_sum(array_map('count', GrantCatalog::CATALOG)), $this->fx->config->batchCalls);
 		$ana = array_column($page['users'], null, 'uid')['ana'];
 		$this->assertTrue($ana['eligible']);
 		$this->assertTrue($ana['grants']['notes']['edit']);
@@ -106,7 +106,7 @@ final class GrantMatrixTest extends TestCase {
 
 	public function testCatalogAppsAndService(): void {
 		$page = $this->fx->matrix()->page('', '', 1);
-		$this->assertSame(['files' => GrantPolicy::CATALOG['files'], 'notes' => GrantPolicy::CATALOG['notes'], 'calendar' => GrantPolicy::CATALOG['calendar'], 'people' => GrantPolicy::CATALOG['people'], 'logs' => ['read']], $page['catalog']);
+		$this->assertSame(['files' => GrantCatalog::CATALOG['files'], 'notes' => GrantCatalog::CATALOG['notes'], 'calendar' => GrantCatalog::CATALOG['calendar'], 'people' => GrantCatalog::CATALOG['people'], 'logs' => ['read']], $page['catalog']);
 		$this->assertSame(\OCA\Mcp\Tests\Unit\Tools\Forms\FormsCatalogExpectation::apps(['files' => true, 'notes' => true, 'deck' => false, 'calendar' => true, 'talk' => false, 'contacts' => false, 'tasks' => false, 'people' => true, 'logs' => true, 'mail' => false, 'tables' => false]) + ['polls' => false], $page['appsEnabled']);
 		$this->assertFalse($page['serviceEnabled']);
 	}
@@ -143,7 +143,7 @@ final class GrantMatrixTest extends TestCase {
 
 		$page = $this->fx->matrix()->page('Bruno', '', 1);
 
-		$this->assertSame(GrantPolicy::CATALOG['calendar'], $page['catalog']['calendar']);
+		$this->assertSame(GrantCatalog::CATALOG['calendar'], $page['catalog']['calendar']);
 		$this->assertTrue($page['users'][0]['grants']['calendar']['create']);
 	}
 
@@ -154,7 +154,7 @@ final class GrantMatrixTest extends TestCase {
 		$page = $this->fx->matrix()->page('Bruno', '', 1);
 
 		// People and logs come with the core, so they stay whatever optional app is missing.
-		$this->assertSame(['files' => GrantPolicy::CATALOG['files'], 'people' => GrantPolicy::CATALOG['people'], 'logs' => GrantPolicy::CATALOG['logs']], $page['catalog']);
+		$this->assertSame(['files' => GrantCatalog::CATALOG['files'], 'people' => GrantCatalog::CATALOG['people'], 'logs' => GrantCatalog::CATALOG['logs']], $page['catalog']);
 		$this->assertSame(\OCA\Mcp\Tests\Unit\Tools\Forms\FormsCatalogExpectation::apps(['files' => true, 'notes' => false, 'deck' => false, 'calendar' => false, 'talk' => false, 'contacts' => false, 'tasks' => false, 'people' => true, 'logs' => true, 'mail' => false, 'tables' => false]) + ['polls' => false], $page['appsEnabled']);
 		$this->assertTrue($page['users'][0]['grants']['notes']['edit']);
 	}

@@ -9,6 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Tables;
 
 use InvalidArgumentException;
 use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
@@ -93,7 +94,7 @@ final class TablesModuleTest extends TestCase {
 	 * @return void
 	 */
 	public function testTheCatalogOffersReadingTables(): void {
-		$this->assertSame(['read', 'create', 'edit'], GrantPolicy::CATALOG['tables']);
+		$this->assertSame(['read', 'create', 'edit'], GrantCatalog::CATALOG['tables']);
 		$this->assertNotContains('tables', GrantPolicy::DENIED_READS);
 		$this->assertTrue($this->policy->granted('alice', 'tables', 'read'));
 		$this->assertFalse($this->policy->granted('alice', 'tables', 'create'));

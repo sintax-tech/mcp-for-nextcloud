@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\People;
 
 use InvalidArgumentException;
 use OCA\Mcp\AppInfo\Application;
-use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
@@ -200,7 +200,7 @@ final class PeopleModuleTest extends TestCase {
 
 	public function testReadGrantIsOnByDefaultAndCanBeDenied(): void {
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
-		self::assertSame(['read'], GrantPolicy::CATALOG['people']);
+		self::assertSame(['read'], GrantCatalog::CATALOG['people']);
 		self::assertTrue($policy->granted('alice', 'people', 'read'));
 		$policy->setGrant('alice', 'people', 'read', false);
 		self::assertFalse($policy->granted('alice', 'people', 'read'));

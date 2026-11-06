@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Stack;
-use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
@@ -122,7 +122,7 @@ final class DeckStructureToolsTest extends TestCase {
 		self::assertSame('deck', $definition['module']);
 		self::assertSame('deck', $definition['app']);
 		self::assertSame($operation, $definition['operation']);
-		self::assertContains($operation, GrantPolicy::CATALOG['deck']);
+		self::assertContains($operation, GrantCatalog::CATALOG['deck']);
 		self::assertSame($required, $definition['inputSchema']['required']);
 		self::assertFalse($definition['inputSchema']['additionalProperties']);
 		self::assertTrue(WriteGate::isWrite($definition));
@@ -361,7 +361,7 @@ final class DeckStructureToolsTest extends TestCase {
 
 	private function registry(DeckGatewayInterface $gateway): ToolRegistry {
 		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
-		foreach (GrantPolicy::CATALOG['deck'] as $operation) {
+		foreach (GrantCatalog::CATALOG['deck'] as $operation) {
 			$policy->setGrant('alice', 'deck', $operation, true);
 		}
 		$apps = $this->createMock(IAppManager::class);

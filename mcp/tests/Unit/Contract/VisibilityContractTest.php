@@ -9,6 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Contract;
 
 use OCA\Mcp\AppInfo\Application;
 use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
@@ -246,7 +247,7 @@ final class VisibilityContractTest extends TestCase {
 			return $this->policy;
 		}
 		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($this->config->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
-		foreach (GrantPolicy::CATALOG as $module => $operations) {
+		foreach (GrantCatalog::CATALOG as $module => $operations) {
 			foreach ($operations as $operation) {
 				$policy->setGrant('alice', $module, $operation, true);
 			}

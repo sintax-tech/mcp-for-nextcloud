@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Contract\Oracle;
 
 use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Mcp\Protocol\McpProtocol;
 use OCA\Mcp\Mcp\Prompts\PromptCatalog;
@@ -51,7 +52,7 @@ final class EffectsGate {
 		$this->data = new InMemoryConfig();
 		$this->config = $this->data->mock($test);
 		$this->policy = InMemoryConfig::policy($this->config, new InMemoryOAuthStore());
-		foreach (GrantPolicy::CATALOG as $module => $operations) {
+		foreach (GrantCatalog::CATALOG as $module => $operations) {
 			foreach ($operations as $operation) {
 				$this->policy->setGrant(self::USER, $module, $operation, true);
 			}

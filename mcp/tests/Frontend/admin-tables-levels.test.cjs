@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Tests of the Tables column of the admin page: GrantPolicy::CATALOG offers Tables reading, creating and editing rows,
+ * Tests of the Tables column of the admin page: GrantCatalog::CATALOG offers Tables reading, creating and editing rows,
  * src/admin/admin-levels.js gives it the three levels None, Read and Full (creating and editing together), and every place that
  * names a module names Tables.
  */
@@ -29,11 +29,11 @@ function levels() {
 	return context.McpAdminLevels
 }
 
-/** @return {string[]} GrantPolicy::CATALOG['tables'], read from the PHP source */
+/** @return {string[]} GrantCatalog::CATALOG['tables'], read from the PHP source */
 function tablesOperations() {
 	const policy = fs.readFileSync(path.join(root, 'lib/Access/Grants/GrantCatalog.php'), 'utf8')
 	const line = policy.match(/'tables' => \[([^\]]*)\]/)
-	assert.ok(line, 'the Tables entry of GrantPolicy::CATALOG')
+	assert.ok(line, 'the Tables entry of GrantCatalog::CATALOG')
 	return [...line[1].matchAll(/'(\w+)'/g)].map((match) => match[1])
 }
 

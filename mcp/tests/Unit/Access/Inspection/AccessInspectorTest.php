@@ -8,7 +8,7 @@ namespace OCA\Mcp\Tests\Unit\Access\Inspection;
 
 use OCA\Mcp\Db\ResourceScopeMapper;
 use OCA\Mcp\Access\Inspection\AccessInspector as I;
-use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Access\Inspection\CalendarAccessExplainer;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
@@ -62,7 +62,7 @@ final class AccessInspectorTest extends TestCase {
 		$rows = $this->effective();
 
 		$expected = 0;
-		foreach (GrantPolicy::CATALOG as $operations) {
+		foreach (GrantCatalog::CATALOG as $operations) {
 			$expected += count($operations);
 		}
 		$this->assertCount($expected, $rows);

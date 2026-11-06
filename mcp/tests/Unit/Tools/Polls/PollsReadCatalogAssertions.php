@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 
 use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Modules\Polls\PollsModule;
 use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use PHPUnit\Framework\TestCase;
@@ -23,7 +24,7 @@ final class PollsReadCatalogAssertions {
 	public static function check(TestCase $test, PollsModule $module): void {
 		$tools = PollsCreateCatalogAssertions::separate($test, $module->definitions());
 		$test->assertSame(['polls_list_polls', 'polls_read_poll', 'polls_list_votes', 'polls_read_results', 'polls_list_links'], array_column($tools, 'name'));
-		$test->assertSame(['read', 'results', 'links', 'create'], GrantPolicy::CATALOG['polls']);
+		$test->assertSame(['read', 'results', 'links', 'create'], GrantCatalog::CATALOG['polls']);
 		foreach ($tools as $tool) {
 			$test->assertSame(['polls', 'read', 'polls'], [$tool['module'], $tool['operation'], $tool['app']]);
 			$test->assertFalse($tool['inputSchema']['additionalProperties']);

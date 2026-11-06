@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 use OCA\Deck\Db\Assignment;
 use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Stack;
-use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use OCA\Mcp\Modules\Deck\DeckModule as DeckToolModule;
@@ -363,7 +363,7 @@ final class DeckPreviewTest extends TestCase {
 
 	private function registry(DeckGatewayInterface $gateway): ToolRegistry {
 		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
-		foreach (GrantPolicy::CATALOG['deck'] as $operation) {
+		foreach (GrantCatalog::CATALOG['deck'] as $operation) {
 			$policy->setGrant('alice', 'deck', $operation, true);
 		}
 		$apps = $this->createMock(IAppManager::class);

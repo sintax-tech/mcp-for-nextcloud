@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 
 use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
@@ -37,7 +38,7 @@ final class MailMoveToolsRegistryTest extends TestCase {
 	 * @return void
 	 */
 	public function testTheMoveGrantStartsDenied(): void {
-		$this->assertContains('move', GrantPolicy::CATALOG['mail']);
+		$this->assertContains('move', GrantCatalog::CATALOG['mail']);
 		$this->assertFalse(GrantPolicy::defaultGranted('mail', 'move'));
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
 		foreach (['read', 'messages', 'attachments', 'flags'] as $operation) {

@@ -35,9 +35,6 @@ use OCP\IConfig;
  * operation, discards it. The snapshot is held per operation and released in finally, never kept between operations.
  */
 class GrantPolicy implements ScopeReader {
-	/** Operations an admin can grant per module; every write, including opt-in Files delete, starts denied. */
-	public const CATALOG = GrantCatalog::CATALOG;
-
 	/**
 	 * Modules whose read starts denied like a write. The server log shows the file names, URLs and accounts of every
 	 * user, so nobody may read it by omission: an administrator turns it on user by user.
@@ -408,7 +405,7 @@ class GrantPolicy implements ScopeReader {
 				$eligibility = $context->eligible();
 				$state = ['eligible' => $eligibility->allowed, 'connected' => $context->connected(), 'grants' => [],
 					'origins' => ['eligible' => ['source' => $eligibility->source, 'groupIds' => $eligibility->groupIds], 'grants' => []]];
-				foreach (self::CATALOG as $module => $operations) {
+				foreach (GrantCatalog::CATALOG as $module => $operations) {
 					foreach ($operations as $operation) {
 						$grant = $context->granted($module, $operation);
 						$state['grants'][$module][$operation] = $grant->allowed;
@@ -431,7 +428,7 @@ class GrantPolicy implements ScopeReader {
 	 * @return bool whether the pair exists in CATALOG
 	 */
 	public static function inCatalog(string $module, string $operation): bool {
-		return isset(self::CATALOG[$module]) && in_array($operation, self::CATALOG[$module], true);
+		return isset(GrantCatalog::CATALOG[$module]) && in_array($operation, GrantCatalog::CATALOG[$module], true);
 	}
 
 	/**

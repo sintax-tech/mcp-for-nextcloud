@@ -23,7 +23,7 @@ use Psr\Log\LoggerInterface;
 
 /** Application::MODULES drives the registrations: a module's own bindings, then the capability registry. */
 final class ModuleRegistrationsTest extends TestCase {
-	/** Legacy modules and catalogs without a registration contribute nothing. */
+	/** Catalogs without a registration contribute no bindings or probes. */
 	public function testOnlyRegistrationsOfCatalogModulesRun(): void {
 		self::assertSame([\OCA\Mcp\Modules\Files\FilesRegistration::class, \OCA\Mcp\Modules\Notes\NotesRegistration::class, \OCA\Mcp\Modules\Calendar\CalendarRegistration::class, \OCA\Mcp\Modules\Contacts\ContactsRegistration::class, \OCA\Mcp\Modules\Tasks\TasksRegistration::class, \OCA\Mcp\Modules\Deck\DeckRegistration::class,
 			\OCA\Mcp\Modules\Talk\TalkRegistration::class, \OCA\Mcp\Modules\People\PeopleRegistration::class, \OCA\Mcp\Modules\Mail\MailRegistration::class], array_map(static fn (object $registration): string => $registration::class, ModuleRegistrations::of(Application::MODULES)));
@@ -79,9 +79,20 @@ final class ModuleRegistrationsTest extends TestCase {
 		self::assertSame([ProbeRegistration::class, FeatureProbe::class], $asked);
 	}
 
-	/** A module naming a class that is not a ModuleRegistration is refused. */
+	/** Non-catalog modules and registrations of the wrong type are both refused. */
 	public function testARegistrationOfTheWrongTypeFails(): void {
-		$this->expectException(\LogicException::class);
-		ModuleRegistrations::of([WrongRegistrationModule::class]);
+		$legacy = new class implements \OCA\Mcp\Mcp\Tools\ToolModule {
+			/** @return list<array<string, mixed>> No fixture tools. */
+			public function definitions(): array { return []; }
+			/** @param string $name Tool name. @param array<string, mixed> $arguments Arguments. @param string $userId Actor. @return array<string, mixed> No fixture result. */
+			public function call(string $name, array $arguments, string $userId): array { return []; }
+		};
+		foreach ([$legacy::class, WrongRegistrationModule::class] as $module) {
+			try { ModuleRegistrations::of([$module]); self::fail('Invalid module registration accepted'); }
+			catch (\LogicException $error) {
+				self::assertStringContainsString($module, $error->getMessage());
+				self::assertStringContainsString($module === $legacy::class ? 'does not extend' : 'does not implement', $error->getMessage());
+			}
+		}
 	}
 }

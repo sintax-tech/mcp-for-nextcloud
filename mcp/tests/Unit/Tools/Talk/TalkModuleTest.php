@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Talk;
 
 use InvalidArgumentException;
-use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Modules\Talk\Locating\Conversation;
 use OCA\Mcp\Modules\Talk\Failures\ConversationAccessException;
@@ -809,7 +809,7 @@ class TalkModuleTest extends TestCase {
 	/** The registry with this module and every Talk grant on: the one place that decides about confirm. */
 	private function registry(): ToolRegistry {
 		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
-		foreach (GrantPolicy::CATALOG['talk'] as $operation) {
+		foreach (GrantCatalog::CATALOG['talk'] as $operation) {
 			$policy->setGrant('alice', 'talk', $operation, true);
 		}
 		$apps = $this->createMock(IAppManager::class);

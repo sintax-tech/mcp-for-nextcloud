@@ -11,12 +11,22 @@ use RuntimeException;
 
 /** D6 frozen membership, live ceilings, portable expiration and source-only controls. */
 final class FileSizeTest extends ArchitectureCase {
+	/** Historical RE-06c membership shared by the two local ratchet controls. */
+	private const HISTORICAL_POLICY_WRITER = [
+		'fqcn' => 'OCA\\Mcp\\Service\\Policy\\PolicyWriter',
+		'ceiling' => 1485,
+		'expires' => 'RE-06d',
+		'steps' => [
+			['ticket' => 'RE-06', 'ceiling' => 1300], ['ticket' => 'RE-06b', 'ceiling' => 900], ['ticket' => 'RE-06c', 'ceiling' => 500],
+		],
+	];
+
 	private function problems(?array $live = null, ?array $files = null, ?TicketState $tickets = null): array {
 		return SizeRules::problems($files === null ? self::tree() : self::tree()->withFiles($files), $live ?? AppTree::json(self::tree()->root . '/scripts/dev/size-inventory.json'), self::json('size-baseline'), self::json('source-size-baseline'), $tickets ?? self::tickets());
 	}
 	public function testAppSourceHasNoNewOversizedFileOrRaisedCeiling(): void {
 		self::assertCount(21, self::json('size-baseline')['final']);
-		self::assertCount(6, self::json('size-baseline')['transitional']);
+		self::assertCount(0, self::json('size-baseline')['transitional']);
 		self::assertSame([], $this->problems());
 		self::assertSame('lib/OAuth/Storage/OAuthStore.php', self::tree()->present('OCA\\Mcp\\OAuth\\OAuthStore'));
 	}
@@ -31,14 +41,14 @@ final class FileSizeTest extends ArchitectureCase {
 	public function testMembershipPromotionCeilingsAndTransientGrowthFail(): void {
 		$live = AppTree::json(self::tree()->root . '/scripts/dev/size-inventory.json');
 		self::assertSame([], SizeRules::problems(self::tree(), $live, self::json('size-baseline'), self::json('source-size-baseline'), self::tickets()));
+		// Keep the invalid source-ceiling control independent of the real RE-28 completion.
+		$sourceTickets = new TicketState(self::tickets()->known, array_values(array_diff(self::tickets()->completed, ['RE-28'])));
 		$source = array_key_first(array_filter(self::tree()->files, static fn (string $path): bool => str_starts_with($path, 'src/'), ARRAY_FILTER_USE_KEY));
 		$paths = [$source => ['ceiling' => substr_count(self::tree()->files[$source], "\n"), 'expires' => 'RE-28']]; $paths[$source]['ceiling']++;
-		self::assertNotSame([], SizeRules::problems(self::tree(), $live, self::json('size-baseline'), $paths, self::tickets()));
+		self::assertNotSame([], SizeRules::problems(self::tree(), $live, self::json('size-baseline'), $paths, $sourceTickets));
 		// Exercise the historical ratchet locally even after every live exception is retired.
-		$name = 'OCA\\Mcp\\Service\\Policy\\PolicyWriter';
-		$row = ['ceiling' => 1485, 'expires' => 'RE-06d', 'steps' => [
-			['ticket' => 'RE-06', 'ceiling' => 1300], ['ticket' => 'RE-06b', 'ceiling' => 900], ['ticket' => 'RE-06c', 'ceiling' => 500],
-		]];
+		$name = self::HISTORICAL_POLICY_WRITER['fqcn'];
+		$row = self::HISTORICAL_POLICY_WRITER; unset($row['fqcn']);
 		$baseline = self::json('size-baseline');
 		$baseline['transitional'] = [['nameParts' => explode('\\', $name), ...$row]];
 		$live['transitional'] = [['fqcn' => $name, ...$row]];
@@ -66,7 +76,7 @@ final class FileSizeTest extends ArchitectureCase {
 	}
 	public function testCompletedPolicyWriterStepLowersTheEffectiveCeiling(): void {
 		$live = AppTree::json(self::tree()->root . '/scripts/dev/size-inventory.json');
-		$name = 'OCA\\Mcp\\Service\\Policy\\PolicyWriter';
+		$name = self::HISTORICAL_POLICY_WRITER['fqcn'];
 		$files = self::tree()->files; $path = self::tree()->present($name);
 		// The real completed tree has no exception: the default 300-line ceiling applies.
 		$files[$path] = str_repeat("// x\n", 300);
@@ -75,14 +85,15 @@ final class FileSizeTest extends ArchitectureCase {
 		self::assertNotSame([], $this->problems(files: $files));
 		// Fabricate the historical RE-06c state without reviving an expired live exception.
 		$tickets = new TicketState(self::tickets()->known, array_values(array_diff(self::tickets()->completed, ['RE-06d'])));
-		foreach (self::json('size-baseline')['transitional'] as $row) {
-			if (implode('\\', $row['nameParts']) === $name) {
-				unset($row['nameParts']); $live['transitional'][] = ['fqcn' => $name, ...$row];
-			}
-		}
+		$row = self::HISTORICAL_POLICY_WRITER; unset($row['fqcn']);
+		$live['transitional'][] = ['fqcn' => $name, ...$row];
+		$baseline = self::json('size-baseline');
+		$baseline['transitional'][] = ['nameParts' => explode('\\', $name), ...$row];
+		/** @param array<string, string> $sources Local source bytes. @return list<string> Violations of the fabricated RE-06c state only. */
+		$problems = static fn (array $sources): array => SizeRules::problems(self::tree()->withFiles($sources), $live, $baseline, self::json('source-size-baseline'), $tickets);
 		$files[$path] = str_repeat("// x\n", 500);
-		self::assertSame([], $this->problems($live, $files, $tickets));
+		self::assertSame([], $problems($files));
 		$files[$path] .= "// x\n";
-		self::assertNotSame([], $this->problems($live, $files, $tickets));
+		self::assertNotSame([], $problems($files));
 	}
 }

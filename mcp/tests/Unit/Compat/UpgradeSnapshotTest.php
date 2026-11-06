@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Compat;
 
 use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Tests\Integration\Compat\SnapshotProbe;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
@@ -27,7 +28,7 @@ final class UpgradeSnapshotTest extends TestCase {
 		$config = $data->mock($this);
 		$store = new InMemoryOAuthStore();
 		$policy = InMemoryConfig::policy($config, $store);
-		$plan = SnapshotProbe::plan(GrantPolicy::CATALOG);
+		$plan = SnapshotProbe::plan(GrantCatalog::CATALOG);
 		foreach ($plan as $uid => $values) {
 			$data->user[$uid]['mcp'] = array_filter($values, static fn (?string $value): bool => $value !== null);
 		}
@@ -48,7 +49,7 @@ final class UpgradeSnapshotTest extends TestCase {
 					$this->assertSame($service === '1' && $eligible && $connected, $policy->canConnect($uid), "$uid service $service");
 					$this->assertSame($eligible, $matrix[$uid]['eligible'], $uid);
 					$this->assertSame($connected, $matrix[$uid]['connected'], $uid);
-					foreach (GrantPolicy::CATALOG as $module => $operations) {
+					foreach (GrantCatalog::CATALOG as $module => $operations) {
 						foreach ($operations as $operation) {
 							$default = $operation === 'read' && $module !== 'logs' ? '1' : '0';
 							$legacy = ($values["grant_{$module}_{$operation}"] ?? $default) === '1';
@@ -65,7 +66,7 @@ final class UpgradeSnapshotTest extends TestCase {
 				static fn (array $values): bool => $values['connected'] === '1')))), $policy->connectedUsers());
 			$this->assertSame($app, $data->app, 'reading materialized an app value');
 		}
-		$this->assertSame(3 * 9 * array_sum(array_map('count', GrantPolicy::CATALOG)), $checked);
+		$this->assertSame(3 * 9 * array_sum(array_map('count', GrantCatalog::CATALOG)), $checked);
 		$this->assertSame($users, $data->user, 'reading materialized a default or changed a stored value');
 		$this->assertSame($revision, $data->revision);
 		$this->assertSame([], $data->events);

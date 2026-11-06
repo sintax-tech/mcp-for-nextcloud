@@ -7,13 +7,11 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Forms;
 
 use OCA\Mcp\Modules\Forms\FormsModule;
-use OCA\Mcp\Mcp\Tools\CatalogModule;
 use Psr\Container\ContainerInterface;
 
 /** Preserves the seven legacy fixture collaborators while constructing the catalog's tools from the same graph. */
 final class FormsTestModule {
 	public static function build(object ...$handlers): FormsModule {
-		if (!is_subclass_of(FormsModule::class, CatalogModule::class)) { return new FormsModule(...$handlers); }
 		$classes = FormsModule::catalog(); $services = [];
 		foreach ($classes as $i => $class) {
 			if ($i < 4) { $services[$class] = new $class($handlers[$i]); continue; }

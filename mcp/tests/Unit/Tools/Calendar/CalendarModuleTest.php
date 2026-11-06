@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Calendar;
 
 use InvalidArgumentException;
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Mcp\Tools\RendersPlans;
 
@@ -19,7 +19,7 @@ final class CalendarModuleTest extends CalendarTestCase {
 		foreach ($this->module->definitions() as $definition) {
 			$this->assertSame(['name', 'description', 'inputSchema', 'module', 'operation', 'app'], array_slice(array_keys($definition), 0, 6));
 			$this->assertSame(['calendar', 'calendar'], [$definition['module'], $definition['app']]);
-			$this->assertContains($definition['operation'], GrantPolicy::CATALOG['calendar']);
+			$this->assertContains($definition['operation'], GrantCatalog::CATALOG['calendar']);
 			$this->assertFalse($definition['inputSchema']['additionalProperties']);
 			$this->assertIsObject($definition['inputSchema']['properties']);
 			$operations[$definition['name']] = $definition['operation'];
@@ -68,7 +68,7 @@ final class CalendarModuleTest extends CalendarTestCase {
 
 	public function testWriteGrantNamesRemainAvailableForFutureReactivation(): void {
 		foreach (['create', 'edit', 'move', 'delete', 'transfer'] as $operation) {
-			$this->assertContains($operation, GrantPolicy::CATALOG['calendar']);
+			$this->assertContains($operation, GrantCatalog::CATALOG['calendar']);
 		}
 	}
 

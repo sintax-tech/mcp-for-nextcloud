@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Contract;
 
 use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\DiscoveryHarness;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\DiscoveryScenario;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\GoldenFile;
@@ -72,7 +73,7 @@ final class GoldenContractTest extends TestCase {
 
 	/** @return void the grant catalog, its order and the reads that start denied */
 	public function testGrantCatalogIsUnchanged(): void {
-		$this->assertGolden('grant-catalog', ['CATALOG' => GrantPolicy::CATALOG, 'DENIED_READS' => GrantPolicy::DENIED_READS]);
+		$this->assertGolden('grant-catalog', ['CATALOG' => GrantCatalog::CATALOG, 'DENIED_READS' => GrantPolicy::DENIED_READS]);
 	}
 
 	/** @return void every route of appinfo/routes.php with the controller method the router derives from its name */

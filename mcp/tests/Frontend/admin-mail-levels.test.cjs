@@ -31,11 +31,11 @@ function load(files) {
 	return context
 }
 
-/** @return {string[]} GrantPolicy::CATALOG['mail'], read from the PHP source */
+/** @return {string[]} GrantCatalog::CATALOG['mail'], read from the PHP source */
 function mailOperations() {
 	const policy = require('./AdminTemplates.cjs').read(path.join(root, 'lib/Access/Grants/GrantCatalog.php'), 'utf8')
 	const line = policy.match(/'mail' => \[([^\]]*)\]/)
-	assert.ok(line, 'the Mail entry of GrantPolicy::CATALOG')
+	assert.ok(line, 'the Mail entry of GrantCatalog::CATALOG')
 	return [...line[1].matchAll(/'(\w+)'/g)].map((match) => match[1])
 }
 

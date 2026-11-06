@@ -19,7 +19,7 @@ vm.runInNewContext(require('./AdminManifest.cjs').levelsSource(), context)
 const Levels = context.McpAdminLevels
 const plain = (value) => JSON.parse(JSON.stringify(value))
 
-/** GrantPolicy::CATALOG as PHP declares it: module => list of operations. */
+/** GrantCatalog::CATALOG as PHP declares it: module => list of operations. */
 function catalog() {
 	const policy = fs.readFileSync(path.join(root, 'lib/Access/Grants/GrantCatalog.php'), 'utf8')
 	const body = policy.slice(policy.indexOf('public const CATALOG = ['), policy.indexOf('];', policy.indexOf('public const CATALOG = [')))
@@ -27,7 +27,7 @@ function catalog() {
 	for (const [, module, operations] of body.matchAll(/'(\w+)' => \[([^\]]*)\]/g)) {
 		out[module] = [...operations.matchAll(/'(\w+)'/g)].map((match) => match[1])
 	}
-	assert.ok(Object.keys(out).length >= 9, 'the catalog was read from GrantPolicy.php')
+	assert.ok(Object.keys(out).length >= 9, 'the catalog was read from GrantCatalog.php')
 	return out
 }
 

@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Contract;
 
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\FakeCalendarDav;
@@ -167,7 +167,7 @@ final class ToolErrorsLanguagesTest extends TestCase {
 	private function call(ToolModule $module, string $name, array $arguments): string {
 		$config = new InMemoryConfig();
 		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($config->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
-		foreach (GrantPolicy::CATALOG as $grantedModule => $operations) {
+		foreach (GrantCatalog::CATALOG as $grantedModule => $operations) {
 			foreach ($operations as $operation) {
 				$policy->setGrant('alice', $grantedModule, $operation, true);
 			}

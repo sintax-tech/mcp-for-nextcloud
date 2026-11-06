@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 
 use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Modules\Mail\Integration\MailAttachmentSupport;
@@ -38,7 +39,7 @@ final class MailAttachmentToolsRegistryTest extends TestCase {
 	 * @return void
 	 */
 	public function testTheAttachmentsGrantStartsDenied(): void {
-		$this->assertContains('attachments', GrantPolicy::CATALOG['mail']);
+		$this->assertContains('attachments', GrantCatalog::CATALOG['mail']);
 		$this->assertFalse(GrantPolicy::defaultGranted('mail', 'attachments'));
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
 		$policy->setGrant('alice', 'mail', 'messages', true);

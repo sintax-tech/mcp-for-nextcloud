@@ -13,6 +13,7 @@ use OCA\Mcp\Db\GroupLifeMapper;
 use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\ResourceScopeMapper;
 use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Access\Policy\GroupSourceClassifier;
 use OCA\Mcp\Access\Policy\GroupTrustObserver;
 use OCA\Mcp\Access\Policy\LogsRoleReader;
@@ -154,7 +155,7 @@ final class ScopeGuardTest extends TestCase {
 	/** @return array<string, array{string, string}> every catalog cell */
 	public static function cells(): array {
 		$cells = [];
-		foreach (GrantPolicy::CATALOG as $module => $operations) {
+		foreach (GrantCatalog::CATALOG as $module => $operations) {
 			foreach ($operations as $operation) {
 				$cells["$module $operation"] = [$module, $operation];
 			}

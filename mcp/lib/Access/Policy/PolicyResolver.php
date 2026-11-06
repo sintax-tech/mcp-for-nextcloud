@@ -15,6 +15,7 @@ use OCA\Mcp\Db\ResourceScopeMapper;
 use OCA\Mcp\Platform\Compat\AppEnablement;
 use OCA\Mcp\Access\Grants\GrantMatrix;
 use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Access\ResourceScope\ScopeGuard;
 use OCP\App\IAppManager;
 use OCP\Config\IUserConfig;
@@ -258,7 +259,7 @@ class PolicyResolver {
 	/** @return list<string> every user policy key: eligibility, connection and each catalog grant */
 	private static function keys(): array {
 		$keys = [GrantPolicy::ELIGIBLE_KEY, GrantPolicy::CONNECTED_KEY];
-		foreach (GrantPolicy::CATALOG as $module => $operations) {
+		foreach (GrantCatalog::CATALOG as $module => $operations) {
 			foreach ($operations as $operation) {
 				$keys[] = 'grant_' . $module . '_' . $operation;
 			}

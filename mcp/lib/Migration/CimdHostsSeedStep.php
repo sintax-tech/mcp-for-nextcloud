@@ -8,7 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Migration;
 
 use OCA\Mcp\Db\CimdHostsSeeder;
-use OCP\Migration\{IOutput, IRepairStep};
+use OCP\Migration\IOutput;
+use OCP\Migration\IRepairStep;
 
 /** Fresh installs run schema-only migrations: the declared install step seeds host trust after the table exists. */
 final class CimdHostsSeedStep implements IRepairStep {

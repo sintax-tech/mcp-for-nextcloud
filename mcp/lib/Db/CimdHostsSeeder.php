@@ -8,7 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Db;
 
 use OCA\Mcp\OAuth\Clients\ClientMetadataFetcher;
-use OCP\{IAppConfig, IConfig};
+use OCP\IAppConfig;
+use OCP\IConfig;
 
 /** Install/upgrade initialization only: preserves explicit settings and never overwrites a live row or tombstone. */
 class CimdHostsSeeder {

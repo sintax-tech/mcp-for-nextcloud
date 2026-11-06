@@ -49,6 +49,15 @@ final class CurrentMoveSource {
 	 */
 	public static function path(array $tree, array &$data, string $old): string {
 		if (isset($tree[$old])) {
+			// New extracted work classes have no historical move yet: give only this fixture a planned hop.
+			foreach ($data['entries'] as &$entry) {
+				if ($entry['path'] === $old && $entry['target'] === FqcnMap::STAYS) {
+					$current = $entry['fqcn'];
+					$entry = ['path' => $old, 'fqcn' => $current, 'target' => substr($current, 0, strrpos($current, '\\'))
+						. '\\MoveProof\\' . basename($old, '.php'), 'owner' => 'Proof', 'ticket' => 'RE-X'];
+					break;
+				}
+			}
 			return $old;
 		}
 		$map = FqcnMap::fromJson(json_encode($data, JSON_THROW_ON_ERROR));

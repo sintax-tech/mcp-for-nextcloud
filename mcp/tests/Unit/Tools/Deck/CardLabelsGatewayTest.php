@@ -10,7 +10,7 @@ use OCA\Deck\Db\{Acl,Board,Card,CardMapper,Label,LabelMapper,Stack,StackMapper};
 use OCA\Deck\Service\{BoardService,CardService,PermissionService};
 use OCA\Deck\NoPermissionException;
 use OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway;
-use OCA\Mcp\Tools\Deck\{CardLabelChanges, DeckConflictException, DeckRefusalException, DeckSessionException};
+use OCA\Mcp\Modules\Deck\Editing\CardLabelChanges; use OCA\Mcp\Modules\Deck\Failures\DeckConflictException; use OCA\Mcp\Modules\Deck\Failures\DeckRefusalException; use OCA\Mcp\Modules\Deck\Failures\DeckSessionException;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Container\ContainerInterface;

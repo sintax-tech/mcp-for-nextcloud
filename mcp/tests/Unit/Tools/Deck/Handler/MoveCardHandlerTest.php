@@ -9,10 +9,10 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck\Handler;
 
 use OCA\Deck\NoPermissionException;
 use OCA\Deck\StatusException;
-use OCA\Mcp\Tools\Deck\CardFormatter;
+use OCA\Mcp\Modules\Deck\Integration\CardFormatter;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Tools\Deck\DeckMessages;
-use OCA\Mcp\Tools\Deck\Handler\MoveCardHandler;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
+use OCA\Mcp\Modules\Deck\Moving\MoveCardHandler;
 use OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestHelpers;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -82,7 +82,7 @@ final class MoveCardHandlerTest extends TestCase {
 			->handle(['cardId' => 7, 'stackId' => 11], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotFoundOrForbidden(), $this->text($result));
 		self::assertStringNotContainsString('Permission denied', $this->text($result));
 	}
 
@@ -90,7 +90,7 @@ final class MoveCardHandlerTest extends TestCase {
 		$result = $this->handler(new StatusException('Operation not allowed. This card is archived.'))
 			->handle(['cardId' => 7, 'stackId' => 11], 'alice');
 
-		self::assertSame(DeckMessages::errorNotAllowed(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotAllowed(), $this->text($result));
 	}
 
 	public function testBackendFailureBecomesTheGenericMessage(): void {
@@ -98,7 +98,7 @@ final class MoveCardHandlerTest extends TestCase {
 			->handle(['cardId' => 7, 'stackId' => 11], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorGeneric(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorGeneric(), $this->text($result));
 		self::assertStringNotContainsString('deck_cards', $this->text($result));
 	}
 
@@ -157,6 +157,6 @@ final class MoveCardHandlerTest extends TestCase {
 		$result = $handler->handle(['cardId' => 7, 'stackId' => 11], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotFoundOrForbidden(), $this->text($result));
 	}
 }

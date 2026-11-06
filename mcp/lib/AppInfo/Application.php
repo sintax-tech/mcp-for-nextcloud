@@ -16,9 +16,7 @@ use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Modules\Calendar\CalendarModule;
 use OCA\Mcp\Modules\Contacts\ContactsModule;
-use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway;
-use OCA\Mcp\Tools\Deck\DeckToolModule;
+use OCA\Mcp\Modules\Deck\DeckModule;
 use OCA\Mcp\Modules\Talk\TalkModule;
 use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\TextExtractor;
@@ -52,7 +50,7 @@ class Application extends App implements IBootstrap {
 		CalendarModule::class,
 		ContactsModule::class,
 		\OCA\Mcp\Modules\Tasks\TasksModule::class,
-		DeckToolModule::class,
+		DeckModule::class,
 		TalkModule::class,
 		\OCA\Mcp\Modules\People\PeopleModule::class,
 		\OCA\Mcp\Modules\Logs\LogsModule::class,
@@ -92,14 +90,6 @@ class Application extends App implements IBootstrap {
 		$context->registerService(\OCA\Mcp\Access\ResourceScope\ScopeReader::class, static fn (ContainerInterface $c): \OCA\Mcp\Access\ResourceScope\ScopeReader => $c->get(\OCA\Mcp\Access\Grants\GrantPolicy::class));
 		// The Files scope step of the structured-reference filter: the user's Files resource scope of the operation.
 		$context->registerService(\OCA\Mcp\Access\ResourceScope\FileReferenceScope::class, static fn (ContainerInterface $c): \OCA\Mcp\Access\ResourceScope\FileReferenceScope => $c->get(\OCA\Mcp\Access\ResourceScope\FilesReferenceScope::class));
-		// The Talk references read Deck cards through the same gateway the Deck tools use; it resolves Deck lazily.
-		$context->registerService(DeckGatewayInterface::class, static fn (ContainerInterface $c): DeckGatewayInterface => new DeckServiceGateway(
-			$c,
-			$c->get(ITimeFactory::class),
-			new UserTimezone($c->get(IConfig::class)),
-			$c->get(\OCP\ISession::class),
-		));
-		$context->registerService(\OCA\Mcp\Access\References\ReadableDeckCard::class, static fn (ContainerInterface $c): \OCA\Mcp\Access\References\ReadableDeckCard => $c->get(\OCA\Mcp\Tools\Deck\DeckCardReference::class));
 		// Modules of the 1.3.0 contract register their own services and capability probes.
 		ModuleRegistrations::register($context, self::MODULES);
 		$context->registerService(ToolRegistry::class, static fn (ContainerInterface $c): ToolRegistry => new ToolRegistry(

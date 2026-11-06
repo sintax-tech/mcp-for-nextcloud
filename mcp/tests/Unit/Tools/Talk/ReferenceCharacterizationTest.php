@@ -70,7 +70,7 @@ final class ReferenceCharacterizationTest extends TestCase {
 			$oldTrace = $trace; $oldScope = $scope->asked; $trace = []; $scope->asked = [];
 			try {
 				if ($args['type'] === 'deck_card') {
-					$read = (new \OCA\Mcp\Tools\Deck\DeckCardReference($deck))->read('alice', $args['card_id'], $args['board_id']);
+					$read = (new \OCA\Mcp\Modules\Deck\DeckCardReference($deck))->read('alice', $args['card_id'], $args['board_id']);
 				} else {
 					$read = (new \OCA\Mcp\Modules\Calendar\CalendarEventReference(ScopeStub::access($store, $scope), $store, new EventRepository($store, $classification), $classification))
 						->read('alice', $args['calendar'], $args['uid']);

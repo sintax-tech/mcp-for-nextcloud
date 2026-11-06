@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\CriticalFlow;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\EffectsGate;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\FlowRunner;
-use OCA\Mcp\Tools\Deck\DeckMessages;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
 use OCP\Share\IShare;
 use PHPUnit\Framework\TestCase;
 
@@ -24,7 +24,8 @@ final class DeckRemainingEffectsContractTest extends TestCase {
 		$this->gate = new EffectsGate($this);
 		$this->wiring = new DeckGatewayWiring($this, $this->gate);
 		$this->wiring->dependencies = true;
-		$this->gate->serve(fn (): array => [$this->wiring->module()]);
+		$this->gate->serve(fn (): array => [$this->wiring->module()],
+			fn () => new \OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry([\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::capability($this->wiring->module())], $this->createMock(\Psr\Log\LoggerInterface::class)));
 	}
 
 	/** @return void native board insertion with title/color/owner */
@@ -65,7 +66,7 @@ final class DeckRemainingEffectsContractTest extends TestCase {
 			$out = $this->gate->call($tool, $request);
 			$t->record($step, $request, $out, $this->state());
 			$this->assertTrue($out['body']->result->isError ?? false, json_encode($out));
-			$this->assertSame(DeckMessages::dependencyCycle(), $out['body']->result->content[0]->text);
+			$this->assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckDependencyMessages::dependencyCycle(), $out['body']->result->content[0]->text);
 			$this->assertSame($before, $this->state(), 'cycle refusal keeps all native rows and write records');
 		}
 		$t->assertGolden();

@@ -9,8 +9,8 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use OCA\Deck\NoPermissionException;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Tools\Deck\{DeckConflictException, DeckPlanRenderer};
-use OCA\Mcp\Tools\Deck\Handler\ChangeCardDependencyHandler;
+use OCA\Mcp\Modules\Deck\Failures\DeckConflictException; use OCA\Mcp\Modules\Deck\Presentation\DeckPlans\DeckPlanRenderer;
+use OCA\Mcp\Modules\Deck\Dependencies\AddCardDependencyHandler as ChangeCardDependencyHandler;
 use OCA\Mcp\Mcp\{Confirmation\PlanState, Confirmation\PlanChanged, Tools\Validation\ArgumentValidationException};
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -28,14 +28,15 @@ final class DependencyWriteHandlerTest extends TestCase {
 			'board' => $this->ownershipOf($owner), 'graph' => null];
 	}
 
-	private function handler(DeckGatewayInterface $gateway, bool $assign = true): ChangeCardDependencyHandler {
+	private function handler(DeckGatewayInterface $gateway, bool $assign = true): \OCA\Mcp\Modules\Deck\AbstractHandler {
 		$config = $this->createMock(\OCP\IConfig::class);
 		$config->method('getSystemValueString')->willReturn('secret');
-		return new ChangeCardDependencyHandler($gateway, $this->createMock(LoggerInterface::class),
-			$this->cardFormatter(), fn () => new PlanState($config), $assign);
+		$class = $assign ? \OCA\Mcp\Modules\Deck\Dependencies\AddCardDependencyHandler::class : \OCA\Mcp\Modules\Deck\Dependencies\RemoveCardDependencyHandler::class;
+		return new $class($gateway, $this->createMock(LoggerInterface::class),
+			$this->cardFormatter(), fn () => new PlanState($config));
 	}
 
-	private function args(ChangeCardDependencyHandler $handler): array {
+	private function args(\OCA\Mcp\Modules\Deck\AbstractHandler $handler): array {
 		$args = ['cardId' => 7, 'targetId' => 8];
 		return $args + ['confirm' => true, 'plan_state' => $handler->preview($args, 'alice')['plan_state']];
 	}
@@ -50,7 +51,7 @@ final class DependencyWriteHandlerTest extends TestCase {
 		self::assertSame('origin.dependentCards contains target', $p['direction']);
 		self::assertStringContainsString('cards you cannot read', $p['message']);
 		self::assertStringContainsString('those cards', $p['message']);
-		self::assertStringContainsString('Origin', (new DeckPlanRenderer())->render(ChangeCardDependencyHandler::ADD, $p));
+		self::assertStringContainsString('Origin', (new DeckPlanRenderer())->render(ChangeCardDependencyHandler::TOOL, $p));
 	}
 
 	public function testPersistThenThrowReadsBackForBothDirectionsWithoutRetry(): void {
@@ -113,7 +114,7 @@ final class DependencyWriteHandlerTest extends TestCase {
 			$a = $this->args($h);
 			if (!$conflict) { $s['board']['name'] = 'Renamed'; }
 			try { $h->handle($a, 'alice'); self::fail('Stale plan accepted'); }
-			catch (PlanChanged $e) { self::assertSame(ChangeCardDependencyHandler::ADD, $e->plan['action']); }
+			catch (PlanChanged $e) { self::assertSame(ChangeCardDependencyHandler::TOOL, $e->plan['action']); }
 		}
 	}
 

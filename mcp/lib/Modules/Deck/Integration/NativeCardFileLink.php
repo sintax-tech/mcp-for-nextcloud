@@ -12,7 +12,7 @@ use OCP\Constants;
 use OCP\Files\File;
 use OCP\Share\IManager;
 use OCP\Share\IShare;
-use OCA\Mcp\Tools\Deck\CardFiles;
+use OCA\Mcp\Modules\Deck\Attachments\CardFiles;
 
 /**
  * Narrow native type-12 creation and canonical node/card observation, with no file mutations.

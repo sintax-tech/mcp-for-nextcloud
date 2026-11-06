@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use OCA\Deck\Db\Card;
-use OCA\Mcp\Tools\Deck\CardFormatter;
+use OCA\Mcp\Modules\Deck\Integration\CardFormatter;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IURLGenerator;

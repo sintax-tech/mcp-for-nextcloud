@@ -49,7 +49,7 @@ final class DeckAssignments {
 		/** @var IUserManager $users */
 		$users = $this->services->get(IUserManager::class);
 		$out = [];
-		foreach (\OCA\Mcp\Tools\Deck\CardInput::assignees($assignees) as $uid) {
+		foreach (\OCA\Mcp\Modules\Deck\Editing\CardInput::assignees($assignees) as $uid) {
 			$user = $users->get($uid);
 			// Deck evaluates owner, direct ACL, group and circle membership for this account.
 			if ($user === null || !($permissions->getPermissions($boardId, $uid)[Acl::PERMISSION_READ] ?? false)) {

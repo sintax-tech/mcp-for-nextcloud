@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
-use OCA\Mcp\Tools\Deck\AssigneeChanges;
+use OCA\Mcp\Modules\Deck\Editing\AssigneeChanges;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/Stubs/deck_stubs.php';

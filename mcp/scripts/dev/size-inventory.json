@@ -2,37 +2,134 @@
 	"base": "46006682",
 	"limit": 300,
 	"final": [
-		{"fqcn":"OCA\\Mcp\\Controller\\GrantsController","ceiling":598},
-		{"fqcn":"OCA\\Mcp\\Db\\GroupLifeMapper","ceiling":354},
-		{"fqcn":"OCA\\Mcp\\Db\\ResourceScopeMapper","ceiling":471},
-		{"fqcn":"OCA\\Mcp\\Listener\\GroupLifecycleListener","ceiling":384},
-		{"fqcn":"OCA\\Mcp\\OAuth\\OAuthStore","ceiling":377},
-		{"fqcn":"OCA\\Mcp\\OAuth\\TokenService","ceiling":354},
-		{"fqcn":"OCA\\Mcp\\Service\\GrantPolicy","ceiling":484},
-		{"fqcn":"OCA\\Mcp\\Service\\McpProtocol","ceiling":547},
-		{"fqcn":"OCA\\Mcp\\Service\\Policy\\PolicyEventPayload","ceiling":451},
-		{"fqcn":"OCA\\Mcp\\Tools\\Calendar\\CalendarMessages","ceiling":448},
-		{"fqcn":"OCA\\Mcp\\Tools\\Calendar\\CalendarPlanRenderer","ceiling":541},
-		{"fqcn":"OCA\\Mcp\\Tools\\Calendar\\EmbeddedDavDispatcher","ceiling":317},
-		{"fqcn":"OCA\\Mcp\\Tools\\Calendar\\Scheduling\\PlanWarnings","ceiling":382},
-		{"fqcn":"OCA\\Mcp\\Tools\\Common\\LockAwareWrite","ceiling":436},
-		{"fqcn":"OCA\\Mcp\\Tools\\Common\\OutputReferenceFilter","ceiling":441},
-		{"fqcn":"OCA\\Mcp\\Tools\\Deck\\DeckGatewayInterface","ceiling":483},
-		{"fqcn":"OCA\\Mcp\\Tools\\Deck\\DeckMessages","ceiling":550},
-		{"fqcn":"OCA\\Mcp\\Tools\\Deck\\DeckPlanRenderer","ceiling":572},
-		{"fqcn":"OCA\\Mcp\\Tools\\Files\\FileCreation","ceiling":341},
-		{"fqcn":"OCA\\Mcp\\Tools\\ToolGuide","ceiling":414}
+		{
+			"fqcn": "OCA\\Mcp\\Controller\\GrantsController",
+			"ceiling": 598
+		},
+		{
+			"fqcn": "OCA\\Mcp\\Db\\GroupLifeMapper",
+			"ceiling": 354
+		},
+		{
+			"fqcn": "OCA\\Mcp\\Db\\ResourceScopeMapper",
+			"ceiling": 471
+		},
+		{
+			"fqcn": "OCA\\Mcp\\Listener\\GroupLifecycleListener",
+			"ceiling": 384
+		},
+		{
+			"fqcn": "OCA\\Mcp\\OAuth\\OAuthStore",
+			"ceiling": 377
+		},
+		{
+			"fqcn": "OCA\\Mcp\\OAuth\\TokenService",
+			"ceiling": 354
+		},
+		{
+			"fqcn": "OCA\\Mcp\\Service\\GrantPolicy",
+			"ceiling": 484
+		},
+		{
+			"fqcn": "OCA\\Mcp\\Service\\McpProtocol",
+			"ceiling": 547
+		},
+		{
+			"fqcn": "OCA\\Mcp\\Service\\Policy\\PolicyEventPayload",
+			"ceiling": 451
+		},
+		{
+			"fqcn": "OCA\\Mcp\\Tools\\Calendar\\CalendarMessages",
+			"ceiling": 448
+		},
+		{
+			"fqcn": "OCA\\Mcp\\Tools\\Calendar\\CalendarPlanRenderer",
+			"ceiling": 541
+		},
+		{
+			"fqcn": "OCA\\Mcp\\Tools\\Calendar\\EmbeddedDavDispatcher",
+			"ceiling": 317
+		},
+		{
+			"fqcn": "OCA\\Mcp\\Tools\\Calendar\\Scheduling\\PlanWarnings",
+			"ceiling": 382
+		},
+		{
+			"fqcn": "OCA\\Mcp\\Tools\\Common\\LockAwareWrite",
+			"ceiling": 436
+		},
+		{
+			"fqcn": "OCA\\Mcp\\Tools\\Common\\OutputReferenceFilter",
+			"ceiling": 441
+		},
+		{
+			"fqcn": "OCA\\Mcp\\Tools\\Files\\FileCreation",
+			"ceiling": 341
+		},
+		{
+			"fqcn": "OCA\\Mcp\\Tools\\ToolGuide",
+			"ceiling": 414
+		}
 	],
 	"transitional": [
-		{"fqcn":"OCA\\Mcp\\Controller\\CheckoutController","ceiling":562,"expires":"RE-24"},
-		{"fqcn":"OCA\\Mcp\\Service\\Policy\\PolicyWriter","ceiling":900,"expires":"RE-06d","steps":[{"ticket":"RE-06","ceiling":1300},{"ticket":"RE-06b","ceiling":900},{"ticket":"RE-06c","ceiling":500}]},
-		{"fqcn":"OCA\\Mcp\\Tools\\Deck\\DeckToolModule","ceiling":1092,"expires":"RE-27"},
-		{"fqcn":"OCA\\Mcp\\Tools\\Files\\FilesMessages","ceiling":983,"expires":"RE-21c"},
-		{"fqcn":"OCA\\Mcp\\Tools\\Files\\FilesModule","ceiling":755,"expires":"RE-21b"},
-		{"fqcn":"OCA\\Mcp\\Tools\\Files\\FilesPlanRenderer","ceiling":612,"expires":"RE-21c"},
-		{"fqcn":"OCA\\Mcp\\Tools\\Files\\Handler\\ImageSearchHandler","ceiling":312,"expires":"RE-21d"},
-		{"fqcn":"OCA\\Mcp\\Tools\\Files\\ImageTools","ceiling":448,"expires":"RE-21d"},
-		{"fqcn":"OCA\\Mcp\\Tools\\Files\\Reorganization","ceiling":1106,"expires":"RE-23"},
-		{"fqcn":"OCA\\Mcp\\Tools\\Files\\Sharing\\ShareWriter","ceiling":554,"expires":"RE-22"}
+		{
+			"fqcn": "OCA\\Mcp\\Controller\\CheckoutController",
+			"ceiling": 562,
+			"expires": "RE-24"
+		},
+		{
+			"fqcn": "OCA\\Mcp\\Service\\Policy\\PolicyWriter",
+			"ceiling": 900,
+			"expires": "RE-06d",
+			"steps": [
+				{
+					"ticket": "RE-06",
+					"ceiling": 1300
+				},
+				{
+					"ticket": "RE-06b",
+					"ceiling": 900
+				},
+				{
+					"ticket": "RE-06c",
+					"ceiling": 500
+				}
+			]
+		},
+		{
+			"fqcn": "OCA\\Mcp\\Tools\\Files\\FilesMessages",
+			"ceiling": 983,
+			"expires": "RE-21c"
+		},
+		{
+			"fqcn": "OCA\\Mcp\\Tools\\Files\\FilesModule",
+			"ceiling": 755,
+			"expires": "RE-21b"
+		},
+		{
+			"fqcn": "OCA\\Mcp\\Tools\\Files\\FilesPlanRenderer",
+			"ceiling": 612,
+			"expires": "RE-21c"
+		},
+		{
+			"fqcn": "OCA\\Mcp\\Tools\\Files\\Handler\\ImageSearchHandler",
+			"ceiling": 312,
+			"expires": "RE-21d"
+		},
+		{
+			"fqcn": "OCA\\Mcp\\Tools\\Files\\ImageTools",
+			"ceiling": 448,
+			"expires": "RE-21d"
+		},
+		{
+			"fqcn": "OCA\\Mcp\\Tools\\Files\\Reorganization",
+			"ceiling": 1106,
+			"expires": "RE-23"
+		},
+		{
+			"fqcn": "OCA\\Mcp\\Tools\\Files\\Sharing\\ShareWriter",
+			"ceiling": 554,
+			"expires": "RE-22"
+		}
 	]
 }

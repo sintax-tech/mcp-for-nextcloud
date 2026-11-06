@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Tools\Deck\{CardLabelChanges, DeckConflictException, DeckPlanRenderer};
-use OCA\Mcp\Tools\Deck\Handler\EditCardLabelsHandler;
+use OCA\Mcp\Modules\Deck\Editing\CardLabelChanges; use OCA\Mcp\Modules\Deck\Failures\DeckConflictException; use OCA\Mcp\Modules\Deck\Presentation\DeckPlans\DeckPlanRenderer;
+use OCA\Mcp\Modules\Deck\Editing\EditCardLabelsHandler;
 use OCA\Mcp\Mcp\{Confirmation\PlanState, Confirmation\PlanChanged, Tools\Validation\ArgumentValidationException};
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -124,7 +124,7 @@ final class CardLabelsTest extends TestCase {
 		try {
 			foreach(['en','pt_BR','es','de']as$lang){
 				\OCA\Mcp\L10n\Translator::use(new \OCA\Mcp\Tests\Unit\L10n\JsonL10n($lang));
-				$message=\OCA\Mcp\Tools\Deck\DeckMessages::planLabels();
+				$message=\OCA\Mcp\Modules\Deck\Presentation\DeckPlanMessages::planLabels();
 				$title=\OCA\Mcp\Mcp\Tools\ToolPresentation::title(EditCardLabelsHandler::TOOL);
 				if($lang==='en'){self::assertStringContainsString('Only the requested',$message);}
 				else{self::assertStringNotContainsString('Only the requested',$message);self::assertNotSame('Change Deck card labels',$title);}
@@ -139,11 +139,11 @@ final class CardLabelsTest extends TestCase {
 		$apps->method('isEnabledForUser')->willReturnCallback(function()use(&$enabled){return $enabled;});
 		$users=$this->createMock(\OCP\IUserManager::class);$users->method('get')->willReturn($this->createMock(\OCP\IUser::class));
 		$logger=$this->createMock(LoggerInterface::class);
-		$module=new \OCA\Mcp\Tools\Deck\DeckToolModule($this->createMock(\Psr\Container\ContainerInterface::class),
+		$module=\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::build($this->createMock(\Psr\Container\ContainerInterface::class),
 			$apps,$logger,$this->createMock(\OCP\IURLGenerator::class),$this->createMock(\OCP\AppFramework\Utility\ITimeFactory::class),$users,$config);
 		$g=$this->createMock(DeckGatewayInterface::class);$g->method('cardLabelState')->willReturn($this->state());
 		$g->expects(self::never())->method('changeCardLabel');
-		(new \ReflectionProperty($module,'gateway'))->setValue($module,$g);
+		\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::setGateway($module, $g);
 		$registry=new \OCA\Mcp\Mcp\Tools\ToolRegistry([$module],$policy,$apps,$users,$logger);
 		$args=['cardId'=>7,'add'=>[2]];
 		$p=$registry->call(EditCardLabelsHandler::TOOL,$args,'alice')['structuredContent'];
@@ -160,7 +160,7 @@ final class CardLabelsTest extends TestCase {
 		$g->expects(self::once())->method('changeCardLabel')->willThrowException(new \OCA\Deck\NoPermissionException());
 		$h=$this->handler($g);$result=$h->handle($this->args($h),'alice');
 		self::assertTrue($result['isError']);
-		self::assertSame(\OCA\Mcp\Tools\Deck\DeckMessages::errorNotFoundOrForbidden(),$result['content'][0]['text']);
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotFoundOrForbidden(),$result['content'][0]['text']);
 	}
 	public function testUnobservedWriteWithoutExceptionReportsAllPendingAndCurrentLabels(): void {
 		$g=$this->createMock(DeckGatewayInterface::class);$g->method('cardLabelState')->willReturn($this->state());

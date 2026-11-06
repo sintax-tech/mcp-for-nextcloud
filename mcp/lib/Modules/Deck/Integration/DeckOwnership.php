@@ -14,7 +14,7 @@ use OCA\Deck\Db\StackMapper;
 use OCA\Deck\NoPermissionException;
 use OCA\Deck\Service\BoardService;
 use OCA\Deck\Service\PermissionService;
-use OCA\Mcp\Tools\Deck\DeckErrors;
+use OCA\Mcp\Modules\Deck\Integration\DeckErrors;
 
 /** Reads who owns a board, a list or a card after the caller's own permission check. */
 final class DeckOwnership {

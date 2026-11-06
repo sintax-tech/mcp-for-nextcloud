@@ -11,7 +11,7 @@ use OCA\Deck\Db\{Acl, Board, Card, CardMapper, Stack, StackMapper};
 use OCA\Deck\Service\{BoardService, CardService, PermissionService};
 use OCA\Deck\NoPermissionException;
 use OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway;
-use OCA\Mcp\Tools\Deck\{DependencyChange, DeckConflictException, DeckRefusalException};
+use OCA\Mcp\Modules\Deck\Dependencies\DependencyChange; use OCA\Mcp\Modules\Deck\Failures\DeckConflictException; use OCA\Mcp\Modules\Deck\Failures\DeckRefusalException;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 
@@ -60,7 +60,7 @@ final class DependencyWriteGatewayTest extends TestCase {
 		$this->services[BoardService::class]->expects(self::exactly(2))->method('findAll')->with(-2, false, true);
 		$this->services[StackMapper::class]->expects(self::exactly(2))->method('findAll')->with(20);
 		for ($i = 0; $i < 2; $i++) {
-			$graph = (new \OCA\Mcp\Tools\Deck\DependencyGraph($this->gateway))->read('alice', 1);
+			$graph = (new \OCA\Mcp\Modules\Deck\Dependencies\DependencyGraph($this->gateway))->read('alice', 1);
 			self::assertCount(3, $graph['nodes']);
 		}
 	}
@@ -80,7 +80,7 @@ final class DependencyWriteGatewayTest extends TestCase {
 			$this->hidden = [99];
 			foreach ([false, true] as $missing) {
 				$this->missing = $missing;
-				$reader = new \OCA\Mcp\Tools\Deck\Handler\ReadCardDependenciesHandler($this->gateway, $this->createMock(\Psr\Log\LoggerInterface::class), $this->cardFormatter());
+				$reader = new \OCA\Mcp\Modules\Deck\Reading\ReadCardDependenciesHandler($this->gateway, $this->createMock(\Psr\Log\LoggerInterface::class), $this->cardFormatter());
 				$public = $reader->handle(['cardId' => 1], $uid);
 				$hidden = DependencyChange::snapshot($this->gateway->dependencyChangeState($uid, 1, 2, true));
 				$this->edges = [];

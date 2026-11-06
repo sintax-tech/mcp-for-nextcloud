@@ -10,10 +10,10 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck\Handler;
 use OCA\Deck\BadRequestException;
 use OCA\Deck\NoPermissionException;
 use OCP\AppFramework\Db\DoesNotExistException;
-use OCA\Mcp\Tools\Deck\CardFormatter;
+use OCA\Mcp\Modules\Deck\Integration\CardFormatter;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Tools\Deck\DeckMessages;
-use OCA\Mcp\Tools\Deck\Handler\ReadCardHandler;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
+use OCA\Mcp\Modules\Deck\Reading\ReadCardHandler;
 use OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestHelpers;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -75,21 +75,21 @@ final class ReadCardHandlerTest extends TestCase {
 		$missing = $this->handler(new DoesNotExistException('gone'))->handle(['cardId' => 7], 'alice');
 
 		self::assertTrue($denied['isError']);
-		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($denied));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotFoundOrForbidden(), $this->text($denied));
 		self::assertSame($this->text($denied), $this->text($missing));
 	}
 
 	public function testDeckValidationFailureBecomesTheInvalidMessage(): void {
 		$result = $this->handler(new BadRequestException('title too long'))->handle(['cardId' => 7], 'alice');
 
-		self::assertSame(DeckMessages::errorInvalid(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorInvalid(), $this->text($result));
 	}
 
 	public function testBackendFailureBecomesTheGenericMessage(): void {
 		$result = $this->handler(new RuntimeException('boom'))->handle(['cardId' => 7], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorGeneric(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorGeneric(), $this->text($result));
 	}
 
 	/**

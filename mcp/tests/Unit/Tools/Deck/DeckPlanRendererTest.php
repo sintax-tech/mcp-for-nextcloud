@@ -12,8 +12,8 @@ use OCA\Deck\Db\Stack;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Tools\Deck\DeckPlanRenderer;
-use OCA\Mcp\Tools\Deck\DeckToolModule;
+use OCA\Mcp\Modules\Deck\Presentation\DeckPlans\DeckPlanRenderer;
+use OCA\Mcp\Modules\Deck\DeckModule as DeckToolModule;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IConfig;
@@ -66,7 +66,7 @@ final class DeckPlanRendererTest extends TestCase {
 
 		$apps = $this->createMock(IAppManager::class);
 		$apps->method('isEnabledForUser')->willReturn(true);
-		$this->module = new DeckToolModule(
+		$this->module = \OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::build(
 			$this->createMock(ContainerInterface::class),
 			$apps,
 			$this->createMock(LoggerInterface::class),
@@ -80,7 +80,7 @@ final class DeckPlanRendererTest extends TestCase {
 				return $config;
 			})(),
 		);
-		(new \ReflectionProperty(DeckToolModule::class, 'gateway'))->setValue($this->module, $this->gateway);
+		\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::setGateway($this->module, $this->gateway);
 
 		$this->renderer = new DeckPlanRenderer();
 	}
@@ -315,7 +315,7 @@ final class DeckPlanRendererTest extends TestCase {
 			'deck_edit_card' => $this->module->preview('deck_edit_card', ['cardId' => 7, 'title' => 'Tarefa Nova'], 'alice'),
 			'deck_move_card' => $this->module->preview('deck_move_card', ['cardId' => 7, 'stackId' => 11], 'alice'),
 			'deck_delete_card' => $this->module->preview('deck_delete_card', ['cardId' => 7], 'alice'),
-		] + $this->structurePlans());
+		] + $this->structurePlans() + $this->dependencyPlans());
 	}
 
 	/**
@@ -405,7 +405,7 @@ final class DeckPlanRendererTest extends TestCase {
 			'deck_edit_card' => $this->assigneePlan(),
 			'deck_move_card' => $this->module->preview('deck_move_card', ['cardId' => 7, 'stackId' => 11], 'alice'),
 			'deck_delete_card' => $this->module->preview('deck_delete_card', ['cardId' => 7], 'alice'),
-		] + $this->structurePlans());
+		] + $this->structurePlans() + $this->dependencyPlans());
 	}
 
 	public function testMarkdownInTitleBoardAndListStaysLiteral(): void {
@@ -417,5 +417,14 @@ final class DeckPlanRendererTest extends TestCase {
 		$this->assertStringStartsWith('Create card in *B\\*1* › *L\\_2*: **\\*\\*urgente\\*\\***', $text);
 		$this->assertStringNotContainsString("\nNothing was changed", $text);
 		$this->assertStringNotContainsString('](javascript', $text);
+	}
+	private function dependencyPlans(): array {
+		$plans = [];
+		foreach (['deck_add_card_dependency', 'deck_remove_card_dependency'] as $tool) {
+			$plans[$tool] = ['origin' => ['title' => 'Origin'], 'target' => ['title' => 'Target'],
+				'before' => $tool === 'deck_remove_card_dependency', 'after' => $tool === 'deck_add_card_dependency',
+				'board' => ['name' => 'Board']];
+		}
+		return $plans;
 	}
 }

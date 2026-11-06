@@ -65,7 +65,10 @@ final class WriteGateContractTest extends TestCase {
 		$users = $this->createMock(IUserManager::class);
 		$users->method('get')->willReturn($this->createMock(IUser::class));
 
-		return new ToolRegistry($modules, $policy, $apps, $users, $this->createMock(LoggerInterface::class));
+		$logger = $this->createMock(LoggerInterface::class);
+		return new ToolRegistry($modules, $policy, $apps, $users, $logger, capabilities: new \OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry([
+			$this->build(\OCA\Mcp\Modules\Deck\Integration\DeckCapabilities::class),
+		], $logger));
 	}
 
 	/**

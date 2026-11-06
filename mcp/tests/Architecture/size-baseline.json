@@ -156,36 +156,6 @@
 			]
 		},
 		{
-			"ceiling": 483,
-			"nameParts": [
-				"OCA",
-				"Mcp",
-				"Tools",
-				"Deck",
-				"DeckGatewayInterface"
-			]
-		},
-		{
-			"ceiling": 550,
-			"nameParts": [
-				"OCA",
-				"Mcp",
-				"Tools",
-				"Deck",
-				"DeckMessages"
-			]
-		},
-		{
-			"ceiling": 572,
-			"nameParts": [
-				"OCA",
-				"Mcp",
-				"Tools",
-				"Deck",
-				"DeckPlanRenderer"
-			]
-		},
-		{
 			"ceiling": 341,
 			"nameParts": [
 				"OCA",
@@ -280,17 +250,6 @@
 				"Tools",
 				"Contacts",
 				"ContactsModule"
-			]
-		},
-		{
-			"ceiling": 1092,
-			"expires": "RE-27",
-			"nameParts": [
-				"OCA",
-				"Mcp",
-				"Tools",
-				"Deck",
-				"DeckToolModule"
 			]
 		},
 		{

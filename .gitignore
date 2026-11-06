@@ -34,6 +34,8 @@ downloads/
 *.db
 extracted/
 attachments/
+# O módulo Deck contém código, inclusive em volumes com ignorecase.
+!mcp/lib/Modules/Deck/Attachments/
 
 # ---- Logs ----
 *.log

@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 
 use OCA\Deck\Db\Card;
-use OCA\Mcp\Tools\Deck\CardLabelChanges;
-use OCA\Mcp\Tools\Deck\DeckConflictException;
+use OCA\Mcp\Modules\Deck\Editing\CardLabelChanges;
+use OCA\Mcp\Modules\Deck\Failures\DeckConflictException;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;

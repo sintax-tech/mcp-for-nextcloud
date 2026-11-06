@@ -13,7 +13,7 @@ use OCA\Deck\Db\Stack;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Tools\Deck\DeckToolModule;
+use OCA\Mcp\Modules\Deck\DeckModule as DeckToolModule;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -69,7 +69,7 @@ final class DeckPreviewTest extends TestCase {
 	private function moduleWith(DeckGatewayInterface $gateway, ?IUserManager $users = null, ?IConfig $config = null): DeckToolModule {
 		$apps = $this->createMock(IAppManager::class);
 		$apps->method('isEnabledForUser')->willReturn(true);
-		$module = new DeckToolModule(
+		$module = \OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::build(
 			$this->createMock(ContainerInterface::class),
 			$apps,
 			$this->createMock(LoggerInterface::class),
@@ -79,7 +79,7 @@ final class DeckPreviewTest extends TestCase {
 			$config,
 		);
 		// The gateway is built lazily from the Deck container; the test hands its double in its place.
-		(new \ReflectionProperty(DeckToolModule::class, 'gateway'))->setValue($module, $gateway);
+		\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::setGateway($module, $gateway);
 
 		return $module;
 	}

@@ -16,7 +16,7 @@ use OCA\Deck\Model\OptionalNullableValue;
 use OCA\Deck\Service\CardService;
 use OCA\Deck\Service\PermissionService;
 use OCA\Mcp\Platform\Time\UserTimezone;
-use OCA\Mcp\Tools\Deck\DeckErrors;
+use OCA\Mcp\Modules\Deck\Integration\DeckErrors;
 
 /** Creates, updates, moves and deletes a card. A due date is still formatted only by CardDueDate. */
 final class DeckCardChanges {
@@ -202,7 +202,7 @@ final class DeckCardChanges {
 	 * @return string|null UTC with Z for every supported deadline or preserved native instant, or null.
 	 */
 	private function instant(string $userId, ?string $duedate): ?string {
-		return \OCA\Mcp\Tools\Deck\CardDueDate::forDeck($duedate, $this->zone($userId));
+		return \OCA\Mcp\Modules\Deck\DueDates\CardDueDate::forDeck($duedate, $this->zone($userId));
 	}
 
 	/**

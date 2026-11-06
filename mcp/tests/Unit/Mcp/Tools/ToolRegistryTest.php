@@ -112,11 +112,13 @@ final class ToolRegistryTest extends TestCase {
 		foreach (\OCA\Mcp\AppInfo\Application::MODULES as $class) {
 			// Exercise both the unavailable catalogue and the native dependency tools without resource services.
 			$instance = (new \ReflectionClass($class))->newInstanceWithoutConstructor();
-			if ($instance instanceof \OCA\Mcp\Tools\Deck\DeckToolModule) {
-				(new \ReflectionProperty($instance, 'capabilities'))->setValue($instance,
-					new \OCA\Mcp\Modules\Deck\Integration\DeckCapabilities($this->nativeDeckApps(), $dependencies ? 35 : 32, static fn (): bool => true));
-			}
 			$definitions = $instance->definitions();
+			if ($instance instanceof \OCA\Mcp\Modules\Deck\DeckModule) {
+				$probe = new \OCA\Mcp\Modules\Deck\Integration\DeckCapabilities($this->nativeDeckApps(), $dependencies ? 35 : 32, static fn (): bool => true);
+				$definitions = array_values(array_filter($definitions, static fn (array $definition): bool => ($definition['requires'] ?? []) === [] || $probe->supports('deck.dependencies')));
+				// This fixture wraps each admitted definition in a legacy module; discovery owns requires.
+				$definitions = array_map(static function (array $definition): array { unset($definition['requires']); return $definition; }, $definitions);
+			}
 			$module = new class($definitions) implements ToolModule {
 				public function __construct(private array $definitions) {}
 				public function definitions(): array {

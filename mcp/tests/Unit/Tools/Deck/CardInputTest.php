@@ -8,9 +8,9 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use InvalidArgumentException;
-use OCA\Mcp\Tools\Deck\CardDueDateMessages;
-use OCA\Mcp\Tools\Deck\CardInput;
-use OCA\Mcp\Tools\Deck\DeckMessages;
+use OCA\Mcp\Modules\Deck\DueDates\CardDueDateMessages;
+use OCA\Mcp\Modules\Deck\Editing\CardInput;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -38,7 +38,7 @@ final class CardInputTest extends TestCase {
 	#[DataProvider('blankTitleProvider')]
 	public function testBlankTitleIsRejected(string $title): void {
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::errorTitleRequired());
+		$this->expectExceptionMessage(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorTitleRequired());
 
 		CardInput::requireTitle($title);
 	}
@@ -51,7 +51,7 @@ final class CardInputTest extends TestCase {
 
 	public function testDescriptionOverTheLimitIsRejectedInsteadOfTruncated(): void {
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::errorDescriptionTooLong());
+		$this->expectExceptionMessage(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorDescriptionTooLong());
 
 		CardInput::requireDescription(str_repeat('a', CardInput::MAX_DESCRIPTION_LENGTH + 1));
 	}

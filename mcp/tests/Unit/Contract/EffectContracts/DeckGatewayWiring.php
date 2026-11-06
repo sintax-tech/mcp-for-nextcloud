@@ -14,7 +14,7 @@ use OCA\Mcp\Tests\Unit\Contract\Oracle\EffectsGate;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
-use OCA\Mcp\Tools\Deck\DeckToolModule;
+use OCA\Mcp\Modules\Deck\DeckModule as DeckToolModule;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\File;
@@ -78,7 +78,7 @@ final class DeckGatewayWiring {
 		$urls->method('linkToRouteAbsolute')->willReturn('https://cloud.example.com/apps/deck/');
 		$session = $this->mock(ISession::class);
 		$session->method('get')->willReturnCallback(static fn (string $key): ?string => $key === 'user_id' ? EffectsGate::USER : null);
-		return new DeckToolModule($this->container($apps, $session), $apps, $this->mock(LoggerInterface::class), $urls, $time,
+		return \OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::build($this->container($apps, $session), $apps, $this->mock(LoggerInterface::class), $urls, $time,
 			$this->users, $this->gate->config(), $session, $this->dependencies ? new \OCA\Mcp\Modules\Deck\Integration\DeckCapabilities($apps, 35) : null);
 	}
 

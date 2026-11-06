@@ -9,8 +9,8 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use DateTimeZone;
 use InvalidArgumentException;
-use OCA\Mcp\Tools\Deck\CardDueDate;
-use OCA\Mcp\Tools\Deck\CardInput;
+use OCA\Mcp\Modules\Deck\DueDates\CardDueDate;
+use OCA\Mcp\Modules\Deck\Editing\CardInput;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

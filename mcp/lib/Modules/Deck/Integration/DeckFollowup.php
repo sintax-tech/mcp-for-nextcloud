@@ -16,8 +16,8 @@ use OCA\Deck\Db\Stack;
 use OCA\Deck\Db\StackMapper;
 use OCA\Deck\Service\PermissionService;
 use OCA\Mcp\Platform\Time\UserTimezone;
-use OCA\Mcp\Tools\Deck\CardCriteria;
-use OCA\Mcp\Tools\Deck\DeckErrors;
+use OCA\Mcp\Modules\Deck\Integration\CardCriteria;
+use OCA\Mcp\Modules\Deck\Integration\DeckErrors;
 use OCP\AppFramework\Utility\ITimeFactory;
 
 /** Scans boards the caller may manage for cards that match a follow-up filter. */
@@ -100,7 +100,7 @@ final class DeckFollowup {
 			$matching = [];
 			foreach ($this->cardsOfStacks($cardMapper, $stackIds) as $cardsOfStack) {
 				foreach ($cardsOfStack ?? [] as $card) {
-					if (\OCA\Mcp\Tools\Deck\CardCriteria::matches($card, $status, $dueBefore, $now, $zone)) {
+					if (\OCA\Mcp\Modules\Deck\Integration\CardCriteria::matches($card, $status, $dueBefore, $now, $zone)) {
 						$matching[] = $card;
 					}
 				}
@@ -112,7 +112,7 @@ final class DeckFollowup {
 			$this->query->attachAssignments($matching);
 
 			foreach ($matching as $card) {
-				if ($assignee !== null && !in_array($assignee, \OCA\Mcp\Tools\Deck\CardCriteria::assignedUids($card), true)) {
+				if ($assignee !== null && !in_array($assignee, \OCA\Mcp\Modules\Deck\Integration\CardCriteria::assignedUids($card), true)) {
 					continue;
 				}
 

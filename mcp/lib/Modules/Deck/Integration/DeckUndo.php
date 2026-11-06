@@ -12,9 +12,9 @@ use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Stack;
 use OCA\Deck\Service\BoardService;
 use OCA\Deck\Service\StackService;
-use OCA\Mcp\Tools\Deck\DeckErrors;
-use OCA\Mcp\Tools\Deck\DeckRefusalException;
-use OCA\Mcp\Tools\Deck\DeckUnconfirmedException;
+use OCA\Mcp\Modules\Deck\Integration\DeckErrors;
+use OCA\Mcp\Modules\Deck\Failures\DeckRefusalException;
+use OCA\Mcp\Modules\Deck\Failures\DeckUnconfirmedException;
 
 /** Deletes an empty list or an empty board and restores it when a card arrives during the delete. */
 final class DeckUndo {
@@ -75,7 +75,7 @@ final class DeckUndo {
 		// The count runs the manage check and binds the caller; it is taken again here and not trusted from the plan.
 		$cards = $this->stacks->stackCardCount($userId, $stackId);
 		if ($cards > 0) {
-			throw \OCA\Mcp\Tools\Deck\DeckRefusalException::stackNotEmpty($cards);
+			throw \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException::stackNotEmpty($cards);
 		}
 
 		/** @var StackService $stackService */
@@ -112,11 +112,11 @@ final class DeckUndo {
 	public function deleteEmptyBoard(string $userId, int $boardId): Board {
 		// Owner first: somebody who merely manages the board is refused before a single card is counted.
 		if ($this->ownership->boardOwnership($userId, $boardId)['owner'] !== $userId) {
-			throw \OCA\Mcp\Tools\Deck\DeckRefusalException::boardNotOwned();
+			throw \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException::boardNotOwned();
 		}
 		$cards = $this->counts->cardsInBoard($boardId);
 		if ($cards > 0) {
-			throw \OCA\Mcp\Tools\Deck\DeckRefusalException::boardNotEmpty($cards);
+			throw \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException::boardNotEmpty($cards);
 		}
 
 		/** @var BoardService $boardService */
@@ -154,13 +154,13 @@ final class DeckUndo {
 			try {
 				$stillDeleted = $this->stacks->deletedStack($userId, (int)$deleted->getId()) !== null;
 			} catch (\Throwable) {
-				throw new \OCA\Mcp\Tools\Deck\DeckUnconfirmedException('deck_list_stacks', $e);
+				throw new \OCA\Mcp\Modules\Deck\Failures\DeckUnconfirmedException('deck_list_stacks', $e);
 			}
 
-			throw \OCA\Mcp\Tools\Deck\DeckRefusalException::stackReceivedCards(!$stillDeleted);
+			throw \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException::stackReceivedCards(!$stillDeleted);
 		}
 
-		throw \OCA\Mcp\Tools\Deck\DeckRefusalException::stackReceivedCards(true);
+		throw \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException::stackReceivedCards(true);
 	}
 
 	/**
@@ -192,12 +192,12 @@ final class DeckUndo {
 					throw new \RuntimeException('The board is not among the boards of the caller');
 				}
 			} catch (\Throwable) {
-				throw new \OCA\Mcp\Tools\Deck\DeckUnconfirmedException('deck_list_boards', $e);
+				throw new \OCA\Mcp\Modules\Deck\Failures\DeckUnconfirmedException('deck_list_boards', $e);
 			}
 
-			throw \OCA\Mcp\Tools\Deck\DeckRefusalException::boardReceivedCards(!$stillDeleted);
+			throw \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException::boardReceivedCards(!$stillDeleted);
 		}
 
-		throw \OCA\Mcp\Tools\Deck\DeckRefusalException::boardReceivedCards(true);
+		throw \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException::boardReceivedCards(true);
 	}
 }

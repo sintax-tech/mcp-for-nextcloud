@@ -11,7 +11,7 @@ use OCA\Mcp\Tests\Unit\Contract\Oracle\CriticalFlow;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\EffectsGate;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\FlowRunner;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
-use OCA\Mcp\Tools\Deck\DeckToolModule;
+use OCA\Mcp\Modules\Deck\DeckModule as DeckToolModule;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\ISession;
@@ -66,7 +66,7 @@ final class DeckGatewayEffectsContractTest extends TestCase {
 		$container = $this->createMock(ContainerInterface::class);
 		$container->method('get')->willReturnCallback(static fn (string $id): object => $services[$id]
 			?? throw new \RuntimeException('Unexpected service ' . $id));
-		return new DeckToolModule($container, $apps, $this->createMock(LoggerInterface::class), $urls, $time, $this->users,
+		return \OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::build($container, $apps, $this->createMock(LoggerInterface::class), $urls, $time, $this->users,
 			$this->gate->config(), $session);
 	}
 

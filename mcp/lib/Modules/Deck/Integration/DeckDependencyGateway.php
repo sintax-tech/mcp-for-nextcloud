@@ -13,12 +13,12 @@ use OCA\Deck\Db\CardMapper;
 use OCA\Deck\NoPermissionException;
 use OCA\Deck\Service\CardService;
 use OCA\Deck\Service\PermissionService;
-use OCA\Mcp\Tools\Deck\DeckConflictException;
-use OCA\Mcp\Tools\Deck\DeckMessages;
-use OCA\Mcp\Tools\Deck\DeckRefusalException;
-use OCA\Mcp\Tools\Deck\DependencyChange;
-use OCA\Mcp\Tools\Deck\DependencyGraph;
-use OCA\Mcp\Tools\Deck\DependencyNodeSource;
+use OCA\Mcp\Modules\Deck\Failures\DeckConflictException;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
+use OCA\Mcp\Modules\Deck\Failures\DeckRefusalException;
+use OCA\Mcp\Modules\Deck\Dependencies\DependencyChange;
+use OCA\Mcp\Modules\Deck\Dependencies\DependencyGraph;
+use OCA\Mcp\Modules\Deck\Integration\DependencyNodeSource;
 
 /** Native dependency reads and writes with the existing readable-cycle boundary. */
 final class DeckDependencyGateway implements DependencyNodeSource {
@@ -42,7 +42,7 @@ final class DeckDependencyGateway implements DependencyNodeSource {
 	 */
 	public function dependencyNode(string $userId, int $cardId, ?array &$view = null): array {
 		if (!property_exists(Card::class, 'dependentCards') || !method_exists(CardMapper::class, 'findDependenciesForCards')) {
-			throw new DeckRefusalException(DeckMessages::dependenciesUnavailable());
+			throw new DeckRefusalException(\OCA\Mcp\Modules\Deck\Presentation\DeckDependencyMessages::dependenciesUnavailable());
 		}
 		$view ??= [];
 		$source = $this->references->target($userId, $cardId, $view);
@@ -72,7 +72,7 @@ final class DeckDependencyGateway implements DependencyNodeSource {
 	public function dependencyChangeState(string $userId, int $originId, int $targetId, bool $assign,
 		bool $checkCycle = true): array {
 		if ($originId === $targetId) {
-			throw new DeckRefusalException(DeckMessages::dependencyCycle());
+			throw new DeckRefusalException(\OCA\Mcp\Modules\Deck\Presentation\DeckDependencyMessages::dependencyCycle());
 		}
 		$view = [];
 		$origin = $this->dependencyNode($userId, $originId, $view);
@@ -84,7 +84,7 @@ final class DeckDependencyGateway implements DependencyNodeSource {
 		}
 		foreach ([$origin, $target] as $node) {
 			if ($node['card']->getArchived() || $view['boards'][$node['boardId']]->getArchived()) {
-				throw new DeckRefusalException(DeckMessages::dependencyInactive());
+				throw new DeckRefusalException(\OCA\Mcp\Modules\Deck\Presentation\DeckDependencyMessages::dependencyInactive());
 			}
 		}
 		$present = in_array($targetId, array_map(
@@ -94,7 +94,7 @@ final class DeckDependencyGateway implements DependencyNodeSource {
 			$graph = (new DependencyGraph($this))->read($userId, $targetId, $view);
 			foreach ($graph['nodes'] as $node) {
 				if ((int)$node['card']->getId() === $originId) {
-					throw new DeckRefusalException(DeckMessages::dependencyCycle());
+					throw new DeckRefusalException(\OCA\Mcp\Modules\Deck\Presentation\DeckDependencyMessages::dependencyCycle());
 				}
 			}
 		}
@@ -119,7 +119,7 @@ final class DeckDependencyGateway implements DependencyNodeSource {
 	public function changeDependency(string $userId, int $originId, int $targetId, bool $assign, array $expected): void {
 		$state = $this->dependencyChangeState($userId, $originId, $targetId, $assign);
 		if (DependencyChange::snapshot($state) !== $expected) {
-			throw new DeckConflictException(DeckMessages::dependencyPlanChanged());
+			throw new DeckConflictException(\OCA\Mcp\Modules\Deck\Presentation\DeckDependencyMessages::dependencyPlanChanged());
 		}
 		if ($state['present'] === $assign) {
 			return;

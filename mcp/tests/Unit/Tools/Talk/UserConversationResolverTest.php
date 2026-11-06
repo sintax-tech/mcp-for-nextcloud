@@ -8,11 +8,11 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Talk;
 
 use InvalidArgumentException;
-use OCA\Mcp\Tools\Talk\ConversationAccessException;
-use OCA\Mcp\Tools\Talk\Messages;
-use OCA\Mcp\Tools\Talk\TalkServices;
-use OCA\Mcp\Tools\Talk\TalkUnavailableException;
-use OCA\Mcp\Tools\Talk\UserConversationResolver;
+use OCA\Mcp\Modules\Talk\Failures\ConversationAccessException;
+use OCA\Mcp\Modules\Talk\Presentation\Messages;
+use OCA\Mcp\Modules\Talk\Integration\TalkServices;
+use OCA\Mcp\Modules\Talk\Failures\TalkUnavailableException;
+use OCA\Mcp\Modules\Talk\Locating\UserConversationResolver;
 use OCP\IUser;
 use OCP\IUserManager;
 use OCP\Share\IManager as IShareManager;

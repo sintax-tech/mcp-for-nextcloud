@@ -564,7 +564,7 @@ final class NextcloudApiUsage {
 		'OCA\\Talk\\Service\\RoomService::validateLobbyTimer' => [
 			'missing' => ['31', '32', '33'],
 			'fallback' => 'OCA\\Talk\\Room::getLobbyState',
-			'by' => \OCA\Mcp\Tools\Talk\ConversationResolver::class,
+			'by' => \OCA\Mcp\Modules\Talk\Locating\ConversationResolver::class,
 		],
 		// The Nextcloud Tables app, kept with the Tables module's contract.
 		...Tables\TablesApiUsage::VERSION_GATED,

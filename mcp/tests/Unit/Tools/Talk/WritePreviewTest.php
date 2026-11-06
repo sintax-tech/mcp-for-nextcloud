@@ -8,16 +8,16 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Talk;
 
 use InvalidArgumentException;
-use OCA\Mcp\Tools\Talk\ActorNames;
-use OCA\Mcp\Tools\Talk\AttachmentAccess;
-use OCA\Mcp\Tools\Talk\Conversation;
-use OCA\Mcp\Tools\Talk\ConversationAccessException;
-use OCA\Mcp\Tools\Talk\ConversationWriter;
-use OCA\Mcp\Tools\Talk\DirectContact;
-use OCA\Mcp\Tools\Talk\FileAccessException;
-use OCA\Mcp\Tools\Talk\FileSharer;
-use OCA\Mcp\Tools\Talk\Messages;
-use OCA\Mcp\Tools\Talk\WritePreview;
+use OCA\Mcp\Modules\Talk\Presentation\ActorNames;
+use OCA\Mcp\Modules\Talk\Attachments\AttachmentAccess;
+use OCA\Mcp\Modules\Talk\Locating\Conversation;
+use OCA\Mcp\Modules\Talk\Failures\ConversationAccessException;
+use OCA\Mcp\Modules\Talk\Writing\ConversationWriter;
+use OCA\Mcp\Modules\Talk\Locating\DirectContact;
+use OCA\Mcp\Modules\Talk\Failures\FileAccessException;
+use OCA\Mcp\Modules\Talk\Attachments\FileSharer;
+use OCA\Mcp\Modules\Talk\Presentation\Messages;
+use OCA\Mcp\Modules\Talk\Writing\WritePreview;
 use OCP\Comments\IComment;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -175,7 +175,7 @@ class WritePreviewTest extends TestCase {
 	public function testTheDirectMessageDraftNamesThePersonInTheInstruction(): void {
 		$draft = $this->previews->directMessage(new DirectContact('bob', 'Bob Souza'), 'alice', 'oi');
 
-		$this->assertSame(Messages::confirmationInstructionTarget('Bob Souza'), $draft['message']);
+		$this->assertSame(\OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::confirmationInstructionTarget('Bob Souza'), $draft['message']);
 		$this->assertStringContainsString('confirm: true', $draft['message']);
 	}
 
@@ -183,7 +183,7 @@ class WritePreviewTest extends TestCase {
 		$draft = $this->previews->reply($this->givenConversation(), 'alice', 'bom dia', null);
 
 		$this->assertSame(
-			Messages::confirmationInstruction('Comercial'),
+			\OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::confirmationInstruction('Comercial'),
 			$draft['message'],
 		);
 		$this->assertStringContainsString("'Comercial'", $draft['message']);

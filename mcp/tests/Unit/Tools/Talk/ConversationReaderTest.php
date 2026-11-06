@@ -9,11 +9,11 @@ namespace OCA\Mcp\Tests\Unit\Tools\Talk;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
-use OCA\Mcp\Tools\Talk\ActorNames;
-use OCA\Mcp\Tools\Talk\ConversationReader;
-use OCA\Mcp\Tools\Talk\ConversationResolver;
-use OCA\Mcp\Tools\Talk\Messages;
-use OCA\Mcp\Tools\Talk\TalkServices;
+use OCA\Mcp\Modules\Talk\Presentation\ActorNames;
+use OCA\Mcp\Modules\Talk\Reading\ConversationReader;
+use OCA\Mcp\Modules\Talk\Locating\ConversationResolver;
+use OCA\Mcp\Modules\Talk\Presentation\Messages;
+use OCA\Mcp\Modules\Talk\Integration\TalkServices;
 use OCP\Comments\IComment;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -76,7 +76,7 @@ class ConversationReaderTest extends TestCase {
 		$participant->expects($this->never())->method('markAsRead');
 		$participant->expects($this->never())->method('ensureOneToOneRoomIsFilled');
 		$this->resolver->method('resolveForReading')->willReturn(
-			new \OCA\Mcp\Tools\Talk\Conversation($room, $participant),
+			new \OCA\Mcp\Modules\Talk\Locating\Conversation($room, $participant),
 		);
 		$this->talkServices->method('chatManager')->willReturn($chatManager);
 
@@ -230,9 +230,9 @@ class ConversationReaderTest extends TestCase {
 		$share->method('getNode')->willReturn($node);
 		$shares = $this->createMock(\OCP\Share\IManager::class);
 		$shares->method('getShareById')->with('ocRoomShare:12', 'alice')->willReturn($share);
-		$access = new \OCA\Mcp\Tools\Talk\AttachmentAccess($shares, \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::openGuard($this), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this));
+		$access = new \OCA\Mcp\Modules\Talk\Attachments\AttachmentAccess($shares, \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::openGuard($this), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this));
 
-		$found = $access->requireRoomShareOf(new \OCA\Mcp\Tools\Talk\Conversation(new ReaderRoomStub('abcd'), new ReaderParticipantStub()), 'alice', $attachmentId);
+		$found = $access->requireRoomShareOf(new \OCA\Mcp\Modules\Talk\Locating\Conversation(new ReaderRoomStub('abcd'), new ReaderParticipantStub()), 'alice', $attachmentId);
 
 		$this->assertSame(['attachmentId' => 12, 'name' => 'Talk recording 2026-10-02.ogg', 'size' => 4096, 'mimeType' => 'audio/ogg'], $access->describe($found));
 	}
@@ -342,7 +342,7 @@ class ConversationReaderTest extends TestCase {
 		$this->talkServices->method('manager')->willReturn($manager);
 		$this->talkServices->method('participantService')->willReturn($participantService);
 		$this->resolver->method('keepsOutOfLobby')->willReturnCallback(
-			static fn (string $userId, \OCA\Mcp\Tools\Talk\Conversation $conversation): bool => $conversation->room->getToken() === 'lobby1',
+			static fn (string $userId, \OCA\Mcp\Modules\Talk\Locating\Conversation $conversation): bool => $conversation->room->getToken() === 'lobby1',
 		);
 
 		$conversations = $this->reader->listConversations('alice');
@@ -390,7 +390,7 @@ class ConversationReaderTest extends TestCase {
 
 	private function givenResolvedConversation(object $room): void {
 		$this->resolver->method('resolveForReading')->willReturn(
-			new \OCA\Mcp\Tools\Talk\Conversation($room, new ReaderParticipantStub()),
+			new \OCA\Mcp\Modules\Talk\Locating\Conversation($room, new ReaderParticipantStub()),
 		);
 	}
 

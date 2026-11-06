@@ -137,6 +137,8 @@ Both modules have separate `read`, `create`, `edit` and `delete` grants; every w
 
 Task deletion uses native calendar trash and is refused when `dav/calendarRetentionObligation` is `0`. Recurring tasks can be read; writes to recurring tasks or tasks with participants are refused to protect their series and scheduling. Completed tasks are excluded from listings by default; use `include_completed` to include them. Contact searches and task listings accept `limit` (up to 200) and `offset`, and return `nextOffset` for more results.
 
+**Task status:** create and edit accept `NEEDS-ACTION`, `IN-PROCESS`, `COMPLETED` and `CANCELLED`, as in the Tasks app. Status alone completes at 100% with a completion time (preserving it if already completed), reopens 100% at 99%, and starts `IN-PROCESS` at 1% when progress was zero or absent. `CANCELLED` preserves progress and the completion date and stays listed. An explicit `percentComplete` wins when consistent: `COMPLETED` requires 100, `NEEDS-ACTION`/`IN-PROCESS` reject 100, and `CANCELLED` accepts 0–100. Progress alone keeps its previous behavior, including reopening cancelled tasks. Create/edit plans show status and completion-date changes in the plan timezone. Status/progress based on PR #29 by Marc-Olivier Turgeon-Ferland (@mturgeonferland): [contribution](https://github.com/sintax-tech/mcp-for-nextcloud/pull/29).
+
 ## Deck in 1.2.0
 
 Labels, due time, native dependencies and a native file link are part of this release. The app does not imitate an API that is absent, and it does not upload, copy or delete the file.

@@ -21,7 +21,6 @@
 		{"fqcn":"OCA\\Mcp\\Tools\\Deck\\DeckMessages","ceiling":550},
 		{"fqcn":"OCA\\Mcp\\Tools\\Deck\\DeckPlanRenderer","ceiling":572},
 		{"fqcn":"OCA\\Mcp\\Tools\\Files\\FileCreation","ceiling":341},
-		{"fqcn":"OCA\\Mcp\\Tools\\Talk\\TalkPlanRenderer","ceiling":377},
 		{"fqcn":"OCA\\Mcp\\Tools\\ToolGuide","ceiling":414}
 	],
 	"transitional": [
@@ -34,8 +33,6 @@
 		{"fqcn":"OCA\\Mcp\\Tools\\Files\\Handler\\ImageSearchHandler","ceiling":312,"expires":"RE-21d"},
 		{"fqcn":"OCA\\Mcp\\Tools\\Files\\ImageTools","ceiling":448,"expires":"RE-21d"},
 		{"fqcn":"OCA\\Mcp\\Tools\\Files\\Reorganization","ceiling":1106,"expires":"RE-23"},
-		{"fqcn":"OCA\\Mcp\\Tools\\Files\\Sharing\\ShareWriter","ceiling":554,"expires":"RE-22"},
-		{"fqcn":"OCA\\Mcp\\Tools\\Talk\\Messages","ceiling":547,"expires":"RE-20"},
-		{"fqcn":"OCA\\Mcp\\Tools\\Talk\\TalkModule","ceiling":844,"expires":"RE-20"}
+		{"fqcn":"OCA\\Mcp\\Tools\\Files\\Sharing\\ShareWriter","ceiling":554,"expires":"RE-22"}
 	]
 }

@@ -18,21 +18,21 @@ use OCA\Mcp\Modules\Calendar\Locating\EventRepository;
 use OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess;
 use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Tools\Talk\ActorNames;
-use OCA\Mcp\Tools\Talk\AttachmentAccess;
-use OCA\Mcp\Tools\Talk\AttachmentMessage;
-use OCA\Mcp\Tools\Talk\ConversationReader;
-use OCA\Mcp\Tools\Talk\ConversationResolver;
-use OCA\Mcp\Tools\Talk\ConversationWriter;
-use OCA\Mcp\Tools\Talk\FileSharer;
-use OCA\Mcp\Tools\Talk\AttachedFile;
-use OCA\Mcp\Tools\Talk\GroupCreator;
-use OCA\Mcp\Tools\Talk\ReferenceLinker;
-use OCA\Mcp\Tools\Talk\TalkModule;
-use OCA\Mcp\Tools\Talk\TalkServices;
-use OCA\Mcp\Tools\Talk\UserConversationResolver;
-use OCA\Mcp\Tools\Talk\UserFileResolver;
-use OCA\Mcp\Tools\Talk\WritePreview;
+use OCA\Mcp\Modules\Talk\Presentation\ActorNames;
+use OCA\Mcp\Modules\Talk\Attachments\AttachmentAccess;
+use OCA\Mcp\Modules\Talk\Attachments\AttachmentMessage;
+use OCA\Mcp\Modules\Talk\Reading\ConversationReader;
+use OCA\Mcp\Modules\Talk\Locating\ConversationResolver;
+use OCA\Mcp\Modules\Talk\Writing\ConversationWriter;
+use OCA\Mcp\Modules\Talk\Attachments\FileSharer;
+use OCA\Mcp\Modules\Talk\Attachments\AttachedFile;
+use OCA\Mcp\Modules\Talk\Groups\GroupCreator;
+use OCA\Mcp\Modules\Talk\ReferenceLinker;
+use OCA\Mcp\Modules\Talk\TalkModule;
+use OCA\Mcp\Modules\Talk\Integration\TalkServices;
+use OCA\Mcp\Modules\Talk\Locating\UserConversationResolver;
+use OCA\Mcp\Modules\Talk\Locating\UserFileResolver;
+use OCA\Mcp\Modules\Talk\Writing\WritePreview;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IURLGenerator;
@@ -50,6 +50,8 @@ require_once __DIR__ . '/TalkFakes.php';
 /** Talk's real module over native room creation, participants, messages and shares with observable state. */
 final class TalkWritesWiring {
 	public TalkChat $chat;
+	/** @var list<array{level:string,message:string,context:array}> observed module logs */
+	public array $logged = [];
 	public HiddenTagFiles $files;
 	public RecordingShares $shares;
 	public TalkCreationNative $creation;
@@ -103,13 +105,18 @@ final class TalkWritesWiring {
 		$resolver = new ConversationResolver($talk);
 		$names = new ActorNames($this->users);
 		$logger = $this->mock(LoggerInterface::class);
+		foreach (['error', 'warning'] as $level) {
+			$logger->method($level)->willReturnCallback(function (string|\Stringable $message, array $context = []) use ($level): void {
+				$this->logged[] = ['level' => $level, 'message' => (string)$message, 'context' => $context];
+			});
+		}
 		$userConversations = new UserConversationResolver($talk, $this->users, $this->shareManager);
 		$store = $this->mock(CalendarStore::class);
 		$classification = new Classification();
-		$linker = new ReferenceLinker($this->mock(DeckGatewayInterface::class),
+		$linker = \OCA\Mcp\Tests\Unit\Tools\Talk\ReferenceLinkers::build($this->mock(DeckGatewayInterface::class),
 			new ScopedCalendarAccess($this->mock(CalendarAccess::class), $this->gate->policy()), $store,
 			new EventRepository($store, $classification), $classification, $apps, $this->users, $this->gate->policy(), $urls);
-		return new TalkModule($talk, new ConversationReader($talk, $resolver, $names, $references), $resolver, $writer, $sharer,
+		return \OCA\Mcp\Tests\Unit\Tools\Talk\TalkTestModule::build($talk, new ConversationReader($talk, $resolver, $names, $references), $resolver, $writer, $sharer,
 			new WritePreview($writer, $sharer, $attachments, $names), $userConversations,
 			new GroupCreator($talk, $this->users, $userConversations, $logger), $linker, $logger);
 	}

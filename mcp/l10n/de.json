@@ -1814,6 +1814,7 @@
     "The new type does not use options. Existing options stay stored but are not shown." : "Der neue Typ verwendet keine Optionen. Vorhandene Optionen bleiben gespeichert, werden aber nicht angezeigt.",
     "Existing options are kept with their IDs and order." : "Vorhandene Optionen bleiben mit ihren IDs und ihrer Reihenfolge erhalten.",
     "Files already uploaded to this question are not touched and no cleanup job is queued." : "Bereits zu dieser Frage hochgeladene Dateien bleiben unberührt, und es wird kein Bereinigungsjob eingereiht.",
-    "Change existing forms, including adding, reordering and deleting questions and options and changing a question type" : "Vorhandene Formulare ändern, einschließlich Fragen und Optionen hinzufügen, neu anordnen und löschen sowie den Typ einer Frage ändern"
+    "Change existing forms, including adding, reordering and deleting questions and options and changing a question type" : "Vorhandene Formulare ändern, einschließlich Fragen und Optionen hinzufügen, neu anordnen und löschen sowie den Typ einer Frage ändern",
+    "The question already has this type, so nothing would change and these settings would not be applied. Change settings with forms_update_question." : "Die Frage hat bereits diesen Typ, daher würde sich nichts ändern und diese Einstellungen würden nicht angewendet. Ändern Sie Einstellungen mit forms_update_question."
     },"pluralForm" : "nplurals=2; plural=(n != 1);"
 }

@@ -134,6 +134,22 @@ final class StructureOperationsTest extends TestCase {
 		self::assertContains(StructureMessages::answersNotConverted(), $plan['effects']);
 		$f->question(8, 4, 'datetime', 'When', []);
 		self::assertSame('applied', $this->apply($f, 'forms_change_question_type', ['form_id' => 1, 'question_id' => 8, 'type' => 'date'])['status']);
+		// Review R3: the same type is a no-op whose plan shows the preserved settings; different settings are refused.
+		$f = new StructureFixture();
+		$noop = ['form_id' => 1, 'question_id' => 3, 'type' => 'dropdown'];
+		$plan = $this->plan($f, 'forms_change_question_type', $noop + ['settings' => []]);
+		self::assertTrue($plan['noChange']);
+		self::assertSame($plan['before'], $plan['after']);
+		self::assertSame([], $plan['effects']);
+		try {
+			$this->plan($f, 'forms_change_question_type', $noop + ['settings' => ['shuffleOptions' => true]]);
+			self::fail('same-type settings shown as an effect that would never run');
+		} catch (ArgumentValidationException $error) {
+			self::assertStringContainsString(StructureMessages::sameTypeSettings(), $error->clientMessage());
+		}
+		self::assertSame('not_attempted', $this->apply($f, 'forms_change_question_type', $noop)['status']);
+		self::assertSame([], $f->questions[3]->data['extraSettings']);
+		self::assertSame([], $f->calls);
 		foreach (QuestionTypes::TARGETS as $target) {
 			$f = new StructureFixture();
 			$receipt = $this->apply($f, 'forms_change_question_type', ['form_id' => 1, 'question_id' => 3, 'type' => $target, 'settings' => []]);

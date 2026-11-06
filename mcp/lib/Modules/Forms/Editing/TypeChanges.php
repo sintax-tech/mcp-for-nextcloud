@@ -56,6 +56,10 @@ final class TypeChanges implements StructureOperation {
 			throw new ToolFailure(StructureMessages::refused());
 		}
 		$noop = $q['type'] === $r['type'];
+		// The same type is a no-op: different settings would never be applied, so they are refused, never shown as an effect.
+		if ($noop && array_key_exists('settings', $r) && EditSettings::stored($r['settings']) !== EditValues::canonical($q['extraSettings'])) {
+			throw new ArgumentValidationException('Invalid argument: settings', 'settings', StructureMessages::sameTypeSettings());
+		}
 		if (!$noop && !array_key_exists('settings', $r) && ($keys = TypeSettings::incompatible($r['type'], $q['extraSettings'])) !== []) {
 			throw new ArgumentValidationException('Invalid argument: settings', 'settings', StructureMessages::settingsRequired($keys));
 		}
@@ -63,14 +67,14 @@ final class TypeChanges implements StructureOperation {
 			throw new ArgumentValidationException('Invalid argument: settings', 'settings', StructureMessages::settingsCurrentType());
 		}
 		$patch = $noop ? [] : ['type' => $r['type']] + (array_key_exists('settings', $r) ? ['extraSettings' => $r['settings']] : []);
-		$next = ['type' => $r['type'], 'extraSettings' => array_key_exists('settings', $r) ? EditSettings::stored($r['settings']) : EditValues::canonical($q['extraSettings'])];
+		$next = ['type' => $r['type'], 'extraSettings' => !$noop && array_key_exists('settings', $r) ? EditSettings::stored($r['settings']) : EditValues::canonical($q['extraSettings'])];
 		$selected = $s['header']['selector'] === $q['id'];
 		$selector = $selected && !$noop && !EditState::email($next + $q) ? null : $s['header']['selector'];
-		$effects = [StructureMessages::answersNotConverted()];
-		if ($q['options'] !== []) {
+		$effects = $noop ? [] : [StructureMessages::answersNotConverted()];
+		if (!$noop && $q['options'] !== []) {
 			$effects[] = OptionPartition::kind($r['type']) === null ? StructureMessages::optionsHidden() : StructureMessages::optionsKept();
 		}
-		if ($q['type'] === 'file') {
+		if (!$noop && $q['type'] === 'file') {
 			$effects[] = StructureMessages::uploadsUntouched();
 		}
 		return StructureEffect::of($s, ['target' => ['questionId' => $q['id'], 'questionText' => $q['text']],

@@ -60,6 +60,11 @@ final class StructureMessages {
 		return Translator::t('Forms validates settings against the current type before changing it, and rejects these. Adjust the settings first with forms_update_question, or send settings: {} and configure them after the change.');
 	}
 
+	/** @return string refusal of settings sent with the question's current type, which this tool never applies */
+	public static function sameTypeSettings(): string {
+		return Translator::t('The question already has this type, so nothing would change and these settings would not be applied. Change settings with forms_update_question.');
+	}
+
 	/** @return list<string> notes of every structure plan */
 	public static function planNotes(): array {
 		return [Translator::t('A successful change reserves or renews the native editing lock for 15 minutes. Other authorized editors can see your editing identity and may be blocked during that period. This preview did not take the lock, and the operation does not unlock the form.'),

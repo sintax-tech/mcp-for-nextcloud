@@ -73,6 +73,11 @@ final class NonPhpClassRenameTest extends TestCase {
 		$expected = $registered ? [] : [$stale(2), $stale(1), $stale(1), $stale(1)];
 		$this->assertSame($expected, ClassRewrites::stale([$path => self::GOLDEN], ['Acme\\A\\Probe' => 'Acme\\B\\Probe']));
 		$this->assertSame($expected, $this->check(str_replace('\\A\\', '\\B\\', self::GOLDEN), [$path => self::GOLDEN]));
+		if ($registered) {
+			$map = new FqcnMap([], 'Acme\\', 'lib/');
+			$problems = (new MoveEquivalence([$path => self::GOLDEN], [$path => self::GOLDEN . "\n"], $map))->check();
+			$this->assertContains($path . ': non-PHP file changed; a move commit only moves PHP and updates the map', $problems);
+		}
 	}
 
 	/** @return iterable<string,array{string,bool}> Only exact registered certificate paths keep historical names. */

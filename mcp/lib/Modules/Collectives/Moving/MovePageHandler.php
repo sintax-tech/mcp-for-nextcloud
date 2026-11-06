@@ -19,7 +19,7 @@ use Throwable;
  * The confirmed `collectives_move`: the plan is rebuilt from a fresh read and must still be the approved one, the
  * native edit permission is read again, and the page service moves the page once, which renames its file, updates
  * its slug and both subpage orders. The receipt reads the tree again: parent, title, position, the removal from the
- * old parent's order and, for a rename, the new slug.
+ * old parent's order and, for a rename, the slug Collectives answered it computed.
  */
 class MovePageHandler {
 	/**
@@ -52,17 +52,20 @@ class MovePageHandler {
 		$cid = (int)$arguments['collective_id'];
 		$this->gateway->assertEditable($cid, $uid, 'move');
 		$error = null;
+		$answered = null;
 		try {
-			$this->gateway->move($cid, $built['page_id'], $built['moves'] ? $built['to'] : null,
+			$answered = $this->gateway->move($cid, $built['page_id'], $built['moves'] ? $built['to'] : null,
 				$built['title'] !== $built['plan']['from']['title'] ? $built['title'] : null, $built['index'], $uid);
 		} catch (Throwable $e) {
 			$error = CollectivesGateway::failure($e)->getMessage();
 		}
-		// A new parent asks for the position there and the removal from the old order; a new title asks for a new slug.
+		// A new parent asks for the position there and the removal from the old order. A new title asks for the slug
+		// Collectives' own slugger gave in its answer, which may equal the old one ("Hello World" and "Hello-World");
+		// without an answer it is unknown, so the slug cannot be confirmed.
 		$renamed = $built['title'] !== $built['plan']['from']['title'];
 		$requested = ['parent_id' => $built['to'], 'title' => $built['title']]
 			+ ($built['moves'] ? ['position' => $built['plan']['to']['position'], 'in_old_order' => false] : [])
-			+ ($renamed ? ['slug_changed' => true] : []);
+			+ ($renamed ? ['slug' => $answered === null ? false : $answered['slug']] : []);
 		$extra = $error === null ? [] : ['native_error' => $error];
 		try {
 			$tree = $this->trees->load($cid, $uid, 'move');
@@ -77,7 +80,7 @@ class MovePageHandler {
 		$position = array_search($built['page_id'], $order, true);
 		$old = $tree->has($built['from']) ? in_array($built['page_id'], $tree->page($built['from'])['subpage_order'], true) : null;
 		$observed = ['parent_id' => $page['parent_id'], 'title' => $page['title'], 'position' => $position === false ? null : $position,
-			'in_old_order' => $old, 'slug_changed' => $page['slug'] !== $built['plan']['page']['slug']];
+			'in_old_order' => $old, 'slug' => $page['slug']];
 		return PageReceipt::of($requested, $observed, ['page' => $tree->visible($page)] + $extra);
 	}
 }

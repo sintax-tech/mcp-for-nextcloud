@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Access\Policy\Credentials;
 
 use Closure;
-use OCA\Mcp\Access\Policy\{PolicyEventPayload, PolicyUnavailable, SnapshotInvalidated};
+use OCA\Mcp\Access\Policy\{PolicyEventPayload, SnapshotInvalidated};
 use OCA\Mcp\Db\{AuthUsersMapper, RecheckMapper};
 use OCA\Mcp\Platform\Numbers\DecimalCounter;
 use OCA\Mcp\Access\Policy\Transactions\PolicyExecution;

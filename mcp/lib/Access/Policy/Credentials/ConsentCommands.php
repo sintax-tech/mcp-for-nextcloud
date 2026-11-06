@@ -10,7 +10,6 @@ namespace OCA\Mcp\Access\Policy\Credentials;
 use Closure;
 use OCA\Mcp\Access\Grants\Commands\{CellWriter, UserAdmission};
 use OCA\Mcp\Access\Grants\GrantPolicy;
-use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Db\AuthUsersMapper;
 use OCP\IConfig;
 

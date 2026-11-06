@@ -33,6 +33,7 @@ final class CimdHostsUpdate {
 			if ($this->hosts->find($host) === null) {
 				// Legacy credentials of hosts absent at migration have stamp 1 but were not trusted.
 				$this->hosts->put($host, true, '2');
+				$this->credentials->deleteForHost($host);
 				$changed = true;
 			}
 		}

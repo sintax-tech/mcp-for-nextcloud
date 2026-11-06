@@ -142,4 +142,49 @@ final class CimdHostWithdrawalTest extends OAuthAccountTestCase {
 		self::assertSame([], $this->stamps($second, 'mcp_oauth_codes'));
 		self::assertFalse($this->official()->inTransaction());
 	}
+	/** @return void First admission and orphan cleanup roll back together; a second session never sees half a command. */
+	public function testFirstAdmissionAndItsOrphanCleanupAreAtomic(): void {
+		$second = $this->openIndependentConnection();
+		$host = 'atomic-cimd.example.test';
+		$client = 'https://' . $host . '/client';
+		$original = $this->exchange($this->consent());
+		Server::get(TokenService::class)->refresh(['client_id' => self::CLIENT, 'refresh_token' => $original['refresh_token']]);
+		$this->consent();
+		foreach (['mcp_oauth_codes', 'mcp_oauth_tokens', 'mcp_oauth_spent'] as $table) {
+			$qb = $this->official()->getQueryBuilder();
+			$qb->update($table)->set('client_id', $qb->createNamedParameter($client));
+			if ($table !== 'mcp_oauth_spent') { $qb->set('client_gen', $qb->createNamedParameter(1)); }
+			$qb->where($qb->expr()->eq('user_id', $qb->createNamedParameter($this->uid)))->executeStatement();
+		}
+		$count = static function (string $table) use ($second, $client): int {
+			$qb = $second->getQueryBuilder();
+			$result = $qb->select('client_id')->from($table)->where($qb->expr()->eq('client_id', $qb->createNamedParameter($client)))->executeQuery();
+			try { return count($result->fetchAll()); } finally { $result->closeCursor(); }
+		};
+		$observe = function () use ($second, $host, $count): void {
+			self::assertNull((new CimdHostsMapper($second))->find($host), 'Uncommitted host admission is invisible');
+			foreach (['mcp_oauth_codes', 'mcp_oauth_tokens', 'mcp_oauth_spent'] as $table) { self::assertSame(1, $count($table), 'Uncommitted cleanup is invisible'); }
+		};
+		$broken = new class($this->official(), $observe) extends OAuthStore {
+			/** @param \OCP\IDBConnection $db Official transaction. @param \Closure $observe Concurrent observer. */
+			public function __construct(\OCP\IDBConnection $db, private \Closure $observe) { parent::__construct($db); }
+			/** @param string $host New host. @return void Inject failure after the production cut. */
+			public function deleteForHost(string $host): void { parent::deleteForHost($host); ($this->observe)(); throw new \RuntimeException('Injected after the host cut'); }
+		};
+		$hosts = [...array_column(array_filter(Server::get(CimdHostsMapper::class)->all(), static fn ($r) => $r['enabled']), 'host'), $host];
+		$revision = Server::get(PolicyStateMapper::class)->state()['revision'];
+		$failure = null;
+		try {
+			(new OAuthClientsService(Server::get(PolicyWriter::class), Server::get(IConfig::class), Server::get(OAuthClientsMapper::class), $broken))
+				->update($revision, $hosts, null, null);
+		} catch (\RuntimeException $e) { $failure = $e; }
+		self::assertNotNull($failure, 'The injected cleanup failure must propagate');
+		self::assertNull((new CimdHostsMapper($second))->find($host), 'The host put rolled back');
+		self::assertSame($revision, Server::get(PolicyStateMapper::class)->state()['revision']);
+		foreach (['mcp_oauth_codes', 'mcp_oauth_tokens', 'mcp_oauth_spent'] as $table) { self::assertSame(1, $count($table)); }
+		$this->saveHosts($hosts);
+		self::assertSame('2', (new CimdHostsMapper($second))->find($host)['gen']);
+		foreach (['mcp_oauth_codes', 'mcp_oauth_tokens', 'mcp_oauth_spent'] as $table) { self::assertSame(0, $count($table)); }
+	}
+
 }

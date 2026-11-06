@@ -39,11 +39,15 @@ final class LegacyCredentialFixture {
 					'refresh_hash' => $hasher->hash($tokens[$name]['refresh']), 'refresh_expires' => $now + $ttl, 'created_at' => $now], $now);
 			}
 			$spent = $tokens['rotated']['refresh'];
-			$id = (int)$store->findByRefresh($hasher->hash($spent))['id'];
-			$tokens['rotated'] = ['access' => $hasher->generate('at'), 'refresh' => $hasher->generate('rt')];
-			if (!$store->rotate($id, $hasher->hash($spent), $hasher->hash($tokens['rotated']['access']), $now + $ttl,
-				$hasher->hash($tokens['rotated']['refresh']), $now + $ttl)) {
-				throw new RuntimeException('The baseline store refused the fixture rotation');
+			$untrustedSpent = $tokens['untrusted']['refresh'];
+			foreach (['rotated', 'untrusted'] as $name) {
+				$old = $tokens[$name]['refresh'];
+				$id = (int)$store->findByRefresh($hasher->hash($old))['id'];
+				$tokens[$name] = ['access' => $hasher->generate('at'), 'refresh' => $hasher->generate('rt')];
+				if (!$store->rotate($id, $hasher->hash($old), $hasher->hash($tokens[$name]['access']), $now + $ttl,
+					$hasher->hash($tokens[$name]['refresh']), $now + $ttl)) {
+					throw new RuntimeException('The baseline store refused the fixture rotation');
+				}
 			}
 			$db->commit();
 		} catch (Throwable $e) {
@@ -63,7 +67,7 @@ final class LegacyCredentialFixture {
 		}
 		file_put_contents($output, json_encode(['uid' => $uid, 'client' => $client, 'redirect' => $redirect, 'resource' => $resource,
 			'code' => $code, 'verifier' => $verifier, 'tokens' => $tokens, 'untrusted_client' => 'https://mcp-it.example/client.json',
-			'spent' => $spent, 'rows' => $rows], JSON_THROW_ON_ERROR));
+			'spent' => $spent, 'untrusted_spent' => $untrustedSpent, 'rows' => $rows], JSON_THROW_ON_ERROR));
 		chmod($output, 0600);
 		echo 'Issued legacy credentials: ', implode(', ', array_map(static fn ($t, $r): string => "$t=" . count($r), array_keys($rows), $rows)), PHP_EOL;
 	}

@@ -64,7 +64,7 @@ final class LegacyCredentialsTest extends IntegrationTestCase {
 		$this->assertSame(Fixtures::LEGACY, $legacy['uid']);
 		$this->assertCount(1, $legacy['rows']['mcp_oauth_codes']);
 		$this->assertCount(3, $legacy['rows']['mcp_oauth_tokens']);
-		$this->assertCount(1, $legacy['rows']['mcp_oauth_spent']);
+		$this->assertCount(2, $legacy['rows']['mcp_oauth_spent']);
 		foreach ($legacy['rows'] as $table => $before) {
 			$after = $this->rows($table);
 			$this->assertCount(count($before), $after, $table);
@@ -95,6 +95,7 @@ final class LegacyCredentialsTest extends IntegrationTestCase {
 		} catch (OAuthException $e) {
 			$this->assertSame('invalid_grant', $e->error);
 		}
+		LegacyHostAdmissionProof::run($this, $legacy);
 		$this->assertSame(Fixtures::LEGACY, $bearer($legacy['tokens']['rotated']['access']));
 		$this->assertSame(Fixtures::LEGACY, $bearer($legacy['tokens']['plain']['access']));
 		$exchanged = $tokens->exchangeCode(['code' => $legacy['code'], 'code_verifier' => $legacy['verifier'],
@@ -113,6 +114,6 @@ final class LegacyCredentialsTest extends IntegrationTestCase {
 		}
 		$this->assertNull($bearer($legacy['tokens']['rotated']['access']));
 		$this->assertNull($bearer((string)$refreshed['access_token']));
-		$this->assertSame([$legacy['untrusted_client']], array_column($this->rows('mcp_oauth_tokens'), 'client_id'), 'Only the unusable untrusted fixture remains until teardown');
+		$this->assertSame([], $this->rows('mcp_oauth_tokens'));
 	}
 }

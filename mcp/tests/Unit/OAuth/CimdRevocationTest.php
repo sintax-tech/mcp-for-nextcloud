@@ -101,6 +101,34 @@ final class CimdRevocationTest extends TestCase {
 		$this->refused(fn () => $this->rig->tokens->refresh(['client_id' => 'https://legacy.example/client', 'refresh_token' => $tokens['refresh_token']]));
 	}
 
+	/** @return void An orphaned legacy spent hash cannot revoke a new session after the host's first admission. */
+	public function testFirstAdmissionCutsLegacySpentWithoutRevokingTheNewSessionOnReplay(): void {
+		$old = $this->rig->issue();
+		$this->rig->tokens->refresh(['client_id' => CimdRevocationRig::CLIENT, 'refresh_token' => $old['refresh_token']]);
+		$client = 'https://legacy.example/client';
+		foreach (['tokens', 'spent'] as $table) {
+			foreach ($this->rig->store->$table as &$row) { $row['client_id'] = $client; }
+			unset($row);
+		}
+		$this->rig->hosts(['claude.ai', 'chatgpt.com', 'legacy.example']);
+		self::assertSame([], $this->rig->store->tokens);
+		self::assertSame([], $this->rig->store->spent);
+		$new = $this->rig->issue($client);
+		$this->refused(fn () => $this->rig->tokens->refresh(['client_id' => $client, 'refresh_token' => $old['refresh_token']]));
+		self::assertNotNull($this->rig->bearer->authenticate('Bearer ' . $new['access_token'], CimdRevocationRig::RESOURCE));
+	}
+
+	/** @return void Repeating an existing host admission neither cuts credentials nor changes its generation. */
+	public function testRepeatingAdmissionOfAnExistingHostNeverDeletesItsSession(): void {
+		$hosts = ['claude.ai', 'chatgpt.com', 'legacy.example'];
+		$this->rig->hosts($hosts);
+		$new = $this->rig->issue('https://legacy.example/client');
+		$generation = $this->rig->table->mapper->cimdHosts()->find('legacy.example');
+		$this->rig->hosts($hosts);
+		self::assertSame($generation, $this->rig->table->mapper->cimdHosts()->find('legacy.example'));
+		self::assertNotNull($this->rig->bearer->authenticate('Bearer ' . $new['access_token'], CimdRevocationRig::RESOURCE));
+	}
+
 	/** @return void A stale config cannot override local tombstones and a failed database read fails closed. */
 	public function testBearerDoesNotTrustStaleAppConfigAndFailsClosedOnStorageFailure(): void {
 		$tokens = $this->rig->issue();

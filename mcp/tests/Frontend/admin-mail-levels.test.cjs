@@ -36,7 +36,7 @@ function mailOperations() {
 	const policy = require('./AdminTemplates.cjs').read(path.join(root, 'lib/Access/Grants/GrantCatalog.php'), 'utf8')
 	const line = policy.match(/'mail' => \[([^\]]*)\]/)
 	assert.ok(line, 'the Mail entry of GrantPolicy::CATALOG')
-	return [...line[1].matchAll(/'(\w+)'/g)].map((match) => match[1])
+	return [...line[1].matchAll(/'([\w.]+)'/g)].map((match) => match[1])
 }
 
 test('Mail levels are None, Accounts and folders, Messages, Messages and attachments, with flags, with moving, with drafts and with sending', () => {

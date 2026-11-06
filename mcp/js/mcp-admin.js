@@ -591,7 +591,7 @@
 
 	/** @return {Object<string,string>} common results key matches Forms; links is distinct from Files.link */
 	function operationLabels() {
-		return { results: t('mcp', 'results'), links: t('mcp', 'Read existing links (credentials)') }
+		return { results: t('mcp', 'results'), links: t('mcp', 'Read existing links (credentials)'), configure: t('mcp', 'configure'), options: t('mcp', 'options'), 'options.remove': t('mcp', 'remove or restore options'), invite: t('mcp', 'invite') }
 	}
 
 	/**
@@ -866,6 +866,8 @@
 
 	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 	catalog.tiers.tables = [['read'], ['create', 'edit']]
+	// Structure and sharing remain operation-only until the presets are explicitly widened.
+	catalog.untiered = Object.assign(catalog.untiered || {}, { tables: ['schema', 'share'] })
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
 /* admin/access/levels/forms.js */
@@ -896,7 +898,7 @@
  * A level is only a way to show and choose a set of operations; the server never sees it. Each module's operations are
  * split into cumulative tiers (Read, then Edit adds its tier, then Full adds the last one), so a level is the union of
  * the tiers up to it. A set of allowed operations that is no such union is "custom" and is shown and edited operation
- * by operation. The tiers follow GrantPolicy::CATALOG; an operation the tiers do not name (a newer catalog) falls into
+ * by operation. The tiers follow GrantPolicy::CATALOG; an operation the tiers do not name (unless explicitly untiered) falls into
  * the last tier, so it is never hidden and never granted by a lower level.
  *
  * The level functions are pure, with no DOM and no strings: src/admin/matrix/level-cells.js draws the cells and src/admin/matrix/labels.js names the levels.
@@ -934,7 +936,7 @@
 
 	/**
 	 * The tiers of a module, restricted to the operations the catalog has, with any operation they do not name added to
-	 * the last tier.
+	 * the last tier, except operations explicitly kept outside presets by the module.
 	 *
 	 * @param {string} module module id
 	 * @param {string[]} operations the module's operations in the catalog
@@ -944,7 +946,8 @@
 		if (module === 'polls') return root.OCA.Mcp.Admin.pollsGrants?.tiers(operations) || []
 		const known = TIERS[module] || [operations.filter((operation) => operation === 'read'), operations.filter((operation) => operation !== 'read')]
 		const listed = known.map((tier) => tier.filter((operation) => operations.includes(operation)))
-		const rest = operations.filter((operation) => !listed.some((tier) => tier.includes(operation)))
+		const untiered = catalog.untiered?.[module] || []
+		const rest = operations.filter((operation) => !listed.some((tier) => tier.includes(operation)) && !untiered.includes(operation))
 		if (rest.length > 0) {
 			if (listed.length === 0) listed.push([])
 			listed[listed.length - 1] = listed[listed.length - 1].concat(rest)
@@ -1139,7 +1142,7 @@
 			return {
 				...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(),
 				read: t('mcp', 'read'),
-				results: t('mcp', 'results'),
+				schema: t('mcp', 'schema'), results: t('mcp', 'results'),
 				edit: t('mcp', 'edit'),
 				create: t('mcp', 'create'),
 				move: t('mcp', 'move'),
@@ -1191,7 +1194,7 @@
 				reply: t('mcp', 'Send messages and replies'),
 				attach: t('mcp', 'Share a file into a conversation'),
 				quote: t('mcp', 'Quote part of a file in a message'),
-				share: t('mcp', 'Share own files with people and groups'),
+				share: module === 'files' ? t('mcp', 'Share own files with people and groups') : '',
 				link: t('mcp', 'Create public links to own files'),
 			}
 			return hints[operation] || ''
@@ -6392,7 +6395,7 @@
 		 * @return {string}
 		 */
 		function operationName(operation) {
-			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
+			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), schema: t('mcp', 'schema'), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
 		}
 
 		/** Flatten and sort granted module and operation pairs for stable draft comparison.
@@ -8258,7 +8261,7 @@
 		 * @return {string}
 		 */
 		function operationName(operation) {
-			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
+			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), schema: t('mcp', 'schema'), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
 		}
 
 		/** The first check that blocks, by the code of the effective access (EffectiveResult::blockingGate).

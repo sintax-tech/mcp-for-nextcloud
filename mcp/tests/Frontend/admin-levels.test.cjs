@@ -24,10 +24,11 @@ function catalog() {
 	const policy = fs.readFileSync(path.join(root, 'lib/Access/Grants/GrantCatalog.php'), 'utf8')
 	const body = policy.slice(policy.indexOf('public const CATALOG = ['), policy.indexOf('];', policy.indexOf('public const CATALOG = [')))
 	const out = {}
-	for (const [, module, operations] of body.matchAll(/'(\w+)' => \[([^\]]*)\]/g)) {
-		out[module] = [...operations.matchAll(/'(\w+)'/g)].map((match) => match[1])
+	for (const [, module, operations] of body.matchAll(/'([\w.]+)' => \[([^\]]*)\]/g)) {
+		out[module] = [...operations.matchAll(/'([\w.]+)'/g)].map((match) => match[1])
 	}
 	assert.ok(Object.keys(out).length >= 9, 'the catalog was read from GrantPolicy.php')
+	assert.ok(out.polls.includes('options.remove'), 'literal dotted operation is parsed')
 	return out
 }
 

@@ -34,10 +34,11 @@ final class GrantCatalog {
 		// sends a new message, four writes. All but 'read' start denied, as every operation but 'read' does.
 		'mail' => ['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'],
 		// Nextcloud Tables: 'read' lists the tables, views, columns and rows the user can open; 'create' adds one row and
-		// 'edit' changes cells of one row, through the Tables app, two writes that start denied like every write.
-		'tables' => ['read', 'create', 'edit'],
+		// 'edit' changes cells of one row. 'schema' manages structure and 'share' manages access; these four writes start denied.
+		'tables' => ['read', 'create', 'edit', 'schema', 'share'],
 		'forms' => ['read', 'results', 'create', 'edit'],
-		'polls' => ['read', 'results', 'links', 'create'],
+		// 'options.remove' is one literal operation, independent of 'options'; all new writes start denied.
+		'polls' => ['read', 'results', 'links', 'create', 'configure', 'options', 'options.remove', 'share', 'invite'],
 	];
 
 	/** Prevents instantiation of the immutable catalog. */

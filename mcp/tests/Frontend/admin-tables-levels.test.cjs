@@ -34,20 +34,20 @@ function tablesOperations() {
 	const policy = fs.readFileSync(path.join(root, 'lib/Access/Grants/GrantCatalog.php'), 'utf8')
 	const line = policy.match(/'tables' => \[([^\]]*)\]/)
 	assert.ok(line, 'the Tables entry of GrantPolicy::CATALOG')
-	return [...line[1].matchAll(/'(\w+)'/g)].map((match) => match[1])
+	return [...line[1].matchAll(/'([\w.]+)'/g)].map((match) => match[1])
 }
 
 test('Tables levels are None, Read and Full', () => {
 	const Levels = levels()
 	const operations = tablesOperations()
-	assert.deepEqual(operations, ['read', 'create', 'edit'])
+	assert.deepEqual(operations, ['read', 'create', 'edit', 'schema', 'share'])
 	assert.deepEqual(plain(Levels.levels('tables', operations)), ['none', 'read', 'full'])
 	assert.deepEqual(plain(Levels.operationsFor('tables', operations, 'read')), ['read'])
 	assert.deepEqual(plain(Levels.operationsFor('tables', operations, 'full')), ['read', 'create', 'edit'])
-	assert.equal(Levels.levelOf('tables', operations, { read: true, create: false, edit: false }), 'read')
-	assert.equal(Levels.levelOf('tables', operations, { read: true, create: true, edit: true }), 'full')
-	assert.equal(Levels.levelOf('tables', operations, { read: false, create: false, edit: false }), 'none')
-	assert.equal(Levels.levelOf('tables', operations, { read: false, create: true, edit: false }), 'custom', 'creating without reading is shown operation by operation')
+	assert.equal(Levels.levelOf('tables', operations, { read: true, create: false, edit: false, schema: false, share: false }), 'read')
+	assert.equal(Levels.levelOf('tables', operations, { read: true, create: true, edit: true, schema: false, share: false }), 'full')
+	assert.equal(Levels.levelOf('tables', operations, { read: false, create: false, edit: false, schema: false, share: false }), 'none')
+	assert.equal(Levels.levelOf('tables', operations, { read: false, create: true, edit: false, schema: false, share: false }), 'custom', 'creating without reading is shown operation by operation')
 })
 
 test('every module label map names Tables', () => {

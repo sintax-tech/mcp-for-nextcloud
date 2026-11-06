@@ -11,4 +11,6 @@
 
 	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 	catalog.tiers.tables = [['read'], ['create', 'edit']]
+	// Structure and sharing remain operation-only until the presets are explicitly widened.
+	catalog.untiered = Object.assign(catalog.untiered || {}, { tables: ['schema', 'share'] })
 })(typeof window !== 'undefined' ? window : globalThis)

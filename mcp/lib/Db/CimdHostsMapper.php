@@ -65,6 +65,20 @@ class CimdHostsMapper {
 		$qb->executeStatement();
 	}
 
+	/** @param string $host Effective trusted host. @return void A concurrent insert never overwrites its generation. */
+	public function seed(string $host): void {
+		$qb = $this->db->getQueryBuilder();
+		$qb->insert(self::TABLE);
+		foreach (['host_key' => hash('sha256', $host), 'host' => $host, 'enabled' => 1, 'gen' => 1] as $key => $value) {
+			$qb->setValue($key, $qb->createNamedParameter($value, is_int($value) ? IQueryBuilder::PARAM_INT : IQueryBuilder::PARAM_STR));
+		}
+		try {
+			$qb->executeStatement();
+		} catch (\OCP\DB\Exception $e) {
+			if ($e->getReason() !== \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) { throw $e; }
+		}
+	}
+
 	/** @param array<string,mixed> $row Database row. @return array{host:string, enabled:bool, gen:string} Validated state. */
 	private static function row(array $row): array {
 		$host = $row['host'] ?? null;

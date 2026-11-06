@@ -2,6 +2,8 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Db/CimdHostsSeeder.php","fqcn":"OCA\\Mcp\\Db\\CimdHostsSeeder","target":"stays","owner":"Db","ticket":null},
+		{"path":"lib/Migration/CimdHostsSeedStep.php","fqcn":"OCA\\Mcp\\Migration\\CimdHostsSeedStep","target":"stays","owner":"Migration","ticket":null},
 		{"path":"lib/Db/CimdHostsMapper.php","fqcn":"OCA\\Mcp\\Db\\CimdHostsMapper","target":"stays","owner":"Db","ticket":null},
 		{"path":"lib/Migration/Version001205Date20261106000000.php","fqcn":"OCA\\Mcp\\Migration\\Version001205Date20261106000000","target":"stays","owner":"Migration","ticket":null},
 		{"path":"lib/OAuth/Clients/CimdHostsUpdate.php","fqcn":"OCA\\Mcp\\OAuth\\Clients\\CimdHostsUpdate","target":"stays","owner":"OAuth","ticket":null},

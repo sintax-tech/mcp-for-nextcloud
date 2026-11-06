@@ -54,4 +54,27 @@ final class CimdHostsMigrationTest extends TestCase {
 		$migration->postSchemaChange($out, fn () => null, []);
 		self::assertSame(['host' => 'dedicated.example', 'enabled' => false, 'gen' => '9'], $table->mapper->cimdHosts()->find('dedicated.example'));
 	}
+	/** @return void Both native phases run the same seed twice without changing a row, including a withdrawal tombstone. */
+	public function testDeclaredInstallAndPostMigrationSeedsAreRepeatableAndKeepTombstones(): void {
+		$table = new ClientsTable($this);
+		$table->db->dbal->executeStatement('DELETE FROM mcp_cimd_hosts');
+		$config = $this->createMock(IConfig::class);
+		$config->method('getAppValue')->willReturn('claude.ai,chatgpt.com');
+		$seeder = new \OCA\Mcp\Db\CimdHostsSeeder($table->mapper->cimdHosts(), $config, $this->createMock(IAppConfig::class));
+		$info = simplexml_load_file(__DIR__ . '/../../../appinfo/info.xml');
+		foreach (['install', 'post-migration'] as $phase) {
+			$names = array_map('strval', $info->xpath('/info/repair-steps/' . $phase . '/step'));
+			self::assertContains(\OCA\Mcp\Migration\CimdHostsSeedStep::class, $names);
+		}
+		$step = new \OCA\Mcp\Migration\CimdHostsSeedStep($seeder);
+		$out = $this->createMock(IOutput::class);
+		$step->run($out);
+		$before = $table->mapper->cimdHosts()->all();
+		$step->run($out);
+		self::assertSame($before, $table->mapper->cimdHosts()->all());
+		$table->mapper->cimdHosts()->put('claude.ai', false, '7');
+		$step->run($out);
+		self::assertSame(['host' => 'claude.ai', 'enabled' => false, 'gen' => '7'], $table->mapper->cimdHosts()->find('claude.ai'));
+	}
+
 }

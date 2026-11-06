@@ -9,7 +9,6 @@ namespace OCA\Mcp\Migration;
 
 use Closure;
 use OCA\Mcp\Db\CimdHostsMapper;
-use OCA\Mcp\OAuth\Clients\ClientMetadataFetcher;
 use OCP\DB\ISchemaWrapper;
 use OCP\DB\Types;
 use OCP\IAppConfig;
@@ -47,15 +46,6 @@ class Version001205Date20261106000000 extends SimpleMigrationStep {
 
 	/** @param IOutput $output Output. @param Closure $schemaClosure Schema provider. @param array $options Options. @return void Seeds only absent rows. */
 	public function postSchemaChange(IOutput $output, Closure $schemaClosure, array $options): void {
-		$this->apps->clearCache(false);
-		$value = $this->config->getAppValue('mcp', ClientMetadataFetcher::HOSTS_KEY, ClientMetadataFetcher::DEFAULT_HOSTS);
-		$hosts = array_filter(array_map('trim', explode(',', strtolower($value))));
-		$hosts = $hosts === [] ? explode(',', ClientMetadataFetcher::DEFAULT_HOSTS) : array_values(array_unique($hosts));
-		$mapper = new CimdHostsMapper($this->db);
-		foreach ($hosts as $host) {
-			if ($mapper->find($host) === null) {
-				$mapper->put($host, true, '1');
-			}
-		}
+		(new \OCA\Mcp\Db\CimdHostsSeeder(new CimdHostsMapper($this->db), $this->config, $this->apps))->seed();
 	}
 }

@@ -26,7 +26,6 @@
 		{"path":"lib/Modules/Files/FilesPreviewContext.php","fqcn":"OCA\\Mcp\\Modules\\Files\\FilesPreviewContext","target":"stays","owner":"Modules\\Files","ticket":null},
 		{"path":"lib/Modules/Files/FilesRegistration.php","fqcn":"OCA\\Mcp\\Modules\\Files\\FilesRegistration","target":"stays","owner":"Modules\\Files","ticket":null},
 		{"path":"lib/Modules/Files/FilesToolCatalog.php","fqcn":"OCA\\Mcp\\Modules\\Files\\FilesToolCatalog","target":"stays","owner":"Modules\\Files","ticket":null},
-		{"path":"lib/Modules/Files/MovePlanner.php","fqcn":"OCA\\Mcp\\Modules\\Files\\MovePlan","target":"stays","owner":"Modules\\Files","ticket":null},
 		{"path":"lib/Modules/Files/Moving/MoveBatchAction.php","fqcn":"OCA\\Mcp\\Modules\\Files\\Moving\\MoveBatchAction","target":"stays","owner":"Modules\\Files","ticket":null},
 		{"path":"lib/Modules/Files/Moving/MoveBatchPreview.php","fqcn":"OCA\\Mcp\\Modules\\Files\\Moving\\MoveBatchPreview","target":"stays","owner":"Modules\\Files","ticket":null},
 		{"path":"lib/Modules/Files/Moving/MoveFileHandler.php","fqcn":"OCA\\Mcp\\Modules\\Files\\Moving\\MoveFileHandler","target":"stays","owner":"Modules\\Files","ticket":null},

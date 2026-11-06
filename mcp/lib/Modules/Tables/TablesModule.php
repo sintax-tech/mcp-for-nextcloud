@@ -23,6 +23,9 @@ final class TablesModule extends CatalogModule {
 		return TablesToolCatalog::TOOLS;
 	}
 
+	/** @return class-string<\OCA\Mcp\Mcp\Tools\ModuleRegistration> Native capabilities. */
+	public static function registration(): ?string { return TablesRegistration::class; }
+
 	/** {@inheritDoc} */
 	public function guideNotes(): array {
 		return TablesGuideNotes::notes();
@@ -30,6 +33,7 @@ final class TablesModule extends CatalogModule {
 
 	/** {@inheritDoc} */
 	public function renderPlan(string $tool, array $plan): ?string {
+		if (\OCA\Mcp\Modules\Tables\Presentation\SchemaPlanRenderer::supports($tool)) return \OCA\Mcp\Modules\Tables\Presentation\SchemaPlanRenderer::render($plan);
 		return in_array($tool, [CreateRowHandler::TOOL, UpdateRowHandler::TOOL], true) ? (new RowWritePlanRenderer())->render($plan) : null;
 	}
 }

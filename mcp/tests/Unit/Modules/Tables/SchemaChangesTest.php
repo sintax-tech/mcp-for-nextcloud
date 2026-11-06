@@ -1,0 +1,70 @@
+<?php
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+declare(strict_types=1);
+
+namespace OCA\Mcp\Tests\Unit\Modules\Tables;
+
+use OCA\Mcp\Modules\Tables\Writing\{SchemaColumnChanges, SchemaViewChanges};
+use PHPUnit\Framework\TestCase;
+
+/** Relation immutability, typed filter domains and bounded regex compilation. */
+final class SchemaChangesTest extends TestCase {
+	/** @return void Unsupported relation columns cannot be edited, including metadata. */
+	public function testRelationColumnRejected(): void {
+		$this->expectException(\InvalidArgumentException::class);
+		SchemaColumnChanges::of(['title' => 'Changed'], ['type' => 'relation', 'subtype' => '']);
+	}
+	/** @return void A view may edit metadata while leaving its existing relation references untouched. */
+	public function testRelationReferencesArePreservedWithoutEditing(): void {
+		$before = ['columnSettings' => [['columnId' => 7, 'order' => 0]], 'filter' => [[['columnId' => 7, 'operator' => 'is-equal', 'value' => '1']]], 'sort' => []];
+		$columns = [7 => ['type' => 'relation']];
+		$this->assertSame(['title' => 'Changed'], SchemaViewChanges::of(['title' => 'Changed'], $before, $columns, '2.3.2'));
+		$this->expectException(\InvalidArgumentException::class);
+		SchemaViewChanges::of(['columns' => []], $before, $columns, '2.3.2');
+	}
+	/** @return void New relation predicates cannot be introduced through view editing. */
+	public function testNewRelationFilterRejected(): void {
+		$this->expectException(\InvalidArgumentException::class);
+		SchemaViewChanges::of(['filter' => [[['column_id' => 7, 'operator' => 'is-equal', 'value' => 1]]]], ['filter' => []], [7 => ['type' => 'relation', 'subtype' => '']], '2.3.2');
+	}
+	/** @return void A saved filter cannot refer to a foreign column. */
+	public function testForeignFilterColumnIsNotFound(): void {
+		$this->expectExceptionMessage(\OCA\Mcp\Platform\FileAccess\CommonMessages::notFound());
+		SchemaViewChanges::of(['sort' => [['column_id' => 7, 'mode' => 'ASC']]], [], [], '2.3.2');
+	}
+	/** @return void Empty lists clear rules and invalid operators do not disappear silently. */
+	public function testEmptyAndTypedRules(): void {
+		$this->assertSame(['filter' => [], 'sort' => []], SchemaViewChanges::of(['filter' => [], 'sort' => []], [], [], '2.3.2'));
+		$this->expectException(\InvalidArgumentException::class);
+		SchemaViewChanges::of(['filter' => [[['column_id' => 1, 'operator' => 'contains', 'value' => 'x']]]], [], [1 => ['type' => 'number', 'subtype' => '']], '2.3.2');
+	}
+	/** @return void Regex validation restores limits and rejects malformed/oversized patterns. */
+	public function testRegexIsCompiledWithBoundsAndRestoresProcessConfiguration(): void {
+		$limit = ini_get('pcre.backtrack_limit');
+		$result = SchemaColumnChanges::of(['type' => 'text', 'subtype' => 'line', 'options' => [['name' => 'textAllowedPattern', 'value' => '/^[a-z]+$/u']]], null);
+		$this->assertSame('/^[a-z]+$/u', $result['textAllowedPattern']);
+		$this->assertSame($limit, ini_get('pcre.backtrack_limit'));
+		try { SchemaColumnChanges::of(['type' => 'text', 'subtype' => 'line', 'options' => [['name' => 'textAllowedPattern', 'value' => '/[/']]], null); $this->fail('Malformed regex accepted'); }
+		catch (\InvalidArgumentException) { $this->assertSame($limit, ini_get('pcre.backtrack_limit')); }
+	}
+	/** @return void Native settings objects retain readonly/mandatory when only visible order is edited. */
+	public function testNestedNativeSettingsAreMaterializedWithoutDroppingFlags(): void {
+		$settings = new class implements \JsonSerializable {
+			/** @return array<string,mixed> Native column information shape. */
+			public function jsonSerialize(): array { return ['columnId' => 1, 'order' => 1, 'readonly' => true, 'mandatory' => true]; }
+		};
+		$view = new class($settings) {
+			/** @param object $settings Native nested information. */
+			public function __construct(private object $settings) {}
+			/** @return array<string,mixed> Native view metadata. */
+			public function jsonSerialize(): array { return ['columnSettings' => [$this->settings]]; }
+		};
+		$before = \OCA\Mcp\Modules\Tables\Integration\SchemaNativeSnapshot::of($view);
+		$result = SchemaViewChanges::of(['columns' => [1]], $before, [1 => ['type' => 'text', 'subtype' => 'line']], '2.3.2');
+		$this->assertTrue($result['columnSettings'][0]['readonly']);
+		$this->assertTrue($result['columnSettings'][0]['mandatory']);
+	}
+}

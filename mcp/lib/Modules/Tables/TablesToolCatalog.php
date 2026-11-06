@@ -17,7 +17,7 @@ use OCA\Mcp\Modules\Tables\Tools\UpdateRow;
 /** The Tables tools in their published order. */
 final class TablesToolCatalog {
 	/** @var list<class-string<\OCA\Mcp\Mcp\Tools\Tool>> ordered published tools */
-	public const TOOLS = [ListTables::class, ListViews::class, ListColumns::class, ListRows::class, CreateRow::class, UpdateRow::class];
+	public const TOOLS = [ListTables::class, ListViews::class, ListColumns::class, ListRows::class, CreateRow::class, UpdateRow::class, \OCA\Mcp\Modules\Tables\Tools\CreateTable::class, \OCA\Mcp\Modules\Tables\Tools\UpdateTable::class, \OCA\Mcp\Modules\Tables\Tools\CreateColumn::class, \OCA\Mcp\Modules\Tables\Tools\UpdateColumn::class, \OCA\Mcp\Modules\Tables\Tools\CreateView::class, \OCA\Mcp\Modules\Tables\Tools\UpdateView::class, \OCA\Mcp\Modules\Tables\Tools\ShareNode::class, \OCA\Mcp\Modules\Tables\Tools\UnshareNode::class];
 
 	/** Prevents construction of this ordered catalog. */
 	private function __construct() {

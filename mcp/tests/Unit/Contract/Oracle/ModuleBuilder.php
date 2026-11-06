@@ -51,6 +51,7 @@ final class ModuleBuilder {
 			$native = $this->deckDependencies;
 			return new DeckCapabilities($apps, 35, static fn (): bool => $native);
 		}
+		if ($class === \OCA\Mcp\Modules\Tables\Integration\TablesWriteCapabilities::class) return \OCA\Mcp\Tests\Unit\Modules\Tables\SchemaCapabilityFixture::of($this->mock(IAppManager::class));
 		$constructor = (new ReflectionClass($class))->getConstructor();
 		$args = [];
 		foreach ($constructor?->getParameters() ?? [] as $parameter) {

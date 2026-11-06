@@ -195,6 +195,14 @@ final class ToolPresentation {
 			'tables_list_rows' => Translator::t('List table rows'),
 			'tables_create_row' => Translator::t('Create table row'),
 			'tables_update_row' => Translator::t('Update table row'),
+			'tables_create_table' => Translator::t('Create table'),
+			'tables_update_table' => Translator::t('Update table'),
+			'tables_create_column' => Translator::t('Create table column'),
+			'tables_update_column' => Translator::t('Update table column'),
+			'tables_create_view' => Translator::t('Create table view'),
+			'tables_update_view' => Translator::t('Update table view'),
+			'tables_share_node' => Translator::t('Share table or view'),
+			'tables_unshare_node' => Translator::t('Revoke table or view share'),
 			default => self::humanized($name),
 		};
 	}

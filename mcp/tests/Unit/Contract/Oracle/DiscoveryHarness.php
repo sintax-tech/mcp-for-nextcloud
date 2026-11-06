@@ -76,7 +76,7 @@ final class DiscoveryHarness {
 		}
 		$logger = $this->mock(LoggerInterface::class);
 		$modules = (new ModuleBuilder($test, $scenario->deckDependencies))->modules(Application::MODULES);
-		$registry = new ToolRegistry($modules, $policy, $apps, $users, $logger, $guests, capabilities: new \OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry([(new ModuleBuilder($test, $scenario->deckDependencies))->build(\OCA\Mcp\Modules\Deck\Integration\DeckCapabilities::class)], $logger));
+		$registry = new ToolRegistry($modules, $policy, $apps, $users, $logger, $guests, capabilities: new \OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry([(new ModuleBuilder($test, $scenario->deckDependencies))->build(\OCA\Mcp\Modules\Deck\Integration\DeckCapabilities::class), (new ModuleBuilder($test))->build(\OCA\Mcp\Modules\Tables\Integration\TablesWriteCapabilities::class)], $logger));
 		$resources = new ResourceRegistry($registry, $policy, $apps, $users, $this->mock(IRootFolder::class), $this->mock(VisibilityGuard::class),
 			new \OCA\Mcp\Modules\Files\ExtractedFileText($this->mock(TextExtractor::class)), $this->mock(NoteResource::class), $registry->guide(), $this->mock(FilesAccessGuard::class), $guests);
 		$installed = $this->mock(IAppManager::class);

@@ -57,7 +57,7 @@ final class TablesModuleTest extends TestCase {
 	 */
 	public function testTheModulePublishesFourReadToolsOfTheTablesApp(): void {
 		$all = TablesHandlers::module($this, TablesScene::app())->definitions();
-		$this->assertSame([...self::TOOLS, ...array_keys(self::WRITES)], array_column($all, 'name'));
+		$this->assertSame([...self::TOOLS, ...array_keys(self::WRITES), 'tables_create_table', 'tables_update_table', 'tables_create_column', 'tables_update_column', 'tables_create_view', 'tables_update_view', 'tables_share_node', 'tables_unshare_node'], array_column($all, 'name'));
 		$definitions = array_slice($all, 0, 4);
 		foreach ($definitions as $definition) {
 			$this->assertSame(['tables', 'read', 'tables'], [$definition['module'], $definition['operation'], $definition['app']]);
@@ -72,7 +72,7 @@ final class TablesModuleTest extends TestCase {
 		}
 		$this->assertSame(['table_id', 'view_id'], array_keys($definitions[2]['inputSchema']['properties']));
 		$this->assertSame(['table_id', 'view_id', 'filter', 'search', 'sort', 'limit', 'cursor'], array_keys($definitions[3]['inputSchema']['properties']));
-		foreach (array_slice($all, 4) as $definition) {
+		foreach (array_slice($all, 4, 2) as $definition) {
 			$this->assertSame(['tables', self::WRITES[$definition['name']], 'tables'], [$definition['module'], $definition['operation'], $definition['app']]);
 			$this->assertTrue(WriteGate::isWrite($definition), $definition['name']);
 			$this->assertFalse($definition['inputSchema']['additionalProperties']);

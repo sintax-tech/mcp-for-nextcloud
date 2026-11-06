@@ -11,10 +11,12 @@ use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Collectives\Presentation\CollectivesMessages;
 
 /**
- * The content search of the two proven Collectives shapes: 4.0.0 takes the most results to return (15 unless told),
- * 4.4.0 and later return what the index finds. The budget is passed where the release takes it, hits are read as
- * file ids in native rank order, without repeats, cut at the budget, and the answer says when the native side may
- * have stopped at it. Authorizing each hit is the caller's.
+ * The content search of Collectives 4.4.0 and later, whose whole native chain only reads (SearchService::searchCollective
+ * to FileSearcher and its mappers, proven on the pinned releases by collectives-read-chains.json). The 4.0.0 shape is
+ * refused before Collectives is asked: its search creates the `indices` folder of the app data when it is missing
+ * (getIndexForCollective to getIndicesFolder to newFolder), a write that a read must not make. Hits are read as file
+ * ids in native rank order, without repeats, cut at the budget, and the answer says when the native side may have
+ * stopped at it. Authorizing each hit is the caller's.
  */
 class ContentSearch {
 	/**
@@ -33,11 +35,14 @@ class ContentSearch {
 	 * @param string $uid authenticated actor
 	 * @param int $budget most results asked for
 	 * @return array{ids:list<int>, capped:bool} page ids in native rank order, and whether the native answer may have stopped at the budget
-	 * @throws ToolFailure when this version has no proven content search, or the call is not admitted
+	 * @throws ToolFailure when this version has no read-only content search (4.0.0 or an unknown shape), or the call is
+	 *   not admitted
 	 */
 	public function search(int $cid, string $query, string $uid, int $budget): array {
-		$arity = $this->surface->searchArity() ?? throw new ToolFailure(CollectivesMessages::contentSearchUnavailable());
-		$results = $this->gateway->searchCollective($cid, $query, $uid, $arity === CollectivesSurface::SEARCH_WITH_LIMIT ? $budget : null);
+		if ($this->surface->searchArity() !== CollectivesSurface::SEARCH_WITHOUT_LIMIT) {
+			throw new ToolFailure(CollectivesMessages::contentSearchUnavailable());
+		}
+		$results = $this->gateway->searchCollective($cid, $query, $uid);
 		$ids = [];
 		foreach ($results as $hit) {
 			$id = is_array($hit) ? (int)($hit['file_id'] ?? 0) : 0;

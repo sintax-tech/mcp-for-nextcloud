@@ -94,4 +94,50 @@ final class CollectivesContractTest extends TestCase {
 			$this->assertStringContainsString('searchCollective(Collective $collective, string $query): array', $search[$version]);
 		}
 	}
+
+	/**
+	 * Every method a read, a plan, a read-back or a content search can reach in each pinned release (followed through
+	 * the source by CollectivesCallGraph, over-approximating untyped receivers), checked for writes. The only write on
+	 * the read chain stores the user's Collectives folder when it is unset, which CollectivesAdmission refuses before.
+	 * The 4.0.0 content search creates the indices folder, so the module refuses that shape; 4.4.0 and later only read.
+	 * @return void
+	 */
+	public function testEveryChainAReadReachesOnlyReads(): void {
+		$chains = json_decode((string)file_get_contents(self::DIR . 'collectives-read-chains.json'), true, 512, JSON_THROW_ON_ERROR);
+		$this->assertSame(['4.0.0', '4.4.0', '4.5.0', '4.7.1'], array_keys($chains));
+		$folder = 'OCA\\Collectives\\Fs\\UserFolderHelper::getUserFolderSetting';
+		foreach ($chains as $version => $chain) {
+			$read = $chain['read'];
+			$this->assertGreaterThan(50, count($read['methods']), "$version: the read chain was followed");
+			foreach (['OCA\\Collectives\\Service\\PageService::find', 'OCA\\Collectives\\Service\\PageService::getParentPageId',
+				'OCA\\Collectives\\Service\\CollectiveServiceBase::getCollective', $folder] as $reached) {
+				$this->assertArrayHasKey($reached, $read['methods'], "$version reaches $reached");
+			}
+			$this->assertSame([$folder => ['setUserValue']], NativeWrites::in($read['methods']), "$version: the read chain writes nothing else");
+			$this->assertMatchesRegularExpression("/if \\(\\\$userCollectivesPath === ''\\) \\{[^}]*->setUserValue\\(/s", $read['methods'][$folder],
+				"$version: the folder setting is only written when it is unset");
+			$this->assertSame(['OCP\\IConfig::setUserValue'], NativeWrites::leaving($read['leaves']), "$version: no other write leaves the app");
+			$search = $chain['search'];
+			if ($version === '4.0.0') {
+				$this->assertContains('newFolder', NativeWrites::in($search['methods'])['OCA\\Collectives\\Service\\SearchService::getIndicesFolder'] ?? [],
+					'4.0.0 creates the indices folder on a search: the module refuses that shape');
+				continue;
+			}
+			$this->assertSame([], NativeWrites::in($search['methods']), "$version: the content search only reads");
+			$this->assertSame([], NativeWrites::leaving($search['leaves']), "$version: no write leaves the app from the search");
+			$this->assertArrayHasKey('OCA\\Collectives\\Search\\FileSearch\\FileSearcher::search', $search['methods'], "$version: the search chain was followed");
+		}
+	}
+
+	/** @return void the write finder catches every kind of write the chains are checked for, and nothing in a read */
+	public function testTheWriteFinderCatchesEveryWrite(): void {
+		foreach (['$folder->newFolder(\'indices\')', '$folder->newFile($name)', '$file->putContent($x)', '$this->newPage($c, $f)',
+			'$this->createIndexPage($f, 0)', '$this->initSubFolder($file)', '$qb->insert(\'t\')', '$qb->update(\'t\')',
+			'$this->mapper->delete($e)', '$this->mapper->updateOrInsert($p)', '$this->config->setUserValue($u, $a, $k, $v)',
+			'$node->move($to)', '$node->copy($to)', '$qb->executeStatement()'] as $write) {
+			$this->assertNotSame([], NativeWrites::in(['X::m' => "function m() { $write; }"]), $write);
+		}
+		$this->assertSame([], NativeWrites::in(['X::m' => 'function m() { return $this->mapper->findByFileId($id) ?? $qb->select(\'*\')->executeQuery(); }']));
+		$this->assertSame(['(outside value)::newFolder'], NativeWrites::leaving(['(outside value)::newFolder', 'OCP\\Files\\Folder::get']));
+	}
 }

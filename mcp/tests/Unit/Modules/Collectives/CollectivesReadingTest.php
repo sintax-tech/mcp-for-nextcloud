@@ -188,14 +188,13 @@ final class CollectivesReadingTest extends TestCase {
 		$this->assertCount(2, $this->call('collectives_search', ['collective_id' => 7, 'query' => 'x', 'scope' => 'content'])['notices'], 'a full budget is declared');
 	}
 
-	/** @return void the 4.0.0 shape gets the budget explicitly; hits are deduplicated, filtered and never pass it */
-	public function testTheLegacySearchReceivesTheBudget(): void {
+	/** @return void the 4.0.0 shape, whose search creates the indices folder, is refused before Collectives is asked */
+	public function testTheLegacySearchIsRefusedWithoutTouchingCollectives(): void {
 		$this->rig->surface = new CollectivesSurface(CollectivesSurface::MEMBERS, 'OCA\\Collectives\\Service\\LegacySearchService');
-		CollectivesScene::$searchHits = [...array_fill(0, 30, ['file_id' => CollectivesScene::$ids['Guide.md']]),
-			['file_id' => CollectivesScene::$ids['.templates/Template.md']], ['file_id' => CollectivesScene::$ids['Team/Onboarding.md']]];
-		$answer = $this->call('collectives_search', ['collective_id' => 7, 'query' => 'x', 'scope' => 'content']);
-		$this->assertContains('searchCollective:100', CollectivesScene::$calls);
-		$this->assertSame(['Guide', 'Onboarding'], array_column($answer['pages'], 'title'));
+		CollectivesScene::$searchHits = [['file_id' => CollectivesScene::$ids['Guide.md']]];
+		$this->assertStringContainsString('Content search is not available', $this->refusal('collectives_search', ['collective_id' => 7, 'query' => 'x', 'scope' => 'content']));
+		$this->assertSame([], array_values(array_filter(CollectivesScene::$calls, static fn (string $call): bool => str_starts_with($call, 'searchCollective'))));
+		$this->assertSame(['Guide'], array_column($this->call('collectives_search', ['collective_id' => 7, 'query' => 'guide'])['pages'], 'title'), 'title search still works');
 	}
 
 	/** @return void a version without a proven content search refuses it and keeps the title search */

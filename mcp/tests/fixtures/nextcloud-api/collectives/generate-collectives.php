@@ -8,6 +8,7 @@ declare(strict_types=1);
 use OCA\Mcp\Tests\Unit\Contract\NextcloudApi\{FixtureFile,LibScanner,SourceParser};
 
 require __DIR__ . '/../../../../vendor/autoload.php';
+require __DIR__ . '/CollectivesCallGraph.php';
 
 /**
  * Regenerates the Collectives surfaces of tests/fixtures/nextcloud-api/<major>.php and collectives-behavior.json from
@@ -18,6 +19,19 @@ require __DIR__ . '/../../../../vendor/autoload.php';
  */
 final class CollectivesFixtureGenerator {
 	/** Native methods recorded per release, by file under lib/. */
+	/**
+	 * The native entry points each kind of MCP call reaches. `read`: every read, plan and read-back (collectives, folder,
+	 * pages by find, page file, the edit check and the entities projected); `search`: the content search.
+	 */
+	public const CHAINS = [
+		'read' => ['OCA\\Collectives\\Service\\CollectiveService::getCollectives', 'OCA\\Collectives\\Service\\CollectiveService::getCollective',
+			'OCA\\Collectives\\Service\\PageService::getFolder', 'OCA\\Collectives\\Service\\PageService::find',
+			'OCA\\Collectives\\Service\\PageService::getPageFile', 'OCA\\Collectives\\Service\\PageService::verifyEditPermissions',
+			'OCA\\Collectives\\Db\\Collective::canEdit', 'OCA\\Collectives\\Db\\Collective::getName', 'OCA\\Collectives\\Db\\Collective::jsonSerialize',
+			'OCA\\Collectives\\Model\\PageInfo::jsonSerialize'],
+		'search' => ['OCA\\Collectives\\Service\\SearchService::searchCollective'],
+	];
+
 	public const METHODS = [
 		'Service/PageService.php' => ['verifyEditPermissions', 'getPageFile', 'getFolder', 'getPagesFromFolder', 'findAll', 'createBase', 'create', 'move',
 			'find', 'getPageByFile', 'getParentPageId', 'getIndexPageFile'],
@@ -37,6 +51,7 @@ final class CollectivesFixtureGenerator {
 	public static function run(string $archives): void {
 		$pins = json_decode(file_get_contents(__DIR__ . '/collectives-sources.json'), true, 512, JSON_THROW_ON_ERROR);
 		$behavior = [];
+		$chains = [];
 		foreach ($pins as $major => $pin) {
 			$version = $pin['collectives']['version'];
 			$tree = sys_get_temp_dir() . '/mcp-collectives-fixture-' . bin2hex(random_bytes(5));
@@ -80,6 +95,11 @@ final class CollectivesFixtureGenerator {
 						$methods[$file . '::' . $name] = self::method($source, $name);
 					}
 				}
+				$graph = new CollectivesCallGraph($app . '/lib');
+				foreach (self::CHAINS as $kind => $entries) {
+					$reached = $graph->reach($entries);
+					$chains[$version][$kind] = ['entries' => $entries, 'leaves' => $reached['leaves'], 'methods' => $reached['methods']];
+				}
 				$behavior[$version] = ['sha256' => $pin['collectives']['sha256'],
 					'nextcloud' => ['min' => (int)$xml->dependencies->nextcloud['min-version'], 'max' => (int)$xml->dependencies->nextcloud['max-version']],
 					'methods' => $methods];
@@ -93,7 +113,9 @@ final class CollectivesFixtureGenerator {
 			}
 		}
 		ksort($behavior);
+		ksort($chains);
 		file_put_contents(__DIR__ . '/collectives-behavior.json', json_encode($behavior, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . PHP_EOL);
+		file_put_contents(__DIR__ . '/collectives-read-chains.json', json_encode($chains, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . PHP_EOL);
 	}
 
 	/**

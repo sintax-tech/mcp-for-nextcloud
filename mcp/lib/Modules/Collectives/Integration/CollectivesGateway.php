@@ -127,20 +127,19 @@ class CollectivesGateway {
 	}
 
 	/**
-	 * One native content search for the actor, through the collective read for them now.
+	 * One native content search for the actor, through the collective read for them now; only for the read-only
+	 * shape of 4.4.0 and later (see {@see ContentSearch}).
 	 * @param int $cid collective id
 	 * @param string $query text to find
 	 * @param string $uid authenticated actor
-	 * @param int|null $limit the most results, passed only to a release whose search takes it
 	 * @return array<mixed> the native hits, untouched
 	 * @throws ToolFailure when the call is not admitted or Collectives fails
 	 */
-	public function searchCollective(int $cid, string $query, string $uid, ?int $limit): array {
+	public function searchCollective(int $cid, string $query, string $uid): array {
 		$this->admission->admit($uid, 'read');
-		return $this->call(function () use ($cid, $query, $uid, $limit): array {
+		return $this->call(function () use ($cid, $query, $uid): array {
 			$collective = $this->service(CollectivesSurface::COLLECTIVES)->getCollective($cid, $uid);
-			$search = $this->service(CollectivesSurface::SEARCH);
-			return $limit === null ? $search->searchCollective($collective, $query) : $search->searchCollective($collective, $query, $limit);
+			return $this->service(CollectivesSurface::SEARCH)->searchCollective($collective, $query);
 		});
 	}
 

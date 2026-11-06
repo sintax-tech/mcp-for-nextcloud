@@ -26,7 +26,7 @@ final class OptionChanges {
 				if (count($matches) > 1) { PollWriteRequest::invalid('option'); }
 				$old = $matches[0] ?? null;
 				$order = $old['order'] ?? ($s['poll']['type'] === 'datePoll'
-					? ($s['version'] === '8.6.3' ? null : $value['timestamp'])
+					? (version_compare($s['version'], '9.0.0', '<') ? null : $value['timestamp'])
 					: 1 + max([0, ...array_column($rows, 'order')]));
 				$after = $value + ['id' => $old['id'] ?? null, 'order' => $order, 'deleted' => false,
 					'owner' => $old['owner'] ?? ($s['poll']['owner'] === $s['actor'] ? '' : $s['actor'])];

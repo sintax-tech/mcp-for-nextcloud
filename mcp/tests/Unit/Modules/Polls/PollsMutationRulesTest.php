@@ -55,7 +55,7 @@ final class PollsMutationRulesTest extends TestCase {
 		self::assertStringContainsString('votes may reappear', implode(' ', $e['notes']));
 		$s['optionValue']['text'] = 'New';
 		self::assertSame('alice', OptionChanges::effect(['tool' => 'polls_add_option', 'option' => ['text' => 'New']], $s)['after']['owner']);
-		$s['version'] = '8.6.3'; $s['poll']['type'] = 'datePoll';
+		$s['version'] = '8.6.4'; $s['poll']['type'] = 'datePoll';
 		self::assertNull(OptionChanges::effect(['tool' => 'polls_add_option', 'option' => ['timestamp' => 1800000000]], $s)['after']['order']);
 	}
 	/** @return void Wrong child ID has the common absence answer; never exposes another poll. */

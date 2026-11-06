@@ -51,11 +51,11 @@ final class CalendarDraftApproval {
 	 */
 	public function preview(string $name, CalendarDraft $tool, array $arguments, string $userId): array {
 		[$prepared, $shared] = $this->prepare($tool, $arguments, $userId);
-		return ['requiresConfirmation' => true, 'message' => CalendarMessages::approvalPrompt()]
+		return \OCA\Mcp\Modules\Calendar\Presentation\AlarmPlan::withWarnings(['requiresConfirmation' => true, 'message' => CalendarMessages::approvalPrompt()]
 			+ $this->plan($name, $prepared, $arguments)
 			+ ['timezone' => $this->zones?->forUser($userId)->getName()]
 			+ ['shared' => $shared]
-			+ ($this->warnings->applies($name) ? $this->warnings->forWrite($name, $prepared, $arguments, $userId) : []);
+			+ ($this->warnings->applies($name) ? $this->warnings->forWrite($name, $prepared, $arguments, $userId) : []));
 	}
 
 	/**
@@ -124,7 +124,8 @@ final class CalendarDraftApproval {
 			'recoverable' => $deleting, 'consequence' => $deleting ? CalendarMessages::previewTrash() : null,
 			'scheduling' => ['requested' => $notify, 'imipEnabled' => $this->scheduling->imipEnabled(), 'participantsNotified' => false,
 				'message' => $moving ? CalendarMessages::participantsNotNotified() : ($notify ? ($deleting ? CalendarMessages::previewCancel() : CalendarMessages::previewInvitations()) : CalendarMessages::previewSuppressed()),
-				'proofScope' => CalendarMessages::previewInvitationProof()]];
+				'proofScope' => CalendarMessages::previewInvitationProof()]]
+			+ \OCA\Mcp\Modules\Calendar\Presentation\AlarmPlan::extend($name, $prepared, $arguments);
 	}
 
 	/**

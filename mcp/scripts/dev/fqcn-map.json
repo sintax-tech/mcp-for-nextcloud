@@ -1232,7 +1232,13 @@
 		{"path":"lib/Modules/Deck/Presentation/DeckPlans/CardStatusText.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Presentation\\DeckPlans\\CardStatusText","target":"stays","owner":"Modules\\Deck","ticket":null},
 		{"path":"lib/Modules/Deck/Presentation/DeckStatusMessages.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Presentation\\DeckStatusMessages","target":"stays","owner":"Modules\\Deck","ticket":null},
 		{"path":"lib/Modules/Deck/Tools/SetCardArchived.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Tools\\SetCardArchived","target":"stays","owner":"Modules\\Deck","ticket":null},
-		{"path":"lib/Modules/Deck/Tools/SetCardDone.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Tools\\SetCardDone","target":"stays","owner":"Modules\\Deck","ticket":null}
+		{"path":"lib/Modules/Deck/Tools/SetCardDone.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Tools\\SetCardDone","target":"stays","owner":"Modules\\Deck","ticket":null},
+		{"path":"lib/Modules/Calendar/Composing/AlarmInput.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Composing\\AlarmInput","target":"stays","owner":"Modules\\Calendar","ticket":null},
+		{"path":"lib/Modules/Calendar/Composing/EventAlarms.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Composing\\EventAlarms","target":"stays","owner":"Modules\\Calendar","ticket":null},
+		{"path":"lib/Modules/Calendar/Presentation/AlarmSchema.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Presentation\\AlarmSchema","target":"stays","owner":"Modules\\Calendar","ticket":null},
+		{"path":"lib/Modules/Calendar/Presentation/AlarmPlan.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Presentation\\AlarmPlan","target":"stays","owner":"Modules\\Calendar","ticket":null},
+		{"path":"lib/Modules/Calendar/Presentation/AlarmMessages.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Presentation\\AlarmMessages","target":"stays","owner":"Modules\\Calendar","ticket":null},
+		{"path":"lib/Modules/Calendar/Writing/AlarmReceipt.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Writing\\AlarmReceipt","target":"stays","owner":"Modules\\Calendar","ticket":null}
 	],
 	"tests": [
 		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\ServerInfoTest","target":"OCA\\Mcp\\Tests\\Unit\\Mcp\\Protocol\\ServerInfoTest"},

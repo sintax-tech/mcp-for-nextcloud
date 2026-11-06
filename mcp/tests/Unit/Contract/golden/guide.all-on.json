@@ -386,7 +386,7 @@
                             {
                                 "name": "calendar_create_event",
                                 "title": "Create event",
-                                "description": "Creates a simple event (no recurrence) in a writable calendar. Attendees are Nextcloud account IDs; call users_search first if you are not sure of someone's ID. This call may send invitations to other people. If the resource belongs to someone else, the agent MUST ask the user before sending confirm_shared: true. First returns a detailed plan without writing. Show it to the user and wait for explicit approval; then repeat the same arguments with confirm=true, adding the etag returned in the plan when it has one.",
+                                "description": "Creates a simple event (no recurrence) in a writable calendar. Attendees are Nextcloud account IDs; call users_search first if you are not sure of someone's ID. Supports optional DISPLAY reminders relative to the start via alarms (up to 5, at most 4 weeks). This call may send invitations to other people. If the resource belongs to someone else, the agent MUST ask the user before sending confirm_shared: true. First returns a detailed plan without writing. Show it to the user and wait for explicit approval; then repeat the same arguments with confirm=true, adding the etag returned in the plan when it has one.",
                                 "read_only": false,
                                 "destructive": true,
                                 "confirmation": [
@@ -397,7 +397,7 @@
                             {
                                 "name": "calendar_update_event",
                                 "title": "Edit event",
-                                "description": "Updates title, location, description, dates, or attendees (account IDs; call users_search first if unsure) of an event. Recurrent series dates cannot be changed. This call may send invitations to other people. Attendees are only notified with send_invitations: true, depending on server configuration; sending does not confirm receipt. If the resource belongs to someone else, the agent MUST ask the user before sending confirm_shared: true. First returns a detailed plan without writing. Show it to the user and wait for explicit approval; then repeat the same arguments with confirm=true, adding the etag returned in the plan when it has one.",
+                                "description": "Updates title, location, description, dates, or attendees (account IDs; call users_search first if unsure) of an event. Recurrent series dates cannot be changed. Optional alarms replaces only DISPLAY reminders relative to the start (up to 5, at most 4 weeks); [] removes those reminders. Omit alarms to preserve all reminders. Other reminders and recurrence overrides stay unchanged. This call may send invitations to other people. Attendees are only notified with send_invitations: true, depending on server configuration; sending does not confirm receipt. If the resource belongs to someone else, the agent MUST ask the user before sending confirm_shared: true. First returns a detailed plan without writing. Show it to the user and wait for explicit approval; then repeat the same arguments with confirm=true, adding the etag returned in the plan when it has one.",
                                 "read_only": false,
                                 "destructive": true,
                                 "confirmation": [

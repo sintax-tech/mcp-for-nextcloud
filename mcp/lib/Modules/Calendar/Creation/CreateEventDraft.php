@@ -60,7 +60,7 @@ final class CreateEventDraft implements \OCA\Mcp\Modules\Calendar\Approval\Calen
 	) {}
 
 	/**
-	 * @param array{calendar: string, summary: string, start: string, end: string, allDay?: bool, timeZone?: string, location?: string, description?: string, attendees?: list<string>, send_invitations?: bool, confirm_shared?: bool} $arguments tool arguments, already validated against the schema
+	 * @param array{calendar: string, summary: string, start: string, end: string, allDay?: bool, timeZone?: string, location?: string, description?: string, attendees?: list<string>, send_invitations?: bool, confirm_shared?: bool, alarms?: list<array{minutesBefore:int, description?:string}>} $arguments tool arguments, already validated against the schema
 	 * @param string $userId authenticated UID
 	 * @return array{content: list<array{type:string, text:string}>} created event item plus etag and scheduling
 	 * @throws CalendarException when the calendar is not visible, not writable, the UID is taken or the pipeline refuses
@@ -94,19 +94,25 @@ final class CreateEventDraft implements \OCA\Mcp\Modules\Calendar\Approval\Calen
 		if ($organizer !== null) {
 			$this->builder->setAttendees($vcalendar->VEVENT, $guests, $organizer['email'], $organizer['displayName']);
 		}
+		\OCA\Mcp\Modules\Calendar\Composing\EventAlarms::apply($vcalendar->VEVENT, $arguments);
 		$notify = (bool)($arguments['send_invitations'] ?? false);
-		return new \OCA\Mcp\Modules\Calendar\Approval\PreparedCalendarWrite($calendar, null, null, $vcalendar, function () use ($calendar, $uid, $uri, $vcalendar, $notify, $userId, $timing): array {
+		return new \OCA\Mcp\Modules\Calendar\Approval\PreparedCalendarWrite($calendar, null, null, $vcalendar, function () use ($calendar, $uid, $uri, $vcalendar, $notify, $userId, $timing, $arguments): array {
+			$map = fn ($written, $row): array => $this->mapper->toItem($written->VEVENT, $timing->start, $timing->end, $calendar, Classification::FULL)
+				+ ['etag' => $row['etag'], 'scheduling' => $this->scheduling->report($notify, $written)];
+			if (array_key_exists('alarms', $arguments)) {
+				return \OCA\Mcp\Modules\Calendar\Writing\AlarmReceipt::dispatch($vcalendar, null, $this->events,
+					fn () => $this->dav->put($userId, $calendar->uri, $uri, $vcalendar->serialize(), $notify),
+					fn () => $this->store->object($calendar->id, $uri),
+					$map,
+				);
+			}
 			$this->dav->put($userId, $calendar->uri, $uri, $vcalendar->serialize(), $notify);
 			// The ETag comes from the re-read: Sabre omits it in the response once a plugin has
 			// rewritten the data (sabre/dav/lib/DAV/CorePlugin.php:428-518).
 			$row = $this->store->object($calendar->id, $uri)
 				?? throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
 			$written = $this->events->parse($row['data']) ?? throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
-			$item = $this->mapper->toItem($written->VEVENT, $timing->start, $timing->end, $calendar, Classification::FULL);
-			return SchemaBuilder::result($item + [
-				'etag' => $row['etag'],
-				'scheduling' => $this->scheduling->report($notify, $written),
-			]);
+			return SchemaBuilder::result($map($written, $row));
 		});
 	}
 

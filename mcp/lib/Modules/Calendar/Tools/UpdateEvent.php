@@ -38,6 +38,7 @@ final class UpdateEvent implements WriteTool {
 			'calendar_update_event',
 			'edit',
 			CalendarMessages::TOOL_UPDATE_EVENT
+				. \OCA\Mcp\Modules\Calendar\Presentation\AlarmMessages::UPDATE
 				. CalendarMessages::INVITES_OTHERS . CalendarMessages::SEND_INVITATIONS_NOTE . CalendarMessages::SHARED_CONFIRMATION_SUFFIX,
 			[
 				'calendar' => CalendarSchema::calendar(),
@@ -49,6 +50,7 @@ final class UpdateEvent implements WriteTool {
 				'timeZone' => CalendarSchema::text(CalendarMessages::propertyDescription('timezone'), 1, 64),
 				'location' => CalendarSchema::text(CalendarMessages::propertyDescription('updated-location'), 0, 255),
 				'description' => CalendarSchema::text(CalendarMessages::propertyDescription('updated-description'), 0, 65536),
+				'alarms' => CalendarSchema::alarms(),
 				'attendees' => CalendarSchema::attendees(true),
 				'send_invitations' => CalendarSchema::sendInvitations(),
 				'etag' => CalendarSchema::etag(),

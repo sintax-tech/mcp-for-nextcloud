@@ -66,7 +66,7 @@ final class UpdateEventDraft implements \OCA\Mcp\Modules\Calendar\Approval\Calen
 	) {}
 
 	/**
-	 * @param array{calendar: string, uid: string, summary?: string, start?: string, end?: string, allDay?: bool, timeZone?: string, location?: string, description?: string, attendees?: list<string>, send_invitations?: bool, etag?: string, confirm_shared?: bool} $arguments tool arguments, already validated against the schema
+	 * @param array{calendar: string, uid: string, summary?: string, start?: string, end?: string, allDay?: bool, timeZone?: string, location?: string, description?: string, attendees?: list<string>, send_invitations?: bool, etag?: string, confirm_shared?: bool, alarms?: list<array{minutesBefore:int, description?:string}>} $arguments tool arguments, already validated against the schema
 	 * @param string $userId authenticated UID
 	 * @return array{content: list<array{type:string, text:string}>} updated event item plus etag and scheduling
 	 * @throws CalendarException when not visible, not writable, changed meanwhile or a recurring timing change
@@ -88,7 +88,7 @@ final class UpdateEventDraft implements \OCA\Mcp\Modules\Calendar\Approval\Calen
 		$timingChanges = array_intersect_key($arguments, array_flip(self::TIMING_FIELDS));
 		$textChanges = array_intersect_key($arguments, array_flip(self::TEXT_FIELDS));
 		$guestChanges = array_key_exists('attendees', $arguments);
-		if ($timingChanges === [] && $textChanges === [] && !$guestChanges) {
+		if ($timingChanges === [] && $textChanges === [] && !$guestChanges && !array_key_exists('alarms', $arguments)) {
 			throw new CalendarArgumentException(CalendarMessages::noFieldGiven());
 		}
 		$calendar = $this->access->resolveWritable($userId, $arguments['calendar']);
@@ -108,21 +108,29 @@ final class UpdateEventDraft implements \OCA\Mcp\Modules\Calendar\Approval\Calen
 		if ($guestChanges) {
 			$this->replaceGuests($master, $stored, $arguments['attendees'] ?? [], $userId);
 		}
+		\OCA\Mcp\Modules\Calendar\Composing\EventAlarms::apply($master, $arguments);
 		$this->builder->touch($master, $this->time->now());
 		$notify = (bool)($arguments['send_invitations'] ?? false);
 		// If-Match always carries the ETag just read, even when the client sent none, so a change
 		// made between the read and the write loses instead of being overwritten (an ETag mismatch aborts the update).
-		return new \OCA\Mcp\Modules\Calendar\Approval\PreparedCalendarWrite($calendar, null, $before, $stored->vcalendar, function () use ($calendar, $stored, $notify, $userId): array {
+		return new \OCA\Mcp\Modules\Calendar\Approval\PreparedCalendarWrite($calendar, null, $before, $stored->vcalendar, function () use ($calendar, $stored, $notify, $userId, $arguments, $before): array {
+			$map = function ($written, $row) use ($calendar, $notify): array {
+				$timing = $this->builder->timing($written->VEVENT);
+				return $this->mapper->toItem($written->VEVENT, $timing['start'], $timing['end'], $calendar, Classification::FULL)
+					+ ['etag' => $row['etag'], 'scheduling' => $this->scheduling->report($notify, $written)];
+			};
+			if (array_key_exists('alarms', $arguments)) {
+				return \OCA\Mcp\Modules\Calendar\Writing\AlarmReceipt::dispatch($stored->vcalendar, $before->vcalendar, $this->events,
+					fn () => $this->dav->update($userId, $calendar->uri, $stored->uri, $stored->etag, $stored->vcalendar->serialize(), $notify),
+					fn () => $this->store->object($calendar->id, $stored->uri),
+					$map,
+				);
+			}
 			$this->dav->update($userId, $calendar->uri, $stored->uri, $stored->etag, $stored->vcalendar->serialize(), $notify);
 			$row = $this->store->object($calendar->id, $stored->uri)
 				?? throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
 			$written = $this->events->parse($row['data']) ?? throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
-			$timing = $this->builder->timing($written->VEVENT);
-			$item = $this->mapper->toItem($written->VEVENT, $timing['start'], $timing['end'], $calendar, Classification::FULL);
-			return SchemaBuilder::result($item + [
-				'etag' => $row['etag'],
-				'scheduling' => $this->scheduling->report($notify, $written),
-			]);
+			return SchemaBuilder::result($map($written, $row));
 		});
 	}
 

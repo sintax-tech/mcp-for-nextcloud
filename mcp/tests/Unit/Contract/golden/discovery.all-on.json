@@ -1345,7 +1345,7 @@
                     {
                         "name": "calendar_create_event",
                         "title": "Create event",
-                        "description": "Creates a simple event (no recurrence) in a writable calendar. Attendees are Nextcloud account IDs; call users_search first if you are not sure of someone's ID. This call may send invitations to other people. If the resource belongs to someone else, the agent MUST ask the user before sending confirm_shared: true. First returns a detailed plan without writing. Show it to the user and wait for explicit approval; then repeat the same arguments with confirm=true, adding the etag returned in the plan when it has one.",
+                        "description": "Creates a simple event (no recurrence) in a writable calendar. Attendees are Nextcloud account IDs; call users_search first if you are not sure of someone's ID. Supports optional DISPLAY reminders relative to the start via alarms (up to 5, at most 4 weeks). This call may send invitations to other people. If the resource belongs to someone else, the agent MUST ask the user before sending confirm_shared: true. First returns a detailed plan without writing. Show it to the user and wait for explicit approval; then repeat the same arguments with confirm=true, adding the etag returned in the plan when it has one.",
                         "inputSchema": {
                             "type": "object",
                             "properties": {
@@ -1396,6 +1396,33 @@
                                     "maxLength": 65536,
                                     "description": "description"
                                 },
+                                "alarms": {
+                                    "type": "array",
+                                    "minItems": 0,
+                                    "maxItems": 5,
+                                    "description": "Optional DISPLAY reminders relative to the start (start of day for all-day events), up to 4 weeks. Omit to keep current behavior. On update, replaces only DISPLAY reminders relative to the start; [] removes those reminders. Other reminders and recurrence overrides stay unchanged.",
+                                    "items": {
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "minutesBefore"
+                                        ],
+                                        "properties": {
+                                            "minutesBefore": {
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "maximum": 40320,
+                                                "description": "Minutes before the event starts; 0 means at the start."
+                                            },
+                                            "description": {
+                                                "type": "string",
+                                                "minLength": 0,
+                                                "maxLength": 65536,
+                                                "description": "Reminder text. Omitted or empty uses the final event title, or Event reminder when untitled."
+                                            }
+                                        }
+                                    }
+                                },
                                 "attendees": {
                                     "type": "array",
                                     "items": {
@@ -1441,7 +1468,7 @@
                     {
                         "name": "calendar_update_event",
                         "title": "Edit event",
-                        "description": "Updates title, location, description, dates, or attendees (account IDs; call users_search first if unsure) of an event. Recurrent series dates cannot be changed. This call may send invitations to other people. Attendees are only notified with send_invitations: true, depending on server configuration; sending does not confirm receipt. If the resource belongs to someone else, the agent MUST ask the user before sending confirm_shared: true. First returns a detailed plan without writing. Show it to the user and wait for explicit approval; then repeat the same arguments with confirm=true, adding the etag returned in the plan when it has one.",
+                        "description": "Updates title, location, description, dates, or attendees (account IDs; call users_search first if unsure) of an event. Recurrent series dates cannot be changed. Optional alarms replaces only DISPLAY reminders relative to the start (up to 5, at most 4 weeks); [] removes those reminders. Omit alarms to preserve all reminders. Other reminders and recurrence overrides stay unchanged. This call may send invitations to other people. Attendees are only notified with send_invitations: true, depending on server configuration; sending does not confirm receipt. If the resource belongs to someone else, the agent MUST ask the user before sending confirm_shared: true. First returns a detailed plan without writing. Show it to the user and wait for explicit approval; then repeat the same arguments with confirm=true, adding the etag returned in the plan when it has one.",
                         "inputSchema": {
                             "type": "object",
                             "properties": {
@@ -1496,6 +1523,33 @@
                                     "minLength": 0,
                                     "maxLength": 65536,
                                     "description": "new description; empty to clear"
+                                },
+                                "alarms": {
+                                    "type": "array",
+                                    "minItems": 0,
+                                    "maxItems": 5,
+                                    "description": "Optional DISPLAY reminders relative to the start (start of day for all-day events), up to 4 weeks. Omit to keep current behavior. On update, replaces only DISPLAY reminders relative to the start; [] removes those reminders. Other reminders and recurrence overrides stay unchanged.",
+                                    "items": {
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "minutesBefore"
+                                        ],
+                                        "properties": {
+                                            "minutesBefore": {
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "maximum": 40320,
+                                                "description": "Minutes before the event starts; 0 means at the start."
+                                            },
+                                            "description": {
+                                                "type": "string",
+                                                "minLength": 0,
+                                                "maxLength": 65536,
+                                                "description": "Reminder text. Omitted or empty uses the final event title, or Event reminder when untitled."
+                                            }
+                                        }
+                                    }
                                 },
                                 "attendees": {
                                     "type": "array",

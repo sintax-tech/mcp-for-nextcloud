@@ -103,6 +103,11 @@ final class CalendarSchema {
 		return SchemaBuilder::text($description, $minLength, $maxLength);
 	}
 
+	/** @return array<string, mixed> optional reminder list shared by create and update */
+	public static function alarms(): array {
+		return AlarmSchema::property();
+	}
+
 	/**
 	 * @return array<string, mixed> the optional `confirm_shared` property every write publishes
 	 */

@@ -51,6 +51,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Modules/Files/FileBackupCopy.php#copy:fopen:1' => 'read: original bytes for internal recovery',
 			'Modules/Files/VersionRestore.php#writeVersion:fopen:1' => 'temporary: php temp stream buffer, not a Files node',
 			'Modules/Files/TextExtractor.php#read:fopen:1' => 'read: bounded file content, read-only mode',
+			'Modules/Files/VersionStream.php#open:fopen:1' => 'read: current file bytes of the listed current version, read-only mode',
 			'Modules/Files/TextExtractor.php#zipXml:file_put_contents:1' => 'temporary: ITempManager local zip, not a Files node',
 			'Modules/Mail/Extraction/MailAttachmentDocument.php#text:file_put_contents:1' => 'temporary: ITempManager local zip of a mail attachment, not a Files node',
 			'Modules/Mail/Integration/MailMoveStore.php#move:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Mail\\MailMoveToolsTest::testAnotherGenerationNeverMovesAMessage',
@@ -108,7 +109,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 		$calls = FileWriteSinkInventory::calls(FileWriteSinkInventory::sources(__DIR__ . '/../../../lib'));
 		$literals = array_values(array_filter($calls, static fn (string $call): bool => str_contains($call, ':literal-')));
 		self::assertCount(21, $literals);
-		self::assertCount(45, array_diff($calls, $literals));
+		self::assertCount(46, array_diff($calls, $literals));
 		foreach ($calls as $call) {
 			self::assertDoesNotMatchRegularExpression('/:(?:literal-)?(?:writestream|fputs):/', $call);
 		}

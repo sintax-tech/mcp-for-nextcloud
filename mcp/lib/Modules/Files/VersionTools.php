@@ -91,7 +91,7 @@ final class VersionTools {
 	public function read(File $file, string $path, string $revision, string $viewerUid): array {
 		$user = $this->requireVersioning($viewerUid);
 		$version = $this->find($user, $file, $revision);
-		$handle = $this->manager()->read($version);
+		$handle = VersionStream::open($this->manager(), $version, $file);
 		if (!is_resource($handle)) {
 			throw new ToolFailure(FilesMessages::versionUnreadable());
 		}

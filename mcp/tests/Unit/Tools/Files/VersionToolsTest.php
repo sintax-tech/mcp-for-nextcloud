@@ -162,6 +162,18 @@ final class VersionToolsTest extends TestCase {
 		$this->tools->read($this->file(), '/Documentos/ata.md', '1759200000', 'alice');
 	}
 
+	public function testReadOfTheListedCurrentVersionReturnsTheFileAndOtherMissingVersionsStayMissing(): void {
+		$current = (string)$this->file()->getMTime();
+		$this->manager->versions[0] = new FakeVersion($current, (int)$current, 9, 'text/markdown', 'ata.md');
+		$this->manager->versions[0]->noStoredFile = true;
+		$this->manager->versions[1]->noStoredFile = true;
+		$out = $this->tools->read($this->file(), '/Documentos/ata.md', $current, 'alice');
+		$this->assertSame("# Ata\nolá", $out['text']);
+		$this->assertSame($current, $out['version']);
+		$this->expectException(\OCP\Files\NotFoundException::class);
+		$this->tools->read($this->file(), '/Documentos/ata.md', '1759100000', 'alice');
+	}
+
 	public function testRestoreBacksUpThenRollsBack(): void {
 		$out = $this->tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
 		$this->assertSame(['path', 'size', 'etag', 'access', 'backup', 'version'], array_keys($out));

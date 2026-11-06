@@ -758,6 +758,7 @@
 		{"path":"lib/Tools/Files/UnifiedDiff.php","fqcn":"OCA\\Mcp\\Tools\\Files\\UnifiedDiff","target":"OCA\\Mcp\\Platform\\Text\\UnifiedDiff","owner":"Platform","ticket":"RE-13"},
 		{"path":"lib/Tools/Files/UniqueSnippet.php","fqcn":"OCA\\Mcp\\Tools\\Files\\UniqueSnippet","target":"OCA\\Mcp\\Platform\\Text\\UniqueSnippet","owner":"Platform","ticket":"RE-13"},
 		{"path":"lib/Tools/Files/VersionRestore.php","fqcn":"OCA\\Mcp\\Tools\\Files\\VersionRestore","target":"OCA\\Mcp\\Modules\\Files\\VersionRestore","owner":"Modules\\Files","ticket":"RE-21"},
+		{"path":"lib/Modules/Files/VersionStream.php","fqcn":"OCA\\Mcp\\Modules\\Files\\VersionStream","target":"OCA\\Mcp\\Modules\\Files\\VersionStream","owner":"Modules\\Files","ticket":"RE-21"},
 		{"path":"lib/Tools/Files/VersionTools.php","fqcn":"OCA\\Mcp\\Tools\\Files\\VersionTools","target":"OCA\\Mcp\\Modules\\Files\\VersionTools","owner":"Modules\\Files","ticket":"RE-21"},
 		{"path":"lib/Tools/Forms/Attachments/ResultFileAccess.php","fqcn":"OCA\\Mcp\\Tools\\Forms\\Attachments\\ResultFileAccess","target":"OCA\\Mcp\\Modules\\Forms\\ResultFileAccess","owner":"Modules\\Forms","ticket":"RE-18"},
 		{"path":"lib/Tools/Forms/Creation/CreateFormContext.php","fqcn":"OCA\\Mcp\\Tools\\Forms\\Creation\\CreateFormContext","target":"OCA\\Mcp\\Modules\\Forms\\Creation\\CreateFormContext","owner":"Modules\\Forms","ticket":"RE-18"},

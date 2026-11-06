@@ -16,7 +16,7 @@ use OCA\Mcp\Modules\Files\CopyMoveContext;
 use OCA\Mcp\Modules\Files\FileTypePreflight;
 use OCA\Mcp\Modules\Files\ListedTreeCopy;
 use OCA\Mcp\Modules\Files\FolderExposureGate;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 
 /** Owns files_copy planning and confirmation, preserving native authorization and receipts. */
 final class CopyHandler {

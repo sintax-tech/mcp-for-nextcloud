@@ -13,7 +13,7 @@ use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCP\FullTextSearch\IFullTextSearchManager;
 use OCP\FullTextSearch\Model\ISearchResult;
 use OCA\Mcp\Modules\Files\FilesModule;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 
 /** Preserves the existing Files SearchFilesHandler behavior. */

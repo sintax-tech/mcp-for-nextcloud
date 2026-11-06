@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\Sharing\ShareAccess;
 use OCP\Share\IShare;
 

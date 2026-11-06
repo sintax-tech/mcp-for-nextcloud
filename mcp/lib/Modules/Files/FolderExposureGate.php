@@ -22,7 +22,7 @@ final class FolderExposureGate {
 
 	public static function assertExposure(Node $node, ?VisibilityGuard $guard): void {
 		if (NodeAccess::isFolder($node) && self::active($guard)) {
-			throw new ToolFailure(FilesMessages::folderExposureRefused());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::folderExposureRefused());
 		}
 	}
 
@@ -43,7 +43,7 @@ final class FolderExposureGate {
 			$sameParent = false;
 		}
 		if (!$sameParent) {
-			throw new ToolFailure(FilesMessages::folderExposureRefused());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::folderExposureRefused());
 		}
 	}
 }

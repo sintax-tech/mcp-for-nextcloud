@@ -10,7 +10,7 @@ namespace OCA\Mcp\Modules\Files\Tools;
 use OCA\Mcp\Platform\FileAccess\SharePermission;
 use OCA\Mcp\Modules\Files\Sharing\ShareWriter;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\Presentation\FilesSchema;
 use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;

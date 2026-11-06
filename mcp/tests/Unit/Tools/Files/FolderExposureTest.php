@@ -11,7 +11,7 @@ use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\Platform\FileAccess\FakeLock;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Modules\Files\Batch;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Lock\ILock;
 use OCP\IConfig;

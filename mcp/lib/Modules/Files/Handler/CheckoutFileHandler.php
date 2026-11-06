@@ -14,7 +14,7 @@ use OCP\Files\NotFoundException;
 use OCA\Mcp\Modules\Files\CheckoutService;
 use OCA\Mcp\Modules\Files\FileBackup;
 use OCA\Mcp\Modules\Files\FileWriteBoundary;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;

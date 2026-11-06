@@ -42,7 +42,7 @@ final class FileBackupPreparation {
 	public function prepare(File $file, string $path, string $userId, ?string $etag, bool $asUser, \Closure $copy): string {
 		$user = $this->userManager->get($userId);
 		if ($user === null || !$this->appManager->isEnabledForUser('files_versions', $user)) {
-			throw new ToolFailure(FilesMessages::versioningOff());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::versioningOff());
 		}
 		if (!$file->isUpdateable()) {
 			throw new ToolFailure(CommonMessages::forbidden());

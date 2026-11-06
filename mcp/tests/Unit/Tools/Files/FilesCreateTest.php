@@ -14,7 +14,7 @@ use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Modules\Files\CheckoutService;
 use OCA\Mcp\Modules\Files\FileCreation;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCA\Mcp\Mcp\Tools\UnknownToolException;
 use OCP\IUser;

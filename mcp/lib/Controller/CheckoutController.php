@@ -26,7 +26,7 @@ use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Modules\Files\CheckoutService;
 use OCA\Mcp\Modules\Files\FileBackup;
 use OCA\Mcp\Modules\Files\FileCreation;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;

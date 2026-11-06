@@ -30,7 +30,7 @@ use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Modules\Files\FileBackup;
 use OCA\Mcp\Modules\Files\FileCreation;
 use OCA\Mcp\Modules\Files\FileExists;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Response;

@@ -12,7 +12,7 @@ use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\Access\ResourceScope\FilesScopes;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\SystemTag\ISystemTagObjectMapper;
 

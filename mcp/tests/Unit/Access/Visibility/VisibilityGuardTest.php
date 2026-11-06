@@ -77,7 +77,7 @@ final class VisibilityGuardTest extends TestCase {
 				$guard->copyHiddenTags($node, $this->createMock(Node::class));
 				$this->fail('Backup tagging must refuse unresolved ancestry');
 			} catch (ToolFailure $e) {
-				$this->assertSame(\OCA\Mcp\Modules\Files\FilesMessages::backupFailed(), $e->getMessage());
+				$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::backupFailed(), $e->getMessage());
 			}
 		}
 	}

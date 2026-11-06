@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Handler;
 
-use OCA\Mcp\Modules\Files\{CopyMoveContext, BatchStore, Batch, MovePlanner, FolderExposureGate, FilesMessages};
+use OCA\Mcp\Modules\Files\{CopyMoveContext, BatchStore, Batch, MovePlanner, FolderExposureGate, Presentation\FilesMessages};
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;

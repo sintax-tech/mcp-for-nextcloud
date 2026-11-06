@@ -32,10 +32,10 @@ final class ImageFileAccess {
 	public function requireImage(Folder $root, string $path): File {
 		$node = NodeAccess::get($root, $path, $this->visibilityGuard);
 		if (!$node instanceof File) {
-			throw new ToolFailure(\OCA\Mcp\Modules\Files\FilesMessages::notAnImage());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::notAnImage());
 		}
 		if (!self::looksLikeImage((string)$node->getMimetype())) {
-			throw new ToolFailure(\OCA\Mcp\Modules\Files\FilesMessages::notAnImage());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::notAnImage());
 		}
 		return $node;
 	}

@@ -45,8 +45,8 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Modules/Files/Handler/CheckoutWriteHandler.php#create:fopen:1' => 'read: temporary upload body',
 			'Controller/CheckoutController.php#storeBody:fopen:1' => 'temporary: ITempManager upload body, not a Files node',
 			'Controller/CheckoutController.php#inputStream:fopen:1' => 'read: php input stream',
-			'Modules/Files/FilesPlanRenderer.php#render:copy:1' => 'render: static plan text, no Files mutation',
-			'Modules/Files/FilesPlanRenderer.php#render:move:1' => 'render: static plan text, no Files mutation',
+			'Modules/Files/Presentation/FilesPlanRenderer.php#render:copy:1' => 'render: static plan text, no Files mutation',
+			'Modules/Files/Presentation/FilesPlanRenderer.php#render:move:1' => 'render: static plan text, no Files mutation',
 			'Modules/Files/Images/ImageMetadata.php#originalDimensions:fopen:1' => 'read: original image bytes',
 			'Modules/Files/FileBackupCopy.php#copy:fopen:1' => 'read: original bytes for internal recovery',
 			'Modules/Files/VersionRestore.php#writeVersion:fopen:1' => 'temporary: php temp stream buffer, not a Files node',
@@ -117,7 +117,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 
 	/** Static copy/move helpers render plan text; the scanner still discovers and classifies both calls. */
 	public function testPlanRendererCallsAreExplicitlyClassifiedAsRendering(): void {
-		$path = 'Modules/Files/FilesPlanRenderer.php';
+		$path = 'Modules/Files/Presentation/FilesPlanRenderer.php';
 		$calls = FileWriteSinkInventory::calls([$path => (string)file_get_contents(__DIR__ . '/../../../lib/' . $path)]);
 		self::assertSame([$path . '#render:copy:1', $path . '#render:move:1'], $calls);
 		foreach ($calls as $call) {

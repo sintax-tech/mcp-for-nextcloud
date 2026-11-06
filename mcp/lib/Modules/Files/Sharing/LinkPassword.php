@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Sharing;
 
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\HintException;

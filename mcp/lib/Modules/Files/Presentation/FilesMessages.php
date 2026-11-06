@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files;
+namespace OCA\Mcp\Modules\Files\Presentation;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
@@ -21,7 +21,7 @@ final class FilesMessages {
 	}
 
 	/** Folder in the user's root that receives a copy of every file before an edit writes it. */
-	public const BACKUP_FOLDER = FileBackup::FOLDER;
+	public const BACKUP_FOLDER = \OCA\Mcp\Modules\Files\FileBackup::FOLDER;
 
 	// ---------------------------------------------------------------- tool descriptions
 
@@ -107,8 +107,8 @@ final class FilesMessages {
 	public static function copyTool(): string {
 		return 'Copy a file or folder to another path, creating a new node with a new id. Never '
 			. 'overwrites the destination. The copy is an independent node: does not preserve source id, versions, '
-			. 'or shares. Capped at ' . ReorganizationLimits::NODES . ' items and '
-			. ReorganizationLimits::BYTES . ' bytes, measured before copying. If source or destination '
+			. 'or shares. Capped at ' . \OCA\Mcp\Modules\Files\ReorganizationLimits::NODES . ' items and '
+			. \OCA\Mcp\Modules\Files\ReorganizationLimits::BYTES . ' bytes, measured before copying. If source or destination '
 			. 'is outside your personal folder, ask the user first and retry with confirm_shared.';
 	}
 
@@ -123,17 +123,17 @@ final class FilesMessages {
 
 	/** @return string description of files_edit */
 	public static function editTool(): string {
-		return BackupMessages::editTool();
+		return \OCA\Mcp\Modules\Files\BackupMessages::editTool();
 	}
 
 	/** @return string description of files_replace */
 	public static function replaceTool(): string {
-		return BackupMessages::replaceTool();
+		return \OCA\Mcp\Modules\Files\BackupMessages::replaceTool();
 	}
 
 	/** @return string description of files_checkout */
 	public static function checkoutTool(): string {
-		return BackupMessages::checkoutTool();
+		return \OCA\Mcp\Modules\Files\BackupMessages::checkoutTool();
 	}
 
 	/** @return string description of files_versions_list */
@@ -149,7 +149,7 @@ final class FilesMessages {
 
 	/** @return string description of files_version_restore */
 	public static function versionRestoreTool(): string {
-		return BackupMessages::versionRestoreTool();
+		return \OCA\Mcp\Modules\Files\BackupMessages::versionRestoreTool();
 	}
 
 	/** @return string description of files_image_view */
@@ -280,14 +280,14 @@ final class FilesMessages {
 	 * @return string the plan of files_edit
 	 */
 	public static function planEdit(): string {
-		return BackupMessages::planEdit();
+		return \OCA\Mcp\Modules\Files\BackupMessages::planEdit();
 	}
 
 	/**
 	 * @return string the plan of files_replace
 	 */
 	public static function planReplace(): string {
-		return BackupMessages::planReplace();
+		return \OCA\Mcp\Modules\Files\BackupMessages::planReplace();
 	}
 
 	/**
@@ -301,21 +301,21 @@ final class FilesMessages {
 	 * @return string the plan of files_version_restore
 	 */
 	public static function planRestore(): string {
-		return BackupMessages::planRestore();
+		return \OCA\Mcp\Modules\Files\BackupMessages::planRestore();
 	}
 
 	/**
 	 * @return string what the backup taken by a write gives back
 	 */
 	public static function planBackupConsequence(): string {
-		return BackupMessages::planBackupConsequence();
+		return \OCA\Mcp\Modules\Files\BackupMessages::planBackupConsequence();
 	}
 
 	/**
 	 * @return string what the links of a checkout mean
 	 */
 	public static function planCheckoutConsequence(): string {
-		return BackupMessages::planCheckoutConsequence();
+		return \OCA\Mcp\Modules\Files\BackupMessages::planCheckoutConsequence();
 	}
 
 	/** @return string description of the max_size parameter of files_image_view */
@@ -407,7 +407,7 @@ final class FilesMessages {
 
 	/** @return string an edit inside the backup folder */
 	public static function backupPath(): string {
-		return BackupMessages::backupPath();
+		return \OCA\Mcp\Modules\Files\BackupMessages::backupPath();
 	}
 
 	/**
@@ -423,7 +423,7 @@ final class FilesMessages {
 	 * @return string a failed write, naming where the original still is
 	 */
 	public static function writeFailed(string $backup): string {
-		return BackupMessages::writeFailed($backup);
+		return \OCA\Mcp\Modules\Files\BackupMessages::writeFailed($backup);
 	}
 
 	/**
@@ -431,7 +431,7 @@ final class FilesMessages {
 	 * @return string closing sentence of a lock refusal that came after the backup
 	 */
 	public static function originalKept(string $backup): string {
-		return BackupMessages::originalKept($backup);
+		return \OCA\Mcp\Modules\Files\BackupMessages::originalKept($backup);
 	}
 
 	/** @return string versioning is off for the user */
@@ -675,7 +675,7 @@ final class FilesMessages {
 	/** @return string description of files_create, read by the model and therefore fixed English */
 	public static function createTool(): string {
 		return 'Create a NEW small text file with its content inline: ' . implode(', ', array_map(
-			static fn (string $extension): string => '.' . $extension, FileCreation::TEXT_EXTENSIONS))
+			static fn (string $extension): string => '.' . $extension, \OCA\Mcp\Modules\Files\FileCreation::TEXT_EXTENSIONS))
 			. ', up to 1 MB of UTF-8. Never overwrites a file with content: an existing name is refused (use files_edit or files_checkout '
 			. 'to change it). For any other type or a larger file use files_upload. The folder must exist '
 			. '(files_mkdir creates it); outside your personal folder ask the user and retry with confirm_shared.';
@@ -765,7 +765,7 @@ final class FilesMessages {
 	/** @return string the rule of a path whose extension files_create does not write */
 	public static function createExtensionRule(): string {
 		return Translator::t('files_create only writes text files (%s); use files_upload for any other type', [implode(', ', array_map(
-			static fn (string $extension): string => '.' . $extension, FileCreation::TEXT_EXTENSIONS))]);
+			static fn (string $extension): string => '.' . $extension, \OCA\Mcp\Modules\Files\FileCreation::TEXT_EXTENSIONS))]);
 	}
 
 	// ---------------------------------------------------------------- sharing

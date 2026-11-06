@@ -18,7 +18,7 @@ use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\InstalledApp;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\TextExtractor;
 use OCA\Mcp\Modules\Notes\Presentation\NotesMessages;

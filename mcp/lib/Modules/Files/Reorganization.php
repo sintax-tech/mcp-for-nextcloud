@@ -70,7 +70,7 @@ final class Reorganization {
 		if ($roots === null) {
 			$start = NodeAccess::get($root, $path, $this->visibilityGuard);
 			if (!$start instanceof Folder) {
-				throw new ToolFailure(FilesMessages::notAFolder());
+				throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::notAFolder());
 			}
 		}
 		$entries = [];
@@ -123,10 +123,10 @@ final class Reorganization {
 	public function mkdir(Folder $root, string $userId, string $path, bool $confirmedShared): array {
 		$path = PathGuard::normalize($path);
 		if ($path === '/') {
-			throw new ToolFailure(FilesMessages::destinationExists());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists());
 		}
 		if (FileBackup::isBackupPath($path, $this->backupLocation)) {
-			throw new ToolFailure(FilesMessages::backupPath());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::backupPath());
 		}
 		$relPath = ltrim($path, '/');
 		if ($root->nodeExists($relPath)) {
@@ -142,7 +142,7 @@ final class Reorganization {
 					throw new ToolFailure(CommonMessages::notFound());
 				}
 			}
-			throw new ToolFailure(FilesMessages::destinationExists());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists());
 		}
 		$parent = $this->existingAncestor($root, $path);
 		if ($this->visibilityGuard !== null) {
@@ -397,10 +397,10 @@ final class Reorganization {
 	public function planMkdir(Folder $root, string $userId, string $path): array {
 		$path = PathGuard::normalize($path);
 		if ($path === '/') {
-			throw new ToolFailure(FilesMessages::destinationExists());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists());
 		}
 		if (FileBackup::isBackupPath($path, $this->backupLocation)) {
-			throw new ToolFailure(FilesMessages::backupPath());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::backupPath());
 		}
 		$rel = ltrim($path, '/');
 		if ($root->nodeExists($rel)) {
@@ -416,7 +416,7 @@ final class Reorganization {
 					throw new ToolFailure(CommonMessages::notFound());
 				}
 			}
-			throw new ToolFailure(FilesMessages::destinationExists());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists());
 		}
 		$parent = $this->existingAncestor($root, $path);
 		if ($this->visibilityGuard !== null) {
@@ -433,7 +433,7 @@ final class Reorganization {
 			'access' => $this->access->describe($parent, $userId),
 			'shared' => $this->sharedOf($userId, $parent),
 			'recoverable' => true,
-			'message' => FilesMessages::planMkdir(),
+			'message' => \OCA\Mcp\Modules\Files\Presentation\FilesMessages::planMkdir(),
 		];
 	}
 
@@ -558,7 +558,7 @@ final class Reorganization {
 				$visible = false;
 			}
 			if (!$visible) {
-				throw new ToolFailure(FilesMessages::batchHasHiddenItem());
+				throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::batchHasHiddenItem());
 			}
 		}
 	}
@@ -594,11 +594,11 @@ final class Reorganization {
 	private function assertUndoable(Folder $root, Batch $batch, array $move, string $userId): void {
 		$there = NodeAccess::run(fn () => NodeAccess::get($root, $move['to']));
 		if ((int)$there->getId() !== $move['toId']) {
-			throw new ToolFailure(FilesMessages::notTheBatchNode());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::notTheBatchNode());
 		}
 		$this->assertUnlocked($there, $userId);
 		if ($root->nodeExists(ltrim(PathGuard::normalize($move['from'], 'moves'), '/'))) {
-			throw new MoveConflict(FilesMessages::destinationExists());
+			throw new MoveConflict(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists());
 		}
 		if (!$there->isDeletable()) {
 			throw new ToolFailure(CommonMessages::forbidden());
@@ -789,7 +789,7 @@ final class Reorganization {
 				// file outside the Files scope from a missing path (D6). A file is never an ancestor of a selected
 				// folder, so this costs no traversal.
 				$this->assertReachable($existing);
-				throw new ToolFailure(FilesMessages::destinationExists());
+				throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists());
 			}
 			$parent = $existing;
 		}
@@ -846,7 +846,7 @@ final class Reorganization {
 					$existing = $root->get($below);
 					if (!$existing instanceof Folder) {
 						$this->assertReachable($existing);
-						throw new ToolFailure(FilesMessages::destinationExists());
+						throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists());
 					}
 					continue;
 				}
@@ -880,7 +880,7 @@ final class Reorganization {
 			}
 			$nodes++;
 			if ($nodes > ReorganizationLimits::NODES) {
-				throw new ToolFailure(FilesMessages::copyTooManyNodes(ReorganizationLimits::NODES));
+				throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::copyTooManyNodes(ReorganizationLimits::NODES));
 			}
 			if ($current instanceof Folder) {
 				foreach ($this->sorted($current) as $child) {
@@ -890,7 +890,7 @@ final class Reorganization {
 			}
 			$bytes += (int)$current->getSize();
 			if ($bytes > ReorganizationLimits::BYTES) {
-				throw new ToolFailure(FilesMessages::copyTooLarge(ReorganizationLimits::BYTES));
+				throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::copyTooLarge(ReorganizationLimits::BYTES));
 			}
 		}
 		return ['nodes' => $nodes, 'bytes' => $bytes];
@@ -945,7 +945,7 @@ final class Reorganization {
 					throw new ToolFailure(CommonMessages::notFound());
 				}
 			}
-			throw new MoveConflict(FilesMessages::destinationExists());
+			throw new MoveConflict(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::destinationExists());
 		}
 	}
 
@@ -958,7 +958,7 @@ final class Reorganization {
 	private function assertNotIntoItself(Folder $root, Node $from, string $to): void {
 		$source = $root->getRelativePath($from->getPath()) ?? '';
 		if ($from instanceof Folder && ($to === $source || str_starts_with($to, rtrim($source, '/') . '/'))) {
-			throw new MoveConflict(FilesMessages::folderIntoItself());
+			throw new MoveConflict(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::folderIntoItself());
 		}
 	}
 
@@ -972,7 +972,7 @@ final class Reorganization {
 	 */
 	private function assertSameStorage(Node $source, Folder $destination): void {
 		if ($source->getStorage()->getId() !== $destination->getStorage()->getId()) {
-			throw new MoveConflict(FilesMessages::crossStorage());
+			throw new MoveConflict(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::crossStorage());
 		}
 	}
 

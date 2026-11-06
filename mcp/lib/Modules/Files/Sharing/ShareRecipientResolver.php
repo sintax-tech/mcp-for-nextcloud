@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Files\Sharing;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCP\IGroupManager;
 use OCP\IUserManager;
 use OCP\Share\IShare;

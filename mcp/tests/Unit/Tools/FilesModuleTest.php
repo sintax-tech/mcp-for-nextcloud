@@ -28,7 +28,7 @@ use OCA\Mcp\Modules\Files\BatchStore;
 use OCA\Mcp\Modules\Files\MovePlanner;
 use OCA\Mcp\Modules\Files\MoveReport;
 use OCA\Mcp\Modules\Files\Reorganization;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\Images\OcrSupport;
 use OCA\Mcp\Modules\Files\TextExtractor;

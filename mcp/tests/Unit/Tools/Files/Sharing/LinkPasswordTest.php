@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files\Sharing;
 
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\Sharing\LinkPassword;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\EventDispatcher\IEventDispatcher;

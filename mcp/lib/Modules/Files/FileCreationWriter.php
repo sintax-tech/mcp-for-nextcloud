@@ -47,16 +47,16 @@ final class FileCreationWriter {
 	public function write(Folder $folder, string $name, mixed $content, ?string $userId, bool $asUser): File {
 		FileWriteBoundary::check($this->fileTypes, $name);
 		if ($folder->nodeExists($name)) {
-			throw new FileExists(FilesMessages::fileExists());
+			throw new FileExists(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::fileExists());
 		}
 		try {
 			$file = NodeAccess::requireFile(NodeAccess::mutate(fn () => $folder->newFile($name), $this->visibilityGuard));
 		} catch (InvalidPathException) {
-			throw new ArgumentValidationException('Invalid argument: path', 'path', FilesMessages::newFileNameRule());
+			throw new ArgumentValidationException('Invalid argument: path', 'path', \OCA\Mcp\Modules\Files\Presentation\FilesMessages::newFileNameRule());
 		}
 		$this->visibilityGuard->assertVisible($file);
 		if ((int)$file->getSize() > 0) {
-			throw new FileExists(FilesMessages::fileExists());
+			throw new FileExists(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::fileExists());
 		}
 		if ($content === '') {
 			return $file;
@@ -64,7 +64,7 @@ final class FileCreationWriter {
 		$created = [(int)$file->getId(), (string)$file->getEtag()];
 		$current = NodeAccess::requireFile($folder->get($name));
 		if ([(int)$current->getId(), (string)$current->getEtag()] !== $created || (int)$current->getSize() > 0) {
-			throw new FileExists(FilesMessages::fileExists());
+			throw new FileExists(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::fileExists());
 		}
 		try {
 			FileWriteBoundary::check($this->fileTypes, $current->getName());
@@ -79,7 +79,7 @@ final class FileCreationWriter {
 		} catch (Throwable $e) {
 			// Only the class: the message of a storage exception may carry the path.
 			$this->logger->error('MCP new file write failed', ['app' => 'mcp', 'exception_class' => $e::class]);
-			throw new ToolFailure(FilesMessages::createFailed());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::createFailed());
 		}
 		return $current;
 	}

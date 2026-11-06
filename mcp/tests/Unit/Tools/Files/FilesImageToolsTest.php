@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\Images\ImageTools;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Constants;

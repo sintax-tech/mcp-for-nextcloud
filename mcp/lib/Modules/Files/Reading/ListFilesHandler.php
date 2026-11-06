@@ -14,7 +14,7 @@ use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCP\Files\Folder;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCP\Files\Node;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 
 /** Preserves the existing Files ListFilesHandler behavior. */

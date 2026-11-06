@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files;
+namespace OCA\Mcp\Modules\Files\Presentation;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
@@ -36,7 +36,7 @@ final class FilesPlanRenderer {
 	public static function render(string $tool, array $plan): ?string {
 		try {
 			$lines = match ($tool) {
-				'files_delete' => Deletion\DeletePlanText::lines($plan),
+				'files_delete' => \OCA\Mcp\Modules\Files\Deletion\DeletePlanText::lines($plan),
 				'files_edit', 'files_replace' => self::content($tool, $plan),
 				'files_checkout' => self::checkout($plan),
 				'files_copy' => self::copy($plan),
@@ -150,7 +150,7 @@ final class FilesPlanRenderer {
 		}
 		$lines[] = '- ' . FilesMessages::planNewFileConsequence();
 		$lines = array_merge($lines, self::sharing($plan));
-		$preview = is_string($plan['preview'] ?? null) ? PlanText::quote($plan['preview'], FileCreation::PREVIEW_CHARS) : '';
+		$preview = is_string($plan['preview'] ?? null) ? PlanText::quote($plan['preview'], \OCA\Mcp\Modules\Files\FileCreation::PREVIEW_CHARS) : '';
 		if ($preview === '') {
 			return array_merge($lines, ['', Translator::t('The file is empty.')]);
 		}

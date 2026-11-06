@@ -17,7 +17,7 @@ use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Modules\Files\ContentTypeGate;
 use OCA\Mcp\Modules\Files\FileBackup;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\VersionTools;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;

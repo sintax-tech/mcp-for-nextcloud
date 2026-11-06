@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Tests\Unit\Tools\Files\Sharing\FakeShares;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\Sharing\ShareFormatter;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Constants;

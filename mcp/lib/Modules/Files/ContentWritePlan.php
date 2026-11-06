@@ -54,7 +54,7 @@ final class ContentWritePlan {
 			'shared' => $shared === null ? [] : [$shared],
 			'requiresSharedConfirmation' => $shared !== null,
 			'recoverable' => true,
-			'consequence' => FilesMessages::planBackupConsequence(),
+			'consequence' => \OCA\Mcp\Modules\Files\Presentation\FilesMessages::planBackupConsequence(),
 		] + ($this->locks?->planNotice($file, $userId, $path, $asUser) ?? []), $userId);
 	}
 }

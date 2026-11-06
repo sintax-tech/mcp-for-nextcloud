@@ -33,7 +33,7 @@ use OCA\Mcp\Modules\Files\ContentCommit;
 use OCA\Mcp\Modules\Files\ContentTypeGate;
 use OCA\Mcp\Modules\Files\ContentWritePlan;
 use OCA\Mcp\Modules\Files\FileBackup;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\Handler\EditFileHandler;
 use OCA\Mcp\Modules\Files\Handler\ReplaceFileHandler;

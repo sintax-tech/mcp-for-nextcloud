@@ -64,9 +64,9 @@ final class ImagePreview {
 			if ($size > 0 && $size <= $byteLimit) {
 				return [(string)$file->getContent(), $mime, $maxSize];
 			}
-			throw new ToolFailure(\OCA\Mcp\Modules\Files\FilesMessages::imagePreviewTooLarge());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::imagePreviewTooLarge());
 		}
-		throw new ToolFailure(\OCA\Mcp\Modules\Files\FilesMessages::imageUnsupported());
+		throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::imageUnsupported());
 	}
 
 	/** @return int per-image byte limit, from app config with a sane default and a lower floor */

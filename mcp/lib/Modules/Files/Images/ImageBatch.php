@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Images;
 
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCP\Files\Folder;

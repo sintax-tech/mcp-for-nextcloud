@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Modules\Files\Batch;
 use OCA\Mcp\Modules\Files\BatchStore;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 

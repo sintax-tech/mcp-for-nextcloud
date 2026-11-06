@@ -86,8 +86,8 @@ final class FileCreation {
 			'requiresSharedConfirmation' => $shared !== null,
 			'recoverable' => true,
 			'linksAfterConfirmation' => true,
-			'consequence' => FilesMessages::planNewFileConsequence(),
-			'message' => FilesMessages::planUpload(),
+			'consequence' => \OCA\Mcp\Modules\Files\Presentation\FilesMessages::planNewFileConsequence(),
+			'message' => \OCA\Mcp\Modules\Files\Presentation\FilesMessages::planUpload(),
 		];
 	}
 
@@ -118,7 +118,7 @@ final class FileCreation {
 			'expiresAt' => $link['expires_at'],
 			'maxBytes' => $limit,
 			'curl' => sprintf('curl -sS -T %s -X PUT -H "Content-Type: application/octet-stream" "%s"', self::LOCAL_FILE, $link['upload_url']),
-			'message' => FilesMessages::uploadIssued(),
+			'message' => \OCA\Mcp\Modules\Files\Presentation\FilesMessages::uploadIssued(),
 		];
 	}
 
@@ -150,8 +150,8 @@ final class FileCreation {
 			'shared' => $shared === null ? [] : [$shared],
 			'requiresSharedConfirmation' => $shared !== null,
 			'recoverable' => true,
-			'consequence' => FilesMessages::planNewFileConsequence(),
-			'message' => FilesMessages::planCreate(),
+			'consequence' => \OCA\Mcp\Modules\Files\Presentation\FilesMessages::planNewFileConsequence(),
+			'message' => \OCA\Mcp\Modules\Files\Presentation\FilesMessages::planCreate(),
 		];
 	}
 
@@ -196,7 +196,7 @@ final class FileCreation {
 			throw self::invalidName();
 		}
 		if (FileBackup::isBackupPath($path, $this->backupLocation)) {
-			throw new ToolFailure(FilesMessages::backupPath());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::backupPath());
 		}
 		$cut = (int)strrpos($path, '/');
 		$name = substr($path, $cut + 1);
@@ -214,7 +214,7 @@ final class FileCreation {
 			} catch (\Throwable) {
 				throw new ToolFailure(CommonMessages::notFound());
 			}
-			throw new FileExists(FilesMessages::fileExists());
+			throw new FileExists(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::fileExists());
 		}
 		FileWriteBoundary::check($this->fileTypes, $name);
 		return ['path' => $path, 'name' => $name, 'folderPath' => $folderPath, 'folder' => $folder];
@@ -243,7 +243,7 @@ final class FileCreation {
 	 * @return File the new file
 	 * @throws FileExists when the name is taken before the creation, or the file changed before the write
 	 * @throws ArgumentValidationException when the storage refuses the name
-	 * @throws ToolFailure with the message of a lock ({@see \OCA\Mcp\Platform\FileAccess\LockWriteFailure}) or a full quota, or {@see FilesMessages::createFailed()}
+	 * @throws ToolFailure with the message of a lock ({@see \OCA\Mcp\Platform\FileAccess\LockWriteFailure}) or a full quota, or {@see \OCA\Mcp\Modules\Files\Presentation\FilesMessages::createFailed()}
 	 */
 	public function write(Folder $folder, string $name, mixed $content, ?string $userId = null, bool $asUser = true): File {
 		return (new FileCreationWriter($this->visibilityGuard, $this->logger, $this->locks, $this->fileTypes))->write($folder, $name, $content, $userId, $asUser);
@@ -293,10 +293,10 @@ final class FileCreation {
 	private function textTarget(Folder $root, string $path, string $content): array {
 		$extension = strtolower(pathinfo(PathGuard::normalize($path), PATHINFO_EXTENSION));
 		if (!in_array($extension, self::TEXT_EXTENSIONS, true)) {
-			throw new ArgumentValidationException('Invalid argument: path', 'path', FilesMessages::createExtensionRule());
+			throw new ArgumentValidationException('Invalid argument: path', 'path', \OCA\Mcp\Modules\Files\Presentation\FilesMessages::createExtensionRule());
 		}
 		if (strlen($content) > self::MAX_INLINE_BYTES) {
-			throw new ToolFailure(FilesMessages::createTooLarge(self::MAX_INLINE_BYTES));
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::createTooLarge(self::MAX_INLINE_BYTES));
 		}
 		return $this->target($root, $path);
 	}
@@ -311,12 +311,12 @@ final class FileCreation {
 		try {
 			$node = NodeAccess::get($root, $folderPath, $this->visibilityGuard);
 		} catch (NotFoundException) {
-			throw new ToolFailure(FilesMessages::createFolderMissing());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::createFolderMissing());
 		} catch (ToolFailure $e) {
-			throw $e->getMessage() === CommonMessages::notFound() ? new ToolFailure(FilesMessages::createFolderMissing()) : $e;
+			throw $e->getMessage() === CommonMessages::notFound() ? new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::createFolderMissing()) : $e;
 		}
 		if (!$node instanceof Folder) {
-			throw new ToolFailure(FilesMessages::notAFolder());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::notAFolder());
 		}
 		return $node;
 	}
@@ -329,13 +329,13 @@ final class FileCreation {
 	private function assertSize(?int $size): int {
 		$limit = $this->checkout->maxBytes();
 		if ($size !== null && $size > $limit) {
-			throw new ToolFailure(FilesMessages::uploadTooLarge($limit));
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::uploadTooLarge($limit));
 		}
 		return $limit;
 	}
 
 	/** @return ArgumentValidationException the G4 refusal of a path that names no acceptable file, without the path */
 	private static function invalidName(): ArgumentValidationException {
-		return new ArgumentValidationException('Invalid argument: path', 'path', FilesMessages::newFileNameRule());
+		return new ArgumentValidationException('Invalid argument: path', 'path', \OCA\Mcp\Modules\Files\Presentation\FilesMessages::newFileNameRule());
 	}
 }

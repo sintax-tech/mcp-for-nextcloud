@@ -20,7 +20,7 @@ final class BackupWriteBoundary {
 	 */
 	public static function check(string $path, ?BackupLocation $location): void {
 		if (BackupLocation::contains($path, $location)) {
-			throw new ToolFailure(FilesMessages::backupPath());
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\FilesMessages::backupPath());
 		}
 	}
 
@@ -46,7 +46,7 @@ final class BackupWriteBoundary {
 		try {
 			$backup->assertWritablePath($path);
 		} catch (ToolFailure $error) {
-			throw new ToolFailure($error->getMessage() . ' ' . FilesMessages::originalKept($copy));
+			throw new ToolFailure($error->getMessage() . ' ' . \OCA\Mcp\Modules\Files\Presentation\FilesMessages::originalKept($copy));
 		}
 	}
 }

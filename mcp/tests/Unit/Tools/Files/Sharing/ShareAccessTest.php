@@ -13,7 +13,7 @@ use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\Sharing\ShareAccess;
 use OCA\Mcp\Modules\Files\Sharing\ShareRecipient;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;

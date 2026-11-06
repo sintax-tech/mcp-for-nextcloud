@@ -14,7 +14,7 @@ use OCA\Mcp\Tests\Unit\Contract\Oracle\GoldenFile;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\VolatileFields;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\Files\Sharing\FakeShares;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCP\Constants;
 use OCP\Share\IShare;
 use PHPUnit\Framework\TestCase;

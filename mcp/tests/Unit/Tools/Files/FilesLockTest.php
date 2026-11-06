@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 use OCA\Mcp\Tests\Unit\Platform\FileAccess\FakeLock;
 use OCA\Mcp\Tests\Unit\Platform\FileAccess\FakeLockManager;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
-use OCA\Mcp\Modules\Files\FilesMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCP\Files\Lock\ILock;
 
 /**

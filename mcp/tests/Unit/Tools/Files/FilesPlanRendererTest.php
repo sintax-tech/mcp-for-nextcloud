@@ -15,7 +15,7 @@ use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Modules\Files\FileBackup;
 use OCA\Mcp\Modules\Files\FilesModule;
-use OCA\Mcp\Modules\Files\FilesPlanRenderer;
+use OCA\Mcp\Modules\Files\Presentation\FilesPlanRenderer;
 use OCA\Mcp\Modules\Files\TextExtractor;
 use OCA\Mcp\Modules\Files\VersionTools;
 use OCA\Mcp\Mcp\Tools\RendersPlans;

@@ -4,7 +4,7 @@
         {
             "rule": "layering",
             "source": "lib/Mcp/Resources/ResourceRegistry.php",
-            "target": "OCA\\Mcp\\Modules\\Files\\FilesMessages",
+            "target": "OCA\\Mcp\\Modules\\Files\\Presentation\\FilesMessages",
             "line": 251,
             "reason": "Invert this legacy upward dependency through a lower-layer contract.",
             "expires": "RE-21c"

@@ -7,6 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Tables\Writing;
 
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
+use OCA\Mcp\Modules\Tables\Presentation\SchemaMessages;
+
 /** Refuses implicit native card-source cleanup; the MCP schema exposes no layout or card-setting writes. */
 final class SchemaViewPreservation {
 	/**
@@ -48,7 +51,9 @@ final class SchemaViewPreservation {
 	private static function requireSources(array $before, array $ids, string $field): void {
 		foreach (['cardBackgroundSource', 'cardTitleSource'] as $key) {
 			$source = $before['viewSettings'][$key] ?? null;
-			if ($source !== null && (!is_int($source) || !in_array($source, $ids, true))) SchemaRequest::invalid($field);
+			if ($source !== null && (!is_int($source) || !in_array($source, $ids, true))) {
+				throw new ArgumentValidationException('Invalid argument: ' . $field, $field, SchemaMessages::cardSourcePreservation());
+			}
 		}
 	}
 }

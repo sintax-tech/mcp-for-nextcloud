@@ -40,6 +40,8 @@ There is no retry, automatic rollback, compensating SQL, backup or guaranteed un
 
 ## Exact Tables 2.4.0 profile
 
+Runtime integration is proven on NC35/MariaDB with the six native-app opt-ins. NC33/34 have official-source and shape evidence; no 2.4.0 runtime cell on those majors is claimed.
+
 The official release archive is pinned to SHA256 `47847b64ee65a58afd2a8ac3f943c53128a927a1b321ed94c4a322daa6b5eb99`. `tables-2.4.0.json` contains 53 official `SourceParser` surfaces, native parser/mapper identities against 2.3.2 and the independent row-writing facts. The 22 row-writing source files are byte-identical to 2.3.2. Reading and row writing keep their existing grants and gates; row tools have no version capability added by this change.
 
 Native 2.4.0 adds optional layout/card DTO fields and view creation parameters, relation-target authorization and audit logging. The independent schema/share probe checks its exact signatures and fields without constructing services. Layout and `viewSettings` are preserved in plans, confirmation state and readback; these fields are not writable MCP arguments. A column selection that would make native Tables clear a card source is refused. Creating a column with `view_ids` is also refused when the native implicit view update would lose a card source (including an empty/all-columns view becoming an explicit new-column selection). Empty column selections follow the native managed-column fallback and are refused if it would lose a source. Relation-column editing remains refused, and the caller's relation ACL checks remain unchanged.

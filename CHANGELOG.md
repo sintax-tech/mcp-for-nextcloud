@@ -2,10 +2,6 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
-## 1.3.0 — Unreleased
-
-- **Tables 2.4.0:** add an exact, source-pinned schema/sharing profile on Nextcloud 33–35, with full native API introspection. View layouts/card sources are preserved and column changes that would clear a card source are refused. Read/row APIs and every column parser are covered by additional official-source contracts; existing row grants and relation ACL checks stay unchanged. A SHA-checked local archive opt-in adds a separate NC35 integration proof without replacing the existing matrix pins.
-
 ## 1.3.0-rc.1 — 2026-11-06
 
 **Database migration on update:** this version includes `Version001205Date20261106000000` for CIMD host trust and credential generations ([#28](https://github.com/sintax-tech/mcp-for-nextcloud/issues/28)), the first database migration since 1.1.0. Nextcloud runs the migration and the `CimdHostsSeedStep` post-migration repair step. The effective CIMD host allowlist is preserved. Credentials issued to hosts that remain allowed survive with `client_gen = 1`. Credentials from a host that was never allowed no longer authenticate or refresh; an administrator must allow the intended host and the client must sign in again.
@@ -13,6 +9,8 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 This release candidate combines the capability-module restructuring with all the features below. It does not claim publication or validation on a user instance.
 
 ### Fixed
+
+- **Tables 2.4.0:** add an exact schema/sharing profile on Nextcloud 33–35 with native API introspection. Preserve view layouts/card sources; refuse `tables_update_view` and `tables_create_column` with `view_ids` when their column changes would clear a card source. Additional official-source contracts cover read/row APIs and column parsers, while a SHA-pinned NC35 archive opt-in keeps the existing matrix pins ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)).
 
 - **Reading the current file version:** `files_version_read` now reads the current version listed by `files_versions_list` when the backend has no separate stored version file, instead of failing with a missing-file error. Other missing historical versions remain refused. This fixes a defect already present in 1.2.5.
 

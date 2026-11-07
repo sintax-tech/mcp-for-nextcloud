@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Tables\Integration;
 
-/** Extracted signatures of the five official source pins; no native objects are built. */
+/** Extracted signatures of the six official source pins; no native objects are built. */
 final class SchemaApiShape {
 	/** @var array<string,list<array>>|null Decoded signatures, once in this PHP request. */
 	private static ?array $signatures = null;

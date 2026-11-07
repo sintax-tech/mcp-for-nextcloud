@@ -27,5 +27,4 @@ final class SchemaViewShape {
 	public static function common(string $class): bool {
 		return str_ends_with($class, '\\Model\\ViewSettings') || str_ends_with($class, '\\Constants\\ViewLayout');
 	}
-
 }

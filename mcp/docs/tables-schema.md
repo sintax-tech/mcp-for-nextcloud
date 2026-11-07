@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
 # Tables structure and sharing
 
 Tables structure writes use the independent `tables.schema` grant. Sharing and revocation use `tables.share`. Both are denied by default. The Full level includes them and Read does not; a person saved with the earlier rows-only Full is shown as Custom and gains nothing. No administration layout or Forms warning is changed by this feature.

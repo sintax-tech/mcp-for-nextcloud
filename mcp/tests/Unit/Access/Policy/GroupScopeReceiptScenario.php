@@ -67,7 +67,8 @@ final class GroupScopeReceiptScenario extends TestCase {
 		$db = $database->connection();
 		(new PolicyStateSeeder($db))->seed();
 		$native = $database->dbal->getNativeConnection();
-		$native->sqliteCreateFunction('mcp_log', static function (string $op) use (&$trace): int {
+		$register = method_exists($native, 'createFunction') ? 'createFunction' : 'sqliteCreateFunction';
+		$native->$register('mcp_log', static function (string $op) use (&$trace): int {
 			$trace[] = $op;
 			return 1;
 		});

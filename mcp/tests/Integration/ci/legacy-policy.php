@@ -32,10 +32,11 @@ if (PHP_SAPI !== 'cli' || !in_array($argv[1] ?? '', ['seed', 'read'], true) || !
 }
 [, $mode, $output] = $argv;
 require_once '/var/www/html/lib/base.php';
-require_once __DIR__ . '/../Compat/ReleaseUpgradeProbe.php';
-\OCA\Mcp\Tests\Integration\Compat\ReleaseUpgradeProbe::checkpoint('policy', $argv[2]);
+require_once __DIR__ . '/../Compat/LegacyPolicyCommand.php';
+\OCA\Mcp\Tests\Integration\Compat\LegacyPolicyCommand::prepare($mode, $output);
 require_once __DIR__ . '/../Compat/SnapshotProbe.php';
 require_once __DIR__ . '/../Compat/LegacyPolicyName.php';
+require_once __DIR__ . '/../Compat/LegacyOAuthNames.php';
 
 if ($mode === 'seed') {
 	Server::get(\OCP\App\IAppManager::class)->loadApp('mcp');

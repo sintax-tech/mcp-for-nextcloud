@@ -32,6 +32,8 @@ Compared with 1.3.0-rc.1, this candidate adds four fixes found while testing rc.
 
 - **Round focus ring on admin radios:** in the level popover of the permissions screen and in the resource scope, the radio's focus and hover ring is a tight circle again instead of a tall ellipse. Nextcloud's core styles give every input a 36px height and the clickable-area minimum height, and the native radio drew its ring around that tall box; the radio keeps its size, position and the rest of the layout. This fixes a defect already present in 1.2.5.
 
+- **Allowed client hosts field:** in the OAuth clients section, the allowed client hosts field is now wide enough to read a list of a few hosts (up to 24em, never wider than the panel) instead of the core's 130px, which cut "claude.ai, chatgpt.com" short, and its label keeps the standard spacing from the field. This fixes a defect already present in 1.2.5.
+
 ### Added
 
 - **Calendar reminders ([#24](https://github.com/sintax-tech/mcp-for-nextcloud/issues/24)):** optional `alarms` on create/update, with up to five DISPLAY reminders relative to the master event start, 0–40320 minutes before it. Omission preserves existing update alarms; an explicit list replaces only valid DISPLAY/start alarms, including removal with `[]`. Other alarms and recurrence overrides remain. Plans show the change and receipts observe the server result, without claiming notification delivery. Existing grants and confirmation remain.

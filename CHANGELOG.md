@@ -14,6 +14,8 @@ Compared with 1.3.0-rc.1, this candidate adds four fixes found while testing rc.
 
 - **Event reminders in listings:** `calendar_list_events` now returns the DISPLAY reminders relative to the start managed by MCP under `alarms` with the same keys accepted by create/update (`minutesBefore` and `description`), and counts other reminders in `otherAlarms`; confidential events and read-only shares expose none. Existing negative, non-integer or greater than 40320 offsets remain visible and must be adjusted before reuse in create/update.
 
+- **One index per reminder:** `calendar_update_event` now reports a replaced reminder with the same `index` in the plan (`alarmChange.after`) and in `alarmReceipt.requested` as in `alarmReceipt.observed`: its position among the event's reminders, counted from 0. `calendar_create_event` was not affected.
+
 - **Filtered server log reads no longer time out:** `logs_list` and `logs_analyze` read the current log file in 64 KiB reverse blocks under a cooperative 1000 ms budget. When `scan.timeBudgetReached` is true, continue with `scan.nextOffset`; lines over 16 MiB are reported in `scan.oversized` without being decoded. This fixes a defect already present in 1.2.5.
 
 - **Tables 2.4.0 ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** add an exact schema/sharing profile on Nextcloud 33–35 with native API introspection. Preserve view layouts/card sources; refuse `tables_update_view` and `tables_create_column` with `view_ids` when their column changes would clear a card source. Additional official-source contracts cover read/row APIs and column parsers, while a SHA-pinned NC35 archive opt-in keeps the existing matrix pins.

@@ -55,6 +55,23 @@ final class CalendarAlarmsTest extends CalendarTestCase {
 		self::assertNotEmpty($this->dav->calls[1][1][2], 'If-Match remains mandatory');
 	}
 
+	/** @return void a replaced reminder keeps one index in the plan, the request and the readback */
+	public function testReplacedReminderReportsTheSameIndexEverywhere(): void {
+		Translator::reset();
+		$this->store->addObject(1, 'single.ics', self::ics("UID:single\nSUMMARY:Meeting\nDTSTART:20261201T120000Z\nDTEND:20261201T130000Z\n"
+			. "BEGIN:VALARM\nACTION:DISPLAY\nTRIGGER:-PT15M\nDESCRIPTION:Old\nEND:VALARM\n"
+			. "BEGIN:VALARM\nACTION:EMAIL\nTRIGGER:-PT5M\nATTENDEE:mailto:outside@example.invalid\nDESCRIPTION:Email\nEND:VALARM"));
+		$args = ['calendar' => self::PERSONAL, 'uid' => 'single', 'alarms' => [['minutesBefore' => 30]]];
+		$plan = $this->module->preview('calendar_update_event', $args, 'alice');
+		$result = self::json($this->registry->call('calendar_update_event', $args + ['confirm' => true], 'alice'));
+		$receipt = $result['alarmReceipt'];
+		self::assertSame('applied', $receipt['status']);
+		self::assertSame([1], array_column($receipt['observed'], 'index'));
+		self::assertSame(array_column($receipt['observed'], 'index'), array_column($receipt['requested'], 'index'));
+		self::assertSame(array_column($receipt['observed'], 'index'), array_column($plan['alarmChange']['after'], 'index'));
+		self::assertSame([0], array_column($plan['alarmChange']['before'], 'index'));
+	}
+
 	/** @return void omission leaves the old public envelopes and reminders alone */
 	public function testOmissionKeepsLegacyBehavior(): void {
 		$created = self::json($this->call('calendar_create_event', $this->createArgs()));

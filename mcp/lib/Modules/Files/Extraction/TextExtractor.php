@@ -9,6 +9,7 @@ namespace OCA\Mcp\Modules\Files\Extraction;
 
 use OCA\Mcp\Platform\Text\ExtractedText;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Platform\Text\PdfSupplementaryCharacters;
 use OCA\Mcp\Platform\Text\XmlCharset;
 use OCP\Files\File;
 use OCP\ITempManager;
@@ -196,7 +197,9 @@ class TextExtractor {
 		$config = new Config();
 		$config->setRetainImageContent(false);
 		$config->setDecodeMemoryLimit(self::MAX_BYTES * 4);
-		return (new Parser([], $config))->parseContent($bytes)->getText();
+		$document = (new Parser([], $config))->parseContent($bytes);
+		PdfSupplementaryCharacters::restore($document);
+		return $document->getText();
 	}
 
 	/**

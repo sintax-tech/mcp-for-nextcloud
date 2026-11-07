@@ -17,12 +17,11 @@ use Smalot\PdfParser\Parser;
 
 /** Freezes files_read through the endpoint with the real PDF parser and UTF-8 repair, without ext-zip. */
 final class PdfTextEffectsContractTest extends TestCase {
-	/** @return void the parser's CESU-8 becomes the original emoji in the JSON response, without file writes */
+	/** @return void the emoji the parser alone loses comes back in the JSON response, without file writes */
 	public function testReadingAPdfWithRealExtraction(): void {
 		$pdf = BrokenTextSamples::pdf();
 		$raw = (new Parser())->parseContent($pdf)->getText();
-		$this->assertStringContainsString("\xED\xA0\xBD\xED\xB8\x80", $raw, 'the native parser actually produces CESU-8');
-		$this->assertFalse(mb_check_encoding($raw, 'UTF-8'));
+		$this->assertNotSame(BrokenTextSamples::PDF_TEXT, $raw, 'the native parser alone loses the emoji: CESU-8 up to PHP 8.3, "?" since 8.4.27 and 8.5.12');
 		$tree = new FakeTree($this);
 		$tree->addFile('/alice/files/emoji.pdf', $pdf, 'application/pdf');
 		$before = FilesEffectState::tree($tree);

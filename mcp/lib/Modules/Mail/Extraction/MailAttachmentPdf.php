@@ -10,6 +10,7 @@ namespace OCA\Mcp\Modules\Mail\Extraction;
 use OCA\Mcp\Modules\Mail\Presentation\MailAttachmentMessages;
 
 use OCA\Mcp\Platform\Text\ExtractedText;
+use OCA\Mcp\Platform\Text\PdfSupplementaryCharacters;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use Smalot\PdfParser\Config;
 
@@ -62,7 +63,9 @@ final class MailAttachmentPdf {
 		$config->setDecodeMemoryLimit(self::STREAM_BYTES);
 		$filters = new MailPdfFilters();
 		try {
-			$text = (new MailPdfParser($config, $filters))->parseContent($bytes)->getText();
+			$document = (new MailPdfParser($config, $filters))->parseContent($bytes);
+			PdfSupplementaryCharacters::restore($document);
+			$text = $document->getText();
 		} catch (\Throwable $e) {
 			throw new ToolFailure($filters->overBudget ? MailAttachmentMessages::pdfOverBudget() : MailAttachmentMessages::unreadable(), 0, $e);
 		}

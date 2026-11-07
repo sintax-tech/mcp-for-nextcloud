@@ -229,6 +229,71 @@ final class VersionToolsTest extends TestCase {
 		$this->assertFalse($guard->isVisible($this->file()));
 	}
 
+	/**
+	 * @param bool $locked whether the version is written through the file (files_lock) or rolled back by the core
+	 * @return array{0: VersionTools, 1: FilesAccessGuard, 2: \Closure(): void} tools behind a real guard, and the switch that tags the file as excluded
+	 */
+	private function guardedTools(bool $locked): array {
+		$hidden = false;
+		$mapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+		$mapper->method('getTagIdsForObjects')->willReturnCallback(static function (array $ids) use (&$hidden): array {
+			return array_fill_keys($ids, $hidden ? ['999'] : []);
+		});
+		$config = new \OCA\Mcp\Tests\Unit\InMemoryConfig();
+		$config->app['mcp'][\OCA\Mcp\Access\Visibility\VisibilityGuard::CONFIG_KEY] = '["999"]';
+		$guard = new FilesAccessGuard($config->mock($this), $mapper, $this->tree->filesystemRoot());
+		$container = $this->createMock(ContainerInterface::class);
+		$container->method('get')->willReturn($this->manager);
+		$locks = $locked ? (new FakeLockManager())->service($this) : null;
+		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
+		$tools = new VersionTools($this->apps, $this->users, $this->backup, $access, $container, $locks, $guard,
+			$this->wiredRestore($access, $container, $locks, $guard));
+		return [$tools, $guard, static function () use (&$hidden): void { $hidden = true; }];
+	}
+
+	/**
+	 * An exclusion tag applied while the backup was written hides the file before anything is restored. The answer is
+	 * the plain visibility refusal a file hidden from the start gets: the copy mirrors a hidden file, so it is not named.
+	 */
+	#[\PHPUnit\Framework\Attributes\DataProvider('restoreModes')]
+	public function testAFileExcludedDuringTheBackupGetsOnlyTheVisibilityRefusal(bool $locked): void {
+		[$tools, $guard, $hide] = $this->guardedTools($locked);
+		$this->manager->versions[1]->withContent('old');
+		$this->tree->afterWrite = static function (string $path) use ($hide): void {
+			if (str_contains($path, '/MCP backups/')) { $hide(); }
+		};
+		try {
+			$tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
+			$this->fail('A file excluded during the backup was restored');
+		} catch (ToolFailure $e) {
+			$this->assertSame(CommonMessages::notFound(), $e->getMessage());
+		}
+		$this->assertNotContains('rollback', $this->manager->ops);
+		$this->assertNotContains('write ' . self::FILE, $this->tree->ops);
+		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
+	}
+
+	/**
+	 * Nextcloud took the read permission away in a hook of the write. The version is in place, the file stays visible to
+	 * the policy, and the refusal of the re-read ends with where the original is kept instead of leaving the copy unannounced.
+	 */
+	#[\PHPUnit\Framework\Attributes\DataProvider('restoreModes')]
+	public function testAReadPermissionLostDuringTheRestoreStillNamesTheCopy(bool $locked): void {
+		[$tools] = $this->guardedTools($locked);
+		$this->manager->versions[1]->withContent('old');
+		$revoke = function (): void { $this->tree->nodes[self::FILE]['readable'] = false; };
+		$this->manager->onRollback = $revoke;
+		$this->tree->afterWrite = static function (string $path) use ($revoke): void {
+			if ($path === self::FILE) { $revoke(); }
+		};
+		try {
+			$tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
+			$this->fail('A restore whose file can no longer be read reported a receipt');
+		} catch (ToolFailure $e) {
+			$this->assertMatchesRegularExpression('#^' . preg_quote(CommonMessages::forbidden(), '#') . ' The original is kept in /MCP backups/Documentos/ata\.md\.[0-9-]+\.bak\.$#', $e->getMessage());
+		}
+	}
+
 	public function testRestoreReportsARollbackThatFailed(): void {
 		$this->manager->rollbackResult = false;
 		$this->expectException(ToolFailure::class);

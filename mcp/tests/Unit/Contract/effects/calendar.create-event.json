@@ -21,7 +21,7 @@
                         "content": [
                             {
                                 "type": "text",
-                                "text": "**Create event**\n\n- Calendar:\n  - Id: 1\n  - Uri: personal\n  - Name: Pessoal\n  - Owner id: alice\n  - Owner principal: principals/users/alice\n  - Writable: yes\n  - Path: /remote.php/dav/calendars/alice/personal/\n- After:\n  - Summary: Reunião de equipe\n  - Location: Sala 2\n  - Description: \n  - Start: 2026-03-12T12:00:00+00:00\n  - End: 2026-03-12T13:00:00+00:00\n  - All day: no\n  - Time zone: America/Sao\\_Paulo\n  - Recurring: no\n- Recoverable: no\n- Scheduling:\n  - Requested: no\n  - Imip enabled: yes\n  - Participants notified: no\n  - Message: No invitations or cancellations will be scheduled in this change.\n  - Proof scope: Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved.\n- Timezone: America/Sao\\_Paulo\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*"
+                                "text": "**Create event**\n\nCreate event in *Pessoal*: **Reunião de equipe**\n- When: 2026-03-12, 09:00–10:00\n- Location: Sala 2\n- Invitations: No invitations or cancellations will be scheduled in this change.\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*"
                             }
                         ],
                         "structuredContent": {
@@ -144,7 +144,7 @@
                         "content": [
                             {
                                 "type": "text",
-                                "text": "**Create event**\n\n- Calendar:\n  - Id: 1\n  - Uri: personal\n  - Name: Pessoal\n  - Owner id: alice\n  - Owner principal: principals/users/alice\n  - Writable: yes\n  - Path: /remote.php/dav/calendars/alice/personal/\n- After:\n  - Summary: Reunião de equipe\n  - Location: Sala 2\n  - Description: \n  - Start: 2026-03-12T12:00:00+00:00\n  - End: 2026-03-12T13:00:00+00:00\n  - All day: no\n  - Time zone: America/Sao\\_Paulo\n  - Recurring: no\n- Recoverable: no\n- Scheduling:\n  - Requested: no\n  - Imip enabled: yes\n  - Participants notified: no\n  - Message: No invitations or cancellations will be scheduled in this change.\n  - Proof scope: Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved.\n- Timezone: America/Sao\\_Paulo\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*"
+                                "text": "**Create event**\n\nCreate event in *Pessoal*: **Reunião de equipe**\n- When: 2026-03-12, 09:00–10:00\n- Location: Sala 2\n- Invitations: No invitations or cancellations will be scheduled in this change.\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*"
                             }
                         ],
                         "structuredContent": {
@@ -235,7 +235,7 @@
                         "content": [
                             {
                                 "type": "text",
-                                "text": "**Create event**\n\n- Calendar:\n  - Id: 1\n  - Uri: personal\n  - Name: Pessoal\n  - Owner id: alice\n  - Owner principal: principals/users/alice\n  - Writable: yes\n  - Path: /remote.php/dav/calendars/alice/personal/\n- After:\n  - Summary: Reunião de equipe\n  - Location: Sala 2\n  - Description: \n  - Start: 2026-03-12T12:00:00+00:00\n  - End: 2026-03-12T13:00:00+00:00\n  - All day: no\n  - Time zone: America/Sao\\_Paulo\n  - Recurring: no\n- Recoverable: no\n- Scheduling:\n  - Requested: no\n  - Imip enabled: yes\n  - Participants notified: no\n  - Message: No invitations or cancellations will be scheduled in this change.\n  - Proof scope: Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved.\n- Timezone: America/Sao\\_Paulo\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*"
+                                "text": "**Create event**\n\nCreate event in *Pessoal*: **Reunião de equipe**\n- When: 2026-03-12, 09:00–10:00\n- Location: Sala 2\n- Invitations: No invitations or cancellations will be scheduled in this change.\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*"
                             }
                         ],
                         "structuredContent": {

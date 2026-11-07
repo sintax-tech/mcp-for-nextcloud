@@ -76,6 +76,7 @@ final class TeamsScene {
 	public static function nativeRead(string $uid, string $read): void {
 		self::$currentUser = $uid;
 		if (in_array($read, self::$failReads, true)) {
+			self::$calls[] = 'failed:' . $read;
 			throw new \RuntimeException('Teams query failed inside the helper session');
 		}
 		self::$currentUser = null;

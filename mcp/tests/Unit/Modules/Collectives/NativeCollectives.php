@@ -39,6 +39,7 @@ namespace OCA\Collectives\Service {
 
 		/** @param int $id collective @param string $userId actor @return Collective a fresh entity */
 		public function getCollective(int $id, string $userId): Collective {
+			\OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene::nativeRead($userId, 'collective');
 			return CollectivesScene::collective($id, $userId);
 		}
 
@@ -62,6 +63,7 @@ namespace OCA\Collectives\Service {
 
 		/** @param int $collectiveId collective @param string $userId actor */
 		public function verifyEditPermissions(int $collectiveId, string $userId): void {
+			\OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene::nativeRead($userId, 'verify');
 			if (!$this->cached($collectiveId, $userId)->canEdit()) {
 				throw new NotPermittedException('Not allowed to edit collective');
 			}
@@ -69,12 +71,14 @@ namespace OCA\Collectives\Service {
 
 		/** @param int $collectiveId collective @param int $fileId page @param string $userId actor @return File the file */
 		public function getPageFile(int $collectiveId, int $fileId, string $userId): File {
+			\OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene::nativeRead($userId, 'pageFile');
 			$this->cached($collectiveId, $userId);
 			return CollectivesScene::fileById($collectiveId, $fileId);
 		}
 
 		/** @param int $collectiveId collective @param int $fileId 0 for the collective folder @param string $userId actor @return Folder the folder */
 		public function getFolder(int $collectiveId, int $fileId, string $userId): Folder {
+			\OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene::nativeRead($userId, 'folder');
 			$this->cached($collectiveId, $userId);
 			return CollectivesScene::folder();
 		}
@@ -86,6 +90,7 @@ namespace OCA\Collectives\Service {
 				\OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene::nativeRead($userId, 'find');
 				return $landing;
 			}
+			\OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene::nativeRead($userId, 'find');
 			$this->cached($collectiveId, $userId);
 			CollectivesScene::$beforeFind === null || (CollectivesScene::$beforeFind)($id);
 			return CollectivesScene::find($id);
@@ -127,6 +132,7 @@ namespace OCA\Collectives\Service {
 		public function searchCollective(Collective $collective, string $query): array {
 			// 4.0.0 receives the most results as a third argument; the double records how many it was given.
 			CollectivesScene::$calls[] = 'searchCollective:' . implode(',', array_slice(func_get_args(), 2));
+			\OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene::nativeRead('alice', 'search');
 			return CollectivesScene::$searchHits;
 		}
 	}

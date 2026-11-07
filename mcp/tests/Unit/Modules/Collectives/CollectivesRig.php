@@ -17,6 +17,7 @@ use OCA\Mcp\Modules\Collectives\Integration\CollectivesAdmission;
 use OCA\Mcp\Modules\Collectives\Integration\CollectivesGateway;
 use OCA\Mcp\Modules\Collectives\Integration\CollectivesSurface;
 use OCA\Mcp\Modules\Collectives\Integration\PageFiles;
+use OCA\Mcp\Modules\Collectives\Integration\TeamsSession;
 use OCP\App\IAppManager;
 use OCP\Files\IRootFolder;
 use OCP\Files\Node;
@@ -113,7 +114,7 @@ final class CollectivesRig {
 			IAppManager::class => $this->apps(),
 			CollectivesAdmission::class => new CollectivesAdmission($this->policy(), $this->apps(), $this->users(), $this->session(),
 				$this->config(), $this->appConfig(), $this->surface ?? new CollectivesSurface()),
-			CollectivesGateway::class => new CollectivesGateway($this->container(), $this->build(CollectivesAdmission::class)),
+			CollectivesGateway::class => new CollectivesGateway($this->container(), $this->build(CollectivesAdmission::class), $this->build(TeamsSession::class)),
 			CollectivesSurface::class => $this->surface ?? new CollectivesSurface(),
 			PageFiles::class => new PageFiles($this->visibility(), $this->scope()),
 			IConfig::class => $this->config(),

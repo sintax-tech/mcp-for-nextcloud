@@ -48,7 +48,6 @@ OCA\Mcp\Tests\Unit\Tools\Calendar\PlanWarningsTest::testUpdateOfTimingChecksColl
 OCA\Mcp\Tests\Unit\Tools\Calendar\PlanWarningsTest::testUpdateWarningsNeverBlockTheConfirmedCall	failure	PHPUnit\Framework\ExpectationFailedException
 OCA\Mcp\Tests\Unit\Tools\Calendar\PlanWarningsTest::testWarningsAreRenderedAsTextForThePerson	failure	PHPUnit\Framework\ExpectationFailedException
 OCA\Mcp\Tests\Unit\Tools\Calendar\PlanWarningsTest::testWarningsNeverBlockTheConfirmedCall	failure	PHPUnit\Framework\ExpectationFailedException
-OCA\Mcp\Tests\Unit\Tools\Deck\DeckCutPresentationTest::testPublishedTextsKeepTheLinkContract	failure	PHPUnit\Framework\ExpectationFailedException
 OCA\Mcp\Tests\Unit\Tools\FilesModuleTest::testCorruptDocumentsAndZipBombsReturnANotice	error	Error
 OCA\Mcp\Tests\Unit\Tools\FilesModuleTest::testReadsTextPdfDocxAndOdt	failure	PHPUnit\Framework\ExpectationFailedException
 OCA\Mcp\Tests\Unit\Tools\Files\FilesCreateTest::testTheUploadPlanNamesTheFileTheFolderAndTheLimitAndMintsNothing	failure	PHPUnit\Framework\ExpectationFailedException

@@ -22,6 +22,7 @@ final class UpgradeBaselineContractTest extends TestCase {
 
 	/** @return void known snapshots are distinct and malformed or unexpected checkpoints are never silently skipped */
 	public function testOnlyRecognizedSnapshotStructuresAreAccepted(): void {
+		LegacyPolicyCommandAssertions::isolation();
 		$old = ['appVersion' => '1.0.8', 'catalog' => [], 'plan' => [], 'raw' => [], 'answers' => [], 'tokens' => []];
 		$new = ['baseline' => '1.2.0', 'snapshot' => ['rows' => [], 'auth' => []]];
 		self::assertSame('1.0.8', UpgradeBaseline::recognize($old));

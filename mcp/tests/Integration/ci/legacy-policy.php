@@ -32,10 +32,11 @@ if (PHP_SAPI !== 'cli' || !in_array($argv[1] ?? '', ['seed', 'read'], true) || !
 }
 [, $mode, $output] = $argv;
 require_once '/var/www/html/lib/base.php';
-require_once __DIR__ . '/../Compat/ReleaseUpgradeProbe.php';
-\OCA\Mcp\Tests\Integration\Compat\ReleaseUpgradeProbe::checkpoint('policy', $argv[2]);
+require_once __DIR__ . '/../Compat/LegacyPolicyCommand.php';
+\OCA\Mcp\Tests\Integration\Compat\LegacyPolicyCommand::prepare($mode, $output);
 require_once __DIR__ . '/../Compat/SnapshotProbe.php';
 require_once __DIR__ . '/../Compat/LegacyPolicyName.php';
+require_once __DIR__ . '/../Compat/LegacyOAuthNames.php';
 
 if ($mode === 'seed') {
 	Server::get(\OCP\App\IAppManager::class)->loadApp('mcp');
@@ -130,5 +131,5 @@ if ($mode === 'read') {
 	sort($loaded);
 	$result += ['boot' => $boot, 'loaded' => $loaded];
 }
-file_put_contents($output, json_encode($result, JSON_THROW_ON_ERROR));
+\OCA\Mcp\Tests\Integration\Compat\LegacyPolicyCommand::write($output, $result);
 echo "Legacy policy snapshot ($mode) of ", count($uids), ' users from ', $source, PHP_EOL;

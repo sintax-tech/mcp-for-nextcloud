@@ -29,12 +29,14 @@ final class CallGraphIndex {
 	public array $namespaces = [];
 	/** @var array<string, array<string, string>> the imports of the file of each class, for docblock names */
 	private array $imports = [];
+	private CallGraphSignatures $signatures;
 
 	/**
 	 * @param array<string, string> $lib followed trees by the prefix their files are reported with
 	 * @param string|null $types the type-only tree
 	 */
 	public function __construct(array $lib, ?string $types) {
+		$this->signatures = new CallGraphSignatures($this);
 		$parser = (new ParserFactory())->createForHostVersion();
 		$roots = array_map(static fn (string $dir): array => [$dir, false], $lib);
 		if ($types !== null) {
@@ -89,7 +91,25 @@ final class CallGraphIndex {
 			return $this->functionUnits[$key] + ['class' => null];
 		}
 		[$class, $method] = explode('::', $key);
-		return $this->classes[$class]['methods'][$method] + ['class' => $class, 'file' => $this->classes[$class]['file'], 'path' => $this->classes[$class]['path']];
+		return $this->classes[$class]['methods'][strtolower($method)] + ['class' => $class, 'file' => $this->classes[$class]['file'], 'path' => $this->classes[$class]['path']];
+	}
+
+	/**
+	 * @param string $class a class
+	 * @param string $method a case-insensitive method name
+	 * @return string the canonical declaration name when indexed, otherwise the supplied name
+	 */
+	public function methodName(string $class, string $method): string {
+		if (isset($this->classes[$class]['methods'][strtolower($method)])) {
+			return $this->classes[$class]['methods'][strtolower($method)]['node']->name->name;
+		}
+		if (class_exists($class, false)) {
+			$reflection = new ReflectionClass($class);
+			if ($reflection->isInternal() && $reflection->hasMethod($method)) {
+				return $reflection->getMethod($method)->getName();
+			}
+		}
+		return $method;
 	}
 
 	/**
@@ -158,46 +178,6 @@ final class CallGraphIndex {
 	}
 
 	/**
-	 * @param Node|null $type a declared type
-	 * @param string|null $class FQCN of the code
-	 * @return string|null the class it names, nullable allowed; null for a scalar, a union or none
-	 */
-	private function declared(?Node $type, ?string $class): ?string {
-		if ($type instanceof Node\NullableType) {
-			$type = $type->type;
-		}
-		if ($type instanceof Node\UnionType) {
-			$named = array_values(array_filter($type->types, static fn (Node $t): bool => !($t instanceof Node\Identifier && $t->toLowerString() === 'null')));
-			$type = count($named) === 1 ? $named[0] : null;
-		}
-		return $type instanceof Node\Name ? $this->name($class, $type) : null;
-	}
-
-	/**
-	 * @param Stmt\ClassMethod|Stmt\Function_ $fn a method or function
-	 * @param callable(string):?string $doc reads a docblock type
-	 * @param string|null $class FQCN of the code
-	 * @return array{0:?string, 1:array<string,string>} its stated return and parameter types
-	 */
-	private function signature(Node $fn, callable $doc, ?string $class): array {
-		$text = $fn->getDocComment()?->getText() ?? '';
-		$returns = $this->declared($fn->returnType, $class) ?? (preg_match('/@return\s+(\S+)/', $text, $m) ? $doc($m[1]) : null);
-		$params = [];
-		preg_match_all('/@param\s+(\S+)\s+(?:\.\.\.)?\$(\w+)/', $text, $ps, PREG_SET_ORDER);
-		foreach ($ps as [, $type, $param]) {
-			if (($type = $doc($type)) !== null) {
-				$params[$param] = $type;
-			}
-		}
-		foreach ($fn->params as $param) {
-			if (($type = $this->declared($param->type, $class)) !== null && is_string($param->var->name)) {
-				$params[$param->var->name] = $type;
-			}
-		}
-		return [$returns, $params];
-	}
-
-	/**
 	 * @param Stmt\Function_ $node a global function of a followed tree
 	 * @param string $file its path as reported
 	 * @param string $path its path on disk
@@ -207,7 +187,7 @@ final class CallGraphIndex {
 	private function indexFunction(Stmt\Function_ $node, string $file, string $path, array $imports): void {
 		$name = $node->namespacedName?->toString() ?? $node->name->name;
 		$namespace = substr($name, 0, (int)strrpos('\\' . $name, '\\'));
-		[$returns, $params] = $this->signature($node, static fn (string $t): ?string => CallGraphNames::docType($imports, $namespace, null, $t), null);
+		[$returns, $params] = $this->signatures->signature($node, static fn (string $t): ?string => CallGraphNames::docType($imports, $namespace, null, $t), null);
 		$key = 'function ' . $name . '@' . $file;
 		$this->functionUnits[$key] = ['node' => $node, 'file' => $file, 'path' => $path, 'params' => $params, 'returns' => $returns];
 		$this->functions[$name][] = $key;
@@ -233,9 +213,11 @@ final class CallGraphIndex {
 		$props = [];
 		foreach ($node->getProperties() as $property) {
 			$text = $property->getDocComment()?->getText() ?? '';
-			$type = $this->declared($property->type, $fqcn) ?? (preg_match('/@var\s+(\S+)/', $text, $m) ? $doc($m[1]) : null);
-			foreach ($type === null ? [] : $property->props as $prop) {
-				$props[$prop->name->name] = $type;
+			$type = $this->signatures->declared($property->type, $fqcn) ?? (preg_match('/@var\s+(\S+(?:\s+[^>\r\n]*>)?)/', $text, $m) ? $doc($m[1]) : null);
+			foreach ($property->props as $prop) {
+				if (($known = $type ?? CallGraphLiterals::type($prop->default)) !== null) {
+					$props[$prop->name->name] = $known;
+				}
 			}
 		}
 		$consts = [];
@@ -246,7 +228,7 @@ final class CallGraphIndex {
 		}
 		$methods = [];
 		foreach ($node->getMethods() as $method) {
-			[$returns, $params] = $this->signature($method, $doc, $fqcn);
+			[$returns, $params] = $this->signatures->signature($method, $doc, $fqcn);
 			foreach ($method->params as $param) {
 				// A promoted parameter is a typed property.
 				if ($param->flags !== 0 && is_string($param->var->name) && isset($params[$param->var->name])) {
@@ -260,7 +242,16 @@ final class CallGraphIndex {
 					$props[$set->var->name->name] ??= $params[(string)$set->expr->name];
 				}
 			}
-			$methods[$method->name->name] = ['node' => $method, 'returns' => $returns, 'params' => $params];
+			foreach ($method->name->toLowerString() === '__construct' ? (new NodeFinder())->findInstanceOf($method->stmts ?? [], Stmt\Expression::class) : [] as $statement) {
+				$set = $statement->expr;
+				if ($set instanceof Expr\Assign && $set->var instanceof Expr\PropertyFetch && $set->var->var instanceof Expr\Variable
+					&& $set->var->var->name === 'this' && $set->var->name instanceof Node\Identifier && $set->expr instanceof Expr\Variable
+					&& preg_match('/@var\s+(\S+)\s+\$' . preg_quote((string)$set->expr->name, '/') . '\b/', $statement->getDocComment()?->getText() ?? '', $match)
+					&& ($type = $doc($match[1])) !== null) {
+					$props[$set->var->name->name] ??= $type;
+				}
+			}
+			$methods[$method->name->toLowerString()] = ['node' => $method, 'returns' => $returns, 'params' => $params];
 		}
 		$traits = [];
 		foreach ($node->getTraitUses() as $use) {

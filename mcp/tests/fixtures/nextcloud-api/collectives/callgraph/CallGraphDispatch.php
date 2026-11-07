@@ -5,122 +5,168 @@
  */
 declare(strict_types=1);
 
-/**
- * Where a call can land. A method call reaches the method the receiver's class runs (its own or inherited body, or a
- * leaf on the first class outside the followed trees) and, since the object may be of a subclass, every override in
- * a followed class extending or implementing the receiver's type. A function reaches every followed definition of
- * it, or is a leaf. A class of a followed tree that the tree does not have, and a method declared nowhere, are unknown.
- */
+/** Case-insensitive dispatch through app bodies, pinned ancestors and PHP's internal methods. */
 final class CallGraphDispatch {
-	/** Methods PHP runs on its own when a class declares them, so their triggers are refused. */
-	public const MAGIC = ['__get', '__set', '__isset', '__unset', '__clone', '__invoke', '__toString', '__call', '__callStatic'];
+	/** PHP hooks whose pinned declaring classes must be followed rather than treated as opaque leaves. */
+	private const MAGIC = ['__get', '__set', '__isset', '__unset', '__call', '__callstatic', '__clone', '__invoke', '__tostring',
+		'__serialize', '__unserialize', '__set_state', '__debuginfo', '__sleep', '__wakeup', '__destruct'];
 
-	/** @var array<string, list<string>> by magic method, the followed classes that declare it and every type they are */
-	private array $magic = [];
-
-	/** @param CallGraphIndex $index the parsed trees */
+	/** @param CallGraphIndex $index the parsed, pinned source trees */
 	public function __construct(private CallGraphIndex $index) {
-		foreach ($index->classes as $fqcn => $info) {
-			foreach ($info['outside'] ? [] : self::MAGIC as $method) {
-				$holders = [$fqcn, ...$index->ancestors($fqcn), ...$info['traits']];
-				if (array_filter($holders, fn (string $c): bool => isset($index->classes[$c]['methods'][$method])) === []) {
-					continue;
-				}
-				$this->magic[$method] = array_values(array_unique([...($this->magic[$method] ?? []), $fqcn, ...$index->ancestors($fqcn)]));
+	}
+
+	/**
+	 * @param string $class the static type of an instance
+	 * @return list<string> that class and every followed subclass or implementation
+	 */
+	public function instances(string $class): array {
+		$found = [$class];
+		foreach ($this->index->classes as $fqcn => $info) {
+			if (!$info['outside'] && in_array($class, $this->index->ancestors($fqcn), true)) {
+				$found[] = $fqcn;
 			}
 		}
+		return array_values(array_unique($found));
 	}
 
 	/**
-	 * @param string $method a magic method
-	 * @return list<string> the types a value may have for PHP to run it: a followed class declaring it, or any of its types
+	 * @param string $class a receiver class
+	 * @param string $method a case-insensitive name
+	 * @return string|null the indexed declaring class, including inherited traits
 	 */
-	public function magic(string $method): array {
-		return $this->magic[$method] ?? [];
+	public function owner(string $class, string $method): ?string {
+		$todo = [$class];
+		$seen = [];
+		while ($todo !== []) {
+			$c = array_shift($todo);
+			if (isset($seen[$c])) {
+				continue;
+			}
+			$seen[$c] = true;
+			if (isset($this->index->classes[$c]['methods'][strtolower($method)])) {
+				return $c;
+			}
+			$info = $this->index->classes[$c] ?? [];
+			array_push($todo, ...($info['traits'] ?? []), ...($info['parents'] ?? []));
+		}
+		return null;
 	}
 
 	/**
-	 * @param string $call `Class::method` or `function name`
-	 * @param list<string> $unknown collects magic calls and missing classes
-	 * @return list<string> unit keys of followed bodies, or leaves
+	 * @param string $call `Class::method`, `static Class::method`, `php-core Class::method` or `function name`
+	 * @param list<string> $unknown unresolved destinations
+	 * @return list<string> canonical body keys or leaves, including every possible override
 	 */
 	public function targets(string $call, array &$unknown): array {
 		if (str_starts_with($call, 'function ')) {
 			return $this->index->functions[substr($call, strlen('function '))] ?? [$call];
 		}
-		[$class, $method] = explode('::', $call);
-		$targets = $this->landing($class, $method, $unknown);
-		if ($method === '__construct') {
-			return $targets;
+		if (str_starts_with($call, 'php-core ')) {
+			return [$call];
 		}
-		foreach ($this->index->classes as $fqcn => $info) {
-			if ($info['outside'] || $fqcn === $class || !in_array($class, $this->index->ancestors($fqcn), true)) {
-				continue;
-			}
-			foreach ([$fqcn, ...$info['traits']] as $holder) {
-				if (($this->index->classes[$holder]['methods'][$method]['node'] ?? null)?->stmts !== null) {
-					$targets[] = $holder . '::' . $method;
-				}
+		$static = str_starts_with($call, 'static ');
+		[$class, $method] = explode('::', $static ? substr($call, 7) : $call);
+		$targets = $this->landing($class, $method, $static, $unknown);
+		if (strtolower($method) !== '__construct') {
+			foreach (array_slice($this->instances($class), 1) as $subclass) {
+				array_push($targets, ...$this->landing($subclass, $method, $static, $unknown));
 			}
 		}
 		return array_values(array_unique($targets));
 	}
 
 	/**
-	 * @param string $key a unit key or a leaf
-	 * @return bool whether it is a followed body
+	 * @param string $key a canonical destination
+	 * @return bool whether its body is available and is part of the followed app or a pinned magic declaring class
 	 */
 	public function isUnit(string $key): bool {
-		return str_starts_with($key, 'function ') ? str_contains($key, '@') : $this->index->followed(explode('::', $key)[0]);
+		if (str_starts_with($key, 'function ')) {
+			return str_contains($key, '@');
+		}
+		if (str_starts_with($key, 'php-core ')) {
+			return false;
+		}
+		[$class, $method] = explode('::', $key);
+		$info = $this->index->classes[$class] ?? [];
+		return ($info['methods'][strtolower($method)]['node'] ?? null)?->stmts !== null
+			&& ($this->index->followed($class) || array_intersect(self::MAGIC, array_keys($info['methods'] ?? [])) !== []);
 	}
 
 	/**
-	 * @param string $class FQCN of the receiver
-	 * @param string $method method name
-	 * @param list<string> $unknown collects magic calls and missing classes
-	 * @return list<string> the method the class itself runs: its own or inherited body, or a leaf outside the followed trees
+	 * @param string $class a possible receiver
+	 * @param string $hook the implicit hook being triggered
+	 * @param list<string> $unknown unresolved implicit destinations
+	 * @return list<string> its body or a PHP-core leaf; no edge when the complete known ancestry has no hook
 	 */
-	private function landing(string $class, string $method, array &$unknown): array {
-		if (!$this->index->followed($class)) {
-			foreach (isset($this->index->classes[$class]) ? [] : $this->index->namespaces as $namespace => $file) {
-				if (str_starts_with($class, $namespace)) {
-					$unknown[] = $file . ':0 ' . $class . '::' . $method . ' names a class of a followed tree the tree does not have';
-					return [];
-				}
+	public function implicit(string $class, string $hook, array &$unknown): array {
+		if (($owner = $this->owner($class, $hook)) !== null) {
+			$key = $owner . '::' . $this->index->methodName($owner, $hook);
+			if ($this->isUnit($key)) {
+				return [$key];
 			}
-			return [$this->outsideOwner($class, $method) . '::' . $method];
-		}
-		for ($c = $class; $c !== null && $this->index->followed($c); $c = $this->index->classes[$c]['extends']) {
-			foreach ([$c, ...$this->index->classes[$c]['traits']] as $holder) {
-				if (($this->index->classes[$holder]['methods'][$method]['node'] ?? null)?->stmts !== null) {
-					return [$holder . '::' . $method];
-				}
-			}
-		}
-		for ($c = $class; $c !== null; $c = $this->index->classes[$c]['extends'] ?? null) {
-			if (!$this->index->followed($c)) {
-				return [$this->outsideOwner($c, $method) . '::' . $method];
-			}
-		}
-		// An interface or abstract method: its implementations are added as overrides.
-		if (isset($this->index->classes[$class]['methods'][$method]) || $method === '__construct') {
+			$unknown[] = ($this->index->classes[$class]['file'] ?? $class) . ':0 implicit ' . $key . ' has no pinned body';
 			return [];
 		}
-		$unknown[] = $this->index->classes[$class]['file'] . ':0 ' . $class . '::' . $method . ' is declared nowhere the reader can see (magic __call)';
+		foreach ([$class, ...$this->index->ancestors($class)] as $ancestor) {
+			if ((class_exists($ancestor, false) || interface_exists($ancestor, false)) && ($reflection = new ReflectionClass($ancestor))->isInternal() && $reflection->hasMethod($hook)) {
+				$method = $reflection->getMethod($hook);
+				return ['php-core ' . $method->getDeclaringClass()->getName() . '::' . $method->getName()];
+			}
+		}
+		$todo = [$class];
+		$seen = [];
+		while ($todo !== []) {
+			$ancestor = array_pop($todo);
+			if (isset($seen[$ancestor])) {
+				continue;
+			}
+			$seen[$ancestor] = true;
+			if (isset($this->index->classes[$ancestor])) {
+				$info = $this->index->classes[$ancestor];
+				array_push($todo, ...$info['traits'], ...array_filter([$info['extends']]));
+			} elseif (!(class_exists($ancestor, false) && (new ReflectionClass($ancestor))->isInternal())) {
+				$unknown[] = ($this->index->classes[$class]['file'] ?? $class) . ':0 implicit ' . $class . '::' . $hook . ' has an unpinned ancestor';
+			}
+		}
 		return [];
 	}
 
 	/**
-	 * @param string $class an outside class
-	 * @param string $method method name
-	 * @return string the outside class or interface that declares it, from the type-only tree; the class itself otherwise
+	 * @param string $class receiver
+	 * @param string $method method as written
+	 * @param bool $static whether the syntax is a static call
+	 * @param list<string> $unknown unresolved destinations
+	 * @return list<string> its declaration, magic fallback or explicit refusal
 	 */
-	public function outsideOwner(string $class, string $method): string {
-		foreach ([$class, ...$this->index->ancestors($class)] as $c) {
-			if (isset($this->index->classes[$c]['methods'][$method])) {
-				return $c;
+	private function landing(string $class, string $method, bool $static, array &$unknown): array {
+		if (($owner = $this->owner($class, $method)) !== null) {
+			if ($this->index->followed($owner) && $this->index->classes[$owner]['methods'][strtolower($method)]['node']->stmts === null) {
+				return [];
+			}
+			return [$owner . '::' . $this->index->methodName($owner, $method)];
+		}
+		foreach ([$class, ...$this->index->ancestors($class)] as $ancestor) {
+			if ((class_exists($ancestor, false) || interface_exists($ancestor, false)) && ($reflection = new ReflectionClass($ancestor))->isInternal() && $reflection->hasMethod($method)) {
+				$m = $reflection->getMethod($method);
+				return [$m->getDeclaringClass()->getName() . '::' . $m->getName()];
 			}
 		}
-		return $class;
+		if (strtolower($method) !== '__construct' && $this->owner($class, $static ? '__callStatic' : '__call') !== null) {
+			return $this->implicit($class, $static ? '__callStatic' : '__call', $unknown);
+		}
+		if ($this->index->followed($class)) {
+			if (strtolower($method) === '__construct') {
+				return [];
+			}
+			$unknown[] = $this->index->classes[$class]['file'] . ':0 ' . $class . '::' . $method . ' is declared nowhere the reader can see (magic __call)';
+			return [];
+		}
+		foreach (isset($this->index->classes[$class]) ? [] : $this->index->namespaces as $namespace => $file) {
+			if (str_starts_with($class, $namespace)) {
+				$unknown[] = $file . ':0 ' . $class . '::' . $method . ' names a class of a followed tree the tree does not have';
+				return [];
+			}
+		}
+		return [$class . '::' . $method];
 	}
 }

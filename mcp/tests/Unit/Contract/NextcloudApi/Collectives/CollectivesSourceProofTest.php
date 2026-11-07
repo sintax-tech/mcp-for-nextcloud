@@ -54,6 +54,22 @@ final class CollectivesSourceProofTest extends TestCase {
 		}
 	}
 
+	/** @return void a PHP-core proof cannot be fabricated for a missing method or a userland class */
+	public function testOnlyActualInternalDeclarationsAreCoreProofs(): void {
+		require_once self::DIR . 'CollectivesCoreProof.php';
+		\CollectivesCoreProof::check('php-core Exception::__toString');
+		foreach (['php-core RuntimeException::anything', 'php-core MissingClass::__toString',
+			'php-core ' . self::class . '::testOnlyActualInternalDeclarationsAreCoreProofs'] as $leaf) {
+			try {
+				\CollectivesCoreProof::check($leaf);
+			} catch (\RuntimeException $e) {
+				$this->assertStringContainsString('Not an internal PHP', $e->getMessage());
+				continue;
+			}
+			$this->fail('An unproved PHP-core leaf was accepted');
+		}
+	}
+
 	/** @return void probes and Wamania are followed bodies rather than leaves justified by imports or composer ranges */
 	public function testTheRealChainsFollowTheProbesAndEveryStemmer(): void {
 		$chains = json_decode(file_get_contents(self::DIR . 'collectives-read-chains.json'), true, 512, JSON_THROW_ON_ERROR);

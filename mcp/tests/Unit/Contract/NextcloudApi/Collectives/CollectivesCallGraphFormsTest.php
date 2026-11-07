@@ -75,13 +75,13 @@ final class CollectivesCallGraphFormsTest extends CallGraphTreeTestCase {
 		$this->assertUnknown($r['unknown'], 'Entry', 'dispatchTyped(');
 	}
 
-	/** @return void R11: a method no app class declares, on an app class with no outside parent, is magic: unknown */
-	public function testMagicCallIsUnknown(): void {
+	/** @return void R11: a method no app class declares, on an app class with no outside parent, is followed through __call */
+	public function testMagicCallIsFollowed(): void {
 		$r = $this->reach([
 			'Entry' => 'public function read(): void { $e = new Magic(); $e->anything(); }',
 			'Magic' => 'public function __call($n, $a) { return null; }',
 		], 'Entry::read');
-		$this->assertUnknown($r['unknown'], 'Magic', 'Magic::anything is declared nowhere');
+		$this->assertArrayHasKey('OCA\\Collectives\\Service\\Magic::__call', $r['methods']);
 	}
 
 	/** @return void R11: an override whose return has no single type makes the call's value unknown */
@@ -104,51 +104,51 @@ final class CollectivesCallGraphFormsTest extends CallGraphTreeTestCase {
 		$this->assertUnknown($r['unknown'], 'Entry', 'untyped value $x->persist(');
 	}
 
-	/** @return void R11: a property access on a class declaring __get (or a value of unknown type) is unknown */
-	public function testAPropertyThatMayRunGetIsUnknown(): void {
+	/** @return void R11: a property access follows the available __get body */
+	public function testAPropertyThatMayRunGetIsFollowed(): void {
 		$r = $this->reach([
 			'Entry' => 'public function read(): void { $m = new Magic(); $x = $m->anything; }',
 			'Magic' => 'public function __get($n) { return null; }',
 		], 'Entry::read');
-		$this->assertUnknown($r['unknown'], 'Entry', 'property access that may run __get, __set, __isset or __unset $m->anything');
+		$this->assertArrayHasKey('OCA\\Collectives\\Service\\Magic::__get', $r['methods']);
 	}
 
-	/** @return void inherited property hooks are refused for writes, isset and unset as well as reads */
-	public function testInheritedPropertyHooksAreUnknown(): void {
+	/** @return void inherited property hooks are followed for writes, isset and unset as well as reads */
+	public function testInheritedPropertyHooksAreFollowed(): void {
 		foreach ([['__set($n, $v)', '$m->x = 1;'], ['__isset($n)', 'isset($m->x);'], ['__unset($n)', 'unset($m->x);']] as [$hook, $use]) {
 			$r = $this->reach([
 				'Entry' => 'public function read(): void { $m = new Child(); ' . $use . ' }',
 				'Magic' => 'public function ' . $hook . ' {}',
 				'Child extends Magic' => '',
 			], 'Entry::read');
-			$this->assertUnknown($r['unknown'], 'Entry', 'property access that may run __get, __set, __isset or __unset');
+			$this->assertArrayHasKey('OCA\\Collectives\\Service\\Magic::' . explode('(', $hook)[0], $r['methods']);
 		}
 	}
 
-	/** @return void R11: a clone of a class declaring __clone is unknown */
-	public function testACloneThatMayRunCloneIsUnknown(): void {
+	/** @return void R11: a clone of a class declaring __clone is followed */
+	public function testACloneThatMayRunCloneIsFollowed(): void {
 		$r = $this->reach([
 			'Entry' => 'public function read(): void { $c = new Copied(); $d = clone $c; }',
 			'Copied' => 'public function __clone() {}',
 		], 'Entry::read');
-		$this->assertUnknown($r['unknown'], 'Entry', 'clone that may run __clone clone $c');
+		$this->assertArrayHasKey('OCA\\Collectives\\Service\\Copied::__clone', $r['methods']);
 	}
 
-	/** @return void R11: calling an object declaring __invoke is unknown, like any callable value */
-	public function testAnInvokedObjectIsUnknown(): void {
+	/** @return void R11: calling an object declaring __invoke follows that body */
+	public function testAnInvokedObjectIsFollowed(): void {
 		$r = $this->reach([
 			'Entry' => 'public function read(): void { $h = new Handler(); $h(); }',
 			'Handler' => 'public function __invoke() {}',
 		], 'Entry::read');
-		$this->assertUnknown($r['unknown'], 'Entry', 'call of a callable value $h(');
+		$this->assertArrayHasKey('OCA\\Collectives\\Service\\Handler::__invoke', $r['methods']);
 	}
 
-	/** @return void R11: a string use of a class declaring __toString is unknown */
-	public function testAStringUseThatMayRunToStringIsUnknown(): void {
+	/** @return void R11: a string use of a class declaring __toString is followed */
+	public function testAStringUseThatMayRunToStringIsFollowed(): void {
 		$r = $this->reach([
 			'Entry' => 'public function read(): void { $s = new Text(); $t = "x" . $s; }',
 			'Text' => 'public function __toString(): string { return ""; }',
 		], 'Entry::read');
-		$this->assertUnknown($r['unknown'], 'Entry', 'string use that may run __toString $s');
+		$this->assertArrayHasKey('OCA\\Collectives\\Service\\Text::__toString', $r['methods']);
 	}
 }

@@ -22,11 +22,12 @@ final class CallGraphCalls {
 	private const CALLING = ['call_user_func', 'call_user_func_array', 'array_map', 'array_filter', 'array_reduce', 'array_walk', 'array_walk_recursive',
 		'usort', 'uasort', 'uksort', 'iterator_apply', 'preg_replace_callback', 'register_shutdown_function', 'forward_static_call'];
 	/** Methods that run listeners or services the source does not name. */
-	private const HIDDEN = ['dispatch', 'dispatchTyped', 'emit', 'query', 'resolve'];
+	private const HIDDEN = ['dispatch', 'dispatchtyped', 'emit', 'query', 'resolve'];
 	/** Types whose get() is a container lookup. */
 	private const CONTAINERS = ['Psr\\Container\\ContainerInterface', 'OCP\\IContainer', 'OCP\\IServerContainer', 'OCP\\AppFramework\\IAppContainer'];
 
 	private Standard $printer;
+	private CallGraphMagicUses $magic;
 
 	/**
 	 * @param CallGraphIndex $index the parsed trees
@@ -35,6 +36,7 @@ final class CallGraphCalls {
 	 */
 	public function __construct(private CallGraphIndex $index, private CallGraphDispatch $dispatch, private CallGraphTypes $types) {
 		$this->printer = new Standard();
+		$this->magic = new CallGraphMagicUses($index, $dispatch);
 	}
 
 	/**
@@ -52,7 +54,7 @@ final class CallGraphCalls {
 		};
 		$calls = [];
 		foreach ((new NodeFinder())->find($unit['node']->stmts ?? [], static fn (Node $n): bool => true) as $n) {
-			$this->magicUses($n, $typeOf, $miss);
+			array_push($calls, ...$this->magic->calls($n, $typeOf, $miss));
 			if ($n instanceof Expr\MethodCall || $n instanceof Expr\NullsafeMethodCall) {
 				$text = $this->printer->prettyPrintExpr($n->var) . '->' . ($n->name instanceof Node\Identifier ? $n->name->name : '{dynamic}') . '(';
 				if (!$n->name instanceof Node\Identifier) {
@@ -67,9 +69,9 @@ final class CallGraphCalls {
 				foreach ($receivers as $type) {
 					if (!CallGraphTypes::isObject($type)) {
 						$miss($n, 'call on a value that is not an object ' . $text);
-					} elseif (in_array($n->name->name, self::HIDDEN, true)) {
+					} elseif (in_array($n->name->toLowerString(), self::HIDDEN, true)) {
 						$miss($n, 'event dispatch or lookup ' . $text);
-					} elseif ($n->name->name === 'get' && array_intersect([$type, ...$this->index->ancestors($type)], self::CONTAINERS) !== []) {
+					} elseif ($n->name->toLowerString() === 'get' && array_intersect([$type, ...$this->index->ancestors($type)], self::CONTAINERS) !== []) {
 						$miss($n, 'container lookup ' . $text);
 					} else {
 						$calls[] = $type . '::' . $n->name->name;
@@ -81,11 +83,11 @@ final class CallGraphCalls {
 					continue;
 				}
 				$target = $this->index->name($class, $n->class);
-				if ($target === 'OCP\\Server' && $n->name->name === 'get' && CallGraphTypes::literalClass($n->args[0] ?? null) === null) {
+				if ($target === 'OCP\\Server' && $n->name->toLowerString() === 'get' && CallGraphTypes::literalClass($n->args[0] ?? null) === null) {
 					$miss($n, 'Server::get( of a class not written in place');
 					continue;
 				}
-				$calls[] = $target . '::' . $n->name->name;
+				$calls[] = 'static ' . $target . '::' . $n->name->name;
 			} elseif ($n instanceof Expr\New_) {
 				$created = $n->class instanceof Stmt\Class_ ? [null] : $this->types->typeOf($class, $n, $locals);
 				if (in_array(null, $created, true)) {
@@ -95,7 +97,9 @@ final class CallGraphCalls {
 				array_push($calls, ...array_map(static fn (string $c): string => $c . '::__construct', $created));
 			} elseif ($n instanceof Expr\FuncCall) {
 				if (!$n->name instanceof Node\Name) {
-					$miss($n, 'call of a callable value ' . $this->printer->prettyPrintExpr($n->name) . '(');
+					if (array_filter($typeOf($n->name), CallGraphTypes::isObject(...)) === []) {
+						$miss($n, 'call of a callable value ' . $this->printer->prettyPrintExpr($n->name) . '(');
+					}
 					continue;
 				}
 				$function = $n->name->toString();
@@ -104,6 +108,15 @@ final class CallGraphCalls {
 					$miss($n, $function . '( with a callable that is not written in place');
 				}
 				$calls[] = 'function ' . $function;
+				foreach ($this->index->functions[$function] ?? [] as $target) {
+					$arguments = [];
+					foreach ($this->index->unit($target)['node']->params as $position => $param) {
+						if (($n->args[$position] ?? null) instanceof Node\Arg) {
+							$arguments[$param->var->name] = $typeOf($n->args[$position]->value);
+						}
+					}
+					$this->types->bindings->record($target, $key . ':' . $n->getStartFilePos(), $arguments);
+				}
 			} elseif ($n instanceof Expr\Include_ && $this->includesOnlyData($unit, $this->assigned($unit['node'], $n->expr))) {
 				continue;
 			} elseif ($n instanceof Expr\Include_ || $n instanceof Expr\Eval_ || $n instanceof Expr\ShellExec) {
@@ -115,40 +128,6 @@ final class CallGraphCalls {
 			}
 		}
 		return array_values(array_unique($calls));
-	}
-
-	/**
-	 * The implicit calls of a node: when a followed class declares __get, __set, __isset, __unset, __clone or
-	 * __toString, any use that may run it on a value of that class, or of unknown type, is unknown.
-	 * @param Node $n a node
-	 * @param callable(Expr):list<?string> $typeOf types an expression of the body
-	 * @param callable(Node, string):void $miss reports an unknown form
-	 * @return void
-	 */
-	private function magicUses(Node $n, callable $typeOf, callable $miss): void {
-		$may = static fn (array $types, array $magic): bool => $magic !== [] && (in_array(null, $types, true) || array_intersect($types, $magic) !== []);
-		$property = array_merge(...array_map($this->dispatch->magic(...), ['__get', '__set', '__isset', '__unset']));
-		if (($n instanceof Expr\PropertyFetch || $n instanceof Expr\NullsafePropertyFetch) && $may($typeOf($n->var), $property)) {
-			$miss($n, 'property access that may run __get, __set, __isset or __unset ' . $this->printer->prettyPrintExpr($n));
-		}
-		if ($n instanceof Expr\Clone_ && $may($typeOf($n->expr), $this->dispatch->magic('__clone'))) {
-			$miss($n, 'clone that may run __clone ' . $this->printer->prettyPrintExpr($n));
-		}
-		$text = $this->dispatch->magic('__toString');
-		$operands = match (true) {
-			$n instanceof Expr\BinaryOp => [$n->left, $n->right],
-			$n instanceof Node\Scalar\InterpolatedString => array_filter($n->parts, static fn (Node $p): bool => $p instanceof Expr),
-			$n instanceof Expr\Cast\String_, $n instanceof Expr\Print_ => [$n->expr],
-			$n instanceof Stmt\Echo_ => $n->exprs,
-			$n instanceof Expr\FuncCall, $n instanceof Expr\MethodCall, $n instanceof Expr\NullsafeMethodCall,
-			$n instanceof Expr\StaticCall, $n instanceof Expr\New_ => array_map(static fn ($a): Expr => $a->value, array_filter($n->args, static fn ($a): bool => $a instanceof Node\Arg)),
-			default => [],
-		};
-		foreach ($text === [] ? [] : $operands as $operand) {
-			if ($may($typeOf($operand), $text)) {
-				$miss($n, 'string use that may run __toString ' . $this->printer->prettyPrintExpr($operand));
-			}
-		}
 	}
 
 	/**

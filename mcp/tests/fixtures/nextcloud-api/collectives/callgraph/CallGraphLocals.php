@@ -42,6 +42,7 @@ final class CallGraphLocals {
 			}
 		}
 		$start = array_merge($start, array_map(static fn (string $type): array => [$type], $unit['params']));
+		$start = array_merge($start, array_diff_key($this->types->bindings->of($key), $unit['params']));
 		$locals = $start;
 		for ($round = 0; $round < 8; $round++) {
 			$next = $start;
@@ -75,7 +76,7 @@ final class CallGraphLocals {
 			$n->expr->setAttribute('stated', true);
 		} elseif ($n instanceof Expr\Assign && $n->var instanceof Expr\ArrayDimFetch && $n->var->var instanceof Expr\Variable && is_string($n->var->var->name)) {
 			// `$list[] = $x` makes $list an array of the type of $x.
-			$add($n->var->var->name, array_map(static fn (?string $t): ?string => $t === null ? null : (CallGraphTypes::isObject($t) ? $t . '[]' : ''),
+			$add($n->var->var->name, array_map(static fn (?string $t): ?string => $t === null ? null : (CallGraphTypes::isObject($t) ? $t . '[]' : 'scalar[]'),
 				$this->types->typeOf($class, $n->expr, $locals)));
 		} elseif ($n instanceof Expr\FuncCall && $n->name instanceof Node\Name && isset(self::ITERATING[strtolower($n->name->toString())])) {
 			[$callback, $array, $count] = self::ITERATING[strtolower($n->name->toString())];
@@ -85,7 +86,8 @@ final class CallGraphLocals {
 			}
 		} elseif (($n instanceof Expr\Assign || $n instanceof Expr\AssignOp\Coalesce) && !$n->hasAttribute('stated')) {
 			foreach (self::targets($n->var) as $name) {
-				$add($name, $n->var instanceof Expr\Variable ? $this->types->typeOf($class, $n->expr, $locals) : [null]);
+				$add($name, $n->var instanceof Expr\Variable ? $this->types->typeOf($class, $n->expr, $locals)
+					: array_map(CallGraphTypes::element(...), $this->types->typeOf($class, $n->expr, $locals)));
 			}
 		} elseif ($n instanceof Stmt\Foreach_) {
 			[$keys, $values] = $this->iterated($class, $n->expr, $locals);
@@ -102,7 +104,11 @@ final class CallGraphLocals {
 			foreach ($n->params as $i => $param) {
 				$add((string)$param->var->name, $param->type instanceof Node\Name ? [$this->index->name($class, $param->type)] : ($i < $count ? $elements : [null]));
 			}
-		} elseif ($n instanceof Expr\List_ || $n instanceof Stmt\Global_ || $n instanceof Stmt\Static_) {
+		} elseif ($n instanceof Stmt\Static_) {
+			foreach ($n->vars as $var) {
+				$add($var->var->name, $var->default === null ? [null] : $this->types->typeOf($class, $var->default, $locals));
+			}
+		} elseif ($n instanceof Stmt\Global_) {
 			foreach ((new NodeFinder())->findInstanceOf([$n], Expr\Variable::class) as $var) {
 				if (is_string($var->name)) {
 					$add($var->name, [null]);

@@ -11,6 +11,7 @@ require __DIR__ . '/../../../../vendor/autoload.php';
 require __DIR__ . '/CollectivesCallGraph.php';
 require __DIR__ . '/CollectivesSourcePins.php';
 require __DIR__ . '/CollectivesDiagnostics.php';
+require __DIR__ . '/CollectivesCoreProof.php';
 
 /**
  * Regenerates the Collectives surfaces of tests/fixtures/nextcloud-api/<major>.php, collectives-behavior.json and
@@ -187,7 +188,10 @@ final class CollectivesFixtureGenerator {
 				continue;
 			}
 			foreach ($entry['proof'] as $proof) {
-				if ($proof['source'] !== 'php' && !str_contains((string)@file_get_contents($roots[$proof['source']] . '/' . $proof['file']), $proof['excerpt'])) {
+				if ($proof['source'] === 'php-core') {
+					CollectivesCoreProof::check($leaf);
+				}
+				if (!in_array($proof['source'], ['php', 'php-core'], true) && !str_contains((string)@file_get_contents($roots[$proof['source']] . '/' . $proof['file']), $proof['excerpt'])) {
 					throw new RuntimeException("NC$major: the proof of $leaf is not in {$proof['source']}:{$proof['file']}");
 				}
 			}

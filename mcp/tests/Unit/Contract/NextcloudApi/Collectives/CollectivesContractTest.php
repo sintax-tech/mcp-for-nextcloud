@@ -182,7 +182,7 @@ final class CollectivesContractTest extends TestCase {
 		$this->leavesAllowed('35', ['OCP\\IL10N::t'], [], 'synthetic');
 	}
 
-	/** @return void each allowed leaf states its effect, why, and a proof in a pinned source, and is reached by some chain */
+	/** @return void native leaves are reached and proved; the explicit PHP-core catalog is verified against internal declarations */
 	public function testTheAllowlistIsExplicit(): void {
 		$chains = json_decode((string)file_get_contents(self::DIR . 'collectives-read-chains.json'), true, 512, JSON_THROW_ON_ERROR);
 		$reached = [];
@@ -194,7 +194,12 @@ final class CollectivesContractTest extends TestCase {
 			}
 		}
 		foreach (self::allowlist() as $leaf => $entry) {
-			$this->assertSame(array_values(array_unique($reached[$leaf] ?? [])), $entry['majors'], "$leaf is allowed exactly where it is reached");
+			if (str_starts_with($leaf, 'php-core ')) {
+				require_once self::DIR . 'CollectivesCoreProof.php';
+				\CollectivesCoreProof::check($leaf);
+			} else {
+				$this->assertSame(array_values(array_unique($reached[$leaf] ?? [])), $entry['majors'], "$leaf is allowed exactly where it is reached");
+			}
 			$this->assertContains($entry['effect'], ['read', 'memory', 'cache', 'platform', 'write', 'diagnostic'], $leaf);
 			$this->assertNotSame('', $entry['why'], $leaf);
 			if ($entry['effect'] === 'diagnostic') {
@@ -202,11 +207,11 @@ final class CollectivesContractTest extends TestCase {
 			}
 			$this->assertNotSame([], $entry['proof'], $leaf);
 			foreach ($entry['proof'] as $proof) {
-				$this->assertContains($proof['source'], ['php', 'ocp', 'server', 'circles', 'collectives', 'joomla'], $leaf);
-				$this->assertSame($proof['source'] === 'php', $proof['excerpt'] === '', "$leaf: a pinned source is quoted, PHP itself is not");
+				$this->assertContains($proof['source'], ['php', 'php-core', 'ocp', 'server', 'circles', 'collectives', 'joomla'], $leaf);
+				$this->assertSame(in_array($proof['source'], ['php', 'php-core'], true), $proof['excerpt'] === '', "$leaf: a pinned source is quoted, PHP itself is not");
 			}
 			// PHP itself: built-in functions, its exceptions, and getMessage, which is final in Exception.
-			if (str_starts_with($leaf, 'function ') || str_ends_with($leaf, '::getMessage') || in_array(explode('::', $leaf)[0], ['Exception', 'RuntimeException'], true)) {
+			if (str_starts_with($leaf, 'function ') || str_ends_with($leaf, '::getMessage') || (class_exists(explode('::', $leaf)[0], false) && (new \ReflectionClass(explode('::', $leaf)[0]))->isInternal())) {
 				continue;
 			}
 			$this->assertNotSame('php', $entry['proof'][0]['source'], "$leaf: only PHP itself is proved by PHP");

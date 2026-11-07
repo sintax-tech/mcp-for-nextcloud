@@ -27,6 +27,9 @@ final class CallGraphNames {
 		if (preg_match('/^(?:list|array|iterable)<(?:[\w\\\\]+,\s*)?([\w\\\\]+)>$/', $type, $m) || preg_match('/^([\w\\\\]+)\[\]$/', $type, $m)) {
 			[$type, $array] = [$m[1], '[]'];
 		}
+		if (in_array(strtolower($type), ['string', 'int', 'float', 'bool', 'void', 'never', 'false', 'true'], true)) {
+			return $array === '' ? '' : 'scalar[]';
+		}
 		if (in_array(strtolower($type), ['self', 'static', '$this'], true)) {
 			return $self === null ? null : $self . $array;
 		}

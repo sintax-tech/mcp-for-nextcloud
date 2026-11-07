@@ -1,4 +1,40 @@
 {
+  "DateTime::__construct": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "memory",
+    "why": "Builds a PHP date value in memory; does not persist it.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "DateTimeImmutable::__construct": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "memory",
+    "why": "Builds an immutable PHP date value in memory; does not persist it.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
   "Exception::__construct": {
     "majors": [
       "31",
@@ -19,6 +55,8 @@
   },
   "Exception::getMessage": {
     "majors": [
+      "31",
+      "32",
       "33",
       "34",
       "35"
@@ -297,202 +335,6 @@
         "source": "circles",
         "file": "lib/Model/Member.php",
         "excerpt": "public function getLevel("
-      }
-    ]
-  },
-  "OCP\\AppFramework\\Db\\Entity::getCircleId": {
-    "majors": [
-      "31",
-      "32",
-      "33",
-      "34",
-      "35"
-    ],
-    "effect": "read",
-    "why": "A getter the entity answers through __call: it returns the loaded property and changes nothing.",
-    "proof": [
-      {
-        "source": "server",
-        "file": "lib/public/AppFramework/Db/Entity.php",
-        "excerpt": "} elseif (str_starts_with($methodName, 'get')) {\n\t\t\treturn $this->getter(lcfirst(substr($methodName, 3)));"
-      }
-    ]
-  },
-  "OCP\\AppFramework\\Db\\Entity::getCircleUniqueId": {
-    "majors": [
-      "31",
-      "32",
-      "33",
-      "34",
-      "35"
-    ],
-    "effect": "read",
-    "why": "A getter the entity answers through __call: it returns the loaded property and changes nothing.",
-    "proof": [
-      {
-        "source": "server",
-        "file": "lib/public/AppFramework/Db/Entity.php",
-        "excerpt": "} elseif (str_starts_with($methodName, 'get')) {\n\t\t\treturn $this->getter(lcfirst(substr($methodName, 3)));"
-      }
-    ]
-  },
-  "OCP\\AppFramework\\Db\\Entity::getEmoji": {
-    "majors": [
-      "31",
-      "32",
-      "33",
-      "34",
-      "35"
-    ],
-    "effect": "read",
-    "why": "A getter the entity answers through __call: it returns the loaded property and changes nothing.",
-    "proof": [
-      {
-        "source": "server",
-        "file": "lib/public/AppFramework/Db/Entity.php",
-        "excerpt": "} elseif (str_starts_with($methodName, 'get')) {\n\t\t\treturn $this->getter(lcfirst(substr($methodName, 3)));"
-      }
-    ]
-  },
-  "OCP\\AppFramework\\Db\\Entity::getFileId": {
-    "majors": [
-      "31",
-      "32",
-      "33",
-      "34",
-      "35"
-    ],
-    "effect": "read",
-    "why": "A getter the entity answers through __call: it returns the loaded property and changes nothing.",
-    "proof": [
-      {
-        "source": "server",
-        "file": "lib/public/AppFramework/Db/Entity.php",
-        "excerpt": "} elseif (str_starts_with($methodName, 'get')) {\n\t\t\treturn $this->getter(lcfirst(substr($methodName, 3)));"
-      }
-    ]
-  },
-  "OCP\\AppFramework\\Db\\Entity::getFullWidth": {
-    "majors": [
-      "31",
-      "32",
-      "33",
-      "34",
-      "35"
-    ],
-    "effect": "read",
-    "why": "A getter the entity answers through __call: it returns the loaded property and changes nothing.",
-    "proof": [
-      {
-        "source": "server",
-        "file": "lib/public/AppFramework/Db/Entity.php",
-        "excerpt": "} elseif (str_starts_with($methodName, 'get')) {\n\t\t\treturn $this->getter(lcfirst(substr($methodName, 3)));"
-      }
-    ]
-  },
-  "OCP\\AppFramework\\Db\\Entity::getId": {
-    "majors": [
-      "31",
-      "32",
-      "33",
-      "34",
-      "35"
-    ],
-    "effect": "read",
-    "why": "A getter the entity answers through __call: it returns the loaded property and changes nothing.",
-    "proof": [
-      {
-        "source": "server",
-        "file": "lib/public/AppFramework/Db/Entity.php",
-        "excerpt": "} elseif (str_starts_with($methodName, 'get')) {\n\t\t\treturn $this->getter(lcfirst(substr($methodName, 3)));"
-      }
-    ]
-  },
-  "OCP\\AppFramework\\Db\\Entity::getLastUserId": {
-    "majors": [
-      "31",
-      "32",
-      "33",
-      "34",
-      "35"
-    ],
-    "effect": "read",
-    "why": "A getter the entity answers through __call: it returns the loaded property and changes nothing.",
-    "proof": [
-      {
-        "source": "server",
-        "file": "lib/public/AppFramework/Db/Entity.php",
-        "excerpt": "} elseif (str_starts_with($methodName, 'get')) {\n\t\t\treturn $this->getter(lcfirst(substr($methodName, 3)));"
-      }
-    ]
-  },
-  "OCP\\AppFramework\\Db\\Entity::getSlug": {
-    "majors": [
-      "31",
-      "32",
-      "33",
-      "34",
-      "35"
-    ],
-    "effect": "read",
-    "why": "A getter the entity answers through __call: it returns the loaded property and changes nothing.",
-    "proof": [
-      {
-        "source": "server",
-        "file": "lib/public/AppFramework/Db/Entity.php",
-        "excerpt": "} elseif (str_starts_with($methodName, 'get')) {\n\t\t\treturn $this->getter(lcfirst(substr($methodName, 3)));"
-      }
-    ]
-  },
-  "OCP\\AppFramework\\Db\\Entity::getSubpageOrder": {
-    "majors": [
-      "31",
-      "32",
-      "33",
-      "34",
-      "35"
-    ],
-    "effect": "read",
-    "why": "A getter the entity answers through __call: it returns the loaded property and changes nothing.",
-    "proof": [
-      {
-        "source": "server",
-        "file": "lib/public/AppFramework/Db/Entity.php",
-        "excerpt": "} elseif (str_starts_with($methodName, 'get')) {\n\t\t\treturn $this->getter(lcfirst(substr($methodName, 3)));"
-      }
-    ]
-  },
-  "OCP\\AppFramework\\Db\\Entity::getTags": {
-    "majors": [
-      "31",
-      "32",
-      "33",
-      "34",
-      "35"
-    ],
-    "effect": "read",
-    "why": "A getter the entity answers through __call: it returns the loaded property and changes nothing.",
-    "proof": [
-      {
-        "source": "server",
-        "file": "lib/public/AppFramework/Db/Entity.php",
-        "excerpt": "} elseif (str_starts_with($methodName, 'get')) {\n\t\t\treturn $this->getter(lcfirst(substr($methodName, 3)));"
-      }
-    ]
-  },
-  "OCP\\AppFramework\\Db\\Entity::getTerm": {
-    "majors": [
-      "33",
-      "34",
-      "35"
-    ],
-    "effect": "read",
-    "why": "A getter the entity answers through __call: it returns the loaded property and changes nothing.",
-    "proof": [
-      {
-        "source": "server",
-        "file": "lib/public/AppFramework/Db/Entity.php",
-        "excerpt": "} elseif (str_starts_with($methodName, 'get')) {\n\t\t\treturn $this->getter(lcfirst(substr($methodName, 3)));"
       }
     ]
   },
@@ -1030,24 +872,6 @@
       }
     ]
   },
-  "OCP\\Files\\InvalidPathException::getMessage": {
-    "majors": [
-      "31",
-      "32",
-      "33",
-      "34",
-      "35"
-    ],
-    "effect": "memory",
-    "why": "Reads an exception's message: Exception::getMessage is final in PHP, so no class overrides it.",
-    "proof": [
-      {
-        "source": "php",
-        "file": "",
-        "excerpt": ""
-      }
-    ]
-  },
   "OCP\\Files\\Mount\\IMountPoint::getMountPoint": {
     "majors": [
       "31",
@@ -1171,42 +995,6 @@
         "source": "ocp",
         "file": "OCP/Files/Node.php",
         "excerpt": "public function getSize("
-      }
-    ]
-  },
-  "OCP\\Files\\NotFoundException::__construct": {
-    "majors": [
-      "31",
-      "32",
-      "33",
-      "34",
-      "35"
-    ],
-    "effect": "memory",
-    "why": "An exception object: the class declares no constructor, so PHP's runs.",
-    "proof": [
-      {
-        "source": "ocp",
-        "file": "OCP/Files/NotFoundException.php",
-        "excerpt": "class NotFoundException extends \\Exception {"
-      }
-    ]
-  },
-  "OCP\\Files\\NotFoundException::getMessage": {
-    "majors": [
-      "31",
-      "32",
-      "33",
-      "34",
-      "35"
-    ],
-    "effect": "memory",
-    "why": "Reads an exception's message: Exception::getMessage is final in PHP, so no class overrides it.",
-    "proof": [
-      {
-        "source": "php",
-        "file": "",
-        "excerpt": ""
       }
     ]
   },
@@ -1439,24 +1227,6 @@
         "source": "server",
         "file": "lib/private/legacy/OC_Util.php",
         "excerpt": "$setupManager->setupForUser($userObject);"
-      }
-    ]
-  },
-  "RuntimeException::__construct": {
-    "majors": [
-      "31",
-      "32",
-      "33",
-      "34",
-      "35"
-    ],
-    "effect": "memory",
-    "why": "A PHP exception object.",
-    "proof": [
-      {
-        "source": "php",
-        "file": "",
-        "excerpt": ""
       }
     ]
   },
@@ -1845,6 +1615,24 @@
       }
     ]
   },
+  "function is_array": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Tests a value in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
   "function is_int": {
     "majors": [
       "33",
@@ -1879,6 +1667,24 @@
       }
     ]
   },
+  "function is_resource": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Tests a value in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
   "function join": {
     "majors": [
       "33",
@@ -1905,6 +1711,24 @@
     ],
     "effect": "read",
     "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function lcfirst": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Changes a string value in memory.",
     "proof": [
       {
         "source": "php",
@@ -2154,6 +1978,24 @@
       }
     ]
   },
+  "function property_exists": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Inspects whether the supplied entity has the field; it does not persist the entity.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
   "function rtrim": {
     "majors": [
       "31",
@@ -2164,6 +2006,24 @@
     ],
     "effect": "read",
     "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function settype": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "memory",
+    "why": "Casts the supplied entity field value in memory; no persistence.",
     "proof": [
       {
         "source": "php",
@@ -2206,6 +2066,24 @@
       }
     ]
   },
+  "function str_starts_with": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Compares string values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
   "function strcmp": {
     "majors": [
       "31",
@@ -2224,6 +2102,24 @@
       }
     ]
   },
+  "function stream_get_contents": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Reads bytes from an existing stream for a BLOB entity field; does not write the stream.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
   "function strlen": {
     "majors": [
       "33",
@@ -2232,6 +2128,24 @@
     ],
     "effect": "read",
     "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function substr": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Copies a string slice in memory.",
     "proof": [
       {
         "source": "php",
@@ -2352,6 +2266,42 @@
     "proof": [
       {
         "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "php-core Exception::__toString": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Formats the built-in exception name, message and stack trace in memory; PHP core does not persist it.",
+    "proof": [
+      {
+        "source": "php-core",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "php-core Exception::__wakeup": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Restores the built-in exception fields in memory; PHP core does not write storage.",
+    "proof": [
+      {
+        "source": "php-core",
         "file": "",
         "excerpt": ""
       }

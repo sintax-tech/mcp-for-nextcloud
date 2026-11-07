@@ -142,22 +142,32 @@ final class LogScannerTest extends TestCase {
 		$this->scanner($this->createMock(IWriter::class))->scan(self::filter(), 0, 10);
 	}
 
-	public function testAFailureOfTheCoreReaderIsARefusalWithoutDetails(): void {
-		$log = new class([]) extends \ArrayObject implements IWriter, \OCP\Log\IFileBased {
-			public function write(string $app, $message, int $level) {
-			}
-			public function getLogFilePath(): string {
-				return '/secret/path/nextcloud.log';
-			}
-			public function getEntries(int $limit = 50, int $offset = 0): array {
-				throw new \RuntimeException('fopen(/secret/path/nextcloud.log): failed');
-			}
-		};
+	/** @return void A not-yet-created log is an empty ended scan, as in the official reader. */
+	public function testAMissingLogIsAnEmptyEndedScan(): void {
+		$path = tempnam(sys_get_temp_dir(), 'mcp-it-missing-log-');
+		unlink($path);
+		$scan = $this->scanner(new OfficialFileLog($path, 2))->scan(self::filter(), 0, 10);
+		self::assertSame([], $scan['entries']);
+		self::assertSame(0, $scan['scanned']);
+		self::assertNull($scan['nextOffset']);
+		self::assertFalse($scan['truncated']);
+		self::assertFalse($scan['timeBudgetReached']);
+	}
+
+	/** @return void An existing unreadable file remains refused and its path stays private. */
+	public function testAnUnreadableFileIsARefusalWithoutDetails(): void {
+		$path = tempnam(sys_get_temp_dir(), 'mcp-it-private-log-');
 		try {
-			$this->scanner($log)->scan(self::filter(), 0, 10);
-			$this->fail('the failure must become a refusal');
-		} catch (ToolFailure $e) {
-			$this->assertStringNotContainsString('/secret', $e->getMessage());
+			chmod($path, 0000);
+			try {
+				$this->scanner(new OfficialFileLog($path, 2))->scan(self::filter(), 0, 10);
+				$this->fail('An existing unreadable file must remain refused');
+			} catch (ToolFailure $error) {
+				self::assertStringNotContainsString($path, $error->getMessage());
+			}
+		} finally {
+			chmod($path, 0600);
+			unlink($path);
 		}
 	}
 

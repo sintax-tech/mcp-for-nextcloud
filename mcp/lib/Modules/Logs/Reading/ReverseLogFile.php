@@ -26,6 +26,10 @@ final class ReverseLogFile {
 	public function __construct(string $path) {
 		$this->handle = @fopen($path, 'rb');
 		if ($this->handle === false) {
+			if (!file_exists($path)) {
+				$this->position = 0;
+				return;
+			}
 			throw new RuntimeException('Cannot open the current log');
 		}
 		$stat = fstat($this->handle);

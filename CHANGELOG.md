@@ -2,6 +2,13 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## 1.3.2 — 2026-11-07
+
+### Fixed
+
+- **`files_version_restore` of the current version failed on Nextcloud 34 and 35 with file locking:** files_versions lists the current content of a file as one of its versions (its revision is the file's modification time) but keeps no stored copy of it. Where the files_lock app is installed, as in the Nextcloud 34 and 35 images, restoring that listed version answered "Resource not found in Nextcloud." after the pre-write copy had already been taken. It is now restored like any other version, as the core rollback already did on servers without files_lock. Defect present since 1.0.5.
+- **A version restore that fails after the pre-write copy says where the copy is:** a version that could not be read, a rollback that reported failure or any other error after the copy now ends with where the original is kept, or says that no copy was created when copies are suspended, as `files_edit` already did. Before, the copy was left in the backup folder without being mentioned.
+
 ## 1.3.1 — 2026-11-07
 
 Fix release on top of 1.3.0. No database change and no permission change; updating from 1.3.0 needs no step. Only HTML mail drafts (`mail_create_draft` with `html: true`) change: they now work on servers with libxml2 2.14 or later (1.3.0 refused them there), a loose `&` no longer refuses a draft, and some HTML that 1.3.0 accepted on older libxml2 is now refused with the same message on every server, as listed below. Plain-text drafts and every other tool behave as in 1.3.0.

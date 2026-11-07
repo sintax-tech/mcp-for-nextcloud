@@ -101,6 +101,27 @@ final class BackupConfigurationTest extends ExclusionTestCase {
 		$this->assertCopy($restore->json(), $copies);
 	}
 
+	/**
+	 * @param bool $copies configured preference with the Versions app active
+	 * @return void the listed current version, which files_versions keeps no file for, is restored under the same setting
+	 */
+	#[DataProvider('preferences')]
+	public function testRestoringTheListedCurrentVersionUsesThePreference(bool $copies): void {
+		$this->configure('.mcp-backups', $copies);
+		$this->later(fn () => $this->deleteQuietly(self::ALICE, '.mcp-backups/' . $this->run));
+		$this->makeFile('home', 'current.txt', 'alpha');
+		$path = $this->path('home', 'current.txt');
+		$mcp = $this->mcp();
+		$versions = $mcp->tool('files_versions_list', ['path' => $path]);
+		self::assertTrue($versions->ok(), $versions->describe());
+		$current = (string)$this->node(self::ALICE, $path)->getMTime();
+		self::assertSame([$current], array_column($versions->json()['versions'], 'revision'), 'A file written once lists only its current content');
+		$restore = $mcp->write('files_version_restore', ['path' => $path, 'version' => $current]);
+		self::assertTrue($restore->ok(), $restore->describe());
+		$this->assertCopy($restore->json(), $copies);
+		self::assertSame('alpha', $this->node(self::ALICE, $path)->getContent());
+	}
+
 	/** @return void changing A to B to A preserves copy files and applies mirror exclusions to every reserved name */
 	public function testHistoricNamesStayProtectedAndHidden(): void {
 		$original = $this->makeFile('home', 'secret.txt', 'private');

@@ -20,6 +20,7 @@ use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\IUser;
 use OCP\IUserManager;
+use OCP\Lock\LockedException;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
@@ -85,6 +86,7 @@ final class VersionRestore {
 	 * @return array{path:string, size:int, etag:string, access:array<string, mixed>, backup:string, version:string}
 	 * @throws ToolFailure When versioning is off, the version does not exist or cannot be read, the backup fails, a
 	 *         lock refuses the write ({@see LockWriteFailure}), the rollback reports failure, or the type policy refuses the name.
+	 *         Every failure after the backup says where the original is kept.
 	 */
 	public function restore(Folder $root, File $file, string $path, string $revision, string $viewerUid, \OCA\Mcp\Modules\Files\Backups\FileBackup $backup): array {
 		$user = $this->requireVersioning($viewerUid);
@@ -95,10 +97,10 @@ final class VersionRestore {
 		$copy = $backup->prepare($root, $file, $path, $viewerUid, null);
 		$this->visibilityGuard?->assertVisible($file);
 		$manager = $this->manager();
+		\OCA\Mcp\Modules\Files\Backups\BackupWriteBoundary::afterCopy($backup, $path, $copy);
 		try {
-			\OCA\Mcp\Modules\Files\Backups\BackupWriteBoundary::afterCopy($backup, $path, $copy);
 			if ($this->locks !== null && $this->locks->providerAvailable()) {
-				$this->writeVersion($manager, $version, $file, $path, $viewerUid, $copy);
+				$this->writeVersion($manager, $version, $file, $path, $viewerUid);
 			} else {
 				// Immediately before the native rollback, still after the backup.
 				$this->types->assertCurrentName($file);
@@ -108,6 +110,17 @@ final class VersionRestore {
 			}
 		} catch (FileTypeDenied | FileWritePolicyUnavailable) {
 			// The copy already exists. Do not roll back, do not write, and do not delete the backup.
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::writeFailed($copy));
+		} catch (LockWriteFailure $e) {
+			throw $e->withNote(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::originalKept($copy));
+		} catch (ToolFailure $e) {
+			// Every refusal after the copy says where the original is kept, so no backup is left unannounced.
+			throw new ToolFailure($e->getMessage() . ' ' . \OCA\Mcp\Modules\Files\Presentation\EditingMessages::originalKept($copy));
+		} catch (LockedException $e) {
+			$failure = NodeAccess::lockFailure($e);
+			throw $failure instanceof LockWriteFailure ? $failure->withNote(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::originalKept($copy)) : new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::writeFailed($copy));
+		} catch (\Throwable) {
+			// Any other failure after the copy, such as a version file removed since the lookup, keeps the copy and names it.
 			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::writeFailed($copy));
 		}
 		$node = NodeAccess::requireFile(NodeAccess::get($root, $path, $this->visibilityGuard));
@@ -138,15 +151,17 @@ final class VersionRestore {
 	 * @param File $file File to restore.
 	 * @param string $path Normalized user-relative path of `$file`.
 	 * @param string $viewerUid Authenticated user.
-	 * @param string $copy User-relative path of the backup taken before.
 	 * @return void
 	 * @throws ToolFailure When the version cannot be read or copied (nothing is written then) or a lock refuses the write.
+	 *         The caller adds where the original is kept.
+	 * @throws \OCP\Files\NotFoundException When a version other than the current one has no stored file.
 	 * @throws FileTypeDenied When the current name is refused after the backup. The caller keeps the backup.
 	 * @throws FileWritePolicyUnavailable When the policy cannot be read after the backup. The caller keeps the backup.
 	 */
-	private function writeVersion(object $manager, object $version, File $file, string $path, string $viewerUid, string $copy): void {
+	private function writeVersion(object $manager, object $version, File $file, string $path, string $viewerUid): void {
 		$locks = $this->locks ?? throw new \LogicException('LockAwareWrite is not wired');
-		$stream = $manager->read($version);
+		// The listed current version has no stored file; VersionStream reads it from the file itself.
+		$stream = VersionStream::open($manager, $version, $file);
 		if (!is_resource($stream)) {
 			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionRestoreFailed());
 		}
@@ -169,8 +184,6 @@ final class VersionRestore {
 				rewind($content);
 				$file->putContent($content);
 			}, $file, $viewerUid, $path), $this->visibilityGuard);
-		} catch (LockWriteFailure $e) {
-			throw $e->withNote(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::originalKept($copy));
 		} finally {
 			if (is_resource($content)) {
 				fclose($content);

@@ -232,7 +232,7 @@ final class VersionToolsTest extends TestCase {
 	public function testRestoreReportsARollbackThatFailed(): void {
 		$this->manager->rollbackResult = false;
 		$this->expectException(ToolFailure::class);
-		$this->expectExceptionMessage(VersionMessages::versionRestoreFailed());
+		$this->expectExceptionMessageMatches('#^' . preg_quote(VersionMessages::versionRestoreFailed(), '#') . ' The original is kept in /MCP backups/Documentos/ata\.md\.[0-9-]+\.bak\.$#');
 		$this->tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
 	}
 
@@ -353,12 +353,41 @@ final class VersionToolsTest extends TestCase {
 		$this->assertSame('1759100000', $out['version']);
 	}
 
+	/**
+	 * The legacy backend lists the current content as a version whose revision is the file's mtime and keeps no
+	 * stored file for it. With files_lock there, restoring that listed version must write the current bytes back,
+	 * as the core rollback does, and not answer that the resource was not found.
+	 */
+	public function testTheListedCurrentVersionIsRestoredWithALockProvider(): void {
+		$current = (string)$this->file()->getMTime();
+		$this->manager->versions[0] = new FakeVersion($current, (int)$current, 9, 'text/markdown', 'ata.md');
+		$this->manager->versions[0]->noStoredFile = true;
+		$out = $this->lockedTools(new FakeLockManager())->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', $current, 'alice');
+		$this->assertSame($current, $out['version']);
+		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
+		$this->assertContains('write ' . self::FILE, $this->tree->ops);
+		$this->assertSame("# Ata\nolá", $this->tree->nodes['/alice/files' . $out['backup']]['content']);
+	}
+
+	/** An older version whose stored file disappeared after the lookup is still refused, and the refusal names the backup already taken. */
+	public function testAStoredVersionGoneAfterTheBackupIsRefusedAndNamesTheCopy(): void {
+		$this->manager->versions[1]->noStoredFile = true;
+		try {
+			$this->lockedTools(new FakeLockManager())->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
+			$this->fail('a version without its stored file was restored');
+		} catch (ToolFailure $e) {
+			$this->assertMatchesRegularExpression('#^Failed to write file; original preserved in /MCP backups/Documentos/ata\.md\.[0-9-]+\.bak\.$#', $e->getMessage());
+		}
+		$this->assertNotContains('write ' . self::FILE, $this->tree->ops);
+		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
+	}
+
 	public function testAVersionThatCannotBeReadIsNotRestored(): void {
 		try {
 			$this->lockedTools(new FakeLockManager())->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
 			$this->fail('an unreadable version was restored');
 		} catch (ToolFailure $e) {
-			$this->assertSame(VersionMessages::versionRestoreFailed(), $e->getMessage());
+			$this->assertMatchesRegularExpression('#^' . preg_quote(VersionMessages::versionRestoreFailed(), '#') . ' The original is kept in /MCP backups/Documentos/ata\.md\.[0-9-]+\.bak\.$#', $e->getMessage(), 'the backup taken before is announced');
 		}
 		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
 	}
@@ -390,7 +419,7 @@ final class VersionToolsTest extends TestCase {
 			$this->lockedTools(new FakeLockManager())->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
 			$this->fail('a version that could not be copied was restored');
 		} catch (ToolFailure $e) {
-			$this->assertSame(VersionMessages::versionRestoreFailed(), $e->getMessage());
+			$this->assertMatchesRegularExpression('#^' . preg_quote(VersionMessages::versionRestoreFailed(), '#') . ' The original is kept in /MCP backups/Documentos/ata\.md\.[0-9-]+\.bak\.$#', $e->getMessage(), 'the backup taken before is announced');
 		}
 		$this->assertNotContains('write ' . self::FILE, $this->tree->ops, 'nothing was written over the file');
 		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);

@@ -80,7 +80,7 @@ class OAuthController extends Controller {
 			return $this->page(['blocked' => true, 'client' => $authRequest->client->name]);
 		}
 		$pendingId = bin2hex(random_bytes(16));
-		$this->session->set(self::PENDING_KEY, [$pendingId => $authRequest->toArray()]);
+		$this->session->set(self::PENDING_KEY, [$pendingId => $authRequest->toArray($this->urls->issuer())]);
 		return $this->page([
 			'pending' => $pendingId,
 			'client' => $authRequest->client->name,
@@ -104,10 +104,10 @@ class OAuthController extends Controller {
 	public function consent(string $pending = '', string $decision = ''): TemplateResponse {
 		$stored = $this->session->get(self::PENDING_KEY);
 		$this->session->remove(self::PENDING_KEY);
-		if (!is_array($stored) || !is_array($stored[$pending] ?? null)) {
+		$authRequest = AuthorizationRequest::fromPending($stored, $pending);
+		if ($authRequest === null) {
 			return $this->page(['error' => 'The authorization request expired. Start the connection again.']);
 		}
-		$authRequest = AuthorizationRequest::fromArray($stored[$pending]);
 		try {
 			// Before any answer, deny included: a pending page older than a withdrawal never returns to its redirect URI.
 			$this->validator->revalidate($authRequest);
@@ -116,7 +116,7 @@ class OAuthController extends Controller {
 		}
 		$uid = $this->userSession->getUser()->getUID();
 		if ($decision !== 'allow') {
-			return $this->clientNavigation($authRequest->redirectWith(['error' => 'access_denied'], $this->urls->issuer()));
+			return $this->clientNavigation($authRequest->redirectWith(['error' => 'access_denied']));
 		}
 		try {
 			if (!$this->policy->globalEnabled() || !$this->policy->eligible($uid)) {
@@ -129,13 +129,13 @@ class OAuthController extends Controller {
 			return $this->page(['error' => 'The authorization request expired. Start the connection again.']);
 		} catch (PolicyUnavailable) {
 			// Nothing was issued: the client may try again (RFC 6749 §4.1.2.1), the state is never assumed.
-			return $this->clientNavigation($authRequest->redirectWith(['error' => 'temporarily_unavailable'], $this->urls->issuer()));
+			return $this->clientNavigation($authRequest->redirectWith(['error' => 'temporarily_unavailable']));
 		}
 		if ($code === null) {
 			// The service or the eligibility changed since the check above.
 			return $this->page(['blocked' => true, 'client' => $authRequest->client->name]);
 		}
-		return $this->clientNavigation($authRequest->redirectWith(['code' => $code], $this->urls->issuer()));
+		return $this->clientNavigation($authRequest->redirectWith(['code' => $code]));
 	}
 
 	/**

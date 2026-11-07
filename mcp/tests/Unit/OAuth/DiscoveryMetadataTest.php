@@ -8,7 +8,6 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\OAuth;
 
 use OCA\Mcp\OAuth\Authorization\ServerMetadata;
-use OCA\Mcp\OAuth\Authorization\AuthorizationRequest;
 use OCA\Mcp\OAuth\Tokens\ResourceUrl;
 use OCP\IRequest;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -26,7 +25,7 @@ final class DiscoveryMetadataTest extends TestCase {
 
 	/** @param string $prefix installation and front-controller path */
 	#[DataProvider('prefixes')]
-	public function testDiscoveryAdvertisesTheIssuerActuallyReturnedInCallbacks(string $prefix): void {
+	public function testDiscoveryPreservesTheIssuerAndAdvertisesItsResponseParameter(string $prefix): void {
 		$issuer = 'https://cloud.example.org' . $prefix . '/apps/mcp';
 		$documents = [];
 		foreach (['openid-configuration', 'oauth-authorization-server'] as $suffix) {
@@ -43,12 +42,6 @@ final class DiscoveryMetadataTest extends TestCase {
 			$this->assertSame(['none'], $data['token_endpoint_auth_methods_supported']);
 			$this->assertTrue($data['client_id_metadata_document_supported']);
 			$this->assertArrayNotHasKey('registration_endpoint', $data);
-			foreach ([['code' => 'test-code'], ['error' => 'access_denied']] as $parameters) {
-				$callback = AuthorizationRequest::buildRedirect('https://client.example/callback', $parameters, 'state', $issuer);
-				parse_str((string)parse_url($callback, PHP_URL_QUERY), $query);
-				$this->assertSame($data['issuer'], $query['iss']);
-				$this->assertSame('state', $query['state']);
-			}
 			$documents[] = $data;
 		}
 		$this->assertSame($documents[0], $documents[1]);

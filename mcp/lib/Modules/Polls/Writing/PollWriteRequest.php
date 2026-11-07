@@ -36,10 +36,11 @@ final class PollWriteRequest {
 			if (isset($valid['changes']['title']) && (trim($valid['changes']['title']) === '' || $valid['changes']['title'] === '0')) {
 				self::invalid('changes.title');
 			}
-			if (isset($valid['changes']['timezoneName'])
-				&& !in_array($valid['changes']['timezoneName'],
+			if (isset($valid['changes']['timezoneName']) && !in_array(
+				$valid['changes']['timezoneName'],
 				\DateTimeZone::listIdentifiers(\DateTimeZone::ALL_WITH_BC),
-				true)) {
+				true,
+			)) {
 				self::invalid('changes.timezoneName');
 			}
 			ksort($valid['changes']);

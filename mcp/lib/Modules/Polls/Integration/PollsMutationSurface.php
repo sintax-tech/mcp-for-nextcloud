@@ -84,19 +84,13 @@ class PollsMutationSurface {
 				'lockByToken' => [['string', 'bool'], $sh],
 				'delete' => [[$sh, 'bool'], $sh],
 			] + ($nine
-				? ['createPublicShare' => [['int'],
-				$sh],
-				'createShare' => [['int',
-				PollsSurface::USER,
-				'string'],
-				$sh]]
-				: ['add' => [['int',
-				'string',
-				'string',
-				'string',
-				'string',
-				'string'],
-				$sh]]),
+				? [
+					'createPublicShare' => [['int'], $sh],
+					'createShare' => [['int', PollsSurface::USER, 'string'], $sh],
+				]
+				: [
+					'add' => [['int', 'string', 'string', 'string', 'string', 'string'], $sh],
+				]),
 
 			self::POLL_MAPPER => ['__construct' => [['OCP\IDBConnection', PollsSurface::SESSION], null], 'get' => [['int'], $p]],
 			self::OPTION_MAPPER => [

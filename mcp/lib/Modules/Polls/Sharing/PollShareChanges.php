@@ -24,20 +24,14 @@ final class PollShareChanges {
 		$notes = [PollsWriteMessages::sharing()];
 		if ($r['tool'] === 'polls_add_share') {
 			if (!$s['shareCreate']
-				|| in_array($r['type'],
-				['public',
-				'email',
-				'contact'],
-				true)
-				&& !$s['shareExternal']
-				|| $r['type'] === 'public'
-				&& !$s['publicAllowed']) {
+				|| (in_array($r['type'], ['public', 'email', 'contact'], true) && !$s['shareExternal'])
+				|| ($r['type'] === 'public' && !$s['publicAllowed'])) {
 				throw new \OCA\Mcp\Mcp\Tools\Results\ToolFailure(\OCA\Mcp\Platform\FileAccess\CommonMessages::forbidden());
 			}
 			$v = $s['recipient'];
 			$rows = $r['type'] === 'public' ? [] : array_values(array_filter($s['shares'], static fn(array $row): bool => $row['userId'] === $v['userId']));
 			$old = $rows[0] ?? null;
-			if (count($rows) > 1 || $old !== null && ($old['deleted'] || $old['type'] !== $v['type'])) {
+			if (count($rows) > 1 || ($old !== null && ($old['deleted'] || $old['type'] !== $v['type']))) {
 				PollWriteRequest::invalid('recipient');
 			}
 			if ($r['type'] === 'admin') {
@@ -121,12 +115,9 @@ final class PollShareChanges {
 					$rows,
 					static fn(array $row): bool => $after['id'] !== null
 						? $row['id'] === $after['id']
-						: !in_array($row['id'],
-						$ids,
-						true)
-						&& $row['type'] === $after['type']
-						&& ($r['type'] === 'public'
-						|| $row['userId'] === $after['userId'])
+						: (!in_array($row['id'], $ids, true)
+							&& $row['type'] === $after['type']
+							&& ($r['type'] === 'public' || $row['userId'] === $after['userId']))
 				)
 			);
 		} else {

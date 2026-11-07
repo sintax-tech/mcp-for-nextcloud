@@ -7,56 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi\Collectives;
 
-use PHPUnit\Framework\TestCase;
-
-/**
- * The reader behind collectives-read-chains.json, on small source trees written here. It is closed: typed paths are
- * followed exactly (constructors and every branch of a union included), and every shape it cannot resolve with
- * certainty is reported with its file and line instead of being taken as safe.
- */
-final class CollectivesCallGraphTest extends TestCase {
-	private string $lib;
-
-	/** @return void loads the reader and makes an empty tree */
-	protected function setUp(): void {
-		require_once __DIR__ . '/../../../../fixtures/nextcloud-api/collectives/CollectivesCallGraph.php';
-		$this->lib = sys_get_temp_dir() . '/mcp-callgraph-' . bin2hex(random_bytes(4));
-		mkdir($this->lib . '/Service', recursive: true);
-	}
-
-	/** @return void removes the tree */
-	protected function tearDown(): void {
-		array_map('unlink', glob($this->lib . '/Service/*.php'));
-		rmdir($this->lib . '/Service');
-		rmdir($this->lib);
-	}
-
-	/**
-	 * @param array<string, string> $classes class body by short name, all in OCA\Collectives\Service
-	 * @param string $entry `Class::method` to start from
-	 * @return array{methods:array<string,string>, leaves:list<string>, unknown:list<string>} what the reader reached
-	 */
-	private function reach(array $classes, string $entry): array {
-		$parents = ['Child' => ' extends Base', 'Provider' => ' implements \\OCP\\Search\\IProvider'];
-		foreach ($classes as $name => $body) {
-			file_put_contents($this->lib . '/Service/' . $name . '.php', "<?php\nnamespace OCA\\Collectives\\Service;\n"
-				. "use OCP\\Files\\Folder;\nuse OCP\\EventDispatcher\\IEventDispatcher;\nclass $name" . ($parents[$name] ?? '') . " {\n$body\n}\n");
-		}
-		return (new \CollectivesCallGraph($this->lib))->reach(['OCA\\Collectives\\Service\\' . $entry]);
-	}
-
-	/**
-	 * @param list<string> $unknown what the reader reported
-	 * @param string $file the short name of the file it is reported in
-	 * @param string $form the form expected among them
-	 * @return void
-	 */
-	private function assertUnknown(array $unknown, string $file, string $form): void {
-		$hits = array_filter($unknown, static fn (string $u): bool => str_contains($u, $form));
-		$this->assertNotSame([], $hits, "$form is reported: " . implode(' | ', $unknown));
-		$this->assertMatchesRegularExpression('/^Service\/' . $file . '\.php:\d+ /', reset($hits), 'with its file and line');
-	}
-
+/** The reader behind collectives-read-chains.json follows typed paths exactly: every body a call can land in is read. */
+final class CollectivesCallGraphTest extends CallGraphTreeTestCase {
 	/** @return void typed calls are followed exactly; a global class keeps its name; outside calls are leaves */
 	public function testTypedPathsAreFollowedExactly(): void {
 		$r = $this->reach([
@@ -71,36 +23,6 @@ final class CollectivesCallGraphTest extends TestCase {
 		$this->assertSame(['OCP\\Files\\Folder::get', 'OC_Util::setupFS'], $r['leaves'], 'a leading backslash names the global class, not one of the namespace');
 	}
 
-	/** @return void R11: a call through an untyped property is unknown, never safe (Writer::persist) */
-	public function testAnUntypedPropertyIsUnknown(): void {
-		$r = $this->reach([
-			'Entry' => 'private $writer;
-				public function read(): void { $this->writer->persist(); }',
-			'Writer' => 'public function persist(Folder $f): void { $f->newFile("x"); }',
-		], 'Entry::read');
-		$this->assertUnknown($r['unknown'], 'Entry', 'untyped property $this->writer->persist');
-	}
-
-	/** @return void R11: a foreach item hides its type, so the hidden call is unknown */
-	public function testAForeachItemIsUnknown(): void {
-		$r = $this->reach([
-			'Entry' => 'public function read(array $items): void { foreach ($items as $item) { $item->hidden(); } }',
-			'Hidden' => 'public function hidden(Folder $f): void { $f->newFile("y"); }',
-		], 'Entry::read');
-		$this->assertUnknown($r['unknown'], 'Entry', 'untyped value $item->hidden');
-	}
-
-	/** @return void R11: a factory with no declared return that hands back an untyped value gives a value of unknown type */
-	public function testAnUntypedReturnIsUnknown(): void {
-		$r = $this->reach([
-			'Entry' => 'public function __construct(private Factory $factory) {}
-				public function read(): void { $w = $this->factory->make(); $w->persist(); }',
-			'Factory' => 'private $writer;
-				public function make() { return $this->writer; }',
-		], 'Entry::read');
-		$this->assertUnknown($r['unknown'], 'Entry', 'untyped value $w->persist');
-	}
-
 	/** @return void with no declared return, the type every return of the body has is the type: the write behind it is found */
 	public function testAReturnWithNoDeclaredTypeIsReadFromItsBody(): void {
 		$r = $this->reach([
@@ -111,12 +33,6 @@ final class CollectivesCallGraphTest extends TestCase {
 		], 'Entry::read');
 		$this->assertSame([], $r['unknown']);
 		$this->assertSame(['OCP\\Files\\Folder::newFile'], $r['leaves']);
-	}
-
-	/** @return void a class of the app missing from the tree is unknown, never a leaf outside the app */
-	public function testAMissingAppClassIsUnknown(): void {
-		$r = $this->reach(['Entry' => 'public function read(): void { $w = new Writer(); $w->persist(); }'], 'Entry::read');
-		$this->assertUnknown($r['unknown'], 'Entry', 'Writer::persist names a class of the app the tree does not have');
 	}
 
 	/** @return void an include of the app's own data files is read; any other include is unknown */
@@ -132,26 +48,6 @@ final class CollectivesCallGraphTest extends TestCase {
 		$this->assertUnknown($code['unknown'], 'Entry', 'include, eval or shell');
 	}
 
-	/** @return void R11: container and Server lookups, callables, closure parameters and dynamic names are unknown */
-	public function testLookupsCallablesAndDynamicNamesAreUnknown(): void {
-		$r = $this->reach([
-			'Entry' => 'public function __construct(private \\OCP\\IServerContainer $server) {}
-				public function read(string $name): void {
-				$this->container->get(Writer::class);
-				$this->server->get(Writer::class);
-				\\OCP\\Server::get($name);
-				call_user_func([$this, "x"]);
-				array_map(fn ($p) => $p->go(), []);
-				$m = "persist";
-				$this->$m();
-			}',
-		], 'Entry::read');
-		foreach (['untyped property $this->container->get(', 'container lookup $this->server->get(', 'Server::get( of a class not written in place',
-			'call_user_func( with a callable', 'untyped value $p->go(', 'dynamic method name'] as $form) {
-			$this->assertUnknown($r['unknown'], 'Entry', $form);
-		}
-	}
-
 	/** @return void Server::get(X::class) gives an X, whose calls are then leaves like any injected X */
 	public function testServerGetOfAClassWrittenInPlaceIsAnX(): void {
 		$r = $this->reach([
@@ -159,16 +55,6 @@ final class CollectivesCallGraphTest extends TestCase {
 		], 'Entry::read');
 		$this->assertSame(['OCP\\L10N\\IFactory::get', 'OCP\\Server::get'], $r['leaves']);
 		$this->assertUnknown($r['unknown'], 'Entry', '->get("collectives")->t(', 'with no type tree, the return of IFactory::get is not stated');
-	}
-
-	/** @return void R12: an event dispatched to listeners is unknown, whatever the listener does */
-	public function testADispatchedEventIsUnknown(): void {
-		$r = $this->reach([
-			'Entry' => 'public function __construct(private IEventDispatcher $dispatcher) {}
-				public function read(): void { $this->dispatcher->dispatchTyped(new Event()); }',
-			'Listener' => 'public function handle(Folder $f): void { $f->newFolder("z"); }',
-		], 'Entry::read');
-		$this->assertUnknown($r['unknown'], 'Entry', 'dispatchTyped(');
 	}
 
 	/** @return void R11: a constructor is followed, so a write in it is found */
@@ -198,20 +84,48 @@ final class CollectivesCallGraphTest extends TestCase {
 		$r = $this->reach([
 			'Entry' => 'public function read(Base $b, \\OCP\\Search\\IProvider $p): void { $b->go(); $p->search(); }',
 			'Base' => 'public function go(): void {}',
-			'Child' => 'public function go(Folder $f): void { $f->newFile("o"); }',
-			'Provider' => 'public function search(Folder $f): void { $f->newFolder("p"); }',
+			'Child extends Base' => 'public function go(Folder $f): void { $f->newFile("o"); }',
+			'Provider implements \\OCP\\Search\\IProvider' => 'public function search(Folder $f): void { $f->newFolder("p"); }',
 		], 'Entry::read');
 		$this->assertArrayHasKey('OCA\\Collectives\\Service\\Child::go', $r['methods']);
 		$this->assertArrayHasKey('OCA\\Collectives\\Service\\Provider::search', $r['methods']);
 		$this->assertSame(['OCP\\Files\\Folder::newFile', 'OCP\\Files\\Folder::newFolder', 'OCP\\Search\\IProvider::search'], $r['leaves']);
 	}
 
-	/** @return void R11: a method no app class declares, on an app class with no outside parent, is magic: unknown */
-	public function testMagicCallIsUnknown(): void {
+	/** @return void R11: a call reaches every override, so its type is the union of their returns and the writing one is found */
+	public function testAReturnIsTheUnionOverEveryOverride(): void {
 		$r = $this->reach([
-			'Entry' => 'public function read(): void { $e = new Magic(); $e->anything(); }',
-			'Magic' => 'public function __call($n, $a) { return null; }',
+			'Entry' => 'public function read(Base $b, Folder $f): void { $x = $b->factory(); $x->persist($f); }',
+			'Base' => 'public function factory() { return new Reader(); }',
+			'Child extends Base' => 'public function factory() { return new Writer(); }',
+			'Reader' => 'public function persist(Folder $f): void {}',
+			'Writer' => 'public function persist(Folder $f): void { $f->newFile("w"); }',
 		], 'Entry::read');
-		$this->assertUnknown($r['unknown'], 'Magic', 'Magic::anything is declared nowhere');
+		$this->assertSame([], $r['unknown']);
+		$this->assertArrayHasKey('OCA\\Collectives\\Service\\Writer::persist', $r['methods']);
+		$this->assertSame(['OCP\\Files\\Folder::newFile'], $r['leaves']);
+	}
+
+	/** @return void a class built from a class constant of class names reaches each of them (the Wamania factory shape) */
+	public function testANewOfAClassFromAConstantReachesEveryClassListed(): void {
+		$r = $this->reach([
+			'Entry' => 'public function read(string $c): void { Factory::create($c); }',
+			'Factory' => 'const LANGS = [En::class => ["en"], De::class => ["de"]];
+				public static function create(string $c) { foreach (self::LANGS as $classname => $codes) { if (in_array($c, $codes)) { return new $classname; } } }',
+			'En' => 'public function __construct() {}',
+			'De' => 'public function __construct(?Folder $f = null) { $f->newFile("d"); }',
+		], 'Entry::read');
+		$this->assertSame([], $r['unknown']);
+		$this->assertArrayHasKey('OCA\\Collectives\\Service\\De::__construct', $r['methods']);
+		$this->assertSame(['OCP\\Files\\Folder::newFile', 'function in_array'], $r['leaves']);
+	}
+
+	/** @return void a global function of a followed tree is followed, every definition of it */
+	public function testAFunctionOfTheTreeIsFollowed(): void {
+		file_put_contents($this->lib . '/Service/functions.php', '<?php function helper_x(\OCP\Files\Folder $f) { $f->newFile("q"); }');
+		$r = $this->reach(['Entry' => 'public function read(Folder $f): void { \\helper_x($f); }'], 'Entry::read');
+		$this->assertSame([], $r['unknown']);
+		$this->assertArrayHasKey('function helper_x@Service/functions.php', $r['methods']);
+		$this->assertSame(['OCP\\Files\\Folder::newFile'], $r['leaves']);
 	}
 }

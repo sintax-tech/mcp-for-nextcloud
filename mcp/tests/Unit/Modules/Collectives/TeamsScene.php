@@ -82,7 +82,7 @@ final class TeamsScene {
 			['id' => 'm-alice', 'userId' => 'alice', 'type' => 1, 'level' => 9, 'status' => 'Member'],
 			['id' => 'm-bob', 'userId' => 'bob', 'type' => 1, 'level' => 8, 'status' => 'Member'],
 			['id' => 'm-carol', 'userId' => 'carol', 'type' => 1, 'level' => 1, 'status' => 'Member'],
-			['id' => 'm-staff', 'userId' => 'staff', 'type' => 2, 'level' => 1, 'status' => 'Member'],
+			self::group('m-staff', 'staff', 1, 'Member'),
 			['id' => 'm-dave', 'userId' => 'dave', 'type' => 1, 'level' => 0, 'status' => 'Invited'],
 			['id' => 'm-erin', 'userId' => 'erin', 'type' => 1, 'level' => 0, 'status' => 'Requesting'],
 			['id' => 'm-frank', 'userId' => 'frank', 'type' => 1, 'level' => 0, 'status' => 'Blocked'],
@@ -95,7 +95,30 @@ final class TeamsScene {
 			return array_map(static fn (string $uid): object => new TeamMember($uid, 1, $uid === self::$teams[$teamId]['owner'] ? 9 : 1),
 				self::$teams[$teamId]['members']);
 		}
-		return array_map(static fn (array $e): object => new TeamMember($e['userId'], $e['type'], $e['level'], $e['status'], $e['id']), self::$entries[$teamId]);
+		return array_map(static fn (array $e): object => self::member($e, $e['level'], $e['status']), self::$entries[$teamId]);
+	}
+
+	/**
+	 * @param string $id membership id
+	 * @param string $group group id
+	 * @param int $level level
+	 * @param string $status status
+	 * @return array<string, mixed> the entry of a group as Teams stores it: a team membership named after the group
+	 */
+	public static function group(string $id, string $group, int $level, string $status): array {
+		return ['id' => $id, 'userId' => ucfirst($group), 'type' => 16, 'group' => $group, 'level' => $level, 'status' => $status];
+	}
+
+	/**
+	 * @param array<string, mixed> $e an entry
+	 * @param int $level its level now
+	 * @param string $status its status now
+	 * @return TeamMember the membership, with the team it stands for joined: a group's system team, or `basedOn`
+	 */
+	private static function member(array $e, int $level, string $status): TeamMember {
+		$team = $e['basedOn'] ?? (isset($e['group']) ? ['name' => 'group:' . $e['group'], 'source' => 2] : null);
+		$basedOn = $team === null ? null : new \OCA\Circles\Model\Circle('single-' . $e['id'], $team + ['owner' => '', 'members' => []]);
+		return new TeamMember($e['userId'], $e['type'], $level, $status, $e['id'], $basedOn);
 	}
 
 	/** @return int the session user's level in that team, as Teams checks the initiator */
@@ -119,23 +142,24 @@ final class TeamsScene {
 			throw new \RuntimeException('FederatedItemBadRequestException 132');
 		}
 		foreach (self::$entries[$teamId] as &$e) {
-			if ($e['userId'] === $target->userId && $e['type'] === $target->type) {
+			if ($e['userId'] === $target->userId && $e['type'] === $target->type && ($e['group'] ?? null) === $target->group) {
 				if ($e['status'] !== 'Requesting') {
 					throw new \RuntimeException('FederatedItemBadRequestException 122');
 				}
 				$e['level'] = 1;
 				$e['status'] = 'Member';
-				return new TeamMember($e['userId'], $e['type'], 1, 'Member', $e['id']);
+				return self::member($e, 1, 'Member');
 			}
 		}
 		unset($e);
 		$invite = (self::$teams[$teamId]['config'] ?? 0) & 32;
-		$entry = ['id' => 'm-' . $target->userId, 'userId' => $target->userId, 'type' => $target->type, 'level' => $invite ? 0 : 1, 'status' => $invite ? 'Invited' : 'Member'];
+		$entry = ['id' => 'm-' . ($target->group ?? $target->userId), 'userId' => $target->userId, 'type' => $target->type, 'level' => $invite ? 0 : 1,
+			'status' => $invite ? 'Invited' : 'Member'] + ($target->group === null ? [] : ['group' => $target->group]);
 		self::$entries[$teamId][] = $entry;
 		if (self::$failMember === 'after') {
 			throw new \RuntimeException('memberPreparing failed');
 		}
-		return new TeamMember($entry['userId'], $entry['type'], $entry['level'], $entry['status'], $entry['id']);
+		return self::member($entry, $entry['level'], $entry['status']);
 	}
 
 	/** `MemberLevel`: never the owner, never a pending member (35 `:136-158`). @return object the member */
@@ -148,7 +172,7 @@ final class TeamsScene {
 						throw new \RuntimeException('FederatedItemBadRequestException');
 					}
 					$e['level'] = $level;
-					return new TeamMember($e['userId'], $e['type'], $level, 'Member', $memberId);
+					return self::member($e, $level, 'Member');
 				}
 			}
 		}

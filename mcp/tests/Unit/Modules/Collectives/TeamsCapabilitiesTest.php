@@ -9,6 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Modules\Collectives;
 
 use OCA\Mcp\Modules\Collectives\Integration\CollectivesCapabilities;
 use OCA\Mcp\Modules\Collectives\Integration\TeamsCapabilities;
+use OCA\Mcp\Modules\Collectives\Integration\TeamsSession;
 use OCA\Mcp\Modules\Collectives\Integration\TeamsSurface;
 use OCP\App\IAppManager;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -66,7 +67,17 @@ final class TeamsCapabilitiesTest extends TestCase {
 		$this->assertFalse(TeamsSurface::supported([['OCA\\Circles\\Missing', 'stopSession', [], 'void']]));
 		$this->assertFalse(TeamsSurface::supported([], [['OCA\\Circles\\Missing', 'LEVEL_OWNER', 9]]));
 		$this->assertFalse(TeamsSurface::supported());
-		$this->assertTrue(TeamsSurface::supported([], [[\DateTime::class, 'ATOM', 'Y-m-d\\TH:i:sP']]), 'a constant with the proven value');
-		$this->assertFalse(TeamsSurface::supported([], [[\DateTime::class, 'ATOM', 'another meaning']]), 'a constant with another value');
+		$present = [[TeamsSession::class, 'seal', [], 'void']];
+		$this->assertTrue(TeamsSurface::supported([], [[\DateTime::class, 'ATOM', 'Y-m-d\\TH:i:sP']], $present), 'a constant with the proven value');
+		$this->assertFalse(TeamsSurface::supported([], [[\DateTime::class, 'ATOM', 'another meaning']], $present), 'a constant with another value');
+	}
+
+	/** @return void the based-on read that identifies a group needs one of its proven shapes, Circles 33/34 or 35 */
+	public function testOneBasedOnShapeIsEnough(): void {
+		$missing = ['OCA\\Circles\\Missing', 'getBasedOn', [], 'int'];
+		$this->assertTrue(TeamsSurface::supported([], [], [$missing, [TeamsSession::class, 'seal', [], 'void']]), 'the second shape matches');
+		$this->assertTrue(TeamsSurface::supported([], [], [[TeamsSession::class, 'seal', [], 'void'], $missing]), 'the first shape matches');
+		$this->assertFalse(TeamsSurface::supported([], [], [$missing]), 'no shape matches');
+		$this->assertFalse(TeamsSurface::supported([], [], []), 'no shape at all');
 	}
 }

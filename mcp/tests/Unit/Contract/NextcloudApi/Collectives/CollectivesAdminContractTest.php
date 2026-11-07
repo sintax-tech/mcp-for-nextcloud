@@ -207,6 +207,33 @@ final class CollectivesAdminContractTest extends TestCase {
 		}
 	}
 
+	/**
+	 * @return void Teams stores a group as a membership of the group's system team `group:<id>`, of source group, named
+	 *     after the group's display name, and lists members with that team joined: the module reads a group that way,
+	 *     through one of the two proven `getBasedOn` shapes (H4: a group added was not found by its type and id)
+	 */
+	public function testAGroupIsAMembershipOfItsSystemTeam(): void {
+		$shapes = array_map(static fn (array $shape): string => 'function getBasedOn(): ' . (str_starts_with($shape[3], '?') ? '?' : '')
+			. substr($shape[3], strrpos($shape[3], '\\') + 1) . ' {', TeamsSurface::BASED_ON);
+		foreach (FoundingCapabilities::MAJORS as $major) {
+			$record = self::behavior()['circles'][$major . '.0.0'];
+			$m = $record['methods'];
+			$this->assertSame(16, $record['constants']['Member::TYPE_CIRCLE'], "NC$major");
+			$group = $m['Service/FederatedUserService.php::getGroupCircle'];
+			$this->assertStringContainsString("setName('group:' . \$groupId)", $group, "NC$major: the system team is named after the group id");
+			$this->assertStringContainsString('->setSource(Member::TYPE_GROUP)', $group, "NC$major: of source group");
+			$this->assertMatchesRegularExpression('/\} else \{\s*\$this->set\(\s*\$circle->getDisplayName\(\),\s*\$circle->getInstance\(\),\s*Member::TYPE_CIRCLE,/',
+				$m['Model/FederatedUser.php::importFromCircle'], "NC$major: the member is the team, named after its display name");
+			$this->assertStringContainsString('bool $getBasedOn = true', $m['Db/MemberRequestBuilder.php::getMemberSelectSql'], "NC$major");
+			$this->assertStringContainsString('$qb->leftJoinBasedOn(CoreQueryBuilder::MEMBER, $initiator);', $m['Db/MemberRequestBuilder.php::getMemberSelectSql'], "NC$major");
+			$this->assertMatchesRegularExpression('/\$qb = \$this->getMemberSelectSql\(\$initiator\);/', $m['Db/MemberRequest.php::getMembers'], "NC$major: members come with the team joined");
+			$this->assertStringContainsString('return !is_null($this->basedOn);', $m['Model/Member.php::hasBasedOn'], "NC$major");
+			$this->assertContains(strtok($m['Model/Member.php::getBasedOn'], "\n"), $shapes, "NC$major: a proven shape");
+			$classes = (require __DIR__ . '/../../../../fixtures/nextcloud-api/' . $major . '.php')['classes'];
+			$this->assertSame([], $classes[TeamsSurface::MEMBER]['methods']['getBasedOn'] ?? null, "NC$major");
+		}
+	}
+
 	/** @return void the Teams rules the member tools plan around and report (C04 §13 C4–C6, §14 R2.4–R2.6, D3, D4) */
 	public function testTheMemberRulesOfTeams(): void {
 		foreach (FoundingCapabilities::MAJORS as $major) {

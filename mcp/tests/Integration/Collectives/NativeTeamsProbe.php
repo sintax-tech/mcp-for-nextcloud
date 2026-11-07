@@ -44,18 +44,31 @@ final class NativeTeamsProbe {
 	/**
 	 * @param string $uid the account whose session reads the team
 	 * @param string $teamId a team
-	 * @return array<string, array{id:string, level:int, status:string}> its memberships, by `type:userId`
+	 * @return array<string, array{id:string, level:int, status:string}> its memberships, by `type:userId`; a group, which
+	 *     Teams stores as a membership of the group's system team `group:<id>` of source group, is keyed `2:<id>`
 	 */
 	public static function members(string $uid, string $teamId): array {
 		return self::asActor($uid, static function (object $teams) use ($teamId): array {
 			$found = [];
 			foreach ($teams->getCircle($teamId)->getMembers() as $member) {
-				$found[$member->getUserType() . ':' . $member->getUserId()] = ['id' => (string)$member->getId(), 'level' => (int)$member->getLevel(),
+				$found[self::key($member)] = ['id' => (string)$member->getId(), 'level' => (int)$member->getLevel(),
 					'status' => (string)$member->getStatus()];
 			}
 			ksort($found);
 			return $found;
 		});
+	}
+
+	/**
+	 * @param object $member a native Teams membership
+	 * @return string `type:userId`, or `2:<group id>` for a group's system team
+	 */
+	private static function key(object $member): string {
+		$team = (int)$member->getUserType() === 16 && $member->hasBasedOn() ? $member->getBasedOn() : null;
+		if ($team !== null && (int)$team->getSource() === 2 && str_starts_with((string)$team->getName(), 'group:')) {
+			return '2:' . substr((string)$team->getName(), strlen('group:'));
+		}
+		return $member->getUserType() . ':' . $member->getUserId();
 	}
 
 	/**

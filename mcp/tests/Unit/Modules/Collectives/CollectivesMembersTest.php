@@ -128,11 +128,41 @@ final class CollectivesMembersTest extends TestCase {
 		$this->refused(fn () => $module->call('collectives_list_members', ['collective_id' => 7], 'alice'));
 	}
 
+	/**
+	 * @return void Teams stores a group as a membership of the group's system team, named after its display name: it is
+	 *     listed as the group by its id, an existing one is seen by the plan, and the readback of an addition finds it
+	 *     (H4 cell: the receipt was partial with nothing observed); another team as member stays `other`
+	 */
+	public function testAGroupIsReadAsTeamsStoresIt(): void {
+		$module = (new CollectivesRig($this))->module();
+		$receipt = $this->confirm($module, 'collectives_add_member', ['collective_id' => 7, 'type' => 'group', 'id' => 'design']);
+		$this->assertSame('applied', $receipt['status'], json_encode($receipt));
+		$this->assertSame(['status' => 'member', 'level' => 'member'], $receipt['observed']);
+		$stored = array_column(TeamsScene::$entries['circle-secret'], null, 'id')['m-design'];
+		$this->assertSame([16, 'Design'], [$stored['type'], $stored['userId']], 'stored as Teams 33 to 35 store a group');
+
+		$module = (new CollectivesRig($this))->module();
+		TeamsScene::$entries['circle-secret'][] = TeamsScene::group('m-design', 'design', 1, 'Member');
+		foreach (['m-ops' => null, 'm-team' => ['name' => 'group:ops', 'source' => 16], 'm-odd' => ['name' => 'ops', 'source' => 2]] as $id => $basedOn) {
+			TeamsScene::$entries['circle-secret'][] = ['id' => $id, 'userId' => 'Ops', 'type' => 16, 'level' => 1, 'status' => 'Member', 'basedOn' => $basedOn];
+		}
+		TeamsScene::$entries['circle-secret'][] = ['id' => 'm-user', 'userId' => 'ops', 'type' => 1, 'level' => 1, 'status' => 'Member',
+			'basedOn' => ['name' => 'group:ops', 'source' => 2]];
+		$byId = array_column(json_decode($module->call('collectives_list_members', ['collective_id' => 7], 'alice')['content'][0]['text'], true)['members'], null, 'member_id');
+		$this->assertSame(['group', 'design'], [$byId['m-design']['type'], $byId['m-design']['id']]);
+		$this->assertSame(['group', 'staff'], [$byId['m-staff']['type'], $byId['m-staff']['id']]);
+		$this->assertSame(['user', 'ops'], [$byId['m-user']['type'], $byId['m-user']['id']], 'only a team membership can be a group');
+		foreach (['m-ops', 'm-team', 'm-odd'] as $id) {
+			$this->assertSame(['other', 'Ops'], [$byId[$id]['type'], $byId[$id]['id']], "$id: a team that is not a group's system team");
+		}
+		$this->refused(fn () => $module->preview('collectives_add_member', ['collective_id' => 7, 'type' => 'group', 'id' => 'staff'], 'alice'));
+	}
+
 	/** @return void reproduction B-R3 of the review: a team that requires invitations refuses a group in any state, a request included */
 	public function testAnInvitationTeamRefusesARequestingGroup(): void {
 		$module = (new CollectivesRig($this))->module();
 		TeamsScene::$teams['circle-secret']['config'] = 32;
-		TeamsScene::$entries['circle-secret'][] = ['id' => 'm-design', 'userId' => 'design', 'type' => 2, 'level' => 0, 'status' => 'Requesting'];
+		TeamsScene::$entries['circle-secret'][] = TeamsScene::group('m-design', 'design', 0, 'Requesting');
 		$this->assertStringContainsString('nobody can accept', $this->refused(fn () => $this->confirm($module, 'collectives_add_member', ['collective_id' => 7, 'type' => 'group', 'id' => 'design'])));
 		$this->assertNotContains('addMember:design', TeamsScene::$calls);
 	}

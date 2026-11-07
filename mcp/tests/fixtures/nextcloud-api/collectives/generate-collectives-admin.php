@@ -45,10 +45,14 @@ final class CollectivesAdminFixtureGenerator {
 		'Service/NotificationService.php' => ['notificationInvited'],
 		'Service/CircleService.php' => ['create', 'cleanCircleName', 'confirmCircleNotFull'],
 		'Listeners/Files/MemberAddedSendMail.php' => ['handle'],
+		'Model/FederatedUser.php' => ['importFromCircle'],
+		'Model/Member.php' => ['hasBasedOn', 'getBasedOn'],
+		'Db/MemberRequestBuilder.php' => ['getMemberSelectSql'],
+		'Db/MemberRequest.php' => ['getMembers'],
 	];
 	/** @var array<string, list<string>> native constants recorded, by class file under lib/ */
 	private const CONSTANTS = ['Model/Member.php' => ['LEVEL_NONE', 'LEVEL_MEMBER', 'LEVEL_MODERATOR', 'LEVEL_ADMIN', 'LEVEL_OWNER', 'TYPE_USER',
-		'TYPE_GROUP', 'STATUS_INVITED', 'STATUS_REQUEST', 'STATUS_MEMBER', 'STATUS_BLOCKED'], 'Model/Circle.php' => ['CFG_SINGLE', 'CFG_PERSONAL', 'CFG_INVITE']];
+		'TYPE_GROUP', 'TYPE_CIRCLE', 'STATUS_INVITED', 'STATUS_REQUEST', 'STATUS_MEMBER', 'STATUS_BLOCKED'], 'Model/Circle.php' => ['CFG_SINGLE', 'CFG_PERSONAL', 'CFG_INVITE']];
 	/** The notice Collectives returns when it adopts an existing team. */
 	public const ADOPTION = 'Created collective "%s" for existing team.';
 

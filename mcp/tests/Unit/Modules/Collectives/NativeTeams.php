@@ -25,8 +25,12 @@ namespace OCA\Circles\Model {
 
 	/** Double of a Teams identity. */
 	class FederatedUser {
-		/** @param string $userId the account or group @param int $type user or group */
-		public function __construct(public string $userId, public int $type = 1) {
+		/**
+		 * @param string $userId the account, or the display name of a group's system team
+		 * @param int $type user, or team for a group
+		 * @param string|null $group the group a team identity stands for
+		 */
+		public function __construct(public string $userId, public int $type = 1, public ?string $group = null) {
 		}
 	}
 
@@ -44,6 +48,11 @@ namespace OCA\Circles\Model {
 		/** @return string name */
 		public function getName(): string {
 			return $this->data['name'];
+		}
+
+		/** @return int what the team stands for: 2 for a group's system team */
+		public function getSource(): int {
+			return $this->data['source'] ?? 16;
 		}
 
 		/** @return string sanitized name */
@@ -124,7 +133,8 @@ namespace OCA\Circles {
 					throw new \RuntimeException('group could not be resolved');
 				}
 			}
-			return new FederatedUser($federatedId, $type);
+			// A group is the group's system team, a team identity named after the group (importFromCircle).
+			return $type === 2 ? new FederatedUser(ucfirst($federatedId), 16, $federatedId) : new FederatedUser($federatedId, $type);
 		}
 
 		/** @return object the membership Teams made */

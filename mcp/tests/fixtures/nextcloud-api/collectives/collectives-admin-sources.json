@@ -26,7 +26,10 @@
             "circles/lib/Service/NotificationService.php": "6de636f3bb43fce144f65bc07dc63b38c8b894c32515c1d08962d6bc2edd7c89",
             "circles/lib/Service/CircleService.php": "1dbeb6df4fd195571b0208d205c3fd2756e93ab66fbaa8ccb3cf58278efed725",
             "circles/lib/Listeners/Files/MemberAddedSendMail.php": "ebd7bdc68758acfa7a43350a68e7e914bd599321bc37ef3b56fb2c8832e4f956",
+            "circles/lib/Model/FederatedUser.php": "65d88afd1661f7e9e5e74158b37c2477d587282e0b6765e0db8002aa28031ab1",
             "circles/lib/Model/Member.php": "41283b64a607be73ca3e6e777ee21efa407782fa8980782ccd866d6d2394d795",
+            "circles/lib/Db/MemberRequestBuilder.php": "595c0bd9a78f106165e75e2da4c56c17497bed543c0b4e1d2415132a4cee1d95",
+            "circles/lib/Db/MemberRequest.php": "88c0ff88f55e3ec2742bcf64a055653c9ac2e1888be401b501332e026772ef5a",
             "circles/lib/Model/Circle.php": "7f4ff726948da55a804d09a73a554d6b51926bc93ebfe8cfd0c8791fb7094278"
         }
     },
@@ -57,7 +60,10 @@
             "circles/lib/Service/NotificationService.php": "6de636f3bb43fce144f65bc07dc63b38c8b894c32515c1d08962d6bc2edd7c89",
             "circles/lib/Service/CircleService.php": "f073bf7073777135d5c1f99fd007761a000cc28399f7996b99cb882cc5325b91",
             "circles/lib/Listeners/Files/MemberAddedSendMail.php": "ebd7bdc68758acfa7a43350a68e7e914bd599321bc37ef3b56fb2c8832e4f956",
+            "circles/lib/Model/FederatedUser.php": "74b8d258a461aea245aeb9b0a0ec1de33c901d1271c79624dc977cc91990356b",
             "circles/lib/Model/Member.php": "6da993feac2f08a7ceb6491b83713613ecd87e1312f97f37c15c6b1f3e213b12",
+            "circles/lib/Db/MemberRequestBuilder.php": "24a8fcacc422a8c2368c69f9270d766b51e305d6dbb6bbd932b3acb3e76310ee",
+            "circles/lib/Db/MemberRequest.php": "c68484c944086b79eed76cc77c45ac0711f37a3788256e8173cd031bbec4ecf8",
             "circles/lib/Model/Circle.php": "f34a877cbbe3874d85b657f100d0a85cafbadc54198008bb080f45942cf57785"
         }
     },
@@ -89,7 +95,10 @@
             "circles/lib/Service/NotificationService.php": "6de636f3bb43fce144f65bc07dc63b38c8b894c32515c1d08962d6bc2edd7c89",
             "circles/lib/Service/CircleService.php": "3b79acdae335376c7eb9ce6890cdad16ed45d215bc3113bad0162559e368c6ce",
             "circles/lib/Listeners/Files/MemberAddedSendMail.php": "ebd7bdc68758acfa7a43350a68e7e914bd599321bc37ef3b56fb2c8832e4f956",
+            "circles/lib/Model/FederatedUser.php": "74b8d258a461aea245aeb9b0a0ec1de33c901d1271c79624dc977cc91990356b",
             "circles/lib/Model/Member.php": "6da993feac2f08a7ceb6491b83713613ecd87e1312f97f37c15c6b1f3e213b12",
+            "circles/lib/Db/MemberRequestBuilder.php": "24a8fcacc422a8c2368c69f9270d766b51e305d6dbb6bbd932b3acb3e76310ee",
+            "circles/lib/Db/MemberRequest.php": "02e7388ce5013df5f6812d397c3c468263219a947b7381bf2e171172f2befe16",
             "circles/lib/Model/Circle.php": "d534f4af20200ab921232993020a3de10e09b10c38d1aedfc5569fc40bde2b10",
             "circles/lib/ConfigLexicon.php": "40e894a36b3dc12dd52afb7675ce307dda0f715eb34723327b2e1a64cb23d9fa"
         }
@@ -121,7 +130,10 @@
             "circles/lib/Service/NotificationService.php": "6de636f3bb43fce144f65bc07dc63b38c8b894c32515c1d08962d6bc2edd7c89",
             "circles/lib/Service/CircleService.php": "0a809c81a96b8fe73f9be32065cc844d3561b288c7f95414bee451180607c5c7",
             "circles/lib/Listeners/Files/MemberAddedSendMail.php": "ebd7bdc68758acfa7a43350a68e7e914bd599321bc37ef3b56fb2c8832e4f956",
+            "circles/lib/Model/FederatedUser.php": "74b8d258a461aea245aeb9b0a0ec1de33c901d1271c79624dc977cc91990356b",
             "circles/lib/Model/Member.php": "6da993feac2f08a7ceb6491b83713613ecd87e1312f97f37c15c6b1f3e213b12",
+            "circles/lib/Db/MemberRequestBuilder.php": "24a8fcacc422a8c2368c69f9270d766b51e305d6dbb6bbd932b3acb3e76310ee",
+            "circles/lib/Db/MemberRequest.php": "8ebe0e1ea1a7e4d64f0b70468d7c547627169eddeaf9765c2412058546526b10",
             "circles/lib/Model/Circle.php": "d534f4af20200ab921232993020a3de10e09b10c38d1aedfc5569fc40bde2b10",
             "circles/lib/ConfigLexicon.php": "aefb568c1f26a501b50c0f98fd24bdf9fc1c3be776a2b10d37ebc2efe5a337f7"
         }
@@ -154,7 +166,10 @@
             "circles/lib/Service/NotificationService.php": "51a01181581592ececf605f724d1b3efac4a7df1e1e3b7371ccb8808be42df92",
             "circles/lib/Service/CircleService.php": "1d8d7582aa79153fcc5c73cfc0fd58a787dc23ec111595151346d61b8a5c009f",
             "circles/lib/Listeners/Files/MemberAddedSendMail.php": "f72df824685e5a1b9d7e076d47e660cca712c4ada3ae26a2e49f30714111867d",
+            "circles/lib/Model/FederatedUser.php": "5f6072450e381fe632b0a0a4727e444ced7525a8150f782f53c6e0babb544313",
             "circles/lib/Model/Member.php": "4eda69248d7112b212d987f157641ff8ce50aaf220e4b266eb1177e0d5b015d8",
+            "circles/lib/Db/MemberRequestBuilder.php": "aabe29279e9985d52b0dcf38ee05e79ce326b337cd76d30a727215d26269f6d5",
+            "circles/lib/Db/MemberRequest.php": "a0e2067f6d4e1cf5cb38c55e3bf40e3fdc485204dd53c1a8bbef2b29d6a55b97",
             "circles/lib/Model/Circle.php": "47cbdbac6aa6f3ca8d947f24f43e4770e21a7074dad08d42f9615200d125218f",
             "circles/lib/ConfigLexicon.php": "8fb9a20d182d0b787d4f5cdfa3fa52e99979758da99979f8020b08449326a499"
         }

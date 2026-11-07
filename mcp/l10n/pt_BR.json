@@ -537,6 +537,7 @@
     "MCP connection" : "Conexão MCP",
     "MCP connection is disabled or access to this folder is no longer granted." : "A conexão com o MCP foi desligada ou o acesso a esta pasta não está mais concedido.",
     "MCP access cannot be checked right now. Try the link again shortly." : "Não foi possível verificar o acesso ao MCP agora. Tente o link de novo em instantes.",
+    "MCP access cannot be checked right now. This upload link has already been used: once access is back, run a new files_checkout." : "Não foi possível verificar o acesso ao MCP agora. Este link de envio já foi usado: quando o acesso voltar, faça um novo files_checkout.",
     "MCP is not available for your account" : "O MCP não está disponível para a sua conta",
     "MCP service enabled" : "Serviço MCP ativado",
     "message cannot be empty" : "message não pode ser vazia",

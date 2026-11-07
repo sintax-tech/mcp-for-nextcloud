@@ -31,7 +31,7 @@ use Psr\Log\LoggerInterface;
  *
  * Once the pre-write copy exists, a refusal says where the original is kept, as files_edit does, unless the file is no
  * longer visible: the copy mirrors a hidden file, so the answer is then 404 with the plain refusal, the one a missing
- * file gets. When the scope cannot be read to decide, the answer is 503.
+ * file gets. When the scope cannot be read to decide, the answer is 503, which asks for a new checkout: the link is spent.
  */
 final class CheckoutUploadFailure {
 	/**
@@ -55,7 +55,7 @@ final class CheckoutUploadFailure {
 	 */
 	public function response(\Throwable $error, File $file, string $copy, bool $copied): Response {
 		if ($error instanceof PolicyUnavailable) {
-			return $this->refusals->refuse(Http::STATUS_SERVICE_UNAVAILABLE, CheckoutMessages::checkoutUnavailable());
+			return $this->refusals->refuse(Http::STATUS_SERVICE_UNAVAILABLE, CheckoutMessages::uploadUnavailableAfterSpend());
 		}
 		if ($copied) {
 			try {
@@ -63,7 +63,7 @@ final class CheckoutUploadFailure {
 					return $this->refusals->refuse(Http::STATUS_NOT_FOUND, CommonMessages::notFound());
 				}
 			} catch (PolicyUnavailable) {
-				return $this->refusals->refuse(Http::STATUS_SERVICE_UNAVAILABLE, CheckoutMessages::checkoutUnavailable());
+				return $this->refusals->refuse(Http::STATUS_SERVICE_UNAVAILABLE, CheckoutMessages::uploadUnavailableAfterSpend());
 			}
 		}
 		$note = $copied ? ' ' . EditingMessages::originalKept($copy) : '';
@@ -77,7 +77,7 @@ final class CheckoutUploadFailure {
 		if ($error instanceof LockedException) {
 			$error = NodeAccess::lockFailure($error);
 			if (!$error instanceof LockWriteFailure) {
-				return $this->refusals->refuse(Http::STATUS_LOCKED, $error->getMessage() . ' ' . LockMessages::newCheckoutNeeded());
+				return $this->refusals->refuse(Http::STATUS_LOCKED, $error->getMessage() . $note . ' ' . LockMessages::newCheckoutNeeded());
 			}
 		}
 		if ($error instanceof LockWriteFailure) {

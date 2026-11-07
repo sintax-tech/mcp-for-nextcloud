@@ -539,6 +539,7 @@ OC.L10N.register(
     "MCP connection" : "Conexión MCP",
     "MCP connection is disabled or access to this folder is no longer granted." : "La conexión con MCP se ha desactivado o el acceso a esta carpeta ya no está concedido.",
     "MCP access cannot be checked right now. Try the link again shortly." : "No se puede comprobar el acceso a MCP en este momento. Vuelve a intentar el enlace en unos instantes.",
+    "MCP access cannot be checked right now. This upload link has already been used: once access is back, run a new files_checkout." : "No se puede comprobar el acceso a MCP en este momento. Este enlace de subida ya se usó: cuando vuelva el acceso, ejecute un nuevo files_checkout.",
     "MCP is not available for your account" : "MCP no está disponible para su cuenta",
     "MCP service enabled" : "Servicio MCP activado",
     "message cannot be empty" : "message no puede estar vacía",

@@ -55,7 +55,7 @@ final class CallGraphIndex {
 						$imports[$item->getAlias()->name] = $item->name->toString();
 					}
 				}
-				$ast = (new NodeTraverser(new NameResolver()))->traverse($ast);
+				$ast = (new NodeTraverser(new NameResolver(), new \PhpParser\NodeVisitor\ParentConnectingVisitor()))->traverse($ast);
 				$name = $prefix . substr($file->getPathname(), strlen($root) + 1);
 				foreach ((new NodeFinder())->findInstanceOf($ast, Stmt\ClassLike::class) as $class) {
 					if ($class->namespacedName !== null) {

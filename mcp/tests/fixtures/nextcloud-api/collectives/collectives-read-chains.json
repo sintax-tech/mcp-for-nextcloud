@@ -82,7 +82,10 @@
                 "OCA\\Collectives\\Db\\Collective::jsonSerialize",
                 "OCA\\Collectives\\Model\\PageInfo::jsonSerialize"
             ],
-            "unknown": [],
+            "unknown": [
+                "(types) OCP/AppFramework/Db/Entity.php:207 array access receiver of unknown type",
+                "circles/Model/Probes/DataProbe.php:45 array access receiver of unknown type"
+            ],
             "leaves": [
                 "DateTime::__construct",
                 "DateTimeImmutable::__construct",
@@ -253,11 +256,13 @@
                 "OCA\\Collectives\\Service\\SearchService::searchCollective"
             ],
             "unknown": [
+                "(types) OCP/AppFramework/Db/Entity.php:207 array access receiver of unknown type",
                 "Search/FileSearch/FileIndexer.php:0 OCA\\Collectives\\Search\\FileSearch\\FileIndexer::disableOutput is declared nowhere the reader can see (magic __call)",
                 "Search/FileSearch/FileIndexer.php:0 OCA\\Collectives\\Search\\FileSearch\\FileIndexer::setIndex is declared nowhere the reader can see (magic __call)",
                 "Search/FileSearch/FileIndexer.php:0 OCA\\Collectives\\Search\\FileSearch\\FileIndexer::setLanguage is declared nowhere the reader can see (magic __call)",
                 "Search/FileSearch/FileIndexer.php:35 Search/FileSearch/FileIndexer.php:0 implicit OCA\\Collectives\\Search\\FileSearch\\FileIndexer::__get has an unpinned ancestor",
                 "Search/FileSearch/FileIndexer.php:35 Search/FileSearch/FileIndexer.php:0 implicit OCA\\Collectives\\Search\\FileSearch\\FileIndexer::__isset has an unpinned ancestor",
+                "Search/FileSearch/FileIndexer.php:35 array access receiver of unknown type",
                 "Search/FileSearch/FileIndexer.php:35 implicit receiver of unknown type for __get/__isset",
                 "Search/FileSearch/FileSearcher.php:0 OCA\\Collectives\\Search\\FileSearch\\FileSearcher::asYouType is declared nowhere the reader can see (magic __call)",
                 "Search/FileSearch/FileSearcher.php:0 OCA\\Collectives\\Search\\FileSearch\\FileSearcher::fuzziness is declared nowhere the reader can see (magic __call)",
@@ -508,7 +513,10 @@
                 "OCA\\Collectives\\Db\\Collective::jsonSerialize",
                 "OCA\\Collectives\\Model\\PageInfo::jsonSerialize"
             ],
-            "unknown": [],
+            "unknown": [
+                "(types) OCP/AppFramework/Db/Entity.php:207 array access receiver of unknown type",
+                "circles/Model/Probes/DataProbe.php:45 array access receiver of unknown type"
+            ],
             "leaves": [
                 "DateTime::__construct",
                 "DateTimeImmutable::__construct",
@@ -679,11 +687,13 @@
                 "OCA\\Collectives\\Service\\SearchService::searchCollective"
             ],
             "unknown": [
+                "(types) OCP/AppFramework/Db/Entity.php:207 array access receiver of unknown type",
                 "Search/FileSearch/FileIndexer.php:0 OCA\\Collectives\\Search\\FileSearch\\FileIndexer::disableOutput is declared nowhere the reader can see (magic __call)",
                 "Search/FileSearch/FileIndexer.php:0 OCA\\Collectives\\Search\\FileSearch\\FileIndexer::setIndex is declared nowhere the reader can see (magic __call)",
                 "Search/FileSearch/FileIndexer.php:0 OCA\\Collectives\\Search\\FileSearch\\FileIndexer::setLanguage is declared nowhere the reader can see (magic __call)",
                 "Search/FileSearch/FileIndexer.php:35 Search/FileSearch/FileIndexer.php:0 implicit OCA\\Collectives\\Search\\FileSearch\\FileIndexer::__get has an unpinned ancestor",
                 "Search/FileSearch/FileIndexer.php:35 Search/FileSearch/FileIndexer.php:0 implicit OCA\\Collectives\\Search\\FileSearch\\FileIndexer::__isset has an unpinned ancestor",
+                "Search/FileSearch/FileIndexer.php:35 array access receiver of unknown type",
                 "Search/FileSearch/FileIndexer.php:35 implicit receiver of unknown type for __get/__isset",
                 "Search/FileSearch/FileSearcher.php:0 OCA\\Collectives\\Search\\FileSearch\\FileSearcher::asYouType is declared nowhere the reader can see (magic __call)",
                 "Search/FileSearch/FileSearcher.php:0 OCA\\Collectives\\Search\\FileSearch\\FileSearcher::fuzziness is declared nowhere the reader can see (magic __call)",
@@ -934,7 +944,10 @@
                 "OCA\\Collectives\\Db\\Collective::jsonSerialize",
                 "OCA\\Collectives\\Model\\PageInfo::jsonSerialize"
             ],
-            "unknown": [],
+            "unknown": [
+                "(types) OCP/AppFramework/Db/Entity.php:203 array access receiver of unknown type",
+                "circles/Model/Probes/DataProbe.php:45 array access receiver of unknown type"
+            ],
             "leaves": [
                 "DateTime::__construct",
                 "DateTimeImmutable::__construct",
@@ -1105,7 +1118,34 @@
             "entries": [
                 "OCA\\Collectives\\Service\\SearchService::searchCollective"
             ],
-            "unknown": [],
+            "unknown": [
+                "(types) OCP/AppFramework/Db/Entity.php:203 array access receiver of unknown type",
+                "Search/FileSearch/FileSearcher.php:168 foreach receiver of unknown type",
+                "Search/FileSearch/FileSearcher.php:169 array access receiver of unknown type",
+                "Search/FileSearch/FileSearcher.php:169 foreach receiver of unknown type",
+                "Search/FileSearch/FileSearcher.php:170 array access receiver of unknown type",
+                "Search/FileSearch/FileSearcher.php:171 implicit receiver of unknown type for __toString",
+                "Search/FileSearch/FileSearcher.php:175 array access receiver of unknown type",
+                "Search/FileSearch/FileSearcher.php:176 array access receiver of unknown type",
+                "Search/FileSearch/FileSearcher.php:60 array access receiver of unknown type",
+                "Search/FileSearch/FileSearcher.php:64 array access receiver of unknown type",
+                "Search/FileSearch/FileSearcher.php:69 array access receiver of unknown type",
+                "Search/FileSearch/Stemmer/Stemmer.php:30 array access receiver of unknown type",
+                "Search/FileSearch/Stemmer/Stemmer.php:32 array access receiver of unknown type",
+                "Search/FileSearch/Stemmer/Stemmer.php:35 array access receiver of unknown type",
+                "joomla/phputf8/native/core.php:247 array access receiver of unknown type",
+                "joomla/phputf8/utils/unicode.php:124 implicit receiver of unknown type for __toString",
+                "wamania/Stemmer/Russian.php:112 array access receiver of unknown type",
+                "wamania/Stemmer/Russian.php:119 array access receiver of unknown type",
+                "wamania/Stemmer/Russian.php:130 array access receiver of unknown type",
+                "wamania/Stemmer/Russian.php:137 array access receiver of unknown type",
+                "wamania/Stemmer/Russian.php:84 array access receiver of unknown type",
+                "wamania/Stemmer/Russian.php:92 array access receiver of unknown type",
+                "wamania/Stemmer/Stem.php:101 foreach receiver of unknown type",
+                "wamania/Stemmer/Stem.php:67 implicit receiver of unknown type for __toString",
+                "wamania/Transliterate.php:139 implicit receiver of unknown type for __toString",
+                "wamania/Transliterate.php:25 implicit receiver of unknown type for __toString"
+            ],
             "leaves": [
                 "DateTime::__construct",
                 "DateTimeImmutable::__construct",
@@ -1562,7 +1602,9 @@
                 "OCA\\Collectives\\Db\\Collective::jsonSerialize",
                 "OCA\\Collectives\\Model\\PageInfo::jsonSerialize"
             ],
-            "unknown": [],
+            "unknown": [
+                "circles/Model/Probes/DataProbe.php:45 array access receiver of unknown type"
+            ],
             "leaves": [
                 "DateTime::__construct",
                 "DateTimeImmutable::__construct",
@@ -1731,7 +1773,28 @@
             "entries": [
                 "OCA\\Collectives\\Service\\SearchService::searchCollective"
             ],
-            "unknown": [],
+            "unknown": [
+                "Search/FileSearch/FileSearcher.php:35 implicit receiver of unknown type for __get/__isset",
+                "Search/FileSearch/FileSearcher.php:37 implicit receiver of unknown type for __toString",
+                "Search/FileSearch/FileSearcher.php:38 array access receiver of unknown type",
+                "Search/FileSearch/FileSearcher.php:63 count receiver of unknown type",
+                "Search/FileSearch/FileSearcher.php:85 count receiver of unknown type",
+                "Search/FileSearch/Stemmer/Stemmer.php:29 array access receiver of unknown type",
+                "Search/FileSearch/Stemmer/Stemmer.php:31 array access receiver of unknown type",
+                "Search/FileSearch/Stemmer/Stemmer.php:34 array access receiver of unknown type",
+                "joomla/phputf8/native/core.php:247 array access receiver of unknown type",
+                "joomla/phputf8/utils/unicode.php:124 implicit receiver of unknown type for __toString",
+                "wamania/Stemmer/Russian.php:112 array access receiver of unknown type",
+                "wamania/Stemmer/Russian.php:119 array access receiver of unknown type",
+                "wamania/Stemmer/Russian.php:130 array access receiver of unknown type",
+                "wamania/Stemmer/Russian.php:137 array access receiver of unknown type",
+                "wamania/Stemmer/Russian.php:84 array access receiver of unknown type",
+                "wamania/Stemmer/Russian.php:92 array access receiver of unknown type",
+                "wamania/Stemmer/Stem.php:101 foreach receiver of unknown type",
+                "wamania/Stemmer/Stem.php:67 implicit receiver of unknown type for __toString",
+                "wamania/Transliterate.php:139 implicit receiver of unknown type for __toString",
+                "wamania/Transliterate.php:25 implicit receiver of unknown type for __toString"
+            ],
             "leaves": [
                 "DateTime::__construct",
                 "DateTimeImmutable::__construct",
@@ -2179,7 +2242,10 @@
                 "OCA\\Collectives\\Db\\Collective::jsonSerialize",
                 "OCA\\Collectives\\Model\\PageInfo::jsonSerialize"
             ],
-            "unknown": [],
+            "unknown": [
+                "(types) OCP/AppFramework/Db/Entity.php:142 implicit receiver of unknown type for __toString",
+                "circles/Model/Probes/DataProbe.php:40 array access receiver of unknown type"
+            ],
             "leaves": [
                 "DateTime::__construct",
                 "DateTimeImmutable::__construct",
@@ -2350,7 +2416,34 @@
             "entries": [
                 "OCA\\Collectives\\Service\\SearchService::searchCollective"
             ],
-            "unknown": [],
+            "unknown": [
+                "(types) OCP/AppFramework/Db/Entity.php:142 implicit receiver of unknown type for __toString",
+                "Search/FileSearch/FileSearcher.php:168 foreach receiver of unknown type",
+                "Search/FileSearch/FileSearcher.php:169 array access receiver of unknown type",
+                "Search/FileSearch/FileSearcher.php:169 foreach receiver of unknown type",
+                "Search/FileSearch/FileSearcher.php:170 array access receiver of unknown type",
+                "Search/FileSearch/FileSearcher.php:171 implicit receiver of unknown type for __toString",
+                "Search/FileSearch/FileSearcher.php:175 array access receiver of unknown type",
+                "Search/FileSearch/FileSearcher.php:176 array access receiver of unknown type",
+                "Search/FileSearch/FileSearcher.php:60 array access receiver of unknown type",
+                "Search/FileSearch/FileSearcher.php:64 array access receiver of unknown type",
+                "Search/FileSearch/FileSearcher.php:69 array access receiver of unknown type",
+                "Search/FileSearch/Stemmer/Stemmer.php:30 array access receiver of unknown type",
+                "Search/FileSearch/Stemmer/Stemmer.php:32 array access receiver of unknown type",
+                "Search/FileSearch/Stemmer/Stemmer.php:35 array access receiver of unknown type",
+                "joomla/phputf8/native/core.php:247 array access receiver of unknown type",
+                "joomla/phputf8/utils/unicode.php:124 implicit receiver of unknown type for __toString",
+                "wamania/Stemmer/Russian.php:112 array access receiver of unknown type",
+                "wamania/Stemmer/Russian.php:119 array access receiver of unknown type",
+                "wamania/Stemmer/Russian.php:130 array access receiver of unknown type",
+                "wamania/Stemmer/Russian.php:137 array access receiver of unknown type",
+                "wamania/Stemmer/Russian.php:84 array access receiver of unknown type",
+                "wamania/Stemmer/Russian.php:92 array access receiver of unknown type",
+                "wamania/Stemmer/Stem.php:101 foreach receiver of unknown type",
+                "wamania/Stemmer/Stem.php:67 implicit receiver of unknown type for __toString",
+                "wamania/Transliterate.php:139 implicit receiver of unknown type for __toString",
+                "wamania/Transliterate.php:25 implicit receiver of unknown type for __toString"
+            ],
             "leaves": [
                 "DateTime::__construct",
                 "DateTimeImmutable::__construct",

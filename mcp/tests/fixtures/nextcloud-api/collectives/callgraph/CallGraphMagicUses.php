@@ -70,6 +70,19 @@ final class CallGraphMagicUses {
 		if ($node instanceof Expr\Clone_) {
 			$add($node->expr, ['__clone']);
 		}
+		if ($node instanceof Expr\BinaryOp && in_array($node->getType(), ['Expr_BinaryOp_Equal', 'Expr_BinaryOp_NotEqual',
+			'Expr_BinaryOp_Smaller', 'Expr_BinaryOp_Greater', 'Expr_BinaryOp_SmallerOrEqual', 'Expr_BinaryOp_GreaterOrEqual', 'Expr_BinaryOp_Spaceship'], true)) {
+			$add($node->left, ['__toString']);
+			$add($node->right, ['__toString']);
+		}
+		if ($node instanceof Stmt\Switch_) {
+			$add($node->cond, ['__toString']);
+			foreach ($node->cases as $case) {
+				if ($case->cond !== null) {
+					$add($case->cond, ['__toString']);
+				}
+			}
+		}
 		$strings = match (true) {
 			$node instanceof Expr\BinaryOp\Concat => [$node->left, $node->right],
 			$node instanceof Expr\AssignOp\Concat => [$node->var, $node->expr],
@@ -87,12 +100,13 @@ final class CallGraphMagicUses {
 		if ($node instanceof Expr\FuncCall && $node->name instanceof Node\Name) {
 			$name = strtolower($this->index->functionName($node->name));
 			$model = CallGraphFunctions::model($name);
-			if (CallGraphFunctions::stringifies($node, $this->index)) {
-				foreach ($node->args as $position => $arg) {
-					if ($arg instanceof Node\Arg && ($model['arguments'] === 'all' || in_array($position, $model['arguments'], true))) {
-						$add($arg->value, ['__toString']);
-					}
+			foreach (CallGraphFunctions::stringArguments($node, $this->index) as $position) {
+				if (($node->args[$position] ?? null) instanceof Node\Arg) {
+					$add($node->args[$position]->value, ['__toString']);
 				}
+			}
+			if (($model['effect'] ?? null) === 'column' && ($node->args[0] ?? null) instanceof Node\Arg) {
+				$add($node->args[0]->value, ['__get', '__isset'], [['']]);
 			}
 			if ($name === 'serialize' && ($node->args[0] ?? null) instanceof Node\Arg) {
 				$add($node->args[0]->value, ['__serialize', '__sleep']);

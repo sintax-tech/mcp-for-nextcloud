@@ -7,9 +7,10 @@ declare(strict_types=1);
 
 /** Case-insensitive dispatch through app bodies, pinned ancestors and PHP's internal methods. */
 final class CallGraphDispatch {
-	/** PHP hooks whose pinned declaring classes must be followed rather than treated as opaque leaves. */
-	private const MAGIC = ['__get', '__set', '__isset', '__unset', '__call', '__callstatic', '__clone', '__invoke', '__tostring',
-		'__serialize', '__unserialize', '__set_state', '__debuginfo', '__sleep', '__wakeup', '__destruct'];
+	/** PHP hooks and protocols whose pinned declaring classes must be followed rather than treated as opaque leaves. */
+	private const IMPLICIT = ['__get', '__set', '__isset', '__unset', '__call', '__callstatic', '__clone', '__invoke', '__tostring',
+		'__serialize', '__unserialize', '__set_state', '__debuginfo', '__sleep', '__wakeup', '__destruct',
+		'count', 'getiterator', 'current', 'next', 'key', 'valid', 'rewind', 'offsetget', 'offsetset', 'offsetexists', 'offsetunset'];
 
 	/** @param CallGraphIndex $index the parsed, pinned source trees */
 	public function __construct(private CallGraphIndex $index) {
@@ -89,7 +90,7 @@ final class CallGraphDispatch {
 		[$class, $method] = explode('::', $key);
 		$info = $this->index->classes[$class] ?? [];
 		return ($info['methods'][strtolower($method)]['node'] ?? null)?->stmts !== null
-			&& ($this->index->followed($class) || array_intersect(self::MAGIC, array_keys($info['methods'] ?? [])) !== []);
+			&& ($this->index->followed($class) || array_intersect(self::IMPLICIT, array_keys($info['methods'] ?? [])) !== []);
 	}
 
 	/**
@@ -124,7 +125,7 @@ final class CallGraphDispatch {
 			if (isset($this->index->classes[$ancestor])) {
 				$info = $this->index->classes[$ancestor];
 				array_push($todo, ...$info['traits'], ...array_filter([$info['extends']]));
-			} elseif (!(class_exists($ancestor, false) && (new ReflectionClass($ancestor))->isInternal())) {
+			} elseif (!((class_exists($ancestor, false) || interface_exists($ancestor, false)) && (new ReflectionClass($ancestor))->isInternal())) {
 				$unknown[] = ($this->index->classes[$class]['file'] ?? $class) . ':0 implicit ' . $class . '::' . $hook . ' has an unpinned ancestor';
 			}
 		}

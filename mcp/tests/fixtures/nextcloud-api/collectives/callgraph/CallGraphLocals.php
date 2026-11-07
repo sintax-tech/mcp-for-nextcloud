@@ -135,7 +135,14 @@ final class CallGraphLocals {
 			}
 			return [$keys === [] ? [''] : $keys, $values === [] ? [null] : $values];
 		}
-		return [[''], array_map(CallGraphTypes::element(...), $this->types->typeOf($class, $expr, $locals))];
+		$keys = [];
+		$values = [];
+		foreach ($this->types->typeOf($class, $expr, $locals) as $type) {
+			[$k, $v] = CallGraphTypes::isObject($type) ? $this->types->protocols()->elements($type) : [[''], [CallGraphTypes::element($type)]];
+			array_push($keys, ...$k);
+			array_push($values, ...$v);
+		}
+		return [CallGraphTypes::union($keys), CallGraphTypes::union($values)];
 	}
 
 	/**

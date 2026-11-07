@@ -23,25 +23,33 @@ final class CallGraphFunctions {
 	}
 
 	/**
-	 * @param Expr\FuncCall $call a listed call
-	 * @param CallGraphIndex $index pinned constant values
-	 * @return bool whether its model can convert an object to string in this call
+	 * @param Expr\FuncCall $call listed call
+	 * @param CallGraphIndex $index pinned constants and function resolution
+	 * @return list<int> argument positions that can trigger string conversion or loose comparison
 	 */
-	public static function stringifies(Expr\FuncCall $call, CallGraphIndex $index): bool {
+	public static function stringArguments(Expr\FuncCall $call, CallGraphIndex $index): array {
 		$model = $call->name instanceof Node\Name ? self::model($index->functionName($call->name)) : null;
-		if (($model['effect'] ?? null) !== 'stringify') {
-			return false;
+		if (!in_array($model['effect'] ?? null, ['stringify', 'compare', 'column'], true)) {
+			return [];
 		}
+		if (isset($model['requiredArgument']) && !isset($call->args[$model['requiredArgument']])) {
+			return [];
+		}
+		$strict = isset($model['strictArgument']) ? ($call->args[$model['strictArgument']]->value ?? null) : null;
+		if ($strict instanceof Expr\ConstFetch && strtolower($strict->name->toString()) === 'true') {
+			return [];
+		}
+		$positions = $model['arguments'] === 'all' ? array_keys($call->args) : $model['arguments'];
 		if (isset($model['condition'])) {
 			$value = $call->args[$model['condition']['argument']]->value ?? null;
 			if ($value instanceof Expr\ClassConstFetch && $value->class instanceof Node\Name && $value->name instanceof Node\Identifier) {
 				$value = $index->constant($value->class->toString(), $value->name->name);
 			}
-			if ($value instanceof Node\Scalar\String_) {
-				return in_array($value->value, $model['condition']['values'], true);
+			if ($value instanceof Node\Scalar\String_ && !in_array($value->value, $model['condition']['values'], true)) {
+				$positions = [];
 			}
 		}
-		return true;
+		return array_values(array_unique([...$positions, ...($model['alwaysArguments'] ?? [])]));
 	}
 
 	/**

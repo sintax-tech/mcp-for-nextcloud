@@ -57,7 +57,7 @@ final class CallGraphTypes {
 			$expr instanceof Expr\StaticPropertyFetch && $expr->class instanceof Node\Name && $expr->name instanceof Node\VarLikeIdentifier
 				=> [$this->index->props($this->index->name($class, $expr->class))[$expr->name->name] ?? null],
 			$expr instanceof Expr\PropertyFetch, $expr instanceof Expr\NullsafePropertyFetch => $this->propertyType($class, $expr, $locals),
-			$expr instanceof Expr\ArrayDimFetch => array_map(self::element(...), $this->typeOf($class, $expr->var, $locals)),
+			$expr instanceof Expr\ArrayDimFetch => $this->offsetType($class, $expr, $locals),
 			$expr instanceof Expr\MethodCall, $expr instanceof Expr\NullsafeMethodCall => $this->callType($class, $expr, $locals),
 			$expr instanceof Expr\StaticCall => $this->staticType($class, $expr),
 			$expr instanceof Expr\FuncCall => $this->functions->of($class, $expr, $locals),
@@ -69,6 +69,25 @@ final class CallGraphTypes {
 			$expr instanceof Expr\ArrowFunction => [''],
 			default => [null],
 		};
+	}
+
+	/**
+	 * @param string|null $class containing class
+	 * @param Expr\ArrayDimFetch $expr array or ArrayAccess read
+	 * @param array<string,list<?string>> $locals expression evidence
+	 * @return list<?string> array element or the union of actual offsetGet returns
+	 */
+	private function offsetType(?string $class, Expr\ArrayDimFetch $expr, array $locals): array {
+		$types = [];
+		foreach ($this->typeOf($class, $expr->var, $locals) as $receiver) {
+			array_push($types, ...(self::isObject($receiver) ? $this->returnTypes($receiver, 'offsetGet') : [self::element($receiver)]));
+		}
+		return self::union($types);
+	}
+
+	/** @return CallGraphProtocols protocol inference shares the graph's declarations and return evidence */
+	public function protocols(): CallGraphProtocols {
+		return new CallGraphProtocols($this->index, $this->dispatch, $this, new CallGraphArguments($this->index, $this->dispatch, $this));
 	}
 
 	/**

@@ -41,7 +41,7 @@ final class CollectivesClosedSubsetTest extends CallGraphTreeTestCase {
 			$this->assertTrue(class_exists($node), $node);
 		}
 		foreach ($functions as $name => $model) {
-			$this->assertContains($model['effect'], ['none', 'stringify', 'callback', 'serialize', 'unserialize'], $name);
+			$this->assertContains($model['effect'], ['none', 'stringify', 'compare', 'column', 'count', 'callback', 'serialize', 'unserialize'], $name);
 			$this->assertNotSame('', $model['return'], $name);
 			$this->assertArrayHasKey('arguments', $model);
 		}

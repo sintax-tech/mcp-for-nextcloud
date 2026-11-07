@@ -22,6 +22,7 @@ require_once __DIR__ . '/callgraph/CallGraphFetchTypes.php';
 require_once __DIR__ . '/callgraph/CallGraphTypes.php';
 require_once __DIR__ . '/callgraph/CallGraphLocals.php';
 require_once __DIR__ . '/callgraph/CallGraphArguments.php';
+require_once __DIR__ . '/callgraph/CallGraphProtocols.php';
 require_once __DIR__ . '/callgraph/CallGraphMagicUses.php';
 require_once __DIR__ . '/callgraph/CallGraphCalls.php';
 

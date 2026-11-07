@@ -16,9 +16,10 @@ use Throwable;
  * and observed; whether it changed is stated apart from the other internal records Teams may write on the way
  * (`auxiliary_effects`), so a refusal never claims that nothing was written. Nothing is retried or undone.
  *
- * - `applied`: the read shows the requested membership;
+ * - `applied`: Teams answered and the read shows the requested membership;
  * - `not_applied`: Teams threw and the membership is as before;
- * - `partial`: the membership changed into something else than requested;
+ * - `partial`: the membership changed into something else than requested, or Teams threw after storing it: what
+ *   follows the store in Teams (its events, the invitation notification) is then not proven (§14 R2.5);
  * - `uncertain`: the team could not be read again.
  */
 final class MemberReceipt {
@@ -42,13 +43,14 @@ final class MemberReceipt {
 		}
 		$changed = $observed !== $before;
 		$status = match (true) {
-			$observed === $requested => 'applied',
+			$error === null && $observed === $requested => 'applied',
 			$error !== null && !$changed => 'not_applied',
 			default => 'partial',
 		};
-		return $receipt + ['observed' => $observed, 'status' => $status, 'membership_changed' => $changed, 'message' => match ($status) {
-			'applied' => MembershipMessages::applied(),
-			'not_applied' => MembershipMessages::notApplied(),
+		return $receipt + ['observed' => $observed, 'status' => $status, 'membership_changed' => $changed, 'message' => match (true) {
+			$status === 'applied' => MembershipMessages::applied(),
+			$status === 'not_applied' => MembershipMessages::notApplied(),
+			$error !== null && $observed === $requested => MembershipMessages::storedThenFailed(),
 			default => MembershipMessages::partial(),
 		}] + $extra;
 	}

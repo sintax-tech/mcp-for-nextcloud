@@ -1888,6 +1888,7 @@
     "Change observed by reading the team of the collective again." : "Mudança observada ao ler de novo o time do coletivo.",
     "Teams refused the change and the membership is as before; other internal records of Teams may still have been written, as listed." : "O Times recusou a mudança e a participação está como antes; outros registros internos do Times ainda podem ter sido gravados, como listado.",
     "Teams answered, but reading the team again shows another result than the one requested; nothing is retried." : "O Times respondeu, mas a nova leitura do time mostra outro resultado que não o pedido; nada é repetido.",
-    "The change was sent to Teams but the team could not be read again; check the members in Collectives before trying again." : "A mudança foi enviada ao Times, mas não foi possível ler o time de novo; confira os membros no Coletivos antes de tentar de novo."
+    "The change was sent to Teams but the team could not be read again; check the members in Collectives before trying again." : "A mudança foi enviada ao Times, mas não foi possível ler o time de novo; confira os membros no Coletivos antes de tentar de novo.",
+    "Teams stored the requested membership but then reported an error; what it does afterwards, such as notifying the person, is not proven. Nothing is retried." : "O Times gravou a participação pedida, mas depois informou um erro; o que ele faz em seguida, como notificar a pessoa, não está comprovado. Nada é repetido."
     },"pluralForm" : "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

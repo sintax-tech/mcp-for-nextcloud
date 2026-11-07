@@ -1888,6 +1888,7 @@
     "Change observed by reading the team of the collective again." : "Cambio observado al volver a leer el equipo del colectivo.",
     "Teams refused the change and the membership is as before; other internal records of Teams may still have been written, as listed." : "Equipos rechazó el cambio y la membresía sigue como antes; otros registros internos de Equipos pueden haberse escrito, como se indica.",
     "Teams answered, but reading the team again shows another result than the one requested; nothing is retried." : "Equipos respondió, pero al volver a leer el equipo se ve otro resultado que el solicitado; no se reintenta nada.",
-    "The change was sent to Teams but the team could not be read again; check the members in Collectives before trying again." : "El cambio se envió a Equipos, pero no se pudo volver a leer el equipo; revisa los miembros en Colectivos antes de volver a intentarlo."
+    "The change was sent to Teams but the team could not be read again; check the members in Collectives before trying again." : "El cambio se envió a Equipos, pero no se pudo volver a leer el equipo; revisa los miembros en Colectivos antes de volver a intentarlo.",
+    "Teams stored the requested membership but then reported an error; what it does afterwards, such as notifying the person, is not proven. Nothing is retried." : "Equipos guardó la membresía solicitada, pero después informó un error; lo que hace a continuación, como notificar a la persona, no está comprobado. No se reintenta nada."
     },"pluralForm" : "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

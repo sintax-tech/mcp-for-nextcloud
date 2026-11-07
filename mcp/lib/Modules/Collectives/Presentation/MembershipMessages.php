@@ -170,6 +170,11 @@ final class MembershipMessages {
 		return Translator::t('Teams answered, but reading the team again shows another result than the one requested; nothing is retried.');
 	}
 
+	/** @return string receipt: Teams stored the membership, then failed */
+	public static function storedThenFailed(): string {
+		return Translator::t('Teams stored the requested membership but then reported an error; what it does afterwards, such as notifying the person, is not proven. Nothing is retried.');
+	}
+
 	/** @return string receipt: the team could not be read again */
 	public static function uncertain(): string {
 		return Translator::t('The change was sent to Teams but the team could not be read again; check the members in Collectives before trying again.');

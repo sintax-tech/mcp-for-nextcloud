@@ -139,8 +139,19 @@ final class CollectivesMembersTest extends TestCase {
 		$module = (new CollectivesRig($this))->module();
 		TeamsScene::$failMember = 'after';
 		$receipt = $this->confirm($module, 'collectives_add_member', ['collective_id' => 7, 'type' => 'user', 'id' => 'gina']);
-		$this->assertSame('applied', $receipt['status'], 'the membership read back is the requested one');
+		$this->assertSame('partial', $receipt['status'], 'stored, then Teams failed: what follows the store is not proven');
+		$this->assertTrue($receipt['membership_changed']);
 		$this->assertArrayHasKey('native_error', $receipt);
+	}
+
+	/** @return void reproduction B-R1 of the review: an invitation stored before memberPreparing failed is not a completed invitation */
+	public function testFailureAfterInsertIsNotACompletedInvitation(): void {
+		$module = (new CollectivesRig($this))->module();
+		TeamsScene::$teams['circle-secret']['config'] = 32;
+		TeamsScene::$failMember = 'after';
+		$receipt = $this->confirm($module, 'collectives_add_member', ['collective_id' => 7, 'type' => 'user', 'id' => 'gina']);
+		$this->assertSame('partial', $receipt['status'], json_encode($receipt));
+		$this->assertSame(['status' => 'invited', 'level' => 'none'], $receipt['observed']);
 	}
 
 	/** @return void levels: member, moderator and admin only; never the owner, oneself or a pending member; the same level is not attempted */

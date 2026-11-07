@@ -50,7 +50,8 @@ final class McpMailDraftHtmlTest extends IntegrationTestCase {
 			}
 			$this->assertFalse($row['refused'] ?? false, $row['name']);
 			if (isset($row['body'])) {
-				$this->assertSame($row['body'], $result['body'], $row['name']);
+				// libxml 2.14+ (HTML5 tokenizer) inserts no paragraph around bare text; the corpus records both safe forms.
+				$this->assertSame(LIBXML_VERSION >= 21400 && isset($row['bodyHtml5']) ? $row['bodyHtml5'] : $row['body'], $result['body'], $row['name']);
 			}
 			$this->assertSame($result['body'], $sanitizer->sanitize($result['body'])['body'], $row['name']);
 			foreach ($row['removed'] ?? [] as $category => $count) {

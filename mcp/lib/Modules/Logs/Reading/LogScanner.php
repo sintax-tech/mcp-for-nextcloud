@@ -22,7 +22,9 @@ class LogScanner {
 	public function __construct(private LogReader $reader, private ?\Closure $clock = null) {}
 
 	/** @param LogFilter $filter Filters. @param int $offset Eligible-entry offset. @param int|null $limit Page size.
-	 * @return array<string,mixed> Bounded scan and continuation diagnostics.
+	 * @return array{entries:list<\stdClass>,scanned:int,truncated:bool,budgetReached:bool,timeBudgetReached:bool,
+	 *     oversized:list<array{offset:int,bytes:int,reason:string}>,oldestScanned:?string,nextOffset:?int,malformed:int,unparsed:int} Bounded scan and continuation diagnostics.
+	 * @throws \InvalidArgumentException For offsets beyond the existing depth budget.
 	 */
 	public function scan(LogFilter $filter, int $offset, ?int $limit): array {
 		return (new TimedLogScan($this->reader, $this->clock))->scan($filter, $offset, $limit);

@@ -20,7 +20,7 @@ final class ReverseLogFile {
 	private array $fragments = [];
 	private int $lineBytes = 0;
 	private bool $oversized = false;
-	public bool $timedOut = false;
+	private bool $timedOut = false;
 
 	/** @param string $path Only IFileBased::getLogFilePath may supply this path. */
 	public function __construct(string $path) {
@@ -85,6 +85,11 @@ final class ReverseLogFile {
 			$this->buffer = $chunk;
 		}
 		return null;
+	}
+
+	/** @return bool Whether the shared deadline interrupted this reader before EOF. */
+	public function timedOut(): bool {
+		return $this->timedOut;
 	}
 
 	/** @return void Release this request's handle. */

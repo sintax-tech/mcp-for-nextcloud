@@ -19,7 +19,8 @@ final class TimedLogScan {
 	 * @param LogFilter $filter Validated filters.
 	 * @param int $offset Eligible entries to skip; oversized lines are explicit unparsed slots.
 	 * @param int|null $limit Page size, or null to analyze all matches in the bounded window.
-	 * @return array<string,mixed> Entries, exact continuation and scan diagnostics.
+	 * @return array{entries:list<\stdClass>,scanned:int,truncated:bool,budgetReached:bool,timeBudgetReached:bool,
+	 *     oversized:list<array{offset:int,bytes:int,reason:string}>,oldestScanned:?string,nextOffset:?int,malformed:int,unparsed:int} Entries, exact continuation and scan diagnostics.
 	 * @throws InvalidArgumentException For offsets beyond the existing depth budget.
 	 * @throws ToolFailure For a read failure, without leaking the path.
 	 */
@@ -44,7 +45,7 @@ final class TimedLogScan {
 				while ($scanned < $window) {
 					$line = $file->next($deadline);
 					if ($line === null) {
-						$timedOut = $file->timedOut;
+						$timedOut = $file->timedOut();
 						$ended = !$timedOut;
 						break;
 					}

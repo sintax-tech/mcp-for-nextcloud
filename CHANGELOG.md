@@ -2,6 +2,14 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## 1.3.1 — 2026-11-07
+
+### Fixed
+
+- **HTML mail drafts were always refused on servers with libxml2 2.14 or later ([#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30)):** on Ubuntu 25.10 and 26.04, Debian testing and other systems whose libxml2 parses HTML with the HTML5 tokenizer, every `mail_create_draft` call with `html: true` failed with "The HTML draft could not be safely parsed and sanitized; nothing was saved." The UTF-8 hint the sanitizer adds before parsing became an extra comment there, which was counted as content removed by the engine. Nothing unsafe was ever saved, but the feature did not work. The hint no longer reaches the sanitizer on any libxml version. Servers with older libxml2 (Ubuntu 24.04, Debian 12 and 13, the official Nextcloud Docker images) were not affected. The newer parser does not wrap bare top-level text in a paragraph, so a draft such as `<a>ok</a>` is saved as `ok` there and as `<p>ok</p>` on older libxml2; both are safe.
+- **Source constructs that libxml versions recover differently are refused on all of them:** the newer parser silently keeps the first of two attributes with the same name and decodes a numeric reference without its semicolon, where the older one reported both and refused the draft. The sanitizer now checks the source itself and refuses, on every libxml version, a repeated attribute name (also in another letter case), a numeric character reference without its semicolon or digits, and references to NUL, C1 control characters (which HTML5 turns into other characters), surrogates or values beyond Unicode.
+- **A loose `&` no longer refuses an HTML draft:** text such as "A & B", "AT&T" or "R&D", and a link such as `https://example.com/?a=1&b=2`, was refused on most servers. An ampersand that starts no character reference is now kept as text (saved as `&amp;`), so the preview, the link destinations and the saved draft show exactly what was written. A named reference is decoded only with its semicolon and a name every libxml version knows (the HTML 4.01 names and `&apos;`); any other name, and a name without its semicolon such as `&copy 2026` or `&amp`, is kept as literal text, as shown in the preview.
+
 ## 1.3.0 — 2026-11-07
 
 **Database migration on update:** this version includes `Version001205Date20261106000000` for CIMD host trust and credential generations ([#28](https://github.com/sintax-tech/mcp-for-nextcloud/issues/28)), the first database migration since 1.1.0. Nextcloud runs the migration and the `CimdHostsSeedStep` post-migration repair step. The effective CIMD host allowlist is preserved. Credentials issued to hosts that remain allowed survive with `client_gen = 1`. Credentials from a host that was never allowed no longer authenticate or refresh; an administrator must allow the intended host and the client must sign in again.

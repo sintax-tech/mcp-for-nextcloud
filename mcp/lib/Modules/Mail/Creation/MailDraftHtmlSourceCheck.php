@@ -29,11 +29,18 @@ final class MailDraftHtmlSourceCheck {
 		. '|<([a-zA-Z][a-zA-Z0-9]*)((?:[\t\n ]+' . self::ATTRIBUTE . ')*)[\t\n ]*(/?)>|</([a-zA-Z][a-zA-Z0-9]*)[\t\n ]*>)~';
 	/**
 	 * Elements outside the saved vocabulary that both parsers build alike: the document wrappers and head elements,
-	 * the subtrees the filter removes, and two HTML 4 wrappers the filter unwraps. Any other element is refused,
+	 * the subtrees the filter removes, and wrappers the filter unwraps. Any other element is refused,
 	 * so obsolete, HTML5-only, foreign and unknown elements never reach parsers that build them differently.
 	 */
 	private const KNOWN = ['html', 'head', 'body', 'meta', 'title', 'base', 'link', 'script', 'style', 'iframe', 'object', 'form',
-		'template', 'noscript', 'textarea', 'img', 'font', 'center'];
+		'template', 'noscript', 'textarea', 'img', 'font', 'center', ...self::UNWRAPPED];
+	/**
+	 * Elements outside the saved vocabulary that 1.3.0 unwrapped, keeping their content, and that both parsers build
+	 * alike with the identity and the real engine (security review of 1.3.1); "/>" stays refused on them.
+	 */
+	private const UNWRAPPED = ['h4', 'h5', 'h6', 'sup', 'sub', 'small', 'mark', 'abbr', 'cite', 'q', 'ins', 'kbd', 'dl', 'dt', 'dd',
+		'section', 'article', 'header', 'footer', 'figure', 'figcaption', 'acronym', 'big', 'strike', 'tt', 'samp', 'var',
+		'address', 'dfn'];
 	/** Known elements without content or end tag; only these may end with "/>". */
 	private const VOID = ['br', 'hr', 'img', 'meta', 'link', 'base'];
 	/** Raw text or escapable raw text in at least one parser: content up to the end tag must not contain "<". */
@@ -84,7 +91,7 @@ final class MailDraftHtmlSourceCheck {
 			$offset = $next + strlen($token[0]);
 			$name = strtolower(($token[1] ?? '') . ($token[4] ?? ''));
 			if ($name === '') {
-				$structure->comment();
+				$structure->comment(str_starts_with($token[0], '<!['));
 				$out .= $token[0];
 				continue;
 			}
@@ -112,7 +119,7 @@ final class MailDraftHtmlSourceCheck {
 	}
 
 	/**
-	 * Escapes and records text between tokens.
+	 * Escapes and records text between tokens, dropping whitespace that shows nothing.
 	 *
 	 * @param MailDraftHtmlStructure $structure wrapper order of this source
 	 * @param string $text text without "<"
@@ -120,6 +127,7 @@ final class MailDraftHtmlSourceCheck {
 	 * @throws ToolFailure for misplaced text or an ambiguous reference
 	 */
 	private static function text(MailDraftHtmlStructure $structure, string $text): string {
+		$text = $structure->visible($text);
 		$structure->text($text);
 		return MailDraftHtmlReferences::text($text);
 	}

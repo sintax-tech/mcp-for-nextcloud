@@ -153,8 +153,8 @@ final class MailDraftHtml {
 			}
 			$tag = strtolower($node->tagName);
 			if (in_array($tag, MailDraftHtmlAllow::SUBTREES, true)) {
-				// An implicit empty head is parser scaffolding, not removed source content.
-				if ($tag !== 'head' || $node->hasChildNodes()) {
+				// An implicit head left with only whitespace is parser scaffolding, not removed source content.
+				if ($tag !== 'head' || trim($node->textContent, " \t\n\r\f") !== '' || $node->getElementsByTagName('*')->length > 0) {
 					$removed['subtree']++;
 				}
 				$parent->removeChild($node);

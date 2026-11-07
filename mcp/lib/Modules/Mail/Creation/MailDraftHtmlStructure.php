@@ -29,6 +29,8 @@ final class MailDraftHtmlStructure {
 	private bool $content = false;
 	/** Depth of head elements open inside head. */
 	private int $headDepth = 0;
+	/** Whether a head element was read before any body content, outside an explicit head (an implied head). */
+	private bool $impliedHead = false;
 
 	/**
 	 * Reads text outside tags.
@@ -45,13 +47,30 @@ final class MailDraftHtmlStructure {
 	}
 
 	/**
+	 * Whitespace before any body content or after </body> or </html> shows nothing; the parsers put it in different
+	 * places (an implied paragraph or the implied head), so it is dropped before parsing.
+	 *
+	 * @param string $text source text
+	 * @return string the text without whitespace outside the body content
+	 */
+	public function visible(string $text): string {
+		if (!$this->content) {
+			return ltrim($text, " \t\n");
+		}
+		return trim($text, " \t\n") === '' && (($this->closed['body'] ?? false) || ($this->closed['html'] ?? false)) ? '' : $text;
+	}
+
+	/**
 	 * Reads a comment or conditional delimiter.
 	 *
+	 * A revealed conditional delimiter becomes a marker the parsers place differently inside head, so it is refused there.
+	 *
+	 * @param bool $conditional whether the token is a revealed conditional delimiter
 	 * @return void
-	 * @throws ToolFailure after </body> or </html>
+	 * @throws ToolFailure after </body> or </html>, or for a conditional delimiter inside head
 	 */
-	public function comment(): void {
-		$this->refuseIf(($this->closed['body'] ?? false) || ($this->closed['html'] ?? false));
+	public function comment(bool $conditional): void {
+		$this->refuseIf(($this->closed['body'] ?? false) || ($this->closed['html'] ?? false) || ($conditional && $this->inHead()));
 	}
 
 	/**
@@ -64,14 +83,19 @@ final class MailDraftHtmlStructure {
 	 */
 	public function start(string $name, bool $void): void {
 		if ($name === 'html') {
-			$this->refuseIf(($this->opened['html'] ?? false) || $this->opened !== [] || $this->content);
+			$this->refuseIf(($this->opened['html'] ?? false) || $this->opened !== [] || $this->content || $this->impliedHead);
 		} elseif ($name === 'head') {
-			$this->refuseIf(($this->opened['head'] ?? false) || ($this->opened['body'] ?? false) || $this->content);
+			$this->refuseIf(($this->opened['head'] ?? false) || ($this->opened['body'] ?? false) || $this->content || $this->impliedHead);
 		} elseif ($name === 'body') {
 			$this->refuseIf(($this->opened['body'] ?? false) || $this->inHead() || $this->content);
 		} elseif ($this->inHead()) {
 			$this->refuseIf(!in_array($name, self::HEAD, true));
 			$this->headDepth += $void ? 0 : 1;
+			return;
+		} elseif (!$this->content && !($this->opened['body'] ?? false) && in_array($name, self::HEAD, true)) {
+			// Before body content both parsers put head elements in an implied head; they are not content.
+			$this->refuseIf(($this->closed['body'] ?? false) || ($this->closed['html'] ?? false));
+			$this->impliedHead = true;
 			return;
 		} else {
 			$this->content(false);
@@ -93,6 +117,9 @@ final class MailDraftHtmlStructure {
 			if ($this->inHead()) {
 				$this->refuseIf($this->headDepth === 0);
 				$this->headDepth--;
+				return;
+			}
+			if (!$this->content && $this->impliedHead && in_array($name, self::HEAD, true)) {
 				return;
 			}
 			$this->content(false);

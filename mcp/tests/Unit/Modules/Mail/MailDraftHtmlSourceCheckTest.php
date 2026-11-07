@@ -50,7 +50,10 @@ final class MailDraftHtmlSourceCheckTest extends TestCase {
 		yield 'foreign content' => ['<svg><p>x</p></svg><p>ok</p>'];
 		yield 'loose less-than sign' => ['<p>A < B</p>'];
 		yield 'element outside the known list' => ['<bgsound>A</bgsound><p>B</p>'];
-		yield 'HTML5-only element' => ['<section><p>A</p></section>'];
+		yield 'element outside the unwrapped list' => ['<nav><p>A</p></nav>'];
+		yield 'revealed conditional inside head' => ['<head><![endif]></head><p>ok</p>'];
+		yield 'revealed conditional opening inside head' => ['<head><![if IE]></head><p>ok</p>'];
+		yield 'self-closing unwrapped element' => ['<p>a<sup/>b</p>'];
 		yield 'self-closing non-void element' => ['<ul><li/>one<li>two</li></ul>'];
 		yield 'end tag of a void element' => ['<p>a</br>b</p>'];
 		yield 'decoded angle bracket in a value' => ['<p><a href="https://a.test/?x=&lt;script&gt;">ok</a></p>'];
@@ -106,6 +109,25 @@ final class MailDraftHtmlSourceCheckTest extends TestCase {
 		$this->assertStringContainsString('example.com/?a=1\\&b=2\\&lang=pt', $render);
 		$this->assertStringContainsString('A \\& B, AT\\&T, R\\&D, \\&copy 2026', $render);
 		$this->assertSame($result['body'], $this->sanitizer()->sanitize($result['body'])['body']);
+	}
+
+	/** @return void */
+	public function testElementsUnwrappedIn130KeepTheirContent(): void {
+		$sanitizer = $this->sanitizer();
+		$result = $sanitizer->sanitize('<h4>word</h4><p>x<sup>2</sup> <small>s</small></p><dl><dt>t</dt><dd>d</dd></dl>');
+		$this->assertSame(6, $result['removed']['unknown-tag']);
+		$this->assertStringContainsString('word', $result['body']);
+		$this->assertStringContainsString('x2 s', $result['body']);
+	}
+
+	/** @return void */
+	public function testAnImpliedHeadWithOnlyWhitespaceIsNotCountedAsARemovedSubtree(): void {
+		$sanitizer = $this->sanitizer();
+		foreach (["<style>p{}</style>\n<p>ok</p>", "<script>x()</script>\n<p>ok</p>", '<style>p{}</style><p>ok</p>'] as $source) {
+			$result = $sanitizer->sanitize($source);
+			$this->assertSame('<p>ok</p>', $result['body'], $source);
+			$this->assertSame(['subtree' => 1], array_filter($result['removed']), $source);
+		}
 	}
 
 	/** @return MailDraftHtml sanitizer with an identity engine */

@@ -4,6 +4,8 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 
 ## 1.3.2 — 2026-11-07
 
+Fix release on top of 1.3.1. No database change and no permission change; updating from 1.3.1 needs no step. Only the file writes that keep a pre-write copy change: `files_version_restore`, `files_edit`, `files_replace` and the `files_checkout` upload, as listed below. Every other tool behaves as in 1.3.1.
+
 ### Fixed
 
 - **`files_version_restore` of the current version failed on Nextcloud 34 and 35 with file locking:** files_versions lists the current content of a file as one of its versions (its revision is the file's modification time) but keeps no stored copy of it. Where the files_lock app is installed, as in the Nextcloud 34 and 35 images, restoring that listed version answered "Resource not found in Nextcloud." after the pre-write copy had already been taken. It is now restored like any other version, as the core rollback already did on servers without files_lock. Defect present since 1.0.5.

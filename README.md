@@ -19,8 +19,9 @@ English · [Português (Brasil)](README.pt-BR.md) · [Deutsch](README.de.md) · 
 
 ---
 
-## What's new in 1.3.1 and 1.3.0
+## What's new in 1.3.2, 1.3.1 and 1.3.0
 
+- **1.3.2: fixes for file writes.** `files_version_restore` of the current version no longer fails on Nextcloud 34 and 35 with file locking. When `files_version_restore`, `files_edit`, `files_replace` or a `files_checkout` upload fails after the pre-write copy, the answer now says where the copy is, and a file that became hidden in the meantime gets only "Resource not found in Nextcloud.", without its folder or name. No database change.
 - **1.3.1: fix for HTML mail drafts ([#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30)).** On servers with libxml2 2.14 or later (Ubuntu 25.10 and 26.04, Debian testing), every `mail_create_draft` call with `html: true` was refused; it now works there. A loose `&` ("A & B", "AT&T", a link with `?a=1&b=2`) is kept as text instead of refusing the draft, and HTML that libxml versions read differently is refused with the same message on every server. No database change.
 
 The app is organized into capability modules, following the architecture proposed by @marcjoancr in [#14](https://github.com/sintax-tech/mcp-for-nextcloud/pull/14).

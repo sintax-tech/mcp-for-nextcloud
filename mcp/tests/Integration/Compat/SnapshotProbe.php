@@ -27,8 +27,8 @@ final class SnapshotProbe {
 	public const VALUES = ['1', '0', null];
 	/** Resource of the access token the baseline issues to each user of the snapshot. */
 	public const RESOURCE = 'https://mcp-it.example/index.php/apps/mcp/mcp';
-	/** Client of those tokens. */
-	public const CLIENT = 'https://mcp-it.example/snapshot-client.json';
+	/** Trusted CIMD client of those tokens; #28 deliberately refuses hosts outside the existing allowlist. */
+	public const CLIENT = 'https://claude.ai/mcp-it-snapshot-client.json';
 	private const APP = 'mcp';
 	private const SERVICE_KEY = 'service_enabled';
 

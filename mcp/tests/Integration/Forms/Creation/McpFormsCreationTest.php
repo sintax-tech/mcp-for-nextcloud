@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Forms\Creation;
 
+use OCA\Mcp\Tests\Integration\Support\ServiceSwitchFixture;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Forms\{FormsApiScene,FormsScene,FormsState};
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
@@ -15,10 +16,25 @@ use OCP\Server;
 
 /** Exercises aggregate creation through real authenticated MCP and installed pinned Forms, not unit doubles. */
 final class McpFormsCreationTest extends IntegrationTestCase {
+	/** @var ServiceSwitchFixture|null Per-test service switch, absent when the opt-in skips setup. */
+	private ?ServiceSwitchFixture $serviceSwitch = null;
+
 	/** Selects only the official opt-in Forms cell.
 	 * @return void
 	 */
-	protected function setUp(): void { parent::setUp(); if (getenv('MCP_IT_WITH_FORMS') !== '1') { self::markTestSkipped('Requires pinned Forms cell.'); } }
+	protected function setUp(): void { parent::setUp(); if (getenv('MCP_IT_WITH_FORMS') !== '1') { self::markTestSkipped('Requires pinned Forms cell.'); }
+		$this->serviceSwitch = ServiceSwitchFixture::open();
+	}
+
+	/** @return void Restore the service switch even when the HTTP test fails. */
+	protected function tearDown(): void {
+		try {
+			$this->serviceSwitch?->restore();
+		} finally {
+			parent::tearDown();
+		}
+	}
+
 	/** Proves default deny, inert previews and both authenticated creation transports against native readback.
 	 * @return void
 	 */

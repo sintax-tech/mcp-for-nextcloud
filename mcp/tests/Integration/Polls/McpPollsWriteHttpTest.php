@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Polls;
 
+use OCA\Mcp\Tests\Integration\Support\ServiceSwitchFixture;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Modules\Polls\Integration\PollsMutationProbe;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
@@ -19,6 +20,9 @@ use PHPUnit\Framework\Attributes\Group;
 /** Minimal real Bearer proof of independently granted Polls configuration, options and user sharing. */
 #[Group('polls')]
 final class McpPollsWriteHttpTest extends IntegrationTestCase {
+	/** @var ServiceSwitchFixture|null Per-test service switch, absent when the opt-in skips setup. */
+	private ?ServiceSwitchFixture $serviceSwitch = null;
+
 	/** Selects the explicit Polls cell and loads the native app.
 	 * @return void
 	 */
@@ -29,6 +33,17 @@ final class McpPollsWriteHttpTest extends IntegrationTestCase {
 		}
 		$apps = Server::get(IAppManager::class);
 		$apps->loadApp('polls');
+
+		$this->serviceSwitch = ServiceSwitchFixture::open();
+	}
+
+	/** @return void Restore the service switch even when the HTTP test fails. */
+	protected function tearDown(): void {
+		try {
+			$this->serviceSwitch?->restore();
+		} finally {
+			parent::tearDown();
+		}
 	}
 
 	/** Configures, adds/reorders and shares through separate plans, then checks native persistence and grant refusals.

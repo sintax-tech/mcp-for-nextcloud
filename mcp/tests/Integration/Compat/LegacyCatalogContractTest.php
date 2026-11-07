@@ -20,9 +20,9 @@ final class LegacyCatalogContractTest extends TestCase {
 			'files' => ['read', 'edit', 'delete'],
 			'notes' => ['read', 'create'],
 			'mail' => ['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'],
-			'tables' => ['read', 'create', 'edit'],
+			'tables' => ['read', 'create', 'edit', 'schema', 'share'],
 			'forms' => ['read', 'results', 'create', 'edit'],
-			'polls' => ['read', 'results', 'links', 'create'],
+			'polls' => ['read', 'results', 'links', 'create', 'configure', 'options', 'options.remove', 'share', 'invite'],
 		];
 	}
 

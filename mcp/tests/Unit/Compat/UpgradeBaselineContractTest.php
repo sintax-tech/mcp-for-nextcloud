@@ -15,7 +15,7 @@ require_once __DIR__ . '/../../Integration/Compat/UpgradeBaseline.php';
 
 /** Upgrade fixture guards cannot turn removals, unknown additions or malformed input into passing comparisons. */
 final class UpgradeBaselineContractTest extends TestCase {
-	/** @return void All legacy operations remain exact and only the reviewed 1.2.2 additions are accepted. */
+	/** @return void All legacy operations remain exact and only the reviewed 1.2.2 and approved 1.3.0 F00 additions are accepted. */
 	public function testCatalogRecognizesTheExplicitAdditionAndRejectsOtherChanges(): void {
 		LegacyCatalogAssertions::catalog();
 	}
@@ -60,6 +60,9 @@ final class UpgradeBaselineContractTest extends TestCase {
 	/** @return void Every new default is checked and every legacy answer remains observable. */
 	public function testMatrixChecksTheNewCellBeforeRemovingOnlyThatCell(): void {
 		LegacyCatalogAssertions::matrix();
+		ScenePolicyAssertions::unchanged($this);
+		ServiceSwitchAssertions::roundTrip($this);
+		SnapshotClientAssertions::trusted($this);
 	}
 
 }

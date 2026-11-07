@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Forms;
 
+use OCA\Mcp\Tests\Integration\Support\ServiceSwitchFixture;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\{McpClient,LoginFactory,Http};
 use OCA\Mcp\Access\Grants\GrantPolicy;
@@ -14,10 +15,25 @@ use OCP\Server;
 
 /** FO2 runtime proofs use real authenticated MCP/Forms/Files, never substituted source fixtures. */
 final class McpFormsResultsTest extends IntegrationTestCase {
+	/** @var ServiceSwitchFixture|null Per-test service switch, absent when the opt-in skips setup. */
+	private ?ServiceSwitchFixture $serviceSwitch = null;
+
 	/** Requires the opt-in pinned Forms cell only.
 	 * @return void
 	 */
-	protected function setUp(): void { parent::setUp();if(getenv('MCP_IT_WITH_FORMS')!=='1'){self::markTestSkipped('Requires pinned Forms cell.');} }
+	protected function setUp(): void { parent::setUp();if(getenv('MCP_IT_WITH_FORMS')!=='1'){self::markTestSkipped('Requires pinned Forms cell.');}
+		$this->serviceSwitch = ServiceSwitchFixture::open();
+	}
+
+	/** @return void Restore the service switch even when the HTTP test fails. */
+	protected function tearDown(): void {
+		try {
+			$this->serviceSwitch?->restore();
+		} finally {
+			parent::tearDown();
+		}
+	}
+
 	/** Compares native own/all modes, active-question omission and identity projection in both auth transports.
 	 * @return void
 	 */

@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Polls;
 
+use OCA\Mcp\Tests\Integration\Support\ServiceSwitchFixture;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\{LoginFactory,McpClient,Credential};
@@ -16,6 +17,9 @@ use PHPUnit\Framework\Attributes\Group;
 /** Real authenticated creation and authorized native/SQL observations in the disposable official Polls cells. */
 #[Group('polls')]
 final class McpPollsCreateHttpTest extends IntegrationTestCase {
+	/** @var ServiceSwitchFixture|null Per-test service switch, absent when the opt-in skips setup. */
+	private ?ServiceSwitchFixture $serviceSwitch = null;
+
 	/** @var array<string,Credential> fixture credentials, never printed */
 	private static array $credentials=[];
 	/** @return void separate creation policy from read/protected-read grants */
@@ -25,14 +29,23 @@ final class McpPollsCreateHttpTest extends IntegrationTestCase {
 		$p=Server::get(GrantPolicy::class);
 		foreach(PollsScene::USERS as$uid){$p->setGrant($uid,'polls','create',true);foreach(['read','results','links']as$op){$p->setGrant($uid,'polls',$op,false);}}
 		Server::get(\OCA\Polls\Model\Settings\AppSettings::class)->setBooleanSetting('allowPollCreation',true);
+
+		$this->serviceSwitch = ServiceSwitchFixture::open();
 	}
 	/** @return void restore the read fixtures' expected policy, without deleting native evidence from this cell */
 	protected function tearDown(): void {
-		if(getenv('MCP_IT_WITH_POLLS')==='1'){
-			$p=Server::get(GrantPolicy::class);foreach(PollsScene::USERS as$uid){$p->setGrant($uid,'polls','create',false);$p->setGrant($uid,'polls','read',true);}
-			Server::get(\OCA\Polls\Model\Settings\AppSettings::class)->setBooleanSetting('allowPollCreation',true);
+		try {
+			$this->serviceSwitch?->restore();
+		} finally {
+			try {
+				if(getenv('MCP_IT_WITH_POLLS')==='1'){
+					$p=Server::get(GrantPolicy::class);foreach(PollsScene::USERS as$uid){$p->setGrant($uid,'polls','create',false);$p->setGrant($uid,'polls','read',true);}
+					Server::get(\OCA\Polls\Model\Settings\AppSettings::class)->setBooleanSetting('allowPollCreation',true);
+				}
+			} finally {
+				parent::tearDown();
+			}
 		}
-		parent::tearDown();
 	}
 	/**
 	 * Authenticated endpoint; credentials are reused only within this cell.

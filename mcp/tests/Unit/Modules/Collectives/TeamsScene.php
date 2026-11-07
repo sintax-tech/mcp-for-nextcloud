@@ -44,6 +44,8 @@ final class TeamsScene {
 	public static bool $root = true;
 	/** @var array<int, array{landing:int, registered:bool}> what each created collective has on disk */
 	public static array $folders = [];
+	/** @var list<string> native reads (collectives, find) that fail inside the Teams session they open, as CircleHelper does */
+	public static array $failReads = [];
 
 	/** @return void three teams: Wiki (alice), Design (bob, with alice) and Secret (carol only, which alice cannot see) */
 	public static function reset(): void {
@@ -61,6 +63,22 @@ final class TeamsScene {
 		self::$beforeCreate = null;
 		self::$root = true;
 		self::$folders = [];
+		self::$failReads = [];
+	}
+
+	/**
+	 * A native Collectives read that opens a Teams session for the actor, as `CircleHelper::getCircles`/`getCircle` do
+	 * (`:103-120`): when it is set to fail, the query throws after `startSession` and before `stopSession`.
+	 * @param string $uid actor
+	 * @param string $read which read this is
+	 * @return void
+	 */
+	public static function nativeRead(string $uid, string $read): void {
+		self::$currentUser = $uid;
+		if (in_array($read, self::$failReads, true)) {
+			throw new \RuntimeException('Teams query failed inside the helper session');
+		}
+		self::$currentUser = null;
 	}
 
 	/** @return string the account of the open session; listing without one fails, as upstream needs an initiator */

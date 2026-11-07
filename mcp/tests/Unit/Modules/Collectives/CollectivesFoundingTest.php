@@ -207,6 +207,35 @@ final class CollectivesFoundingTest extends TestCase {
 		$this->assertNotContains('createRoot', TeamsScene::$calls);
 	}
 
+	/**
+	 * @return void a native read that fails inside the Teams session it opened leaves no current user and no bypass:
+	 *     the listing of the preflight, the listing of the receipt and the landing page of the receipt
+	 */
+	public function testNativeReadsThatFailInsideTheirSessionAreClosed(): void {
+		$rig = new CollectivesRig($this);
+		TeamsScene::$failReads = ['collectives'];
+		$this->refused(fn () => $rig->module()->preview(self::TOOL, ['name' => 'Projetos'], 'alice'));
+		$this->assertNull(TeamsScene::$currentUser, 'preflight');
+		$this->assertFalse(TeamsScene::$bypass, 'preflight');
+
+		$module = (new CollectivesRig($this))->module();
+		TeamsScene::$beforeCreate = static function (): void {
+			TeamsScene::$failReads = ['collectives'];
+		};
+		$receipt = $this->confirm($module, ['name' => 'Projetos']);
+		$this->assertSame('uncertain', $receipt['status']);
+		$this->assertNull(TeamsScene::$currentUser, 'receipt listing');
+		$this->assertFalse(TeamsScene::$bypass, 'receipt listing');
+
+		$module = (new CollectivesRig($this))->module();
+		TeamsScene::$failReads = ['find'];
+		$receipt = $this->confirm($module, ['name' => 'Projetos']);
+		$this->assertSame('partial', $receipt['status']);
+		$this->assertNull($receipt['pieces']['registered']);
+		$this->assertNull(TeamsScene::$currentUser, 'receipt landing page');
+		$this->assertFalse(TeamsScene::$bypass, 'receipt landing page');
+	}
+
 	/** @return void when the actor's identity cannot be resolved, the session is still closed */
 	public function testTheSessionIsClosedWhenResolvingFails(): void {
 		$module = (new CollectivesRig($this))->module();

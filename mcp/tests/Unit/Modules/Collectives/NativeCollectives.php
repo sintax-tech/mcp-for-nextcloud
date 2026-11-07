@@ -33,6 +33,7 @@ namespace OCA\Collectives\Service {
 	class CollectiveService {
 		/** @param string $userId actor @return list<Collective> the actor's collectives */
 		public function getCollectives(string $userId): array {
+			\OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene::nativeRead($userId, 'collectives');
 			return CollectivesScene::collectivesOf($userId);
 		}
 
@@ -82,6 +83,7 @@ namespace OCA\Collectives\Service {
 		public function find(int $collectiveId, int $id, string $userId): PageInfo {
 			$landing = \OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene::landing($id);
 			if ($landing !== null) {
+				\OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene::nativeRead($userId, 'find');
 				return $landing;
 			}
 			$this->cached($collectiveId, $userId);

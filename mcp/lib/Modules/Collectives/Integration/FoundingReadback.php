@@ -21,6 +21,11 @@ use Throwable;
  *
  * The landing page counts as registered only when the page service answers it with a last user: that value comes
  * from the page record alone, and is null without one (`getPageByFile`, 4.7.1 `:239,:269`).
+ *
+ * Both native reads open Teams sessions inside Collectives and close them only after a `try/catch`: listing the
+ * collectives reaches `CircleHelper::getCircles` (`CollectiveService.php:95-96`, `CircleHelper.php:103-120`), and `find`
+ * reaches `CircleHelper::getCircle` through the collective's folder. Each runs in {@see TeamsSession::closingAfter()},
+ * so a failure inside leaves no current user and no bypass behind, also when the receipt turns it into `uncertain`.
  */
 class FoundingReadback {
 	/** Landing page of a new collective (`CollectiveFolderManager::LANDING_PAGE_TITLE` and `SUFFIX`). */
@@ -29,10 +34,12 @@ class FoundingReadback {
 	/**
 	 * @param ContainerInterface $container server container the native services are shared in
 	 * @param IRootFolder $root the server file tree, only asked whether paths exist
+	 * @param TeamsSession $teams closes the Teams session the native reads may leave open
 	 */
 	public function __construct(
 		private ContainerInterface $container,
 		private IRootFolder $root,
+		private TeamsSession $teams,
 	) {
 	}
 
@@ -43,7 +50,8 @@ class FoundingReadback {
 	 */
 	public function collectives(string $uid): array {
 		$found = [];
-		foreach ($this->service(CollectivesSurface::COLLECTIVES)->getCollectives($uid) as $collective) {
+		$native = $this->teams->closingAfter(fn (): array => $this->service(CollectivesSurface::COLLECTIVES)->getCollectives($uid));
+		foreach ($native as $collective) {
 			if (is_object($collective)) {
 				$shown = PageProjection::collective($collective);
 				$found[] = ['id' => $shown['id'], 'name' => $shown['name'], 'team_id' => (string)$collective->getCircleId()];
@@ -68,7 +76,7 @@ class FoundingReadback {
 			$found['landing'] = $found['folder'] && $this->root->nodeExists($root . '/' . $id . '/' . self::LANDING);
 			if ($found['landing']) {
 				$file = $folders->getFolder($id)->get(self::LANDING);
-				$page = $file instanceof File ? $this->service(CollectivesSurface::PAGES)->find($id, $file->getId(), $uid) : null;
+				$page = $file instanceof File ? $this->teams->closingAfter(fn (): object => $this->service(CollectivesSurface::PAGES)->find($id, $file->getId(), $uid)) : null;
 				$data = $page === null ? [] : (array)$page->jsonSerialize();
 				$found['registered'] = is_string($data['lastUserId'] ?? null) && $data['lastUserId'] !== '';
 			}

@@ -71,7 +71,6 @@ final class OAuthControllerFlowTest extends TestCase {
 	/** @return array<string,string> the headers, read without the server container OCP needs for getHeaders() */
 	private function headers(\OCP\AppFramework\Http\Response $response): array {
 		$property = new \ReflectionProperty(\OCP\AppFramework\Http\Response::class, 'headers');
-		$property->setAccessible(true);
 		return $property->getValue($response);
 	}
 

@@ -213,7 +213,6 @@ final class CheckoutControllerTest extends TestCase {
 	 */
 	private function headers(\OCP\AppFramework\Http\Response $response): array {
 		$property = new \ReflectionProperty(\OCP\AppFramework\Http\Response::class, 'headers');
-		$property->setAccessible(true);
 		return $property->getValue($response);
 	}
 

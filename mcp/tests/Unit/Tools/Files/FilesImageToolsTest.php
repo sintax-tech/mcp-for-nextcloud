@@ -44,7 +44,6 @@ final class FilesImageToolsTest extends FilesToolsTestCase {
 		ob_start();
 		imagejpeg($im);
 		$jpegBytes = (string)ob_get_clean();
-		imagedestroy($im);
 
 		$this->tree->addFile('/alice/files/Photos/dim.jpg', $jpegBytes, 'image/jpeg');
 		$this->preparePreview('image/jpeg', 'preview-bytes');

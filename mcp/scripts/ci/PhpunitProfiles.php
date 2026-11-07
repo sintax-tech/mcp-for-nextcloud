@@ -36,6 +36,25 @@ final class PhpunitProfiles {
 	}
 
 	/**
+	 * Rejects stale explicit selectors and unexpected expansion of the frozen partitions.
+	 * @param list<string> $inventory Official class and method names including dataset suffixes.
+	 * @return void
+	 */
+	public static function assertExplicitInventory(array $inventory): void {
+		$prefix = 'OCA\\Mcp\\Tests\\Unit\\Contract\\EffectContracts\\';
+		foreach (['oracle' => [self::ORACLE, 6], 'recordings' => [self::RECORDINGS, 2]] as $profile => [$names, $expected]) {
+			$total = 0;
+			foreach ($names as $name) {
+				$pattern = '~^' . preg_quote($prefix . $name, '~') . '(?:$| with data set )~';
+				$count = count(array_filter($inventory, static fn (string $id): bool => preg_match($pattern, $id) === 1));
+				if ($count === 0) { throw new \RuntimeException('Missing explicit PHPUnit selector: ' . $name); }
+				$total += $count;
+			}
+			if ($total !== $expected) { throw new \RuntimeException($profile . ': expected exactly ' . $expected . ' inventory identities, got ' . $total); }
+		}
+	}
+
+	/**
 	 * Preserves the repository configuration while making relative paths absolute and bounding each process at 2 GiB.
 	 * @param string $app App directory.
 	 * @param string $work Disposable report directory.
@@ -48,8 +67,13 @@ final class PhpunitProfiles {
 		$xml['cacheDirectory'] = $work . '/cache';
 		foreach ($xml->xpath('//directory|//exclude|//file') as $path) { $path[0] = $app . '/' . (string)$path; }
 		foreach ($xml->xpath('//php/ini[@name="memory_limit"]') as $ini) { $ini['value'] = '2G'; }
-		$xml->asXML($work . '/phpunit.xml');
-		mkdir($work . '/without-intl');
+		if (!$xml->asXML($work . '/phpunit.xml')) { throw new \RuntimeException('Cannot write PHPUnit configuration'); }
+		$scan = $work . '/without-intl';
+		if (is_dir($scan)) {
+			foreach (new \FilesystemIterator($scan) as $entry) {
+				if (!$entry->isFile() || !unlink($entry->getPathname())) { throw new \RuntimeException('Cannot clean ini scan directory'); }
+			}
+		} elseif (!mkdir($scan)) { throw new \RuntimeException('Cannot create ini scan directory'); }
 		foreach (array_filter(array_map('trim', explode(',', php_ini_scanned_files() ?: ''))) as $i => $path) {
 			$ini = (string)file_get_contents($path);
 			$ini = (string)preg_replace('~^\h*extension\h*=\h*["\x27]?(?:[^\s"\x27]*/)?(?:php_)?intl(?:\.so|\.dll)?["\x27]?\h*(?:;[^\n]*)?$~mi', '; intl disabled only for the frozen oracle', $ini);

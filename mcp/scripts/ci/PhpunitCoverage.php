@@ -19,16 +19,19 @@ final class PhpunitCoverage {
 		$xml = self::xml($work . '/inventory.xml');
 		$partitions = array_fill_keys(array_keys($filters), []);
 		$all = [];
+		$names = [];
 		foreach ($xml->testCaseClass as $class) {
 			foreach ($class->testCaseMethod as $method) {
 				$base = (string)$class['name'] . '::' . $method['name'];
 				$id = (string)$method['id'];
+				$names[] = $base;
 				$owners = array_keys(array_filter($filters, static fn (string $filter): bool => preg_match($filter, $base) === 1));
 				if (count($owners) !== 1 || isset($all[$id])) { throw new \RuntimeException('Omitted or duplicated inventory identity: ' . $id); }
 				$all[$id] = true;
 				$partitions[$owners[0]][] = $id;
 			}
 		}
+		PhpunitProfiles::assertExplicitInventory($names);
 		foreach ($partitions as $name => $ids) {
 			if ($ids === []) { throw new \RuntimeException('Empty PHPUnit partition: ' . $name); }
 			echo $name . ': ' . count($ids) . " inventoried cases\n";
@@ -54,7 +57,7 @@ final class PhpunitCoverage {
 				}
 				$id = (string)$case['class'] . '::' . $name;
 				if (isset($seen[$id])) { throw new \RuntimeException('Test executed twice: ' . $id); }
-				if (isset($case->failure) || isset($case->error)) { throw new \RuntimeException('Failing test: ' . $id); }
+				if (isset($case->failure) || isset($case->error) || isset($case->skipped) || isset($case->incomplete)) { throw new \RuntimeException('Failing or unexecuted test: ' . $id); }
 				$seen[$id] = true;
 				$actual[] = $id;
 			}

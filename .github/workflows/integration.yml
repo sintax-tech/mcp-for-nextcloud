@@ -3,8 +3,8 @@
 #
 # Verification-only CI: installs the app into a disposable official Nextcloud container next to a disposable
 # database, through the server's own installer (fresh) or upgrade (from the released baseline), and runs the
-# integration suite in mcp/tests/Integration with two real database sessions and real core events. Groupfolders, local
-# external storage, Talk and Notes are provisioned in the same container for the exclusion proof (issue #4, A4).
+# integration suite in mcp/tests/Integration with two real database sessions and real core events. Deck, Mail, Tables,
+# Forms, Polls and Collectives opt-ins run alongside Groupfolders, external storage, Talk and Notes exclusion fixtures.
 # Images, actions and the PHPUnit PHAR are pinned by digest, commit or checksum. It never publishes, releases or uploads anything but test logs.
 
 name: Integration
@@ -21,10 +21,9 @@ on:
 permissions:
   contents: read
 
-# One group per branch, whether the run comes from a push or from a pull request of that branch, so the two events
-# never run the matrix twice for the same work.
+# Isolate pull requests by number, including requests from forks, and other runs by ref.
 concurrency:
-  group: integration-${{ github.head_ref || github.ref_name }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:

@@ -38,6 +38,8 @@ final class AssignmentPushDeferralTest extends TestCase {
 	private array $warned = [];
 	/** @var list<string> Recipients whose leftover notification the retry withdrew. */
 	private array $withdrawn = [];
+	/** How the withdrawal of a failed attempt's notification fails: '' (it works), 'before-delete' or 'dismiss'. */
+	private string $withdrawalFailure = '';
 	/** Official manager of the release under test. */
 	private object $manager;
 	/** Notifications app registered in that manager. */
@@ -60,12 +62,21 @@ final class AssignmentPushDeferralTest extends TestCase {
 	private function gateway(string $major, array $failing, bool $foreignDeferral = false): DeckServiceGateway {
 		require_once dirname(__DIR__, 4) . '/tests/Unit/Tools/Deck/Stubs/deck_stubs.php';
 		$core = dirname(__DIR__, 3) . '/fixtures/nextcloud-core/notification/' . $major;
-		require_once $core . '/IManager.php';
-		require_once $core . '/Manager.php';
+		foreach (['INotification', 'IManager', 'Notification', 'Manager'] as $file) {
+			require_once $core . '/' . $file . '.php';
+		}
 		$this->app = new PushQueueApp($failing);
 		$reflection = new \ReflectionClass(\OC\Notification\Manager::class);
 		$this->manager = $reflection->newInstanceWithoutConstructor();
-		foreach (['apps' => [$this->app], 'appClasses' => [], 'deferPushing' => false] as $property => $value) {
+		$this->app->manager = $this->manager;
+		$dismissing = $this->createMock(\OCP\Notification\IDismissableNotifier::class);
+		if ($this->withdrawalFailure === 'dismiss') {
+			$dismissing->method('dismissNotification')->willThrowException(new \RuntimeException('dismissable notifier failed'));
+		}
+		foreach (['apps' => [$this->app], 'appClasses' => [], 'deferPushing' => false, 'notifiers' => [$dismissing],
+			'notifierClasses' => [], 'parsedRegistrationContext' => true,
+			'validator' => $this->createMock(\OCP\RichObjectStrings\IValidator::class),
+			'richTextFormatter' => $this->createMock(\OCP\RichObjectStrings\IRichTextFormatter::class)] as $property => $value) {
 			$reflection->getProperty($property)->setValue($this->manager, $value);
 		}
 		if ($foreignDeferral) {
@@ -84,8 +95,14 @@ final class AssignmentPushDeferralTest extends TestCase {
 			return new Assignment(['cardId' => $cardId, 'participant' => $uid, 'type' => Acl::PERMISSION_TYPE_USER]);
 		});
 		$helper = $this->createMock(NotificationHelper::class);
+		// Deck's helper builds the notification and hands it to the manager, as in Deck 1.16.8 and 1.19.0.
 		$helper->method('markCardAssignedAsRead')->willReturnCallback(function (Card $card, string $uid): void {
 			$this->withdrawn[] = $uid;
+			if ($this->withdrawalFailure === 'before-delete') {
+				throw new \RuntimeException('withdrawal failed before anything was deleted');
+			}
+			$this->manager->markProcessed($this->manager->createNotification()->setApp('deck')->setUser($uid)
+				->setObject('card', (string)$card->getId())->setSubject('card-assigned'));
 		});
 		$cards = $this->createMock(CardMapper::class);
 		$cards->method('find')->willReturn(new Card(['id' => 9]));
@@ -139,6 +156,43 @@ final class AssignmentPushDeferralTest extends TestCase {
 		self::assertSame(['bad'], $this->withdrawn);
 		self::assertSame(['healthy', 'bad'], array_keys($outcomes));
 		self::assertNotInstanceOf(\Throwable::class, $outcomes['bad']);
+		self::assertSame(1, $this->notices('bad'));
+	}
+
+	/**
+	 * When the leftover notification cannot be withdrawn, the failing recipient is not retried: never two notices,
+	 * never a silent success, and no deferral left without its owner.
+	 *
+	 * @param string $major Release folder under the fixture.
+	 * @param string $failure Where the withdrawal fails.
+	 * @return void
+	 */
+	#[DataProvider('withdrawalFailures')]
+	#[RunInSeparateProcess]
+	#[PreserveGlobalState(false)]
+	public function testAnUnconfirmedWithdrawalWithholdsTheRetry(string $major, string $failure): void {
+		$this->withdrawalFailure = $failure;
+		$outcomes = $this->assign($this->gateway($major, ['bad']), ['bad', 'healthy']);
+		self::assertSame(['healthy'], $this->inserted);
+		self::assertSame(['healthy'], $this->app->delivered);
+		self::assertInstanceOf(\OCA\Mcp\Modules\Deck\Failures\DeckRetryWithheldException::class, $outcomes['bad']);
+		self::assertSame([], $this->warned);
+		self::assertSame(1, $this->notices('bad'));
+		self::assertFalse($this->coreDeferring());
+		self::assertSame([], $this->app->queue);
+	}
+
+	/** @return iterable<string, array{0: string, 1: string}> Release and the step where the withdrawal fails. */
+	public static function withdrawalFailures(): iterable {
+		foreach (self::releases() as $release => [$major]) {
+			yield $release . ', before the delete' => [$major, 'before-delete'];
+			yield $release . ', in a dismissable notifier' => [$major, 'dismiss'];
+		}
+	}
+
+	/** @param string $uid Recipient. @return int Notifications the app holds for that recipient. */
+	private function notices(string $uid): int {
+		return count(array_keys($this->app->stored, $uid, true));
 	}
 
 	/** Without the retry, the 1.2.5 path: the failing recipient is never assigned. */
@@ -164,8 +218,11 @@ final class AssignmentPushDeferralTest extends TestCase {
 		$this->assign($this->gateway($major, ['bad1', 'bad2']), ['bad1', 'bad2']);
 		self::assertSame(['bad1', 'bad2'], $this->inserted);
 		self::assertSame(['bad1', 'bad2'], $this->warned);
-		self::assertSame(2, $this->app->flushes);
+		// Withdrawal and assignment of each retry flush the deferral they own: four, two after the first failure.
+		self::assertSame(4, $this->app->flushes);
 		self::assertSame([], $this->app->delivered);
+		self::assertSame(1, $this->notices('bad1'));
+		self::assertSame(1, $this->notices('bad2'));
 	}
 
 	/** Recipients whose push works take the 1.2.5 path only: inline delivery, no deferral, no flush. */

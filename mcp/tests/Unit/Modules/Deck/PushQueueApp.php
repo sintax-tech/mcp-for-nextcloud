@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Modules\Deck;
 
 use OCP\Notification\IDeferrableApp;
+use OCP\Notification\IManager;
 use OCP\Notification\INotification;
 
 /**
@@ -17,7 +18,9 @@ use OCP\Notification\INotification;
  * deferral, prepares and sends the push inline (`Push::pushToDevice`); inside one it only queues it. `flush()`
  * (`Push::flushPayloads`) prepares the queue in order, clears it only after the whole loop and only then stops
  * deferring and sends, so a push that fails to prepare leaves itself and everything after it queued, and keeps the
- * app deferring.
+ * app deferring. `markProcessed()` is `Handler::delete`: it defers through the manager, lets every dismissable
+ * notifier see the notification, deletes it and flushes only a deferral it opened; when a notifier throws, the
+ * deletion is rolled back and that deferral stays open. `getCount()` is `Handler::count` for the recipient.
  */
 final class PushQueueApp implements IDeferrableApp {
 	/** @var list<string> Recipients whose notification was stored. */
@@ -35,6 +38,9 @@ final class PushQueueApp implements IDeferrableApp {
 	/** @var list<string> Prepared pushes waiting to be sent (`Push::$payloadsToSend`). */
 	private array $payloads = [];
 
+	/** Official manager this app is registered in, which `markProcessed()` defers and dismisses through. */
+	public ?IManager $manager = null;
+
 	/** @param list<string> $failing Recipients whose push fails while it is prepared. */
 	public function __construct(private array $failing) {
 	}
@@ -50,13 +56,27 @@ final class PushQueueApp implements IDeferrableApp {
 		$this->send();
 	}
 
-	/** @param INotification $notification Ignored. @return void */
+	/**
+	 * @param INotification $notification Notification to withdraw, matched by recipient.
+	 * @return void
+	 * @throws \Throwable What a dismissable notifier raised; the notification then stays.
+	 */
 	public function markProcessed(INotification $notification): void {
+		$user = $notification->getUser();
+		if (!in_array($user, $this->stored, true)) {
+			return;
+		}
+		$shouldFlush = $this->manager->defer();
+		$this->manager->dismissNotification($notification);
+		$this->stored = array_values(array_filter($this->stored, static fn (string $stored): bool => $stored !== $user));
+		if ($shouldFlush) {
+			$this->manager->flush();
+		}
 	}
 
-	/** @param INotification $notification Ignored. @return int Always 0. */
+	/** @param INotification $notification Filter by recipient. @return int Notifications stored for that recipient. */
 	public function getCount(INotification $notification): int {
-		return 0;
+		return count(array_keys($this->stored, $notification->getUser(), true));
 	}
 
 	/** @return void */

@@ -16,6 +16,7 @@ use OCA\Deck\Notification\NotificationHelper;
 use OCA\Deck\Service\AssignmentService;
 use OCA\Deck\Service\PermissionService;
 use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\Modules\Deck\Failures\DeckRetryWithheldException;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCP\IUserManager;
 use OCP\Notification\IManager;
@@ -72,14 +73,17 @@ final class DeckAssignments {
 	 *
 	 * The direct call is the one of 1.2.5: Deck notifies the assignee and the Notifications app sends the push inline.
 	 * A retry with `$deferDelivery` first withdraws the notification the failed attempt left, through Deck's own
-	 * `NotificationHelper::markCardAssignedAsRead()` as an unassignment does, so the assignee keeps a single one, and
-	 * then assigns with the push delivered after the insert ({@see DeferredAssignmentNotice}).
+	 * `NotificationHelper::markCardAssignedAsRead()` as an unassignment does, and assigns again only when the
+	 * Notifications app confirms that none is left: Deck's assignment always stores a new notification, so retrying
+	 * over one that stayed would give the assignee two. Unconfirmed, the assignment is not retried and fails as it did
+	 * in 1.2.5. Both steps run with the push delivered after them ({@see DeferredAssignmentNotice}).
 	 * @param string $userId Authenticated caller.
 	 * @param int $cardId Created card.
 	 * @param string $assignee Account ID to assign.
 	 * @param bool $deferDelivery Retry of an assignment that failed before Deck stored it.
 	 * @return \OCA\Deck\Db\Assignment Persisted assignment.
 	 * @throws \Throwable When a concurrent change prevents assignment, or a deferred delivery fails after the insert.
+	 * @throws DeckRetryWithheldException When the notification of the failed attempt could not be withdrawn.
 	 * @see DeckGatewayInterface::assignCardUser()
 	 */
 	public function assignCardUser(string $userId, int $cardId, string $assignee, bool $deferDelivery = false): Assignment {
@@ -89,33 +93,40 @@ final class DeckAssignments {
 		if (!$deferDelivery) {
 			return $assignments->assignUser($cardId, $assignee);
 		}
-		$this->withdrawFailedNotice($cardId, $assignee);
-		if ($this->deferred === null) {
-			/** @var IManager $notifications */
-			$notifications = $this->services->get(IManager::class);
-			$this->deferred = new DeferredAssignmentNotice($notifications);
+		/** @var IManager $notifications */
+		$notifications = $this->services->get(IManager::class);
+		$this->deferred ??= new DeferredAssignmentNotice($notifications);
+		if (!$this->withdrawFailedNotice($notifications, $cardId, $assignee)) {
+			throw new DeckRetryWithheldException('The notification of the failed attempt is still there');
 		}
 		return $this->deferred->assign(static fn (): Assignment => $assignments->assignUser($cardId, $assignee));
 	}
 
 	/**
-	 * Withdraws the "card assigned" notification a failed attempt stored before its push failed.
+	 * Withdraws the "card assigned" notification a failed attempt stored before its push failed, and confirms it.
 	 *
-	 * Best effort: when it cannot be withdrawn the assignee sees it twice, which never blocks the assignment.
-	 *
+	 * @param IManager $notifications Manager whose apps hold the notification.
 	 * @param int $cardId Card of the failed attempt.
 	 * @param string $assignee Account the attempt notified.
-	 * @return void
+	 * @return bool True only when the Notifications app reports no such notification left.
 	 */
-	private function withdrawFailedNotice(int $cardId, string $assignee): void {
+	private function withdrawFailedNotice(IManager $notifications, int $cardId, string $assignee): bool {
 		try {
 			/** @var CardMapper $cards */
 			$cards = $this->services->get(CardMapper::class);
 			/** @var NotificationHelper $helper */
 			$helper = $this->services->get(NotificationHelper::class);
-			$helper->markCardAssignedAsRead($cards->find($cardId), $assignee);
+			$card = $cards->find($cardId);
+			$this->deferred?->withdraw(static fn () => $helper->markCardAssignedAsRead($card, $assignee));
 		} catch (\Throwable) {
-			// The retry below decides the outcome; a duplicate notification is the only cost.
+			// Whether anything was withdrawn is read back below; a failure here alone proves nothing either way.
+		}
+		try {
+			$left = $notifications->createNotification()->setApp('deck')->setUser($assignee)
+				->setObject('card', (string)$cardId)->setSubject('card-assigned');
+			return $notifications->getCount($left) === 0;
+		} catch (\Throwable) {
+			return false;
 		}
 	}
 

@@ -11,7 +11,7 @@ use OCA\Deck\Db\Assignment;
 use OCP\Notification\IManager;
 
 /**
- * Retries one Deck assignment with the assignee's push delivered only after the assignment is stored (issue #26).
+ * Runs the steps of an assignment retry with push delivery deferred, keeping track of the deferral (issue #26).
  *
  * Deck's `AssignmentService::assignUser()` notifies another assignee through `IManager::notify()` before it inserts
  * the assignment, and the Notifications app prepares and sends the push inline for an assignee with a push device.
@@ -21,17 +21,19 @@ use OCP\Notification\IManager;
  *
  * Only retries come here, after every other assignment of the call took the direct path
  * ({@see \OCA\Mcp\Modules\Deck\AssigneePasses}): when a flush fails, NC 32/35 `Manager::flush()` stops before it
- * clears its deferral and Notifications' `Push::flushPayloads()` keeps the failing push queued, so nothing queued
- * after it in this request can be sent. That deferral is still the one this instance opened: `defer()` answers false
- * for it, and this instance keeps flushing it, so each later retry gets its own delivery attempt and its own error.
- * A deferral someone else opened is left to them, as `IManager::defer()` documents.
+ * clears its deferral and Notifications' `Push::flushPayloads()` keeps the failing push queued. That deferral is
+ * still the one this instance opened: `defer()` answers false for it, and this instance keeps flushing it, so each
+ * later step gets its own delivery attempt and its own error. The withdrawal of a failed attempt's notification runs
+ * here too, because the Notifications app opens a deferral of its own while it deletes and leaves it open when a
+ * notifier fails; opened by this instance first, that deferral is closed here. A deferral someone else opened is
+ * left to them, as `IManager::defer()` documents.
  */
 final class DeferredAssignmentNotice {
 	/** Whether this instance opened the deferral that is open now and left it open after a failed flush. */
 	private bool $abandoned = false;
 
 	/**
-	 * Keep the notification manager the assignment runs under.
+	 * Keep the notification manager the steps run under.
 	 *
 	 * @param IManager $notifications Nextcloud notification manager shared by every app in the request.
 	 */
@@ -43,27 +45,49 @@ final class DeferredAssignmentNotice {
 	/**
 	 * Runs the assignment with push delivery deferred, then delivers what it queued.
 	 *
-	 * A failed assignment still flushes the deferral this instance owns, and the assignment's own error is the one
-	 * that reaches the caller.
-	 *
 	 * @param \Closure(): Assignment $assign Deck call that stores the assignment.
 	 * @return Assignment The assignment Deck stored.
 	 * @throws \Throwable The assignment's error, or the delivery error raised after the assignment was stored.
 	 */
 	public function assign(\Closure $assign): Assignment {
+		return $this->deferred($assign);
+	}
+
+	/**
+	 * Runs the withdrawal of a notification inside the same deferral, so a deferral it leaves open stays closed.
+	 *
+	 * @param \Closure(): void $withdraw Deck call that marks the notification processed.
+	 * @return void
+	 * @throws \Throwable The withdrawal's error, or a delivery error raised after it.
+	 */
+	public function withdraw(\Closure $withdraw): void {
+		$this->deferred($withdraw);
+	}
+
+	/**
+	 * Runs one step with delivery deferred and closes the deferral this instance owns.
+	 *
+	 * A failed step still flushes the deferral this instance owns, and the step's own error is the one that reaches
+	 * the caller.
+	 *
+	 * @param \Closure(): mixed $step Deck call to run.
+	 * @return mixed What the step returned.
+	 * @throws \Throwable The step's error, or the delivery error raised after it.
+	 */
+	private function deferred(\Closure $step): mixed {
 		$owner = $this->notifications->defer() || $this->abandoned;
 		if (!$owner) {
-			return $assign();
+			return $step();
 		}
 		try {
-			$assignment = $assign();
+			$result = $step();
 		} catch (\Throwable $e) {
 			$this->flushAfterFailure();
 			throw $e;
 		}
 		$this->flush();
 
-		return $assignment;
+		return $result;
 	}
 
 	/**
@@ -79,7 +103,7 @@ final class DeferredAssignmentNotice {
 	}
 
 	/**
-	 * Delivers the queued pushes after an assignment that failed, without hiding that failure.
+	 * Delivers the queued pushes after a step that failed, without hiding that failure.
 	 *
 	 * @return void
 	 */
@@ -87,7 +111,7 @@ final class DeferredAssignmentNotice {
 		try {
 			$this->flush();
 		} catch (\Throwable) {
-			// The assignment error is the answer; a delivery error after it adds nothing the caller can act on.
+			// The step's error is the answer; a delivery error after it adds nothing the caller can act on.
 		}
 	}
 }

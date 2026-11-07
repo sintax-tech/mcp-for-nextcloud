@@ -178,9 +178,14 @@ final class AssignmentPushTest extends IntegrationTestCase {
 			$saved = FunctionalDeckScene::run($actor, 'read', ['card' => $f['card']])['assignees'];
 			$byMcp = array_slice($devices->proxyRequests(), $before);
 			$toHealthy = array_values(array_filter($byMcp, static fn (array $r): bool => str_starts_with($r['path'], '/healthy/')));
-			$manager = \OCP\Server::get(\OCP\Notification\IManager::class);
-			$notice = $manager->createNotification()->setApp('deck')->setUser($bad)->setObject('card', (string)$f['card']);
-			$notices = $manager->getCount($notice);
+			// Read in the table: this CLI process has not booted the Notifications app, so its IManager counts nothing.
+			$q = \OCP\Server::get(\OCP\IDBConnection::class)->getQueryBuilder();
+			$notices = (int)$q->select($q->func()->count('*'))->from('notifications')
+				->where($q->expr()->eq('app', $q->createNamedParameter('deck')))
+				->andWhere($q->expr()->eq('user', $q->createNamedParameter($bad)))
+				->andWhere($q->expr()->eq('object_type', $q->createNamedParameter('card')))
+				->andWhere($q->expr()->eq('object_id', $q->createNamedParameter((string)$f['card'])))
+				->executeQuery()->fetchOne();
 			file_put_contents('/tmp/mcp-it-observations.txt', json_encode(['issue26' => 'batch: failing recipient then healthy',
 				'mcp' => $out, 'saved' => $saved, 'proxyPaths' => array_column($byMcp, 'path'), 'badNotices' => $notices],
 				JSON_THROW_ON_ERROR) . "\n", FILE_APPEND);

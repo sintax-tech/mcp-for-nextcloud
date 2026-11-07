@@ -15,7 +15,7 @@ use Psr\Container\ContainerInterface;
 final class FilesRegistration implements ModuleRegistration {
 	/** @param IRegistrationContext $context app registration context @return void */
 	public function register(IRegistrationContext $context): void {
-		$context->registerService(FileTextResource::class, static fn (ContainerInterface $c): FileTextResource => $c->get(ExtractedFileText::class));
+		$context->registerService(FileTextResource::class, static fn (ContainerInterface $c): FileTextResource => $c->get(Extraction\ExtractedFileText::class));
 	}
 	/** @return list<class-string<\OCA\Mcp\Mcp\Tools\CapabilityProbe>> no installation probes */
 	public function probes(): array { return []; }

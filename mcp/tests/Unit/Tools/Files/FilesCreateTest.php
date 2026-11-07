@@ -13,7 +13,7 @@ use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Modules\Files\Checkout\CheckoutService;
-use OCA\Mcp\Modules\Files\FileCreation;
+use OCA\Mcp\Modules\Files\Creation\FileCreation;
 use OCA\Mcp\Modules\Files\Presentation\CreationMessages;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCA\Mcp\Mcp\Tools\UnknownToolException;

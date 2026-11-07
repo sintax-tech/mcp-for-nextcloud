@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files;
+namespace OCA\Mcp\Modules\Files\Creation;
 
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
@@ -216,7 +216,7 @@ final class FileCreation {
 			}
 			throw new FileExists(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::fileExists());
 		}
-		FileWriteBoundary::check($this->fileTypes, $name);
+		\OCA\Mcp\Modules\Files\Writing\FileWriteBoundary::check($this->fileTypes, $name);
 		return ['path' => $path, 'name' => $name, 'folderPath' => $folderPath, 'folder' => $folder];
 	}
 

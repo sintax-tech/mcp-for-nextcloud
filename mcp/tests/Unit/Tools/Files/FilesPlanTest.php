@@ -15,7 +15,7 @@ use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Modules\Files\Backups\FileBackup;
 use OCA\Mcp\Modules\Files\FilesModule;
-use OCA\Mcp\Modules\Files\TextExtractor;
+use OCA\Mcp\Modules\Files\Extraction\TextExtractor;
 use OCA\Mcp\Modules\Files\Integration\VersionTools;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use PHPUnit\Framework\Attributes\DataProvider;

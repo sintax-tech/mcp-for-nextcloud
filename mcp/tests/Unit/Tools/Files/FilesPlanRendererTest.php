@@ -16,7 +16,7 @@ use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Modules\Files\Backups\FileBackup;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\Presentation\FilesPlanRenderer;
-use OCA\Mcp\Modules\Files\TextExtractor;
+use OCA\Mcp\Modules\Files\Extraction\TextExtractor;
 use OCA\Mcp\Modules\Files\Integration\VersionTools;
 use OCA\Mcp\Mcp\Tools\RendersPlans;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -96,8 +96,8 @@ final class FilesPlanRendererTest extends FilesToolsTestCase {
 		$body = $this->body('files_create', ['path' => '/Arquivo/longo.txt', 'content' => str_repeat('a', 3000)]);
 
 		$this->assertStringContainsString('Beginning of the content:', $body);
-		$this->assertStringContainsString(str_repeat('a', \OCA\Mcp\Modules\Files\FileCreation::PREVIEW_CHARS) . '…', $body);
-		$this->assertStringNotContainsString(str_repeat('a', \OCA\Mcp\Modules\Files\FileCreation::PREVIEW_CHARS + 1), $body);
+		$this->assertStringContainsString(str_repeat('a', \OCA\Mcp\Modules\Files\Creation\FileCreation::PREVIEW_CHARS) . '…', $body);
+		$this->assertStringNotContainsString(str_repeat('a', \OCA\Mcp\Modules\Files\Creation\FileCreation::PREVIEW_CHARS + 1), $body);
 		$this->assertStringContainsString('2.9 KB', $body);
 	}
 

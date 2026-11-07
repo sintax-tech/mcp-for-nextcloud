@@ -20,7 +20,7 @@ use OCA\Mcp\Tests\Unit\ArrayGroupBackend;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\InstalledApp;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
-use OCA\Mcp\Modules\Files\TextExtractor;
+use OCA\Mcp\Modules\Files\Extraction\TextExtractor;
 use OCA\Mcp\Mcp\Resources\NoteResource;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
@@ -80,7 +80,7 @@ final class DiscoveryHarness {
 		$registry = new ToolRegistry($modules, $policy, $apps, $users, $logger, $guests, capabilities: new \OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry([(new ModuleBuilder($test, $scenario->deckDependencies))->build(\OCA\Mcp\Modules\Deck\Integration\DeckCapabilities::class),
 			(new ModuleBuilder($test))->build(\OCA\Mcp\Modules\Forms\Integration\StructureCapabilities::class)], $logger));
 		$resources = new ResourceRegistry($registry, $policy, $apps, $users, $this->mock(IRootFolder::class), $this->mock(VisibilityGuard::class),
-			new \OCA\Mcp\Modules\Files\ExtractedFileText($this->mock(TextExtractor::class)), $this->mock(NoteResource::class), $registry->guide(), $this->mock(FilesAccessGuard::class), $guests);
+			new \OCA\Mcp\Modules\Files\Extraction\ExtractedFileText($this->mock(TextExtractor::class)), $this->mock(NoteResource::class), $registry->guide(), $this->mock(FilesAccessGuard::class), $guests);
 		$installed = $this->mock(IAppManager::class);
 		InstalledApp::mock($installed);
 		$this->protocol = new McpProtocol($registry, new PromptCatalog(), $policy, $logger, $installed, $resources);

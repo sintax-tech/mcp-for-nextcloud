@@ -5,8 +5,9 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files;
+namespace OCA\Mcp\Modules\Files\Editing;
 
+use OCA\Mcp\Modules\Files\Extraction\TextExtractor;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 

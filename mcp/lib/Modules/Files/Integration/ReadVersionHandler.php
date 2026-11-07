@@ -13,7 +13,7 @@ use OCA\Mcp\Modules\Files\FilesCallContext;
 use OCA\Mcp\Modules\Files\Images\OcrSupport;
 use OCA\Mcp\Modules\Files\Presentation\ReadingMessages;
 use OCA\Mcp\Modules\Files\Presentation\VersionMessages;
-use OCA\Mcp\Modules\Files\TextExtractor;
+use OCA\Mcp\Modules\Files\Extraction\TextExtractor;
 use OCA\Mcp\Modules\Files\Integration\VersionTools;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCP\Files\File;

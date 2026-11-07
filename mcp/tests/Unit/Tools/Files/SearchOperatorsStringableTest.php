@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
-use OCA\Mcp\Modules\Files\MimeLikeComparison;
-use OCA\Mcp\Modules\Files\NameLikeComparison;
-use OCA\Mcp\Modules\Files\SearchBinaryOperator;
-use OCA\Mcp\Modules\Files\SearchComparison;
+use OCA\Mcp\Modules\Files\Searching\MimeLikeComparison;
+use OCA\Mcp\Modules\Files\Searching\NameLikeComparison;
+use OCA\Mcp\Modules\Files\Searching\SearchBinaryOperator;
+use OCA\Mcp\Modules\Files\Searching\SearchComparison;
 use OCP\Files\Search\ISearchComparison;
 use PHPUnit\Framework\TestCase;
 

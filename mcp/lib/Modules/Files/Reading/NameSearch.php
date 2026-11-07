@@ -12,8 +12,8 @@ use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCP\IDBConnection;
 use OCP\IUserManager;
 use OCA\Mcp\Modules\Files\FilesModule;
-use OCA\Mcp\Modules\Files\NameSearchQuery;
-use OCA\Mcp\Modules\Files\NameLikeComparison;
+use OCA\Mcp\Modules\Files\Searching\NameSearchQuery;
+use OCA\Mcp\Modules\Files\Searching\NameLikeComparison;
 
 /** Searches filenames in the database and formats only visible matches. */
 final class NameSearch {

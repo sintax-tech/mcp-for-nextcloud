@@ -8,9 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Files\Creation;
 
 use OCP\Files\Folder;
-use OCA\Mcp\Modules\Files\FileCreation;
+use OCA\Mcp\Modules\Files\Creation\FileCreation;
 use OCA\Mcp\Modules\Files\FilesPreviewContext;
-use OCA\Mcp\Modules\Files\Handler;
 
 /** Plans the operation that creates a file from inline text, without executing the write. */
 final class CreateFilePreview {
@@ -30,6 +29,6 @@ final class CreateFilePreview {
 	 * @return array<string,mixed> unchanged read-only plan
 	 */
 	public function plan(array $arguments, string $userId): array {
-		return $this->context->run($userId, fn (Folder $root): array => (new Handler\CreateFileHandler(($this->creation ?? throw new \LogicException('FileCreation is not wired'))))->plan($root, $userId, $arguments['path'], $arguments['content']));
+		return $this->context->run($userId, fn (Folder $root): array => (new CreateFileHandler(($this->creation ?? throw new \LogicException('FileCreation is not wired'))))->plan($root, $userId, $arguments['path'], $arguments['content']));
 	}
 }

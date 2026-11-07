@@ -17,7 +17,7 @@ use OCA\Mcp\Modules\Files\Backups\FileBackup;
 use OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\Reorganization\Reorganization;
-use OCA\Mcp\Modules\Files\TextExtractor;
+use OCA\Mcp\Modules\Files\Extraction\TextExtractor;
 use OCA\Mcp\Modules\Files\Integration\VersionTools;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;

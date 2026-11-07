@@ -231,13 +231,13 @@ final class ApplicationRegistrationTest extends TestCase {
 			},
 		);
 
-		$creation = $container->get(\OCA\Mcp\Modules\Files\FileCreation::class);
-		$this->assertInstanceOf(\OCA\Mcp\Modules\Files\FileCreation::class, $creation);
+		$creation = $container->get(\OCA\Mcp\Modules\Files\Creation\FileCreation::class);
+		$this->assertInstanceOf(\OCA\Mcp\Modules\Files\Creation\FileCreation::class, $creation);
 		$this->assertInstanceOf(\OCA\Mcp\Access\Visibility\VisibilityGuard::class,
-			(new \ReflectionProperty(\OCA\Mcp\Modules\Files\FileCreation::class, 'visibilityGuard'))->getValue($creation));
+			(new \ReflectionProperty(\OCA\Mcp\Modules\Files\Creation\FileCreation::class, 'visibilityGuard'))->getValue($creation));
 		$this->assertInstanceOf(\OCP\Files\IFilenameValidator::class,
-			(new \ReflectionProperty(\OCA\Mcp\Modules\Files\FileCreation::class, 'filenames'))->getValue($creation));
-		foreach ((new \ReflectionMethod(\OCA\Mcp\Modules\Files\FileCreation::class, '__construct'))->getParameters() as $parameter) {
+			(new \ReflectionProperty(\OCA\Mcp\Modules\Files\Creation\FileCreation::class, 'filenames'))->getValue($creation));
+		foreach ((new \ReflectionMethod(\OCA\Mcp\Modules\Files\Creation\FileCreation::class, '__construct'))->getParameters() as $parameter) {
 			$this->assertFalse($parameter->allowsNull(), 'FileCreation::$' . $parameter->getName() . ' é obrigatório');
 		}
 
@@ -246,7 +246,7 @@ final class ApplicationRegistrationTest extends TestCase {
 				static fn (\ReflectionParameter $p): array => ['name' => $p->getName(), 'type' => (string)$p->getType()],
 				(new \ReflectionMethod($class, '__construct'))->getParameters(),
 			), 'type', 'name');
-			$this->assertSame('?' . \OCA\Mcp\Modules\Files\FileCreation::class, $parameters['creation'], $class);
+			$this->assertSame('?' . \OCA\Mcp\Modules\Files\Creation\FileCreation::class, $parameters['creation'], $class);
 		}
 	}
 

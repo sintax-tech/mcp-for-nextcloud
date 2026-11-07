@@ -53,7 +53,7 @@ final class VersionRestore {
 	public function __construct(
 		private IAppManager $appManager,
 		private IUserManager $userManager,
-		private \OCA\Mcp\Modules\Files\ContentTypeGate $types,
+		private \OCA\Mcp\Modules\Files\Writing\ContentTypeGate $types,
 		private NodeAccessInfo $access,
 		private ContainerInterface $container,
 		private ?LockAwareWrite $locks = null,

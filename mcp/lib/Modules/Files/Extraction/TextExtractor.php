@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Files;
+namespace OCA\Mcp\Modules\Files\Extraction;
 
 use OCA\Mcp\Platform\Text\ExtractedText;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;

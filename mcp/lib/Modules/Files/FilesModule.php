@@ -23,7 +23,7 @@ use OCA\Mcp\Mcp\Tools\CatalogModule;
  */
 final class FilesModule extends CatalogModule {
 	/** Characters returned by files_read before the text is truncated. */
-	public const MAX_CHARS = TextExtractor::MAX_CHARS;
+	public const MAX_CHARS = Extraction\TextExtractor::MAX_CHARS;
 	/** Maximum size of the new content accepted by files_edit and files_replace, in bytes. */
 	public const MAX_EDIT_BYTES = 10 * 1024 * 1024;
 	/** Folder in the user's root that receives a copy of every file before an edit writes it. */

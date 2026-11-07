@@ -12,11 +12,12 @@ abstract class RuntimeTreeTestCase extends CallGraphTreeTestCase {
 	/**
 	 * @param array<string, string> $classes ordered declarations, with parent classes before children
 	 * @param int $expected expected writes in the PHP reproduction
+	 * @param bool $strict whether the exact sources executed and analyzed declare strict_types
 	 * @return array{methods:array<string,string>, leaves:list<string>, unknown:list<string>} the graph of the same source
 	 */
-	protected function runtimeAndUnknown(array $classes, int $expected = 1): array {
+	protected function runtimeAndUnknown(array $classes, int $expected = 1, bool $strict = false): array {
 		@unlink($this->lib . '/runtime.php');
-		$r = $this->reach($classes, 'Entry::read');
+		$r = $this->reach($classes, 'Entry::read', $strict);
 		$runner = '<?php namespace OCP\\Files { class Folder { public int $writes = 0;
 			public function newFile(string $name): void { $this->writes++; } } }
 			namespace { ';

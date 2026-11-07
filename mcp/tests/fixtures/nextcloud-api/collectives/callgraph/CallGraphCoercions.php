@@ -37,7 +37,11 @@ final class CallGraphCoercions {
 		foreach ($this->callbackValues($node, $typeOf) as $value) {
 			array_push($edges, ...$this->edges->of($value, ['__toString'], $node, $caller, $miss, [], false));
 		}
-		if (!$this->weak($unit['path'])) {
+		$weak = $this->weak($unit['path']);
+		foreach ((new CallGraphWriteCoercions($this->index, $this->dispatch))->values($node, $unit['class'], $typeOf, $weak) as $types) {
+			array_push($edges, ...$this->edges->of($types, ['__toString'], $node, $caller, $miss, [], false));
+		}
+		if (!$weak) {
 			return $edges;
 		}
 		$values = [];
@@ -51,9 +55,7 @@ final class CallGraphCoercions {
 				$values[] = $node->expr;
 			}
 		}
-		foreach ((new CallGraphWriteCoercions($this->index, $this->dispatch))->values($node, $unit['class'], $typeOf) as $types) {
-			array_push($edges, ...$this->edges->of($types, ['__toString'], $node, $caller, $miss, [], false));
-		}
+
 		$calls = [];
 		if (($node instanceof Expr\MethodCall || $node instanceof Expr\NullsafeMethodCall) && $node->name instanceof Node\Identifier) {
 			foreach ($typeOf($node->var) as $class) {

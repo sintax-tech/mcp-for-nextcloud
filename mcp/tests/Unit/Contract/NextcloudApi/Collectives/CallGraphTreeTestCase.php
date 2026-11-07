@@ -32,11 +32,12 @@ abstract class CallGraphTreeTestCase extends TestCase {
 	/**
 	 * @param array<string, string> $classes class body by declaration (`Child extends Base`), all in OCA\Collectives\Service
 	 * @param string $entry `Class::method` to start from
+	 * @param bool $strict whether generated files declare strict_types on the first line
 	 * @return array{methods:array<string,string>, leaves:list<string>, unknown:list<string>} what the reader reached
 	 */
-	protected function reach(array $classes, string $entry): array {
+	protected function reach(array $classes, string $entry, bool $strict = false): array {
 		foreach ($classes as $declaration => $body) {
-			file_put_contents($this->lib . '/Service/' . explode(' ', $declaration)[0] . '.php', "<?php\nnamespace OCA\\Collectives\\Service;\n"
+			file_put_contents($this->lib . '/Service/' . explode(' ', $declaration)[0] . '.php', ("<?php" . ($strict ? " declare(strict_types=1);" : "") . "\nnamespace OCA\\Collectives\\Service;\n")
 				. "use OCP\\Files\\Folder;\nuse OCP\\EventDispatcher\\IEventDispatcher;\nclass $declaration {\n$body\n}\n");
 		}
 		return (new \CollectivesCallGraph($this->lib))->reach(['OCA\\Collectives\\Service\\' . $entry]);

@@ -45,7 +45,8 @@ final class CollectivesAdminHttpActorsTest extends TestCase {
 		$users->method('get')->willReturn($this->createMock(IUser::class));
 		$actors = new CollectivesAdminHttpActors($policy, $config, $groups, $users, 'owner', 'outsider',
 			static fn (): string => 'team', static fn (): array => [], $remove);
-		$this->assertSame([], $actors->enable(7));
+		$actors->enable();
+		$this->assertSame([], $actors->watch(7));
 		$this->done = [];
 		return $actors;
 	}

@@ -25,9 +25,11 @@ use PHPUnit\Framework\Attributes\Group;
  * Creating a collective and managing its members (C04, #22) over the real MCP endpoint, with an app password, against
  * the pinned Collectives and Teams of the cell. Every write is refused without its grant, its plan is shown to change
  * nothing by reading Collectives and Teams themselves in this process ({@see NativeTeamsProbe}), and the confirmed call
- * is read back the same way. Runs only on Nextcloud 33 to 35, where the C04 tools exist (decision D7). Everything the
- * test changes is captured first and put back exactly by {@see CollectivesAdminHttpActors}, also when it fails, so the
- * outsider of {@see McpCollectivesHttpTest} stays an outsider; a membership that existed before makes the test skip.
+ * is read back the same way. Runs only on Nextcloud 33 to 35, where the C04 tools exist (decision D7). The member
+ * tests work on a collective the test creates through `collectives_create_collective`, never on the shared "MCP Wiki",
+ * so nothing they add existed before. Everything the test changes is captured first and put back exactly by
+ * {@see CollectivesAdminHttpActors}, also when it fails. Nothing in the common setup skips: the catalog and the creation
+ * always run.
  */
 #[Group('collectives')]
 final class McpCollectivesAdminHttpTest extends IntegrationTestCase {
@@ -50,10 +52,7 @@ final class McpCollectivesAdminHttpTest extends IntegrationTestCase {
 		$this->serviceSwitch = ServiceSwitchFixture::open();
 		$this->actors = new CollectivesAdminHttpActors(Server::get(GrantPolicy::class), Server::get(IConfig::class), Server::get(IGroupManager::class),
 			Server::get(IUserManager::class), $this->owner(), $this->outsider());
-		$present = $this->actors->enable($this->wiki());
-		if ($present !== []) {
-			$this->markTestSkipped('The cell already has these memberships, which the test would change: ' . implode(', ', $present));
-		}
+		$this->actors->enable();
 	}
 
 	/** @return void the memberships, the access, the group and the service switch exactly as they were, step by step */
@@ -79,9 +78,17 @@ final class McpCollectivesAdminHttpTest extends IntegrationTestCase {
 		return (string)getenv('MCP_IT_COLLECTIVES_OUTSIDER');
 	}
 
-	/** @return int the id of the cell's collective, read from Collectives itself */
-	private function wiki(): int {
-		return NativeTeamsProbe::collectives($this->owner())['MCP Wiki'];
+	/**
+	 * Creates a collective of its own for a member test, through the tool under test, and watches its team.
+	 * @return int its id; its new team has the owner only, so the test accounts have no membership there before
+	 */
+	private function ownCollective(): int {
+		$name = 'MCP C04 members ' . bin2hex(random_bytes(3));
+		$receipt = $this->confirm('collectives_create_collective', ['name' => $name], $this->plan('collectives_create_collective', ['name' => $name]));
+		$this->assertSame('applied', $receipt['status'], json_encode($receipt));
+		$cid = (int)$receipt['collective']['id'];
+		$this->assertSame([], $this->actors?->watch($cid), 'a new collective has no membership of the test accounts');
+		return $cid;
 	}
 
 	/**
@@ -194,7 +201,7 @@ final class McpCollectivesAdminHttpTest extends IntegrationTestCase {
 
 	/** @return void list, add, level and remove: refused without the grant, plans with no native effect, each change read back natively */
 	public function testManagingMembers(): void {
-		$cid = $this->wiki();
+		$cid = $this->ownCollective();
 		$team = NativeTeamsProbe::team($cid, $this->owner());
 		$outsider = '1:' . $this->outsider();
 		$this->grant('members', false);
@@ -234,7 +241,7 @@ final class McpCollectivesAdminHttpTest extends IntegrationTestCase {
 
 	/** @return void a group is added and removed through its own request; the owner can never be removed */
 	public function testAGroupAndTheOwner(): void {
-		$cid = $this->wiki();
+		$cid = $this->ownCollective();
 		$team = NativeTeamsProbe::team($cid, $this->owner());
 		$group = '2:' . self::GROUP;
 		$add = ['collective_id' => $cid, 'type' => 'group', 'id' => self::GROUP];

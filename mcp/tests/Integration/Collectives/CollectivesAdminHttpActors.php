@@ -17,8 +17,9 @@ use Throwable;
  * Owns what the C04 HTTP tests change in the cell and puts it back exactly, like TablesSchemaHttpActors: the owner's
  * and the outsider's MCP access and the owner's two C04 grants (resolved value through the official writer, then the
  * raw preference, an absent key included), the test group and the outsider's place in it, and the memberships of the
- * collective's team the tests add. Everything is captured before the first change; a membership that already existed
- * is never touched, so the tests refuse to run over it instead. Restoring tries every item on its own, each membership,
+ * collective's team the tests add. Everything is captured before the first change. The member tests work on a
+ * collective they create themselves, so its team has no membership of the test accounts before; {@see self::watch()}
+ * records that team, and a membership that existed there would never be touched. Restoring tries every item on its own, each membership,
  * each access cell (writer and raw preference) and each group step, and raises one {@see RestoreFailures} at the end
  * with all that failed: no restoration is skipped and no failure is hidden.
  */
@@ -64,12 +65,11 @@ final class CollectivesAdminHttpActors {
 	}
 
 	/**
-	 * Captures everything, then grants the owner the C04 operations and both accounts MCP access, and puts the
-	 * outsider in the test group.
-	 * @param int $cid the collective whose team the tests change
-	 * @return list<string> memberships (`type:userId`) of the test accounts that existed before: the tests must not run
+	 * Captures the access and the group, then grants the owner the C04 operations and both accounts MCP access, and puts
+	 * the outsider in the test group.
+	 * @return void
 	 */
-	public function enable(int $cid): array {
+	public function enable(): void {
 		foreach ([$this->owner => self::GRANTS, $this->outsider => []] as $uid => $grants) {
 			$cells = [GrantPolicy::ELIGIBLE_KEY => $this->policy->eligible($uid), GrantPolicy::CONNECTED_KEY => $this->policy->connected($uid)];
 			foreach ($grants as $operation) {
@@ -80,11 +80,6 @@ final class CollectivesAdminHttpActors {
 				$this->before[$uid][$key] = ['raw' => in_array($key, $keys, true) ? $this->config->getUserValue($uid, 'mcp', $key) : null, 'allowed' => $allowed];
 			}
 		}
-		$this->team = ($this->teamOf)($cid, $this->owner);
-		$members = ($this->membersOf)($this->owner, $this->team);
-		$watched = ['1:' . $this->outsider, '2:' . self::GROUP];
-		$present = array_values(array_intersect($watched, array_keys($members)));
-		$this->absent = array_values(array_diff($watched, $present));
 		foreach ([$this->owner, $this->outsider] as $uid) {
 			$this->policy->setEligible($uid, true);
 			$this->policy->setConnected($uid, true);
@@ -102,6 +97,20 @@ final class CollectivesAdminHttpActors {
 			$group->addUser($outsider);
 			$this->outsiderAdded = true;
 		}
+	}
+
+	/**
+	 * Records the team of a collective the test changes, and which memberships of the test accounts it lacks now: only
+	 * those are removed again on restore.
+	 * @param int $cid the collective, created by the test
+	 * @return list<string> memberships (`type:userId`) of the test accounts it already has; a new collective has none
+	 */
+	public function watch(int $cid): array {
+		$this->team = ($this->teamOf)($cid, $this->owner);
+		$members = ($this->membersOf)($this->owner, $this->team);
+		$watched = ['1:' . $this->outsider, '2:' . self::GROUP];
+		$present = array_values(array_intersect($watched, array_keys($members)));
+		$this->absent = array_values(array_diff($watched, $present));
 		return $present;
 	}
 

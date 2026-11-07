@@ -1276,6 +1276,7 @@
 		{"path":"lib/Modules/Deck/Editing/SetCardDonePreview.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Editing\\SetCardDonePreview","target":"stays","owner":"Modules\\Deck","ticket":null},
 		{"path":"lib/Modules/Deck/Integration/CardStatusGateway.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Integration\\CardStatusGateway","target":"stays","owner":"Modules\\Deck","ticket":null},
 		{"path":"lib/Modules/Deck/Integration/CardStatusGatewayInterface.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Integration\\CardStatusGatewayInterface","target":"stays","owner":"Modules\\Deck","ticket":null},
+		{"path":"lib/Modules/Deck/Integration/DeferredAssignmentNotice.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Integration\\DeferredAssignmentNotice","target":"stays","owner":"Modules\\Deck","ticket":null},
 		{"path":"lib/Modules/Deck/Presentation/DeckPlans/CardStatusText.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Presentation\\DeckPlans\\CardStatusText","target":"stays","owner":"Modules\\Deck","ticket":null},
 		{"path":"lib/Modules/Deck/Presentation/DeckStatusMessages.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Presentation\\DeckStatusMessages","target":"stays","owner":"Modules\\Deck","ticket":null},
 		{"path":"lib/Modules/Deck/Tools/SetCardArchived.php","fqcn":"OCA\\Mcp\\Modules\\Deck\\Tools\\SetCardArchived","target":"stays","owner":"Modules\\Deck","ticket":null},

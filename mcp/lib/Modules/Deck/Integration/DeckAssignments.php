@@ -16,6 +16,7 @@ use OCA\Deck\Service\PermissionService;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCP\IUserManager;
+use OCP\Notification\IManager;
 
 /** Validates accounts against a board and assigns or unassigns them on a card. */
 final class DeckAssignments {
@@ -63,18 +64,24 @@ final class DeckAssignments {
 
 	/**
 	 * Assigns one validated account through Deck's assignment service.
+	 *
+	 * The assignee's push delivery waits until the assignment is stored ({@see DeferredAssignmentNotice}).
 	 * @param string $userId Authenticated caller.
 	 * @param int $cardId Created card.
 	 * @param string $assignee Account ID to assign.
 	 * @return \OCA\Deck\Db\Assignment Persisted assignment.
-	 * @throws \Throwable When a concurrent change prevents assignment.
+	 * @throws \Throwable When a concurrent change prevents assignment, or delivery fails after it was stored.
 	 * @see DeckGatewayInterface::assignCardUser()
 	 */
 	public function assignCardUser(string $userId, int $cardId, string $assignee): Assignment {
 		$this->services->bindUser($userId);
 		/** @var AssignmentService $assignments */
 		$assignments = $this->services->get(AssignmentService::class);
-		return $assignments->assignUser($cardId, $assignee);
+		/** @var IManager $notifications */
+		$notifications = $this->services->get(IManager::class);
+		return (new DeferredAssignmentNotice($notifications))->assign(
+			static fn (): Assignment => $assignments->assignUser($cardId, $assignee)
+		);
 	}
 
 	/**

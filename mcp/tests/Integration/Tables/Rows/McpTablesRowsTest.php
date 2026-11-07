@@ -67,8 +67,8 @@ final class McpTablesRowsTest extends IntegrationTestCase {
 			$mcp = self::rows($comparison);
 			$native = $comparison['native'];
 			$this->assertArrayHasKey('rows', $native, "$uid native");
-			$this->assertSame(array_column($native['rows'], 'id'), array_column($mcp, 'id'), "$uid " . json_encode($target) . ': rows and order');
-			foreach ($native['rows'] as $i => $row) {
+			$nativeRows = RowsNativeComparison::assertOrderAndMatch($mcp, $native['rows'], isset($target['table_id']), "$uid " . json_encode($target));
+			foreach ($nativeRows as $i => $row) {
 				$this->assertSame(array_column($row['data'], 'columnId'), array_column($mcp[$i]['cells'], 'columnId'), "$uid row {$row['id']}: cells");
 				foreach ($row['data'] as $j => $cell) {
 					$kinds[self::assertSameValue($cell['value'], $mcp[$i]['cells'][$j], "$uid row {$row['id']} column {$cell['columnId']}")]++;

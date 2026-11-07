@@ -32,6 +32,7 @@ final class RowsReadRequestTest extends TestCase {
 		$actual = array_merge(...array_map(static fn (array $page): array => json_decode($page['content'][0]['text'], true)['rows'], $result['pages']));
 		$this->assertSame($result['native']['rows'], $actual);
 	}
+
 	/** @return void A differing native order stays different, so the integration assertion cannot be weakened. */
 	public function testComparisonDoesNotHideAnOrderMismatch(): void {
 		$request = new RowsReadRequest(

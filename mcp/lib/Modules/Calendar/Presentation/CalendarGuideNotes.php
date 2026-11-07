@@ -18,7 +18,6 @@ final class CalendarGuideNotes {
 	 */
 	public static function notes(): array {
 		return [
-			EventAlarmListing::note(),
 			'Calendars are addressed by path: calendar_list_calendars gives the paths of this user. Events are '
 				. 'addressed by uid, and calendar_list_events gives the uids of a period.',
 			'Every write answers with a plan first: what it would change, the etag of the object as it is now, and '
@@ -37,6 +36,7 @@ final class CalendarGuideNotes {
 				. 'the event itself out. An appointment of a guest sitting entirely inside the old slot is not reported.',
 			'Dates and times arrive as they will be stored, and are read back in the timezone of the account; a '
 				. 'recurring event is expanded into its occurrences before it reaches the user.',
+			EventAlarmListing::note(),
 			'send_invitations hands the invitation to the CalDAV scheduling of the server. The plan and the result '
 				. 'say whether the server has e-mail invitations switched on (imipEnabled); when it is off, say so to '
 				. 'the user instead of claiming an e-mail was sent.',

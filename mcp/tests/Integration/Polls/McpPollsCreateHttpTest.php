@@ -34,12 +34,18 @@ final class McpPollsCreateHttpTest extends IntegrationTestCase {
 	}
 	/** @return void restore the read fixtures' expected policy, without deleting native evidence from this cell */
 	protected function tearDown(): void {
-		$this->serviceSwitch?->restore();
-		if(getenv('MCP_IT_WITH_POLLS')==='1'){
-			$p=Server::get(GrantPolicy::class);foreach(PollsScene::USERS as$uid){$p->setGrant($uid,'polls','create',false);$p->setGrant($uid,'polls','read',true);}
-			Server::get(\OCA\Polls\Model\Settings\AppSettings::class)->setBooleanSetting('allowPollCreation',true);
+		try {
+			$this->serviceSwitch?->restore();
+		} finally {
+			try {
+				if(getenv('MCP_IT_WITH_POLLS')==='1'){
+					$p=Server::get(GrantPolicy::class);foreach(PollsScene::USERS as$uid){$p->setGrant($uid,'polls','create',false);$p->setGrant($uid,'polls','read',true);}
+					Server::get(\OCA\Polls\Model\Settings\AppSettings::class)->setBooleanSetting('allowPollCreation',true);
+				}
+			} finally {
+				parent::tearDown();
+			}
 		}
-		parent::tearDown();
 	}
 	/**
 	 * Authenticated endpoint; credentials are reused only within this cell.

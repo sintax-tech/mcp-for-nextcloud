@@ -44,7 +44,6 @@ final class McpPollsHttpTest extends IntegrationTestCase {
 		}
 	}
 
-
 	/**
 	 * Creates a scoped Basic or Bearer credential once, without exposing its token.
 	 * @param string $uid scene actor

@@ -39,7 +39,6 @@ final class McpFormsTest extends IntegrationTestCase {
 		}
 	}
 
-
 	/** Checks native context cold/warm, captured null/other, and lazy when the core/PHP support it.
 	 * @return void
 	 */

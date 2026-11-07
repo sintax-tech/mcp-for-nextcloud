@@ -53,7 +53,6 @@ final class McpPollsContentHttpTest extends IntegrationTestCase {
 		}
 	}
 
-
 	/**
 	 * Authenticated real MCP endpoint.
 	 * @param string $actor fixture user

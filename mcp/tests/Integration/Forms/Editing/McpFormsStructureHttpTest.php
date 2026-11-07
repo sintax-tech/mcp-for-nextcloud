@@ -44,7 +44,6 @@ final class McpFormsStructureHttpTest extends IntegrationTestCase {
 		}
 	}
 
-
 	/** Adds a question/options, reorders and deletes an option; refuses grid without changing native state.
 	 * @return void
 	 */

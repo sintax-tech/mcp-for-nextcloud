@@ -46,7 +46,6 @@ final class McpPollsWriteHttpTest extends IntegrationTestCase {
 		}
 	}
 
-
 	/** Configures, adds/reorders and shares through separate plans, then checks native persistence and grant refusals.
 	 * @return void
 	 */

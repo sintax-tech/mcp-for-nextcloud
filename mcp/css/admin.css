@@ -877,6 +877,10 @@
 #mcp-admin .mcp-badge-error { color: var(--color-error-text, var(--color-main-text)); }
 #mcp-admin p[id="mcp-scope-alert"] { color: var(--color-error-text, var(--color-error)); }
 
+/* Allowed client hosts: wide enough for a few hosts, never wider than the panel, apart from its label. */
+#mcp-admin label[for="mcp-oauth-hosts"] { margin-inline-end: calc(2 * var(--default-grid-baseline, 4px)); }
+#mcp-admin .mcp-oauth-hosts { width: 24em; max-width: 100%; }
+
 /* Self-hosted clients: one card each; redirect URIs one per line, wide enough for a full URL. */
 #mcp-admin .mcp-custom-heading { margin-top: 20px; font-size: 16px; font-weight: bold; }
 #mcp-admin .mcp-custom-client { max-width: 680px; margin: 12px 0; padding: 8px 16px; border: 1px solid var(--color-border); border-radius: var(--border-radius-element, var(--border-radius-large, 12px)); }
@@ -1070,8 +1074,17 @@ body[data-themes*="dark"] #mcp-admin {
 	background-color: var(--color-background-hover);
 }
 
+/* The core gives every input a 36px height and the clickable-area min-height, which stretch a radio and its focus ring into
+   an ellipse: natural size, centred where the tall box centred it. */
+#mcp-admin .mcp-popover-choice input,
+.mcp-scope-choice input[type="radio"] {
+	height: auto;
+	min-height: 0;
+}
+
 #mcp-admin .mcp-popover-choice input {
-	margin: 3px 0 0;
+	align-self: center;
+	margin: 0;
 }
 
 #mcp-admin .mcp-popover-choice > span {

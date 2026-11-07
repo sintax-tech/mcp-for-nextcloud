@@ -74,9 +74,7 @@ final class McpPollsCreateHttpTest extends IntegrationTestCase {
 			foreach(['allow_maybe','allow_comment','hide_booked_up','use_no']as$key){$this->assertSame(1,(int)$back['raw'][$key]);}
 			if(str_starts_with(getenv('MCP_IT_POLLS_VERSION'),'8.')){$this->assertArrayNotHasKey('timezoneName',$back['observable']);$this->assertArrayNotHasKey('timezone_name',$back['raw']);}
 			else{$this->assertNull($back['observable']['timezoneName']);$this->assertNull($back['raw']['timezone_name']);}
-			$expected=array_map(static fn(array $r):array=>array_intersect_key($r,array_flip(['text','timestamp','duration'])),$out['options']);
-			$actual=array_map(static fn(array $r):array=>array_intersect_key($r,array_flip(['text','timestamp','duration'])),$back['options']);
-			$this->assertSame($plan['options'],$expected);$this->assertSame($expected,$actual);
+			PollsCreateOptionComparison::assertPlanAndNative($plan['options'], $out['options'], $back['options']);
 			$after=PollsScene::snapshot();$this->assertSame($before['polls_polls']['count']+1,$after['polls_polls']['count']);$this->assertSame($before['polls_options']['count']+2,$after['polls_options']['count']);
 			foreach(['polls_votes','polls_share','polls_comments']as$table){if(isset($before[$table])){$this->assertSame($before[$table],$after[$table]);}}
 		}}

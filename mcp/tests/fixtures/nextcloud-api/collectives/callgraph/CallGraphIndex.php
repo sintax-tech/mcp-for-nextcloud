@@ -226,29 +226,7 @@ final class CallGraphIndex {
 			$node instanceof Stmt\Interface_ => array_map(static fn (Node\Name $n): string => $n->toString(), $node->extends),
 			default => [],
 		};
-		$props = [];
-		if ($node instanceof Stmt\Enum_) {
-			$props = $node->scalarType === null ? ['name' => ''] : ['name' => '', 'value' => ''];
-		}
-		foreach ($node->getProperties() as $property) {
-			$text = $property->getDocComment()?->getText() ?? '';
-			$type = $this->signatures->declared($property->type, $fqcn) ?? (preg_match('/@var\s+(\S+(?:\s+[^>\r\n]*>)?)/', $text, $m) ? $doc($m[1]) : null);
-			foreach ($property->props as $prop) {
-				if (($known = $type ?? CallGraphLiterals::type($prop->default)) !== null) {
-					$props[$prop->name->name] = $known;
-				}
-			}
-		}
-		// Magic getter contracts require declarations, never inferred property defaults.
-		$declaredProps = [];
-		foreach ($node->getProperties() as $property) {
-			$text = $property->getDocComment()?->getText() ?? '';
-			$type = $this->signatures->declared($property->type, $fqcn)
-				?? (preg_match('/@var\s+(\S+)/', $text, $m) ? $doc($m[1]) : null);
-			foreach ($property->props as $prop) {
-				$declaredProps[$prop->name->name] = $type;
-			}
-		}
+		[$props, $declaredProps] = CallGraphPropertyIndex::read($node, $fqcn, $this->signatures, $doc);
 		$magicReturns = [];
 		preg_match_all('/@method\s+(?:static\s+)?(\S+)\s+(\w+)\s*\(/', $node->getDocComment()?->getText() ?? '', $matches, PREG_SET_ORDER);
 		foreach ($matches as [, $type, $method]) {
@@ -274,7 +252,9 @@ final class CallGraphIndex {
 			foreach ($method->name->toLowerString() === '__construct' ? (new NodeFinder())->findInstanceOf($method->stmts ?? [], Expr\Assign::class) : [] as $set) {
 				if ($set->var instanceof Expr\PropertyFetch && $set->var->var instanceof Expr\Variable && $set->var->var->name === 'this'
 					&& $set->var->name instanceof Node\Identifier && $set->expr instanceof Expr\Variable && isset($params[(string)$set->expr->name])) {
-					$props[$set->var->name->name] ??= $params[(string)$set->expr->name];
+					if (!isset($props[$set->var->name->name]) || in_array(null, CallGraphArrayTypes::read($props[$set->var->name->name])['values'] ?? [], true)) {
+						$props[$set->var->name->name] = $params[(string)$set->expr->name];
+					}
 				}
 			}
 			foreach ($method->name->toLowerString() === '__construct' ? (new NodeFinder())->findInstanceOf($method->stmts ?? [], Stmt\Expression::class) : [] as $statement) {
@@ -283,7 +263,9 @@ final class CallGraphIndex {
 					&& $set->var->var->name === 'this' && $set->var->name instanceof Node\Identifier && $set->expr instanceof Expr\Variable
 					&& preg_match('/@var\s+(\S+)\s+\$' . preg_quote((string)$set->expr->name, '/') . '\b/', $statement->getDocComment()?->getText() ?? '', $match)
 					&& ($type = $doc($match[1])) !== null) {
-					$props[$set->var->name->name] ??= $type;
+					if (!isset($props[$set->var->name->name]) || in_array(null, CallGraphArrayTypes::read($props[$set->var->name->name])['values'] ?? [], true)) {
+						$props[$set->var->name->name] = $type;
+					}
 				}
 			}
 			$methods[$method->name->toLowerString()] = ['node' => $method, 'returns' => $returns, 'params' => $params];

@@ -7,9 +7,12 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/callgraph/CallGraphSubset.php';
 require_once __DIR__ . '/callgraph/CallGraphFunctions.php';
+require_once __DIR__ . '/callgraph/CallGraphArrayTypes.php';
+require_once __DIR__ . '/callgraph/CallGraphDocs.php';
 require_once __DIR__ . '/callgraph/CallGraphNames.php';
 require_once __DIR__ . '/callgraph/CallGraphLiterals.php';
 require_once __DIR__ . '/callgraph/CallGraphSignatures.php';
+require_once __DIR__ . '/callgraph/CallGraphPropertyIndex.php';
 require_once __DIR__ . '/callgraph/CallGraphIndex.php';
 require_once __DIR__ . '/callgraph/CallGraphDispatch.php';
 require_once __DIR__ . '/callgraph/CallGraphBindings.php';

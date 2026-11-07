@@ -41,13 +41,16 @@ final class CallGraphSignatures {
 		$text = $fn->getDocComment()?->getText() ?? '';
 		$returns = $this->declared($fn->returnType, $class) ?? (preg_match('/@return\s+(\S+)/', $text, $m) ? $doc($m[1]) : null);
 		$params = [];
-		preg_match_all('/@param\s+(\S+)\s+(?:\.\.\.)?\$(\w+)/', $text, $ps, PREG_SET_ORDER);
+		preg_match_all('/@param\s+([^\r\n]+?)\s+(?:\.\.\.)?\$(\w+)/', $text, $ps, PREG_SET_ORDER);
 		foreach ($ps as [, $type, $param]) {
 			if (($type = $doc($type)) !== null) {
 				$params[$param] = $type;
 			}
 		}
 		foreach ($fn->params as $param) {
+			if ($param->type instanceof Node\Identifier && $param->type->toLowerString() === 'array' && is_string($param->var->name)) {
+				$params[$param->var->name] ??= CallGraphArrayTypes::make([''], [null]);
+			}
 			if (($type = $this->declared($param->type, $class)) !== null && is_string($param->var->name)) {
 				$params[$param->var->name] = $type;
 			}

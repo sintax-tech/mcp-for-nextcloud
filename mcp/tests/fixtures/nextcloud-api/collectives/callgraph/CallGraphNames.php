@@ -19,27 +19,17 @@ final class CallGraphNames {
 	 * @return string|null the FQCN, `FQCN[]` for an array of one class, or null when it names no single class
 	 */
 	public static function docType(array $imports, string $namespace, ?string $self, string $doc): ?string {
-		$parts = array_values(array_diff(explode('|', ltrim($doc, '?')), ['null']));
-		if (count($parts) !== 1) {
-			return null;
-		}
-		[$type, $array] = [$parts[0], ''];
-		if (preg_match('/^(?:list|array|iterable)<(?:[\w\\\\]+,\s*)?([\w\\\\]+)>$/', $type, $m) || preg_match('/^([\w\\\\]+)\[\]$/', $type, $m)) {
-			[$type, $array] = [$m[1], '[]'];
-		}
-		if (in_array(strtolower($type), ['string', 'int', 'float', 'bool', 'void', 'never', 'false', 'true'], true)) {
-			return $array === '' ? '' : 'scalar[]';
-		}
-		if (in_array(strtolower($type), ['self', 'static', '$this'], true)) {
-			return $self === null ? null : $self . $array;
-		}
-		if (preg_match('/^[A-Z]\w*$/', substr((string)strrchr('\\' . $type, '\\'), 1)) !== 1) {
-			return null;
-		}
-		$head = explode('\\', ltrim($type, '\\'))[0];
-		$fqcn = str_starts_with($type, '\\') ? ltrim($type, '\\')
-			: (isset($imports[$head]) ? $imports[$head] . substr($type, strlen($head)) : $namespace . $type);
-		return $fqcn . $array;
+		return CallGraphDocs::type($doc, static function (string $type) use ($imports, $namespace, $self): ?string {
+			if (in_array(strtolower($type), ['self', 'static', '$this'], true)) {
+				return $self;
+			}
+			if (preg_match('/^[A-Z]\\w*$/', substr((string)strrchr('\\' . $type, '\\'), 1)) !== 1) {
+				return null;
+			}
+			$head = explode('\\', ltrim($type, '\\'))[0];
+			return str_starts_with($type, '\\') ? ltrim($type, '\\')
+				: (isset($imports[$head]) ? $imports[$head] . substr($type, strlen($head)) : $namespace . $type);
+		});
 	}
 
 	/**

@@ -27,10 +27,7 @@ final class CallGraphMagicUses {
 	public function calls(Node $node, callable $typeOf, callable $miss, string $caller): array {
 		$edges = [];
 		$add = function (Expr $value, array $hooks, array $arguments = []) use ($typeOf, $miss, $node, $caller, &$edges): void {
-			foreach ($typeOf($value) as $type) {
-				while ($type !== null && str_ends_with($type, '[]')) {
-					$type = CallGraphTypes::element($type);
-				}
+			foreach (CallGraphArrayTypes::leaves($typeOf($value)) as $type) {
 				if ($type === 'json-object-value' && in_array('__toString', $hooks, true)) {
 					$edges[] = 'php-core stdClass::__toString[absent]';
 				}

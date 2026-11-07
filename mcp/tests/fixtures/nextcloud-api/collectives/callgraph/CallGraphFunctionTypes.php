@@ -69,6 +69,10 @@ final class CallGraphFunctionTypes {
 				return $row !== null && str_ends_with($row, '[]') ? $row : null;
 			}, $arguments[0] ?? [null]));
 		}
+		if (in_array($name, ['array_values', 'array_reverse', 'array_slice', 'array_merge', 'array_combine'], true)) {
+			$source = $name === 'array_combine' ? ($arguments[1] ?? [null]) : ($name === 'array_merge' ? array_merge(...$arguments) : ($arguments[0] ?? [null]));
+			return [CallGraphArrayTypes::make([''], array_merge(...array_map(CallGraphArrayTypes::values(...), $source)))];
+		}
 		if (str_starts_with($result, 'preserve:')) {
 			$which = substr($result, 9);
 			return $which === 'all' ? CallGraphTypes::union(array_merge(...$arguments)) : ($arguments[(int)$which] ?? [null]);

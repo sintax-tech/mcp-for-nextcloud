@@ -18,13 +18,19 @@ final class CallGraphLiterals {
 		if ($value instanceof Node\Scalar || ($value instanceof Expr\ConstFetch && in_array(strtolower($value->name->toString()), ['true', 'false', 'null'], true))) {
 			return '';
 		}
-		if ($value instanceof Expr\Array_ && $value->items !== []) {
-			foreach ($value->items as $item) {
-				if ($item === null || $item->unpack || self::type($item->value) !== '') {
-					return null;
+		if ($value instanceof Expr\Array_) {
+			$values = $shape = [];
+			foreach ($value->items as $position => $item) {
+				if ($item === null || $item->unpack || ($type = self::type($item->value)) === null) {
+					return CallGraphArrayTypes::make([''], [null]);
+				}
+				$values[] = $type;
+				$key = $item->key === null ? $position : ($item->key instanceof Node\Scalar\String_ || $item->key instanceof Node\Scalar\Int_ ? $item->key->value : null);
+				if ($key !== null) {
+					$shape[(string)$key] = [$type];
 				}
 			}
-			return 'scalar[]';
+			return $value->items === [] ? '[]' : CallGraphArrayTypes::make([''], $values, $shape);
 		}
 		return null;
 	}

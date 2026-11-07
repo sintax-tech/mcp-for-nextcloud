@@ -45,7 +45,7 @@ final class CallGraphTypes {
 		if (!CallGraphSubset::allows($expr)) {
 			return [null];
 		}
-		return match (true) {
+		return self::union(match (true) {
 			$expr instanceof Expr\Variable => $expr->name === 'this' ? [$class] : (is_string($expr->name) ? ($locals[$expr->name] ?? [null]) : [null]),
 			$expr instanceof Expr\New_ => $this->created($class, $expr, $locals),
 			$expr instanceof Expr\Include_ => ['scalar[]'],
@@ -68,7 +68,7 @@ final class CallGraphTypes {
 			$expr instanceof Expr\Empty_, $expr instanceof Expr\Instanceof_, $expr instanceof Expr\UnaryMinus, $expr instanceof Expr\Closure,
 			$expr instanceof Expr\ArrowFunction => [''],
 			default => [null],
-		};
+		});
 	}
 
 	/**
@@ -80,7 +80,7 @@ final class CallGraphTypes {
 	private function offsetType(?string $class, Expr\ArrayDimFetch $expr, array $locals): array {
 		$types = [];
 		foreach ($this->typeOf($class, $expr->var, $locals) as $receiver) {
-			array_push($types, ...(self::isObject($receiver) ? $this->returnTypes($receiver, 'offsetGet') : [self::element($receiver)]));
+			array_push($types, ...(self::isObject($receiver) ? $this->returnTypes($receiver, 'offsetGet') : CallGraphArrayTypes::values($receiver, $expr->dim instanceof Node\Scalar\String_ || $expr->dim instanceof Node\Scalar\Int_ ? $expr->dim->value : null)));
 		}
 		return self::union($types);
 	}
@@ -159,13 +159,23 @@ final class CallGraphTypes {
 	 * @return list<?string> proven array element types, preserving an unknown or an object element
 	 */
 	private function arrayType(?string $class, Expr\Array_ $expr, array $locals): array {
-		$types = [];
-		foreach ($expr->items as $item) {
-			foreach ($item === null ? [null] : $this->typeOf($class, $item->value, $locals) as $type) {
-				$types[] = $item?->unpack ? $type : ($type === null ? null : ($type === '' ? 'scalar[]' : $type . '[]'));
+		$keys = $values = $shape = [];
+		$exact = true;
+		foreach ($expr->items as $position => $item) {
+			if ($item === null || $item->unpack) {
+				return [CallGraphArrayTypes::make([''], [null])];
 			}
+			$types = $this->typeOf($class, $item->value, $locals);
+			array_push($values, ...$types);
+			array_push($keys, ...($item->key === null ? [''] : $this->typeOf($class, $item->key, $locals)));
+			$key = $item->key === null ? $position : ($item->key instanceof Node\Scalar\String_ || $item->key instanceof Node\Scalar\Int_ ? $item->key->value : null);
+			if ($key === null) {
+				$exact = false;
+				continue;
+			}
+			$shape[(string)$key] = $types;
 		}
-		return $types === [] ? ['[]'] : self::union($types);
+		return $expr->items === [] ? ['[]'] : [CallGraphArrayTypes::make($keys, $values, $exact ? $shape : [])];
 	}
 
 	/**
@@ -251,7 +261,7 @@ final class CallGraphTypes {
 	 * @return bool whether it is an object of a known class
 	 */
 	public static function isObject(?string $type): bool {
-		return $type !== null && !in_array($type, ['', 'json-value', 'json-object-value'], true) && !str_ends_with($type, '[]') && !str_starts_with($type, 'class-string:');
+		return $type !== null && !in_array($type, ['', 'json-value', 'json-object-value'], true) && !str_ends_with($type, '[]') && !str_starts_with($type, 'class-string:') && !str_starts_with($type, '@');
 	}
 
 	/**
@@ -259,7 +269,7 @@ final class CallGraphTypes {
 	 * @return string|null the type of an element when it is an array of a class; null otherwise
 	 */
 	public static function element(?string $type): ?string {
-		return in_array($type, ['json-value', 'json-object-value'], true) ? $type : ($type === '' || $type === '[]' ? '' : ($type !== null && $type !== '[]' && str_ends_with($type, '[]') ? ($type === 'scalar[]' ? '' : substr($type, 0, -2)) : null));
+		return CallGraphArrayTypes::pack(CallGraphArrayTypes::values($type));
 	}
 
 	/**
@@ -267,9 +277,7 @@ final class CallGraphTypes {
 	 * @return list<?string> without repeats; an empty array (`[]`) adds nothing to an array of a class
 	 */
 	public static function union(array $types): array {
-		$types = array_values(array_unique($types, SORT_REGULAR));
-		$arrays = array_filter($types, static fn (?string $t): bool => $t !== null && $t !== '[]' && str_ends_with($t, '[]'));
-		return $arrays === [] ? $types : array_values(array_diff($types, ['[]']));
+		return CallGraphArrayTypes::merge($types);
 	}
 
 	/**

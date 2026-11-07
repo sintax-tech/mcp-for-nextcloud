@@ -42,7 +42,14 @@ final class CallGraphLocals {
 			}
 		}
 		$start = array_merge($start, array_map(static fn (string $type): array => [$type], $unit['params']));
-		$start = array_merge($start, array_diff_key($this->types->bindings->of($key), $unit['params']));
+		$given = $this->types->bindings->of($key);
+		foreach ($given as $name => $values) {
+			$stated = $unit['params'][$name] ?? null;
+			$array = CallGraphArrayTypes::read($stated);
+			if ($stated === null || ($array !== null && in_array(null, $array['values'], true))) {
+				$start[$name] = $values;
+			}
+		}
 		$locals = $start;
 		for ($round = 0; $round < 8; $round++) {
 			$next = $start;
@@ -138,7 +145,7 @@ final class CallGraphLocals {
 		$keys = [];
 		$values = [];
 		foreach ($this->types->typeOf($class, $expr, $locals) as $type) {
-			[$k, $v] = CallGraphTypes::isObject($type) ? $this->types->protocols()->elements($type) : [[''], [CallGraphTypes::element($type)]];
+			[$k, $v] = CallGraphTypes::isObject($type) ? $this->types->protocols()->elements($type) : [CallGraphArrayTypes::read($type)['keys'] ?? [''], CallGraphArrayTypes::values($type)];
 			array_push($keys, ...$k);
 			array_push($values, ...$v);
 		}

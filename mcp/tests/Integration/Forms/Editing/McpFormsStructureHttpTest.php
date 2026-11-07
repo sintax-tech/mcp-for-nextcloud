@@ -19,16 +19,13 @@ use PHPUnit\Framework\Attributes\Group;
 /** Minimal Bearer structure proof with native OCS readback, independent edit grant and forbidden grid conversion. */
 #[Group('forms')]
 final class McpFormsStructureHttpTest extends IntegrationTestCase {
-	/** Selects the explicit Forms cell and proven version pins.
+	/** Selects the explicit Forms cell.
 	 * @return void
 	 */
 	protected function setUp(): void {
 		parent::setUp();
 		if (getenv('MCP_IT_WITH_FORMS') !== '1') {
 			self::markTestSkipped('Requires pinned Forms cell.');
-		}
-		if (!in_array(Server::get(IAppManager::class)->getAppVersion('forms'), StructureCapabilities::PROVEN, true)) {
-			self::markTestSkipped('Installed Forms version is outside the proven structure pins.');
 		}
 	}
 
@@ -37,12 +34,23 @@ final class McpFormsStructureHttpTest extends IntegrationTestCase {
 	 */
 	public function testBearerStructureRoundtripAndGridRefusal(): void {
 		$api = new FormsApiScene();
-		$id = $api->form('HTTP structure proof');
+		$id = null;
 		$uid = FormsScene::OWNER;
 		$client = new McpClient(LoginFactory::bearer($uid));
 		$policy = Server::get(GrantPolicy::class);
-		$args = ['form_id' => $id, 'type' => 'dropdown', 'text' => 'HTTP choice'];
 		try {
+			$policy->setGrant($uid, 'forms', 'edit', true);
+			if (!in_array(Server::get(IAppManager::class)->getAppVersion('forms'), StructureCapabilities::PROVEN, true)) {
+				self::assertFalse(Server::get(StructureCapabilities::class)->supports(StructureCapabilities::KEY));
+				$before = FormsState::database();
+				$reply = $client->tool('forms_add_question', ['form_id' => FormsScene::read()['direct'], 'type' => 'dropdown', 'text' => 'Incompatible proof']);
+				self::assertFalse($reply->ok());
+				self::assertSame('Unknown tool', $reply->body['error']['message'] ?? null);
+				self::assertSame($before, FormsState::database());
+				return;
+			}
+			$id = $api->form('HTTP structure proof');
+			$args = ['form_id' => $id, 'type' => 'dropdown', 'text' => 'HTTP choice'];
 			$policy->setGrant($uid, 'forms', 'edit', false);
 			$before = FormsState::database();
 			self::assertFalse($client->tool('forms_add_question', $args)->ok());
@@ -70,7 +78,13 @@ final class McpFormsStructureHttpTest extends IntegrationTestCase {
 				self::assertSame($before, FormsState::database());
 			}
 		} finally {
-			$policy->setGrant($uid, 'forms', 'edit', false);
+			try {
+				if ($id !== null) {
+					$api->api($uid, 'DELETE', "forms/$id");
+				}
+			} finally {
+				$policy->setGrant($uid, 'forms', 'edit', false);
+			}
 		}
 	}
 

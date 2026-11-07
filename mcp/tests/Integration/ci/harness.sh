@@ -198,7 +198,7 @@ cmd_install_app() {
         docker exec -u www-data "$NC" tar -xzf /tmp/mcp-baseline.tar.gz -C /var/www/html/custom_apps
         occ app:enable mcp
         assert_installed_version "$baseline_version"
-        occ migrations:status mcp || true
+        sh "$REPO_ROOT/mcp/tests/Integration/ci/migration-status.sh" "$NC"
         # Credentials issued by the baseline itself, checked after the upgrade (validation T12).
         docker exec -u www-data "$NC" php /mcp-it-src/mcp/tests/Integration/ci/legacy-credentials.php /tmp/mcp-it-legacy.json
         # Preferences the baseline writes through its own setters, and its answers for them (validation T12/T13).
@@ -232,7 +232,7 @@ cmd_install_app() {
         occ app:enable mcp
     fi
     assert_installed_version "$expected"
-    occ migrations:status mcp || true
+    sh "$REPO_ROOT/mcp/tests/Integration/ci/migration-status.sh" "$NC"
     echo "$expected" > "$WORK/expected-version"
 }
 

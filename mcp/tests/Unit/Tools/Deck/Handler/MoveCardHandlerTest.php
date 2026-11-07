@@ -9,10 +9,10 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck\Handler;
 
 use OCA\Deck\NoPermissionException;
 use OCA\Deck\StatusException;
-use OCA\Mcp\Tools\Deck\CardFormatter;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
-use OCA\Mcp\Tools\Deck\DeckMessages;
-use OCA\Mcp\Tools\Deck\Handler\MoveCardHandler;
+use OCA\Mcp\Modules\Deck\Integration\CardFormatter;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
+use OCA\Mcp\Modules\Deck\Moving\MoveCardHandler;
 use OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestHelpers;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -55,6 +55,33 @@ final class MoveCardHandlerTest extends TestCase {
 		self::assertSame(11, $payload['stackId']);
 	}
 
+	public function testMovedCardReportsTheBoardItLandedOn(): void {
+		// `CardService::reorder()` answers cards without their board; the destination may be another board.
+		$gateway = $this->gatewayOwnedBy('alice');
+		$gateway->method('moveCard')->willReturn($this->card(['id' => 7, 'stackId' => 42]));
+		$gateway->expects(self::once())->method('cardBoardId')->with('alice', 7)->willReturn(30);
+		$handler = new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
+
+		$payload = $this->payload($handler->handle(['cardId' => 7, 'stackId' => 42], 'alice'));
+
+		self::assertSame(30, $payload['boardId']);
+		self::assertNotNull($payload['url']);
+	}
+
+	public function testABoardThatCannotBeReadAfterTheMoveLeavesTheMoveASuccess(): void {
+		$gateway = $this->gatewayOwnedBy('alice');
+		$gateway->method('moveCard')->willReturn($this->card(['id' => 7, 'stackId' => 42]));
+		$gateway->method('cardBoardId')->willThrowException(new RuntimeException('db gone'));
+		$handler = new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
+
+		$result = $handler->handle(['cardId' => 7, 'stackId' => 42], 'alice');
+
+		self::assertArrayNotHasKey('isError', $result);
+		$payload = $this->payload($result);
+		self::assertSame(42, $payload['stackId']);
+		self::assertNull($payload['boardId']);
+	}
+
 	public function testExplicitOrderIsForwardedAsZeroToo(): void {
 		$gateway = $this->gatewayOwnedBy('alice');
 		$gateway->expects(self::once())
@@ -82,7 +109,7 @@ final class MoveCardHandlerTest extends TestCase {
 			->handle(['cardId' => 7, 'stackId' => 11], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotFoundOrForbidden(), $this->text($result));
 		self::assertStringNotContainsString('Permission denied', $this->text($result));
 	}
 
@@ -90,7 +117,7 @@ final class MoveCardHandlerTest extends TestCase {
 		$result = $this->handler(new StatusException('Operation not allowed. This card is archived.'))
 			->handle(['cardId' => 7, 'stackId' => 11], 'alice');
 
-		self::assertSame(DeckMessages::errorNotAllowed(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotAllowed(), $this->text($result));
 	}
 
 	public function testBackendFailureBecomesTheGenericMessage(): void {
@@ -98,7 +125,7 @@ final class MoveCardHandlerTest extends TestCase {
 			->handle(['cardId' => 7, 'stackId' => 11], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorGeneric(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorGeneric(), $this->text($result));
 		self::assertStringNotContainsString('deck_cards', $this->text($result));
 	}
 
@@ -157,6 +184,6 @@ final class MoveCardHandlerTest extends TestCase {
 		$result = $handler->handle(['cardId' => 7, 'stackId' => 11], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotFoundOrForbidden(), $this->text($result));
 	}
 }

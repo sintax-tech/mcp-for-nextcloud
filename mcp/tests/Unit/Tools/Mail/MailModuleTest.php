@@ -8,13 +8,14 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 
 use InvalidArgumentException;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
-use OCA\Mcp\Tools\Mail\MailModule;
-use OCA\Mcp\Tools\PreviewsWrites;
-use OCA\Mcp\Tools\ToolRegistry;
-use OCA\Mcp\Tools\WriteGate;
+use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
+use OCA\Mcp\Modules\Mail\MailModule;
+use OCA\Mcp\Mcp\Tools\PreviewsWrites;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use OCP\App\IAppManager;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -66,7 +67,7 @@ final class MailModuleTest extends TestCase {
 	 * @return void
 	 */
 	public function testTheCatalogOffersReadingMailAndItsWrites(): void {
-		$this->assertSame(['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'], GrantPolicy::CATALOG['mail']);
+		$this->assertSame(['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'], GrantCatalog::CATALOG['mail']);
 		$this->assertNotContains('mail', GrantPolicy::DENIED_READS);
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
 		$this->assertTrue($policy->granted('alice', 'mail', 'read'));

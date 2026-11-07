@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Files;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Exclusion\ExclusionTestCase;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
 use OCA\Mcp\Tests\Integration\Support\McpClient;
@@ -150,8 +150,8 @@ final class DeleteSharingTest extends ExclusionTestCase {
 	/** @return void An innocently named received alias cannot release a historical NFC owner backup reservation. */
 	public function testHistoricalOwnerReservationRefusesAlias(): void {
 		$config = Server::get(\OCP\IAppConfig::class);
-		$before = Server::get(\OCA\Mcp\Service\BackupSettingsDocument::class)->read();
-		$writer = Server::get(\OCA\Mcp\Service\BackupSettingsWriter::class);
+		$before = Server::get(\OCA\Mcp\Platform\Backups\BackupSettingsDocument::class)->read();
+		$writer = Server::get(\OCA\Mcp\Access\Settings\BackupSettingsWriter::class);
 		$state = Server::get(\OCA\Mcp\Db\PolicyStateMapper::class);
 		$name = 'FD3 Café ' . $this->run;
 		try {
@@ -167,9 +167,9 @@ final class DeleteSharingTest extends ExclusionTestCase {
 				self::assertSame('reserved bytes', $file->getContent());
 			}
 		} finally {
-			$before === null ? $config->deleteKey('mcp', \OCA\Mcp\Service\BackupLocation::KEY)
-				: $config->setValueString('mcp', \OCA\Mcp\Service\BackupLocation::KEY, $before, false);
-			Server::get(\OCA\Mcp\Service\BackupLocation::class)->invalidate();
+			$before === null ? $config->deleteKey('mcp', \OCA\Mcp\Platform\Backups\BackupLocation::KEY)
+				: $config->setValueString('mcp', \OCA\Mcp\Platform\Backups\BackupLocation::KEY, $before, false);
+			Server::get(\OCA\Mcp\Platform\Backups\BackupLocation::class)->invalidate();
 		}
 	}
 
@@ -178,7 +178,7 @@ final class DeleteSharingTest extends ExclusionTestCase {
 		$file = $this->makeFile('home', 'scope/incoming/sub/a.txt', 'keep whole tree');
 		$share = $this->share($file->getParent()->getParent()->getParent());
 		$path = $share->getTarget() . '/incoming';
-		$writer = Server::get(\OCA\Mcp\Service\Policy\PolicyWriter::class);
+		$writer = Server::get(\OCA\Mcp\Access\Policy\PolicyWriter::class);
 		$state = Server::get(\OCA\Mcp\Db\PolicyStateMapper::class);
 		// A long-lived CLI fixture predates the new share; refresh its public mount setup before native scope admission.
 		\OCA\Mcp\Tests\Integration\Support\FixtureFilesystem::tearDown();

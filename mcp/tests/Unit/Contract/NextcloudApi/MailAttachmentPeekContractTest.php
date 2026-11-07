@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi;
 
-use OCA\Mcp\Tools\Mail\MailAttachmentSupport;
+use OCA\Mcp\Modules\Mail\Integration\MailAttachmentSupport;
 use PHPUnit\Framework\TestCase;
 
 /**

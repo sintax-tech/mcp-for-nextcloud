@@ -14,7 +14,7 @@
 	max-width: 900px;
 }
 
-/* Tab navigation (js/admin-tabs.js): the bar appears only once the script marks the page ready, so
+/* Tab navigation (src/admin/admin-tabs.js): the bar appears only once the script marks the page ready, so
    without JavaScript every panel stays visible and the page keeps its old single-column layout. */
 #mcp-admin .mcp-tab-bar {
 	display: none;
@@ -85,7 +85,7 @@
 	display: none;
 }
 
-/* Searchable multi-select picker (js/admin-picker.js): chips of the selected options on top, a
+/* Searchable multi-select picker (src/admin/admin-picker.js): chips of the selected options on top, a
    search field that filters the existing options and a collapsed listbox. Theme variables only. */
 #mcp-admin .mcp-picker {
 	inline-size: 100%;
@@ -437,7 +437,7 @@
 }
 
 /*
- * Individual values in the operations view: only a real exception (js/admin-exceptions.js) is outlined, and its state
+ * Individual values in the operations view: only a real exception (src/admin/admin-exceptions.js) is outlined, and its state
  * is named in the tooltip and for screen readers, so it never depends on colour; an invalid stored value uses a solid
  * outline in the error colour. The outline is neutral: the theme colour is not a state. The reset toolbar sits above the
  * table.
@@ -877,6 +877,10 @@
 #mcp-admin .mcp-badge-error { color: var(--color-error-text, var(--color-main-text)); }
 #mcp-admin p[id="mcp-scope-alert"] { color: var(--color-error-text, var(--color-error)); }
 
+/* Allowed client hosts: wide enough for a few hosts, never wider than the panel, apart from its label. */
+#mcp-admin label[for="mcp-oauth-hosts"] { margin-inline-end: calc(2 * var(--default-grid-baseline, 4px)); }
+#mcp-admin .mcp-oauth-hosts { width: 24em; max-width: 100%; }
+
 /* Self-hosted clients: one card each; redirect URIs one per line, wide enough for a full URL. */
 #mcp-admin .mcp-custom-heading { margin-top: 20px; font-size: 16px; font-weight: bold; }
 #mcp-admin .mcp-custom-client { max-width: 680px; margin: 12px 0; padding: 8px 16px; border: 1px solid var(--color-border); border-radius: var(--border-radius-element, var(--border-radius-large, 12px)); }
@@ -884,7 +888,7 @@
 .mcp-custom-redirects { width: 100%; max-width: 640px; font-family: var(--font-face-monospace, monospace); }
 
 /*
- * Levels view (js/admin-levels.js): one cell per module with the level as a word and its origin as an icon, so no state
+ * Levels view (src/admin/admin-levels.js): one cell per module with the level as a word and its origin as an icon, so no state
  * depends on colour. The view switch is a segmented control whose pressed button is the selection.
  */
 #mcp-admin .mcp-legend[hidden],
@@ -998,7 +1002,7 @@ body[data-themes*="dark"] #mcp-admin {
 	color: var(--color-main-text);
 }
 
-/* Popover of a level cell (js/admin-level-popover.js), placed under the cell inside the matrix block. */
+/* Popover of a level cell (src/admin/admin-level-popover.js), placed under the cell inside the matrix block. */
 #mcp-admin [id="mcp-block-matrix"] {
 	position: relative;
 }
@@ -1070,8 +1074,17 @@ body[data-themes*="dark"] #mcp-admin {
 	background-color: var(--color-background-hover);
 }
 
+/* The core gives every input a 36px height and the clickable-area min-height, which stretch a radio and its focus ring into
+   an ellipse: natural size, centred where the tall box centred it. */
+#mcp-admin .mcp-popover-choice input,
+.mcp-scope-choice input[type="radio"] {
+	height: auto;
+	min-height: 0;
+}
+
 #mcp-admin .mcp-popover-choice input {
-	margin: 3px 0 0;
+	align-self: center;
+	margin: 0;
 }
 
 #mcp-admin .mcp-popover-choice > span {
@@ -1144,7 +1157,7 @@ body[data-themes*="dark"] #mcp-admin {
 	outline-offset: 2px;
 }
 
-/* Notices above the matrix (js/admin-exceptions.js), like NcNoteCard: a bar on the start side and the words. */
+/* Notices above the matrix (src/admin/admin-exceptions.js), like NcNoteCard: a bar on the start side and the words. */
 #mcp-admin .mcp-note {
 	display: flex;
 	flex-wrap: wrap;
@@ -1250,7 +1263,7 @@ body[data-themes*="dark"] #mcp-admin {
 	outline-offset: -2px;
 }
 
-/* The selection bar (js/admin-overrides.js): shown while people are selected, in place of the "All" menus. */
+/* The selection bar (src/admin/admin-overrides.js): shown while people are selected, in place of the "All" menus. */
 #mcp-admin .mcp-selection-bar {
 	display: flex;
 	flex-wrap: wrap;

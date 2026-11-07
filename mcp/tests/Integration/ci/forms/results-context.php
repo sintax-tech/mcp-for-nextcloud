@@ -18,8 +18,8 @@ $uninitialized=$lazy&&(new \ReflectionClass($service))->isUninitializedLazyObjec
 if($scenario!=='cold'&&!$lazy){$f=new \OCA\Forms\Db\Form();$f->setId(0);$f->setOwnerId(FormsScene::OWNER);$f->setAccess(['permitAllUsers'=>false,'showToAllUsers'=>false]);$service->getPermissions($f);}
 if(Server::get(\OCA\Forms\Db\ShareMapper::class)->findByForm(0)!==[]){throw new RuntimeException('Sentinel premise failed');}
 $session->setUser($users->get(FormsScene::READER));$accepted=true;
-try{Server::get(\OCA\Mcp\Tools\Forms\Results\ResultsReadFlow::class)->run(['form_id'=>FormsResultsScene::read()['form']],FormsScene::READER,true);}
-catch(\OCA\Mcp\Tools\ToolFailure){$accepted=false;}
+try{Server::get(\OCA\Mcp\Modules\Forms\Integration\ResultsReadFlow::class)->run(['form_id'=>FormsResultsScene::read()['form']],FormsScene::READER,true);}
+catch(\OCA\Mcp\Mcp\Tools\Results\ToolFailure){$accepted=false;}
 if($accepted===in_array($scenario,['null','other'],true)){throw new RuntimeException('Unexpected captured FO2 context result');}
 $mappers=[];if($accepted){foreach(['SubmissionMapper','AnswerMapper','QuestionMapper','OptionMapper']as$name){$mappers[]=get_class(Server::get('OCA\\Forms\\Db\\'.$name));}}
 echo json_encode(['scenario'=>$scenario,'accepted'=>$accepted,'sameNativeInstance'=>Server::get(\OCA\Forms\Service\FormsService::class)===$service,'initiallyUninitialized'=>$uninitialized,'nativeMappers'=>$mappers],JSON_THROW_ON_ERROR)."\n";

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Tables\Discovery;
 
-use OCA\Mcp\Tools\Tables\Discovery\TablesPage;
+use OCA\Mcp\Modules\Tables\Reading\TablesPage;
 use PHPUnit\Framework\TestCase;
 
 /** A page says how many there are, whether more remain and where the next page starts. */

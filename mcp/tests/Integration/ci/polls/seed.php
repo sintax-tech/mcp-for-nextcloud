@@ -49,11 +49,9 @@ final class PollsSeed {
 				\OCP\Server::get(\OCA\Polls\Service\VoteService::class)->set($ids['options'][$name][0],\OCA\Polls\Db\Vote::VOTE_YES);
 			}
 		}
-		$policy=\OCP\Server::get(\OCA\Mcp\Service\GrantPolicy::class);
-		$policy->setGlobalEnabled(true);
-		foreach (PollsScene::USERS as $uid) {
-			$policy->setEligible($uid,true);$policy->setConnected($uid,true);$policy->setGrant($uid,'polls','read',true);
-		}
+		\OCA\Mcp\Tests\Integration\Support\ScenePolicySetup::actors(
+			\OCP\Server::get(\OCA\Mcp\Access\Grants\GrantPolicy::class), PollsScene::USERS, 'polls',
+		);
 		file_put_contents($out,json_encode($ids,JSON_PRETTY_PRINT|JSON_THROW_ON_ERROR));
 		echo 'Synthetic Polls scene created through native services: '.count($ids['options']).' polls'.PHP_EOL;
 		$context->cleanSession();$session->setUser(null);

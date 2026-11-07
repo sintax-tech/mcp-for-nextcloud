@@ -55,7 +55,7 @@ final readonly class StoredGroupGrant {
 	 * @return bool Whether this version can grant the pair.
 	 */
 	public static function known(string $module, string $operation): bool {
-		return \OCA\Mcp\Service\GrantPolicy::inCatalog($module, $operation)
+		return \OCA\Mcp\Access\Grants\GrantPolicy::inCatalog($module, $operation)
 			|| ($module === '_system' && $operation === 'eligible');
 	}
 

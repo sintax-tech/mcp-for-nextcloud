@@ -6,13 +6,13 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files\Deletion\Sharing;
 
-use OCA\Mcp\Service\BackupLocation;
-use OCA\Mcp\Service\BackupSettingsDocument;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
-use OCA\Mcp\Tools\Files\Deletion\DeleteBackendGate;
-use OCA\Mcp\Tools\Files\Deletion\DeleteEligibility;
-use OCA\Mcp\Tools\Files\Deletion\Sharing\DeleteLocalOrigin;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Platform\Backups\BackupLocation;
+use OCA\Mcp\Platform\Backups\BackupSettingsDocument;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
+use OCA\Mcp\Modules\Files\Integration\DeleteBackendGate;
+use OCA\Mcp\Modules\Files\Deletion\DeleteEligibility;
+use OCA\Mcp\Modules\Files\Deletion\Sharing\DeleteLocalOrigin;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\IRootFolder;

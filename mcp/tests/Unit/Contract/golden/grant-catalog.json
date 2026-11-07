@@ -1,0 +1,105 @@
+{
+    "CATALOG": {
+        "files": [
+            "read",
+            "edit",
+            "create",
+            "move",
+            "restore",
+            "share",
+            "link",
+            "delete"
+        ],
+        "notes": [
+            "read",
+            "create",
+            "edit",
+            "move",
+            "delete"
+        ],
+        "deck": [
+            "read",
+            "create",
+            "edit",
+            "move",
+            "delete"
+        ],
+        "contacts": [
+            "read",
+            "create",
+            "edit",
+            "delete"
+        ],
+        "tasks": [
+            "read",
+            "create",
+            "edit",
+            "delete"
+        ],
+        "calendar": [
+            "read",
+            "create",
+            "edit",
+            "move",
+            "delete",
+            "transfer"
+        ],
+        "people": [
+            "read"
+        ],
+        "talk": [
+            "read",
+            "reply",
+            "attach",
+            "quote",
+            "create"
+        ],
+        "logs": [
+            "read"
+        ],
+        "mail": [
+            "read",
+            "messages",
+            "attachments",
+            "flags",
+            "move",
+            "draft",
+            "send"
+        ],
+        "tables": [
+            "read",
+            "create",
+            "edit",
+            "schema",
+            "share"
+        ],
+        "forms": [
+            "read",
+            "results",
+            "create",
+            "edit"
+        ],
+        "polls": [
+            "read",
+            "results",
+            "links",
+            "create",
+            "configure",
+            "options",
+            "options.remove",
+            "share",
+            "invite"
+        ],
+        "collectives": [
+            "read",
+            "create",
+            "edit",
+            "move",
+            "collective.create",
+            "members"
+        ]
+    },
+    "DENIED_READS": [
+        "logs"
+    ]
+}

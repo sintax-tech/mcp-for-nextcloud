@@ -4,7 +4,7 @@
 #
 # Disposable Nextcloud instance for the integration suite (.github/workflows/integration.yml).
 # It starts containers, so it refuses to run anywhere but a GitHub Actions runner or an explicit local run
-# (MCP_IT_LOCAL=1, which only run-local.sh sets: it brings the container engine up and always takes it down again).
+# (MCP_IT_LOCAL=1, which only run-local.sh sets: it starts the shared container engine when needed and leaves it running).
 #
 # Usage: harness.sh <packages|tools|start-db|start-nextcloud|install-app|fixtures|provision|report|test|collect>
 # Cell, from the workflow matrix:
@@ -54,6 +54,7 @@ MAIL_CELL="$REPO_ROOT/mcp/tests/Integration/ci/mail-cell.sh"
 TABLES_CELL="$REPO_ROOT/mcp/tests/Integration/ci/tables/cell.sh"
 FORMS_CELL="$REPO_ROOT/mcp/tests/Integration/ci/forms/cell.sh"
 POLLS_CELL="$REPO_ROOT/mcp/tests/Integration/ci/polls/cell.sh"
+COLLECTIVES_CELL="$REPO_ROOT/mcp/tests/Integration/ci/collectives/cell.sh"
 PHPUNIT_VERSION=10.5.65
 PHPUNIT_SHA256=ce85745a2ec7d8e536621ebed69dfa36a8d504daf73be6750e93bb8c5b088835
 
@@ -198,7 +199,7 @@ cmd_install_app() {
         docker exec -u www-data "$NC" tar -xzf /tmp/mcp-baseline.tar.gz -C /var/www/html/custom_apps
         occ app:enable mcp
         assert_installed_version "$baseline_version"
-        occ migrations:status mcp || true
+        sh "$REPO_ROOT/mcp/tests/Integration/ci/migration-status.sh" "$NC"
         # Credentials issued by the baseline itself, checked after the upgrade (validation T12).
         docker exec -u www-data "$NC" php /mcp-it-src/mcp/tests/Integration/ci/legacy-credentials.php /tmp/mcp-it-legacy.json
         # Preferences the baseline writes through its own setters, and its answers for them (validation T12/T13).
@@ -225,14 +226,14 @@ cmd_install_app() {
         docker cp "$WORK/branch-pkg/mcp" "$NC:/tmp/mcp-next"
         docker exec "$NC" sh -c 'mv /var/www/html/custom_apps/mcp /tmp/mcp-previous \
             && mv /tmp/mcp-next /var/www/html/custom_apps/mcp && chown -R www-data:www-data /var/www/html/custom_apps/mcp'
-        occ upgrade
+        sh "$REPO_ROOT/mcp/tests/Integration/ci/upgrade-local-package.sh" "$NC"
     else
         docker cp "$WORK/mcp-branch.tar.gz" "$NC:/tmp/mcp-branch.tar.gz"
         docker exec -u www-data "$NC" tar -xzf /tmp/mcp-branch.tar.gz -C /var/www/html/custom_apps
         occ app:enable mcp
     fi
     assert_installed_version "$expected"
-    occ migrations:status mcp || true
+    sh "$REPO_ROOT/mcp/tests/Integration/ci/migration-status.sh" "$NC"
     echo "$expected" > "$WORK/expected-version"
 }
 
@@ -371,7 +372,7 @@ provision_files_external() {
 provision_deck() {
     started=$(php -r 'echo (int)(microtime(true)*1000);')
     cache="$WORK/deck-downloads"
-    [ "${MCP_IT_LOCAL:-0}" != 1 ] || cache="$REPO_ROOT/mcp/tests/Integration/.local-runs/deck-downloads"
+    [ "${MCP_IT_LOCAL:-0}" != 1 ] || cache="$(sh "$REPO_ROOT/mcp/tests/Integration/ci/local-artifact-root.sh")/deck-downloads"
     mkdir -p "$cache"
     archive="$cache/deck-$DECK_TAG-$DECK_SHA.tar.gz"
     hit=warm
@@ -415,6 +416,7 @@ cmd_provision() {
     [ "${MCP_IT_WITH_TABLES:-0}" != 1 ] || parts="$parts tables"
     [ "${MCP_IT_WITH_FORMS:-0}" != 1 ] || parts="$parts forms"
     [ "${MCP_IT_WITH_POLLS:-0}" != 1 ] || parts="$parts polls"
+    [ "${MCP_IT_WITH_COLLECTIVES:-0}" != 1 ] || parts="$parts collectives"
     for part in $parts; do
         echo "=== provisioning $part" | tee -a "$log"
         case "$part" in
@@ -429,6 +431,7 @@ cmd_provision() {
             tables) step="sh $TABLES_CELL provision" ;;
             forms) step="sh $FORMS_CELL provision" ;;
             polls) step="sh $POLLS_CELL provision" ;;
+            collectives) step="sh $COLLECTIVES_CELL provision" ;;
             # Unpacked only: Guests/GuestRestrictionsTest enables it for its own scenarios, since it adds a user and a
             # group backend every other test would see.
             guests) step="unpack_release_app guests guests $GUESTS_TAG $GUESTS_SHA" ;;
@@ -526,6 +529,7 @@ cmd_test() {
     [ "${MCP_IT_WITH_TABLES:-0}" != 1 ] || set -- "$@" $(sh "$TABLES_CELL" test-env)
     [ "${MCP_IT_WITH_FORMS:-0}" != 1 ] || set -- "$@" $(sh "$FORMS_CELL" test-env)
     [ "${MCP_IT_WITH_POLLS:-0}" != 1 ] || set -- "$@" $(sh "$POLLS_CELL" test-env)
+    [ "${MCP_IT_WITH_COLLECTIVES:-0}" != 1 ] || set -- "$@" $(sh "$COLLECTIVES_CELL" test-env)
     # MCP_IT_PHPUNIT_ARGS (local diagnostics only), e.g. "--filter SomeTest", is passed to PHPUnit as is.
     # shellcheck disable=SC2086
     docker exec -u www-data "$@" "$NC" php -d memory_limit=1G /mcp-it-tools/phpunit.phar \

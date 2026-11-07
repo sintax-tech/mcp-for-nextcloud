@@ -7,13 +7,13 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 
-use OCA\Mcp\Service\UserTimezone;
-use OCA\Mcp\Tools\Mail\MailBodyPreflight;
-use OCA\Mcp\Tools\Mail\MailGateway;
-use OCA\Mcp\Tools\Mail\MailMessages;
-use OCA\Mcp\Tools\Mail\MailMessageScope;
-use OCA\Mcp\Tools\Mail\MailMessageTools;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Platform\Time\UserTimezone;
+use OCA\Mcp\Modules\Mail\Reading\MailBodyPreflight;
+use OCA\Mcp\Modules\Mail\Integration\MailGateway;
+use OCA\Mcp\Modules\Mail\Presentation\MailMessages;
+use OCA\Mcp\Modules\Mail\Locating\MailMessageScope;
+use OCA\Mcp\Modules\Mail\Reading\MailMessageTools;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
 

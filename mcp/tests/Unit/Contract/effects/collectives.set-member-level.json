@@ -1,0 +1,830 @@
+{
+    "tool": "collectives_set_member_level",
+    "grant": "collectives.members",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "collective_id": 7,
+                "member_id": "m-carol",
+                "level": "moderator"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Change collective member level**\n\nChange the level of **Carol** in collective *Wiki* to moderator.\n\n- Level member becomes moderator.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "collectives_set_member_level",
+                            "title": "Change collective member level",
+                            "action": "collectives_set_member_level",
+                            "collective": {
+                                "id": 7,
+                                "name": "Wiki"
+                            },
+                            "member": {
+                                "member_id": "m-carol",
+                                "type": "user",
+                                "id": "carol",
+                                "display_name": "Carol",
+                                "level": "member",
+                                "status": "member"
+                            },
+                            "level": "moderator",
+                            "changes": true,
+                            "notices": [
+                                "Level member becomes moderator."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "members": [
+                    {
+                        "id": "m-alice",
+                        "userId": "alice",
+                        "type": 1,
+                        "level": 9,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-bob",
+                        "userId": "bob",
+                        "type": 1,
+                        "level": 8,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-carol",
+                        "userId": "carol",
+                        "type": 1,
+                        "level": 1,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-staff",
+                        "userId": "Staff",
+                        "type": 16,
+                        "group": "staff",
+                        "level": 1,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-dave",
+                        "userId": "dave",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Invited"
+                    },
+                    {
+                        "id": "m-erin",
+                        "userId": "erin",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Requesting"
+                    },
+                    {
+                        "id": "m-frank",
+                        "userId": "frank",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Blocked"
+                    }
+                ],
+                "calls": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "collective_id": 7,
+                "member_id": "m-carol",
+                "level": "moderator",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "members": [
+                    {
+                        "id": "m-alice",
+                        "userId": "alice",
+                        "type": 1,
+                        "level": 9,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-bob",
+                        "userId": "bob",
+                        "type": 1,
+                        "level": 8,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-carol",
+                        "userId": "carol",
+                        "type": 1,
+                        "level": 1,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-staff",
+                        "userId": "Staff",
+                        "type": 16,
+                        "group": "staff",
+                        "level": 1,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-dave",
+                        "userId": "dave",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Invited"
+                    },
+                    {
+                        "id": "m-erin",
+                        "userId": "erin",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Requesting"
+                    },
+                    {
+                        "id": "m-frank",
+                        "userId": "frank",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Blocked"
+                    }
+                ],
+                "calls": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "collective_id": 7,
+                "member_id": "m-carol",
+                "level": "moderator",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Change collective member level**\n\nChange the level of **Carol** in collective *Wiki* to moderator.\n\n- Level member becomes moderator.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "collectives_set_member_level",
+                            "title": "Change collective member level",
+                            "action": "collectives_set_member_level",
+                            "collective": {
+                                "id": 7,
+                                "name": "Wiki"
+                            },
+                            "member": {
+                                "member_id": "m-carol",
+                                "type": "user",
+                                "id": "carol",
+                                "display_name": "Carol",
+                                "level": "member",
+                                "status": "member"
+                            },
+                            "level": "moderator",
+                            "changes": true,
+                            "notices": [
+                                "Level member becomes moderator."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "members": [
+                    {
+                        "id": "m-alice",
+                        "userId": "alice",
+                        "type": 1,
+                        "level": 9,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-bob",
+                        "userId": "bob",
+                        "type": 1,
+                        "level": 8,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-carol",
+                        "userId": "carol",
+                        "type": 1,
+                        "level": 1,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-staff",
+                        "userId": "Staff",
+                        "type": 16,
+                        "group": "staff",
+                        "level": 1,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-dave",
+                        "userId": "dave",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Invited"
+                    },
+                    {
+                        "id": "m-erin",
+                        "userId": "erin",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Requesting"
+                    },
+                    {
+                        "id": "m-frank",
+                        "userId": "frank",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Blocked"
+                    }
+                ],
+                "calls": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "arguments": {
+                "collective_id": 7,
+                "member_id": "m-carol",
+                "level": "moderator",
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Change collective member level**\n\nChange the level of **Carol** in collective *Wiki* to moderator.\n\n- Level admin becomes moderator.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "collectives_set_member_level",
+                            "title": "Change collective member level",
+                            "action": "collectives_set_member_level",
+                            "collective": {
+                                "id": 7,
+                                "name": "Wiki"
+                            },
+                            "member": {
+                                "member_id": "m-carol",
+                                "type": "user",
+                                "id": "carol",
+                                "display_name": "Carol",
+                                "level": "admin",
+                                "status": "member"
+                            },
+                            "level": "moderator",
+                            "changes": true,
+                            "notices": [
+                                "Level admin becomes moderator."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "members": [
+                    {
+                        "id": "m-alice",
+                        "userId": "alice",
+                        "type": 1,
+                        "level": 9,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-bob",
+                        "userId": "bob",
+                        "type": 1,
+                        "level": 8,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-carol",
+                        "userId": "carol",
+                        "type": 1,
+                        "level": 8,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-staff",
+                        "userId": "Staff",
+                        "type": 16,
+                        "group": "staff",
+                        "level": 1,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-dave",
+                        "userId": "dave",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Invited"
+                    },
+                    {
+                        "id": "m-erin",
+                        "userId": "erin",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Requesting"
+                    },
+                    {
+                        "id": "m-frank",
+                        "userId": "frank",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Blocked"
+                    }
+                ],
+                "calls": []
+            }
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "collective_id": 7,
+                "member_id": "m-carol",
+                "level": "moderator"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Change collective member level**\n\nChange the level of **Carol** in collective *Wiki* to moderator.\n\n- Level admin becomes moderator.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "collectives_set_member_level",
+                            "title": "Change collective member level",
+                            "action": "collectives_set_member_level",
+                            "collective": {
+                                "id": 7,
+                                "name": "Wiki"
+                            },
+                            "member": {
+                                "member_id": "m-carol",
+                                "type": "user",
+                                "id": "carol",
+                                "display_name": "Carol",
+                                "level": "admin",
+                                "status": "member"
+                            },
+                            "level": "moderator",
+                            "changes": true,
+                            "notices": [
+                                "Level admin becomes moderator."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "members": [
+                    {
+                        "id": "m-alice",
+                        "userId": "alice",
+                        "type": 1,
+                        "level": 9,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-bob",
+                        "userId": "bob",
+                        "type": 1,
+                        "level": 8,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-carol",
+                        "userId": "carol",
+                        "type": 1,
+                        "level": 8,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-staff",
+                        "userId": "Staff",
+                        "type": 16,
+                        "group": "staff",
+                        "level": 1,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-dave",
+                        "userId": "dave",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Invited"
+                    },
+                    {
+                        "id": "m-erin",
+                        "userId": "erin",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Requesting"
+                    },
+                    {
+                        "id": "m-frank",
+                        "userId": "frank",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Blocked"
+                    }
+                ],
+                "calls": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "collective_id": 7,
+                "member_id": "m-carol",
+                "level": "moderator",
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"nativeCallAttempted\": true,\n    \"before\": {\n        \"status\": \"member\",\n        \"level\": \"admin\"\n    },\n    \"requested\": {\n        \"status\": \"member\",\n        \"level\": \"moderator\"\n    },\n    \"observed\": {\n        \"status\": \"member\",\n        \"level\": \"moderator\"\n    },\n    \"status\": \"applied\",\n    \"membership_changed\": true,\n    \"message\": \"Change observed by reading the team of the collective again.\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "members": [
+                    {
+                        "id": "m-alice",
+                        "userId": "alice",
+                        "type": 1,
+                        "level": 9,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-bob",
+                        "userId": "bob",
+                        "type": 1,
+                        "level": 8,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-carol",
+                        "userId": "carol",
+                        "type": 1,
+                        "level": 4,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-staff",
+                        "userId": "Staff",
+                        "type": 16,
+                        "group": "staff",
+                        "level": 1,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-dave",
+                        "userId": "dave",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Invited"
+                    },
+                    {
+                        "id": "m-erin",
+                        "userId": "erin",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Requesting"
+                    },
+                    {
+                        "id": "m-frank",
+                        "userId": "frank",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Blocked"
+                    }
+                ],
+                "calls": [
+                    "levelMember:m-carol:4"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "collective_id": 7,
+                "member_id": "m-carol",
+                "level": "member",
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "members": [
+                    {
+                        "id": "m-alice",
+                        "userId": "alice",
+                        "type": 1,
+                        "level": 9,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-bob",
+                        "userId": "bob",
+                        "type": 1,
+                        "level": 8,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-carol",
+                        "userId": "carol",
+                        "type": 1,
+                        "level": 4,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-staff",
+                        "userId": "Staff",
+                        "type": 16,
+                        "group": "staff",
+                        "level": 1,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-dave",
+                        "userId": "dave",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Invited"
+                    },
+                    {
+                        "id": "m-erin",
+                        "userId": "erin",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Requesting"
+                    },
+                    {
+                        "id": "m-frank",
+                        "userId": "frank",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Blocked"
+                    }
+                ],
+                "calls": [
+                    "levelMember:m-carol:4"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "collective_id": 7,
+                "member_id": "m-carol",
+                "level": "member"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "members": [
+                    {
+                        "id": "m-alice",
+                        "userId": "alice",
+                        "type": 1,
+                        "level": 9,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-bob",
+                        "userId": "bob",
+                        "type": 1,
+                        "level": 8,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-carol",
+                        "userId": "carol",
+                        "type": 1,
+                        "level": 4,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-staff",
+                        "userId": "Staff",
+                        "type": 16,
+                        "group": "staff",
+                        "level": 1,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-dave",
+                        "userId": "dave",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Invited"
+                    },
+                    {
+                        "id": "m-erin",
+                        "userId": "erin",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Requesting"
+                    },
+                    {
+                        "id": "m-frank",
+                        "userId": "frank",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Blocked"
+                    }
+                ],
+                "calls": [
+                    "levelMember:m-carol:4"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "collective_id": 7,
+                "member_id": "m-carol",
+                "level": "member",
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "members": [
+                    {
+                        "id": "m-alice",
+                        "userId": "alice",
+                        "type": 1,
+                        "level": 9,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-bob",
+                        "userId": "bob",
+                        "type": 1,
+                        "level": 8,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-carol",
+                        "userId": "carol",
+                        "type": 1,
+                        "level": 4,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-staff",
+                        "userId": "Staff",
+                        "type": 16,
+                        "group": "staff",
+                        "level": 1,
+                        "status": "Member"
+                    },
+                    {
+                        "id": "m-dave",
+                        "userId": "dave",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Invited"
+                    },
+                    {
+                        "id": "m-erin",
+                        "userId": "erin",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Requesting"
+                    },
+                    {
+                        "id": "m-frank",
+                        "userId": "frank",
+                        "type": 1,
+                        "level": 0,
+                        "status": "Blocked"
+                    }
+                ],
+                "calls": [
+                    "levelMember:m-carol:4"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "Members are accounts and groups, not Files nodes; Teams decides who sees the team."
+        }
+    ]
+}

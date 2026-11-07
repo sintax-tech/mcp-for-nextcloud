@@ -1,0 +1,100 @@
+<?php
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+declare(strict_types=1);
+
+namespace OCA\Mcp\Modules\Deck\Integration;
+
+/**
+ * Maps Deck and OCP exceptions to the generic messages held by {@see DeckMessages}.
+ *
+ * Class names are strings so this file never needs the Deck app to be installed and never
+ * autoloads a class that may not exist.
+ */
+final class DeckErrors {
+	/** @var list<array{list<string>, string}> Pairs of exception classes and the name of the {@see DeckMessages} method that words them. */
+	private const MAPPING = [
+		[
+			[\OCA\Mcp\Modules\Deck\Failures\DeckConflictException::class],
+			'errorConflict',
+		],
+		[
+			[\OCA\Mcp\Modules\Deck\Failures\DeckSessionException::class],
+			'errorSessionNotBound',
+		],
+		[
+			['OCA\Deck\NoPermissionException', 'OCP\AppFramework\Db\DoesNotExistException', 'OCP\AppFramework\Db\IMapperException'],
+			'errorNotFoundOrForbidden',
+		],
+		// Before StatusException, which Deck's ConflictException extends; it lives in OCA\Deck\Exceptions.
+		[
+			['OCA\Deck\Exceptions\ConflictException'],
+			'errorConflict',
+		],
+		[
+			['OCA\Deck\StatusException', 'OCA\Deck\ArchivedItemException'],
+			'errorNotAllowed',
+		],
+		[
+			['OCA\Deck\BadRequestException'],
+			'errorInvalid',
+		],
+	];
+
+	/**
+	 * Resolves the caller-safe message for an exception.
+	 *
+	 * "Not found" and "no permission" deliberately share one message: the Deck itself answers
+	 * `NoPermissionException('Permission denied')` in both cases to avoid leaking existence.
+	 *
+	 * @param \Throwable $exception Exception raised by the Deck gateway or by the handler.
+	 * @return string One of the error messages of {@see DeckMessages}, in the language of the current user.
+	 */
+	public static function messageFor(\Throwable $exception): string {
+		// A refusal of this module carries its own, already translated and Deck-free message.
+		if ($exception instanceof \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException) {
+			return $exception->getMessage();
+		}
+		if ($exception instanceof \OCA\Mcp\Modules\Deck\Failures\DeckUnconfirmedException) {
+			return \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::writeUnconfirmed($exception->readWith);
+		}
+
+		foreach (self::MAPPING as [$classes, $method]) {
+			foreach ($classes as $class) {
+				if (is_a($exception, $class)) {
+					return [\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::class, $method]();
+				}
+			}
+		}
+
+		return \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorGeneric();
+	}
+
+	/**
+	 * Whether an exception is none of the refusals this module or Deck explain, so it gets the generic message.
+	 *
+	 * An assignment that fails this way before Deck stores it is retried with the assignee's push deferred
+	 * ({@see \OCA\Mcp\Modules\Deck\AssigneePasses}); a refusal is final and never retried.
+	 *
+	 * @param \Throwable $exception What the Deck call raised.
+	 * @return bool True when no refusal of this module and no mapped Deck exception matches.
+	 */
+	public static function unexplained(\Throwable $exception): bool {
+		if ($exception instanceof \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException
+			|| $exception instanceof \OCA\Mcp\Modules\Deck\Failures\DeckUnconfirmedException
+			|| $exception instanceof \OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException) {
+			return false;
+		}
+		foreach (self::MAPPING as [$classes]) {
+			foreach ($classes as $class) {
+				if (is_a($exception, $class)) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+}

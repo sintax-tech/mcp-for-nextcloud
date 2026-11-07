@@ -1,0 +1,179 @@
+<?php
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+declare(strict_types=1);
+
+namespace OCA\Mcp\Modules\Files\Integration;
+
+use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCP\App\IAppManager;
+use OCP\Files\File;
+use OCP\Files\Folder;
+use OCP\IUser;
+use OCP\IUserManager;
+use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
+
+/**
+ * The version tools, built on the files_versions app. files_version_read is answered by
+ * {@see Reading\ReadVersionHandler}, which opens the version through {@see self::open()}.
+ *
+ * Nextcloud 33 exposes no OCP for versions (`lib/public/Files/` has no `Versions/`), so the internal
+ * `OCA\Files_Versions\Versions\IVersionManager` is resolved through the container — injecting it in a
+ * constructor would break the `mcp` container wherever files_versions is disabled. Every signature used
+ * here was read from stable33: getVersionsForFile and rollback and read in
+ * `apps/files_versions/lib/Versions/IVersionBackend.php`, the accessors in `IVersion.php`.
+ */
+final class VersionTools {
+	/** Nextcloud app that owns the versions, and therefore the gate for these tools. */
+	public const APP = 'files_versions';
+	/** Versions returned when the caller asks for no limit. */
+	public const DEFAULT_LIMIT = 50;
+	/** Class resolved lazily; a string so this file autoloads with files_versions absent. */
+	private const MANAGER = 'OCA\Files_Versions\Versions\IVersionManager';
+
+	public function __construct(
+		private IAppManager $appManager,
+		private IUserManager $userManager,
+		private \OCA\Mcp\Modules\Files\Backups\FileBackup $backup,
+		private NodeAccessInfo $access,
+		private ContainerInterface $container,
+		private ?LockAwareWrite $locks = null,
+		private ?\OCA\Mcp\Access\ResourceScope\FilesAccessGuard $visibilityGuard = null,
+		private ?\OCA\Mcp\Modules\Files\Integration\VersionRestore $versionRestore = null,
+	) {}
+
+	/**
+	 * @param Folder $root the user's folder
+	 * @param File $file file whose versions are listed
+	 * @param string $path normalized user-relative path of $file
+	 * @param int $limit maximum number of versions
+	 * @param string $viewerUid authenticated user
+	 * @return array{path:string, access:array<string, mixed>, versions:list<array{revision:string, timestamp:string, size:int, mime:string, name:string}>, truncated:bool}
+	 * @throws ToolFailure when versioning is off or unreadable
+	 */
+	public function list(Folder $root, File $file, string $path, int $limit, string $viewerUid): array {
+		$user = $this->requireVersioning($viewerUid);
+		$versions = VersionOrder::newestFirst($this->manager()->getVersionsForFile($user, $file));
+		$out = [];
+		foreach (array_slice($versions, 0, $limit) as $version) {
+			$out[] = [
+				'revision' => (string)$version->getRevisionId(),
+				'timestamp' => gmdate('Y-m-d\TH:i:s\Z', $version->getTimestamp()),
+				'size' => (int)$version->getSize(),
+				'mime' => $version->getMimeType(),
+				'name' => $version->getSourceFileName(),
+			];
+		}
+		return [
+			'path' => $path,
+			'access' => $this->access->describe($file, $viewerUid),
+			'versions' => $out,
+			'truncated' => count($versions) > count($out),
+		];
+	}
+
+	/**
+	 * Opens one listed version for reading, after the versioning check and the lookup of the listed version.
+	 *
+	 * @param File $file file the version belongs to
+	 * @param string $revision version identifier as returned by list()
+	 * @param string $viewerUid authenticated user
+	 * @return array{0: object, 1: resource|false} the IVersion and its stream, which the caller closes
+	 * @throws ToolFailure when versioning is off or no version carries that identifier
+	 * @throws \OCP\Files\NotFoundException when files_versions has no stored file for a version other than the current one
+	 */
+	public function open(File $file, string $revision, string $viewerUid): array {
+		$version = $this->find($this->requireVersioning($viewerUid), $file, $revision);
+		return [$version, \OCA\Mcp\Modules\Files\Integration\VersionStream::open($this->manager(), $version, $file)];
+	}
+
+	/**
+	 * Describes the version a rollback would bring back, without reading its content and without writing.
+	 *
+	 * @param File $file file to be rolled back
+	 * @param string $revision version identifier as returned by list()
+	 * @param string $viewerUid authenticated user
+	 * @return array{revision:string, timestamp:string, size:int, mime:string, name:string}
+	 * @throws ToolFailure when versioning is off or no version carries that identifier
+	 */
+	public function describe(File $file, string $revision, string $viewerUid): array {
+		$version = $this->find($this->requireVersioning($viewerUid), $file, $revision);
+		return [
+			'revision' => (string)$version->getRevisionId(),
+			'timestamp' => gmdate('Y-m-d\TH:i:s\Z', $version->getTimestamp()),
+			'size' => (int)$version->getSize(),
+			'mime' => $version->getMimeType(),
+			'name' => $version->getSourceFileName(),
+		];
+	}
+
+	/**
+	 * Brings a stored version back, after the same backup files_edit performs.
+	 *
+	 * The backup, the lock-aware write and the native rollback live in {@see VersionRestore}. This method only
+	 * forwards the call, including the backup this object was constructed with.
+	 *
+	 * @param Folder $root the user's folder
+	 * @param File $file file to restore
+	 * @param string $path normalized user-relative path of $file
+	 * @param string $revision version identifier as returned by list()
+	 * @param string $viewerUid authenticated user
+	 * @return array{path:string, size:int, etag:string, access:array<string, mixed>, backup:string, version:string}
+	 * @throws ToolFailure when versioning is off, the version does not exist or cannot be read, the backup fails, a
+	 *         lock refuses the write or the rollback reports failure
+	 */
+	public function restore(Folder $root, File $file, string $path, string $revision, string $viewerUid): array {
+		return ($this->versionRestore ?? throw new \LogicException('VersionRestore is not wired'))
+			->restore($root, $file, $path, $revision, $viewerUid, $this->backup);
+	}
+
+	/**
+	 * @param string $viewerUid authenticated user
+	 * @return IUser the user the versions belong to
+	 * @throws ToolFailure when files_versions is not enabled for them
+	 */
+	private function requireVersioning(string $viewerUid): IUser {
+		$user = $this->userManager->get($viewerUid);
+		if ($user === null || !$this->appManager->isEnabledForUser(self::APP, $user)) {
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionsOff());
+		}
+		return $user;
+	}
+
+	/**
+	 * @param IUser $user owner of the versions
+	 * @param File $file file the version belongs to
+	 * @param string $revision version identifier
+	 * @return object the IVersion whose revision matches
+	 * @throws ToolFailure when no version carries that identifier
+	 */
+	private function find(IUser $user, File $file, string $revision): object {
+		foreach ($this->manager()->getVersionsForFile($user, $file) as $version) {
+			if ((string)$version->getRevisionId() === $revision) {
+				return $version;
+			}
+		}
+		throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionMissing($revision));
+	}
+
+	/**
+	 * @return object the files_versions manager, resolved on first use
+	 * @throws ToolFailure when the app is enabled but its classes cannot be resolved
+	 */
+	private function manager(): object {
+		try {
+			$manager = $this->container->get(self::MANAGER);
+		} catch (NotFoundExceptionInterface | \RuntimeException) {
+			$manager = null;
+		}
+		if (!is_object($manager)) {
+			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionsOff());
+		}
+		return $manager;
+	}
+}

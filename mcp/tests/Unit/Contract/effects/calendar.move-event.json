@@ -1,0 +1,550 @@
+{
+    "tool": "calendar_move_event",
+    "grant": "calendar.move",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "quinzenal",
+                "targetCalendar": "/remote.php/dav/calendars/alice/work/"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Move event to another calendar**\n\nMove event from *Pessoal* to *Trabalho*: **Reunião quinzenal**\n- When: 2026-10-01, 09:00–10:00\n- Invitations: Event attendees are not notified, just like when moving in the Calendar app.\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "calendar_move_event",
+                            "title": "Move event to another calendar",
+                            "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                            "action": "calendar_move_event",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Pessoal",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/personal/"
+                            },
+                            "destination": {
+                                "id": 2,
+                                "uri": "work",
+                                "name": "Trabalho",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/work/"
+                            },
+                            "uid": "quinzenal",
+                            "etag": "<etag#1>",
+                            "before": {
+                                "summary": "Reunião quinzenal",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [],
+                                "organizer": null,
+                                "recurring": false
+                            },
+                            "after": {
+                                "summary": "Reunião quinzenal",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [],
+                                "organizer": null,
+                                "recurring": false
+                            },
+                            "participants": {
+                                "current": [],
+                                "proposed": [],
+                                "added": [],
+                                "removed": [],
+                                "names": []
+                            },
+                            "recoverable": false,
+                            "consequence": null,
+                            "scheduling": {
+                                "requested": false,
+                                "imipEnabled": true,
+                                "participantsNotified": false,
+                                "message": "Event attendees are not notified, just like when moving in the Calendar app.",
+                                "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                            },
+                            "timezone": "America/Sao_Paulo",
+                            "shared": [],
+                            "warnings": [],
+                            "sharedCalendars": [],
+                            "suggestedCalendar": null
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "quinzenal.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:quinzenal\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Reunião quinzenal\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": [],
+                "dav": [],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "quinzenal",
+                "targetCalendar": "/remote.php/dav/calendars/alice/work/",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "quinzenal.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:quinzenal\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Reunião quinzenal\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": [],
+                "dav": [],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "quinzenal",
+                "targetCalendar": "/remote.php/dav/calendars/alice/work/",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Move event to another calendar**\n\nMove event from *Pessoal* to *Trabalho*: **Reunião quinzenal**\n- When: 2026-10-01, 09:00–10:00\n- Invitations: Event attendees are not notified, just like when moving in the Calendar app.\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "calendar_move_event",
+                            "title": "Move event to another calendar",
+                            "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                            "action": "calendar_move_event",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Pessoal",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/personal/"
+                            },
+                            "destination": {
+                                "id": 2,
+                                "uri": "work",
+                                "name": "Trabalho",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/work/"
+                            },
+                            "uid": "quinzenal",
+                            "etag": "<etag#1>",
+                            "before": {
+                                "summary": "Reunião quinzenal",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [],
+                                "organizer": null,
+                                "recurring": false
+                            },
+                            "after": {
+                                "summary": "Reunião quinzenal",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [],
+                                "organizer": null,
+                                "recurring": false
+                            },
+                            "participants": {
+                                "current": [],
+                                "proposed": [],
+                                "added": [],
+                                "removed": [],
+                                "names": []
+                            },
+                            "recoverable": false,
+                            "consequence": null,
+                            "scheduling": {
+                                "requested": false,
+                                "imipEnabled": true,
+                                "participantsNotified": false,
+                                "message": "Event attendees are not notified, just like when moving in the Calendar app.",
+                                "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                            },
+                            "timezone": "America/Sao_Paulo",
+                            "shared": [],
+                            "warnings": [],
+                            "sharedCalendars": [],
+                            "suggestedCalendar": null
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "quinzenal.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:quinzenal\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Reunião quinzenal\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": [],
+                "dav": [],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "The Calendar module keeps no plan fingerprint (no PlanState/PlanChanged). The plan returns the ETag of the event and the confirmed call carries it: when the event changed in between, the ETag no longer matches and the call is refused as a conflict (If-Match), without a new plan."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "quinzenal",
+                "targetCalendar": "/remote.php/dav/calendars/alice/work/"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Move event to another calendar**\n\nMove event from *Pessoal* to *Trabalho*: **Reunião quinzenal**\n- When: 2026-10-01, 09:00–10:00\n- Invitations: Event attendees are not notified, just like when moving in the Calendar app.\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "calendar_move_event",
+                            "title": "Move event to another calendar",
+                            "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                            "action": "calendar_move_event",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Pessoal",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/personal/"
+                            },
+                            "destination": {
+                                "id": 2,
+                                "uri": "work",
+                                "name": "Trabalho",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/work/"
+                            },
+                            "uid": "quinzenal",
+                            "etag": "<etag#1>",
+                            "before": {
+                                "summary": "Reunião quinzenal",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [],
+                                "organizer": null,
+                                "recurring": false
+                            },
+                            "after": {
+                                "summary": "Reunião quinzenal",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [],
+                                "organizer": null,
+                                "recurring": false
+                            },
+                            "participants": {
+                                "current": [],
+                                "proposed": [],
+                                "added": [],
+                                "removed": [],
+                                "names": []
+                            },
+                            "recoverable": false,
+                            "consequence": null,
+                            "scheduling": {
+                                "requested": false,
+                                "imipEnabled": true,
+                                "participantsNotified": false,
+                                "message": "Event attendees are not notified, just like when moving in the Calendar app.",
+                                "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                            },
+                            "timezone": "America/Sao_Paulo",
+                            "shared": [],
+                            "warnings": [],
+                            "sharedCalendars": [],
+                            "suggestedCalendar": null
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "quinzenal.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:quinzenal\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Reunião quinzenal\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": [],
+                "dav": [],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "quinzenal",
+                "targetCalendar": "/remote.php/dav/calendars/alice/work/",
+                "confirm": true,
+                "etag": "<etag#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"uid\": \"quinzenal\",\n    \"etag\": \"\\\"7166e21068b5fb451cbd49ceaf7f8ba8\\\"\",\n    \"from\": \"/remote.php/dav/calendars/alice/personal/\",\n    \"to\": \"/remote.php/dav/calendars/alice/work/\",\n    \"participantsNotified\": false,\n    \"note\": \"Event attendees are not notified, just like when moving in the Calendar app.\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [],
+                    "2": {
+                        "quinzenal.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:quinzenal\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Reunião quinzenal\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "3": []
+                },
+                "trash": [],
+                "dav": [
+                    {
+                        "operation": "move",
+                        "calendar": "personal",
+                        "object": "quinzenal.ics",
+                        "target": "work",
+                        "etag": "<etag#1>"
+                    }
+                ],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/work/",
+                "uid": "quinzenal",
+                "targetCalendar": "/remote.php/dav/calendars/alice/personal/",
+                "confirm": true,
+                "etag": "<etag#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [],
+                    "2": {
+                        "quinzenal.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:quinzenal\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Reunião quinzenal\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "3": []
+                },
+                "trash": [],
+                "dav": [
+                    {
+                        "operation": "move",
+                        "calendar": "personal",
+                        "object": "quinzenal.ics",
+                        "target": "work",
+                        "etag": "<etag#1>"
+                    }
+                ],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/work/",
+                "uid": "quinzenal",
+                "targetCalendar": "/remote.php/dav/calendars/alice/personal/"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [],
+                    "2": {
+                        "quinzenal.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:quinzenal\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Reunião quinzenal\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "3": []
+                },
+                "trash": [],
+                "dav": [
+                    {
+                        "operation": "move",
+                        "calendar": "personal",
+                        "object": "quinzenal.ics",
+                        "target": "work",
+                        "etag": "<etag#1>"
+                    }
+                ],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/work/",
+                "uid": "quinzenal",
+                "targetCalendar": "/remote.php/dav/calendars/alice/personal/",
+                "confirm": true,
+                "etag": "<etag#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [],
+                    "2": {
+                        "quinzenal.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:quinzenal\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Reunião quinzenal\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "3": []
+                },
+                "trash": [],
+                "dav": [
+                    {
+                        "operation": "move",
+                        "calendar": "personal",
+                        "object": "quinzenal.ics",
+                        "target": "work",
+                        "etag": "<etag#1>"
+                    }
+                ],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "Calendar objects are not Files nodes: no system tag or excluded folder can hide a calendar or an event from MCP (VisibilityGuard and FilesAccessGuard do not apply). What narrows the reachable calendars is the administrator resource scope and the native ACL, which are scope and permission refusals, not visibility."
+        }
+    ]
+}

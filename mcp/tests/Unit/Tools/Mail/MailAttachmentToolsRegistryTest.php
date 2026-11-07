@@ -7,12 +7,13 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
-use OCA\Mcp\Tools\Mail\MailAttachmentSupport;
-use OCA\Mcp\Tools\ToolRegistry;
-use OCA\Mcp\Tools\UnknownToolException;
+use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
+use OCA\Mcp\Modules\Mail\Integration\MailAttachmentSupport;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Mcp\Tools\UnknownToolException;
 use OCP\App\IAppManager;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -38,7 +39,7 @@ final class MailAttachmentToolsRegistryTest extends TestCase {
 	 * @return void
 	 */
 	public function testTheAttachmentsGrantStartsDenied(): void {
-		$this->assertContains('attachments', GrantPolicy::CATALOG['mail']);
+		$this->assertContains('attachments', GrantCatalog::CATALOG['mail']);
 		$this->assertFalse(GrantPolicy::defaultGranted('mail', 'attachments'));
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
 		$policy->setGrant('alice', 'mail', 'messages', true);
@@ -140,6 +141,6 @@ final class MailAttachmentToolsRegistryTest extends TestCase {
 		$users->method('get')->willReturn($this->createMock(IUser::class));
 		$app = (new FakeMailMessageApp())->withAccount(1, 'alice', 'Work', 'alice@example.com');
 		$module = MailMessageToolsRegistryTest::module($this, $app, $version);
-		return [new ToolRegistry([$module], $policy, $apps, $users, $this->createMock(LoggerInterface::class)), $app];
+		return [new ToolRegistry([$module], $policy, $apps, $users, $this->createMock(LoggerInterface::class), null, MailTestModule::capabilities($apps)), $app];
 	}
 }

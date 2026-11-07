@@ -1,0 +1,50 @@
+<?php
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+declare(strict_types=1);
+
+namespace OCA\Mcp\Modules\Files\Tools;
+
+use OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages;
+use OCA\Mcp\Modules\Files\Presentation\FilesSchema;
+use OCA\Mcp\Mcp\Tools\ToolDefinition;
+use OCA\Mcp\Mcp\Tools\WriteTool;
+use OCA\Mcp\Mcp\Tools\ToolContext;
+
+/** Publishes files_undo_batch and delegates to the component that undoes a recorded batch move. */
+final class UndoBatch implements WriteTool {
+	/**
+	 * @param \OCA\Mcp\Modules\Files\Moving\UndoBatchAction $handler executor that undoes a recorded batch move
+	 * @param \OCA\Mcp\Modules\Files\Moving\UndoBatchPreview $plans read-only planner for this write operation
+	 */
+	public function __construct(private \OCA\Mcp\Modules\Files\Moving\UndoBatchAction $handler, private \OCA\Mcp\Modules\Files\Moving\UndoBatchPreview $plans) {
+	}
+
+	/** @return ToolDefinition unchanged static definition */
+	public static function definition(): ToolDefinition {
+		return FilesSchema::definition(['name' => 'files_undo_batch', 'module' => 'files', 'operation' => 'move',
+				'description' => ReorganizationMessages::undoTool(),
+				'inputSchema' => FilesSchema::schema([
+					'batch_id' => ['type' => 'integer', 'minimum' => 1, 'description' => 'The batch_id returned by files_move_batch.'],
+				], ['batch_id'])]);
+	}
+
+	/**
+	 * @param array<string,mixed> $arguments validated tool arguments
+	 * @param ToolContext $context authenticated invocation
+	 * @return array<string,mixed> unchanged result
+	 */
+	public function execute(array $arguments, ToolContext $context): array {
+		return $this->handler->handle($arguments, $context->userId);
+	}
+	/**
+	 * @param array<string,mixed> $arguments validated tool arguments
+	 * @param ToolContext $context authenticated invocation
+	 * @return array<string,mixed> unchanged result
+	 */
+	public function preview(array $arguments, ToolContext $context): array {
+		return $this->plans->plan($arguments, $context->userId);
+	}
+}

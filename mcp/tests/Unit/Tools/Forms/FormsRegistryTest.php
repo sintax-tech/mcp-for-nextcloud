@@ -7,15 +7,15 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Forms;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
-use OCA\Mcp\Tools\Forms\FormsModule;
-use OCA\Mcp\Tools\Forms\FormsServices;
-use OCA\Mcp\Tools\Forms\FormsIdentityProbe;
-use OCA\Mcp\Tools\Forms\Handler\ListFormsHandler;
-use OCA\Mcp\Tools\Forms\Handler\ReadFormHandler;
-use OCA\Mcp\Tools\WriteGate;
+use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
+use OCA\Mcp\Modules\Forms\FormsModule;
+use OCA\Mcp\Modules\Forms\Integration\FormsServices;
+use OCA\Mcp\Modules\Forms\Integration\FormsIdentityProbe;
+use OCA\Mcp\Modules\Forms\Reading\ListFormsHandler;
+use OCA\Mcp\Modules\Forms\Reading\ReadFormHandler;
+use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/FormsFixture.php';
@@ -38,7 +38,7 @@ final class FormsRegistryTest extends TestCase {
 			$apps=$this->createMock(\OCP\App\IAppManager::class);$apps->method('isEnabledForUser')->willReturn($enabled);$apps->method('getAppVersion')->willReturn($version);
 			$container=$this->createMock(\Psr\Container\ContainerInterface::class);$container->expects(self::never())->method('get');
 			try { (new FormsServices($apps,$users,$container,new FormsIdentityProbe($this->createMock(\OCP\IUserSession::class))))->open('alice');self::fail('Unavailable app admitted'); }
-			catch (\OCA\Mcp\Tools\ToolFailure) { self::assertTrue(true); }
+			catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure) { self::assertTrue(true); }
 		}
 	}
 }

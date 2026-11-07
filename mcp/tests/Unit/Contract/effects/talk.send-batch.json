@@ -1,0 +1,462 @@
+{
+    "tool": "talk_send_batch",
+    "grant": "talk.reply",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "messages": [
+                    {
+                        "message": "First"
+                    },
+                    {
+                        "message": "Second"
+                    }
+                ]
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Send batch in Talk**\n\n2 messages to **Project**:\n\n1. > First\n\n2. > Second\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user exactly as it will be sent to the conversation 'Project', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "talk_send_batch",
+                            "title": "Send batch in Talk",
+                            "action": "talk_send_batch",
+                            "conversation": {
+                                "token": "abcd1234",
+                                "displayName": "Project"
+                            },
+                            "draft": {
+                                "messages": [
+                                    {
+                                        "message": "First"
+                                    },
+                                    {
+                                        "message": "Second"
+                                    }
+                                ]
+                            },
+                            "message": "Show this plan to the user exactly as it will be sent to the conversation 'Project', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "messages": [
+                    {
+                        "message": "First"
+                    },
+                    {
+                        "message": "Second"
+                    }
+                ],
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "messages": [
+                    {
+                        "message": "First"
+                    },
+                    {
+                        "message": "Second"
+                    }
+                ],
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Send batch in Talk**\n\n2 messages to **Project**:\n\n1. > First\n\n2. > Second\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user exactly as it will be sent to the conversation 'Project', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "talk_send_batch",
+                            "title": "Send batch in Talk",
+                            "action": "talk_send_batch",
+                            "conversation": {
+                                "token": "abcd1234",
+                                "displayName": "Project"
+                            },
+                            "draft": {
+                                "messages": [
+                                    {
+                                        "message": "First"
+                                    },
+                                    {
+                                        "message": "Second"
+                                    }
+                                ]
+                            },
+                            "message": "Show this plan to the user exactly as it will be sent to the conversation 'Project', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "Talk does not sign a PlanState; it revalidates the conversation and arguments at execution."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "messages": [
+                    {
+                        "message": "First"
+                    },
+                    {
+                        "message": "Second"
+                    }
+                ]
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Send batch in Talk**\n\n2 messages to **Project**:\n\n1. > First\n\n2. > Second\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user exactly as it will be sent to the conversation 'Project', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "talk_send_batch",
+                            "title": "Send batch in Talk",
+                            "action": "talk_send_batch",
+                            "conversation": {
+                                "token": "abcd1234",
+                                "displayName": "Project"
+                            },
+                            "draft": {
+                                "messages": [
+                                    {
+                                        "message": "First"
+                                    },
+                                    {
+                                        "message": "Second"
+                                    }
+                                ]
+                            },
+                            "message": "Show this plan to the user exactly as it will be sent to the conversation 'Project', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "messages": [
+                    {
+                        "message": "First"
+                    },
+                    {
+                        "message": "Second"
+                    }
+                ],
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"conversation_token\": \"abcd1234\",\n    \"sent\": [\n        {\n            \"index\": 0,\n            \"messageId\": 55\n        },\n        {\n            \"index\": 1,\n            \"messageId\": 56\n        }\n    ],\n    \"failed\": []\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "messages": [
+                    {
+                        "id": 55,
+                        "room": "abcd1234",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "First",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    },
+                    {
+                        "id": 56,
+                        "room": "abcd1234",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "Second",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    }
+                ],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": []
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "messages": [
+                    {
+                        "message": "First"
+                    },
+                    {
+                        "message": "Second"
+                    }
+                ],
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [
+                    {
+                        "id": 55,
+                        "room": "abcd1234",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "First",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    },
+                    {
+                        "id": 56,
+                        "room": "abcd1234",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "Second",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    }
+                ],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": []
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "messages": [
+                    {
+                        "message": "First"
+                    },
+                    {
+                        "message": "Second"
+                    }
+                ]
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [
+                    {
+                        "id": 55,
+                        "room": "abcd1234",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "First",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    },
+                    {
+                        "id": 56,
+                        "room": "abcd1234",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "Second",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    }
+                ],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": []
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "messages": [
+                    {
+                        "message": "First"
+                    },
+                    {
+                        "message": "Second"
+                    }
+                ],
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [
+                    {
+                        "id": 55,
+                        "room": "abcd1234",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "First",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    },
+                    {
+                        "id": 56,
+                        "room": "abcd1234",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "Second",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    }
+                ],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": []
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "Room membership and account reachability apply; this operation has no Files node."
+        }
+    ]
+}

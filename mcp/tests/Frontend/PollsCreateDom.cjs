@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 const fs = require('node:fs')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const path = require('node:path')
 
 /** Minimal DOM for the Polls inspector contract; all rendering comes from the production script. */
@@ -36,7 +36,7 @@ class PollsCreateDom {
 	static load(files, extra = {}) {
 		const root = { t: (_, text, args = {}) => text.replace(/\{(\w+)\}/g, (_, key) => args[key] ?? key), ...extra }
 		root.window = root
-		for (const file of files) vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js', file), 'utf8'), root)
+		for (const file of files) vm.runInNewContext(require('./AdminManifest.cjs').script(file), root)
 		return root
 	}
 

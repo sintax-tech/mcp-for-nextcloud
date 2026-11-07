@@ -8,9 +8,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 
-use OCA\Mcp\Tools\PlanChanged;
-use OCA\Mcp\Tools\PlanRenderer;
-use OCA\Mcp\Tools\Polls\Create\CreatePlan;
+use OCA\Mcp\Mcp\Confirmation\PlanChanged;
+use OCA\Mcp\Mcp\Confirmation\PlanRenderer;
+use OCA\Mcp\Modules\Polls\Creation\CreatePlan;
 use PHPUnit\Framework\TestCase;
 
 /**

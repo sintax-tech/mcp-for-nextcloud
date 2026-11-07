@@ -19,75 +19,89 @@ final class FileWriteGuardCoverageTest extends TestCase {
 	 */
 	private function classified(): array {
 		return [
-			'Service/GrantPolicy.php#<global>:literal-move:1' => 'label: files operation catalog entry',
-			'Service/GrantPolicy.php#<global>:literal-move:2' => 'label: notes operation catalog entry',
-			'Service/GrantPolicy.php#<global>:literal-move:3' => 'label: deck operation catalog entry',
-			'Service/GrantPolicy.php#<global>:literal-move:4' => 'label: calendar operation catalog entry',
-			'Service/GrantPolicy.php#<global>:literal-move:5' => 'label: mail operation catalog entry',
-			'Service/Calendar/CalendarSelftestService.php#run:literal-move:1' => 'label: self-test operation grant name',
-			'Service/Calendar/CalendarSelftestService.php#run:literal-move:2' => 'label: self-test stage identifier',
-			'Service/Calendar/CalendarSelftestService.php#run:literal-move:3' => 'label: self-test report detail key',
-			'Service/Calendar/CalendarSelftestMessages.php#detail:literal-move:1' => 'label: report message lookup key',
-			'Tools/ToolPresentation.php#<global>:literal-move:1' => 'label: destructive-operation presentation catalog',
-			'Tools/Notes/NotesModule.php#definitions:literal-move:1' => 'label: notes_move operation metadata',
-			'Tools/Files/FilesModule.php#definitions:literal-move:1' => 'label: files_move operation metadata',
-			'Tools/Files/FilesModule.php#definitions:literal-move:2' => 'label: files_move_batch operation metadata',
-			'Tools/Files/FilesModule.php#definitions:literal-move:3' => 'label: files_undo_batch operation metadata',
-			'Tools/Logs/LogRedactor.php#<global>:literal-copy:1' => 'label: allowed HTTP verb for redacted log rendering',
-			'Tools/Logs/LogRedactor.php#<global>:literal-move:1' => 'label: allowed HTTP verb for redacted log rendering',
-			'Tools/Deck/DeckToolModule.php#definitions:literal-move:1' => 'label: move-card operation metadata',
-			'Tools/Calendar/Handler/MoveEvent.php#definition:literal-move:1' => 'label: calendar_move_event operation metadata',
-			'Tools/Mail/Move/MailMoveTools.php#<global>:literal-move:1' => 'label: mail_move_message operation metadata',
-			'Tools/Mail/Move/MailMoveCapability.php#assertMoveTouchesOnlyTheMessage:literal-move:1' => 'label: IMAP capability name queried, no write',
-			'Tools/Calendar/EmbeddedDavDispatcher.php#move:literal-move:1' => 'label: DAV HTTP verb; actual dispatcher is classified separately',
+			'Access/Grants/GrantCatalog.php#<global>:literal-move:1' => 'label: files operation catalog entry',
+			'Access/Grants/GrantCatalog.php#<global>:literal-move:2' => 'label: notes operation catalog entry',
+			'Access/Grants/GrantCatalog.php#<global>:literal-move:3' => 'label: deck operation catalog entry',
+			'Access/Grants/GrantCatalog.php#<global>:literal-move:4' => 'label: calendar operation catalog entry',
+			'Access/Grants/GrantCatalog.php#<global>:literal-move:5' => 'label: mail operation catalog entry',
+			'Modules/Calendar/Selftest/CalendarSelftestService.php#run:literal-move:1' => 'label: self-test operation grant name',
+			'Modules/Calendar/Selftest/CalendarSelftestService.php#run:literal-move:2' => 'label: self-test stage identifier',
+			'Modules/Calendar/Selftest/CalendarSelftestService.php#run:literal-move:3' => 'label: self-test report detail key',
+			'Modules/Calendar/Selftest/CalendarSelftestMessages.php#detail:literal-move:1' => 'label: report message lookup key',
+			'Mcp/Tools/ToolPresentation.php#<global>:literal-move:1' => 'label: destructive-operation presentation catalog',
+			'Modules/Collectives/Integration/CollectivesSurface.php#<global>:literal-move:1' => 'label: proven native PageService::move shape',
+			'Access/Grants/GrantCatalog.php#<global>:literal-move:6' => 'label: collectives operation catalog entry',
+			'Modules/Collectives/Integration/CollectivesGateway.php#move:literal-move:1' => 'label: collectives.move grant the admission re-reads',
+			'Modules/Collectives/Integration/CollectivesGateway.php#move:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Modules\\Collectives\\CollectivesMovingTest::testRefusesWhatCollectivesWouldBreakOrNotDo',
+			'Modules/Collectives/Moving/MovePageHandler.php#handle:literal-move:1' => 'label: collectives.move grant the edit permission re-reads',
+			'Modules/Collectives/Moving/MovePageHandler.php#handle:literal-move:2' => 'label: collectives.move grant of the read-back',
+			'Modules/Collectives/Moving/MovePageHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Modules\\Collectives\\CollectivesMovingTest::testRevocationAndChangedTreeMoveNothing',
+			'Modules/Collectives/Moving/MovePagePlan.php#build:literal-move:1' => 'label: collectives.move grant of the plan permission check',
+			'Modules/Collectives/Moving/MovePagePlan.php#build:literal-move:2' => 'label: collectives.move grant of the plan tree read',
+			'Modules/Collectives/Tools/MovePage.php#definition:literal-move:1' => 'label: collectives_move operation metadata',
+			'Modules/Collectives/Editing/EditPageHandler.php#handle:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Modules\\Collectives\\CollectivesFileTypeBoundaryTest::testFilesKeepsTheAllowlistWhileCollectivesWritesMarkdown',
+			'Modules/Notes/Tools/MoveNote.php#definition:literal-move:1' => 'label: notes_move operation metadata',
+			'Modules/Files/Tools/MoveFile.php#definition:literal-move:1' => 'label: files_move operation metadata',
+			'Modules/Files/Tools/MoveBatch.php#definition:literal-move:1' => 'label: files_move_batch operation metadata',
+			'Modules/Files/Tools/UndoBatch.php#definition:literal-move:1' => 'label: files_undo_batch operation metadata',
+			'Modules/Logs/Presentation/LogRedactor.php#<global>:literal-copy:1' => 'label: allowed HTTP verb for redacted log rendering',
+			'Modules/Logs/Presentation/LogRedactor.php#<global>:literal-move:1' => 'label: allowed HTTP verb for redacted log rendering',
+			'Modules/Deck/Tools/MoveCard.php#definition:literal-move:1' => 'label: move-card operation metadata',
+			'Modules/Calendar/Tools/MoveEvent.php#definition:literal-move:1' => 'label: calendar_move_event operation metadata',
+			'Modules/Mail/Moving/MailMoveTools.php#<global>:literal-move:1' => 'label: mail_move_message operation metadata',
+			'Modules/Mail/Moving/MailMoveCapability.php#assertMoveTouchesOnlyTheMessage:literal-move:1' => 'label: IMAP capability name queried, no write',
+			'Modules/Calendar/Writing/EmbeddedDavDispatcher.php#move:literal-move:1' => 'label: DAV HTTP verb; actual dispatcher is classified separately',
 
-			'Controller/CheckoutController.php#send:fopen:1' => 'read: existing file download stream',
-			'Tools/Files/Handler/CheckoutWriteHandler.php#create:fopen:1' => 'read: temporary upload body',
-			'Controller/CheckoutController.php#storeBody:fopen:1' => 'temporary: ITempManager upload body, not a Files node',
+			'Modules/Files/Checkout/CheckoutDownload.php#send:fopen:1' => 'read: existing file download stream',
+			'Modules/Files/Checkout/CheckoutWriter.php#create:fopen:1' => 'read: temporary upload body',
+			'Modules/Files/Checkout/BodyReader.php#storeBody:fopen:1' => 'temporary: ITempManager upload body, not a Files node',
 			'Controller/CheckoutController.php#inputStream:fopen:1' => 'read: php input stream',
-			'Tools/Files/FilesPlanRenderer.php#render:copy:1' => 'render: static plan text, no Files mutation',
-			'Tools/Files/FilesPlanRenderer.php#render:move:1' => 'render: static plan text, no Files mutation',
-			'Tools/Files/ImageTools.php#originalDimensions:fopen:1' => 'read: original image bytes',
-			'Tools/Files/FileBackupCopy.php#copy:fopen:1' => 'read: original bytes for internal recovery',
-			'Tools/Files/VersionRestore.php#writeVersion:fopen:1' => 'temporary: php temp stream buffer, not a Files node',
-			'Tools/Files/TextExtractor.php#read:fopen:1' => 'read: bounded file content, read-only mode',
-			'Tools/Files/TextExtractor.php#zipXml:file_put_contents:1' => 'temporary: ITempManager local zip, not a Files node',
-			'Tools/Mail/MailAttachmentDocument.php#text:file_put_contents:1' => 'temporary: ITempManager local zip of a mail attachment, not a Files node',
-			'Tools/Mail/Move/MailMoveStore.php#move:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Mail\\MailMoveToolsTest::testAnotherGenerationNeverMovesAMessage',
-			'Tools/Mail/Handler/MoveMessageHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Mail\\MailMoveToolsTest::testAConfirmedCallMovesOnTheCheckedSelection',
-			'Tools/Calendar/Handler/UpdateEvent.php#prepare:touch:1' => 'DAV: update an in-memory event timestamp, not Files touch',
-			'Service/FileWritePolicy.php#recoverStringType:rollback:1' => 'database: rollback owned configuration repair, not Files',
+			'Modules/Files/Presentation/FilesPlanRenderer.php#render:copy:1' => 'render: static plan text, no Files mutation',
+			'Modules/Files/Presentation/FilesPlanRenderer.php#render:move:1' => 'render: static plan text, no Files mutation',
+			'Modules/Files/Images/ImageMetadata.php#originalDimensions:fopen:1' => 'read: original image bytes',
+			'Modules/Files/Backups/FileBackupCopy.php#copy:fopen:1' => 'read: original bytes for internal recovery',
+			'Modules/Files/Integration/VersionRestore.php#writeVersion:fopen:1' => 'temporary: php temp stream buffer, not a Files node',
+			'Modules/Files/Extraction/TextExtractor.php#read:fopen:1' => 'read: bounded file content, read-only mode',
+			'Modules/Files/Integration/VersionStream.php#open:fopen:1' => 'read: current file bytes of the listed current version, read-only mode',
+			'Modules/Logs/Reading/ReverseLogFile.php#__construct:fopen:1' => 'read: current server log published by IFileBased::getLogFilePath, read-only mode',
+			'Modules/Files/Extraction/TextExtractor.php#zipXml:file_put_contents:1' => 'temporary: ITempManager local zip, not a Files node',
+			'Modules/Mail/Extraction/MailAttachmentDocument.php#text:file_put_contents:1' => 'temporary: ITempManager local zip of a mail attachment, not a Files node',
+			'Modules/Mail/Integration/MailMoveStore.php#move:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Mail\\MailMoveToolsTest::testAnotherGenerationNeverMovesAMessage',
+			'Modules/Mail/Moving/MoveMessageHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Mail\\MailMoveToolsTest::testAConfirmedCallMovesOnTheCheckedSelection',
+			'Modules/Calendar/Editing/UpdateEventDraft.php#prepare:touch:1' => 'DAV: update an in-memory event timestamp, not Files touch',
+			'Access/FileTypes/FileWritePolicy.php#recoverStringType:rollback:1' => 'database: rollback owned configuration repair, not Files',
 
-			'Tools/Files/Handler/CheckoutWriteHandler.php#write:putcontent:1' => 'guarded: OCA\Mcp\Tests\Unit\Tools\Files\FileWritePolicyBoundariesTest::testPolicyChangeDuringBackupRefusesContentSinkAndKeepsOriginalAndBackup',
-			'Tools/Files/FileCreationWriter.php#write:newfile:1' => 'guarded: OCA\Mcp\Tests\Unit\Tools\Files\FileWritePolicyBoundariesTest::testDirectCreationSinkRefusesBeforeNewFile',
-			'Tools/Files/FileCreationWriter.php#write:putcontent:1' => 'guarded: OCA\Mcp\Tests\Unit\Tools\Files\FileWritePolicyBoundariesTest::testCreationRechecksBeforePutContentWithoutDeletingEmptyFile',
-			'Tools/Files/FilesModule.php#call:copy:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testForbiddenDescendantDeniesBothToolsBeforeEffects',
-			'Tools/Files/FilesModule.php#call:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testForbiddenDescendantDeniesBothToolsBeforeEffects',
-			'Tools/Files/Handler/MoveHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testForbiddenDescendantDeniesBothToolsBeforeEffects',
-			'Tools/Files/Handler/MoveBatchHandler.php#batch:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testBatchRechecksEverySinkAndRecordsPartialProgress',
-			'Tools/Files/Handler/UndoBatchHandler.php#undoBatch:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testUndoRechecksEverySinkAndKeepsOnlyRemainingMoves',
-			'Tools/Files/ListedTreeCopy.php#native:copy:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testListedCopyExcludesLateChildrenAndReportsRenamedSource',
-			'Tools/Files/ListedTreeCopy.php#execute:newfolder:1' => 'directory: only entries of the wholly prevalidated listed tree, never a file',
-			'Tools/Files/ContentCommit.php#commit:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\FileContentTypePolicyTest::testSinkDenialAfterBackupKeepsTheOriginalAndTheBackup',
-			'Tools/Files/ContentCommit.php#commit:putcontent:2' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\FileContentTypePolicyTest::testSinkDenialAfterBackupKeepsTheOriginalAndTheBackup',
-			'Tools/Files/VersionRestore.php#restore:rollback:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\FileContentTypePolicyTest::testSinkDenialAfterBackupOnRestoreKeepsTheOriginalAndTheBackup',
-			'Tools/Files/VersionRestore.php#writeVersion:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\FileContentTypePolicyTest::testSinkDenialAfterBackupOnRestoreKeepsTheOriginalAndTheBackup',
-			'Tools/Files/Reorganization.php#createFolders:newfolder:1' => 'directory: type not applicable; T15-6 must preflight associated files first',
-			'Tools/Common/NodeAccess.php#ensureFolder:newfolder:1' => 'directory: auxiliary folder, not a file; callers preflight associated files',
-			'Tools/Notes/Handler/CreateNoteHandler.php#handle:newfile:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testCreateRefusesBeforeCreatingACategory',
-			'Tools/Notes/Handler/EditNoteHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testWholeEditRefusesADeniedTitleBeforeWritingContent',
-			'Tools/Notes/Handler/MoveNoteHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testMoveRefusesBeforeCreatingACategory',
-			'Tools/Notes/NoteContentSink.php#whole:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testWholeEditRefusesADeniedTitleBeforeWritingContent',
-			'Tools/Notes/NoteContentSink.php#partial:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testPartialWriterRefusesBeforePutContent',
-			'Tools/Notes/NotesModule.php#call:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testMoveDelegationIsGuarded',
-			'Tools/Files/FileBackup.php#copy:copy:1' => 'D3: delegates to the verified internal recovery copier; never reads file type policy',
-			'Tools/Files/FileBackup.php#prepare:copy:1' => 'D3: internal verified backup delegation; never reads policy',
-			'Tools/Files/FileBackupCopy.php#copy:newfile:1' => 'D3: mandatory internal backup creation; never reads policy',
-			'Tools/Files/FileBackupCopy.php#copy:putcontent:1' => 'D3: mandatory internal backup bytes; never reads policy',
-			'Tools/Contacts/ContactBackup.php#save:newfile:1' => 'D3: mandatory internal vCard backup; never reads policy',
-			'Tools/Calendar/EventRelocator.php#prepare:move:1' => 'DAV: not Files, official CalDAV move',
-			'Service/Policy/PolicyWriter.php#failure:rollback:1' => 'database: not Files, application transaction rollback',
-			'Service/Calendar/CalendarSelftestService.php#run:move:1' => 'DAV: not Files, diagnostic CalDAV move',
+			'Modules/Files/Checkout/CheckoutWriter.php#write:putcontent:1' => 'guarded: OCA\Mcp\Tests\Unit\Tools\Files\FileWritePolicyBoundariesTest::testPolicyChangeDuringBackupRefusesContentSinkAndKeepsOriginalAndBackup',
+			'Modules/Files/Creation/FileCreationWriter.php#write:newfile:1' => 'guarded: OCA\Mcp\Tests\Unit\Tools\Files\FileWritePolicyBoundariesTest::testDirectCreationSinkRefusesBeforeNewFile',
+			'Modules/Files/Creation/FileCreationWriter.php#write:putcontent:1' => 'guarded: OCA\Mcp\Tests\Unit\Tools\Files\FileWritePolicyBoundariesTest::testCreationRechecksBeforePutContentWithoutDeletingEmptyFile',
+			'Modules/Files/Creation/CopyFileHandler.php#handle:copy:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testForbiddenDescendantDeniesBothToolsBeforeEffects',
+			'Modules/Files/Moving/MoveFileHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testForbiddenDescendantDeniesBothToolsBeforeEffects',
+			'Modules/Files/Reorganization/Reorganization.php#copy:copy:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testForbiddenDescendantDeniesBothToolsBeforeEffects',
+			'Modules/Files/Reorganization/Reorganization.php#move:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testForbiddenDescendantDeniesBothToolsBeforeEffects',
+			'Modules/Files/Reorganization/MoveHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testForbiddenDescendantDeniesBothToolsBeforeEffects',
+			'Modules/Files/Reorganization/MoveBatchHandler.php#batch:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testBatchRechecksEverySinkAndRecordsPartialProgress',
+			'Modules/Files/Reorganization/UndoBatchHandler.php#undoBatch:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testUndoRechecksEverySinkAndKeepsOnlyRemainingMoves',
+			'Modules/Files/Reorganization/ListedTreeCopy.php#native:copy:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testListedCopyExcludesLateChildrenAndReportsRenamedSource',
+			'Modules/Files/Reorganization/ListedTreeCopy.php#execute:newfolder:1' => 'directory: only entries of the wholly prevalidated listed tree, never a file',
+			'Modules/Files/Writing/ContentCommit.php#commit:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\FileContentTypePolicyTest::testSinkDenialAfterBackupKeepsTheOriginalAndTheBackup',
+			'Modules/Files/Writing/ContentCommit.php#commit:putcontent:2' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\FileContentTypePolicyTest::testSinkDenialAfterBackupKeepsTheOriginalAndTheBackup',
+			'Modules/Files/Integration/VersionRestore.php#restore:rollback:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\FileContentTypePolicyTest::testSinkDenialAfterBackupOnRestoreKeepsTheOriginalAndTheBackup',
+			'Modules/Files/Integration/VersionRestore.php#writeVersion:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\FileContentTypePolicyTest::testSinkDenialAfterBackupOnRestoreKeepsTheOriginalAndTheBackup',
+			'Modules/Files/Reorganization/FolderCreator.php#createFolders:newfolder:1' => 'directory: type not applicable; T15-6 must preflight associated files first',
+			'Platform/FileAccess/NodeAccess.php#ensureFolder:newfolder:1' => 'directory: auxiliary folder, not a file; callers preflight associated files',
+			'Modules/Notes/Creation/CreateNoteHandler.php#handle:newfile:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testCreateRefusesBeforeCreatingACategory',
+			'Modules/Notes/Editing/EditNoteHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testWholeEditRefusesADeniedTitleBeforeWritingContent',
+			'Modules/Notes/Moving/MoveNoteHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testMoveRefusesBeforeCreatingACategory',
+			'Modules/Notes/Editing/NoteContentSink.php#whole:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testWholeEditRefusesADeniedTitleBeforeWritingContent',
+			'Modules/Notes/Editing/NoteContentSink.php#partial:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testPartialWriterRefusesBeforePutContent',
+			'Modules/Files/Backups/FileBackup.php#copy:copy:1' => 'D3: delegates to the verified internal recovery copier; never reads file type policy',
+			'Modules/Files/Backups/FileBackup.php#prepare:copy:1' => 'D3: internal verified backup delegation; never reads policy',
+			'Modules/Files/Backups/FileBackupCopy.php#copy:newfile:1' => 'D3: mandatory internal backup creation; never reads policy',
+			'Modules/Files/Backups/FileBackupCopy.php#copy:putcontent:1' => 'D3: mandatory internal backup bytes; never reads policy',
+			'Modules/Contacts/Backup/ContactBackup.php#save:newfile:1' => 'D3: mandatory internal vCard backup; never reads policy',
+			'Modules/Calendar/Moving/EventRelocator.php#prepare:move:1' => 'DAV: not Files, official CalDAV move',
+			'Access/Policy/Transactions/PolicyTransaction.php#failure:rollback:1' => 'database: not Files, application transaction rollback',
+			'Modules/Calendar/Selftest/CalendarSelftestService.php#run:move:1' => 'DAV: not Files, diagnostic CalDAV move',
 		];
 	}
 
@@ -100,16 +114,15 @@ final class FileWriteGuardCoverageTest extends TestCase {
 	}
 
 	/**
-	 * Keep 44 real calls, including the merged NT-1 writer and the attachment reader's temporary zip, and 18 explicit
-	 * literals visible.
+	 * Keep all 48 calls, including the two reorganization facade delegations, and all 21 explicit literals visible.
 	 *
 	 * @return void
 	 */
 	public function testLiteralLabelsKeepTheOriginalCallInventory(): void {
 		$calls = FileWriteSinkInventory::calls(FileWriteSinkInventory::sources(__DIR__ . '/../../../lib'));
 		$literals = array_values(array_filter($calls, static fn (string $call): bool => str_contains($call, ':literal-')));
-		self::assertCount(21, $literals);
-		self::assertCount(46, array_diff($calls, $literals));
+		self::assertCount(29, $literals);
+		self::assertCount(52, array_diff($calls, $literals));
 		foreach ($calls as $call) {
 			self::assertDoesNotMatchRegularExpression('/:(?:literal-)?(?:writestream|fputs):/', $call);
 		}
@@ -117,7 +130,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 
 	/** Static copy/move helpers render plan text; the scanner still discovers and classifies both calls. */
 	public function testPlanRendererCallsAreExplicitlyClassifiedAsRendering(): void {
-		$path = 'Tools/Files/FilesPlanRenderer.php';
+		$path = 'Modules/Files/Presentation/FilesPlanRenderer.php';
 		$calls = FileWriteSinkInventory::calls([$path => (string)file_get_contents(__DIR__ . '/../../../lib/' . $path)]);
 		self::assertSame([$path . '#render:copy:1', $path . '#render:move:1'], $calls);
 		foreach ($calls as $call) {
@@ -136,7 +149,8 @@ final class FileWriteGuardCoverageTest extends TestCase {
 				self::assertStringContainsString(':literal-', $key, 'A label classification cannot waive a detected call.');
 			}
 			if (str_starts_with($classification, 'D3:')) {
-				self::assertMatchesRegularExpression('~\ATools/(Files/FileBackup(?:Copy)?|Contacts/ContactBackup)\.php#~', $key);
+				$paths = ['Modules/Files/Backups/FileBackup.php', 'Modules/Files/Backups/FileBackupCopy.php', 'Modules/Contacts/Backup/ContactBackup.php'];
+				self::assertMatchesRegularExpression('~\A(?:' . implode('|', array_map(static fn (string $path): string => preg_quote($path, '~'), $paths)) . ')#~', $key);
 			}
 		}
 	}

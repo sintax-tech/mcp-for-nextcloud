@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
 # Recipient API fixture provenance
 
 `recipient-sources.json` pins official Deck release archives (the minimum supported tag for each historical fixture), the bundled Circles tags, and the core QBMapper source from each fixture's original server tag. URLs, versions and SHA256 values are recorded per major. Circles uses the official repository's tag archive because bundled Teams has no separate release asset for these tags. The historical Circles v31.0.0 tag identifies itself as 31.0.0-dev.0 in appinfo; that exact manifest is recorded and verified separately, without changing the tag or hash. NC31 remains a historical compatibility fixture; the supported integration matrix is NC32–35.

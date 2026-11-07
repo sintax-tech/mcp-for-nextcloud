@@ -16,12 +16,10 @@ set_exception_handler(static function (\Throwable $error): void {
 	fwrite(STDERR, $error::class . ': ' . $error->getMessage() . "\n");
 	exit(1);
 });
-$policy = \OCP\Server::get(\OCA\Mcp\Service\GrantPolicy::class);
-$policy->setGlobalEnabled(true);
-foreach ([FormsScene::OWNER, FormsScene::READER, FormsScene::EDITOR, FormsScene::OUTSIDE] as $uid) {
-	$policy->setEligible($uid, true);
-	$policy->setConnected($uid, true);
-}
+\OCA\Mcp\Tests\Integration\Support\ScenePolicySetup::actors(
+	\OCP\Server::get(\OCA\Mcp\Access\Grants\GrantPolicy::class),
+	[FormsScene::OWNER, FormsScene::READER, FormsScene::EDITOR, FormsScene::OUTSIDE],
+);
 $api = new FormsApiScene();
 $ids = [];
 $ids['private'] = $api->form('Private owner structure');

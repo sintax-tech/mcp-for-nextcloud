@@ -7,11 +7,11 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Tables\Write;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Tables\TablesCellRows;
-use OCA\Mcp\Tools\Tables\TablesMessages;
-use OCA\Mcp\Tools\Tables\Write\RowWriteMessages;
+use OCA\Mcp\Modules\Tables\Presentation\TablesMessages;
+use OCA\Mcp\Modules\Tables\Presentation\RowWriteMessages;
 use OCP\Server;
 use PHPUnit\Framework\Attributes\Group;
 
@@ -73,9 +73,8 @@ final class McpTablesWriteTest extends IntegrationTestCase {
 		$this->assertFalse($plan['isError'], $plan['text']);
 		$this->assertTrue($plan['structured']['requiresConfirmation']);
 		$this->assertSame($before, $this->tablesAppRows(), 'a plan writes nothing');
-		$string = in_array((string)getenv('MCP_IT_TABLES_VERSION'), ['1.0.10', '2.3.2'], true);
 		$after = array_column($plan['structured']['cells'], 'after', 'columnId');
-		$this->assertSame(['Gamma', 12.5, $string ? '2' : 2, [1, 10], 'false', 0, '2026-11-02', '{"title":"Docs","value":"https://example.org/a","providerId":"url"}'],
+		$this->assertSame(['Gamma', 12.5, WriteSelectionExpectation::parsedId((string)getenv('MCP_IT_TABLES_VERSION'), 2), [1, 10], 'false', 0, '2026-11-02', '{"title":"Docs","value":"https://example.org/a","providerId":"url"}'],
 			array_values($after), 'the effect each pinned parser gives');
 
 		$confirmed = WriteActor::run(WriteCellScene::OWNER, 'call', ['tool' => 'tables_create_row',

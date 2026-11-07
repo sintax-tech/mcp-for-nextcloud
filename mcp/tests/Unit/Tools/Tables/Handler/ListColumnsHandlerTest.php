@@ -10,9 +10,9 @@ namespace OCA\Mcp\Tests\Unit\Tools\Tables\Handler;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\FakeTablesApp;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesHandlers;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesScene;
-use OCA\Mcp\Tools\ArgumentValidationException;
-use OCA\Mcp\Tools\Tables\TablesMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
+use OCA\Mcp\Modules\Tables\Presentation\TablesMessages;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 
 /**

@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
-use OCA\Mcp\Tools\Deck\DeckPlanRenderer;
+use OCA\Mcp\Modules\Deck\Presentation\DeckPlans\DeckPlanRenderer;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/Stubs/deck_stubs.php';

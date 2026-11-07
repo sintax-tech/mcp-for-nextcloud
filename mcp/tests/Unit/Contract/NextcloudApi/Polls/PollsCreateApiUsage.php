@@ -40,9 +40,9 @@ final class PollsCreateApiUsage {
 	public const VERSION_GATED = [
 		'OCA\\Polls\\Db\\Poll::getTimezoneName' => ['missing'=>['31','32'],
 			'pins'=>['31'=>'8.6.3','32'=>'8.6.3','33'=>'9.0.7','34'=>'9.1.4','35'=>'9.3.0'],
-			'omittedField'=>'timezoneName','by'=>\OCA\Mcp\Tools\Polls\Create\CreateDefaults::class],
+			'omittedField'=>'timezoneName','by'=>\OCA\Mcp\Modules\Polls\Creation\CreateDefaults::class],
 		'OCA\\Polls\\Db\\Option::setPoll' => ['missing'=>['31','32'],
-			'fallback'=>'OCA\\Polls\\Db\\Option::setPollId','by'=>\OCA\Mcp\Tools\Polls\Create\CreateNormalizer::class],
+			'fallback'=>'OCA\\Polls\\Db\\Option::setPollId','by'=>\OCA\Mcp\Modules\Polls\Creation\CreateNormalizer::class],
 	];
 	/** New native classes are constructor dependencies/value objects; unrelated method names never authorize calls on them. */
 	public const NAME_CLASHES = [

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi;
 
-use OCA\Mcp\Tools\Mail\Send\MailSendBccCopy;
+use OCA\Mcp\Modules\Mail\Sending\MailSendBccCopy;
 use PHPUnit\Framework\TestCase;
 
 /**

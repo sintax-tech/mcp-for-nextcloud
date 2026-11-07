@@ -9,9 +9,9 @@ namespace OCA\Mcp\Tests\Integration\Tables\Rows;
 
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Tables\TablesCellRows;
-use OCA\Mcp\Tools\Tables\Rows\RowCellText;
-use OCA\Mcp\Tools\Tables\Rows\RowsMessages;
-use OCA\Mcp\Tools\Tables\TablesMessages;
+use OCA\Mcp\Modules\Tables\Reading\RowCellText;
+use OCA\Mcp\Modules\Tables\Presentation\RowsMessages;
+use OCA\Mcp\Modules\Tables\Presentation\TablesMessages;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
@@ -45,7 +45,7 @@ final class McpTablesRowsTest extends IntegrationTestCase {
 	}
 
 	/**
-	 * Every user and target, two rows per page, against RowService, and the database unchanged.
+	 * Every user and target, two rows per page, against RowService in the same actor request, and the database unchanged.
 	 *
 	 * @return void
 	 */
@@ -63,11 +63,12 @@ final class McpTablesRowsTest extends IntegrationTestCase {
 		];
 		$kinds = ['same' => 0, 'whole' => 0, 'cut' => 0];
 		foreach ($cases as [$uid, $target]) {
-			$mcp = self::rows(RowsActor::run($uid, 'pages', ['arguments' => $target + ['limit' => 2]]));
-			$native = RowsActor::run($uid, 'native', $target);
+			$comparison = RowsActor::run($uid, 'compare', ['arguments' => $target + ['limit' => 2]]);
+			$mcp = self::rows($comparison);
+			$native = $comparison['native'];
 			$this->assertArrayHasKey('rows', $native, "$uid native");
-			$this->assertSame(array_column($native['rows'], 'id'), array_column($mcp, 'id'), "$uid " . json_encode($target) . ': rows and order');
-			foreach ($native['rows'] as $i => $row) {
+			$nativeRows = RowsNativeComparison::assertOrderAndMatch($mcp, $native['rows'], isset($target['table_id']), "$uid " . json_encode($target));
+			foreach ($nativeRows as $i => $row) {
 				$this->assertSame(array_column($row['data'], 'columnId'), array_column($mcp[$i]['cells'], 'columnId'), "$uid row {$row['id']}: cells");
 				foreach ($row['data'] as $j => $cell) {
 					$kinds[self::assertSameValue($cell['value'], $mcp[$i]['cells'][$j], "$uid row {$row['id']} column {$cell['columnId']}")]++;

@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
-use OCA\Mcp\Tools\Files\Handler\ImageSearchHandler;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
+use OCA\Mcp\Modules\Files\Images\ImageSearchHandler;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\IDBConnection;
@@ -101,7 +101,7 @@ final class FilesImageSearchTest extends FilesToolsTestCase {
 		]);
 		$this->expectException(ToolFailure::class);
 		$this->expectExceptionMessage('Failed to search images in Nextcloud.');
-		$this->handler()->execute($root, 'alice', ['limit' => 25]);
+		$this->handler()->execute($root, 'alice', ['limit' => 25], static fn (Folder $root, string $userId, File $file): array => ['name' => $file->getName()]);
 	}
 
 	/** @return void An unavailable mount skips only its node and preserves other matching images. */
@@ -117,7 +117,7 @@ final class FilesImageSearchTest extends FilesToolsTestCase {
 			return [$file];
 		});
 		$this->logger->expects(self::never())->method('error');
-		self::assertSame([['name' => 'holiday.jpg']], $this->handler()->execute($root, 'alice', ['tag' => 'holiday', 'limit' => 25]));
+		self::assertSame([['name' => 'holiday.jpg']], $this->handler()->execute($root, 'alice', ['tag' => 'holiday', 'limit' => 25], static fn (Folder $root, string $userId, File $file): array => ['name' => $file->getName()]));
 	}
 
 	/** @return void The per-node fallback must never swallow an unavailable policy. */
@@ -153,7 +153,7 @@ final class FilesImageSearchTest extends FilesToolsTestCase {
 			$root->method('search')->willReturn([$file]);
 		}
 		$this->expectExceptionObject($failure);
-		$this->handler($guard)->execute($root, 'alice', $args);
+		$this->handler($guard)->execute($root, 'alice', $args, static fn (Folder $root, string $userId, File $file): array => ['name' => $file->getName()]);
 	}
 
 	/**
@@ -169,7 +169,7 @@ final class FilesImageSearchTest extends FilesToolsTestCase {
 		$root->method('getById')->willThrowException($failure);
 		$this->logger->expects(self::never())->method('error');
 		$this->expectExceptionObject($failure);
-		$this->handler()->execute($root, 'alice', ['tag' => 'holiday', 'limit' => 25]);
+		$this->handler()->execute($root, 'alice', ['tag' => 'holiday', 'limit' => 25], static fn (Folder $root, string $userId, File $file): array => ['name' => $file->getName()]);
 	}
 
 	/**
@@ -178,12 +178,9 @@ final class FilesImageSearchTest extends FilesToolsTestCase {
 	 */
 	private function handler(?FilesAccessGuard $guard = null): ImageSearchHandler {
 		return new ImageSearchHandler(
-			$this->tagManager,
-			$this->tagMapper,
-			$this->users,
+			new \OCA\Mcp\Modules\Files\Images\ImageTagSearch($this->tagManager, $this->tagMapper, $this->users, $this->logger, $guard),
+			new \OCA\Mcp\Modules\Files\Images\ImageQuerySearch($this->createMock(IDBConnection::class), $this->users, $guard),
 			$this->logger,
-			$this->createMock(IDBConnection::class),
-			static fn (Folder $root, string $userId, File $file): array => ['name' => $file->getName()],
 			$guard,
 		);
 	}

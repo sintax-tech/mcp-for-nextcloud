@@ -9,9 +9,9 @@ declare(strict_types=1);
 [$script, $path, $major, $version] = $argv;
 $xml = simplexml_load_file($path);
 if ($xml === false || (string)$xml->id !== 'deck' || (string)$xml->version !== $version
-    || (string)$xml->dependencies->nextcloud['min-version'] !== $major
-    || (string)$xml->dependencies->nextcloud['max-version'] !== $major) {
-    fwrite(STDERR, "Deck manifest does not match pinned version $version / Nextcloud $major\n");
-    exit(1);
+	|| (string)$xml->dependencies->nextcloud['min-version'] !== $major
+	|| (string)$xml->dependencies->nextcloud['max-version'] !== $major) {
+	fwrite(STDERR, "Deck manifest does not match pinned version $version / Nextcloud $major\n");
+	exit(1);
 }
 echo "Deck manifest verified: $version / Nextcloud $major\n";

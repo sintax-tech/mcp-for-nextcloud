@@ -7,12 +7,20 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Files;
 
-use OCA\Mcp\Service\FileWritePolicy;
+use OCA\Mcp\Access\FileTypes\FileWritePolicy;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
-use OCA\Mcp\Tools\Common\{FileTypeGuard, NodeAccessInfo, SharedWriteGuard};
-use OCA\Mcp\Tools\Files\{CopyMoveContext, FileTypePreflight, ListedTreeCopy, MoveReport, Reorganization};
+use OCA\Mcp\Access\FileTypes\FileTypeGuard;
+use OCA\Mcp\Platform\FileAccess\{NodeAccessInfo, SharedWriteGuard};
+use OCA\Mcp\Modules\Files\Reorganization\CopyMoveContext;
+use OCA\Mcp\Modules\Files\Reorganization\FileTypePreflight;
+use OCA\Mcp\Modules\Files\Reorganization\ListedTreeCopy;
+use OCA\Mcp\Modules\Files\Integration\MoveReport;
+use OCA\Mcp\Modules\Files\Reorganization\{
+	BatchDirectories, BatchVisibility, FolderBoundary, FolderCreator, FolderLevels,
+	MoveDestination, MoveGuards, MoveInspection, MoveLocks, MoveReceipt, TreeEntries, TreeMeasure, UndoConflicts,
+};
 use OCP\Files\{Folder, IRootFolder};
 use OCP\IAppConfig;
 use OCP\Server;
@@ -50,9 +58,37 @@ final class TreeBatchFilePolicyTest extends IntegrationTestCase {
 		$shares = Server::get(\OCP\Share\IManager::class);
 		$access = new NodeAccessInfo($users, $shares);
 		$report = new MoveReport(\OC::$server, $shares, Server::get(\OCP\App\IAppManager::class));
-		$this->context = (new Reorganization($access, new SharedWriteGuard($access), $report, $users,
-			fileTypes: Server::get(FileTypeGuard::class)))->copyMoveContext();
+		$this->context = $this->copyMoveContext($access, $report, $users, Server::get(FileTypeGuard::class));
 		Server::get(FileWritePolicy::class)->save('allowlist', ['txt'], false);
+	}
+
+	/**
+	 * Compose native rules locally without depending on the unit-test autoloader.
+	 *
+	 * @param NodeAccessInfo $access Native ownership descriptions.
+	 * @param MoveReport $report Native versions and shares reporting.
+	 * @param \OCP\IUserManager $users Native user lookup.
+	 * @param FileTypeGuard $fileTypes Real persisted final-name policy guard.
+	 * @return CopyMoveContext The same native collaborators and null optional services as before.
+	 */
+	private function copyMoveContext(NodeAccessInfo $access, MoveReport $report, \OCP\IUserManager $users, FileTypeGuard $fileTypes): CopyMoveContext {
+		$guard = new SharedWriteGuard($access);
+		$destination = new MoveDestination();
+		$moveLocks = new MoveLocks();
+		$boundary = new FolderBoundary();
+		$rules = new MoveGuards(
+			new MoveInspection($destination),
+			$moveLocks,
+			new BatchVisibility(),
+			new UndoConflicts($moveLocks, $destination),
+			new BatchDirectories(),
+			new FolderCreator(new FolderLevels(), $guard, $boundary),
+			$boundary,
+			new TreeMeasure(new TreeEntries($access)),
+			$destination,
+			new MoveReceipt($guard, $access, $report, $users),
+		);
+		return new CopyMoveContext($rules, $access, $report, null, null, $fileTypes);
 	}
 
 	/** Restore only app configuration; the official harness destroys fixture containers and volumes.
@@ -135,7 +171,7 @@ final class TreeBatchFilePolicyTest extends IntegrationTestCase {
 			$this->context->policy()->write($this->source(), '/' . $this->base . '/blocked',
 				fn () => self::fail('The native sink must not run'));
 			self::fail('A forbidden descendant must refuse the whole move');
-		} catch (\OCA\Mcp\Tools\Common\FileTypeDenied) {
+		} catch (\OCA\Mcp\Access\FileTypes\FileTypeDenied) {
 			self::assertFalse($this->root->nodeExists($this->base . '/blocked'));
 			self::assertSame('blocked', $this->root->get($this->base . '/src.php/sub/blocked.php')->getContent());
 		}

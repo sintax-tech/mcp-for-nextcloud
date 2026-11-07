@@ -1,0 +1,79 @@
+{
+    "5.0.0": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.0.0/mail-v5.0.0.tar.gz",
+        "sha256": "015d2fac3538cde83b0104292648f998741ab7109ad9130e379b58e10fce8f23",
+        "isHtmlPosition": 8,
+        "nativeDefault": true,
+        "bodyPath": "getBody->setContent->getContent->setHtmlBody",
+        "saveSanitizes": false,
+        "readingRegistersImageDataScheme": true,
+        "autoloadsEngine": true,
+        "purifierVersion": "4.18.0"
+    },
+    "5.5.0": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.5.0/mail-v5.5.0.tar.gz",
+        "sha256": "975b1204e9f94cac744c259c8adc901cb7e09bc860eb97154d9bc88d69ef0a7e",
+        "isHtmlPosition": 8,
+        "nativeDefault": true,
+        "bodyPath": "getBody->setContent->getContent->setHtmlBody",
+        "saveSanitizes": false,
+        "readingRegistersImageDataScheme": true,
+        "autoloadsEngine": true,
+        "purifierVersion": "4.18.0"
+    },
+    "5.7.0": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.7.0/mail-v5.7.0.tar.gz",
+        "sha256": "2b504f4624877b740c6fcaa212ac9b5e25470395ab13174af8e4c3cb2add67e1",
+        "isHtmlPosition": 8,
+        "nativeDefault": true,
+        "bodyPath": "getBody->setContent->getContent->setHtmlBody",
+        "saveSanitizes": false,
+        "readingRegistersImageDataScheme": true,
+        "autoloadsEngine": true,
+        "purifierVersion": "4.19.0"
+    },
+    "5.9.0": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.9.0/mail-v5.9.0.tar.gz",
+        "sha256": "4987bc0440b8bfd8af97688654290e447cb9ca7f70378a369aba89606ab3551c",
+        "isHtmlPosition": 8,
+        "nativeDefault": true,
+        "bodyPath": "getBody->setHtmlBody",
+        "saveSanitizes": false,
+        "readingRegistersImageDataScheme": true,
+        "autoloadsEngine": true,
+        "purifierVersion": "4.19.0"
+    },
+    "5.10.11": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.10.11/mail-v5.10.11.tar.gz",
+        "sha256": "23a053bd4b477fa0c55a07acb230f13c05e0d4993f72b4843b929d6e491cb0b8",
+        "isHtmlPosition": 8,
+        "nativeDefault": true,
+        "bodyPath": "getBody->setHtmlBody",
+        "saveSanitizes": false,
+        "readingRegistersImageDataScheme": true,
+        "autoloadsEngine": true,
+        "purifierVersion": "4.19.0"
+    },
+    "5.11.0": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.11.0/mail-v5.11.0.tar.gz",
+        "sha256": "b023d43775b96db450f247e1bc5fdee9173637e264a5cfa09072c66a42ab3cc4",
+        "isHtmlPosition": 8,
+        "nativeDefault": true,
+        "bodyPath": "getBody->setHtmlBody",
+        "saveSanitizes": false,
+        "readingRegistersImageDataScheme": true,
+        "autoloadsEngine": true,
+        "purifierVersion": "4.19.0"
+    },
+    "5.12.5": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.12.5/mail-v5.12.5.tar.gz",
+        "sha256": "c52dab18a4de1710854038d95810f9ae4eb76a8656d89800e7dceb5aff0034e0",
+        "isHtmlPosition": 8,
+        "nativeDefault": true,
+        "bodyPath": "getBody->setHtmlBody",
+        "saveSanitizes": false,
+        "readingRegistersImageDataScheme": true,
+        "autoloadsEngine": true,
+        "purifierVersion": "4.19.0"
+    }
+}

@@ -7,11 +7,11 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Tables\Rows;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Exclusion\ExclusionTestCase;
 use OCA\Mcp\Tests\Integration\Support\Http;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
-use OCA\Mcp\Tools\Tables\Rows\RowsMessages;
+use OCA\Mcp\Modules\Tables\Presentation\RowsMessages;
 use OCP\Server;
 use PHPUnit\Framework\Attributes\Group;
 

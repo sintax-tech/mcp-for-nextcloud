@@ -7,14 +7,15 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Tables\Write;
 
+use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesTestModule;
 use OCA\Mcp\Tests\Unit\Tools\AssertsReadablePlans;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\FakeTablesWriteApp;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesHandlers;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesScene;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesWriteWiring;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\WriteScene;
-use OCA\Mcp\Tools\Tables\TablesModule;
-use OCA\Mcp\Tools\WriteGate;
+use OCA\Mcp\Modules\Tables\TablesModule;
+use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -36,8 +37,8 @@ final class TablesPlanRendererTest extends TestCase {
 	public function testEveryTablesWriteHasAReadablePlan(): void {
 		$module = $this->module(WriteScene::app());
 		$writes = array_values(array_column(array_filter($module->definitions(), static fn (array $definition): bool => WriteGate::isWrite($definition)), 'name'));
-		$this->assertSame(['tables_create_row', 'tables_update_row'], $writes);
-		$this->assertEveryWriteToolHasAReadablePlan($module, self::plans($module));
+		$this->assertSame(['tables_create_row', 'tables_update_row', ...array_keys(\OCA\Mcp\Tests\Unit\Modules\Tables\SchemaReadablePlans::of($this))], $writes);
+		$this->assertEveryWriteToolHasAReadablePlan($module, self::plans($module) + \OCA\Mcp\Tests\Unit\Modules\Tables\SchemaReadablePlans::of($this));
 	}
 
 	/**
@@ -62,8 +63,8 @@ final class TablesPlanRendererTest extends TestCase {
 	 */
 	private function module(FakeTablesWriteApp $app): TablesModule {
 		$base = TablesHandlers::module($this, TablesScene::app());
-		$property = static fn (string $name): object => (fn (): object => $this->{$name})->call($base);
-		return new TablesModule($property('tables'), $property('views'), $property('columns'), $property('rows'), ...TablesWriteWiring::handlers($this, $app, 'alice'));
+		$property = static fn (string $name): object => TablesTestModule::handler($base, $name);
+		return TablesTestModule::make($property('tables'), $property('views'), $property('columns'), $property('rows'), ...TablesWriteWiring::handlers($this, $app, 'alice'));
 	}
 
 	/**

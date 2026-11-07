@@ -9,18 +9,18 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Contacts;
 
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tools\ArgumentValidationException;
-use OCA\Mcp\Tools\Calendar\DavResult;
-use OCA\Mcp\Tools\Calendar\SharedGuard;
-use OCA\Mcp\Tools\Contacts\ContactAccess;
-use OCA\Mcp\Tools\Contacts\ContactBackup;
-use OCA\Mcp\Tools\Contacts\ContactCard;
-use OCA\Mcp\Tools\Contacts\ContactDav;
-use OCA\Mcp\Tools\Contacts\ContactStore;
-use OCA\Mcp\Tools\Contacts\ContactsModule;
-use OCA\Mcp\Tools\Contacts\SystemContacts;
-use OCA\Mcp\Tools\PlanChanged;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
+use OCA\Mcp\Platform\Dav\DavResult;
+use OCA\Mcp\Modules\Contacts\Planning\AddressBookShareNotice;
+use OCA\Mcp\Modules\Contacts\Locating\ContactAccess;
+use OCA\Mcp\Modules\Contacts\Backup\ContactBackup;
+use OCA\Mcp\Modules\Contacts\Cards\ContactCard;
+use OCA\Mcp\Modules\Contacts\Writing\ContactDav;
+use OCA\Mcp\Modules\Contacts\Locating\ContactStore;
+use OCA\Mcp\Modules\Contacts\ContactsModule;
+use OCA\Mcp\Modules\Contacts\Accounts\SystemContacts;
+use OCA\Mcp\Mcp\Confirmation\PlanChanged;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\IUserManager;
 use PHPUnit\Framework\TestCase;
 use Sabre\VObject\Reader;
@@ -61,12 +61,12 @@ final class ContactCreatePlanTest extends TestCase {
 		});
 		$config = new InMemoryConfig();
 		$config->system['secret'] = 'contact-plan-secret';
-		$this->module = new ContactsModule(
+		$this->module = ContactsTestModule::build(
 			new ContactAccess($store),
 			$store,
 			$this->dav,
 			new ContactCard(),
-			new SharedGuard($this->createMock(IUserManager::class)),
+			new AddressBookShareNotice($this->createMock(IUserManager::class)),
 			$this->createMock(ContactBackup::class),
 			$this->createMock(SystemContacts::class),
 			new PlanState($config->mock($this)),

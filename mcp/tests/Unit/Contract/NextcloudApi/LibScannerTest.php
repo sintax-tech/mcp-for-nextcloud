@@ -14,24 +14,24 @@ use PHPUnit\Framework\TestCase;
  * check each constructor against every covered major without a hand-kept list.
  */
 final class LibScannerTest extends TestCase {
-    private string $root;
+	private string $root;
 
-    protected function setUp(): void {
-        parent::setUp();
-        $this->root = sys_get_temp_dir() . '/mcp-lib-scanner-' . bin2hex(random_bytes(6));
-        mkdir($this->root, 0700);
-    }
+	protected function setUp(): void {
+		parent::setUp();
+		$this->root = sys_get_temp_dir() . '/mcp-lib-scanner-' . bin2hex(random_bytes(6));
+		mkdir($this->root, 0700);
+	}
 
-    protected function tearDown(): void {
-        foreach (glob($this->root . '/*.php') ?: [] as $file) {
-            unlink($file);
-        }
-        rmdir($this->root);
-        parent::tearDown();
-    }
+	protected function tearDown(): void {
+		foreach (glob($this->root . '/*.php') ?: [] as $file) {
+			unlink($file);
+		}
+		rmdir($this->root);
+		parent::tearDown();
+	}
 
-    public function testEveryNewOfANextcloudClassIsListedWithItsArguments(): void {
-        file_put_contents($this->root . '/Sample.php', <<<'PHP'
+	public function testEveryNewOfANextcloudClassIsListedWithItsArguments(): void {
+		file_put_contents($this->root . '/Sample.php', <<<'PHP'
             <?php
             namespace OCA\Mcp\Sample;
 
@@ -57,17 +57,17 @@ final class LibScannerTest extends TestCase {
             }
             PHP);
 
-        $constructions = (new LibScanner($this->root))->constructions();
+		$constructions = (new LibScanner($this->root))->constructions();
 
-        $this->assertSame([
-            'OCA\\DAV\\CardDAV\\Plugin' => [['file' => 'Sample.php', 'arguments' => 3, 'spread' => false, 'named' => []]],
-            'OCA\\DAV\\RootCollection' => [
-                ['file' => 'Sample.php', 'arguments' => 0, 'spread' => false, 'named' => []],
-                ['file' => 'Sample.php', 'arguments' => 0, 'spread' => false, 'named' => []],
-            ],
-            'OCP\\AppFramework\\Http\\JSONResponse' => [['file' => 'Sample.php', 'arguments' => 2, 'spread' => false, 'named' => ['data', 'statusCode']]],
-            'OCP\\Files\\Search\\SearchQuery' => [['file' => 'Sample.php', 'arguments' => 1, 'spread' => true, 'named' => []]],
-            'OCP\\Security\\Events\\ValidatePasswordPolicyEvent' => [['file' => 'Sample.php', 'arguments' => 2, 'spread' => false, 'named' => []]],
-        ], $constructions);
-    }
+		$this->assertSame([
+			'OCA\\DAV\\CardDAV\\Plugin' => [['file' => 'Sample.php', 'arguments' => 3, 'spread' => false, 'named' => []]],
+			'OCA\\DAV\\RootCollection' => [
+				['file' => 'Sample.php', 'arguments' => 0, 'spread' => false, 'named' => []],
+				['file' => 'Sample.php', 'arguments' => 0, 'spread' => false, 'named' => []],
+			],
+			'OCP\\AppFramework\\Http\\JSONResponse' => [['file' => 'Sample.php', 'arguments' => 2, 'spread' => false, 'named' => ['data', 'statusCode']]],
+			'OCP\\Files\\Search\\SearchQuery' => [['file' => 'Sample.php', 'arguments' => 1, 'spread' => true, 'named' => []]],
+			'OCP\\Security\\Events\\ValidatePasswordPolicyEvent' => [['file' => 'Sample.php', 'arguments' => 2, 'spread' => false, 'named' => []]],
+		], $constructions);
+	}
 }

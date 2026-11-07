@@ -7,12 +7,13 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
-use OCA\Mcp\Tools\PlanState;
-use OCA\Mcp\Tools\ToolRegistry;
-use OCA\Mcp\Tools\UnknownToolException;
+use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Mcp\Tools\UnknownToolException;
 use OCP\App\IAppManager;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -34,7 +35,7 @@ final class MailSendToolsRegistryTest extends TestCase {
 	 * @return void
 	 */
 	public function testTheSendGrantStartsDenied(): void {
-		$this->assertContains('send', GrantPolicy::CATALOG['mail']);
+		$this->assertContains('send', GrantCatalog::CATALOG['mail']);
 		$this->assertFalse(GrantPolicy::defaultGranted('mail', 'send'));
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
 		foreach (['read', 'messages', 'attachments', 'flags', 'move', 'draft'] as $operation) {

@@ -1,0 +1,167 @@
+{
+    "create": {
+        "open": {
+            "admitted": {
+                "outcome": "admitted: reached the native construction",
+                "message": "Form creation is not available for this user or installed Forms version.",
+                "cause": "Error: Class \"OCA\\Forms\\Service\\ConfigService\" not found"
+            },
+            "no-session": {
+                "outcome": "refused before the native construction",
+                "message": "Form creation is not available for this user or installed Forms version.",
+                "cause": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure: Form creation is not available for this user or installed Forms version."
+            },
+            "other-account-in-session": {
+                "outcome": "refused before the native construction",
+                "message": "Form creation is not available for this user or installed Forms version.",
+                "cause": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure: Form creation is not available for this user or installed Forms version."
+            },
+            "guest-without-forms": {
+                "outcome": "refused before the native construction",
+                "message": "Form creation is not available for this user or installed Forms version.",
+                "cause": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure: Form creation is not available for this user or installed Forms version."
+            },
+            "policy-renewed-without-grant": {
+                "outcome": "refused before the native construction",
+                "message": "Form creation is not available for this user or installed Forms version.",
+                "cause": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure: Form creation is not available for this user or installed Forms version."
+            },
+            "forms-unavailable": {
+                "outcome": "refused before the native construction",
+                "message": "Form creation is not available for this user or installed Forms version.",
+                "cause": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure: The Forms context could not be established for this user."
+            },
+            "unsupported-forms-version": {
+                "outcome": "refused before the native construction",
+                "message": "Form creation is not available for this user or installed Forms version.",
+                "cause": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure: Form creation is not available for this user or installed Forms version."
+            },
+            "other-forms-service": {
+                "outcome": "admitted: reached the native construction",
+                "message": "Form creation is not available for this user or installed Forms version.",
+                "cause": "Error: Class \"OCA\\Forms\\Service\\ConfigService\" not found"
+            },
+            "can-create-forms-false": {
+                "outcome": "admitted: reached the native construction",
+                "message": "Form creation is not available for this user or installed Forms version.",
+                "cause": "Error: Class \"OCA\\Forms\\Service\\ConfigService\" not found"
+            }
+        },
+        "assertAllowed": {
+            "admitted": {
+                "outcome": "admitted",
+                "message": ""
+            },
+            "no-session": {
+                "outcome": "refused",
+                "message": "Form creation is not available for this user or installed Forms version."
+            },
+            "other-account-in-session": {
+                "outcome": "refused",
+                "message": "Form creation is not available for this user or installed Forms version."
+            },
+            "guest-without-forms": {
+                "outcome": "refused",
+                "message": "Form creation is not available for this user or installed Forms version."
+            },
+            "policy-renewed-without-grant": {
+                "outcome": "refused",
+                "message": "Form creation is not available for this user or installed Forms version."
+            },
+            "forms-unavailable": {
+                "outcome": "refused",
+                "message": "The Forms context could not be established for this user."
+            },
+            "unsupported-forms-version": {
+                "outcome": "refused",
+                "message": "Form creation is not available for this user or installed Forms version."
+            },
+            "other-forms-service": {
+                "outcome": "refused",
+                "message": "Form creation is not available for this user or installed Forms version."
+            },
+            "can-create-forms-false": {
+                "outcome": "refused",
+                "message": "Form creation is not available for this user or installed Forms version."
+            }
+        }
+    },
+    "edit": {
+        "open": {
+            "admitted": {
+                "outcome": "admitted: reached the native construction",
+                "message": "The Forms edit is unavailable or no longer permitted. No automatic retry was made.",
+                "cause": "Error: Class \"OCA\\Forms\\Service\\ConfigService\" not found"
+            },
+            "no-session": {
+                "outcome": "refused before the native construction",
+                "message": "The Forms edit is unavailable or no longer permitted. No automatic retry was made.",
+                "cause": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure: The Forms edit is unavailable or no longer permitted. No automatic retry was made."
+            },
+            "other-account-in-session": {
+                "outcome": "refused before the native construction",
+                "message": "The Forms edit is unavailable or no longer permitted. No automatic retry was made.",
+                "cause": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure: The Forms edit is unavailable or no longer permitted. No automatic retry was made."
+            },
+            "guest-without-forms": {
+                "outcome": "refused before the native construction",
+                "message": "The Forms edit is unavailable or no longer permitted. No automatic retry was made.",
+                "cause": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure: The Forms edit is unavailable or no longer permitted. No automatic retry was made."
+            },
+            "policy-renewed-without-grant": {
+                "outcome": "refused before the native construction",
+                "message": "The Forms edit is unavailable or no longer permitted. No automatic retry was made.",
+                "cause": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure: The Forms edit is unavailable or no longer permitted. No automatic retry was made."
+            },
+            "forms-unavailable": {
+                "outcome": "refused before the native construction",
+                "message": "The Forms edit is unavailable or no longer permitted. No automatic retry was made.",
+                "cause": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure: The Forms context could not be established for this user."
+            },
+            "unsupported-forms-version": {
+                "outcome": "refused before the native construction",
+                "message": "The Forms edit is unavailable or no longer permitted. No automatic retry was made.",
+                "cause": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure: The Forms edit is unavailable or no longer permitted. No automatic retry was made."
+            },
+            "other-forms-service": {
+                "outcome": "admitted: reached the native construction",
+                "message": "The Forms edit is unavailable or no longer permitted. No automatic retry was made.",
+                "cause": "Error: Class \"OCA\\Forms\\Service\\ConfigService\" not found"
+            }
+        },
+        "assertAllowed": {
+            "admitted": {
+                "outcome": "admitted",
+                "message": ""
+            },
+            "no-session": {
+                "outcome": "refused",
+                "message": "The Forms edit is unavailable or no longer permitted. No automatic retry was made."
+            },
+            "other-account-in-session": {
+                "outcome": "refused",
+                "message": "The Forms edit is unavailable or no longer permitted. No automatic retry was made."
+            },
+            "guest-without-forms": {
+                "outcome": "refused",
+                "message": "The Forms edit is unavailable or no longer permitted. No automatic retry was made."
+            },
+            "policy-renewed-without-grant": {
+                "outcome": "refused",
+                "message": "The Forms edit is unavailable or no longer permitted. No automatic retry was made."
+            },
+            "forms-unavailable": {
+                "outcome": "refused",
+                "message": "The Forms context could not be established for this user."
+            },
+            "unsupported-forms-version": {
+                "outcome": "refused",
+                "message": "The Forms edit is unavailable or no longer permitted. No automatic retry was made."
+            },
+            "other-forms-service": {
+                "outcome": "refused",
+                "message": "The Forms edit is unavailable or no longer permitted. No automatic retry was made."
+            }
+        }
+    }
+}

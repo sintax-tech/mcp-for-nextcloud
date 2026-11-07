@@ -7,8 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Forms\Editing;
 
-use OCA\Mcp\Tools\Forms\Editing\{EditRequest,EditSettings,EditValues};
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Modules\Forms\Editing\EditRequest;
+use OCA\Mcp\Modules\Forms\Editing\EditSettings;
+use OCA\Mcp\Modules\Forms\Editing\EditValues;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use PHPUnit\Framework\TestCase;
 
 /** Exercises closed input, exact Unicode/byte boundaries and disjoint explicit settings removal. */
@@ -59,13 +61,13 @@ final class EditRequestSettingsTest extends TestCase {
 	 * @return void
 	 */
 	public function testPublishedSchemaMatchesSupportedSettingValues(): void {
-		$schema=\OCA\Mcp\Tools\Forms\Editing\EditTools::definitions()[0]['inputSchema'];
+		$schema=\OCA\Mcp\Modules\Forms\Presentation\EditTools::definitions()[0]['inputSchema'];
 		foreach ([['validationType'=>'email'],['dateMin'=>null],['dateRange'=>false],['allowedFileExtensions'=>['png']]] as $settings) {
 			$args=['form_id'=>1,'question_id'=>2,'changes'=>['settings'=>$settings]];
-			$valid=\OCA\Mcp\Tools\ArgumentValidator::validate($schema,$args);
+			$valid=\OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator::validate($schema,$args);
 			self::assertSame($settings,$valid['changes']['settings']);
 		}
-		$this->refused(static fn()=>\OCA\Mcp\Tools\ArgumentValidator::validate($schema,['form_id'=>1,'question_id'=>2,'changes'=>['settings'=>['dateMin'=>'today']]]));
+		$this->refused(static fn()=>\OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator::validate($schema,['form_id'=>1,'question_id'=>2,'changes'=>['settings'=>['dateMin'=>'today']]]));
 		$this->refused(static fn()=>EditSettings::merge('date',[],['settings'=>['dateMin'=>2,'dateMax'=>1]]));
 		$this->refused(static fn()=>EditSettings::merge('time',[],['settings'=>['timeMin'=>'10:00','timeMax'=>'09:59']]));
 	}

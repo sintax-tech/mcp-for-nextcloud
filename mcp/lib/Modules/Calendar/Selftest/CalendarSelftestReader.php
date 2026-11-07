@@ -1,0 +1,24 @@
+<?php
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+declare(strict_types=1);
+namespace OCA\Mcp\Modules\Calendar\Selftest;
+
+use OCA\Mcp\Platform\Dav\Calendar;
+
+/** Read-only evidence that ordinary tool results do not expose. */
+interface CalendarSelftestReader {
+	/**
+	 * @param Calendar $calendar calendar the selftest created
+	 * @return array{syncToken:string, deleted:bool}|null fresh backend state, including trash
+	 */
+	public function calendarState(Calendar $calendar): ?array;
+
+	/**
+	 * @param string $uid account whose CalDAV inbox is read
+	 * @return list<array{uri:string, data:string, etag:string}> the user's CalDAV inbox
+	 */
+	public function schedulingObjects(string $uid): array;
+}

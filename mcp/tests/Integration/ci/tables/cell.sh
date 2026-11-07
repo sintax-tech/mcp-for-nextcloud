@@ -23,16 +23,8 @@ ROWS_USERS="mcp-it-rows-owner mcp-it-rows-viewer mcp-it-rows-reader mcp-it-rows-
 # The users of the row write scene (seed-write.php), apart from the others.
 WRITE_USERS="mcp-it-write-owner mcp-it-write-viewer mcp-it-write-editor mcp-it-write-reader mcp-it-write-shared"
 
-# Release pinned per Nextcloud major (appinfo/info.xml of each release): 1.0.10 is the newest 1.x and declares 30-32,
-# 2.2.2 declares 33-35 and 2.3.2 declares 33-36. tests/fixtures/nextcloud-api/tables covers the oldest release per major.
-pin_release() {
-	case "$MCP_IT_NC" in
-		32) TABLES_TAG=v1.0.10; TABLES_SHA=6a8e8294b8467c9c36a724d5d6f6d62b9b97b285b8de291712812958dfa1b727 ;;
-		33|34) TABLES_TAG=v2.2.2; TABLES_SHA=c2806c1c40b58efdfd1b1f2e2d6f37a19fb0ee34bcf9ee7f26cecb170233ac4f ;;
-		35) TABLES_TAG=v2.3.2; TABLES_SHA=29953270010587fc8c0a95cfaba7b167adafb93d2f1a0a5a89e42f2d2be1cf28 ;;
-		*) echo "No Tables release pinned for Nextcloud $MCP_IT_NC" >&2; return 1 ;;
-	esac
-}
+# Release selection is shared by provisioning and test-env; defaults stay pinned per Nextcloud major.
+. "$(dirname "$0")/release.sh"
 
 # occ <args...>: the server's command line, as the web server user.
 occ() {
@@ -52,7 +44,7 @@ sha256_check() {
 install_tables() {
 	mkdir -p "$TOOLS_DIR"
 	archive="$TOOLS_DIR/tables.tar.gz"
-	curl -fsSL -o "$archive" "https://github.com/nextcloud-releases/tables/releases/download/$TABLES_TAG/tables-$TABLES_TAG.tar.gz"
+	stage_tables_archive "$archive"
 	echo "$TABLES_SHA  $archive" | sha256_check
 	docker exec -u www-data "$NC" tar -xzf /mcp-it-tools/tables.tar.gz -C /var/www/html/custom_apps
 	occ app:enable tables

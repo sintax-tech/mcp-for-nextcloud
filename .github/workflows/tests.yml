@@ -8,30 +8,39 @@ name: Tests
 
 on:
   push:
+    branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   phpunit:
     name: PHPUnit (PHP ${{ matrix.php-version }})
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
         php-version: ['8.2', '8.3', '8.4', '8.5']
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
       - name: Set up PHP ${{ matrix.php-version }}
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2 (2.40.0)
         with:
           php-version: ${{ matrix.php-version }}
-          extensions: mbstring, intl, gd, zip, sqlite3
+          extensions: mbstring, intl, gd, zip, sqlite3, pdo_sqlite
           coverage: none
       - name: Cache Composer packages
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.cache/composer
           key: composer-${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('mcp/composer.lock') }}
@@ -41,6 +50,26 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --no-progress
         working-directory: mcp
-      - name: Run the test suite
-        run: php -d memory_limit=1G -d post_max_size=1G -d upload_max_filesize=1G vendor/bin/phpunit
+      - name: Inventory the complete official suite and prove complementary partitions
+        run: php scripts/ci/phpunit.php prepare "$RUNNER_TEMP/phpunit"
+        working-directory: mcp
+      - name: Run the six frozen flows without intl through OracleUnitRunner (8M)
+        if: success() || failure()
+        run: php scripts/ci/phpunit.php run "$RUNNER_TEMP/phpunit" oracle
+        working-directory: mcp
+      - name: Run request-limit recordings (8M)
+        if: success() || failure()
+        run: php scripts/ci/phpunit.php run "$RUNNER_TEMP/phpunit" recordings
+        working-directory: mcp
+      - name: Run development-script tests in their own process (2G)
+        if: success() || failure()
+        run: php scripts/ci/phpunit.php run "$RUNNER_TEMP/phpunit" dev
+        working-directory: mcp
+      - name: Run the supported runtime with intl, gd, zip and 50M uploads
+        if: success() || failure()
+        run: php scripts/ci/phpunit.php run "$RUNNER_TEMP/phpunit" supported
+        working-directory: mcp
+      - name: Prove every inventoried test executed exactly once
+        if: always()
+        run: php scripts/ci/phpunit.php verify "$RUNNER_TEMP/phpunit"
         working-directory: mcp

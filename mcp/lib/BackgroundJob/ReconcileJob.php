@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\BackgroundJob;
 
-use OCA\Mcp\Service\Policy\CauseProcessor;
-use OCA\Mcp\Service\Policy\GroupLifecycle;
-use OCA\Mcp\Service\Policy\ScopeCleanup;
+use OCA\Mcp\Access\Policy\CauseProcessor;
+use OCA\Mcp\Access\Policy\GroupLifecycle;
+use OCA\Mcp\Access\Policy\ScopeCleanup;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\TimedJob;
 
@@ -28,19 +28,19 @@ use OCP\BackgroundJob\TimedJob;
  * the id stays restricted) and this pass only reports it.
  */
 class ReconcileJob extends TimedJob {
-    public const INTERVAL = 900;
+	public const INTERVAL = 900;
 
-    public function __construct(ITimeFactory $time, private CauseProcessor $causes, private GroupLifecycle $groups, private ?ScopeCleanup $scopes = null) {
-        parent::__construct($time);
-        $this->setInterval(self::INTERVAL);
-        $this->setTimeSensitivity(self::TIME_SENSITIVE);
-    }
+	public function __construct(ITimeFactory $time, private CauseProcessor $causes, private GroupLifecycle $groups, private ?ScopeCleanup $scopes = null) {
+		parent::__construct($time);
+		$this->setInterval(self::INTERVAL);
+		$this->setTimeSensitivity(self::TIME_SENSITIVE);
+	}
 
-    /** @param mixed $argument unused */
-    protected function run($argument): void {
-        $this->causes->flush();
-        $this->groups->reconcile();
-        $this->causes->reconcile();
-        $this->scopes?->reconcile();
-    }
+	/** @param mixed $argument unused */
+	protected function run($argument): void {
+		$this->causes->flush();
+		$this->groups->reconcile();
+		$this->causes->reconcile();
+		$this->scopes?->reconcile();
+	}
 }

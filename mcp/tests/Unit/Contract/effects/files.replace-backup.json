@@ -1,0 +1,498 @@
+{
+    "tool": "files_replace",
+    "grant": "files.edit",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "old": "olá",
+                "new": "mundo",
+                "etag": "<etag#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Replace part of a file**\n\nReplace a passage of **/Documentos/ata.md**.\n\n- Lines removed: 1; lines added: 1.\n- Before: «olá»\n- After: «mundo»\n- Size: 10 B → 11 B\n- A copy of the current file is saved first in **/MCP backups**.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the snippet below is replaced and a copy of the current content is kept in the backup folder.*\n\n*To confirm, repeat the call with etag `e102`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_replace",
+                            "title": "Replace part of a file",
+                            "action": "files_replace",
+                            "snippet": {
+                                "occurrences": 1,
+                                "replaced": 1
+                            },
+                            "size": {
+                                "before": 10,
+                                "after": 11
+                            },
+                            "diff": "--- antes\n+++ depois\n@@ -1,2 +1,2 @@\n # Ata\n-olá\n\\ No newline at end of file\n+mundo\n\\ No newline at end of file\n",
+                            "message": "Nothing was changed. After your approval the snippet below is replaced and a copy of the current content is kept in the backup folder.",
+                            "path": "/Documentos/ata.md",
+                            "etag": "<etag#1>",
+                            "backup": "/MCP backups",
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": true,
+                            "consequence": "The previous content stays available in the backup folder. Nextcloud may also keep versions of the file, according to its versioning policy."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "old": "olá",
+                "new": "mundo",
+                "etag": "<etag#1>",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "old": "olá",
+                "new": "mundo",
+                "etag": "<etag#1>",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Replace part of a file**\n\nReplace a passage of **/Documentos/ata.md**.\n\n- Lines removed: 1; lines added: 1.\n- Before: «olá»\n- After: «mundo»\n- Size: 10 B → 11 B\n- A copy of the current file is saved first in **/MCP backups**.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the snippet below is replaced and a copy of the current content is kept in the backup folder.*\n\n*To confirm, repeat the call with etag `e102`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_replace",
+                            "title": "Replace part of a file",
+                            "action": "files_replace",
+                            "snippet": {
+                                "occurrences": 1,
+                                "replaced": 1
+                            },
+                            "size": {
+                                "before": 10,
+                                "after": 11
+                            },
+                            "diff": "--- antes\n+++ depois\n@@ -1,2 +1,2 @@\n # Ata\n-olá\n\\ No newline at end of file\n+mundo\n\\ No newline at end of file\n",
+                            "message": "Nothing was changed. After your approval the snippet below is replaced and a copy of the current content is kept in the backup folder.",
+                            "path": "/Documentos/ata.md",
+                            "etag": "<etag#1>",
+                            "backup": "/MCP backups",
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": true,
+                            "consequence": "The previous content stays available in the backup folder. Nextcloud may also keep versions of the file, according to its versioning policy."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "files_replace carries no plan_state: a file changed after the plan is refused as a conflict on its ETag or as a snippet no longer found, never answered with a new plan"
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "old": "olá",
+                "new": "mundo",
+                "etag": "<etag#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Replace part of a file**\n\nReplace a passage of **/Documentos/ata.md**.\n\n- Lines removed: 1; lines added: 1.\n- Before: «olá»\n- After: «mundo»\n- Size: 10 B → 11 B\n- A copy of the current file is saved first in **/MCP backups**.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the snippet below is replaced and a copy of the current content is kept in the backup folder.*\n\n*To confirm, repeat the call with etag `e102`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_replace",
+                            "title": "Replace part of a file",
+                            "action": "files_replace",
+                            "snippet": {
+                                "occurrences": 1,
+                                "replaced": 1
+                            },
+                            "size": {
+                                "before": 10,
+                                "after": 11
+                            },
+                            "diff": "--- antes\n+++ depois\n@@ -1,2 +1,2 @@\n # Ata\n-olá\n\\ No newline at end of file\n+mundo\n\\ No newline at end of file\n",
+                            "message": "Nothing was changed. After your approval the snippet below is replaced and a copy of the current content is kept in the backup folder.",
+                            "path": "/Documentos/ata.md",
+                            "etag": "<etag#1>",
+                            "backup": "/MCP backups",
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": true,
+                            "consequence": "The previous content stays available in the backup folder. Nextcloud may also keep versions of the file, according to its versioning policy."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "old": "olá",
+                "new": "mundo",
+                "etag": "<etag#1>",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"path\": \"/Documentos/ata.md\",\n    \"size\": 11,\n    \"etag\": \"e102+\",\n    \"access\": {\n        \"scope\": \"personal\",\n        \"owner\": \"alice\",\n        \"ownerDisplayName\": \"Alice\",\n        \"permissions\": {\n            \"read\": true,\n            \"update\": true,\n            \"create\": true,\n            \"delete\": true,\n            \"share\": true\n        }\n    },\n    \"backup\": \"/MCP backups/Documentos/ata.md.20260921-141320.bak\",\n    \"diff\": \"--- antes\\n+++ depois\\n@@ -1,2 +1,2 @@\\n # Ata\\n-olá\\n\\\\ No newline at end of file\\n+mundo\\n\\\\ No newline at end of file\\n\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nmundo",
+                    "/alice/files/MCP backups": "dir #103",
+                    "/alice/files/MCP backups/Documentos": "dir #104",
+                    "/alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak": "#105 # Ata\nolá"
+                },
+                "ops": [
+                    "mkdir /alice/files/MCP backups",
+                    "mkdir /alice/files/MCP backups/Documentos",
+                    "create /alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak",
+                    "write /alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak",
+                    "write /alice/files/Documentos/ata.md"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "old": "mundo",
+                "new": "olá",
+                "etag": "<etag#2>",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nmundo",
+                    "/alice/files/MCP backups": "dir #103",
+                    "/alice/files/MCP backups/Documentos": "dir #104",
+                    "/alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak": "#105 # Ata\nolá"
+                },
+                "ops": [
+                    "mkdir /alice/files/MCP backups",
+                    "mkdir /alice/files/MCP backups/Documentos",
+                    "create /alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak",
+                    "write /alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak",
+                    "write /alice/files/Documentos/ata.md"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "old": "mundo",
+                "new": "olá",
+                "etag": "<etag#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Replace part of a file**\n\nReplace a passage of **/Documentos/ata.md**.\n\n- Lines removed: 1; lines added: 1.\n- Before: «mundo»\n- After: «olá»\n- Size: 11 B → 10 B\n- A copy of the current file is saved first in **/MCP backups**.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the snippet below is replaced and a copy of the current content is kept in the backup folder.*\n\n*To confirm, repeat the call with etag `e102+`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_replace",
+                            "title": "Replace part of a file",
+                            "action": "files_replace",
+                            "snippet": {
+                                "occurrences": 1,
+                                "replaced": 1
+                            },
+                            "size": {
+                                "before": 11,
+                                "after": 10
+                            },
+                            "diff": "--- antes\n+++ depois\n@@ -1,2 +1,2 @@\n # Ata\n-mundo\n\\ No newline at end of file\n+olá\n\\ No newline at end of file\n",
+                            "message": "Nothing was changed. After your approval the snippet below is replaced and a copy of the current content is kept in the backup folder.",
+                            "path": "/Documentos/ata.md",
+                            "etag": "<etag#2>",
+                            "backup": "/MCP backups",
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": true,
+                            "consequence": "The previous content stays available in the backup folder. Nextcloud may also keep versions of the file, according to its versioning policy."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nmundo",
+                    "/alice/files/MCP backups": "dir #103",
+                    "/alice/files/MCP backups/Documentos": "dir #104",
+                    "/alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak": "#105 # Ata\nolá"
+                },
+                "ops": [
+                    "mkdir /alice/files/MCP backups",
+                    "mkdir /alice/files/MCP backups/Documentos",
+                    "create /alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak",
+                    "write /alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak",
+                    "write /alice/files/Documentos/ata.md"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "old": "mundo",
+                "new": "olá",
+                "etag": "<etag#2>",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"path\": \"/Documentos/ata.md\",\n    \"size\": 10,\n    \"etag\": \"e102++\",\n    \"access\": {\n        \"scope\": \"personal\",\n        \"owner\": \"alice\",\n        \"ownerDisplayName\": \"Alice\",\n        \"permissions\": {\n            \"read\": true,\n            \"update\": true,\n            \"create\": true,\n            \"delete\": true,\n            \"share\": true\n        }\n    },\n    \"backup\": \"/MCP backups/Documentos/ata.md.20260921-141320-2.bak\",\n    \"diff\": \"--- antes\\n+++ depois\\n@@ -1,2 +1,2 @@\\n # Ata\\n-mundo\\n\\\\ No newline at end of file\\n+olá\\n\\\\ No newline at end of file\\n\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/MCP backups": "dir #103",
+                    "/alice/files/MCP backups/Documentos": "dir #104",
+                    "/alice/files/MCP backups/Documentos/ata.md.20260921-141320-2.bak": "#106 # Ata\nmundo",
+                    "/alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak": "#105 # Ata\nolá"
+                },
+                "ops": [
+                    "mkdir /alice/files/MCP backups",
+                    "mkdir /alice/files/MCP backups/Documentos",
+                    "create /alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak",
+                    "write /alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak",
+                    "write /alice/files/Documentos/ata.md",
+                    "create /alice/files/MCP backups/Documentos/ata.md.20260921-141320-2.bak",
+                    "write /alice/files/MCP backups/Documentos/ata.md.20260921-141320-2.bak",
+                    "write /alice/files/Documentos/ata.md"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "old": "olá",
+                "new": "mundo",
+                "etag": "<etag#3>",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/MCP backups": "dir #103",
+                    "/alice/files/MCP backups/Documentos": "dir #104",
+                    "/alice/files/MCP backups/Documentos/ata.md.20260921-141320-2.bak": "#106 # Ata\nmundo",
+                    "/alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak": "#105 # Ata\nolá"
+                },
+                "ops": [
+                    "mkdir /alice/files/MCP backups",
+                    "mkdir /alice/files/MCP backups/Documentos",
+                    "create /alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak",
+                    "write /alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak",
+                    "write /alice/files/Documentos/ata.md",
+                    "create /alice/files/MCP backups/Documentos/ata.md.20260921-141320-2.bak",
+                    "write /alice/files/MCP backups/Documentos/ata.md.20260921-141320-2.bak",
+                    "write /alice/files/Documentos/ata.md"
+                ]
+            }
+        }
+    ]
+}

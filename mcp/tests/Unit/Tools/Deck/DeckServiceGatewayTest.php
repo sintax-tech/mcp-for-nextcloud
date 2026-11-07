@@ -21,11 +21,11 @@ use OCA\Deck\Service\BoardService;
 use OCA\Deck\Service\CardService;
 use OCA\Deck\Service\PermissionService;
 use OCA\Deck\Service\StackService;
-use OCA\Mcp\Service\UserTimezone;
-use OCA\Mcp\Tools\Deck\CardCriteria;
-use OCA\Mcp\Tools\Deck\CardDueDate;
-use OCA\Mcp\Tools\Deck\DeckServiceGateway;
-use OCA\Mcp\Tools\Deck\DeckSessionException;
+use OCA\Mcp\Platform\Time\UserTimezone;
+use OCA\Mcp\Modules\Deck\Integration\CardCriteria;
+use OCA\Mcp\Modules\Deck\DueDates\CardDueDate;
+use OCA\Mcp\Modules\Deck\Integration\DeckServiceGateway;
+use OCA\Mcp\Modules\Deck\Failures\DeckSessionException;
 use OCA\Deck\Service\AssignmentService;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IConfig;
@@ -70,6 +70,7 @@ final class DeckServiceGatewayTest extends TestCase {
 			StackMapper::class => $this->createMock(StackMapper::class),
 			AssignmentMapper::class => $this->createMock(AssignmentMapper::class),
 			IUserManager::class => $this->createMock(IUserManager::class),
+			\OCP\Notification\IManager::class => $this->createMock(\OCP\Notification\IManager::class),
 		];
 
 		$this->time = $this->createMock(ITimeFactory::class);
@@ -134,7 +135,7 @@ final class DeckServiceGatewayTest extends TestCase {
 		try {
 			$this->gateway->validateAssignees('alice', 10, ['secret-account']);
 			self::fail('accepted a missing account');
-		} catch (\OCA\Mcp\Tools\ArgumentValidationException $e) {
+		} catch (\OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException $e) {
 			self::assertSame('assignees', $e->details()['field']);
 			self::assertStringNotContainsString('secret-account', $e->clientMessage());
 		}

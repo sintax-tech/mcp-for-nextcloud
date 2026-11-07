@@ -6,8 +6,20 @@
 declare(strict_types=1);
 
 use OCA\Mcp\Tests\Integration\Polls\{PollsScene,PollsCountingService,PollsProbeContainer};
-use OCA\Mcp\Tools\Polls\{PollsServices,PollsSurface,PollsSessionGuard,PollsContext,PollsShapes,PollsCursor,PollsListing,PollsReading,PollsModule,PollsRefusal};
-use OCA\Mcp\Tools\Polls\Handler\{ListPollsHandler,ReadPollHandler};
+use OCA\Mcp\Modules\Polls\Integration\PollsServices;
+use OCA\Mcp\Modules\Polls\Integration\PollsSessionGuard;
+use OCA\Mcp\Modules\Polls\Integration\PollsSurface;
+use OCA\Mcp\Modules\Polls\PollsModule;
+use OCA\Mcp\Modules\Polls\PollsRefusal;
+use OCA\Mcp\Modules\Polls\Presentation\PollsShapes;
+use OCA\Mcp\Modules\Polls\Reading\ListPollsHandler;
+use OCA\Mcp\Modules\Polls\Reading\PollsContext;
+use OCA\Mcp\Modules\Polls\Reading\PollsCursor;
+use OCA\Mcp\Modules\Polls\Reading\PollsListing;
+use OCA\Mcp\Modules\Polls\Reading\PollsReading;
+use OCA\Mcp\Modules\Polls\Reading\ReadPollHandler;
+use OCA\Mcp\Modules\Polls\Tools\ListPolls;
+use OCA\Mcp\Modules\Polls\Tools\ReadPoll;
 use OCP\Server;
 
 require dirname(__DIR__).'/bootstrap.php';
@@ -49,14 +61,17 @@ final class PollsNativeProbe {
 		$guard=new PollsSessionGuard($session);
 		$counter=new PollsCountingService(Server::get(\OCA\Polls\Service\PollService::class));
 		$services=new PollsServices(Server::get(\OCP\App\IAppManager::class),$users,new PollsProbeContainer($counter),
-			Server::get(\OCA\Mcp\Service\GrantPolicy::class),new PollsSurface());
-		$cursor=new PollsCursor(Server::get(\OCA\Mcp\Tools\PlanState::class));$shapes=new PollsShapes();$context=new PollsContext($services,$guard,Server::get(\Psr\Log\LoggerInterface::class));
-		$module=new PollsModule(new ListPollsHandler($context,new PollsListing($services,$guard,$shapes,$cursor)),
-			new ReadPollHandler($context,new PollsReading($services,$guard,$shapes,$cursor)),
-			Server::get(\OCA\Mcp\Tools\Polls\Handler\ListVotesHandler::class),
-			Server::get(\OCA\Mcp\Tools\Polls\Handler\ReadResultsHandler::class),
-			Server::get(\OCA\Mcp\Tools\Polls\Handler\ListLinksHandler::class),
-			Server::get(\OCA\Mcp\Tools\Polls\Handler\CreatePollHandler::class));
+			Server::get(\OCA\Mcp\Access\Grants\GrantPolicy::class),new PollsSurface());
+		$cursor=new PollsCursor(Server::get(\OCA\Mcp\Mcp\Confirmation\PlanState::class));$shapes=new PollsShapes();$context=new PollsContext($services,$guard,Server::get(\Psr\Log\LoggerInterface::class));
+		// The two instrumented reads; the other tools come from the app container, as the module resolves them there.
+		$module=new PollsModule(new class([
+			ListPolls::class=>new ListPolls(new ListPollsHandler($context,new PollsListing($services,$guard,$shapes,$cursor))),
+			ReadPoll::class=>new ReadPoll(new ReadPollHandler($context,new PollsReading($services,$guard,$shapes,$cursor))),
+		]) implements \Psr\Container\ContainerInterface {
+			public function __construct(private array $tools) {}
+			public function get(string $id): mixed {return $this->tools[$id] ?? Server::get($id);}
+			public function has(string $id): bool {return true;}
+		});
 		if ($action==='native') {
 			$native->cleanSession();$guard->native($native,$uid);
 			$polls=Server::get(\OCA\Polls\Service\PollService::class)->listPolls();$ids=[];

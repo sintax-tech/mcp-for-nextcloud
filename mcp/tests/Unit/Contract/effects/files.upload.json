@@ -1,0 +1,517 @@
+{
+    "tool": "files_upload",
+    "grant": "files.create",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "path": "/Docs/new.md"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Upload new file**\n\nCreate the new file **/Docs/new.md** with the content you send.\n\n- Inside: **/Docs**\n- The upload link works once, for 15 minutes.\n- The file can weigh up to 8 MB.\n- Nothing is overwritten: if a file with this name already exists, with content, nothing is written.\n\nNothing was changed. Confirm to execute.\n\n*After your approval a single-use upload link is issued that creates this new file; the file only appears once the bytes are sent to it.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_upload",
+                            "title": "Upload new file",
+                            "action": "files_upload",
+                            "path": "/Docs/new.md",
+                            "name": "new.md",
+                            "folder": "/Docs",
+                            "uploadMaxBytes": 8388608,
+                            "uploadTtlSeconds": 900,
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": true,
+                            "linksAfterConfirmation": true,
+                            "consequence": "Nothing is overwritten: if a file with this name already exists, with content, nothing is written.",
+                            "message": "Nothing was changed. After your approval a single-use upload link is issued that creates this new file; the file only appears once the bytes are sent to it."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Docs": "dir #101",
+                        "/alice/files/Docs/old.md": "#102 current bytes"
+                    },
+                    "ops": []
+                },
+                "tokens": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "path": "/Docs/new.md",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Docs": "dir #101",
+                        "/alice/files/Docs/old.md": "#102 current bytes"
+                    },
+                    "ops": []
+                },
+                "tokens": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "path": "/Docs/new.md",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Upload new file**\n\nCreate the new file **/Docs/new.md** with the content you send.\n\n- Inside: **/Docs**\n- The upload link works once, for 15 minutes.\n- The file can weigh up to 8 MB.\n- Nothing is overwritten: if a file with this name already exists, with content, nothing is written.\n\nNothing was changed. Confirm to execute.\n\n*After your approval a single-use upload link is issued that creates this new file; the file only appears once the bytes are sent to it.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_upload",
+                            "title": "Upload new file",
+                            "action": "files_upload",
+                            "path": "/Docs/new.md",
+                            "name": "new.md",
+                            "folder": "/Docs",
+                            "uploadMaxBytes": 8388608,
+                            "uploadTtlSeconds": 900,
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": true,
+                            "linksAfterConfirmation": true,
+                            "consequence": "Nothing is overwritten: if a file with this name already exists, with content, nothing is written.",
+                            "message": "Nothing was changed. After your approval a single-use upload link is issued that creates this new file; the file only appears once the bytes are sent to it."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Docs": "dir #101",
+                        "/alice/files/Docs/old.md": "#102 current bytes"
+                    },
+                    "ops": []
+                },
+                "tokens": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "No PlanState: each call rechecks the destination; a minted link rechecks it when used."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "path": "/Docs/new.md"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Upload new file**\n\nCreate the new file **/Docs/new.md** with the content you send.\n\n- Inside: **/Docs**\n- The upload link works once, for 15 minutes.\n- The file can weigh up to 8 MB.\n- Nothing is overwritten: if a file with this name already exists, with content, nothing is written.\n\nNothing was changed. Confirm to execute.\n\n*After your approval a single-use upload link is issued that creates this new file; the file only appears once the bytes are sent to it.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_upload",
+                            "title": "Upload new file",
+                            "action": "files_upload",
+                            "path": "/Docs/new.md",
+                            "name": "new.md",
+                            "folder": "/Docs",
+                            "uploadMaxBytes": 8388608,
+                            "uploadTtlSeconds": 900,
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": true,
+                            "linksAfterConfirmation": true,
+                            "consequence": "Nothing is overwritten: if a file with this name already exists, with content, nothing is written.",
+                            "message": "Nothing was changed. After your approval a single-use upload link is issued that creates this new file; the file only appears once the bytes are sent to it."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Docs": "dir #101",
+                        "/alice/files/Docs/old.md": "#102 current bytes"
+                    },
+                    "ops": []
+                },
+                "tokens": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "path": "/Docs/new.md",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"path\": \"/Docs/new.md\",\n    \"uploadUrl\": \"https://cloud.test/index.php/apps/mcp/mcp.checkout.upload/<create-token#1>\",\n    \"method\": \"PUT\",\n    \"expiresAt\": \"2026-09-21T14:28:20Z\",\n    \"maxBytes\": 8388608,\n    \"curl\": \"curl -sS -T /path/to/local/file -X PUT -H \\\"Content-Type: application/octet-stream\\\" \\\"https://cloud.test/index.php/apps/mcp/mcp.checkout.upload/<create-token#1>\\\"\",\n    \"message\": \"Send the file with the curl command below before the link expires. The link works once: if the upload is refused before it is used, fix the request and send it again; otherwise call files_upload again.\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Docs": "dir #101",
+                        "/alice/files/Docs/old.md": "#102 current bytes"
+                    },
+                    "ops": []
+                },
+                "tokens": [
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 0,
+                        "id": 1,
+                        "kind": "create",
+                        "path": "/Docs/new.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": null,
+                        "user_id": "alice"
+                    }
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "path": "/Docs/new.md",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Docs": "dir #101",
+                        "/alice/files/Docs/old.md": "#102 current bytes"
+                    },
+                    "ops": []
+                },
+                "tokens": [
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 0,
+                        "id": 1,
+                        "kind": "create",
+                        "path": "/Docs/new.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": null,
+                        "user_id": "alice"
+                    }
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "path": "/Docs/new.md"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Upload new file**\n\nCreate the new file **/Docs/new.md** with the content you send.\n\n- Inside: **/Docs**\n- The upload link works once, for 15 minutes.\n- The file can weigh up to 8 MB.\n- Nothing is overwritten: if a file with this name already exists, with content, nothing is written.\n\nNothing was changed. Confirm to execute.\n\n*After your approval a single-use upload link is issued that creates this new file; the file only appears once the bytes are sent to it.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_upload",
+                            "title": "Upload new file",
+                            "action": "files_upload",
+                            "path": "/Docs/new.md",
+                            "name": "new.md",
+                            "folder": "/Docs",
+                            "uploadMaxBytes": 8388608,
+                            "uploadTtlSeconds": 900,
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": true,
+                            "linksAfterConfirmation": true,
+                            "consequence": "Nothing is overwritten: if a file with this name already exists, with content, nothing is written.",
+                            "message": "Nothing was changed. After your approval a single-use upload link is issued that creates this new file; the file only appears once the bytes are sent to it."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Docs": "dir #101",
+                        "/alice/files/Docs/old.md": "#102 current bytes"
+                    },
+                    "ops": []
+                },
+                "tokens": [
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 0,
+                        "id": 1,
+                        "kind": "create",
+                        "path": "/Docs/new.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": null,
+                        "user_id": "alice"
+                    }
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "path": "/Docs/new.md",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"path\": \"/Docs/new.md\",\n    \"uploadUrl\": \"https://cloud.test/index.php/apps/mcp/mcp.checkout.upload/<create-token#2>\",\n    \"method\": \"PUT\",\n    \"expiresAt\": \"2026-09-21T14:28:20Z\",\n    \"maxBytes\": 8388608,\n    \"curl\": \"curl -sS -T /path/to/local/file -X PUT -H \\\"Content-Type: application/octet-stream\\\" \\\"https://cloud.test/index.php/apps/mcp/mcp.checkout.upload/<create-token#2>\\\"\",\n    \"message\": \"Send the file with the curl command below before the link expires. The link works once: if the upload is refused before it is used, fix the request and send it again; otherwise call files_upload again.\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Docs": "dir #101",
+                        "/alice/files/Docs/old.md": "#102 current bytes"
+                    },
+                    "ops": []
+                },
+                "tokens": [
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 0,
+                        "id": 1,
+                        "kind": "create",
+                        "path": "/Docs/new.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": null,
+                        "user_id": "alice"
+                    },
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 0,
+                        "id": 2,
+                        "kind": "create",
+                        "path": "/Docs/new.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": null,
+                        "user_id": "alice"
+                    }
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "arguments": {
+                "path": "/Docs/new.md",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud. If the destination folder does not exist yet, create it first with files_mkdir."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Docs": "dir #101",
+                        "/alice/files/Docs/old.md": "#102 current bytes"
+                    },
+                    "ops": []
+                },
+                "tokens": [
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 0,
+                        "id": 1,
+                        "kind": "create",
+                        "path": "/Docs/new.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": null,
+                        "user_id": "alice"
+                    },
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 0,
+                        "id": 2,
+                        "kind": "create",
+                        "path": "/Docs/new.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": null,
+                        "user_id": "alice"
+                    }
+                ]
+            }
+        }
+    ]
+}

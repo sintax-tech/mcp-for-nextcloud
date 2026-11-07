@@ -1,0 +1,172 @@
+<?php
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+declare(strict_types=1);
+
+namespace OCA\Mcp\Tests\Unit\Access\Grants;
+
+use OCA\Mcp\Access\Grants\GrantMatrix;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Tests\Unit\InMemoryConfig;
+use OCP\IAppConfig;
+use OCP\App\IAppManager;
+use OCP\IGroup;
+use OCP\IGroupManager;
+use OCP\IUser;
+use OCP\IUserManager;
+use PHPUnit\Framework\TestCase;
+
+/**
+ * Users, groups and apps of a fake instance for the admin matrix tests. The user search mimics the
+ * stable33 Database backend: one match on uid, display name or e-mail, ordered by display name.
+ */
+final class MatrixFixture {
+	public InMemoryConfig $config;
+	/** App config of the logs groups, shared by every worker of the fixture. */
+	public \OCA\Mcp\Tests\Unit\InMemoryAppConfig $appConfig;
+	public \OCA\Mcp\Tests\Unit\InMemoryLocks $locks;
+	public \OCA\Mcp\Tests\Unit\SqliteDatabase $logsDb;
+	/** Resource scope tables the matrix reads its {mode, count} cells from. */
+	public \OCA\Mcp\Tests\Unit\SqliteDatabase $scopeDb;
+	public GrantPolicy $policy;
+	/** The IConfig mock the policy, its writer and the logs gate share. */
+	public \OCP\IConfig $policyConfig;
+	public \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore $oauth;
+	/** The authoritative table of the administrator's OAuth clients. */
+	public \OCA\Mcp\Tests\Unit\OAuth\ClientsTable $clients;
+	/** @var array<string, array{name:string, email:string, enabled:bool}> */
+	public array $users = [];
+	/** @var array<string, list<string>> members by group id */
+	public array $groups = ['sales' => [], 'admin' => []];
+	/** @var list<array{string, ?int, ?int}> searchDisplayName calls: pattern, limit, offset */
+	public array $searches = [];
+	public array $enabledApps = ['notes', 'calendar'];
+	/** @var array<string, list<string>> optional per-app user allowlists */
+	public array $appUsers = [];
+	/** @var array<string, string> installed version per app id; an app left out answers '' (unknown) */
+	public array $appVersions = [];
+
+	public function __construct(private TestCase $test) {
+		$this->config = new InMemoryConfig();
+		$this->appConfig = new \OCA\Mcp\Tests\Unit\InMemoryAppConfig();
+		$this->locks = new \OCA\Mcp\Tests\Unit\InMemoryLocks();
+		$this->logsDb = new \OCA\Mcp\Tests\Unit\SqliteDatabase($test, [new \OCA\Mcp\Migration\Version001002Date20261008000000()]);
+		$this->scopeDb = new \OCA\Mcp\Tests\Unit\SqliteDatabase($test, [new \OCA\Mcp\Migration\Version001100Date20261015020000()]);
+		$this->oauth = new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore();
+		$this->clients = new \OCA\Mcp\Tests\Unit\OAuth\ClientsTable($test);
+		$this->config->userExists = fn (string $uid): bool => isset($this->users[$uid]);
+		$this->policyConfig = $this->config->mock($test);
+		$this->policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($this->policyConfig, $this->oauth);
+	}
+
+	public function addUser(string $uid, string $name, string $email = '', bool $enabled = true, array $groups = []): void {
+		$this->users[$uid] = ['name' => $name, 'email' => $email, 'enabled' => $enabled];
+		foreach ($groups as $gid) {
+			$this->groups[$gid][] = $uid;
+		}
+	}
+
+	public function matrix(): GrantMatrix {
+		return new GrantMatrix($this->policy, $this->userManager(), $this->groupManager(), $this->appManager(), $this->logsAccess(),
+			new \OCA\Mcp\Db\ResourceScopeMapper($this->scopeDb->connection()));
+	}
+
+	/** The role gate of the logs module over the same config and groups; members of 'admin' are the administrators. */
+	public function logsAccess(): \OCA\Mcp\Access\Logs\LogsAccess {
+		$config = $this->config->mock($this->test);
+		$groups = $this->groupManager();
+		$mapper = new \OCA\Mcp\Db\LogsGroupsMapper($this->logsDb->connection(), $this->appConfig->worker($this->test));
+		$remote = $this->mock(\OCP\Security\Ip\IRemoteAddress::class);
+		$remote->method('allowsAdminActions')->willReturn(true);
+		$roles = new \OCA\Mcp\Access\Policy\LogsRoleReader($config, $mapper, $groups, $remote, $this->mock(\OCP\IUserSession::class));
+		return new \OCA\Mcp\Access\Logs\LogsAccess($config, $groups, $mapper, $this->locks, $this->writer(), $roles,
+			new \OCA\Mcp\Access\Policy\MembershipReader($groups), $this->userManager());
+	}
+
+	/** @return \OCA\Mcp\Access\Policy\PolicyWriter the writer behind the policy, shared by every worker of the fixture */
+	public function writer(): \OCA\Mcp\Access\Policy\PolicyWriter {
+		return InMemoryConfig::writer($this->policyConfig, $this->oauth);
+	}
+
+	/** @return \OCA\Mcp\OAuth\Clients\OAuthClientsService the administrator's OAuth client settings over the writer and the OAuth store of the fixture */
+	public function clients(): \OCA\Mcp\OAuth\Clients\OAuthClientsService {
+		return new \OCA\Mcp\OAuth\Clients\OAuthClientsService($this->writer(), $this->config->mock($this->test), $this->clients->mapper, $this->oauth);
+	}
+
+	/** @return \OCA\Mcp\Db\PolicyStateMapper the revision the writer reads */
+	public function state(): \OCA\Mcp\Db\PolicyStateMapper {
+		return InMemoryConfig::state($this->policyConfig);
+	}
+
+	public function userManager(): IUserManager {
+		$manager = $this->mock(IUserManager::class);
+		$manager->method('get')->willReturnCallback(fn (string $uid) => isset($this->users[$uid]) ? $this->user($uid) : null);
+		$manager->method('searchDisplayName')->willReturnCallback(function (string $pattern, $limit = null, $offset = null): array {
+			$this->searches[] = [$pattern, $limit, $offset];
+			return array_slice(array_map(fn ($uid) => $this->user($uid), $this->matching($pattern)), (int)$offset, $limit);
+		});
+		$manager->method('countUsersTotal')->willReturnCallback(fn () => count($this->users));
+		return $manager;
+	}
+
+	/** @return list<string> uids whose uid, name or e-mail contain the pattern, ordered by name */
+	public function matching(string $pattern): array {
+		$uids = array_keys(array_filter($this->users, fn ($u, $uid) => $pattern === ''
+			|| stripos($uid, $pattern) !== false || stripos($u['name'], $pattern) !== false || stripos($u['email'], $pattern) !== false, ARRAY_FILTER_USE_BOTH));
+		usort($uids, fn ($a, $b) => strcasecmp($this->users[$a]['name'], $this->users[$b]['name']));
+		return $uids;
+	}
+
+	private function groupManager(): IGroupManager {
+		$manager = $this->mock(IGroupManager::class);
+		$manager->method('get')->willReturnCallback(fn (string $gid) => isset($this->groups[$gid]) ? $this->group($gid) : null);
+		$manager->method('getBackends')->willReturnCallback(fn (): array => [$this->backend()]);
+		$manager->method('search')->willReturnCallback(fn () => array_map(fn ($gid) => $this->group($gid), array_keys($this->groups)));
+		$manager->method('isInGroup')->willReturnCallback(fn (string $uid, string $gid) => in_array($uid, $this->groups[$gid] ?? [], true));
+		$manager->method('isAdmin')->willReturnCallback(fn (string $uid) => in_array($uid, $this->groups['admin'], true));
+		$manager->method('displayNamesInGroup')->willReturnCallback(function ($gid, $search = '', $limit = -1, $offset = 0): array {
+			$uids = array_values(array_intersect($this->matching($search), $this->groups[$gid] ?? []));
+			$uids = array_slice($uids, $offset, $limit === -1 ? null : $limit);
+			return array_combine($uids, array_map(fn ($uid) => $this->users[$uid]['name'], $uids)) ?: [];
+		});
+		return $manager;
+	}
+
+	/** The groups of the fixture as their one Database backend, as the fresh readers see them. */
+	public function backend(): \OCA\Mcp\Tests\Unit\ArrayGroupBackend {
+		return new \OCA\Mcp\Tests\Unit\ArrayGroupBackend(fn (): array => $this->groups);
+	}
+
+	private function appManager(): IAppManager {
+		$apps = $this->mock(IAppManager::class);
+		$apps->method('isEnabledForAnyone')->willReturnCallback(fn (string $app) => in_array($app, $this->enabledApps, true));
+		$apps->method('isEnabledForUser')->willReturnCallback(fn (string $app, IUser $user) =>
+			in_array($app, $this->enabledApps, true)
+			&& (!isset($this->appUsers[$app]) || in_array($user->getUID(), $this->appUsers[$app], true)));
+		$apps->method('getAppVersion')->willReturnCallback(fn (string $app): string => $this->appVersions[$app] ?? '');
+		return $apps;
+	}
+
+	private function group(string $gid): IGroup {
+		$group = $this->mock(IGroup::class);
+		$group->method('getGID')->willReturn($gid);
+		$group->method('getDisplayName')->willReturn(ucfirst($gid));
+		$group->method('count')->willReturnCallback(fn () => count($this->groups[$gid]));
+		return $group;
+	}
+
+	private function user(string $uid): IUser {
+		$user = $this->mock(IUser::class);
+		$user->method('getUID')->willReturn($uid);
+		$user->method('getDisplayName')->willReturn($this->users[$uid]['name']);
+		$user->method('getEMailAddress')->willReturn($this->users[$uid]['email']);
+		$user->method('isEnabled')->willReturn($this->users[$uid]['enabled']);
+		return $user;
+	}
+
+	private function mock(string $class): object {
+		return (new \ReflectionMethod($this->test, 'createMock'))->invoke($this->test, $class);
+	}
+}

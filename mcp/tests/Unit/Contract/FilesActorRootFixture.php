@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract;
 
-use OCA\Mcp\Tools\Files\Access\ActorRoot;
+use OCA\Mcp\Platform\FileAccess\ActorRoot;
 use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
 use OCP\IUser;

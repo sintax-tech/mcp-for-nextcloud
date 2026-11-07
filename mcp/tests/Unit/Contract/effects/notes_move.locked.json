@@ -1,0 +1,117 @@
+{
+    "steps": [
+        {
+            "step": "locked-preview",
+            "request": {
+                "id": 102,
+                "etag": "<etag#1>",
+                "category": "Arquivo"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Move note**\n\nMove note: **old**\n- Category: (root) → *Arquivo*\n- The destination category will be created.\n\n### Warnings\n\n- The file “/Notes/old.md” is locked by Paulo Exemplo. Locked since 2025-10-08 11:05 (UTC). The lock has no end time. While the lock lasts the change is refused, even after confirmation. Ask that person to unlock it, or wait until the lock ends, and then try again.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the note moves to the category below.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "notes_move",
+                            "title": "Move note",
+                            "action": "notes_move",
+                            "note": {
+                                "id": 102,
+                                "title": "old",
+                                "category": "",
+                                "modified": 1759200102,
+                                "etag": "<etag#1>",
+                                "content": "old",
+                                "bytes": 3
+                            },
+                            "from": "",
+                            "to": "Arquivo",
+                            "categoryCreated": true,
+                            "titleTaken": false,
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Nothing was changed. After your approval the note moves to the category below.",
+                            "lock": {
+                                "type": "user",
+                                "owner_display_name": "Paulo Exemplo",
+                                "own": false,
+                                "blocking": true,
+                                "created_at": "<created_at#1>",
+                                "expires_at": null,
+                                "expiry_status": "none"
+                            },
+                            "warnings": [
+                                {
+                                    "type": "file_locked",
+                                    "message": "The file “/Notes/old.md” is locked by Paulo Exemplo. Locked since 2025-10-08 11:05 (UTC). The lock has no end time. While the lock lasts the change is refused, even after confirmation. Ask that person to unlock it, or wait until the lock ends, and then try again."
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Notes": "dir #101",
+                    "/alice/files/Notes/old.md": "#102 old"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "locked-confirmed",
+            "request": {
+                "id": 102,
+                "etag": "<etag#1>",
+                "category": "Arquivo",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "The file “/Notes/old.md” is locked by Paulo Exemplo. Locked since 2025-10-08 11:05 (UTC). The lock has no end time. Ask that person to unlock it, or wait until the lock ends, and then try again. Nothing was changed."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Notes": "dir #101",
+                    "/alice/files/Notes/old.md": "#102 old"
+                },
+                "ops": []
+            }
+        }
+    ]
+}

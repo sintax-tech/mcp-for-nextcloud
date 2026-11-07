@@ -10,11 +10,11 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 use OCA\Deck\Db\Assignment;
 use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Stack;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
-use OCA\Mcp\Tools\Deck\DeckToolModule;
-use OCA\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\DeckModule as DeckToolModule;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IConfig;
@@ -69,7 +69,7 @@ final class DeckPreviewTest extends TestCase {
 	private function moduleWith(DeckGatewayInterface $gateway, ?IUserManager $users = null, ?IConfig $config = null): DeckToolModule {
 		$apps = $this->createMock(IAppManager::class);
 		$apps->method('isEnabledForUser')->willReturn(true);
-		$module = new DeckToolModule(
+		$module = \OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::build(
 			$this->createMock(ContainerInterface::class),
 			$apps,
 			$this->createMock(LoggerInterface::class),
@@ -79,7 +79,7 @@ final class DeckPreviewTest extends TestCase {
 			$config,
 		);
 		// The gateway is built lazily from the Deck container; the test hands its double in its place.
-		(new \ReflectionProperty(DeckToolModule::class, 'gateway'))->setValue($module, $gateway);
+		\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::setGateway($module, $gateway);
 
 		return $module;
 	}
@@ -231,10 +231,10 @@ final class DeckPreviewTest extends TestCase {
 	public function testEditPlanRefusesAnAccountWithoutAccessBeforeAnythingIsWritten(): void {
 		$gateway = $this->gatewayWithAssignedCard([]);
 		$gateway->method('validateAssignees')->willThrowException(
-			new \OCA\Mcp\Tools\ArgumentValidationException('Invalid argument: assignees', 'assignees', 'each account must exist and have access to the board'),
+			new \OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException('Invalid argument: assignees', 'assignees', 'each account must exist and have access to the board'),
 		);
 
-		$this->expectException(\OCA\Mcp\Tools\ArgumentValidationException::class);
+		$this->expectException(\OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException::class);
 
 		$this->moduleWith($gateway)->preview('deck_edit_card', ['cardId' => 7, 'assign' => ['intruso']], 'alice');
 	}
@@ -243,7 +243,7 @@ final class DeckPreviewTest extends TestCase {
 		$gateway = $this->gatewayWithAssignedCard(['pedro']);
 		$gateway->expects(self::never())->method('findCard');
 
-		$this->expectException(\OCA\Mcp\Tools\ArgumentValidationException::class);
+		$this->expectException(\OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException::class);
 
 		$this->moduleWith($gateway)->preview('deck_edit_card', ['cardId' => 7, 'assign' => ['pedro'], 'unassign' => ['pedro']], 'alice');
 	}
@@ -362,8 +362,8 @@ final class DeckPreviewTest extends TestCase {
 	}
 
 	private function registry(DeckGatewayInterface $gateway): ToolRegistry {
-		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
-		foreach (GrantPolicy::CATALOG['deck'] as $operation) {
+		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
+		foreach (GrantCatalog::CATALOG['deck'] as $operation) {
 			$policy->setGrant('alice', 'deck', $operation, true);
 		}
 		$apps = $this->createMock(IAppManager::class);

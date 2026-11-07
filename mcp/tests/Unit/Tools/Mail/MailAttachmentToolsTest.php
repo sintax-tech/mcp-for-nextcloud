@@ -7,13 +7,13 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 
-use OCA\Mcp\Tools\Mail\MailAttachmentMessages;
-use OCA\Mcp\Tools\Mail\MailAttachmentReader;
-use OCA\Mcp\Tools\Mail\MailAttachmentTools;
-use OCA\Mcp\Tools\Mail\MailBodyPreflight;
-use OCA\Mcp\Tools\Mail\MailGateway;
-use OCA\Mcp\Tools\Mail\MailMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Modules\Mail\Presentation\MailAttachmentMessages;
+use OCA\Mcp\Modules\Mail\Integration\MailAttachmentReader;
+use OCA\Mcp\Modules\Mail\Reading\MailAttachmentTools;
+use OCA\Mcp\Modules\Mail\Reading\MailBodyPreflight;
+use OCA\Mcp\Modules\Mail\Integration\MailGateway;
+use OCA\Mcp\Modules\Mail\Presentation\MailMessages;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\ITempManager;
 use PHPUnit\Framework\TestCase;

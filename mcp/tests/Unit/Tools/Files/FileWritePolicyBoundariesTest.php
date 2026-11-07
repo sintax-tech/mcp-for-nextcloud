@@ -8,15 +8,15 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use ReflectionProperty;
-use OCA\Mcp\Checkout\CheckoutToken;
-use OCA\Mcp\Checkout\CheckoutTokenStore;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutToken;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutTokenStore;
 use OCA\Mcp\Controller\CheckoutController;
-use OCA\Mcp\OAuth\TokenHasher;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture;
-use OCA\Mcp\Tools\Common\FileTypeDenied;
-use OCA\Mcp\Tools\Files\FileCreation;
-use OCA\Mcp\Tools\Files\FilesModule;
+use OCA\Mcp\OAuth\Storage\TokenHasher;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture;
+use OCA\Mcp\Access\FileTypes\FileTypeDenied;
+use OCA\Mcp\Modules\Files\Creation\FileCreation;
+use OCA\Mcp\Modules\Files\FilesModule;
 use OCP\Files\IRootFolder;
 use OCP\IRequest;
 use OCP\IUserSession;
@@ -52,8 +52,9 @@ final class FileWritePolicyBoundariesTest extends FilesToolsTestCase {
 		parent::setUp();
 		$this->user->method('isEnabled')->willReturn(true);
 		$this->types = new FileTypePolicyFixture();
-		$this->creation = (new ReflectionProperty(FilesModule::class, 'creation'))->getValue($this->module);
-		foreach ([$this->module, $this->creation] as $service) {
+		$this->creation = FilesCatalogWiring::of($this->module)->named('creation');
+		$this->module = FilesCatalogWiring::replacing($this->module, [\OCA\Mcp\Access\FileTypes\FileTypeGuard::class => $this->types->guard($this)]);
+		foreach ([$this->creation] as $service) {
 			(new ReflectionProperty($service, 'fileTypes'))->setValue($service, $this->types->guard($this));
 		}
 	}
@@ -63,7 +64,7 @@ final class FileWritePolicyBoundariesTest extends FilesToolsTestCase {
 	 * @return mixed The already wired service.
 	 */
 	private function dependency(string $name): mixed {
-		return (new ReflectionProperty(FilesModule::class, $name))->getValue($this->module);
+		return FilesCatalogWiring::of($this->module)->named($name);
 	}
 
 	/**
@@ -91,11 +92,11 @@ final class FileWritePolicyBoundariesTest extends FilesToolsTestCase {
 				return $spent;
 			});
 		}
-		$controller = new PolicyUploadController('mcp', $request, $this->dependency('rootFolder'), $session,
+		$controller = new PolicyUploadController('mcp', $request, \OCA\Mcp\Tests\Unit\Checkout\CheckoutFlowFixture::build($this->dependency('rootFolder'), $session,
 			$this->temp, $this->time, $policy, $store, new TokenHasher($this->config->mock($this)), $this->dependency('checkout'),
 			$this->dependency('backup'), $this->dependency('guard'), $this->dependency('accessInfo'), $this->logger,
 			userManager: $this->users, visibilityGuard: $this->visibilityGuard, creation: $this->creation,
-			locks: $this->locks->service($this), fileTypes: $this->types->guard($this));
+			locks: $this->locks->service($this), fileTypes: $this->types->guard($this)));
 		$controller->token = $token;
 		return $controller;
 	}

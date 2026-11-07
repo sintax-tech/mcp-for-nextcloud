@@ -8,22 +8,22 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Notes;
 
-use OCA\Mcp\Service\FileWritePolicy;
-use OCA\Mcp\Service\FileWritePolicyUnavailable;
+use OCA\Mcp\Access\FileTypes\FileWritePolicy;
+use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
-use OCA\Mcp\Tools\ArgumentValidator;
-use OCA\Mcp\Tools\Common\FileTypeDenied;
-use OCA\Mcp\Tools\Common\FileTypeGuard;
-use OCA\Mcp\Tools\Common\FileTypeMessages;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\Common\SharedWriteGuard;
-use OCA\Mcp\Tools\Notes\NoteContentSink;
-use OCA\Mcp\Tools\Notes\NotesModule;
-use OCA\Mcp\Tools\Notes\NotesRepository;
-use OCA\Mcp\Tools\PlanState;
-use OCA\Mcp\Tools\WriteGate;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
+use OCA\Mcp\Access\FileTypes\FileTypeDenied;
+use OCA\Mcp\Access\FileTypes\FileTypeGuard;
+use OCA\Mcp\Access\FileTypes\FileTypeMessages;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
+use OCA\Mcp\Modules\Notes\Editing\NoteContentSink;
+use OCA\Mcp\Modules\Notes\NotesModule;
+use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use OCP\App\IAppManager;
 use OCP\Files\File;
 use OCP\Files\IRootFolder;
@@ -95,7 +95,7 @@ final class NoteTypePolicyTest extends TestCase {
 		$users = $this->createMock(IUserManager::class);
 		$users->method('get')->willReturn($this->createMock(IUser::class));
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
-		$this->module = new NotesModule(
+		$this->module = NotesTestModule::build(
 			new NotesRepository($root, $this->config->mock($this)),
 			$apps,
 			$users,
@@ -440,7 +440,7 @@ final class NoteTypePolicyTest extends TestCase {
 
 	/** ContactBackup is exempt by service: its source never reads the file-name policy. */
 	public function testContactBackupNeverReadsTheFileTypePolicy(): void {
-		$source = (string)file_get_contents(__DIR__ . '/../../../../lib/Tools/Contacts/ContactBackup.php');
+		$source = (string)file_get_contents((string)(new \ReflectionClass(\OCA\Mcp\Modules\Contacts\Backup\ContactBackup::class))->getFileName());
 		$this->assertNotSame('', $source);
 		$this->assertDoesNotMatchRegularExpression('/FileTypeGuard|FileWritePolicy|file_write_policy/', $source);
 	}

@@ -21,7 +21,7 @@ final class PollsContentSeed {
 		$native = Server::get(\OCA\Polls\UserSession::class);
 		$polls = Server::get(\OCA\Polls\Service\PollService::class);
 		$shares = Server::get(\OCA\Polls\Service\ShareService::class);
-		$services = Server::get(\OCA\Mcp\Tools\Polls\PollsServices::class);
+		$services = Server::get(\OCA\Mcp\Modules\Polls\Integration\PollsServices::class);
 		$ids = [];
 		foreach ([1, 2, 3, 4] as $index) {
 			$session->setUser($users->get(PollsScene::OWNER));

@@ -21,8 +21,8 @@ final class FileDeletionGuardTest extends TestCase {
 	public static function nestedSources(): iterable {
 		yield 'handler' => ['Handler', 'Injected.php'];
 		yield 'sharing' => ['Sharing', 'Injected.php'];
-		yield 'nested FD-1-name collision' => ['Sharing', 'DeleteFileHandler.php'];
-		yield 'nested undo-name collision' => ['Handler', 'Reorganization.php'];
+		yield 'nested FD-1-name collision' => ['Sharing', basename('/lib/Modules/Files/Deletion/DeleteFileHandler.php')];
+		yield 'nested undo-name collision' => ['Handler', basename('/lib/Modules/Files/Reorganization/Reorganization.php')];
 	}
 
 	/**
@@ -44,7 +44,7 @@ final class FileDeletionGuardTest extends TestCase {
 			self::assertSame([$file], $sources);
 			$failure = null;
 			try {
-				FileDeletionGuard::assertNoNodeDeletion($sources, __DIR__ . '/../../../lib/Tools/Files/Reorganization.php');
+				FileDeletionGuard::assertNoNodeDeletion($sources, dirname(__DIR__, 3) . '/lib/Modules/Files/Reorganization/Reorganization.php');
 			} catch (AssertionFailedError $error) {
 				$failure = $error;
 			}

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi;
 
-use OCA\Mcp\Tools\Mail\MailCacheGeneration;
+use OCA\Mcp\Modules\Mail\Locating\MailCacheGeneration;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -136,7 +136,7 @@ final class MailHordeSurfaceContractTest extends TestCase {
 		}
 		$names = array_keys($users);
 		sort($names);
-		$this->assertSame(['MailAttachmentPreflight.php', 'MailBodyPreflight.php', 'MailFlagStore.php', 'MailMoveStore.php'], $names);
+		$this->assertSame(['MailAttachmentPreflight', 'MailBodyPreflight', 'MailFlagStore', 'MailMoveStore'], array_map(static fn (string $name): string => pathinfo($name, PATHINFO_FILENAME), $names));
 	}
 
 	/**

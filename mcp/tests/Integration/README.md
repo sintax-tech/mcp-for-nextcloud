@@ -18,10 +18,9 @@ Needs `brew install colima docker` (Colima, not Docker Desktop), plus the PHP an
 
 It runs the same steps as the workflow (packages, tools, start-db, start-nextcloud, install-app, fixtures, provision,
 report, test, collect) for that one cell, with the image digests, the cell and the baseline tag read from
-`.github/workflows/integration.yml`. The container engine is started for the run and always stopped again: on success,
-on error and on INT/TERM a trap removes the test containers, their network and volumes, the baseline worktree of the
-upgrade mode, and runs `colima stop`, but only when the script itself started Colima (an engine that was already
-running is left running). Images stay cached as files unless `--prune-images` is given. The pinned images are
+`.github/workflows/integration.yml`. Colima is started when needed and always left running because the default
+profile is shared. On success, error and INT/TERM a trap removes only this run's containers, network, volumes and
+baseline worktree. Images stay cached as files unless `--prune-images` is given. The pinned images are
 multi-architecture and run natively as arm64 on Apple silicon; the script prints the architecture it got.
 
 Several runs can be started from different places, also from the same checkout: each names its containers, network
@@ -31,18 +30,22 @@ cache is written atomically. Up to `MCP_IT_SLOTS` runs (default 2) use the engin
 they arrived (numbered tickets, nobody moves while a run is still choosing its number, a run is never overtaken by one
 that arrived after it; tickets of runs that are gone are dropped, and the slot of an owner that is gone is claimed by
 one run, never removed under another). A waiting run logs its position, the runs holding the slots and those ahead of
-it. Colima is started once, under an engine switch, by the first run that finds it down, and stopped by the last run to
-leave when nobody holds a slot or waits. Each run of NC 35 + MariaDB takes about 1.5 GB of the engine's memory; the
+it. Colima is started under an engine switch by the first run that finds it down; leaving a run releases its slot
+without stopping the shared engine. Each run of NC 35 + MariaDB takes about 1.5 GB of the engine's memory; the
 Colima profile here (4 CPUs, 8 GiB) fits 2 slots with room to spare, and 3 at most; give the engine about 2 GiB per slot
 plus 2 GiB before raising `MCP_IT_SLOTS` further (`MCP_IT_SLOTS=1` runs one at a time). The queue lives in
 `ci/engine-queue.sh` and is proven without Colima by `ci/engine-queue-test.sh [repetitions]` (fake `colima`/`docker`, a
 temporary `MCP_IT_LOCK_DIR`). A copy of `run-local.sh` from before the tickets or the slots still shares slot 1 safely,
 but does not wait for the queue and may take slot 1 ahead of it.
 
-**Never run `colima stop` (or `docker rm` on the `mcp-it-*` containers) by hand while a run may exist**: it cuts the run
-in progress. To shut the engine down yourself use `ci/run-local.sh --shutdown`: it waits its turn in the same queue,
-removes what dead runs left behind (never the containers of a run still in a slot), and stops Colima only when no run
-holds a slot or waits.
+**Never stop the shared Colima profile or remove another run's resources.** `ci/run-local.sh --shutdown` cleans
+only interrupted runs recorded in this checkout's `.mcp-it-runs/*/owned-resources` manifests. It skips live owners,
+uses exact container/network names and verifies anonymous-volume removal. A failed inspect is checked against a
+responsive inventory; any failed removal or proof retains the manifest for retry. Exact volume names are saved in
+`owned-volumes` before container removal, so an interrupted cleanup can still remove its remaining volumes.
+It never scans global `mcp-it-*` names or stops Colima. `ci/shared-engine-test.sh` tests a sandboxed copy of the entrypoint, preserving real run manifests;
+`ci/cleanup-ownership-test.sh` covers interrupted runs and retry after seven failure modes.
+`php ci/local-artifact-root-test.php` proves that generated artifacts stay outside the app's recursive source readers.
 
 Diagnostics: mode `baseline` installs the released baseline (the tag in the workflow) and never upgrades it, so a scenario can
 be run against the published code; `MCP_IT_PHPUNIT_ARGS="--filter SomeTest"` limits the suite to one test. They were built
@@ -51,7 +54,7 @@ to find why a groupfolder version restore was refused (`Exclusion/MountsTest` no
 
 Logs and artifacts (`run.log` is the terminal output, `resources.log` the memory samples, `mcp-it/artifacts/` the junit,
 Nextcloud and database logs, `observations.txt` and `provision.log`) land in
-`mcp/tests/Integration/.local-runs/<cell>-<timestamp>/`, which is git-ignored. The exit status is the suite's.
+`.mcp-it-runs/<cell>-<timestamp>-<pid>/` at the repository root, which is git-ignored. The exit status is the suite's.
 A cell takes about 1.5 to 3 minutes once the images are pulled and the engine (a Linux VM with 4 CPUs and 8 GiB) uses
 up to roughly 2 to 3 GiB of host memory while it runs.
 
@@ -386,7 +389,7 @@ semantics, and file share/detach preservation. It deliberately records the nativ
 relations: the MCP refusal is a later ticket. On NC32/33 API absence is asserted while labels/files still run.
 These tests call native services; they do not implement or promise new MCP tools.
 
-Local runs cache only the Deck archive under `.local-runs/deck-downloads/`, keyed by tag and SHA, verifying its
+Local runs cache only the Deck archive under `.mcp-it-runs/deck-downloads/` at the repository root, keyed by tag and SHA, verifying its
 checksum even on a hit. Remove that directory for a cold download. `artifacts/deck-cost.tsv` separates download
 and checksum time from extraction/enablement, in milliseconds; `resources.log` samples the engine/containers.
 For comparable whole-cell timing, run the same existing tests with Deck enabled/disabled:
@@ -406,5 +409,28 @@ The normal integration suite still runs afterwards (or the explicit `MCP_IT_PHPU
     MCP_IT_RUN_UNIT=1 sh mcp/tests/Integration/ci/run-local.sh 35 mariadb fresh
 
 Frontend unit tests need no Nextcloud service: `node --test mcp/tests/Frontend/*.test.cjs`. Both suites keep their
-existing entry points. Fresh/upgrade and database selection are unchanged. Always finish with
-`ci/run-local.sh --shutdown` and check `colima status`; cached archives/images are files, not running services.
+existing entry points. Fresh/upgrade and database selection are unchanged. `ci/run-local.sh --shutdown` cleans interrupted runs recorded by this checkout and preserves live runs.
+The default Colima profile is shared and is always left running. Artifacts and cached downloads stay outside
+`mcp/`, so recursive unit-test source readers cannot ingest run output; cached archives/images are files, not running services.
+
+### Deck issues 26 and 27
+
+`AssignmentLifecycleTest` creates isolated regular users, tests assignment over real MCP Bearer and cookie/CSRF requests to CardController, reverses the actors and checks fresh native persistence. Its separate disposable notification delivery app uses the real IManager; the induced failure records actual defer/flush phases: the MCP route fails inline on the direct call, retries with delivery deferred, stores the assignment and reports the delivery error afterwards, while Deck's web route still fails inline. Devices are counted without storing endpoints/keys. No logs or evidence are requested from the reporter.
+
+`AssignmentPushTest` registers a push device for the recipient through the Notifications app's own OCS routes: a proxy device pointing at a throwaway `php -S` proxy inside the container (`push-proxy.php`) that answers 200 or 500, a proxy device pointing at a closed port, and, where the Notifications app has it, an activated web push subscription with an unreachable https endpoint. `allow_local_remote_servers` and the Notifications `webpush_enabled` switch are turned on only inside the test container and restored on close. For each case it assigns through Deck's own `assignUser()` in a fresh process with no MCP code (`push-actor.php`, the 1.2.5 path), through the Deck web route and through `deck_edit_card`. The probe app's notifier can fail while Deck notifications are prepared, which makes the real Notifications push code raise inside `assignUser()` for a recipient with a device and not for one without, the pattern reported in issue #26. Network and HTTP errors of the push service are handled by the Notifications app and never reach Deck. A batch case assigns, in one call, a recipient whose push fails to prepare and then a healthy one, each device on its own proxy path: both must be assigned, the healthy path must receive a push and the failing recipient must keep a single notification. `AssignmentLifecycleTest` expects the MCP route to try the direct call first and then retry under `defer()`/`flush()`.
+
+`CardStatusPersistenceTest` verifies both status setters, confirmation, stale fingerprints, native completion-column behavior, no-op and UTC persistence. The oracle is the container’s UTC clock and the raw done column read in a new process; account timezones only verify serialization. NC32/MariaDB and NC35/PostgreSQL run serially through run-local.sh; preserve short evidence, use owned --shutdown and verify cleanup.
+
+The issue #26 automation control is a real local Database account whose random creation password is discarded, absent from the browser-login fixture. It is assigned/unassigned as a recipient and also writes through an OAuth Bearer credential only; no interactive login is performed. The test records its actual backend and checks last-login zero before issuing the credential. This models credential-only automation usage, not a specialized service-account backend or the reporter’s unspecified account provisioning. That backend distinction remains outside the proof.
+
+CardStatusPersistenceTest also rereads the persisted native activity stream in a new process for the other board member after each transition. Both pinned Deck versions must emit exactly one card_update_done, card_update_archive, card_update_unarchive and card_update_undone for the corresponding confirmed call, with the actual actor/card/affected account. A no-op must add no activity. This is a read-only DB oracle of native publication, not a claim of push delivery.
+
+### Additional Tables 2.4.0 source pin
+
+The default Tables pins stay unchanged. To exercise the independently supported 2.4.0 profile, download the official `tables-v2.4.0.tar.gz` release and run a separate NC35 cell (after obtaining the shared engine slot):
+
+```sh
+MCP_IT_WITH_TABLES=1 MCP_IT_TABLES_ARCHIVE=/absolute/path/tables-v2.4.0.tar.gz   sh mcp/tests/Integration/ci/run-local.sh 35 mariadb fresh
+```
+
+The archive is copied to the disposable harness tools directory and must match SHA256 `47847b64ee65a58afd2a8ac3f943c53128a927a1b321ed94c4a322daa6b5eb99` before extraction. NC32/33/34 refuse this opt-in; the app profile itself is supported on NC33–35, while this additional runtime proof deliberately uses NC35. `test-env` reports 2.4.0, so the same discovery/read/row/schema/share scenarios run with the correct independent parser expectation. The schema HTTP scenario additionally configures gallery/card sources through native Tables, refuses source-removing MCP column patches without any database change, and confirms an allowed rename while preserving layout/cards in native readback. No user-instance data is used.

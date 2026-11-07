@@ -1,0 +1,3106 @@
+{
+    "flow": "grants.commands-undo",
+    "steps": [
+        {
+            "step": "initial",
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_edit": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "revision": 6,
+                "authEpoch": 0,
+                "events": [],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_edit"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "step": "the preview of a reset writes nothing",
+            "request": {
+                "route": "override_preview#index",
+                "user": "root",
+                "body": {
+                    "commands": [
+                        {
+                            "uid": "ana",
+                            "module": "notes",
+                            "operation": "edit",
+                            "state": "inherit"
+                        }
+                    ]
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "revision": "6",
+                    "cells": [
+                        {
+                            "uid": "ana",
+                            "module": "notes",
+                            "operation": "edit",
+                            "before": {
+                                "allowed": true,
+                                "source": "individual_allow",
+                                "groupIds": []
+                            },
+                            "after": {
+                                "allowed": false,
+                                "source": "default",
+                                "groupIds": []
+                            }
+                        }
+                    ]
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_edit": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "revision": 6,
+                "authEpoch": 0,
+                "events": [],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_edit"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "step": "a non-administrator cannot preview: 403",
+            "request": {
+                "route": "override_preview#index",
+                "user": "ana",
+                "body": {
+                    "commands": [
+                        {
+                            "uid": "ana",
+                            "module": "notes",
+                            "operation": "edit",
+                            "state": "inherit"
+                        }
+                    ]
+                }
+            },
+            "response": {
+                "status": 403,
+                "json": {
+                    "error": "Forbidden"
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_edit": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "revision": 6,
+                "authEpoch": 0,
+                "events": [],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_edit"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "step": "an invalid preview body: 400",
+            "request": {
+                "route": "override_preview#index",
+                "user": "root",
+                "body": {
+                    "commands": [
+                        {
+                            "uid": "ana",
+                            "module": "notes",
+                            "operation": "edit",
+                            "state": "inherit",
+                            "extra": 1
+                        }
+                    ]
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid request"
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_edit": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "revision": 6,
+                "authEpoch": 0,
+                "events": [],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_edit"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "step": "a command with a fifth key is invalid",
+            "request": {
+                "route": "grants#commands",
+                "user": "root",
+                "body": {
+                    "commands": [
+                        {
+                            "uid": "ana",
+                            "module": "notes",
+                            "operation": "edit",
+                            "state": "inherit",
+                            "granted": true
+                        }
+                    ],
+                    "expectedRevision": "6"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid request"
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_edit": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "revision": 6,
+                "authEpoch": 0,
+                "events": [],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_edit"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "step": "an unknown state is invalid",
+            "request": {
+                "route": "grants#commands",
+                "user": "root",
+                "body": {
+                    "commands": [
+                        {
+                            "state": "maybe",
+                            "uid": "ana",
+                            "module": "notes",
+                            "operation": "edit"
+                        }
+                    ],
+                    "expectedRevision": "6"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid request"
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_edit": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "revision": 6,
+                "authEpoch": 0,
+                "events": [],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_edit"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "step": "policy unavailable: 503, nothing changes",
+            "request": {
+                "route": "grants#commands",
+                "user": "root",
+                "body": {
+                    "commands": [
+                        {
+                            "uid": "ana",
+                            "module": "notes",
+                            "operation": "edit",
+                            "state": "inherit"
+                        }
+                    ],
+                    "expectedRevision": "6"
+                }
+            },
+            "response": {
+                "status": 503,
+                "json": {
+                    "error": "Unavailable",
+                    "uncertain": false
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_edit": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "revision": 6,
+                "authEpoch": 0,
+                "events": [],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_edit"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "step": "reset ana notes.edit and deny bob notes.read",
+            "request": {
+                "route": "grants#commands",
+                "user": "root",
+                "body": {
+                    "commands": [
+                        {
+                            "uid": "ana",
+                            "module": "notes",
+                            "operation": "edit",
+                            "state": "inherit"
+                        },
+                        {
+                            "uid": "bob",
+                            "module": "notes",
+                            "operation": "read",
+                            "state": "deny"
+                        }
+                    ],
+                    "expectedRevision": "6"
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "revision": "7",
+                    "changed": 2,
+                    "receiptId": "<command#1>-1"
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_read": "0"
+                    }
+                },
+                "revision": 7,
+                "authEpoch": 0,
+                "events": [
+                    {
+                        "id": "<command#1>-1",
+                        "kind": "receipt",
+                        "status": "pending",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.commands",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "changes": [
+                                {
+                                    "uid": "ana",
+                                    "key": "grant_notes_edit",
+                                    "before": "1",
+                                    "after": null
+                                },
+                                {
+                                    "uid": "bob",
+                                    "key": "grant_notes_read",
+                                    "before": null,
+                                    "after": "0"
+                                }
+                            ]
+                        },
+                        "attempts": 0
+                    },
+                    {
+                        "id": "<command#1>-2",
+                        "kind": "audit",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.commands",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "receiptId": "<command#1>-1",
+                            "undoOf": null,
+                            "changes": []
+                        },
+                        "attempts": 0
+                    }
+                ],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": []
+                    }
+                }
+            }
+        },
+        {
+            "step": "another administrator cannot undo it: 404",
+            "request": {
+                "route": "grants#undo",
+                "user": "other-admin",
+                "body": {
+                    "receiptId": "<command#1>-1",
+                    "expectedRevision": "7"
+                }
+            },
+            "response": {
+                "status": 404,
+                "json": {
+                    "error": "NotFound"
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_read": "0"
+                    }
+                },
+                "revision": 7,
+                "authEpoch": 0,
+                "events": [
+                    {
+                        "id": "<command#1>-1",
+                        "kind": "receipt",
+                        "status": "pending",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.commands",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "changes": [
+                                {
+                                    "uid": "ana",
+                                    "key": "grant_notes_edit",
+                                    "before": "1",
+                                    "after": null
+                                },
+                                {
+                                    "uid": "bob",
+                                    "key": "grant_notes_read",
+                                    "before": null,
+                                    "after": "0"
+                                }
+                            ]
+                        },
+                        "attempts": 0
+                    },
+                    {
+                        "id": "<command#1>-2",
+                        "kind": "audit",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.commands",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "receiptId": "<command#1>-1",
+                            "undoOf": null,
+                            "changes": []
+                        },
+                        "attempts": 0
+                    }
+                ],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": []
+                    }
+                }
+            }
+        },
+        {
+            "step": "an invented receipt: 404",
+            "request": {
+                "route": "grants#undo",
+                "user": "root",
+                "body": {
+                    "receiptId": "not-a-receipt",
+                    "expectedRevision": "7"
+                }
+            },
+            "response": {
+                "status": 404,
+                "json": {
+                    "error": "NotFound"
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_read": "0"
+                    }
+                },
+                "revision": 7,
+                "authEpoch": 0,
+                "events": [
+                    {
+                        "id": "<command#1>-1",
+                        "kind": "receipt",
+                        "status": "pending",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.commands",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "changes": [
+                                {
+                                    "uid": "ana",
+                                    "key": "grant_notes_edit",
+                                    "before": "1",
+                                    "after": null
+                                },
+                                {
+                                    "uid": "bob",
+                                    "key": "grant_notes_read",
+                                    "before": null,
+                                    "after": "0"
+                                }
+                            ]
+                        },
+                        "attempts": 0
+                    },
+                    {
+                        "id": "<command#1>-2",
+                        "kind": "audit",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.commands",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "receiptId": "<command#1>-1",
+                            "undoOf": null,
+                            "changes": []
+                        },
+                        "attempts": 0
+                    }
+                ],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": []
+                    }
+                }
+            }
+        },
+        {
+            "step": "a receipt that is not a string: 400",
+            "request": {
+                "route": "grants#undo",
+                "user": "root",
+                "body": {
+                    "receiptId": 7,
+                    "expectedRevision": "7"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid request"
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_read": "0"
+                    }
+                },
+                "revision": 7,
+                "authEpoch": 0,
+                "events": [
+                    {
+                        "id": "<command#1>-1",
+                        "kind": "receipt",
+                        "status": "pending",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.commands",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "changes": [
+                                {
+                                    "uid": "ana",
+                                    "key": "grant_notes_edit",
+                                    "before": "1",
+                                    "after": null
+                                },
+                                {
+                                    "uid": "bob",
+                                    "key": "grant_notes_read",
+                                    "before": null,
+                                    "after": "0"
+                                }
+                            ]
+                        },
+                        "attempts": 0
+                    },
+                    {
+                        "id": "<command#1>-2",
+                        "kind": "audit",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.commands",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "receiptId": "<command#1>-1",
+                            "undoOf": null,
+                            "changes": []
+                        },
+                        "attempts": 0
+                    }
+                ],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": []
+                    }
+                }
+            }
+        },
+        {
+            "step": "another revision than the receipt committed: 409",
+            "request": {
+                "route": "grants#undo",
+                "user": "root",
+                "body": {
+                    "expectedRevision": "1",
+                    "receiptId": "<command#1>-1"
+                }
+            },
+            "response": {
+                "status": 409,
+                "json": {
+                    "error": "Conflict",
+                    "revision": "7",
+                    "state": {
+                        "users": [
+                            {
+                                "uid": "ana",
+                                "displayName": "Ana",
+                                "enabled": true,
+                                "appsEnabled": {
+                                    "files": true,
+                                    "notes": true,
+                                    "deck": false,
+                                    "calendar": true,
+                                    "talk": false,
+                                    "contacts": false,
+                                    "tasks": false,
+                                    "people": true,
+                                    "logs": false,
+                                    "mail": false,
+                                    "tables": false,
+                                    "forms": false,
+                                    "polls": false,
+                                    "collectives": false
+                                },
+                                "eligible": true,
+                                "connected": true,
+                                "grants": {
+                                    "files": {
+                                        "read": true,
+                                        "edit": false,
+                                        "create": false,
+                                        "move": false,
+                                        "restore": false,
+                                        "share": false,
+                                        "link": false,
+                                        "delete": false
+                                    },
+                                    "notes": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "move": false,
+                                        "delete": false
+                                    },
+                                    "deck": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "move": false,
+                                        "delete": false
+                                    },
+                                    "contacts": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "delete": false
+                                    },
+                                    "tasks": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "delete": false
+                                    },
+                                    "calendar": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "move": false,
+                                        "delete": false,
+                                        "transfer": false
+                                    },
+                                    "people": {
+                                        "read": true
+                                    },
+                                    "talk": {
+                                        "read": true,
+                                        "reply": false,
+                                        "attach": false,
+                                        "quote": false,
+                                        "create": false
+                                    },
+                                    "logs": {
+                                        "read": false
+                                    },
+                                    "mail": {
+                                        "read": true,
+                                        "messages": false,
+                                        "attachments": false,
+                                        "flags": false,
+                                        "move": false,
+                                        "draft": false,
+                                        "send": false
+                                    },
+                                    "tables": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "schema": false,
+                                        "share": false
+                                    },
+                                    "forms": {
+                                        "read": true,
+                                        "results": false,
+                                        "create": false,
+                                        "edit": false
+                                    },
+                                    "polls": {
+                                        "read": true,
+                                        "results": false,
+                                        "links": false,
+                                        "create": false,
+                                        "configure": false,
+                                        "options": false,
+                                        "options.remove": false,
+                                        "share": false,
+                                        "invite": false
+                                    },
+                                    "collectives": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "move": false,
+                                        "collective.create": false,
+                                        "members": false
+                                    }
+                                },
+                                "origins": {
+                                    "eligible": {
+                                        "source": "individual_allow",
+                                        "groupIds": []
+                                    },
+                                    "grants": {
+                                        "files": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "restore": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "share": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "link": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "notes": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "deck": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "contacts": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "tasks": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "calendar": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "transfer": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "people": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "talk": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "reply": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "attach": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "quote": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "logs": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "mail": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "messages": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "attachments": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "flags": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "draft": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "send": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "tables": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "schema": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "share": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "forms": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "results": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "polls": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "results": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "links": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "configure": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "options": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "options.remove": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "share": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "invite": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "collectives": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "collective.create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "members": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        }
+                                    }
+                                },
+                                "scope": {
+                                    "files": {
+                                        "mode": "unrestricted",
+                                        "count": null
+                                    },
+                                    "calendar": {
+                                        "mode": "unrestricted",
+                                        "count": null
+                                    },
+                                    "tasks": {
+                                        "mode": "unrestricted",
+                                        "count": null
+                                    }
+                                }
+                            },
+                            {
+                                "uid": "bob",
+                                "displayName": "Bob",
+                                "enabled": true,
+                                "appsEnabled": {
+                                    "files": true,
+                                    "notes": true,
+                                    "deck": false,
+                                    "calendar": true,
+                                    "talk": false,
+                                    "contacts": false,
+                                    "tasks": false,
+                                    "people": true,
+                                    "logs": false,
+                                    "mail": false,
+                                    "tables": false,
+                                    "forms": false,
+                                    "polls": false,
+                                    "collectives": false
+                                },
+                                "eligible": true,
+                                "connected": true,
+                                "grants": {
+                                    "files": {
+                                        "read": true,
+                                        "edit": false,
+                                        "create": false,
+                                        "move": false,
+                                        "restore": false,
+                                        "share": false,
+                                        "link": false,
+                                        "delete": false
+                                    },
+                                    "notes": {
+                                        "read": false,
+                                        "create": false,
+                                        "edit": false,
+                                        "move": false,
+                                        "delete": false
+                                    },
+                                    "deck": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "move": false,
+                                        "delete": false
+                                    },
+                                    "contacts": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "delete": false
+                                    },
+                                    "tasks": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "delete": false
+                                    },
+                                    "calendar": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "move": false,
+                                        "delete": false,
+                                        "transfer": false
+                                    },
+                                    "people": {
+                                        "read": true
+                                    },
+                                    "talk": {
+                                        "read": true,
+                                        "reply": false,
+                                        "attach": false,
+                                        "quote": false,
+                                        "create": false
+                                    },
+                                    "logs": {
+                                        "read": false
+                                    },
+                                    "mail": {
+                                        "read": true,
+                                        "messages": false,
+                                        "attachments": false,
+                                        "flags": false,
+                                        "move": false,
+                                        "draft": false,
+                                        "send": false
+                                    },
+                                    "tables": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "schema": false,
+                                        "share": false
+                                    },
+                                    "forms": {
+                                        "read": true,
+                                        "results": false,
+                                        "create": false,
+                                        "edit": false
+                                    },
+                                    "polls": {
+                                        "read": true,
+                                        "results": false,
+                                        "links": false,
+                                        "create": false,
+                                        "configure": false,
+                                        "options": false,
+                                        "options.remove": false,
+                                        "share": false,
+                                        "invite": false
+                                    },
+                                    "collectives": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "move": false,
+                                        "collective.create": false,
+                                        "members": false
+                                    }
+                                },
+                                "origins": {
+                                    "eligible": {
+                                        "source": "individual_allow",
+                                        "groupIds": []
+                                    },
+                                    "grants": {
+                                        "files": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "restore": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "share": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "link": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "notes": {
+                                            "read": {
+                                                "source": "individual_deny",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "deck": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "contacts": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "tasks": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "calendar": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "transfer": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "people": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "talk": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "reply": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "attach": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "quote": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "logs": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "mail": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "messages": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "attachments": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "flags": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "draft": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "send": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "tables": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "schema": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "share": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "forms": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "results": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "polls": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "results": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "links": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "configure": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "options": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "options.remove": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "share": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "invite": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "collectives": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "collective.create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "members": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        }
+                                    }
+                                },
+                                "scope": {
+                                    "files": {
+                                        "mode": "unrestricted",
+                                        "count": null
+                                    },
+                                    "calendar": {
+                                        "mode": "unrestricted",
+                                        "count": null
+                                    },
+                                    "tasks": {
+                                        "mode": "unrestricted",
+                                        "count": null
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_read": "0"
+                    }
+                },
+                "revision": 7,
+                "authEpoch": 0,
+                "events": [
+                    {
+                        "id": "<command#1>-1",
+                        "kind": "receipt",
+                        "status": "pending",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.commands",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "changes": [
+                                {
+                                    "uid": "ana",
+                                    "key": "grant_notes_edit",
+                                    "before": "1",
+                                    "after": null
+                                },
+                                {
+                                    "uid": "bob",
+                                    "key": "grant_notes_read",
+                                    "before": null,
+                                    "after": "0"
+                                }
+                            ]
+                        },
+                        "attempts": 0
+                    },
+                    {
+                        "id": "<command#1>-2",
+                        "kind": "audit",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.commands",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "receiptId": "<command#1>-1",
+                            "undoOf": null,
+                            "changes": []
+                        },
+                        "attempts": 0
+                    }
+                ],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": []
+                    }
+                }
+            }
+        },
+        {
+            "step": "policy unavailable: 503, nothing changes",
+            "request": {
+                "route": "grants#undo",
+                "user": "root",
+                "body": {
+                    "receiptId": "<command#1>-1",
+                    "expectedRevision": "7"
+                }
+            },
+            "response": {
+                "status": 503,
+                "json": {
+                    "error": "Unavailable",
+                    "uncertain": false
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_read": "0"
+                    }
+                },
+                "revision": 7,
+                "authEpoch": 0,
+                "events": [
+                    {
+                        "id": "<command#1>-1",
+                        "kind": "receipt",
+                        "status": "pending",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.commands",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "changes": [
+                                {
+                                    "uid": "ana",
+                                    "key": "grant_notes_edit",
+                                    "before": "1",
+                                    "after": null
+                                },
+                                {
+                                    "uid": "bob",
+                                    "key": "grant_notes_read",
+                                    "before": null,
+                                    "after": "0"
+                                }
+                            ]
+                        },
+                        "attempts": 0
+                    },
+                    {
+                        "id": "<command#1>-2",
+                        "kind": "audit",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.commands",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "receiptId": "<command#1>-1",
+                            "undoOf": null,
+                            "changes": []
+                        },
+                        "attempts": 0
+                    }
+                ],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": []
+                    }
+                }
+            }
+        },
+        {
+            "step": "undo restores both cells",
+            "request": {
+                "route": "grants#undo",
+                "user": "root",
+                "body": {
+                    "receiptId": "<command#1>-1",
+                    "expectedRevision": "7"
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "revision": "8",
+                    "changed": 2
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_edit": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "revision": 8,
+                "authEpoch": 0,
+                "events": [
+                    {
+                        "id": "<command#1>-1",
+                        "kind": "receipt",
+                        "status": "pending",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.commands",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "changes": [
+                                {
+                                    "uid": "ana",
+                                    "key": "grant_notes_edit",
+                                    "before": "1",
+                                    "after": null
+                                },
+                                {
+                                    "uid": "bob",
+                                    "key": "grant_notes_read",
+                                    "before": null,
+                                    "after": "0"
+                                }
+                            ]
+                        },
+                        "attempts": 0
+                    },
+                    {
+                        "id": "<command#1>-2",
+                        "kind": "audit",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.commands",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "receiptId": "<command#1>-1",
+                            "undoOf": null,
+                            "changes": []
+                        },
+                        "attempts": 0
+                    },
+                    {
+                        "id": "<command#2>-1",
+                        "kind": "audit",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.undo",
+                            "fromRevision": "7",
+                            "revision": "8",
+                            "receiptId": null,
+                            "undoOf": "<command#1>-1",
+                            "changes": [
+                                {
+                                    "uid": "ana",
+                                    "key": "grant_notes_edit",
+                                    "before": null,
+                                    "after": "1"
+                                },
+                                {
+                                    "uid": "bob",
+                                    "key": "grant_notes_read",
+                                    "before": "0",
+                                    "after": null
+                                }
+                            ]
+                        },
+                        "attempts": 0
+                    }
+                ],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_edit"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "step": "the same receipt again: 409",
+            "request": {
+                "route": "grants#undo",
+                "user": "root",
+                "body": {
+                    "receiptId": "<command#1>-1",
+                    "expectedRevision": "7"
+                }
+            },
+            "response": {
+                "status": 409,
+                "json": {
+                    "error": "Conflict",
+                    "revision": "8",
+                    "state": {
+                        "users": [
+                            {
+                                "uid": "ana",
+                                "displayName": "Ana",
+                                "enabled": true,
+                                "appsEnabled": {
+                                    "files": true,
+                                    "notes": true,
+                                    "deck": false,
+                                    "calendar": true,
+                                    "talk": false,
+                                    "contacts": false,
+                                    "tasks": false,
+                                    "people": true,
+                                    "logs": false,
+                                    "mail": false,
+                                    "tables": false,
+                                    "forms": false,
+                                    "polls": false,
+                                    "collectives": false
+                                },
+                                "eligible": true,
+                                "connected": true,
+                                "grants": {
+                                    "files": {
+                                        "read": true,
+                                        "edit": false,
+                                        "create": false,
+                                        "move": false,
+                                        "restore": false,
+                                        "share": false,
+                                        "link": false,
+                                        "delete": false
+                                    },
+                                    "notes": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": true,
+                                        "move": false,
+                                        "delete": false
+                                    },
+                                    "deck": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "move": false,
+                                        "delete": false
+                                    },
+                                    "contacts": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "delete": false
+                                    },
+                                    "tasks": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "delete": false
+                                    },
+                                    "calendar": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "move": false,
+                                        "delete": false,
+                                        "transfer": false
+                                    },
+                                    "people": {
+                                        "read": true
+                                    },
+                                    "talk": {
+                                        "read": true,
+                                        "reply": false,
+                                        "attach": false,
+                                        "quote": false,
+                                        "create": false
+                                    },
+                                    "logs": {
+                                        "read": false
+                                    },
+                                    "mail": {
+                                        "read": true,
+                                        "messages": false,
+                                        "attachments": false,
+                                        "flags": false,
+                                        "move": false,
+                                        "draft": false,
+                                        "send": false
+                                    },
+                                    "tables": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "schema": false,
+                                        "share": false
+                                    },
+                                    "forms": {
+                                        "read": true,
+                                        "results": false,
+                                        "create": false,
+                                        "edit": false
+                                    },
+                                    "polls": {
+                                        "read": true,
+                                        "results": false,
+                                        "links": false,
+                                        "create": false,
+                                        "configure": false,
+                                        "options": false,
+                                        "options.remove": false,
+                                        "share": false,
+                                        "invite": false
+                                    },
+                                    "collectives": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "move": false,
+                                        "collective.create": false,
+                                        "members": false
+                                    }
+                                },
+                                "origins": {
+                                    "eligible": {
+                                        "source": "individual_allow",
+                                        "groupIds": []
+                                    },
+                                    "grants": {
+                                        "files": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "restore": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "share": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "link": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "notes": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "individual_allow",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "deck": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "contacts": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "tasks": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "calendar": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "transfer": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "people": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "talk": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "reply": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "attach": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "quote": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "logs": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "mail": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "messages": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "attachments": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "flags": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "draft": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "send": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "tables": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "schema": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "share": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "forms": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "results": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "polls": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "results": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "links": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "configure": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "options": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "options.remove": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "share": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "invite": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "collectives": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "collective.create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "members": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        }
+                                    }
+                                },
+                                "scope": {
+                                    "files": {
+                                        "mode": "unrestricted",
+                                        "count": null
+                                    },
+                                    "calendar": {
+                                        "mode": "unrestricted",
+                                        "count": null
+                                    },
+                                    "tasks": {
+                                        "mode": "unrestricted",
+                                        "count": null
+                                    }
+                                }
+                            },
+                            {
+                                "uid": "bob",
+                                "displayName": "Bob",
+                                "enabled": true,
+                                "appsEnabled": {
+                                    "files": true,
+                                    "notes": true,
+                                    "deck": false,
+                                    "calendar": true,
+                                    "talk": false,
+                                    "contacts": false,
+                                    "tasks": false,
+                                    "people": true,
+                                    "logs": false,
+                                    "mail": false,
+                                    "tables": false,
+                                    "forms": false,
+                                    "polls": false,
+                                    "collectives": false
+                                },
+                                "eligible": true,
+                                "connected": true,
+                                "grants": {
+                                    "files": {
+                                        "read": true,
+                                        "edit": false,
+                                        "create": false,
+                                        "move": false,
+                                        "restore": false,
+                                        "share": false,
+                                        "link": false,
+                                        "delete": false
+                                    },
+                                    "notes": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "move": false,
+                                        "delete": false
+                                    },
+                                    "deck": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "move": false,
+                                        "delete": false
+                                    },
+                                    "contacts": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "delete": false
+                                    },
+                                    "tasks": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "delete": false
+                                    },
+                                    "calendar": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "move": false,
+                                        "delete": false,
+                                        "transfer": false
+                                    },
+                                    "people": {
+                                        "read": true
+                                    },
+                                    "talk": {
+                                        "read": true,
+                                        "reply": false,
+                                        "attach": false,
+                                        "quote": false,
+                                        "create": false
+                                    },
+                                    "logs": {
+                                        "read": false
+                                    },
+                                    "mail": {
+                                        "read": true,
+                                        "messages": false,
+                                        "attachments": false,
+                                        "flags": false,
+                                        "move": false,
+                                        "draft": false,
+                                        "send": false
+                                    },
+                                    "tables": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "schema": false,
+                                        "share": false
+                                    },
+                                    "forms": {
+                                        "read": true,
+                                        "results": false,
+                                        "create": false,
+                                        "edit": false
+                                    },
+                                    "polls": {
+                                        "read": true,
+                                        "results": false,
+                                        "links": false,
+                                        "create": false,
+                                        "configure": false,
+                                        "options": false,
+                                        "options.remove": false,
+                                        "share": false,
+                                        "invite": false
+                                    },
+                                    "collectives": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "move": false,
+                                        "collective.create": false,
+                                        "members": false
+                                    }
+                                },
+                                "origins": {
+                                    "eligible": {
+                                        "source": "individual_allow",
+                                        "groupIds": []
+                                    },
+                                    "grants": {
+                                        "files": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "restore": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "share": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "link": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "notes": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "deck": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "contacts": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "tasks": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "calendar": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "transfer": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "people": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "talk": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "reply": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "attach": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "quote": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "logs": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "mail": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "messages": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "attachments": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "flags": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "draft": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "send": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "tables": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "schema": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "share": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "forms": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "results": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "polls": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "results": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "links": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "configure": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "options": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "options.remove": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "share": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "invite": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "collectives": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "collective.create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "members": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        }
+                                    }
+                                },
+                                "scope": {
+                                    "files": {
+                                        "mode": "unrestricted",
+                                        "count": null
+                                    },
+                                    "calendar": {
+                                        "mode": "unrestricted",
+                                        "count": null
+                                    },
+                                    "tasks": {
+                                        "mode": "unrestricted",
+                                        "count": null
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_edit": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "revision": 8,
+                "authEpoch": 0,
+                "events": [
+                    {
+                        "id": "<command#1>-1",
+                        "kind": "receipt",
+                        "status": "pending",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.commands",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "changes": [
+                                {
+                                    "uid": "ana",
+                                    "key": "grant_notes_edit",
+                                    "before": "1",
+                                    "after": null
+                                },
+                                {
+                                    "uid": "bob",
+                                    "key": "grant_notes_read",
+                                    "before": null,
+                                    "after": "0"
+                                }
+                            ]
+                        },
+                        "attempts": 0
+                    },
+                    {
+                        "id": "<command#1>-2",
+                        "kind": "audit",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.commands",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "receiptId": "<command#1>-1",
+                            "undoOf": null,
+                            "changes": []
+                        },
+                        "attempts": 0
+                    },
+                    {
+                        "id": "<command#2>-1",
+                        "kind": "audit",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.undo",
+                            "fromRevision": "7",
+                            "revision": "8",
+                            "receiptId": null,
+                            "undoOf": "<command#1>-1",
+                            "changes": [
+                                {
+                                    "uid": "ana",
+                                    "key": "grant_notes_edit",
+                                    "before": null,
+                                    "after": "1"
+                                },
+                                {
+                                    "uid": "bob",
+                                    "key": "grant_notes_read",
+                                    "before": "0",
+                                    "after": null
+                                }
+                            ]
+                        },
+                        "attempts": 0
+                    }
+                ],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_edit"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list"
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}

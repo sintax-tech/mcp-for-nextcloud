@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Tables\Rows;
 
-use OCA\Mcp\Tools\PlanState;
-use OCA\Mcp\Tools\Tables\Rows\RowCursor;
-use OCA\Mcp\Tools\Tables\Rows\RowsRefusal;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Modules\Tables\Reading\RowCursor;
+use OCA\Mcp\Modules\Tables\Reading\RowsRefusal;
 use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
 

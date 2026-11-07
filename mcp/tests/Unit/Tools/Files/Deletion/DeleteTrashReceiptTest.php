@@ -7,14 +7,14 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files\Deletion;
 
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
-use OCA\Mcp\Tools\Common\LockAwareWrite;
-use OCA\Mcp\Tools\Files\Deletion\DeleteEligibility;
-use OCA\Mcp\Tools\Files\Deletion\DeleteMessages;
-use OCA\Mcp\Tools\Files\Deletion\DeletePlanText;
-use OCA\Mcp\Tools\Files\Deletion\DeleteTrashVeto;
-use OCA\Mcp\Tools\Files\Deletion\TrashReceiptMessages;
-use OCA\Mcp\Tools\Files\Deletion\TrashReceiptVerifier;
-use OCA\Mcp\Tools\Files\Handler\DeleteFileHandler;
+use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
+use OCA\Mcp\Modules\Files\Deletion\DeleteEligibility;
+use OCA\Mcp\Modules\Files\Deletion\DeleteMessages;
+use OCA\Mcp\Modules\Files\Deletion\DeletePlanText;
+use OCA\Mcp\Modules\Files\Integration\DeleteTrashVeto;
+use OCA\Mcp\Modules\Files\Deletion\TrashReceiptMessages;
+use OCA\Mcp\Modules\Files\Integration\TrashReceiptVerifier;
+use OCA\Mcp\Modules\Files\Deletion\DeleteFileHandler;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\File;
@@ -155,13 +155,13 @@ final class DeleteTrashReceiptTest extends TestCase {
 	public function testFolderOutcomeComposesTheReceiptOnlyAfterRemoval(): void {
 		$trash = static fn (string $default): array => ['fields' => ['status' => 'removed_observed_in_trash', 'trash' => 'observed_in_own_trash'],
 			'message' => TrashReceiptMessages::observedFolder()];
-		$removed = self::data(\OCA\Mcp\Tools\Files\Deletion\Folder\DeleteFolderOutcome::observe($this->tree->node('/alice/files'), '/gone', 42, 'e', false, [],
+		$removed = self::data(\OCA\Mcp\Modules\Files\Deletion\Folder\DeleteFolderOutcome::observe($this->tree->node('/alice/files'), '/gone', 42, 'e', false, [],
 			static fn (): array => [], $trash));
 		self::assertSame('removed_observed_in_trash', $removed['status']);
 		self::assertSame(TrashReceiptMessages::observedFolder(), $removed['message']);
 		$this->tree->addFolder('/alice/files/kept');
 		$kept = $this->tree->node('/alice/files/kept');
-		$result = \OCA\Mcp\Tools\Files\Deletion\Folder\DeleteFolderOutcome::observe($this->tree->node('/alice/files'), '/kept', (int)$kept->getId(),
+		$result = \OCA\Mcp\Modules\Files\Deletion\Folder\DeleteFolderOutcome::observe($this->tree->node('/alice/files'), '/kept', (int)$kept->getId(),
 			$kept->getEtag(), false, [], static fn (): array => [], static fn (): never => throw new \LogicException('must not be called'));
 		self::assertSame('preserved', self::data($result)['status']);
 		self::assertArrayNotHasKey('trash', self::data($result));

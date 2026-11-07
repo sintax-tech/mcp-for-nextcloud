@@ -1,0 +1,500 @@
+{
+    "tool": "notes_edit",
+    "grant": "notes.edit",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "id": 102,
+                "append": "próximos passos",
+                "etag": "<etag#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Edit note**\n\nEdit note: **Ata**\n- Append: próximos passos\n\nNothing was changed. Confirm to execute.\n\n*After your approval the text below is added at the end of the note.*\n\n*To confirm, repeat the call with etag `e102`. To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "notes_edit",
+                            "title": "Edit note",
+                            "action": "notes_edit",
+                            "mode": "append",
+                            "note": {
+                                "id": 102,
+                                "before": {
+                                    "title": "Ata",
+                                    "category": "",
+                                    "bytes": 10
+                                },
+                                "after": {
+                                    "title": "Ata",
+                                    "category": "",
+                                    "bytes": 27
+                                }
+                            },
+                            "change": {
+                                "append": "próximos passos"
+                            },
+                            "changed": [
+                                "content"
+                            ],
+                            "diff": "--- antes\n+++ depois\n@@ -1,1 +1,2 @@\n decisões\n+próximos passos\n",
+                            "etag": "<etag#1>",
+                            "message": "Nothing was changed. After your approval the text below is added at the end of the note.",
+                            "plan_state": "<plan_state#1>",
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "recoverable": true
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\n"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "id": 102,
+                "append": "próximos passos",
+                "etag": "<etag#1>",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\n"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "id": 102,
+                "append": "próximos passos",
+                "etag": "<etag#1>",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Edit note**\n\nEdit note: **Ata**\n- Append: próximos passos\n\nNothing was changed. Confirm to execute.\n\n*After your approval the text below is added at the end of the note.*\n\n*To confirm, repeat the call with etag `e102`. To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "notes_edit",
+                            "title": "Edit note",
+                            "action": "notes_edit",
+                            "mode": "append",
+                            "note": {
+                                "id": 102,
+                                "before": {
+                                    "title": "Ata",
+                                    "category": "",
+                                    "bytes": 10
+                                },
+                                "after": {
+                                    "title": "Ata",
+                                    "category": "",
+                                    "bytes": 27
+                                }
+                            },
+                            "change": {
+                                "append": "próximos passos"
+                            },
+                            "changed": [
+                                "content"
+                            ],
+                            "diff": "--- antes\n+++ depois\n@@ -1,1 +1,2 @@\n decisões\n+próximos passos\n",
+                            "etag": "<etag#1>",
+                            "message": "Nothing was changed. After your approval the text below is added at the end of the note.",
+                            "plan_state": "<plan_state#1>",
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "recoverable": true
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\n"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "arguments": {
+                "id": 102,
+                "append": "próximos passos",
+                "etag": "<etag#1>",
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Edit note**\n\nEdit note: **Ata**\n- Append: próximos passos\n\n### Warnings\n\n- The note changed since the plan; check it again.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the text below is added at the end of the note.*\n\n*To confirm, repeat the call with etag `e102`. To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "notes_edit",
+                            "title": "Edit note",
+                            "action": "notes_edit",
+                            "mode": "append",
+                            "note": {
+                                "id": 102,
+                                "before": {
+                                    "title": "Ata",
+                                    "category": "",
+                                    "bytes": 21
+                                },
+                                "after": {
+                                    "title": "Ata",
+                                    "category": "",
+                                    "bytes": 38
+                                }
+                            },
+                            "change": {
+                                "append": "próximos passos"
+                            },
+                            "changed": [
+                                "content"
+                            ],
+                            "diff": "--- antes\n+++ depois\n@@ -1,2 +1,3 @@\n decisões\n nova linha\n+próximos passos\n",
+                            "etag": "<etag#1>",
+                            "message": "Nothing was changed. After your approval the text below is added at the end of the note.",
+                            "plan_state": "<plan_state#2>",
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "warnings": [
+                                {
+                                    "message": "The note changed since the plan; check it again."
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\nnova linha\n"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "id": 102,
+                "append": "próximos passos",
+                "etag": "<etag#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Edit note**\n\nEdit note: **Ata**\n- Append: próximos passos\n\nNothing was changed. Confirm to execute.\n\n*After your approval the text below is added at the end of the note.*\n\n*To confirm, repeat the call with etag `e102`. To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "notes_edit",
+                            "title": "Edit note",
+                            "action": "notes_edit",
+                            "mode": "append",
+                            "note": {
+                                "id": 102,
+                                "before": {
+                                    "title": "Ata",
+                                    "category": "",
+                                    "bytes": 21
+                                },
+                                "after": {
+                                    "title": "Ata",
+                                    "category": "",
+                                    "bytes": 38
+                                }
+                            },
+                            "change": {
+                                "append": "próximos passos"
+                            },
+                            "changed": [
+                                "content"
+                            ],
+                            "diff": "--- antes\n+++ depois\n@@ -1,2 +1,3 @@\n decisões\n nova linha\n+próximos passos\n",
+                            "etag": "<etag#1>",
+                            "message": "Nothing was changed. After your approval the text below is added at the end of the note.",
+                            "plan_state": "<plan_state#2>",
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "recoverable": true
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\nnova linha\n"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "id": 102,
+                "append": "próximos passos",
+                "etag": "<etag#1>",
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"id\": 102,\n    \"title\": \"Ata\",\n    \"category\": \"\",\n    \"modified\": 1759200102,\n    \"etag\": \"e102+\",\n    \"access\": {\n        \"scope\": \"personal\",\n        \"owner\": \"alice\",\n        \"ownerDisplayName\": \"Alice\",\n        \"permissions\": {\n            \"read\": true,\n            \"update\": true,\n            \"create\": true,\n            \"delete\": true,\n            \"share\": true\n        }\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\nnova linha\npróximos passos\n"
+                },
+                "ops": [
+                    "write /alice/files/Notes/Ata.md"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "id": 102,
+                "append": "próximos passos",
+                "etag": "<etag#2>",
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\nnova linha\npróximos passos\n"
+                },
+                "ops": [
+                    "write /alice/files/Notes/Ata.md"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "id": 102,
+                "append": "próximos passos",
+                "etag": "<etag#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\nnova linha\npróximos passos\n"
+                },
+                "ops": [
+                    "write /alice/files/Notes/Ata.md"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "id": 102,
+                "append": "próximos passos",
+                "etag": "<etag#2>",
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\nnova linha\npróximos passos\n"
+                },
+                "ops": [
+                    "write /alice/files/Notes/Ata.md"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "arguments": {
+                "id": 102,
+                "append": "próximos passos",
+                "etag": "<etag#2>",
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\nnova linha\npróximos passos\n"
+                },
+                "ops": [
+                    "write /alice/files/Notes/Ata.md"
+                ]
+            }
+        }
+    ]
+}

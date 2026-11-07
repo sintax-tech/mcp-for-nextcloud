@@ -11,7 +11,7 @@ use OCA\Deck\Db\Acl;
 use OCA\Deck\Db\Assignment;
 use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Stack;
-use OCA\Mcp\Tools\Deck\CardFormatter;
+use OCA\Mcp\Modules\Deck\Integration\CardFormatter;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IURLGenerator;
 use OCP\IUser;

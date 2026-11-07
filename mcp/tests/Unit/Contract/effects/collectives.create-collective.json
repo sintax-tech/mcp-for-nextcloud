@@ -1,0 +1,666 @@
+{
+    "tool": "collectives_create_collective",
+    "grant": "collectives.collective.create",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "name": "Projetos 1",
+                "emoji": "📘"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create collective**\n\nCreate collective **Projetos 1** with a new team owned by you.\n\n- Collectives creates a new team with you as its owner and only member, and marks it as managed by Collectives, using an internal privilege of Teams, as it does in the browser.\n- Collectives creates the folder of the collective with a welcome page, Readme.md, in your language.\n- Nobody else is added, invited or sent an email.\n- If another team, even one you cannot see, already uses this display name, Teams adds “ (2)” to it.\n- On this server Teams may also create a team folder for the new team, depending on how the administrator set up team folders.\n- If, between this confirmation and the creation, a team called “Projetos 1” appears that you administer, Collectives creates the collective for that team instead: its current members get access to the collective and the team becomes managed by Collectives. The name is checked again right before.\n- If the creation fails halfway, it may not be possible to tell whether an existing team was used.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "collectives_create_collective",
+                            "title": "Create collective",
+                            "action": "collectives_create_collective",
+                            "name": "Projetos 1",
+                            "requested_name": "Projetos 1",
+                            "emoji": "📘",
+                            "creates": [
+                                "team",
+                                "collective",
+                                "folder",
+                                "landing_page"
+                            ],
+                            "owner": "alice",
+                            "other_members": [],
+                            "notices": [
+                                "Collectives creates a new team with you as its owner and only member, and marks it as managed by Collectives, using an internal privilege of Teams, as it does in the browser.",
+                                "Collectives creates the folder of the collective with a welcome page, Readme.md, in your language.",
+                                "Nobody else is added, invited or sent an email.",
+                                "If another team, even one you cannot see, already uses this display name, Teams adds “ (2)” to it.",
+                                "On this server Teams may also create a team folder for the new team, depending on how the administrator set up team folders.",
+                                "If, between this confirmation and the creation, a team called “Projetos 1” appears that you administer, Collectives creates the collective for that team instead: its current members get access to the collective and the team becomes managed by Collectives. The name is checked again right before.",
+                                "If the creation fails halfway, it may not be possible to tell whether an existing team was used."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "collectives": {
+                    "7": {
+                        "name": "Wiki",
+                        "members": [
+                            "alice"
+                        ],
+                        "canEdit": true
+                    }
+                },
+                "teams": {
+                    "circle-secret": {
+                        "name": "Wiki",
+                        "owner": "alice",
+                        "members": [
+                            "alice"
+                        ]
+                    },
+                    "team-design": {
+                        "name": "Design Team",
+                        "owner": "bob",
+                        "members": [
+                            "bob",
+                            "alice"
+                        ]
+                    },
+                    "team-hidden": {
+                        "name": "Secret",
+                        "owner": "carol",
+                        "members": [
+                            "carol"
+                        ]
+                    }
+                },
+                "folders": [],
+                "calls": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "name": "Projetos 1",
+                "emoji": "📘",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "collectives": {
+                    "7": {
+                        "name": "Wiki",
+                        "members": [
+                            "alice"
+                        ],
+                        "canEdit": true
+                    }
+                },
+                "teams": {
+                    "circle-secret": {
+                        "name": "Wiki",
+                        "owner": "alice",
+                        "members": [
+                            "alice"
+                        ]
+                    },
+                    "team-design": {
+                        "name": "Design Team",
+                        "owner": "bob",
+                        "members": [
+                            "bob",
+                            "alice"
+                        ]
+                    },
+                    "team-hidden": {
+                        "name": "Secret",
+                        "owner": "carol",
+                        "members": [
+                            "carol"
+                        ]
+                    }
+                },
+                "folders": [],
+                "calls": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "name": "Projetos 1",
+                "emoji": "📘",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create collective**\n\nCreate collective **Projetos 1** with a new team owned by you.\n\n- Collectives creates a new team with you as its owner and only member, and marks it as managed by Collectives, using an internal privilege of Teams, as it does in the browser.\n- Collectives creates the folder of the collective with a welcome page, Readme.md, in your language.\n- Nobody else is added, invited or sent an email.\n- If another team, even one you cannot see, already uses this display name, Teams adds “ (2)” to it.\n- On this server Teams may also create a team folder for the new team, depending on how the administrator set up team folders.\n- If, between this confirmation and the creation, a team called “Projetos 1” appears that you administer, Collectives creates the collective for that team instead: its current members get access to the collective and the team becomes managed by Collectives. The name is checked again right before.\n- If the creation fails halfway, it may not be possible to tell whether an existing team was used.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "collectives_create_collective",
+                            "title": "Create collective",
+                            "action": "collectives_create_collective",
+                            "name": "Projetos 1",
+                            "requested_name": "Projetos 1",
+                            "emoji": "📘",
+                            "creates": [
+                                "team",
+                                "collective",
+                                "folder",
+                                "landing_page"
+                            ],
+                            "owner": "alice",
+                            "other_members": [],
+                            "notices": [
+                                "Collectives creates a new team with you as its owner and only member, and marks it as managed by Collectives, using an internal privilege of Teams, as it does in the browser.",
+                                "Collectives creates the folder of the collective with a welcome page, Readme.md, in your language.",
+                                "Nobody else is added, invited or sent an email.",
+                                "If another team, even one you cannot see, already uses this display name, Teams adds “ (2)” to it.",
+                                "On this server Teams may also create a team folder for the new team, depending on how the administrator set up team folders.",
+                                "If, between this confirmation and the creation, a team called “Projetos 1” appears that you administer, Collectives creates the collective for that team instead: its current members get access to the collective and the team becomes managed by Collectives. The name is checked again right before.",
+                                "If the creation fails halfway, it may not be possible to tell whether an existing team was used."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "collectives": {
+                    "7": {
+                        "name": "Wiki",
+                        "members": [
+                            "alice"
+                        ],
+                        "canEdit": true
+                    }
+                },
+                "teams": {
+                    "circle-secret": {
+                        "name": "Wiki",
+                        "owner": "alice",
+                        "members": [
+                            "alice"
+                        ]
+                    },
+                    "team-design": {
+                        "name": "Design Team",
+                        "owner": "bob",
+                        "members": [
+                            "bob",
+                            "alice"
+                        ]
+                    },
+                    "team-hidden": {
+                        "name": "Secret",
+                        "owner": "carol",
+                        "members": [
+                            "carol"
+                        ]
+                    }
+                },
+                "folders": [],
+                "calls": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "The plan binds the name and emoji only: a name taken after the plan is refused before the call, and a team adopted in the race is reported by the receipt (C04 C1/D6); both are frozen in CollectivesFoundingTest."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "name": "Projetos 1",
+                "emoji": "📘"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create collective**\n\nCreate collective **Projetos 1** with a new team owned by you.\n\n- Collectives creates a new team with you as its owner and only member, and marks it as managed by Collectives, using an internal privilege of Teams, as it does in the browser.\n- Collectives creates the folder of the collective with a welcome page, Readme.md, in your language.\n- Nobody else is added, invited or sent an email.\n- If another team, even one you cannot see, already uses this display name, Teams adds “ (2)” to it.\n- On this server Teams may also create a team folder for the new team, depending on how the administrator set up team folders.\n- If, between this confirmation and the creation, a team called “Projetos 1” appears that you administer, Collectives creates the collective for that team instead: its current members get access to the collective and the team becomes managed by Collectives. The name is checked again right before.\n- If the creation fails halfway, it may not be possible to tell whether an existing team was used.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "collectives_create_collective",
+                            "title": "Create collective",
+                            "action": "collectives_create_collective",
+                            "name": "Projetos 1",
+                            "requested_name": "Projetos 1",
+                            "emoji": "📘",
+                            "creates": [
+                                "team",
+                                "collective",
+                                "folder",
+                                "landing_page"
+                            ],
+                            "owner": "alice",
+                            "other_members": [],
+                            "notices": [
+                                "Collectives creates a new team with you as its owner and only member, and marks it as managed by Collectives, using an internal privilege of Teams, as it does in the browser.",
+                                "Collectives creates the folder of the collective with a welcome page, Readme.md, in your language.",
+                                "Nobody else is added, invited or sent an email.",
+                                "If another team, even one you cannot see, already uses this display name, Teams adds “ (2)” to it.",
+                                "On this server Teams may also create a team folder for the new team, depending on how the administrator set up team folders.",
+                                "If, between this confirmation and the creation, a team called “Projetos 1” appears that you administer, Collectives creates the collective for that team instead: its current members get access to the collective and the team becomes managed by Collectives. The name is checked again right before.",
+                                "If the creation fails halfway, it may not be possible to tell whether an existing team was used."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "collectives": {
+                    "7": {
+                        "name": "Wiki",
+                        "members": [
+                            "alice"
+                        ],
+                        "canEdit": true
+                    }
+                },
+                "teams": {
+                    "circle-secret": {
+                        "name": "Wiki",
+                        "owner": "alice",
+                        "members": [
+                            "alice"
+                        ]
+                    },
+                    "team-design": {
+                        "name": "Design Team",
+                        "owner": "bob",
+                        "members": [
+                            "bob",
+                            "alice"
+                        ]
+                    },
+                    "team-hidden": {
+                        "name": "Secret",
+                        "owner": "carol",
+                        "members": [
+                            "carol"
+                        ]
+                    }
+                },
+                "folders": [],
+                "calls": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "name": "Projetos 1",
+                "emoji": "📘",
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"nativeCallAttempted\": true,\n    \"requested\": {\n        \"name\": \"Projetos 1\"\n    },\n    \"status\": \"applied\",\n    \"adopted_existing_team\": false,\n    \"collective\": {\n        \"id\": 8,\n        \"name\": \"Projetos 1\"\n    },\n    \"name_suffixed\": false,\n    \"team_read\": true,\n    \"pieces\": {\n        \"root\": true,\n        \"folder\": true,\n        \"landing\": true,\n        \"registered\": true\n    },\n    \"message\": \"Change observed by reading the collective again.\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "collectives": {
+                    "7": {
+                        "name": "Wiki",
+                        "members": [
+                            "alice"
+                        ],
+                        "canEdit": true
+                    },
+                    "8": {
+                        "name": "Projetos 1",
+                        "members": [
+                            "alice"
+                        ],
+                        "canEdit": true,
+                        "circleId": "team-4"
+                    }
+                },
+                "teams": {
+                    "circle-secret": {
+                        "name": "Wiki",
+                        "owner": "alice",
+                        "members": [
+                            "alice"
+                        ]
+                    },
+                    "team-design": {
+                        "name": "Design Team",
+                        "owner": "bob",
+                        "members": [
+                            "bob",
+                            "alice"
+                        ]
+                    },
+                    "team-hidden": {
+                        "name": "Secret",
+                        "owner": "carol",
+                        "members": [
+                            "carol"
+                        ]
+                    },
+                    "team-4": {
+                        "name": "Projetos 1",
+                        "owner": "alice",
+                        "members": [
+                            "alice"
+                        ]
+                    }
+                },
+                "folders": {
+                    "8": {
+                        "landing": 111,
+                        "registered": true
+                    }
+                },
+                "calls": [
+                    "createCollective:pt_BR"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "name": "Projetos 2",
+                "emoji": "📘",
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "collectives": {
+                    "7": {
+                        "name": "Wiki",
+                        "members": [
+                            "alice"
+                        ],
+                        "canEdit": true
+                    },
+                    "8": {
+                        "name": "Projetos 1",
+                        "members": [
+                            "alice"
+                        ],
+                        "canEdit": true,
+                        "circleId": "team-4"
+                    }
+                },
+                "teams": {
+                    "circle-secret": {
+                        "name": "Wiki",
+                        "owner": "alice",
+                        "members": [
+                            "alice"
+                        ]
+                    },
+                    "team-design": {
+                        "name": "Design Team",
+                        "owner": "bob",
+                        "members": [
+                            "bob",
+                            "alice"
+                        ]
+                    },
+                    "team-hidden": {
+                        "name": "Secret",
+                        "owner": "carol",
+                        "members": [
+                            "carol"
+                        ]
+                    },
+                    "team-4": {
+                        "name": "Projetos 1",
+                        "owner": "alice",
+                        "members": [
+                            "alice"
+                        ]
+                    }
+                },
+                "folders": {
+                    "8": {
+                        "landing": 111,
+                        "registered": true
+                    }
+                },
+                "calls": [
+                    "createCollective:pt_BR"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "name": "Projetos 2",
+                "emoji": "📘"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "collectives": {
+                    "7": {
+                        "name": "Wiki",
+                        "members": [
+                            "alice"
+                        ],
+                        "canEdit": true
+                    },
+                    "8": {
+                        "name": "Projetos 1",
+                        "members": [
+                            "alice"
+                        ],
+                        "canEdit": true,
+                        "circleId": "team-4"
+                    }
+                },
+                "teams": {
+                    "circle-secret": {
+                        "name": "Wiki",
+                        "owner": "alice",
+                        "members": [
+                            "alice"
+                        ]
+                    },
+                    "team-design": {
+                        "name": "Design Team",
+                        "owner": "bob",
+                        "members": [
+                            "bob",
+                            "alice"
+                        ]
+                    },
+                    "team-hidden": {
+                        "name": "Secret",
+                        "owner": "carol",
+                        "members": [
+                            "carol"
+                        ]
+                    },
+                    "team-4": {
+                        "name": "Projetos 1",
+                        "owner": "alice",
+                        "members": [
+                            "alice"
+                        ]
+                    }
+                },
+                "folders": {
+                    "8": {
+                        "landing": 111,
+                        "registered": true
+                    }
+                },
+                "calls": [
+                    "createCollective:pt_BR"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "name": "Projetos 2",
+                "emoji": "📘",
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "collectives": {
+                    "7": {
+                        "name": "Wiki",
+                        "members": [
+                            "alice"
+                        ],
+                        "canEdit": true
+                    },
+                    "8": {
+                        "name": "Projetos 1",
+                        "members": [
+                            "alice"
+                        ],
+                        "canEdit": true,
+                        "circleId": "team-4"
+                    }
+                },
+                "teams": {
+                    "circle-secret": {
+                        "name": "Wiki",
+                        "owner": "alice",
+                        "members": [
+                            "alice"
+                        ]
+                    },
+                    "team-design": {
+                        "name": "Design Team",
+                        "owner": "bob",
+                        "members": [
+                            "bob",
+                            "alice"
+                        ]
+                    },
+                    "team-hidden": {
+                        "name": "Secret",
+                        "owner": "carol",
+                        "members": [
+                            "carol"
+                        ]
+                    },
+                    "team-4": {
+                        "name": "Projetos 1",
+                        "owner": "alice",
+                        "members": [
+                            "alice"
+                        ]
+                    }
+                },
+                "folders": {
+                    "8": {
+                        "landing": 111,
+                        "registered": true
+                    }
+                },
+                "calls": [
+                    "createCollective:pt_BR"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "A new collective has no file to hide yet; the names it is checked against are those Collectives and Teams list for the actor."
+        }
+    ]
+}

@@ -1,0 +1,129 @@
+{
+    "steps": [
+        {
+            "step": "own-locked-preview",
+            "request": {
+                "id": 102,
+                "content": "new",
+                "etag": "<etag#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Edit note**\n\nEdit note: **old**\n- Content: old → new\n\n### Warnings\n\n- The file “/Notes/old.md” is locked by you. This change is allowed and keeps your lock.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the note keeps the fields below.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "notes_edit",
+                            "title": "Edit note",
+                            "action": "notes_edit",
+                            "note": {
+                                "id": 102,
+                                "before": {
+                                    "id": 102,
+                                    "title": "old",
+                                    "category": "",
+                                    "modified": 1759200102,
+                                    "etag": "<etag#1>",
+                                    "content": "old",
+                                    "bytes": 3
+                                },
+                                "after": {
+                                    "id": 102,
+                                    "title": "old",
+                                    "category": "",
+                                    "modified": 1759200102,
+                                    "etag": "<etag#1>",
+                                    "content": "new",
+                                    "bytes": 3
+                                }
+                            },
+                            "changed": [
+                                "content"
+                            ],
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Nothing was changed. After your approval the note keeps the fields below.",
+                            "lock": {
+                                "type": "user",
+                                "owner_display_name": "Alice",
+                                "own": true,
+                                "blocking": false,
+                                "created_at": "<created_at#1>",
+                                "expires_at": null,
+                                "expiry_status": "none"
+                            },
+                            "warnings": [
+                                {
+                                    "type": "file_locked",
+                                    "message": "The file “/Notes/old.md” is locked by you. This change is allowed and keeps your lock."
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Notes": "dir #101",
+                    "/alice/files/Notes/old.md": "#102 old"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "own-locked-confirmed",
+            "request": {
+                "id": 102,
+                "content": "new",
+                "etag": "<etag#1>",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"id\": 102,\n    \"title\": \"old\",\n    \"category\": \"\",\n    \"modified\": 1759200102,\n    \"etag\": \"e102+\",\n    \"access\": {\n        \"scope\": \"personal\",\n        \"owner\": \"alice\",\n        \"ownerDisplayName\": \"Alice\",\n        \"permissions\": {\n            \"read\": true,\n            \"update\": true,\n            \"create\": true,\n            \"delete\": true,\n            \"share\": true\n        }\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Notes": "dir #101",
+                    "/alice/files/Notes/old.md": "#102 new"
+                },
+                "ops": [
+                    "write /alice/files/Notes/old.md"
+                ]
+            }
+        }
+    ]
+}

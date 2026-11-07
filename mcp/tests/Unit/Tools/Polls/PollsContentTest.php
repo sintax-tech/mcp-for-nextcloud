@@ -7,8 +7,13 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Tools\Polls\{PollsRefusal, PollsAnonymousIdentity, PollsVoteShapes, PollsResultShapes, PollsLinkShapes, PollsContentRequest};
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Modules\Polls\PollsRefusal;
+use OCA\Mcp\Modules\Polls\Presentation\PollsAnonymousIdentity;
+use OCA\Mcp\Modules\Polls\Presentation\PollsLinkShapes;
+use OCA\Mcp\Modules\Polls\Presentation\PollsResultShapes;
+use OCA\Mcp\Modules\Polls\Presentation\PollsVoteShapes;
+use OCA\Mcp\Modules\Polls\Reading\PollsContentRequest;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

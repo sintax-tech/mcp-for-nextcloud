@@ -9,22 +9,22 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use OCA\Deck\Service\BoardService;
 use OCA\Deck\Sharing\DeckShareProvider;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\Common\SharedWriteGuard;
-use OCA\Mcp\Tools\Deck\BoardRecipientResolver;
-use OCA\Mcp\Tools\Deck\CardFileLinkPreparation;
-use OCA\Mcp\Tools\Deck\CardFileNodeAccess;
-use OCA\Mcp\Tools\Deck\CardLinkPlan;
-use OCA\Mcp\Tools\Deck\CardLinkPolicy;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
-use OCA\Mcp\Tools\Deck\DeckServiceContext;
-use OCA\Mcp\Tools\Deck\Handler\LinkCardFileHandler;
-use OCA\Mcp\Tools\Deck\NativeCardFileLink;
-use OCA\Mcp\Tools\Deck\RecipientDirectory;
-use OCA\Mcp\Tools\PlanChanged;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
+use OCA\Mcp\Modules\Deck\Integration\BoardRecipientResolver;
+use OCA\Mcp\Modules\Deck\Attachments\CardFileLinkPreparation;
+use OCA\Mcp\Modules\Deck\Attachments\CardFileNodeAccess;
+use OCA\Mcp\Modules\Deck\Attachments\CardLinkPlan;
+use OCA\Mcp\Modules\Deck\Integration\CardLinkPolicy;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Integration\DeckServiceContext;
+use OCA\Mcp\Modules\Deck\Attachments\LinkCardFileHandler;
+use OCA\Mcp\Modules\Deck\Integration\NativeCardFileLink;
+use OCA\Mcp\Modules\Deck\Recipients\RecipientDirectory;
+use OCA\Mcp\Mcp\Confirmation\PlanChanged;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\App\IAppManager;
 use OCP\Files\File;
 use OCP\Files\Folder;
@@ -454,7 +454,7 @@ final class CardFileLinkTest extends TestCase {
 		try {
 			$this->handler->handle($args, 'alice');
 			self::fail('A confirm without state must be refused');
-		} catch (\OCA\Mcp\Tools\ArgumentValidationException) {
+		} catch (\OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException) {
 			self::assertSame(0, $this->writes);
 		}
 	}

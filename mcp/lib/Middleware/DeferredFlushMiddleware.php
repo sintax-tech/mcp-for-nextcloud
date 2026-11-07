@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Middleware;
 
-use OCA\Mcp\Service\Policy\CauseProcessor;
+use OCA\Mcp\Access\Policy\CauseProcessor;
 use OCP\AppFramework\Middleware;
 
 /**
@@ -16,9 +16,9 @@ use OCP\AppFramework\Middleware;
  * Never throws and never changes the request.
  */
 class DeferredFlushMiddleware extends Middleware {
-    public function __construct(private CauseProcessor $causes) {}
+	public function __construct(private CauseProcessor $causes) {}
 
-    public function beforeController($controller, $methodName): void {
-        $this->causes->flush();
-    }
+	public function beforeController($controller, $methodName): void {
+		$this->causes->flush();
+	}
 }

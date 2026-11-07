@@ -3,31 +3,32 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Tests of the access levels (S2 of the admin redesign): the level ↔ operations mapping of js/admin-levels.js against the
- * catalog of GrantPolicy, and the level cell of js/admin-grants.js, cut out of the source and run against stubs as in
+ * Tests of the access levels (S2 of the admin redesign): the level ↔ operations mapping of src/admin/admin-levels.js against the
+ * catalog of GrantPolicy, and the level cell of src/admin/admin-grants.js, cut out of the source and run against stubs as in
  * admin-revision.test.cjs. A level is presentation only: the server keeps receiving operations.
  */
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const fs = require('node:fs')
 const path = require('node:path')
 
 const root = path.join(__dirname, '../..')
 const context = require('./PollsCreateContext.cjs').load()
-vm.runInNewContext(fs.readFileSync(path.join(root, 'js/admin-levels.js'), 'utf8'), context)
+vm.runInNewContext(require('./AdminManifest.cjs').levelsSource(), context)
 const Levels = context.McpAdminLevels
 const plain = (value) => JSON.parse(JSON.stringify(value))
 
-/** GrantPolicy::CATALOG as PHP declares it: module => list of operations. */
+/** GrantCatalog::CATALOG as PHP declares it: module => list of operations. */
 function catalog() {
-	const policy = fs.readFileSync(path.join(root, 'lib/Service/GrantPolicy.php'), 'utf8')
+	const policy = fs.readFileSync(path.join(root, 'lib/Access/Grants/GrantCatalog.php'), 'utf8')
 	const body = policy.slice(policy.indexOf('public const CATALOG = ['), policy.indexOf('];', policy.indexOf('public const CATALOG = [')))
 	const out = {}
-	for (const [, module, operations] of body.matchAll(/'(\w+)' => \[([^\]]*)\]/g)) {
-		out[module] = [...operations.matchAll(/'(\w+)'/g)].map((match) => match[1])
+	for (const [, module, operations] of body.matchAll(/'([\w.]+)' => \[([^\]]*)\]/g)) {
+		out[module] = [...operations.matchAll(/'([\w.]+)'/g)].map((match) => match[1])
 	}
-	assert.ok(Object.keys(out).length >= 9, 'the catalog was read from GrantPolicy.php')
+	assert.ok(Object.keys(out).length >= 9, 'the catalog was read from GrantCatalog.php')
+	assert.ok(out.polls.includes('options.remove'), 'literal dotted operation is parsed')
 	return out
 }
 
@@ -106,13 +107,11 @@ test('the origin of a module: invalid, then individual, then unknown group, then
 	assert.deepEqual(plain(Levels.originOf(ops, at(o('individual_allow'), o('invalid')))), o('invalid'))
 })
 
-/* The level cell of js/admin-grants.js. */
+/* The level cell of src/admin/admin-grants.js. */
 
-const grants = fs.readFileSync(path.join(root, 'js/admin-grants.js'), 'utf8')
+const grants = require('./AdminManifest.cjs').script('admin-grants.js')
 function cut(declaration) {
-	const start = grants.indexOf('\t' + declaration)
-	assert.ok(start > 0, declaration + ' was found in js/admin-grants.js')
-	return grants.slice(start, grants.indexOf('\n\t}\n', start) + 4)
+	return require('./AdminManifest.cjs').operation(declaration)
 }
 
 class Node {

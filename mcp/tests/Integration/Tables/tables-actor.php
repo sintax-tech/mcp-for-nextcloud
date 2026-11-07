@@ -15,10 +15,10 @@ declare(strict_types=1);
  *   user's applications, and the columns of the input's tables and views, or null where the app refuses.
  */
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Tables\TablesCellScene;
-use OCA\Mcp\Tools\Tables\TablesModule;
-use OCA\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Modules\Tables\TablesModule;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\IUserManager;
 use OCP\IUserSession;

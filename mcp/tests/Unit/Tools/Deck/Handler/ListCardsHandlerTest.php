@@ -8,10 +8,10 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Deck\Handler;
 
 use OCA\Deck\NoPermissionException;
-use OCA\Mcp\Tools\Deck\CardFormatter;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
-use OCA\Mcp\Tools\Deck\DeckMessages;
-use OCA\Mcp\Tools\Deck\Handler\ListCardsHandler;
+use OCA\Mcp\Modules\Deck\Integration\CardFormatter;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
+use OCA\Mcp\Modules\Deck\Reading\ListCardsHandler;
 use OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestHelpers;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -137,7 +137,7 @@ final class ListCardsHandlerTest extends TestCase {
 		$result = $handler->handle(['stackId' => 10], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotFoundOrForbidden(), $this->text($result));
 	}
 
 	public function testBackendFailureBecomesTheGenericMessage(): void {
@@ -148,6 +148,6 @@ final class ListCardsHandlerTest extends TestCase {
 		$result = $handler->handle(['stackId' => 10], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorGeneric(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorGeneric(), $this->text($result));
 	}
 }

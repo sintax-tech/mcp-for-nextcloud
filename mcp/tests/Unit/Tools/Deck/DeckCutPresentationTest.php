@@ -8,16 +8,17 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
-use OCA\Mcp\Tools\Deck\CardFileNodeAccess;
-use OCA\Mcp\Tools\Deck\CardLinkMessages;
-use OCA\Mcp\Tools\Deck\CardLinkPlan;
-use OCA\Mcp\Tools\Deck\CardLinkTool;
-use OCA\Mcp\Tools\Deck\DeckCapabilities;
-use OCA\Mcp\Tools\Deck\DeckMessages;
-use OCA\Mcp\Tools\Deck\DeckPlanRenderer;
-use OCA\Mcp\Tools\Deck\DeckRefusalException;
-use OCA\Mcp\Tools\Deck\DeckToolModule;
+use OCA\Mcp\Tests\Unit\FinalStoreLocaleContract;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
+use OCA\Mcp\Modules\Deck\Attachments\CardFileNodeAccess;
+use OCA\Mcp\Modules\Deck\Attachments\CardLinkMessages;
+use OCA\Mcp\Modules\Deck\Attachments\CardLinkPlan;
+use OCA\Mcp\Modules\Deck\Attachments\CardLinkTool;
+use OCA\Mcp\Modules\Deck\Integration\DeckCapabilities;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
+use OCA\Mcp\Modules\Deck\Presentation\DeckPlans\DeckPlanRenderer;
+use OCA\Mcp\Modules\Deck\Failures\DeckRefusalException;
+use OCA\Mcp\Modules\Deck\DeckModule as DeckToolModule;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\File;
@@ -67,11 +68,11 @@ final class DeckCutPresentationTest extends TestCase {
 	 * @return void
 	 */
 	public function testDependencyToolsFollowTheProvedVersions(): void {
-		$absent = array_column($this->module($this->capabilities(false))->definitions(), 'name');
+		$absent = array_column(\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::definitions($this->module($this->capabilities(false))), 'name');
 		self::assertNotContains('deck_add_card_dependency', $absent);
 		self::assertContains('deck_list_labels', $absent);
 		self::assertContains('deck_list_card_files', $absent);
-		$present = $this->module($this->capabilities(true))->definitions();
+		$present = \OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::definitions($this->module($this->capabilities(true)));
 		$byName = [];
 		foreach ($present as $definition) {
 			$byName[$definition['name']] = $definition['description'];
@@ -123,12 +124,12 @@ final class DeckCutPresentationTest extends TestCase {
 	public function testUncertainOutcomesDoNotClaimSuccess(): void {
 		foreach ([
 			CardLinkMessages::uncertain(),
-			DeckMessages::labelPlanChanged(),
-			DeckMessages::labelsUnconfirmed(),
-			DeckMessages::labelStateObserved(),
-			DeckMessages::filePlanChanged(),
-			DeckMessages::dependencyPlanChanged(),
-			DeckMessages::fileUnlinkObserved(),
+			\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::labelPlanChanged(),
+			\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::labelsUnconfirmed(),
+			\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::labelStateObserved(),
+			\OCA\Mcp\Modules\Deck\Presentation\DeckAttachmentMessages::filePlanChanged(),
+			\OCA\Mcp\Modules\Deck\Presentation\DeckDependencyMessages::dependencyPlanChanged(),
+			\OCA\Mcp\Modules\Deck\Presentation\DeckAttachmentMessages::fileUnlinkObserved(),
 		] as $text) {
 			self::assertStringContainsString('does not prove that the whole request finished', $text);
 			self::assertStringContainsString('not a record of human approval', $text);
@@ -195,10 +196,20 @@ final class DeckCutPresentationTest extends TestCase {
 		self::assertStringContainsString('só quando o vínculo é criado', $portuguese);
 		self::assertStringContainsString('não revoga o vínculo depois', $portuguese);
 		$info = (string)file_get_contents($repo . '/mcp/appinfo/info.xml');
-		self::assertStringContainsString('<version>1.2.1</version>', $info);
-		self::assertStringContainsString('never deletes', $info);
-		self::assertStringContainsString('nunca apaga', $info);
-		self::assertStringContainsString('nunca borra', $info);
+		self::assertStringContainsString('<version>' . FinalStoreLocaleContract::VERSION . '</version>', $info);
+		$unlinkGuarantees = [
+			'en' => 'Unlinking a Deck file association never deletes the original file.',
+			'pt-br' => 'Desvincular um arquivo do Deck nunca apaga o arquivo original.',
+			'es' => 'Desvincular un archivo de Deck nunca borra el archivo original.',
+			'de' => 'Das Aufheben einer Deck-Dateiverknüpfung löscht niemals die Originaldatei.',
+		];
+		$descriptions = [];
+		foreach (simplexml_load_string($info)->description as $description) {
+			$descriptions[(string)($description['lang'] ?? 'en')] = (string)$description;
+		}
+		foreach ($unlinkGuarantees as $locale => $guarantee) {
+			self::assertStringContainsString($guarantee, $descriptions[$locale] ?? '', $locale);
+		}
 		self::assertStringContainsString('Nextcloud 32–35', $info);
 		foreach (['kein-ki', 'lethal trifecta', 'mail_browse', 'tables_browse', 'prepare_context', 'threat-model.md', 'hardening.md'] as $banned) {
 			self::assertStringNotContainsString($banned, $english . $portuguese . $info);
@@ -256,7 +267,7 @@ final class DeckCutPresentationTest extends TestCase {
 		$container->method('get')->willThrowException(new \LogicException('Deck must not be resolved here.'));
 		$apps = $this->createMock(IAppManager::class);
 		$apps->method('isEnabledForUser')->willReturn(true);
-		return new DeckToolModule(
+		return \OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::build(
 			$container,
 			$apps,
 			$this->createMock(LoggerInterface::class),

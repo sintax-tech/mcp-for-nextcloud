@@ -8,12 +8,12 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Exclusion;
 
 use OCA\Mcp\Db\PolicyStateMapper;
-use OCA\Mcp\Service\BackupLocation;
-use OCA\Mcp\Service\BackupCopies;
-use OCA\Mcp\Service\BackupSettingsWriter;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Platform\Backups\BackupLocation;
+use OCA\Mcp\Platform\Backups\BackupCopies;
+use OCA\Mcp\Access\Settings\BackupSettingsWriter;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Integration\Support\Http;
-use OCA\Mcp\Tools\Contacts\ContactBackup;
+use OCA\Mcp\Modules\Contacts\Backup\ContactBackup;
 use OCP\App\IAppManager;
 use OCP\IAppConfig;
 use OCP\Server;
@@ -169,7 +169,7 @@ final class BackupConfigurationTest extends ExclusionTestCase {
 		$path = '/' . $nfd . '/' . $this->run . '/must-not-exist.txt';
 		$refused = $this->mcp()->write('files_create', ['path' => $path, 'content' => 'must not write']);
 		self::assertTrue($refused->isError(), $refused->describe());
-		self::assertStringContainsString(\OCA\Mcp\Tools\Files\FilesMessages::backupPath(), $refused->fingerprint());
+		self::assertStringContainsString(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath(), $refused->fingerprint());
 		self::assertFalse($home->nodeExists($nfc . '/' . $this->run . '/must-not-exist.txt'));
 		$this->tag($original);
 		$this->exclude();
@@ -193,7 +193,7 @@ final class BackupConfigurationTest extends ExclusionTestCase {
 				self::assertTrue($result->isError(), $result->describe());
 			}
 			try { Server::get(ContactBackup::class)->save(self::ALICE, $this->run, 'corrupt', 'private'); self::fail('Contact copy bypassed corruption'); }
-			catch (\OCA\Mcp\Tools\ToolFailure) { }
+			catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure) { }
 			self::assertFalse($home->nodeExists('BK2 history/' . $this->run . '/forbidden.txt'));
 			self::assertFalse($home->nodeExists(ltrim($this->path('home', 'copy.txt'), '/')));
 			self::assertSame('unchanged', $home->get($this->path('home', 'corruption.txt'))->getContent());
@@ -216,7 +216,7 @@ final class BackupConfigurationTest extends ExclusionTestCase {
 			->where($query->expr()->eq('appid', $query->createNamedParameter('mcp')))
 			->andWhere($query->expr()->eq('configkey', $query->createNamedParameter(BackupLocation::KEY)))->executeStatement();
 		self::assertSame('BK3 A', $location->snapshot()['folder']);
-		$other = new BackupLocation(new \OCA\Mcp\Service\BackupSettingsDocument($database));
+		$other = new BackupLocation(new \OCA\Mcp\Platform\Backups\BackupSettingsDocument($database));
 		self::assertSame('BK3 B', $other->current()['folder']);
 		self::assertTrue(BackupLocation::contains('/BK3 B/forbidden.txt', $location));
 		self::assertSame($cached, $config->getValueString('mcp', BackupLocation::KEY), 'Reading must not invalidate AppConfig cache');

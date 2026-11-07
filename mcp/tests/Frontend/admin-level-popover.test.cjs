@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Behavioral tests of js/admin-level-popover.js (S3 of the admin redesign) with Node's built-in runner and a minimal DOM.
+ * Behavioral tests of src/admin/admin-level-popover.js (S3 of the admin redesign) with Node's built-in runner and a minimal DOM.
  * The script runs unchanged against a stub of window.McpAdminMatrix: a level becomes one all-or-nothing command of the
  * operations that change, "inherit" where the preview says that is what the person inherits, from the revision of the
  * table on screen, with the receipt offered as the undo; taking "Can connect" away is confirmed first.
  */
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const fs = require('node:fs')
 const path = require('node:path')
 
@@ -139,8 +139,8 @@ function setup({ users, preview, commands, confirm = true } = {}) {
 		confirm: (text) => { confirms.push(text); return confirm },
 	}
 	const context = { window, document, t: (app, text, vars) => text.replace(/\{(\w+)\}/g, (_, key) => vars?.[key] ?? '{' + key + '}') }
-	vm.runInNewContext(fs.readFileSync(path.join(root, 'js/admin-levels.js'), 'utf8'), context)
-	vm.runInNewContext(fs.readFileSync(path.join(root, 'js/admin-level-popover.js'), 'utf8'), context)
+	vm.runInNewContext(require('./AdminManifest.cjs').levelsSource(), context)
+	vm.runInNewContext(require('./AdminManifest.cjs').script('admin-level-popover.js'), context)
 	const trigger = new Element('button', document)
 	return { api: window.McpLevelPopover, popover, trigger, document, calls, notices, errors, confirms, busy, data, reloads: () => reloads }
 }

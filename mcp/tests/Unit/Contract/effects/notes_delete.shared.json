@@ -1,0 +1,68 @@
+{
+    "steps": [
+        {
+            "step": "shared-unconfirmed",
+            "request": {
+                "id": 102,
+                "etag": "<etag#1>",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"requiresConfirmation\": true,\n    \"scope\": \"team\",\n    \"owner\": \"pedro\",\n    \"ownerDisplayName\": \"Paulo Exemplo\",\n    \"teamFolder\": \"Team\",\n    \"resource\": \"102\",\n    \"message\": \"This file is in the team folder 'Team' (Team Folder). Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true.\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Team": "dir #101",
+                    "/alice/files/Team/old.md": "#102 old"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "shared-confirmed",
+            "request": {
+                "id": 102,
+                "etag": "<etag#1>",
+                "confirm": true,
+                "confirm_shared": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"id\": 102,\n    \"deleted\": true,\n    \"trash\": true\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Team": "dir #101"
+                },
+                "ops": [
+                    "delete /alice/files/Team/old.md"
+                ]
+            }
+        }
+    ]
+}

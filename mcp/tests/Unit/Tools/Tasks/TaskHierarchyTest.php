@@ -7,11 +7,11 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Tasks;
 
-use OCA\Mcp\Tools\Calendar\Calendar;
-use OCA\Mcp\Tools\Tasks\TaskData;
-use OCA\Mcp\Tools\Tasks\TaskHierarchy;
-use OCA\Mcp\Tools\Tasks\TaskHierarchyMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Platform\Dav\Calendar;
+use OCA\Mcp\Modules\Tasks\Composing\TaskData;
+use OCA\Mcp\Modules\Tasks\Hierarchy\TaskHierarchy;
+use OCA\Mcp\Modules\Tasks\Presentation\TaskHierarchyMessages;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 
 /**

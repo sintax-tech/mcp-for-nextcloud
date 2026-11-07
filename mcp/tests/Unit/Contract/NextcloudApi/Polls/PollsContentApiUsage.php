@@ -40,16 +40,15 @@ final class PollsContentApiUsage {
 	/** Untyped scanner collisions resolved to actual callers, not permission to invoke Polls effect APIs. */
 	public const NAME_CLASHES = [
 		'OCA\\Polls\\Model\\User\\Anon::getShareType' => 'OCP share type in Files/Deck/Talk; PO-2 uses only Anon::TYPE and native vote serialization',
-		'OCA\\Polls\\Service\\ShareService::createShare' => 'OCP share manager in ShareWriter/NativeCardFileLink/FileSharer; PO-2 calls only list',
 		'OCA\\Polls\\Service\\ShareService::register' => 'MCP Policy DeferredQueue registration; PO-2 never registers a Polls share',
 		'OCA\\Polls\\Service\\ShareService::request' => 'SharedWriteGuard and Files requests; PO-2 never requests/creates a Polls share',
 	];
 	/** The source pins 8.6.3 in NC31/32 and 9.x in NC33–35 rename this predicate in opposite directions. */
 	public const VERSION_GATED = [
 		'OCA\\Polls\\Db\\Poll::getIsExpired' => ['missing' => ['31', '32'], 'fallback' => 'OCA\\Polls\\Db\\Poll::getExpired',
-			'by' => \OCA\Mcp\Tools\Polls\PollsExpiration::class],
+			'by' => \OCA\Mcp\Modules\Polls\Integration\PollsExpiration::class],
 		'OCA\\Polls\\Db\\Poll::getExpired' => ['missing' => ['33', '34', '35'], 'fallback' => 'OCA\\Polls\\Db\\Poll::getIsExpired',
-			'by' => \OCA\Mcp\Tools\Polls\PollsExpiration::class],
+			'by' => \OCA\Mcp\Modules\Polls\Integration\PollsExpiration::class],
 	];
 
 }

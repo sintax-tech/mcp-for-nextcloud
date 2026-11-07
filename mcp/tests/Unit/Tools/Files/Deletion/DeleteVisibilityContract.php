@@ -6,8 +6,8 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files\Deletion;
 
-use OCA\Mcp\Tools\Common\CommonMessages;
-use OCA\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use PHPUnit\Framework\Assert;
 
 /** Uses the existing tag matrix's real registry to cover direct and inherited exclusion for the new tool. */

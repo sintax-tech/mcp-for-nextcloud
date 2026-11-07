@@ -7,7 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Forms\Creation;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Tests\Integration\Support\ServiceSwitchFixture;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Forms\{FormsApiScene,FormsScene,FormsState};
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\{LoginFactory,McpClient};
@@ -15,10 +16,25 @@ use OCP\Server;
 
 /** Exercises aggregate creation through real authenticated MCP and installed pinned Forms, not unit doubles. */
 final class McpFormsCreationTest extends IntegrationTestCase {
+	/** @var ServiceSwitchFixture|null Per-test service switch, absent when the opt-in skips setup. */
+	private ?ServiceSwitchFixture $serviceSwitch = null;
+
 	/** Selects only the official opt-in Forms cell.
 	 * @return void
 	 */
-	protected function setUp(): void { parent::setUp(); if (getenv('MCP_IT_WITH_FORMS') !== '1') { self::markTestSkipped('Requires pinned Forms cell.'); } }
+	protected function setUp(): void { parent::setUp(); if (getenv('MCP_IT_WITH_FORMS') !== '1') { self::markTestSkipped('Requires pinned Forms cell.'); }
+		$this->serviceSwitch = ServiceSwitchFixture::open();
+	}
+
+	/** @return void Restore the service switch even when the HTTP test fails. */
+	protected function tearDown(): void {
+		try {
+			$this->serviceSwitch?->restore();
+		} finally {
+			parent::tearDown();
+		}
+	}
+
 	/** Proves default deny, inert previews and both authenticated creation transports against native readback.
 	 * @return void
 	 */
@@ -99,7 +115,7 @@ final class McpFormsCreationTest extends IntegrationTestCase {
 				elseif ($key === 'restrictCreation') { $app->setValueBool($name, $key, $prior['value']); }
 				else { $app->setValueArray($name, $key, $prior['value']); }
 			} }
-			 $policy->setGrant($uid, 'forms', 'create', false);
+			$policy->setGrant($uid, 'forms', 'create', false);
 		}
 	}
 	/** Runs native cold/warm/captured-null/other/lazy graphs in isolated PHP processes, using only disposable actors.

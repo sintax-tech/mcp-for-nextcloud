@@ -9,17 +9,17 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Stack;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tools\ArgumentValidationException;
-use OCA\Mcp\Tools\ArgumentValidator;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
-use OCA\Mcp\Tools\Deck\DeckRefusalException;
-use OCA\Mcp\Tools\Deck\DeckToolModule;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\ToolPresentation;
-use OCA\Mcp\Tools\ToolRegistry;
-use OCA\Mcp\Tools\WriteGate;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Failures\DeckRefusalException;
+use OCA\Mcp\Modules\Deck\DeckModule as DeckToolModule;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Tools\ToolPresentation;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IURLGenerator;
@@ -67,7 +67,7 @@ final class DeckStructureToolsTest extends TestCase {
 	private function moduleWith(DeckGatewayInterface $gateway, ?IUserManager $users = null): DeckToolModule {
 		$apps = $this->createMock(IAppManager::class);
 		$apps->method('isEnabledForUser')->willReturn(true);
-		$module = new DeckToolModule(
+		$module = \OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::build(
 			$this->createMock(ContainerInterface::class),
 			$apps,
 			$this->createMock(LoggerInterface::class),
@@ -75,7 +75,7 @@ final class DeckStructureToolsTest extends TestCase {
 			$this->createMock(ITimeFactory::class),
 			$users,
 		);
-		(new \ReflectionProperty(DeckToolModule::class, 'gateway'))->setValue($module, $gateway);
+		\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::setGateway($module, $gateway);
 
 		return $module;
 	}
@@ -85,7 +85,7 @@ final class DeckStructureToolsTest extends TestCase {
 	 * @return array<string, mixed> Definition of that tool.
 	 */
 	private function definitionOf(string $name): array {
-		foreach ($this->moduleWith($this->createMock(DeckGatewayInterface::class))->definitions() as $definition) {
+		foreach (\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::definitions($this->moduleWith($this->createMock(DeckGatewayInterface::class))) as $definition) {
 			if ($definition['name'] === $name) {
 				return $definition;
 			}
@@ -95,9 +95,9 @@ final class DeckStructureToolsTest extends TestCase {
 	}
 
 	public function testTheFourToolsFollowTheExistingOnes(): void {
-		$names = array_column($this->moduleWith($this->createMock(DeckGatewayInterface::class))->definitions(), 'name');
+		$names = array_column(\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::definitions($this->moduleWith($this->createMock(DeckGatewayInterface::class))), 'name');
 
-		self::assertSame(['deck_create_board', 'deck_create_stack', 'deck_delete_stack', 'deck_delete_board'], array_slice($names, -4));
+		self::assertSame(['deck_create_board', 'deck_create_stack', 'deck_delete_stack', 'deck_delete_board'], array_slice($names, -6, 4));
 	}
 
 	/** @return array<string, array{string, string, list<string>}> */
@@ -122,7 +122,7 @@ final class DeckStructureToolsTest extends TestCase {
 		self::assertSame('deck', $definition['module']);
 		self::assertSame('deck', $definition['app']);
 		self::assertSame($operation, $definition['operation']);
-		self::assertContains($operation, GrantPolicy::CATALOG['deck']);
+		self::assertContains($operation, GrantCatalog::CATALOG['deck']);
 		self::assertSame($required, $definition['inputSchema']['required']);
 		self::assertFalse($definition['inputSchema']['additionalProperties']);
 		self::assertTrue(WriteGate::isWrite($definition));
@@ -360,8 +360,8 @@ final class DeckStructureToolsTest extends TestCase {
 	}
 
 	private function registry(DeckGatewayInterface $gateway): ToolRegistry {
-		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
-		foreach (GrantPolicy::CATALOG['deck'] as $operation) {
+		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
+		foreach (GrantCatalog::CATALOG['deck'] as $operation) {
 			$policy->setGrant('alice', 'deck', $operation, true);
 		}
 		$apps = $this->createMock(IAppManager::class);

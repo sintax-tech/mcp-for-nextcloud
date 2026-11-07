@@ -1,0 +1,391 @@
+{
+    "tool": "tasks_create_task",
+    "grant": "tasks.create",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "summary": "Enviar relatório",
+                "description": "Fechamento de março",
+                "due": "2026-03-20T18:00:00-03:00",
+                "priority": 1
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create task**\n\n- Calendar:\n  - Id: 1\n  - Uri: tasks\n  - Name: Tarefas\n  - Owner id: alice\n  - Owner principal: principals/users/alice\n  - Writable: yes\n  - Path: /remote.php/dav/calendars/alice/tasks/\n- After:\n  - Summary: Enviar relatório\n  - Description: Fechamento de março\n  - Status: NEEDS-ACTION\n  - Percent complete: 0\n  - Priority: 1\n  - Due: 2026-03-20T21:00:00+00:00\n  - Recurring: no\n- Recoverable: no\n- Timezone: America/Sao\\_Paulo\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "tasks_create_task",
+                            "title": "Create task",
+                            "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                            "action": "tasks_create_task",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "tasks",
+                                "name": "Tarefas",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/tasks/"
+                            },
+                            "etag": null,
+                            "before": null,
+                            "after": {
+                                "summary": "Enviar relatório",
+                                "description": "Fechamento de março",
+                                "status": "NEEDS-ACTION",
+                                "percentComplete": 0,
+                                "priority": 1,
+                                "start": null,
+                                "due": "2026-03-20T21:00:00+00:00",
+                                "completed": null,
+                                "categories": [],
+                                "parent": null,
+                                "recurring": false
+                            },
+                            "shared": [],
+                            "recoverable": false,
+                            "consequence": null,
+                            "timezone": "America/Sao_Paulo",
+                            "parents": []
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": []
+                },
+                "dav": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "summary": "Enviar relatório",
+                "description": "Fechamento de março",
+                "due": "2026-03-20T18:00:00-03:00",
+                "priority": 1,
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": []
+                },
+                "dav": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "summary": "Enviar relatório",
+                "description": "Fechamento de março",
+                "due": "2026-03-20T18:00:00-03:00",
+                "priority": 1,
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create task**\n\n- Calendar:\n  - Id: 1\n  - Uri: tasks\n  - Name: Tarefas\n  - Owner id: alice\n  - Owner principal: principals/users/alice\n  - Writable: yes\n  - Path: /remote.php/dav/calendars/alice/tasks/\n- After:\n  - Summary: Enviar relatório\n  - Description: Fechamento de março\n  - Status: NEEDS-ACTION\n  - Percent complete: 0\n  - Priority: 1\n  - Due: 2026-03-20T21:00:00+00:00\n  - Recurring: no\n- Recoverable: no\n- Timezone: America/Sao\\_Paulo\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "tasks_create_task",
+                            "title": "Create task",
+                            "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                            "action": "tasks_create_task",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "tasks",
+                                "name": "Tarefas",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/tasks/"
+                            },
+                            "etag": null,
+                            "before": null,
+                            "after": {
+                                "summary": "Enviar relatório",
+                                "description": "Fechamento de março",
+                                "status": "NEEDS-ACTION",
+                                "percentComplete": 0,
+                                "priority": 1,
+                                "start": null,
+                                "due": "2026-03-20T21:00:00+00:00",
+                                "completed": null,
+                                "categories": [],
+                                "parent": null,
+                                "recurring": false
+                            },
+                            "shared": [],
+                            "recoverable": false,
+                            "consequence": null,
+                            "timezone": "America/Sao_Paulo",
+                            "parents": []
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": []
+                },
+                "dav": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "A creation has no existing object to change between the plan and the confirmation, and the Tasks module keeps no plan fingerprint (no PlanState/PlanChanged): the confirmed call is prepared again from the arguments and writes a new task with a new UID. Edits rely on the ETag instead."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "summary": "Enviar relatório",
+                "description": "Fechamento de março",
+                "due": "2026-03-20T18:00:00-03:00",
+                "priority": 1
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create task**\n\n- Calendar:\n  - Id: 1\n  - Uri: tasks\n  - Name: Tarefas\n  - Owner id: alice\n  - Owner principal: principals/users/alice\n  - Writable: yes\n  - Path: /remote.php/dav/calendars/alice/tasks/\n- After:\n  - Summary: Enviar relatório\n  - Description: Fechamento de março\n  - Status: NEEDS-ACTION\n  - Percent complete: 0\n  - Priority: 1\n  - Due: 2026-03-20T21:00:00+00:00\n  - Recurring: no\n- Recoverable: no\n- Timezone: America/Sao\\_Paulo\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "tasks_create_task",
+                            "title": "Create task",
+                            "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                            "action": "tasks_create_task",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "tasks",
+                                "name": "Tarefas",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/tasks/"
+                            },
+                            "etag": null,
+                            "before": null,
+                            "after": {
+                                "summary": "Enviar relatório",
+                                "description": "Fechamento de março",
+                                "status": "NEEDS-ACTION",
+                                "percentComplete": 0,
+                                "priority": 1,
+                                "start": null,
+                                "due": "2026-03-20T21:00:00+00:00",
+                                "completed": null,
+                                "categories": [],
+                                "parent": null,
+                                "recurring": false
+                            },
+                            "shared": [],
+                            "recoverable": false,
+                            "consequence": null,
+                            "timezone": "America/Sao_Paulo",
+                            "parents": []
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": []
+                },
+                "dav": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "summary": "Enviar relatório",
+                "description": "Fechamento de março",
+                "due": "2026-03-20T18:00:00-03:00",
+                "priority": 1,
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"uid\": \"<drawn-uid#1>\",\n    \"summary\": \"Enviar relatório\",\n    \"description\": \"Fechamento de março\",\n    \"status\": \"NEEDS-ACTION\",\n    \"percentComplete\": 0,\n    \"priority\": 1,\n    \"start\": null,\n    \"due\": \"2026-03-20T21:00:00+00:00\",\n    \"completed\": null,\n    \"categories\": [],\n    \"parent\": null,\n    \"recurring\": false,\n    \"icalendar\": \"BEGIN:VCALENDAR\\r\\nVERSION:2.0\\r\\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\nCALSCALE:GREGORIAN\\r\\nBEGIN:VTODO\\r\\nUID:<drawn-uid#1>\\r\\nSUMMARY:Enviar relatório\\r\\nSTATUS:NEEDS-ACTION\\r\\nDESCRIPTION:Fechamento de março\\r\\nPRIORITY:1\\r\\nDUE:20260320T210000Z\\r\\nDTSTAMP:20260310T120000Z\\r\\nLAST-MODIFIED:20260310T120000Z\\r\\nSEQUENCE:1\\r\\nEND:VTODO\\r\\nEND:VCALENDAR\\r\\n\",\n    \"etag\": \"\\\"<etag-of-drawn-object#1>\\\"\",\n    \"calendar\": \"/remote.php/dav/calendars/alice/tasks/\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nCALSCALE:GREGORIAN\r\nBEGIN:VTODO\r\nUID:<drawn-uid#1>\r\nSUMMARY:Enviar relatório\r\nSTATUS:NEEDS-ACTION\r\nDESCRIPTION:Fechamento de março\r\nPRIORITY:1\r\nDUE:20260320T210000Z\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [
+                    "put tasks/<drawn-uid#1>.ics"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "summary": "Enviar relatório",
+                "description": "Fechamento de março",
+                "due": "2026-03-20T18:00:00-03:00",
+                "priority": 1,
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nCALSCALE:GREGORIAN\r\nBEGIN:VTODO\r\nUID:<drawn-uid#1>\r\nSUMMARY:Enviar relatório\r\nSTATUS:NEEDS-ACTION\r\nDESCRIPTION:Fechamento de março\r\nPRIORITY:1\r\nDUE:20260320T210000Z\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [
+                    "put tasks/<drawn-uid#1>.ics"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "summary": "Enviar relatório",
+                "description": "Fechamento de março",
+                "due": "2026-03-20T18:00:00-03:00",
+                "priority": 1
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nCALSCALE:GREGORIAN\r\nBEGIN:VTODO\r\nUID:<drawn-uid#1>\r\nSUMMARY:Enviar relatório\r\nSTATUS:NEEDS-ACTION\r\nDESCRIPTION:Fechamento de março\r\nPRIORITY:1\r\nDUE:20260320T210000Z\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [
+                    "put tasks/<drawn-uid#1>.ics"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "summary": "Enviar relatório",
+                "description": "Fechamento de março",
+                "due": "2026-03-20T18:00:00-03:00",
+                "priority": 1,
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nCALSCALE:GREGORIAN\r\nBEGIN:VTODO\r\nUID:<drawn-uid#1>\r\nSUMMARY:Enviar relatório\r\nSTATUS:NEEDS-ACTION\r\nDESCRIPTION:Fechamento de março\r\nPRIORITY:1\r\nDUE:20260320T210000Z\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [
+                    "put tasks/<drawn-uid#1>.ics"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "Tasks are CalDAV objects, not Files nodes: no system tag or excluded folder can hide a task list or a task from MCP (VisibilityGuard and FilesAccessGuard do not apply). What narrows the reachable lists is the administrator resource scope and the native ACL, not visibility."
+        }
+    ]
+}

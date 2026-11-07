@@ -10,11 +10,11 @@ namespace OCA\Mcp\Tests\Unit\Tools\Tables\Rows;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\FakeTablesRowsApp;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\RowsScene;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesRowsWiring;
-use OCA\Mcp\Tools\Tables\Rows\RowCellText;
-use OCA\Mcp\Tools\Tables\Rows\RowsMessages;
-use OCA\Mcp\Tools\Tables\Rows\RowsRequest;
-use OCA\Mcp\Tools\Tables\TablesMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Modules\Tables\Reading\RowCellText;
+use OCA\Mcp\Modules\Tables\Presentation\RowsMessages;
+use OCA\Mcp\Modules\Tables\Reading\RowsRequest;
+use OCA\Mcp\Modules\Tables\Presentation\TablesMessages;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 
 /**

@@ -5,7 +5,7 @@
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
 const fs = require('node:fs')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const path = require('node:path')
 
 /** Polls registration has one read tier, with no automatic results or future write capability. */
@@ -14,7 +14,7 @@ class PollsAdminContract {
 	static levels() {
 		const context = require('./PollsCreateContext.cjs').load()
 		for (const file of ['admin-levels.js']) {
-			vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js', file), 'utf8'), context)
+			vm.runInNewContext(require('./AdminManifest.cjs').script(file), context)
 		}
 		return context.McpAdminLevels
 	}
@@ -30,6 +30,6 @@ test('Polls has only None and Read, without a future Full grant', () => {
 
 test('every module label map names Polls', () => {
 	for (const file of ['admin-grants.js', 'admin-groups.js', 'admin-inspector.js']) {
-		assert.match(fs.readFileSync(path.join(__dirname, '../../js', file), 'utf8'), /polls: t\('mcp', 'Polls'\)/)
+		assert.match(require('./AdminManifest.cjs').script(file), /polls: t\('mcp', 'Polls'\)/)
 	}
 })

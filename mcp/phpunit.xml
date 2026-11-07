@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
 <phpunit bootstrap="tests/bootstrap.php" colors="false" cacheDirectory=".phpunit.cache">
+    <php><ini name="memory_limit" value="1G"/></php>
     <testsuites><testsuite name="unit"><directory>tests</directory><exclude>tests/Integration</exclude></testsuite></testsuites>
 </phpunit>

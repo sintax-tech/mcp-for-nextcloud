@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Controller;
 
 use InvalidArgumentException;
-use OCA\Mcp\Service\ConnectionList;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\OAuth\Connections\ConnectionList;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
@@ -21,79 +21,79 @@ use OCP\IRequest;
  * are never returned.
  */
 class ConnectionsController extends Controller {
-    /** Longest user id accepted when revoking every connection of a user. */
-    private const MAX_UID = 64;
+	/** Longest user id accepted when revoking every connection of a user. */
+	private const MAX_UID = 64;
 
-    public function __construct(
-        string $appName,
-        IRequest $request,
-        private ConnectionList $connections,
-    ) {
-        parent::__construct($appName, $request);
-    }
+	public function __construct(
+		string $appName,
+		IRequest $request,
+		private ConnectionList $connections,
+	) {
+		parent::__construct($appName, $request);
+	}
 
-    /**
-     * @param string $search part of the user id or client_id
-     * @param int $page 1-based page
-     * @return JSONResponse one page (see ConnectionList::page), or 400
-     */
-    public function index(string $search = '', int $page = 1): JSONResponse {
-        try {
-            return new JSONResponse($this->connections->page(null, $search, $page));
-        } catch (InvalidArgumentException) {
-            return new JSONResponse(['error' => 'Invalid request'], Http::STATUS_BAD_REQUEST);
-        }
-    }
+	/**
+	 * @param string $search part of the user id or client_id
+	 * @param int $page 1-based page
+	 * @return JSONResponse one page (see ConnectionList::page), or 400
+	 */
+	public function index(string $search = '', int $page = 1): JSONResponse {
+		try {
+			return new JSONResponse($this->connections->page(null, $search, $page));
+		} catch (InvalidArgumentException) {
+			return new JSONResponse(['error' => 'Invalid request'], Http::STATUS_BAD_REQUEST);
+		}
+	}
 
-    /**
-     * @param int $id grant id of the connection
-     * @return JSONResponse {revoked: true, counts: {connections}} with the live connection total left, 404 when no such
-     *     connection exists, or 503 {error: 'Unavailable', uncertain} when the revocation could not be stored
-     */
-    public function destroy(int $id): JSONResponse {
-        try {
-            if (!$this->connections->revoke($id, null)) {
-                return new JSONResponse(['error' => 'Not found'], Http::STATUS_NOT_FOUND);
-            }
-        } catch (PolicyUnavailable $e) {
-            return self::unavailable($e);
-        }
-        return new JSONResponse(['revoked' => true, 'counts' => $this->counts()]);
-    }
+	/**
+	 * @param int $id grant id of the connection
+	 * @return JSONResponse {revoked: true, counts: {connections}} with the live connection total left, 404 when no such
+	 *     connection exists, or 503 {error: 'Unavailable', uncertain} when the revocation could not be stored
+	 */
+	public function destroy(int $id): JSONResponse {
+		try {
+			if (!$this->connections->revoke($id, null)) {
+				return new JSONResponse(['error' => 'Not found'], Http::STATUS_NOT_FOUND);
+			}
+		} catch (PolicyUnavailable $e) {
+			return self::unavailable($e);
+		}
+		return new JSONResponse(['revoked' => true, 'counts' => $this->counts()]);
+	}
 
-    /**
-     * Also works for a user id that no longer exists, so leftovers can be cleaned up.
-     *
-     * @param string $uid user whose connections are revoked
-     * @return JSONResponse {revoked: true, counts: {connections}}, 400 for an invalid user id, or 503 {error:
-     *     'Unavailable', uncertain} when the revocation could not be stored
-     */
-    public function revokeUser(string $uid): JSONResponse {
-        if ($uid === '' || strlen($uid) > self::MAX_UID) {
-            return new JSONResponse(['error' => 'Invalid request'], Http::STATUS_BAD_REQUEST);
-        }
-        try {
-            $this->connections->revokeUser($uid);
-        } catch (InvalidArgumentException) {
-            return new JSONResponse(['error' => 'Invalid request'], Http::STATUS_BAD_REQUEST);
-        } catch (PolicyUnavailable $e) {
-            return self::unavailable($e);
-        }
-        return new JSONResponse(['revoked' => true, 'counts' => $this->counts()]);
-    }
+	/**
+	 * Also works for a user id that no longer exists, so leftovers can be cleaned up.
+	 *
+	 * @param string $uid user whose connections are revoked
+	 * @return JSONResponse {revoked: true, counts: {connections}}, 400 for an invalid user id, or 503 {error:
+	 *     'Unavailable', uncertain} when the revocation could not be stored
+	 */
+	public function revokeUser(string $uid): JSONResponse {
+		if ($uid === '' || strlen($uid) > self::MAX_UID) {
+			return new JSONResponse(['error' => 'Invalid request'], Http::STATUS_BAD_REQUEST);
+		}
+		try {
+			$this->connections->revokeUser($uid);
+		} catch (InvalidArgumentException) {
+			return new JSONResponse(['error' => 'Invalid request'], Http::STATUS_BAD_REQUEST);
+		} catch (PolicyUnavailable $e) {
+			return self::unavailable($e);
+		}
+		return new JSONResponse(['revoked' => true, 'counts' => $this->counts()]);
+	}
 
-    /** The revocation runs under the policy mutex; a storage failure is retriable, never a 500. */
-    private static function unavailable(PolicyUnavailable $e): JSONResponse {
-        return new JSONResponse(['error' => 'Unavailable', 'uncertain' => $e->uncertain], Http::STATUS_SERVICE_UNAVAILABLE);
-    }
+	/** The revocation runs under the policy mutex; a storage failure is retriable, never a 500. */
+	private static function unavailable(PolicyUnavailable $e): JSONResponse {
+		return new JSONResponse(['error' => 'Unavailable', 'uncertain' => $e->uncertain], Http::STATUS_SERVICE_UNAVAILABLE);
+	}
 
-    /**
-     * Revoking never changes eligibility or the personal connection flag, so the live connection total is the only
-     * figure of the status summary that moves.
-     *
-     * @return array{connections:int}
-     */
-    private function counts(): array {
-        return ['connections' => $this->connections->count()];
-    }
+	/**
+	 * Revoking never changes eligibility or the personal connection flag, so the live connection total is the only
+	 * figure of the status summary that moves.
+	 *
+	 * @return array{connections:int}
+	 */
+	private function counts(): array {
+		return ['connections' => $this->connections->count()];
+	}
 }

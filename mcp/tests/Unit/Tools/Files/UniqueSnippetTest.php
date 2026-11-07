@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
-use OCA\Mcp\Tools\Files\FilesMessages;
-use OCA\Mcp\Tools\Files\UniqueSnippet;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Modules\Files\Presentation\EditingMessages;
+use OCA\Mcp\Platform\Text\UniqueSnippet;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -23,13 +23,13 @@ final class UniqueSnippetTest extends TestCase {
 
 	/** A snippet that is not there is refused. */
 	public function testAMissingSnippetIsRefused(): void {
-		$this->expectExceptionObject(new ToolFailure(FilesMessages::snippetMissing()));
+		$this->expectExceptionObject(new ToolFailure(EditingMessages::snippetMissing()));
 		UniqueSnippet::replace('abc', 'z', 'y');
 	}
 
 	/** A snippet found more than once is refused. */
 	public function testARepeatedSnippetIsRefused(): void {
-		$this->expectExceptionObject(new ToolFailure(FilesMessages::snippetAmbiguous()));
+		$this->expectExceptionObject(new ToolFailure(EditingMessages::snippetAmbiguous()));
 		UniqueSnippet::replace('a a a', 'a', 'b');
 	}
 
@@ -50,7 +50,7 @@ final class UniqueSnippetTest extends TestCase {
 	 */
 	#[DataProvider('overlapping')]
 	public function testOverlappingOccurrencesAreAmbiguous(string $content, string $old): void {
-		$this->expectExceptionObject(new ToolFailure(FilesMessages::snippetAmbiguous()));
+		$this->expectExceptionObject(new ToolFailure(EditingMessages::snippetAmbiguous()));
 		UniqueSnippet::replace($content, $old, 'X');
 	}
 
@@ -61,8 +61,8 @@ final class UniqueSnippetTest extends TestCase {
 
 	/** @return array<string, array{string, string, string}> content, snippet and the refusal it gets */
 	public static function adversarial(): array {
-		$ambiguous = FilesMessages::snippetAmbiguous();
-		$missing = FilesMessages::snippetMissing();
+		$ambiguous = EditingMessages::snippetAmbiguous();
+		$missing = EditingMessages::snippetMissing();
 		return [
 			'short (strpos): 64 "a" in 10 MiB of "a", ambiguous' => [str_repeat('a', 10485760), str_repeat('a', 64), $ambiguous],
 			'short (strpos): 63 "a" then "b" in 10 MiB of "a", missing' => [str_repeat('a', 10485760), str_repeat('a', 63) . 'b', $missing],
@@ -122,14 +122,14 @@ final class UniqueSnippetTest extends TestCase {
 			$this->fail('a snippet over the limit was searched');
 		} catch (ToolFailure $e) {
 			$this->assertStringContainsString((string)UniqueSnippet::MAX_BYTES, $e->getMessage());
-			$this->assertNotSame(FilesMessages::snippetAmbiguous(), $e->getMessage());
+			$this->assertNotSame(EditingMessages::snippetAmbiguous(), $e->getMessage());
 		}
 	}
 
 	/** Only valid UTF-8 can be located as text. */
 	public function testASnippetThatIsNotUtf8IsRefused(): void {
 		UniqueSnippet::assertText('ação');
-		$this->expectExceptionObject(new ToolFailure(FilesMessages::snippetNotUtf8()));
+		$this->expectExceptionObject(new ToolFailure(EditingMessages::snippetNotUtf8()));
 		UniqueSnippet::assertText("\xC3");
 	}
 }

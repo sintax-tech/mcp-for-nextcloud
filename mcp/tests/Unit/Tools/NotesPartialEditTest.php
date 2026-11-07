@@ -9,23 +9,23 @@ namespace OCA\Mcp\Tests\Unit\Tools;
 
 use InvalidArgumentException;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\Tools\Common\FakeLock;
-use OCA\Mcp\Tests\Unit\Tools\Common\FakeLockManager;
-use OCA\Mcp\Tools\ArgumentValidator;
-use OCA\Mcp\Tools\Common\LockWriteFailure;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\Common\SharedWriteGuard;
-use OCA\Mcp\Tools\Files\FilesMessages;
-use OCA\Mcp\Tools\Files\UnifiedDiff;
-use OCA\Mcp\Tools\ArgumentValidationException;
-use OCA\Mcp\Tools\Notes\NoteChangePlan;
-use OCA\Mcp\Tools\Notes\NotesMessages;
-use OCA\Mcp\Tools\Notes\NotesModule;
-use OCA\Mcp\Tools\Notes\NotesRepository;
-use OCA\Mcp\Tools\PlanChanged;
-use OCA\Mcp\Tools\PlanState;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\WriteGate;
+use OCA\Mcp\Tests\Unit\Platform\FileAccess\FakeLock;
+use OCA\Mcp\Tests\Unit\Platform\FileAccess\FakeLockManager;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
+use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
+use OCA\Mcp\Modules\Files\Presentation\EditingMessages;
+use OCA\Mcp\Platform\Text\UnifiedDiff;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
+use OCA\Mcp\Modules\Notes\Editing\NoteChangePlan;
+use OCA\Mcp\Modules\Notes\Presentation\NotesMessages;
+use OCA\Mcp\Modules\Notes\NotesModule;
+use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
+use OCA\Mcp\Mcp\Confirmation\PlanChanged;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use OCP\App\IAppManager;
 use OCP\Files\IRootFolder;
 use OCP\Files\Lock\ILock;
@@ -33,6 +33,7 @@ use OCP\IUser;
 use OCP\IUserManager;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use OCA\Mcp\Tests\Unit\Tools\Notes\NotesTestModule;
 
 /**
  * NT-1: notes_edit changes a note with a small call. `append` adds at the end and `old`/`new` replaces one unique
@@ -63,7 +64,7 @@ final class NotesPartialEditTest extends TestCase {
 		$users->method('get')->willReturn($this->createMock(IUser::class));
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
 		$this->locks = new FakeLockManager();
-		$this->module = new NotesModule(new NotesRepository($root, $this->config->mock($this)), $apps, $users,
+		$this->module = NotesTestModule::build(new NotesRepository($root, $this->config->mock($this)), $apps, $users,
 			new SharedWriteGuard($access), $access, null, $this->locks->service($this), new PlanState($this->config->mock($this)));
 	}
 
@@ -223,10 +224,10 @@ final class NotesPartialEditTest extends TestCase {
 		$missing = ['id' => $this->id, 'old' => '103', 'new' => 'x', 'etag' => $this->etag(), PlanState::ARGUMENT => 'x'];
 		$repeated = ['id' => $this->id, 'old' => 'aberto', 'new' => 'fechado', 'etag' => $this->etag(), PlanState::ARGUMENT => 'x'];
 
-		$this->assertSame(FilesMessages::snippetMissing(), $this->refusal(fn () => $this->plan($missing)));
-		$this->assertSame(FilesMessages::snippetMissing(), $this->refusal(fn () => $this->write($missing)));
-		$this->assertSame(FilesMessages::snippetAmbiguous(), $this->refusal(fn () => $this->plan($repeated)));
-		$this->assertSame(FilesMessages::snippetAmbiguous(), $this->refusal(fn () => $this->write($repeated)));
+		$this->assertSame(EditingMessages::snippetMissing(), $this->refusal(fn () => $this->plan($missing)));
+		$this->assertSame(EditingMessages::snippetMissing(), $this->refusal(fn () => $this->write($missing)));
+		$this->assertSame(EditingMessages::snippetAmbiguous(), $this->refusal(fn () => $this->plan($repeated)));
+		$this->assertSame(EditingMessages::snippetAmbiguous(), $this->refusal(fn () => $this->write($repeated)));
 		$this->assertNothingWritten($before);
 	}
 
@@ -234,9 +235,9 @@ final class NotesPartialEditTest extends TestCase {
 	public function testReplaceRefusesAnOverlappingPassageInThePlanAndTheWrite(): void {
 		$this->tree->nodes[self::PATH]['content'] = 'banana';
 		$arguments = ['id' => $this->id, 'old' => 'ana', 'new' => 'X'];
-		$this->assertSame(FilesMessages::snippetAmbiguous(), $this->refusal(fn () => $this->plan($arguments)));
+		$this->assertSame(EditingMessages::snippetAmbiguous(), $this->refusal(fn () => $this->plan($arguments)));
 		$confirmed = $arguments + ['etag' => $this->etag(), PlanState::ARGUMENT => 'x'];
-		$this->assertSame(FilesMessages::snippetAmbiguous(), $this->refusal(fn () => $this->write($confirmed)));
+		$this->assertSame(EditingMessages::snippetAmbiguous(), $this->refusal(fn () => $this->write($confirmed)));
 		$this->assertNothingWritten('banana');
 	}
 
@@ -244,10 +245,10 @@ final class NotesPartialEditTest extends TestCase {
 	public function testAnAmbiguousReplaceInALargeNoteIsRefusedQuickly(): void {
 		$started = hrtime(true);
 		try {
-			\OCA\Mcp\Tools\Notes\NoteChange::apply('replace', str_repeat('a', 1048576), ['old' => str_repeat('a', 65536), 'new' => 'X']);
+			\OCA\Mcp\Modules\Notes\Editing\NoteChange::apply('replace', str_repeat('a', 1048576), ['old' => str_repeat('a', 65536), 'new' => 'X']);
 			$this->fail('the replace was accepted');
 		} catch (ToolFailure $e) {
-			$this->assertSame(FilesMessages::snippetAmbiguous(), $e->getMessage());
+			$this->assertSame(EditingMessages::snippetAmbiguous(), $e->getMessage());
 		}
 		$this->assertLessThan(1.0, (hrtime(true) - $started) / 1e9);
 	}
@@ -257,7 +258,7 @@ final class NotesPartialEditTest extends TestCase {
 	 * character bound but over the byte one is refused in the plan and in the write, and one at the limit goes through.
 	 */
 	public function testThePassageIsLimitedTo64KibInCharactersAndBytes(): void {
-		$limit = \OCA\Mcp\Tools\Files\UniqueSnippet::MAX_BYTES;
+		$limit = \OCA\Mcp\Platform\Text\UniqueSnippet::MAX_BYTES;
 		$this->tree->nodes[self::PATH]['content'] = '<' . str_repeat('a', $limit) . '>' . str_repeat('ç', $limit / 2 + 1);
 		$before = $this->content();
 		try {
@@ -280,7 +281,7 @@ final class NotesPartialEditTest extends TestCase {
 	public function testReplaceRefusesAPassageThatIsNotUtf8(): void {
 		$before = $this->content();
 		$message = $this->refusal(fn () => $this->write(['id' => $this->id, 'old' => "\xC3", 'new' => 'x', 'etag' => $this->etag(), PlanState::ARGUMENT => 'x']));
-		$this->assertSame(FilesMessages::snippetNotUtf8(), $message);
+		$this->assertSame(EditingMessages::snippetNotUtf8(), $message);
 		$this->assertNothingWritten($before);
 	}
 
@@ -512,7 +513,7 @@ final class NotesPartialEditTest extends TestCase {
 		$root->method('getUserFolder')->willReturnCallback(fn () => $this->tree->rootFolder());
 		$notes = new NotesRepository($root, $this->config->mock($this));
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
-		$confirmation = new \OCA\Mcp\Tools\Notes\NoteChangeConfirmation($notes, $access, new PlanState($this->config->mock($this)));
+		$confirmation = new \OCA\Mcp\Modules\Notes\Editing\NoteChangeConfirmation($notes, $access, new PlanState($this->config->mock($this)));
 		$folder = $notes->folder('alice', false);
 		$note = $notes->find($folder, $this->id);
 

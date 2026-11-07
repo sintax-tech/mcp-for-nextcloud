@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
-use OCA\Mcp\Tools\Deck\DeckCapabilities;
-use OCA\Mcp\Tools\Deck\DeckToolModule;
-use OCA\Mcp\Tools\ArgumentValidationException;
-use OCA\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Modules\Deck\Integration\DeckCapabilities;
+use OCA\Mcp\Modules\Deck\DeckModule as DeckToolModule;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -61,32 +61,32 @@ final class DependencyCapabilitiesTest extends TestCase {
 			$cap = new DeckCapabilities($apps, $major, static fn (): bool => false);
 			$container = $this->createMock(ContainerInterface::class);
 			$container->expects(self::never())->method('get');
-			$module = new DeckToolModule($container, $apps, $this->createMock(LoggerInterface::class),
+			$module = \OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::build($container, $apps, $this->createMock(LoggerInterface::class),
 				$this->createMock(\OCP\IURLGenerator::class), $this->createMock(\OCP\AppFramework\Utility\ITimeFactory::class),
 				null, null, null, $cap);
-			self::assertNotContains('deck_read_card_dependencies', array_column($module->definitions(), 'name'));
+			self::assertNotContains('deck_read_card_dependencies', array_column(\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::definitions($module), 'name'));
 			try {
 				$module->call('deck_read_card_dependencies', ['cardId' => 7], 'alice');
 				self::fail('unsupported direct call accepted');
 			} catch (\InvalidArgumentException $e) {
-				self::assertSame(\OCA\Mcp\Tools\Deck\DeckMessages::dependenciesUnavailable(), $e->getMessage());
+				self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckDependencyMessages::dependenciesUnavailable(), $e->getMessage());
 			}
 		}
 	}
 
 	public function testRealRegistryFiltersReadGrantAndPerUserAppOnEveryRequest(): void {
 		$data = new \OCA\Mcp\Tests\Unit\InMemoryConfig();
-		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($data->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($data->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
 		$apps = $this->apps('1.18.5');
 		$users = $this->createMock(\OCP\IUserManager::class);
 		$users->method('get')->willReturn($this->createMock(\OCP\IUser::class));
 		$container = $this->createMock(ContainerInterface::class);
 		$container->expects(self::never())->method('get');
 		$logger = $this->createMock(LoggerInterface::class);
-		$module = new DeckToolModule($container, $apps, $logger, $this->createMock(\OCP\IURLGenerator::class),
+		$module = \OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::build($container, $apps, $logger, $this->createMock(\OCP\IURLGenerator::class),
 			$this->createMock(\OCP\AppFramework\Utility\ITimeFactory::class), $users, null, null,
 			new DeckCapabilities($apps, 34, static fn (): bool => true));
-		$registry = new ToolRegistry([$module], $policy, $apps, $users, $logger);
+		$registry = new ToolRegistry([$module], $policy, $apps, $users, $logger, capabilities: new \OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry([\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::capability($module)], $logger));
 		$policy->setGrant('alice', 'deck', 'read', true);
 		self::assertContains('deck_read_card_dependencies', array_column($registry->list('alice'), 'name'));
 		$policy->setGrant('alice', 'deck', 'read', false);
@@ -96,7 +96,7 @@ final class DependencyCapabilitiesTest extends TestCase {
 	}
 	public function testPerUserDisabledAppHidesAndRefusesOtherwiseSupportedTool(): void {
 		$data = new \OCA\Mcp\Tests\Unit\InMemoryConfig();
-		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($data->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($data->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
 		$policy->setGrant('alice', 'deck', 'read', true);
 		$apps = $this->createMock(IAppManager::class);
 		$apps->method('getAppVersion')->willReturn('1.19.0');
@@ -107,10 +107,10 @@ final class DependencyCapabilitiesTest extends TestCase {
 		$container = $this->createMock(ContainerInterface::class);
 		$container->expects(self::never())->method('get');
 		$logger = $this->createMock(LoggerInterface::class);
-		$module = new DeckToolModule($container, $apps, $logger, $this->createMock(\OCP\IURLGenerator::class),
+		$module = \OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::build($container, $apps, $logger, $this->createMock(\OCP\IURLGenerator::class),
 			$this->createMock(\OCP\AppFramework\Utility\ITimeFactory::class), $users, null, null,
 			new DeckCapabilities($apps, 35, static fn (): bool => true));
-		$registry = new ToolRegistry([$module], $policy, $apps, $users, $logger);
+		$registry = new ToolRegistry([$module], $policy, $apps, $users, $logger, capabilities: new \OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry([\OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestModule::capability($module)], $logger));
 		self::assertNotContains('deck_read_card_dependencies', array_column($registry->list('alice'), 'name'));
 		$this->expectException(\InvalidArgumentException::class);
 		$registry->call('deck_read_card_dependencies', ['cardId' => 7], 'alice');
@@ -120,8 +120,8 @@ final class DependencyCapabilitiesTest extends TestCase {
 		try {
 			foreach (['en', 'pt_BR', 'es', 'de'] as $language) {
 				\OCA\Mcp\L10n\Translator::use(new \OCA\Mcp\Tests\Unit\L10n\JsonL10n($language));
-				$title = \OCA\Mcp\Tools\ToolPresentation::title('deck_read_card_dependencies');
-				$message = \OCA\Mcp\Tools\Deck\DeckMessages::dependencyGraphLimit();
+				$title = \OCA\Mcp\Mcp\Tools\ToolPresentation::title('deck_read_card_dependencies');
+				$message = \OCA\Mcp\Modules\Deck\Presentation\DeckDependencyMessages::dependencyGraphLimit();
 				if ($language === 'en') {
 					self::assertSame('Read Deck card dependencies', $title);
 				} else {

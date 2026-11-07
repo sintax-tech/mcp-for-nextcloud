@@ -8,10 +8,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
-use OCA\Mcp\Service\FileWritePolicy;
+use OCA\Mcp\Access\FileTypes\FileWritePolicy;
 use OCA\Mcp\Tests\Unit\InMemoryAppConfig;
-use OCA\Mcp\Tools\Common\FileTypeGuard;
-use OCA\Mcp\Tools\Files\ContentTypeGate;
+use OCA\Mcp\Access\FileTypes\FileTypeGuard;
+use OCA\Mcp\Modules\Files\Writing\ContentTypeGate;
 use OCP\IDBConnection;
 use PHPUnit\Framework\TestCase;
 

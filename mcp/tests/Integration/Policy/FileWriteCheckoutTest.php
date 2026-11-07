@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Policy;
 
-use OCA\Mcp\Checkout\CheckoutTokenStore;
-use OCA\Mcp\OAuth\TokenHasher;
-use OCA\Mcp\Service\FileWritePolicy;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutTokenStore;
+use OCA\Mcp\OAuth\Storage\TokenHasher;
+use OCA\Mcp\Access\FileTypes\FileWritePolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\{Http, LoginFactory, McpClient};

@@ -6,14 +6,14 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files\Deletion\Folder;
 
-use OCA\Mcp\Service\BackupLocation;
-use OCA\Mcp\Service\BackupSettingsDocument;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
-use OCA\Mcp\Service\Scope\FilesScope;
-use OCA\Mcp\Tools\Files\Deletion\DeleteBackendGate;
-use OCA\Mcp\Tools\Files\Deletion\DeleteNodeAdmission;
-use OCA\Mcp\Tools\Files\Deletion\Folder\DeleteFolderAdmission;
-use OCA\Mcp\Tools\Files\Deletion\Folder\DeleteFolderBoundary;
+use OCA\Mcp\Platform\Backups\BackupLocation;
+use OCA\Mcp\Platform\Backups\BackupSettingsDocument;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
+use OCA\Mcp\Access\ResourceScope\FilesScope;
+use OCA\Mcp\Modules\Files\Integration\DeleteBackendGate;
+use OCA\Mcp\Modules\Files\Deletion\DeleteNodeAdmission;
+use OCA\Mcp\Modules\Files\Deletion\Folder\DeleteFolderAdmission;
+use OCA\Mcp\Modules\Files\Deletion\Folder\DeleteFolderBoundary;
 use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\IHomeStorage;
@@ -80,7 +80,7 @@ final class FolderAdmissionFixture {
 		$this->guard = $mock(FilesAccessGuard::class);
 		$this->guard->method('isConfigurationValid')->willReturn(true);
 		$this->guard->method('assertVisible')->willReturnCallback(function ($node): void {
-			if (($this->flags[$node->getPath()] ?? '') === 'hidden') { throw new \OCA\Mcp\Tools\ToolFailure('Resource not found'); }
+			if (($this->flags[$node->getPath()] ?? '') === 'hidden') { throw new \OCA\Mcp\Mcp\Tools\Results\ToolFailure('Resource not found'); }
 		});
 		$shares = $mock(IManager::class);
 		$shares->method('getAccessList')->willReturnCallback(function ($node, $recursive, $current): array {

@@ -1,0 +1,265 @@
+✔ "With exceptions (N)" counts the people of the page with a real exception and shows only them when chosen
+✔ 428 and an uncertain 503 also reload; any other failure keeps the card message
+✔ A1: a preview read at another revision than the table warns, offers a reload and cannot be confirmed
+✔ A1: a table that moved after the preview is not acted on: the warning and the reload take over
+✔ A1: with a matching revision the command names exactly that revision; an unreadable preview falls back to the table
+✔ A5: a path answer names the folder an exclusion is inherited from, for the administrator
+✔ B1: after a generic error or a conflict the focus lands on a control of the toolbar, never on the page
+✔ B1: with no user on the page the toolbar itself takes the focus
+✔ B2/S5: an unavailable cell with an override shows its state, and one without says nothing more
+✔ B2: the row preview says that overrides in cells the table does not offer are removed too
+✔ B3: an answer that arrives after another user was inspected is dropped, never shown under that user
+✔ B3: an invalid stored value of “Can connect” gets the same “may give access” warning as a Deny
+✔ B4: a failed explanation is announced in the alert region
+✔ B4: without the matrix wrapper the toolbar goes before the table; with nothing attached nothing is installed
+✔ B7 review A1: an unreadable scope is marked "Scope unknown", never blank; an unrestricted one has no mark
+✔ B7 review B1: names are shown as they are, never HTML-escaped twice
+✔ B7 review B2: the undo waits while the pointer or the focus is on it, and the focus never falls to the page
+✔ B7 review B3: Save, Discard and Undo wait for the request in flight
+✔ B7 review B4: the same error twice in a row is announced twice
+✔ B7 review M1: a draft whose revision moved by a change this page did not make keeps its own revision and says it is stale
+✔ B7 review M1: discarding a stale draft loads the saved scope from the server
+✔ Escape closes the popover and gives the focus back to the cell
+✔ F1: "Can connect" No is always a deny, asked first; Yes goes back to inheritance only when it is inherited Yes
+✔ F1: group membership that changes within the same revision never turns a removal into kept access
+✔ F2: a 503 without uncertainty writes nothing: the preview and selection stay, no “removed” notice, and a retry is a click
+✔ F2: a failed second read falls back to marking every individual value as an exception
+✔ F2: a write that moves the revision without drawing the table again is classified again
+✔ F2: every new read of the table is classified again, even at the same revision and with the same users
+✔ F3: otherwise the focus goes back to the same control of the same cell of the same row
+✔ F3: the redraw waits while a row actions menu is open and comes when it closes
+✔ F4: the inspector gives the focus to the new "…" of the row when the old one is gone, or to its own button
+✔ F4: the redraw after a closing comes after the closing, not during it
+✔ F4: the redraw also waits while a drawer is open, and comes when it closes
+✔ F4: when the table was drawn again and the "…" that opened the drawer is gone, the focus goes to the new "…" of that row
+✔ F5: without a general block the verdict comes from the operations, never "can use" when nothing is allowed or known
+✔ F6: a "yes" drops the draft and opens the other person; the same person only changes tab and keeps it
+✔ F6: close() says whether the drawer closed, and a draft given up does not come back
+✔ F6: opening another person from the matrix while a draft is open asks first; a "no" keeps the draft and the focus
+✔ F6: the inspector does not open over a resource scope whose draft the administrator kept
+✔ Forms presets render their explicit names in the inspector consumer
+✔ Forms writing never implicitly grants response reading
+✔ G1: cleanup sends exact IDs, snapshot, revision and strict confirmation, then reloads
+✔ G1: conflict and unreadable cleanup responses reload without replay or false success
+✔ G1: unknown grants are shown as denied and cancellation sends no cleanup
+✔ I2: fixed polite/status and assertive/alert regions survive errors; successful retry clears the old error
+✔ L1: a blocked count the server computed is shown on its button
+✔ L1: the filter goes to the server with the search, starts again at page 1, and names its counts
+✔ L3: the list is one tab stop; arrows, Home and End move inside it and skip a row that cannot open
+✔ L4: on a narrow screen the list folds into a picker once a group is open, and the picker opens it again
+✔ L5: a new page starts at the top of the list, and only the page the server sent is drawn
+✔ M1/M2: abandoning edits requires confirmation and draft differences are visible before a preview
+✔ M3/M8: an HTML 503 retains its status, reloads the policy and gives a generic error
+✔ M5: group origin is part of the permission checkbox accessible name
+✔ M6: disabled group grant fields and actions describe their source diagnosis
+✔ M7: an invalid directory identity has a diagnostic row without an editable replacement ID
+✔ Mail levels are None, Accounts and folders, Messages, Messages and attachments, with flags, with moving, with drafts and with sending
+✔ O1: a group the matrix cannot filter by is said so, and neither the matrix nor the focus moves
+✔ O1: undoing a 503 without uncertainty keeps the table, offers the same undo again and does not reload
+✔ O2: a success that follows an error cancels the pending announcement of the error
+✔ O2: an identical error twice in a row is announced twice, and a replaced message never appears
+✔ P2 focus: the popover is brought into view whole when it opens; its height is capped and it scrolls inside
+✔ Polls creation is an explicit independent preset, protected reads do not acquire it
+✔ Polls has only None and Read, without a future Full grant
+✔ Polls presets come from admin-levels alone, and an unknown level grants nothing
+✔ Polls presets name every concession; isolated protected reads stay custom and legacy read stays read
+✔ R1: the intents queued behind a refused save are dropped, not sent on the reloaded page
+✔ R1: two quick toggles build the second list from the first answer and never turn A back on
+✔ S10: the inspector opens as a drawer from a row and from its button, closes on Escape, and only one drawer is open
+✔ S10: when one general check blocks every operation, one sentence says which and how to fix it
+✔ S10: without a general block the verdict says so, and each module has one line with its level, origin and block
+✔ S11: an individual value that repeats what the person inherits is said as the matrix says it, once the preview answers
+✔ S11: the inspector classifies one person with the same preview and rule, at the revision it read
+✔ S11: what was known about one person is never said about the next one
+✔ S11: when the preview cannot answer, or answers after another person was inspected, individual values stay "set for this person"
+✔ S12: the open drawer sits right under the Nextcloud header, and keeps no position once closed
+✔ S12: the open drawer sits right under the Nextcloud header, even when the page box it is placed in starts lower
+✔ S13: a gate that could not be evaluated is named, never reported as reached
+✔ S14 keyboard: removing an item moves the focus to the next one, not to the page
+✔ S14: a conflict never repeats the write; it shows the saved scope again
+✔ S14: an excluded folder is marked as having no effect, and folders are browsed level by level
+✔ S14: choosing resources and saving sends the revision, offers undo for ten seconds and refreshes the matrix
+✔ S14: each module shows its saved scope; a module the tools do not scope yet says so and cannot be saved
+✔ S14: refusals of the server are explained, and an inaccessible resource is marked
+✔ S14: the matrix mark is text, not color alone, and opens the scope of that user
+✔ S14: undo goes back through the receipt of the save
+✔ S4: only a real exception gets the person icon; a value that repeats the inheritance is drawn like what it repeats
+✔ S4: the review of redundant values resets exactly the cells it names, user by user, through the same preview and command
+✔ S5: in the operations view only a real exception is outlined; a repeated value is named "the same as inherited"
+✔ S5: the actions menu of a matrix row inspects that user, as the form does
+✔ S5: the toolbar carries no long help text: an Allow over an inherited Allow is chosen in the level popover
+✔ S6: the select-all box heads the selection column and keeps its accessible name
+✔ S6: the selection bar appears with a selection, sets a level or "Can connect" for exactly the selected people, and clears
+✔ S7/L2: one line per group: the ID only when it differs, a short end, and the state or grants in words in its name
+✔ S7: only the open group is marked with aria-current, and the list keeps the mark across pages of the detail
+✔ S7: the counter tells the range when there are more pages, and nothing when the list failed
+✔ S7: the notices of a group live in its detail, with the action they ask for
+✔ S8: "Not granted" pressed stays neutral, and only focus and selection take the theme colour
+✔ S8: "Operations" shows two-state boxes per operation, and a set that is no level reads as Custom with nothing pressed
+✔ S8: Review and save uses the group preview, shows a short review, Back returns, and Save sends the receipt once
+✔ S8: a change after the review drops the preview, so the old receipt can never be saved
+✔ S8: choosing a level puts exactly its operations in the draft, lower or higher, and keeps the focus on it
+✔ S8: each module shows the matrix levels, the chosen one pressed with a check mark, and "Not granted" first
+✔ S8: one sentence tells who wins over the group, unknown stays apart from zero, and the link filters the matrix
+✔ S8: the save bar counts the changes, Discard restores the saved policy, and nothing is sent without a review
+✔ S9: a draft that would be lost is asked about before the drawer closes, and a tab says it is not saved
+✔ S9: the drawer opens on a user from the matrix, shows one module per tab with its saved state, and gives the focus back
+✔ S9: the entry button of the Access tab opens the drawer on the user field
+✔ T10/T17: unknown eligibility is neither denied nor included in a bulk write, with a retry control
+✔ T14 D1 review F1 (re-read 2): a stored name with no-break spaces, which PHP's trim keeps, saved as the plain name is a change and is announced
+✔ T14 D1 review F1 (re-read): a real change with NUL at the ends is trimmed as the server trims it, committed and announced
+✔ T14 D1 review F1 (re-read): values the server trims with PHP's trim (NUL, VT, TAB, CR at the ends) change nothing, so nothing is announced
+✔ T14 D1 review F1: a save that changes nothing, followed by another administrator's change before the read-back, is never announced
+✔ T14 D1 review F1: a save that changes nothing, followed by another administrator's change before the read-back, is never announced
+✔ T14 D1 review F1: the default host list is stored as no list, so sending it again changes nothing
+✔ T14 D1/D2: a save of another block of this page is adopted, so the server-log groups are saved instead of refused
+✔ T14 D1: a move made elsewhere is still refused by the server, and the block says so
+✔ T14 D1: a refused save never drops the new client typed in; the card stays, says so, and the next save goes through
+✔ T14 D1: a save of another block of this page is adopted, so the new client is saved instead of refused
+✔ T14 D1: a save of another module of this panel moves the revision of a draft that was at the same one; the draft stays and is not stale
+✔ T14 D1: a save of this block is announced to the page only when it alone lies between the two revisions
+✔ T14 D1: a server-log save is announced only when it alone lies between the two revisions
+✔ T14 D1: a write of the matrix on this page moves the revision of the open scope; a move that does not start from it is ignored
+✔ T14 D1: on a refused save an edited saved client keeps its edits, and one deleted elsewhere comes back as a new card
+✔ T14 D5: every operation of the catalog has a translated column label, restore included
+✔ T16/F2: a known "Can connect" kept by a group says nobody is signed out; no “may”, no “will”
+✔ T16/F2: a known loss of "Can connect" says the connections are revoked and that undo does not reconnect
+✔ T16/F2: an unknown "after" is shown as Unknown, never as a value, and the reset is said to be refused
+✔ T16/F2: removing a Deny of Can connect never mentions a sign-out, only that access may come back
+✔ T16/F2: the preview never says “will be signed out”; Allow of Can connect says “may”, other cells say nothing
+✔ T16/T17: confirm current policy previews the saved set and PUT carries the preview receipt
+✔ T16: a membership conflict keeps the draft, reloads, and never repeats the write
+✔ T16: a preview built from a table that was redrawn is closed instead of acting on it
+✔ T16: an answer for a preview that was closed meanwhile is dropped
+✔ T16: an unreadable preview shows the conservative warning, says so, and does not block the reset
+✔ T16: any other failure reloads the saved values and says nothing was reset
+✔ T16: edits from an empty PHP array produce an object payload; saving requires a preview
+✔ T16: select-all covers the page and a reload keeps only users that are still on it
+✔ T16: the preview asks the server for the same commands, read only, and shows before → after per cell
+✔ T16: the reset cannot be confirmed while the preview loads, and the focus stays on the heading when it arrives
+✔ T16: the selected users are reset together; users without overrides are named and left out
+✔ T16: the user reset sends one inherit command per overridden cell, eligibility included, and nothing else
+✔ T16: while a change is saving the controls are locked and a second reset is refused
+✔ T17: 503 refuses the save, preserves draft and demands an explicit new preview
+✔ T17: an identical error twice in a row is cleared then written again
+✔ T17: focus goes to the preview heading, returns to the control on cancel and Escape, and the heading is reachable
+✔ T17: group search and pagination use their own endpoint and page state
+✔ T17: non-native and orphaned groups expose diagnosis, disabled grants and a clearing preview
+✔ T17: regions are fixed (status polite, alert assertive), nothing is announced in the clearing task, and repeats are announced again
+✔ T17: the list of exact targets scrolls, so it is a named region that the keyboard can focus
+✔ T17: the select boxes and buttons have accessible names that carry the user
+✔ T17: unknown and inherited cells are never reset targets
+✔ T17: unknown counters stay distinct from zero and the heading receives focus
+✔ T3: more cells or users than one command accepts is refused without a request
+✔ T4/T16/S5: a cell names its state and carries no button; one cell goes back to inheritance through the same preview
+✔ T4/T16: a 409 reloads once through the matrix handler and never repeats the write
+✔ T4: an uncertain 503 is the matrix’s reload path, not a retry offer
+✔ T4: the result is told only from the server answer, and the undo is the server receipt
+✔ T9: every operation shows its result, first gate and grant; unknown is never shown as allowed
+✔ Tables levels are None, Read and Full
+✔ a "no" at the confirmation sends nothing
+✔ a 409 rebuilds the cards from the server and never resends the stale list
+✔ a Mail policy stored before the attachments grant keeps its level without attachments
+✔ a cell under the sticky columns at the end is scrolled out from under them
+✔ a cell under the sticky columns at the start is scrolled out from under them
+✔ a column that is not sticky (the box and the "…" on a phone) is no obstacle, but the edge of the block is
+✔ a conflict saves nothing and leaves the reload to the conflict handler; another failure is reported and reloads
+✔ a conflict saves nothing, offers no undo and leaves the reload to the conflict handler
+✔ a control wider than the room left keeps its start in view
+✔ a copy the browser refuses is reported, and without a clipboard the item is off
+✔ a late tags success cannot clear a simultaneous policy warning
+✔ a level cell names the level in words and its origin by an icon, never by colour alone
+✔ a level for the selected people: one command of explicit allow and deny, only for who changes
+✔ a level read back from its own operations is that level, for every module
+✔ a level sends only the operations that change, and an operation it takes away is always an explicit deny
+✔ a page without individual values asks nothing
+✔ a preview read at another revision is not used: the level is sent as allow or deny
+✔ a refused or unavailable inspection shows no stale matrix
+✔ a refused or unavailable scope is said in the alert region, with nothing shown
+✔ a save of this page after a 409 uses the revision of the reload
+✔ a set that is no level is custom, and any unknown or missing value makes the module unknown
+✔ a user without individual values cannot be given back to inheritance
+✔ a visible cell is not moved, and a sticky cell never moves the block
+✔ all admin label consumers delegate to the loaded Polls helper and translations agree with Forms common results
+✔ all new UI strings have matching German, Spanish and Portuguese JS/JSON translations
+✔ an error or an answer read at another revision marks every individual value as an exception, never fewer
+✔ an individual value equal to what the person inherits is redundant; a different one, an invalid one or an unknown result is an exception
+✔ an operation the tiers do not name goes to the last tier, never to a lower level
+✔ an unavailable module keeps the no entry mark without a control, and an unknown one the dash with a retry
+✔ another failure is reported and the table reloaded with the saved values
+✔ asks the preview once for exactly the individual cells of the page, Can connect included, as inherit
+✔ cells are split so that no preview has more than 50 users or 2,500 cells
+✔ choosing a level cell opens its popover for that user and module
+✔ choosing the level the person already has sends nothing
+✔ client and server field errors preserve input; backend failure never announces saved
+✔ disabled items are skipped, a second click closes, and a redrawn table closes the menu
+✔ each action does what it says, and the menu closes first
+✔ each operation shows Inherit, Allow and Deny; the pressed one has a check mark besides aria-pressed
+✔ empty list warning and extensionless switch follow mode without discarding input
+✔ every module label map names Forms
+✔ every module label map names Polls
+✔ every module label map names Tables
+✔ every operation of the catalog sits in exactly one tier, and the tiers name nothing else
+✔ every save carries the revision of the page and adopts the one the server answers with
+✔ every way of granting asks before a Mail write: matrix cell, bulk, popover and group policy
+✔ explicit off saves without validating disabled invalid extensions or retaining the disabled switch
+✔ failed load does not expose an invented default or enable saving
+✔ giving an operation back to inheritance only happens when the preview says it is inherited allowed
+✔ granting a Mail write asks first, and only a Mail write does
+✔ inherit, one operation and the eligibility check
+✔ issue #11 matrix: HTTP error status survives unreadable JSON; other settings and preview keep parse errors
+✔ issue #11 matrix: an initial unreadable GET never invokes uncertain-save recovery
+✔ issue #11 matrix: an unreadable reset response uses real api uncertainty recovery, with no success or undo
+✔ issue #11 matrix: unreadable GET during recovery ends with load error and releases every lock
+✔ issue #11 matrix: unreadable bulk command offers no success or undo and restores busy/aria
+✔ issue #11 matrix: unreadable cell save reloads stored values without applying or announcing the response
+✔ issue #11 matrix: unreadable service save never says Saved and restores its control
+✔ issue #11 matrix: unreadable undo says uncertain and reloads once, without a success or retry offer
+✔ issue #11: HTTP 405 never reports a successful group save
+✔ issue #11: HTTP 412 never reports a successful group save
+✔ issue #11: HTTP 500 never reports a successful group save
+✔ issue #11: a non-JSON save response never reports success or discards the draft
+✔ issue #11: an unreadable preview does not offer a save or announce a successful review
+✔ issue #11: an unreadable scope save is unconfirmed and reloads the stored scope
+✔ issue #11: an unreadable undo response never claims the scope change was undone
+✔ issue #11: leaving after preview sends no PUT and never announces Saved
+✔ levels are None, Read, Edit and Full, or None and Read for a module with one operation
+✔ load and save use the canonical revision, CSRF token and returned persisted state
+✔ load failure requires an explicit mode and never writes automatically; off recovery preserves tag warning
+✔ missing Polls helper offers no preset and cannot grant an accumulated fallback
+✔ old Full cells do not acquire Delete; a new Full grant includes it explicitly
+✔ opening asks the preview for the individual cells only, then a level is one command from the table revision with an undo
+✔ partial creation message is translated consistently and differs from uncertain in all supported locales
+✔ personal settings: the user reads their own scope, and an unreadable scope is never shown as unrestricted
+✔ popover commands grant writes without results and grant results only when explicitly selected
+✔ real inspector DOM renders the protected labels, cumulative level and selector, not raw ids
+✔ real inspector DOM retains create as an independent custom combination with results and links
+✔ results labels use translation in all admin paths and combined presets have explicit names
+✔ revision conflict disables retry until explicit reload without discarding the draft
+✔ right to left, the start columns are on the right: a cell under them is scrolled out to the left
+✔ saves of the block go one at a time, the second with the revision the first answered
+✔ successful load and save use CSRF, busy state and verified canonical response
+✔ taking "Can connect" away asks first, in words, and sends nothing without a yes
+✔ textarea canonicalization agrees with server grammar, separators and maximum
+✔ the "…" button names the user, says it opens a menu, and opens the four actions in order
+✔ the Mail names apply only to the Mail tier count, and other modules keep the general names
+✔ the Mail tooltips describe the seven operations and nothing else
+✔ the actual admin loads the presets with the levels, before the grants, and all four consumers use the helper
+✔ the documented mapping: each level adds its tier to the one below
+✔ the existing admin permission page renders the deliberate grant and residual risk warning
+✔ the focus stays on the same control when the preview answer draws the popover again
+✔ the inherit button gives back exactly the individual values, and is off without any
+✔ the keyboard: arrows move, Home and End jump, Escape closes and gives the focus back, Tab closes
+✔ the line under a name: "Account disabled", "Connected" with an aria-hidden mark, or the user ID
+✔ the matrix block listens for the focus
+✔ the notice counts the redundant values of the page and the review opens the reset for exactly those cells
+✔ the origin of a module: invalid, then individual, then unknown group, then group, then default
+✔ the page-wide plan still leaves unknown values out (T10)
+✔ the redraw waits while the level popover is open and comes when it closes
+✔ the resource scope mark stays in the module cell
+✔ the table is drawn again once with the answer, and never asked again for the same revision and users
+✔ turning "Can connect" off for the selection says they are signed out; on does not
+✔ turning "Can connect" on never asks
+✔ while another change saves, or the table is being replaced, nothing is planned or asked
+✔ while the classification is pending the count is not shown and nobody is hidden; an empty result says so
+✔ who is left out and why is said, and nothing is sent when nobody changes

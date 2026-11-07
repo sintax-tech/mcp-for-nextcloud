@@ -7,6 +7,8 @@
 # a dev dependency in vendor/ or a missing script/style referenced with Util::addScript/addStyle.
 set -eu
 cd "$(dirname "$0")/.."
+# Refresh committed bundles from src/ when a manifest exists. With none, this writes nothing.
+php scripts/build_assets.php
 version=$(sed -n 's:.*<version>\(.*\)</version>.*:\1:p' appinfo/info.xml)
 stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT

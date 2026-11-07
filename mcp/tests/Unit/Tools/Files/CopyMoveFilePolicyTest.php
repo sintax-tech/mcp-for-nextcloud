@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
-use OCA\Mcp\Service\FileWritePolicy;
-use OCA\Mcp\Service\FileWritePolicyUnavailable;
-use OCA\Mcp\Tools\Common\FileTypeDenied;
-use OCA\Mcp\Tools\Common\FileTypeMessages;
+use OCA\Mcp\Access\FileTypes\FileWritePolicy;
+use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
+use OCA\Mcp\Access\FileTypes\FileTypeDenied;
+use OCA\Mcp\Access\FileTypes\FileTypeMessages;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 /** End-to-end module behavior for the single-file copy/move policy boundaries. */
@@ -154,10 +154,10 @@ final class CopyMoveFilePolicyTest extends FilesToolsTestCase {
 
 	/** The branch without an optional lock service still checks policy immediately before the copy. */
 	public function testUnlockedCopyBranchRechecksTheActualSink(): void {
-		$access = new \OCA\Mcp\Tools\Common\NodeAccessInfo($this->users, $this->tree->shareManager());
+		$access = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo($this->users, $this->tree->shareManager());
 		$fixture = CopyMovePolicyFixture::forTest($this);
 		$fixture->reads = [self::policy(), array_replace(self::policy(), ['extensions' => []])];
-		$reorganization = new \OCA\Mcp\Tools\Files\Reorganization($access, new \OCA\Mcp\Tools\Common\SharedWriteGuard($access),
+		$reorganization = \OCA\Mcp\Tests\Unit\Tools\Files\FilesCatalogWiring::reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access),
 			$this->report(), $this->users, fileTypes: $fixture->guard);
 		try {
 			$reorganization->copy($this->tree->rootFolder(), 'alice', '/input.txt', '/output.txt', null, false);

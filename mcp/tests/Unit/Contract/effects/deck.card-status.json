@@ -1,0 +1,367 @@
+[
+    {
+        "intent": {
+            "cardId": 7,
+            "done": true
+        },
+        "plan": {
+            "action": "deck_set_card_done",
+            "card": {
+                "id": 7,
+                "boardId": 2,
+                "title": "Status <card>",
+                "stackId": 3,
+                "done": null,
+                "archived": false,
+                "deletedAt": 0,
+                "lastModified": 12
+            },
+            "board": {
+                "id": 2,
+                "name": "Board",
+                "owner": "owner",
+                "ownerDisplayName": "Owner",
+                "archived": false,
+                "shared": true
+            },
+            "field": "done",
+            "before": null,
+            "after": true,
+            "changed": true,
+            "currentList": {
+                "id": 3,
+                "title": "Todo",
+                "isDoneColumn": false
+            },
+            "doneColumn": {
+                "id": 4,
+                "title": "Completed"
+            },
+            "automaticMove": true,
+            "lastModified": {
+                "current": 12,
+                "sent": null
+            },
+            "shared": [
+                {
+                    "id": 2,
+                    "name": "Board",
+                    "owner": "owner",
+                    "ownerDisplayName": "Owner",
+                    "archived": false,
+                    "shared": true
+                }
+            ],
+            "recoverable": true,
+            "message": "Complete the card at confirmation time (UTC).",
+            "limitations": "Nothing was changed. Confirm the shown state before writing. Native permissions and the plan are checked again, but another client can still change the card or done column between the final check and the native write. Completing and archiving are separate operations.",
+            "noDestination": null,
+            "plan_state": "a15628bad93ccbde713c7235b02b823400b2733f434cc8ba753c11f25308c824"
+        },
+        "text": "**Change card status in Deck**\n\nComplete the card at confirmation time (UTC).\nCard: Status \\<card\\>\nBoard: Board\nCurrent list: Todo\nDone column: Completed\nCurrent completion (Unix UTC): `null`\nCurrent archived state: `false`\nShared board owner: Owner\nNative completion will also move the card to: Completed\n\n- Nothing was changed. Confirm the shown state before writing. Native permissions and the plan are checked again, but another client can still change the card or done column between the final check and the native write. Completing and archiving are separate operations.",
+        "observed": {
+            "id": 7,
+            "boardId": 2,
+            "title": "Status <card>",
+            "stackId": 4,
+            "done": 124,
+            "archived": false,
+            "deletedAt": 0,
+            "lastModified": 12
+        },
+        "result": {
+            "confirmed": true,
+            "changed": true
+        }
+    },
+    {
+        "intent": {
+            "cardId": 7,
+            "done": false
+        },
+        "plan": {
+            "action": "deck_set_card_done",
+            "card": {
+                "id": 7,
+                "boardId": 2,
+                "title": "Status <card>",
+                "stackId": 3,
+                "done": 123,
+                "archived": false,
+                "deletedAt": 0,
+                "lastModified": 12
+            },
+            "board": {
+                "id": 2,
+                "name": "Board",
+                "owner": "owner",
+                "ownerDisplayName": "Owner",
+                "archived": false,
+                "shared": true
+            },
+            "field": "done",
+            "before": 123,
+            "after": false,
+            "changed": true,
+            "currentList": {
+                "id": 3,
+                "title": "Todo",
+                "isDoneColumn": false
+            },
+            "doneColumn": {
+                "id": 4,
+                "title": "Completed"
+            },
+            "automaticMove": false,
+            "lastModified": {
+                "current": 12,
+                "sent": null
+            },
+            "shared": [
+                {
+                    "id": 2,
+                    "name": "Board",
+                    "owner": "owner",
+                    "ownerDisplayName": "Owner",
+                    "archived": false,
+                    "shared": true
+                }
+            ],
+            "recoverable": true,
+            "message": "Reopen the card without returning it to its previous list.",
+            "limitations": "Nothing was changed. Confirm the shown state before writing. Native permissions and the plan are checked again, but another client can still change the card or done column between the final check and the native write. Completing and archiving are separate operations.",
+            "noDestination": null,
+            "plan_state": "dfcf92faed2f99d9204d11482b913df9c964fc5cff7640ee00705fdec91c463a"
+        },
+        "text": "**Change card status in Deck**\n\nReopen the card without returning it to its previous list.\nCard: Status \\<card\\>\nBoard: Board\nCurrent list: Todo\nDone column: Completed\nCurrent completion (Unix UTC): `123`\nCurrent archived state: `false`\nShared board owner: Owner\n\n- Nothing was changed. Confirm the shown state before writing. Native permissions and the plan are checked again, but another client can still change the card or done column between the final check and the native write. Completing and archiving are separate operations.",
+        "observed": {
+            "id": 7,
+            "boardId": 2,
+            "title": "Status <card>",
+            "stackId": 3,
+            "done": null,
+            "archived": false,
+            "deletedAt": 0,
+            "lastModified": 12
+        },
+        "result": {
+            "confirmed": true,
+            "changed": true
+        }
+    },
+    {
+        "intent": {
+            "cardId": 7,
+            "archived": true
+        },
+        "plan": {
+            "action": "deck_set_card_archived",
+            "card": {
+                "id": 7,
+                "boardId": 2,
+                "title": "Status <card>",
+                "stackId": 3,
+                "done": null,
+                "archived": false,
+                "deletedAt": 0,
+                "lastModified": 12
+            },
+            "board": {
+                "id": 2,
+                "name": "Board",
+                "owner": "owner",
+                "ownerDisplayName": "Owner",
+                "archived": false,
+                "shared": true
+            },
+            "field": "archived",
+            "before": false,
+            "after": true,
+            "changed": true,
+            "currentList": {
+                "id": 3,
+                "title": "Todo",
+                "isDoneColumn": false
+            },
+            "doneColumn": {
+                "id": 4,
+                "title": "Completed"
+            },
+            "automaticMove": false,
+            "lastModified": {
+                "current": 12,
+                "sent": null
+            },
+            "shared": [
+                {
+                    "id": 2,
+                    "name": "Board",
+                    "owner": "owner",
+                    "ownerDisplayName": "Owner",
+                    "archived": false,
+                    "shared": true
+                }
+            ],
+            "recoverable": true,
+            "message": "Archive the card without completing or deleting it.",
+            "limitations": "Nothing was changed. Confirm the shown state before writing. Native permissions and the plan are checked again, but another client can still change the card or done column between the final check and the native write. Completing and archiving are separate operations.",
+            "noDestination": null,
+            "plan_state": "22182a13830dec4b4f1a893d57f73d86b163ca4c52e0a2a518cfd28b1662f342"
+        },
+        "text": "**Change card status in Deck**\n\nArchive the card without completing or deleting it.\nCard: Status \\<card\\>\nBoard: Board\nCurrent list: Todo\nDone column: Completed\nCurrent completion (Unix UTC): `null`\nCurrent archived state: `false`\nShared board owner: Owner\n\n- Nothing was changed. Confirm the shown state before writing. Native permissions and the plan are checked again, but another client can still change the card or done column between the final check and the native write. Completing and archiving are separate operations.",
+        "observed": {
+            "id": 7,
+            "boardId": 2,
+            "title": "Status <card>",
+            "stackId": 3,
+            "done": null,
+            "archived": true,
+            "deletedAt": 0,
+            "lastModified": 12
+        },
+        "result": {
+            "confirmed": true,
+            "changed": true
+        }
+    },
+    {
+        "intent": {
+            "cardId": 7,
+            "archived": false
+        },
+        "plan": {
+            "action": "deck_set_card_archived",
+            "card": {
+                "id": 7,
+                "boardId": 2,
+                "title": "Status <card>",
+                "stackId": 3,
+                "done": null,
+                "archived": true,
+                "deletedAt": 0,
+                "lastModified": 12
+            },
+            "board": {
+                "id": 2,
+                "name": "Board",
+                "owner": "owner",
+                "ownerDisplayName": "Owner",
+                "archived": false,
+                "shared": true
+            },
+            "field": "archived",
+            "before": true,
+            "after": false,
+            "changed": true,
+            "currentList": {
+                "id": 3,
+                "title": "Todo",
+                "isDoneColumn": false
+            },
+            "doneColumn": {
+                "id": 4,
+                "title": "Completed"
+            },
+            "automaticMove": false,
+            "lastModified": {
+                "current": 12,
+                "sent": null
+            },
+            "shared": [
+                {
+                    "id": 2,
+                    "name": "Board",
+                    "owner": "owner",
+                    "ownerDisplayName": "Owner",
+                    "archived": false,
+                    "shared": true
+                }
+            ],
+            "recoverable": true,
+            "message": "Unarchive the card without changing its completion.",
+            "limitations": "Nothing was changed. Confirm the shown state before writing. Native permissions and the plan are checked again, but another client can still change the card or done column between the final check and the native write. Completing and archiving are separate operations.",
+            "noDestination": null,
+            "plan_state": "8eab814c1be8c668d0bcf8ef77fc6e0c8e68518eaaf968cfcd9bff600568ff67"
+        },
+        "text": "**Change card status in Deck**\n\nUnarchive the card without changing its completion.\nCard: Status \\<card\\>\nBoard: Board\nCurrent list: Todo\nDone column: Completed\nCurrent completion (Unix UTC): `null`\nCurrent archived state: `true`\nShared board owner: Owner\n\n- Nothing was changed. Confirm the shown state before writing. Native permissions and the plan are checked again, but another client can still change the card or done column between the final check and the native write. Completing and archiving are separate operations.",
+        "observed": {
+            "id": 7,
+            "boardId": 2,
+            "title": "Status <card>",
+            "stackId": 3,
+            "done": null,
+            "archived": false,
+            "deletedAt": 0,
+            "lastModified": 12
+        },
+        "result": {
+            "confirmed": true,
+            "changed": true
+        }
+    },
+    {
+        "partial": {
+            "confirmed": false,
+            "partial": true,
+            "warnings": [
+                "Completion is observed, but the planned automatic move is not confirmed. Read the card in Deck. This tool does not retry the move or undo the completion."
+            ]
+        }
+    },
+    {
+        "noop": {
+            "action": "deck_set_card_done",
+            "card": {
+                "id": 7,
+                "boardId": 2,
+                "title": "Status <card>",
+                "stackId": 3,
+                "done": 124,
+                "archived": false,
+                "deletedAt": 0,
+                "lastModified": 12
+            },
+            "board": {
+                "id": 2,
+                "name": "Board",
+                "owner": "owner",
+                "ownerDisplayName": "Owner",
+                "archived": false,
+                "shared": true
+            },
+            "field": "done",
+            "before": 124,
+            "after": true,
+            "changed": false,
+            "currentList": {
+                "id": 3,
+                "title": "Todo",
+                "isDoneColumn": false
+            },
+            "doneColumn": {
+                "id": 4,
+                "title": "Completed"
+            },
+            "automaticMove": false,
+            "lastModified": {
+                "current": 12,
+                "sent": null
+            },
+            "shared": [
+                {
+                    "id": 2,
+                    "name": "Board",
+                    "owner": "owner",
+                    "ownerDisplayName": "Owner",
+                    "archived": false,
+                    "shared": true
+                }
+            ],
+            "recoverable": true,
+            "message": "The card is already completed. This tool does not move completed cards or retry a partial move.",
+            "limitations": "Nothing was changed. Confirm the shown state before writing. Native permissions and the plan are checked again, but another client can still change the card or done column between the final check and the native write. Completing and archiving are separate operations.",
+            "noDestination": null,
+            "plan_state": "651c60438b93497624c4f3bb70482cdb16ca284e2c1cf1d5d90b548b1bef3ef6"
+        }
+    }
+]

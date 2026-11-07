@@ -8,7 +8,7 @@ declare(strict_types=1);
 /** Isolated real native service context probe; session changes are test-only, never a product impersonation mechanism. */
 use OCA\Forms\Db\Form;
 use OCA\Forms\Service\FormsService;
-use OCA\Mcp\Tools\Forms\FormsIdentityProbe;
+use OCA\Mcp\Modules\Forms\Integration\FormsIdentityProbe;
 use OCA\Mcp\Tests\Integration\Forms\FormsScene;
 use OCP\IUserManager;
 use OCP\IUserSession;
@@ -41,7 +41,7 @@ $resolved = Server::get(FormsService::class);
 if ($resolved !== $service) { throw new RuntimeException('Expected cached native service identity'); }
 $accepted = true;
 try { (new FormsIdentityProbe($session))->assertActor($resolved,FormsScene::READER); }
-catch (\OCA\Mcp\Tools\ToolFailure) { $accepted=false; }
+catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure) { $accepted=false; }
 $expected = !in_array($scenario,['null','other'],true);
 if ($accepted !== $expected) { throw new RuntimeException('Real captured context outcome differs'); }
 if ($accepted) { (new FormsIdentityProbe($session))->assertActor($resolved,FormsScene::READER); }

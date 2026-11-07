@@ -7,8 +7,14 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Forms\Creation;
 
-use OCA\Mcp\Tools\Forms\Creation\{CreateFormContext,CreateFormReadback,CreateFormRequest,CreateFormWriter,CreateNativeThrottle,FormsCreateNativeFactory,UploadFolderPrecheck};
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Modules\Forms\Creation\CreateFormContext;
+use OCA\Mcp\Modules\Forms\Integration\CreateFormReadback;
+use OCA\Mcp\Modules\Forms\Creation\CreateFormRequest;
+use OCA\Mcp\Modules\Forms\Creation\CreateFormWriter;
+use OCA\Mcp\Modules\Forms\Integration\CreateNativeThrottle;
+use OCA\Mcp\Modules\Forms\Integration\FormsCreateNativeFactory;
+use OCA\Mcp\Modules\Forms\Creation\UploadFolderPrecheck;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 
 /** Discriminates sinks versus readback, partial native batches, prechecks and stage revalidation. */

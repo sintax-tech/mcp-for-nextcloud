@@ -8,9 +8,12 @@ declare (strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Forms\Editing;
 
 require_once __DIR__ . '/EditingFixture.php';
-use OCA\Mcp\Tools\Forms\Editing\{EditContext, EditState, EditRequest, EditPlan};
+use OCA\Mcp\Modules\Forms\Editing\EditContext;
+use OCA\Mcp\Modules\Forms\Integration\EditState;
+use OCA\Mcp\Modules\Forms\Editing\EditRequest;
+use OCA\Mcp\Modules\Forms\Editing\EditPlan;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tools\{ArgumentValidationException, PlanState, ToolFailure};
+use OCA\Mcp\Mcp\{Tools\Validation\ArgumentValidationException, Confirmation\PlanState, Tools\Results\ToolFailure};
 use PHPUnit\Framework\TestCase;
 /** Discriminates complete inspection/plan budgets, native final-map validation and closed/expired versus archived/locked admission. */
 final class EditLimitsStateTest extends TestCase

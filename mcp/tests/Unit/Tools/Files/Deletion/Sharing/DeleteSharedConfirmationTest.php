@@ -7,12 +7,12 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files\Deletion\Sharing;
 
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
-use OCA\Mcp\Tools\Common\LockAwareWrite;
-use OCA\Mcp\Tools\Files\Deletion\DeleteEligibility;
-use OCA\Mcp\Tools\Files\Deletion\DeleteTrashVeto;
-use OCA\Mcp\Tools\Files\Deletion\Sharing\DeleteSharedConfirmation;
-use OCA\Mcp\Tools\Files\Handler\DeleteFileHandler;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
+use OCA\Mcp\Modules\Files\Deletion\DeleteEligibility;
+use OCA\Mcp\Modules\Files\Integration\DeleteTrashVeto;
+use OCA\Mcp\Modules\Files\Deletion\Sharing\DeleteSharedConfirmation;
+use OCA\Mcp\Modules\Files\Deletion\DeleteFileHandler;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 
 /** Shared acknowledgement is separate from confirm and is revalidated before any native attempt. */

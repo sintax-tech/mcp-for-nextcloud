@@ -1,0 +1,463 @@
+{
+    "tool": "tasks_complete_task",
+    "grant": "tasks.edit",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "uid": "concluir"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Complete task**\n\n- Calendar:\n  - Id: 1\n  - Uri: tasks\n  - Name: Tarefas\n  - Owner id: alice\n  - Owner principal: principals/users/alice\n  - Writable: yes\n  - Path: /remote.php/dav/calendars/alice/tasks/\n- Before:\n  - Uid: concluir\n  - Summary: Concluir\n  - Description: \n  - Status: NEEDS-ACTION\n  - Percent complete: 0\n  - Priority: 0\n  - Recurring: no\n  - Icalendar: BEGIN:VCALENDAR VERSION:2.0 PRODID:-//test//EN BEGIN:VTODO UID:concluir DTSTAMP:20261001T100000Z SUMMARY:Concluir STATUS:NEEDS-ACTION X-CUSTOM:keep END:VTODO END:VCALENDAR\n- After:\n  - Uid: concluir\n  - Summary: Concluir\n  - Description: \n  - Status: COMPLETED\n  - Percent complete: 100\n  - Priority: 0\n  - Completed: 2026-03-10T12:00:00+00:00\n  - Recurring: no\n  - Icalendar: BEGIN:VCALENDAR VERSION:2.0 PRODID:-//test//EN BEGIN:VTODO UID:concluir SUMMARY:Concluir X-CUSTOM:keep STATUS:COMPLETED PERCENT-COMPLETE:100 COMPLETED:20260310T120000Z DTSTAMP:20260310T120000Z LAST-MODIFIED:20260310T120000Z SEQUENCE:1 END:VTODO END:VCALENDAR\n- Recoverable: no\n- Timezone: America/Sao\\_Paulo\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "tasks_complete_task",
+                            "title": "Complete task",
+                            "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                            "action": "tasks_complete_task",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "tasks",
+                                "name": "Tarefas",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/tasks/"
+                            },
+                            "etag": "<etag#1>",
+                            "before": {
+                                "uid": "concluir",
+                                "summary": "Concluir",
+                                "description": "",
+                                "status": "NEEDS-ACTION",
+                                "percentComplete": 0,
+                                "priority": 0,
+                                "start": null,
+                                "due": null,
+                                "completed": null,
+                                "categories": [],
+                                "parent": null,
+                                "recurring": false,
+                                "icalendar": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:concluir\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Concluir\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                            },
+                            "after": {
+                                "uid": "concluir",
+                                "summary": "Concluir",
+                                "description": "",
+                                "status": "COMPLETED",
+                                "percentComplete": 100,
+                                "priority": 0,
+                                "start": null,
+                                "due": null,
+                                "completed": "2026-03-10T12:00:00+00:00",
+                                "categories": [],
+                                "parent": null,
+                                "recurring": false,
+                                "icalendar": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:concluir\r\nSUMMARY:Concluir\r\nX-CUSTOM:keep\r\nSTATUS:COMPLETED\r\nPERCENT-COMPLETE:100\r\nCOMPLETED:20260310T120000Z\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                            },
+                            "shared": [],
+                            "recoverable": false,
+                            "consequence": null,
+                            "timezone": "America/Sao_Paulo"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:editar\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Editar\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:concluir\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Concluir\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-1\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 1\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-2\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 2\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:projeto\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Projeto\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [],
+                "trash": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "uid": "concluir",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:editar\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Editar\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:concluir\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Concluir\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-1\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 1\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-2\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 2\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:projeto\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Projeto\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [],
+                "trash": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "uid": "concluir",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Complete task**\n\n- Calendar:\n  - Id: 1\n  - Uri: tasks\n  - Name: Tarefas\n  - Owner id: alice\n  - Owner principal: principals/users/alice\n  - Writable: yes\n  - Path: /remote.php/dav/calendars/alice/tasks/\n- Before:\n  - Uid: concluir\n  - Summary: Concluir\n  - Description: \n  - Status: NEEDS-ACTION\n  - Percent complete: 0\n  - Priority: 0\n  - Recurring: no\n  - Icalendar: BEGIN:VCALENDAR VERSION:2.0 PRODID:-//test//EN BEGIN:VTODO UID:concluir DTSTAMP:20261001T100000Z SUMMARY:Concluir STATUS:NEEDS-ACTION X-CUSTOM:keep END:VTODO END:VCALENDAR\n- After:\n  - Uid: concluir\n  - Summary: Concluir\n  - Description: \n  - Status: COMPLETED\n  - Percent complete: 100\n  - Priority: 0\n  - Completed: 2026-03-10T12:00:00+00:00\n  - Recurring: no\n  - Icalendar: BEGIN:VCALENDAR VERSION:2.0 PRODID:-//test//EN BEGIN:VTODO UID:concluir SUMMARY:Concluir X-CUSTOM:keep STATUS:COMPLETED PERCENT-COMPLETE:100 COMPLETED:20260310T120000Z DTSTAMP:20260310T120000Z LAST-MODIFIED:20260310T120000Z SEQUENCE:1 END:VTODO END:VCALENDAR\n- Recoverable: no\n- Timezone: America/Sao\\_Paulo\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "tasks_complete_task",
+                            "title": "Complete task",
+                            "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                            "action": "tasks_complete_task",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "tasks",
+                                "name": "Tarefas",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/tasks/"
+                            },
+                            "etag": "<etag#1>",
+                            "before": {
+                                "uid": "concluir",
+                                "summary": "Concluir",
+                                "description": "",
+                                "status": "NEEDS-ACTION",
+                                "percentComplete": 0,
+                                "priority": 0,
+                                "start": null,
+                                "due": null,
+                                "completed": null,
+                                "categories": [],
+                                "parent": null,
+                                "recurring": false,
+                                "icalendar": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:concluir\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Concluir\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                            },
+                            "after": {
+                                "uid": "concluir",
+                                "summary": "Concluir",
+                                "description": "",
+                                "status": "COMPLETED",
+                                "percentComplete": 100,
+                                "priority": 0,
+                                "start": null,
+                                "due": null,
+                                "completed": "2026-03-10T12:00:00+00:00",
+                                "categories": [],
+                                "parent": null,
+                                "recurring": false,
+                                "icalendar": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:concluir\r\nSUMMARY:Concluir\r\nX-CUSTOM:keep\r\nSTATUS:COMPLETED\r\nPERCENT-COMPLETE:100\r\nCOMPLETED:20260310T120000Z\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                            },
+                            "shared": [],
+                            "recoverable": false,
+                            "consequence": null,
+                            "timezone": "America/Sao_Paulo"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:editar\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Editar\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:concluir\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Concluir\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-1\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 1\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-2\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 2\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:projeto\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Projeto\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [],
+                "trash": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "The Tasks module keeps no plan fingerprint (no PlanState/PlanChanged). The plan returns the ETag of the task and the confirmed call carries it: when the task changed in between, the ETag no longer matches and the call is refused as a conflict, without a new plan (asserted outside the golden); the CalDAV write itself carries the read ETag as If-Match."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "uid": "concluir"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Complete task**\n\n- Calendar:\n  - Id: 1\n  - Uri: tasks\n  - Name: Tarefas\n  - Owner id: alice\n  - Owner principal: principals/users/alice\n  - Writable: yes\n  - Path: /remote.php/dav/calendars/alice/tasks/\n- Before:\n  - Uid: concluir\n  - Summary: Concluir\n  - Description: \n  - Status: NEEDS-ACTION\n  - Percent complete: 0\n  - Priority: 0\n  - Recurring: no\n  - Icalendar: BEGIN:VCALENDAR VERSION:2.0 PRODID:-//test//EN BEGIN:VTODO UID:concluir DTSTAMP:20261001T100000Z SUMMARY:Concluir STATUS:NEEDS-ACTION X-CUSTOM:keep END:VTODO END:VCALENDAR\n- After:\n  - Uid: concluir\n  - Summary: Concluir\n  - Description: \n  - Status: COMPLETED\n  - Percent complete: 100\n  - Priority: 0\n  - Completed: 2026-03-10T12:00:00+00:00\n  - Recurring: no\n  - Icalendar: BEGIN:VCALENDAR VERSION:2.0 PRODID:-//test//EN BEGIN:VTODO UID:concluir SUMMARY:Concluir X-CUSTOM:keep STATUS:COMPLETED PERCENT-COMPLETE:100 COMPLETED:20260310T120000Z DTSTAMP:20260310T120000Z LAST-MODIFIED:20260310T120000Z SEQUENCE:1 END:VTODO END:VCALENDAR\n- Recoverable: no\n- Timezone: America/Sao\\_Paulo\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "tasks_complete_task",
+                            "title": "Complete task",
+                            "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                            "action": "tasks_complete_task",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "tasks",
+                                "name": "Tarefas",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/tasks/"
+                            },
+                            "etag": "<etag#1>",
+                            "before": {
+                                "uid": "concluir",
+                                "summary": "Concluir",
+                                "description": "",
+                                "status": "NEEDS-ACTION",
+                                "percentComplete": 0,
+                                "priority": 0,
+                                "start": null,
+                                "due": null,
+                                "completed": null,
+                                "categories": [],
+                                "parent": null,
+                                "recurring": false,
+                                "icalendar": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:concluir\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Concluir\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                            },
+                            "after": {
+                                "uid": "concluir",
+                                "summary": "Concluir",
+                                "description": "",
+                                "status": "COMPLETED",
+                                "percentComplete": 100,
+                                "priority": 0,
+                                "start": null,
+                                "due": null,
+                                "completed": "2026-03-10T12:00:00+00:00",
+                                "categories": [],
+                                "parent": null,
+                                "recurring": false,
+                                "icalendar": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:concluir\r\nSUMMARY:Concluir\r\nX-CUSTOM:keep\r\nSTATUS:COMPLETED\r\nPERCENT-COMPLETE:100\r\nCOMPLETED:20260310T120000Z\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                            },
+                            "shared": [],
+                            "recoverable": false,
+                            "consequence": null,
+                            "timezone": "America/Sao_Paulo"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:editar\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Editar\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:concluir\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Concluir\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-1\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 1\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-2\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 2\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:projeto\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Projeto\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [],
+                "trash": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "uid": "concluir",
+                "confirm": true,
+                "etag": "<etag#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"uid\": \"concluir\",\n    \"summary\": \"Concluir\",\n    \"description\": \"\",\n    \"status\": \"COMPLETED\",\n    \"percentComplete\": 100,\n    \"priority\": 0,\n    \"start\": null,\n    \"due\": null,\n    \"completed\": \"2026-03-10T12:00:00+00:00\",\n    \"categories\": [],\n    \"parent\": null,\n    \"recurring\": false,\n    \"icalendar\": \"BEGIN:VCALENDAR\\r\\nVERSION:2.0\\r\\nPRODID:-//test//EN\\r\\nBEGIN:VTODO\\r\\nUID:concluir\\r\\nSUMMARY:Concluir\\r\\nX-CUSTOM:keep\\r\\nSTATUS:COMPLETED\\r\\nPERCENT-COMPLETE:100\\r\\nCOMPLETED:20260310T120000Z\\r\\nDTSTAMP:20260310T120000Z\\r\\nLAST-MODIFIED:20260310T120000Z\\r\\nSEQUENCE:1\\r\\nEND:VTODO\\r\\nEND:VCALENDAR\\r\\n\",\n    \"etag\": \"\\\"93735234071e684544d5a95fe3dfdd51\\\"\",\n    \"calendar\": \"/remote.php/dav/calendars/alice/tasks/\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:editar\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Editar\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:concluir\r\nSUMMARY:Concluir\r\nX-CUSTOM:keep\r\nSTATUS:COMPLETED\r\nPERCENT-COMPLETE:100\r\nCOMPLETED:20260310T120000Z\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-1\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 1\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-2\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 2\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:projeto\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Projeto\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [
+                    "update tasks/concluir.ics"
+                ],
+                "trash": []
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "uid": "concluir",
+                "confirm": true,
+                "etag": "<etag#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:editar\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Editar\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:concluir\r\nSUMMARY:Concluir\r\nX-CUSTOM:keep\r\nSTATUS:COMPLETED\r\nPERCENT-COMPLETE:100\r\nCOMPLETED:20260310T120000Z\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-1\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 1\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-2\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 2\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:projeto\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Projeto\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [
+                    "update tasks/concluir.ics"
+                ],
+                "trash": []
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "uid": "concluir"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:editar\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Editar\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:concluir\r\nSUMMARY:Concluir\r\nX-CUSTOM:keep\r\nSTATUS:COMPLETED\r\nPERCENT-COMPLETE:100\r\nCOMPLETED:20260310T120000Z\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-1\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 1\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-2\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 2\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:projeto\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Projeto\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [
+                    "update tasks/concluir.ics"
+                ],
+                "trash": []
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "uid": "concluir",
+                "confirm": true,
+                "etag": "<etag#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:editar\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Editar\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:concluir\r\nSUMMARY:Concluir\r\nX-CUSTOM:keep\r\nSTATUS:COMPLETED\r\nPERCENT-COMPLETE:100\r\nCOMPLETED:20260310T120000Z\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-1\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 1\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-2\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 2\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:projeto\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Projeto\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [
+                    "update tasks/concluir.ics"
+                ],
+                "trash": []
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "Tasks are CalDAV objects, not Files nodes: no system tag or excluded folder can hide a task list or a task from MCP (VisibilityGuard and FilesAccessGuard do not apply). What narrows the reachable lists is the administrator resource scope and the native ACL, not visibility."
+        }
+    ]
+}

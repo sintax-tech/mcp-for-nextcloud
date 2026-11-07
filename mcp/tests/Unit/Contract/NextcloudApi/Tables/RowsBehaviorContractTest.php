@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi\Tables;
 
-use OCA\Mcp\Service\Compat\AppEnablement;
-use OCA\Mcp\Tools\Tables\Rows\RowFilterDomain;
+use OCA\Mcp\Platform\Compat\AppEnablement;
+use OCA\Mcp\Modules\Tables\Reading\RowFilterDomain;
 use PHPUnit\Framework\TestCase;
 
 /**

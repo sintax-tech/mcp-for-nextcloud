@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Service;
 
-use OCA\Mcp\Service\BackupLocation;
-use OCA\Mcp\Service\BackupSettingsDocument;
+use OCA\Mcp\Platform\Backups\BackupLocation;
+use OCA\Mcp\Platform\Backups\BackupSettingsDocument;
 use OCP\IAppConfig;
 use PHPUnit\Framework\TestCase;
 

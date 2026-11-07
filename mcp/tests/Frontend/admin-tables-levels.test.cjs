@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Tests of the Tables column of the admin page: GrantPolicy::CATALOG offers Tables reading, creating and editing rows,
- * js/admin-levels.js gives it the three levels None, Read and Full (creating and editing together), and every place that
- * names a module names Tables.
+ * Tests of the Tables column of the admin page: GrantCatalog::CATALOG offers Tables reading, creating and editing rows,
+ * changing the structure and sharing, src/admin/admin-levels.js gives it the three levels None, Read and Full (every
+ * operation after reading together), and every place that names a module names Tables.
  */
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const fs = require('node:fs')
 const path = require('node:path')
 
@@ -24,35 +24,36 @@ const plain = (value) => JSON.parse(JSON.stringify(value))
 function levels() {
 	const context = { t: (app, text) => text }
 	for (const file of ['admin-levels.js']) {
-		vm.runInNewContext(fs.readFileSync(path.join(root, 'js', file), 'utf8'), context)
+		vm.runInNewContext(require('./AdminManifest.cjs').script(file), context)
 	}
 	return context.McpAdminLevels
 }
 
-/** @return {string[]} GrantPolicy::CATALOG['tables'], read from the PHP source */
+/** @return {string[]} GrantCatalog::CATALOG['tables'], read from the PHP source */
 function tablesOperations() {
-	const policy = fs.readFileSync(path.join(root, 'lib/Service/GrantPolicy.php'), 'utf8')
+	const policy = fs.readFileSync(path.join(root, 'lib/Access/Grants/GrantCatalog.php'), 'utf8')
 	const line = policy.match(/'tables' => \[([^\]]*)\]/)
-	assert.ok(line, 'the Tables entry of GrantPolicy::CATALOG')
-	return [...line[1].matchAll(/'(\w+)'/g)].map((match) => match[1])
+	assert.ok(line, 'the Tables entry of GrantCatalog::CATALOG')
+	return [...line[1].matchAll(/'([\w.]+)'/g)].map((match) => match[1])
 }
 
 test('Tables levels are None, Read and Full', () => {
 	const Levels = levels()
 	const operations = tablesOperations()
-	assert.deepEqual(operations, ['read', 'create', 'edit'])
+	assert.deepEqual(operations, ['read', 'create', 'edit', 'schema', 'share'])
 	assert.deepEqual(plain(Levels.levels('tables', operations)), ['none', 'read', 'full'])
 	assert.deepEqual(plain(Levels.operationsFor('tables', operations, 'read')), ['read'])
-	assert.deepEqual(plain(Levels.operationsFor('tables', operations, 'full')), ['read', 'create', 'edit'])
-	assert.equal(Levels.levelOf('tables', operations, { read: true, create: false, edit: false }), 'read')
-	assert.equal(Levels.levelOf('tables', operations, { read: true, create: true, edit: true }), 'full')
-	assert.equal(Levels.levelOf('tables', operations, { read: false, create: false, edit: false }), 'none')
-	assert.equal(Levels.levelOf('tables', operations, { read: false, create: true, edit: false }), 'custom', 'creating without reading is shown operation by operation')
+	assert.deepEqual(plain(Levels.operationsFor('tables', operations, 'full')), ['read', 'create', 'edit', 'schema', 'share'])
+	assert.equal(Levels.levelOf('tables', operations, { read: true, create: false, edit: false, schema: false, share: false }), 'read')
+	assert.equal(Levels.levelOf('tables', operations, { read: true, create: true, edit: true, schema: true, share: true }), 'full')
+	assert.equal(Levels.levelOf('tables', operations, { read: true, create: true, edit: true, schema: false, share: false }), 'custom', 'rows without structure and sharing is no longer Full')
+	assert.equal(Levels.levelOf('tables', operations, { read: false, create: false, edit: false, schema: false, share: false }), 'none')
+	assert.equal(Levels.levelOf('tables', operations, { read: false, create: true, edit: false, schema: false, share: false }), 'custom', 'creating without reading is shown operation by operation')
 })
 
 test('every module label map names Tables', () => {
 	for (const file of ['admin-grants.js', 'admin-groups.js', 'admin-inspector.js']) {
-		const source = fs.readFileSync(path.join(root, 'js', file), 'utf8')
+		const source = require('./AdminManifest.cjs').script(file)
 		assert.match(source, /tables: t\('mcp', 'Tables'\)/, file)
 	}
 })

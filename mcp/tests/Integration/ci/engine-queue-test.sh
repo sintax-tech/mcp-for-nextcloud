@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
 # Proves the queue in front of the engine (engine-queue.sh) without Colima: the runs are small sh processes driving the
-# same functions as run-local.sh, `run-local.sh --shutdown` runs for real, and colima/docker are fakes on a PATH that
+# same functions as run-local.sh; shutdown runs in copied sandbox checkouts, and colima/docker are fakes on a PATH that
 # does not reach the real ones. The lock, the queue and the engine flag live in a temporary directory
 # (MCP_IT_LOCK_DIR); the real ~/.colima/mcp-it.* are never touched.
 #
@@ -25,6 +25,9 @@ STATE="$ROOT/state"
 export MCP_IT_LOCK_DIR="$STATE/mcp-it.lock" MCP_IT_LOCK_POLL=0.2 MCP_IT_LOCK_TIMEOUT=60
 # One slot unless a scenario of slots sets more: the scenarios of one slot prove the behavior of the queue before slots.
 export MCP_IT_SLOTS=1
+export LOCK_LIB="$HERE/engine-locks.sh"
+export SHARED_LIB="$HERE/shared-engine.sh" SHARED_QUEUE_CHECKS="$HERE/shared-queue-checks.sh"
+. "$SHARED_QUEUE_CHECKS"
 export EVENTS ROOT FAKE_UP="$ROOT/colima-up" LIB="$HERE/engine-queue.sh"
 QUEUE="$STATE/mcp-it.queue"
 FLAG="$STATE/mcp-it.engine"
@@ -68,6 +71,8 @@ cat > "$ROOT/runner.sh" <<'EOF'
 set -eu
 NAME=$1
 . "$LIB"
+. "$LOCK_LIB"
+. "$SHARED_LIB"
 pause_at() {
     case " ${PAUSE:-} " in
         *" $1 "*) ;;
@@ -128,16 +133,15 @@ rm "$ROOT/in/$NAME"
 exit 0
 EOF
 # A run of the copy of run-local.sh before the ticket queue (other worktrees may still run it): its lock, queue and
-# engine code verbatim, only polling faster.
+# queue code with faster polling and shared-profile-safe lifecycle.
 cat > "$ROOT/legacy.sh" <<'LEGACY'
 #!/bin/sh
 set -eu
 NAME=$1
+. "$SHARED_QUEUE_CHECKS"
 LOCK_DIR="${MCP_IT_LOCK_DIR:-$HOME/.colima/mcp-it.lock}"
 QUEUE_DIR="${LOCK_DIR%.lock}.queue"
-ENGINE_FLAG="${LOCK_DIR%.lock}.engine"
 HAVE_LOCK=0
-STARTED_COLIMA=0
 log() {
     echo "[run-local $(date +%H:%M:%S)] $*"
 }
@@ -178,15 +182,7 @@ cleanup() {
     status=$?
     trap - EXIT INT TERM
     set +e
-    if [ "$STARTED_COLIMA" = 1 ]; then
-        if others_waiting; then
-            log "another run is waiting for the engine: Colima stays up for it, and it takes over stopping it"
-        else
-            log "stopping Colima (a run of this script started it and nobody is waiting)"
-            colima stop
-            rm -f "$ENGINE_FLAG"
-        fi
-    fi
+    shared_legacy_engine_release
     [ "$HAVE_LOCK" = 1 ] && rm -rf "$LOCK_DIR"
     exit "$status"
 }
@@ -199,11 +195,7 @@ inside=$(ls "$ROOT/in" | wc -l | tr -d ' ')
 [ "$inside" -le "${MCP_IT_SLOTS:-1}" ] || echo "OVERLAP $NAME ($inside inside)" >> "$EVENTS"
 echo "inside $inside" >> "$EVENTS"
 echo "got $NAME $$" >> "$EVENTS"
-if colima status >/dev/null 2>&1; then
-    [ -f "$ENGINE_FLAG" ] && STARTED_COLIMA=1
-else
-    STARTED_COLIMA=1
-    echo "$$" > "$ENGINE_FLAG"
+if ! colima status >/dev/null 2>&1; then
     colima start
 fi
 if [ "${2:-}" = wait ]; then
@@ -291,23 +283,13 @@ expect_no_residue() {
     [ -n "$(ls -A "$QUEUE" 2>/dev/null)" ] && fail "queue entries left behind: $(ls -A "$QUEUE")"
     [ -n "$(ls -A "$ROOT/in")" ] && fail "a run did not finish its work: $(ls "$ROOT/in")"
     [ -n "$(ls -d "$MCP_IT_LOCK_DIR".* "$STATE/mcp-it.engine.lock" 2>/dev/null)" ] && fail "slot or engine switch left behind"
-    [ -e "$FAKE_UP" ] && fail "the engine was left running"
+    grep -q "^colima stop" "$EVENTS" && fail "the shared engine was stopped"
     return 0
 }
 
-# expect_engine_once: started once, stopped once, by the last run served, after all work.
+# expect_engine_once: startup is shared once; every caller leaves the profile running.
 expect_engine_once() {
-    [ "$(grep -c '^colima start' "$EVENTS")" = 1 ] || fail "colima started $(grep -c '^colima start' "$EVENTS") times"
-    [ "$(grep -c '^colima stop' "$EVENTS")" = 1 ] || fail "colima stopped $(grep -c '^colima stop' "$EVENTS") times"
-    [ "$(tail -n 1 "$EVENTS" | cut -d' ' -f1-2)" = "colima stop" ] || fail "colima stopped before the last run finished"
-    stopper=$(tail -n 1 "$EVENTS" | cut -d' ' -f3)
-    if [ "$MCP_IT_SLOTS" = 1 ]; then
-        name=$(sed -n 's/^done //p' "$EVENTS" | tail -n 1)
-        [ "$stopper" = "$(sed -n "s/^got $name //p" "$EVENTS")" ] || fail "colima was not stopped by the last run"
-    else
-        # With slots the last to leave is the last through the engine switch, not the last to write "done".
-        grep -q "^got [^ ]* $stopper\$" "$EVENTS" || fail "colima was stopped by $stopper, which is not a run"
-    fi
+    expect_shared_engine_once
 }
 
 reset() {
@@ -321,17 +303,18 @@ reset() {
     : > "$EVENTS"
 }
 
-# (a) Runs are served in the order they arrived; the engine started by the first is handed down and stopped by the last.
+# (a) Runs are served in the order they arrived; the engine started by the first is reused and preserved by every run.
 scenario_fifo() {
     reset fifo
     hold_first A
     for name in B C D E F; do queue_up "$name"; done
+    wait_for_fifo_position_log
     touch "$ROOT/go.A"
     wait_all
     expect_served "A B C D E F"
     expect_engine_once
-    grep -q "queue position 5: the engine's 1 slot(s) are held by run(s) [0-9]*; waiting before this run: [0-9]* [0-9]* [0-9]* [0-9]*$" \
-        "$ROOT/out.F" || fail "F did not log its position and the runs ahead of it"
+    expect_fifo_position_log "$ROOT/out.F"
+    sh "$HERE/queue-position-test.sh"
     expect_no_residue
 }
 
@@ -409,11 +392,8 @@ scenario_traps() {
     expect_no_residue
 }
 
-# (c)(d) run-local.sh --shutdown queues like a run: it waits for A, sees B waiting, keeps the engine up and hands the
-# duty to stop it to B, which stops it. Alone, it stops the engine at once.
-# Mixed with the copy of the script before the queue: a legacy run holding the engine sees the tickets as waiting runs
-# and hands the engine over; a legacy waiter may cut in (it never looked at the queue), but the engine is never held
-# twice, the new runs keep their order among themselves, and the engine is stopped once, by the last run.
+# The old queue fixture also follows the shared profile lifecycle; the current local runner's shared-engine and
+# ownership-only shutdown contract is covered separately by shared-engine-test.sh.
 scenario_legacy() {
     reset legacy
     "$ROOT/legacy.sh" L1 wait > "$ROOT/out.L1" 2>&1 &
@@ -435,34 +415,8 @@ scenario_legacy() {
 }
 
 scenario_shutdown() {
-    reset shutdown
-    hold_first A
-    before=$(tickets)
-    sh "$HERE/run-local.sh" --shutdown > "$ROOT/out.S" 2>&1 &
-    S=$!
-    PIDS="$PIDS $S"
-    wait_for "the ticket of --shutdown" "[ \$(tickets) -gt $before ]"
-    queue_up B
-    touch "$ROOT/go.A"
-    status=0
-    wait "$S" || status=$?
-    [ "$status" = 0 ] || fail "--shutdown exited $status"
-    wait_all
-    expect_served "A B"
-    grep -q 'another run is waiting for the engine' "$ROOT/out.S" || fail "--shutdown did not hand the engine over"
-    events=$(grep -v -e '^inside' -e '^ready' "$EVENTS" | sed "s/ $S\$/ S/; s/^got \([AB]\) .*/got \1/; s/^colima \([a-z]*\) [0-9]*$/colima \1/" \
-        | tr '\n' ',')
-    # A starts the engine; --shutdown runs after A and before B; B takes over and stops it.
-    [ "$events" = "got A,colima status,colima start,done A,colima status S,got B,colima status,done B,colima stop," ] \
-        || fail "unexpected sequence $events"
-    expect_engine_once
-    expect_no_residue
-
-    reset shutdown-alone
-    touch "$FAKE_UP"
-    sh "$HERE/run-local.sh" --shutdown > "$ROOT/out.S" 2>&1 || fail "--shutdown alone failed"
-    grep -q 'stopping Colima' "$ROOT/out.S" || fail "--shutdown alone did not stop the engine"
-    expect_no_residue
+    sh "$HERE/shared-engine-test.sh"
+    sh "$HERE/cleanup-ownership-test.sh"
 }
 
 # stays_false <description> <shell condition>: the condition stays false for 1 s (five polls of the runs).
@@ -690,37 +644,9 @@ scenario_slots_dead() {
     expect_no_residue
 }
 
-# run-local.sh --shutdown with both slots in use: it waits in the queue, gets the slot A frees while B still works,
-# removes only what runs that are gone left (not B's container, not the fixed name of an old copy while B is there),
-# leaves the engine up for B, and B, the last to leave, stops it.
+# The current runner cleans only recorded resources and skips live owners regardless of occupied slots.
 scenario_slots_shutdown() {
-    reset slots-shutdown
-    export MCP_IT_SLOTS=2
-    hold_slots A B
-    gone=$(dead_pid)
-    printf 'mcp-it-nextcloud-20261022-000000-%s\nmcp-it-db-20261022-000000-%s\nmcp-it-nextcloud-20261022-000000-%s\n' \
-        "$RUN_B" "$gone" "$gone" > "$ROOT/containers"
-    printf 'mcp-it-20261022-000000-%s\nmcp-it-20261022-000000-%s\nmcp-it\n' "$RUN_B" "$gone" > "$ROOT/networks"
-    before=$(tickets)
-    sh "$HERE/run-local.sh" --shutdown > "$ROOT/out.S" 2>&1 &
-    S=$!
-    PIDS="$PIDS $S"
-    wait_for "the ticket of --shutdown" "[ \$(tickets) -gt $before ]"
-    stays_false "--shutdown acted with both slots in use" "grep -q '^docker\|^colima status $S' '$EVENTS'"
-    touch "$ROOT/go.A"
-    status=0
-    wait "$S" || status=$?
-    [ "$status" = 0 ] || fail "--shutdown exited $status"
-    grep -q 'another run is waiting for the engine' "$ROOT/out.S" || fail "--shutdown did not leave the engine to B"
-    [ -f "$FAKE_UP" ] || fail "--shutdown stopped the engine under B"
-    [ "$(sort "$ROOT/containers" | tr '\n' ' ')" = "mcp-it-nextcloud-20261022-000000-$RUN_B " ] \
-        || fail "containers left: $(cat "$ROOT/containers")"
-    [ "$(sort "$ROOT/networks" | tr '\n' ' ')" = "mcp-it mcp-it-20261022-000000-$RUN_B " ] \
-        || fail "networks left: $(cat "$ROOT/networks")"
-    touch "$ROOT/go.B"
-    wait_all
-    expect_engine_once
-    expect_no_residue
+    sh "$HERE/shared-engine-test.sh"
 }
 
 # Review round 2, B1: a slot left without a pid (its creator died between mkdir and writing it) is claimed over once it
@@ -763,7 +689,7 @@ scenario_chain() {
 }
 
 # Two slots next to a copy of the script from before the slots: the old run L holds slot 1 (its lock) and starts the
-# engine, the new run A works in slot 2; L leaves first and, seeing A's h.<pid>, leaves the engine up; A stops it.
+# engine, the new run A works in slot 2; both release their slots and leave the shared engine up.
 scenario_slots_legacy() {
     reset slots-legacy
     export MCP_IT_SLOTS=2
@@ -799,27 +725,12 @@ scenario_slots_legacy() {
     expect_no_residue
 }
 
-# Review round 3, M1: A and B leave together, each stopping right after it lets the engine switch go. The first through
-# the switch has already left its slot, so the second sees nobody and stops the engine: never left up with nobody.
+# Concurrent exits release both slots without touching the shared profile.
 scenario_finish_race() {
-    reset finish-race
-    export MCP_IT_SLOTS=2
-    hold_slots A B
-    # Armed once both are past engine_take, so the pause is the one after leaving, not after starting.
-    wait_for "A and B ready" "grep -q '^ready A' '$EVENTS' && grep -q '^ready B' '$EVENTS'"
-    touch "$ROOT/arm.A.after-switch" "$ROOT/arm.B.after-switch"
-    touch "$ROOT/go.A"
-    wait_for "A past the switch" "[ -f '$ROOT/at.A.after-switch' ]"
-    touch "$ROOT/go.B"
-    wait_for "B past the switch" "[ -f '$ROOT/at.B.after-switch' ]"
-    touch "$ROOT/resume.A.after-switch" "$ROOT/resume.B.after-switch"
-    wait_all
-    expect_engine_once
-    expect_no_residue
+    shared_queue_finish_race
 }
 
-# Review round 3, M2: colima start fails. The cleanup keeps the switch it already holds (no wait for itself), stops
-# what the failed start left and removes the flag; the run fails at once, nothing is left.
+# Startup failures and TERM release the queue and engine switch while preserving the shared profile.
 scenario_start_error() {
     reset start-error
     export MCP_IT_SLOTS=2
@@ -832,7 +743,7 @@ scenario_start_error() {
     [ "$status" != 0 ] || fail "A did not fail when colima start failed"
     [ $(($(date +%s) - started)) -lt 10 ] || fail "A waited for its own engine switch"
     grep -q 'Timed out' "$ROOT/out.A" && fail "A timed out on its own engine switch"
-    [ "$(grep -c '^colima stop' "$EVENTS")" = 1 ] || fail "the failed start was not stopped"
+    expect_engine_once
     # The runner marks itself inside before engine_take; it fails there on purpose and never leaves the mark.
     rm -f "$ROOT/in/A"
     expect_no_residue
@@ -841,14 +752,14 @@ scenario_start_error() {
     reset start-term
     export MCP_IT_SLOTS=2
     start A
-    wait_for "A starting Colima" "grep -q 'starting Colima' '$ROOT/out.A' 2>/dev/null"
+    wait_for "A starting Colima" "grep -q 'starting shared Colima' '$ROOT/out.A' 2>/dev/null"
     kill -TERM "$RUN_A"
     status=0
     wait "$RUN_A" || status=$?
     PIDS=""
     [ "$status" = 143 ] || fail "A exited $status after SIGTERM during colima start"
     grep -q 'Timed out' "$ROOT/out.A" && fail "A timed out on its own engine switch"
-    [ "$(grep -c '^colima stop' "$EVENTS")" = 1 ] || fail "the engine started under TERM was not stopped"
+    expect_engine_once
     rm -f "$ROOT/in/A"
     expect_no_residue
 }

@@ -1,0 +1,470 @@
+{
+    "tool": "files_version_restore",
+    "grant": "files.restore",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "path": "/Docs/old.md",
+                "version": "1759100000"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Restore file version**\n\nBring **/Docs/old.md** back to the version of 09/28/2025 22:53.\n\n- Size: 13 B → 13 B\n- The current content is replaced by that version.\n- A copy of the current file is saved first in **/MCP backups**.\n\nNothing was changed. Confirm to execute.\n\n*After your approval a copy of the current content is kept in the backup folder and the content of the version below is written back to the file; Nextcloud versioning applies as to any edit, according to its policy.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_version_restore",
+                            "title": "Restore file version",
+                            "action": "files_version_restore",
+                            "path": "/Docs/old.md",
+                            "version": {
+                                "revision": "1759100000",
+                                "timestamp": "<timestamp#1>",
+                                "size": 13,
+                                "mime": "text/markdown",
+                                "name": "old.md"
+                            },
+                            "timezone": "UTC",
+                            "current": {
+                                "etag": "<etag#1>",
+                                "size": 13
+                            },
+                            "backup": "/MCP backups",
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": true,
+                            "consequence": "The previous content stays available in the backup folder. Nextcloud may also keep versions of the file, according to its versioning policy.",
+                            "message": "Nothing was changed. After your approval a copy of the current content is kept in the backup folder and the content of the version below is written back to the file; Nextcloud versioning applies as to any edit, according to its policy."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Docs": "dir #101",
+                        "/alice/files/Docs/old.md": "#102 current bytes"
+                    },
+                    "ops": []
+                },
+                "tokens": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "path": "/Docs/old.md",
+                "version": "1759100000",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Docs": "dir #101",
+                        "/alice/files/Docs/old.md": "#102 current bytes"
+                    },
+                    "ops": []
+                },
+                "tokens": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "path": "/Docs/old.md",
+                "version": "1759100000",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Restore file version**\n\nBring **/Docs/old.md** back to the version of 09/28/2025 22:53.\n\n- Size: 13 B → 13 B\n- The current content is replaced by that version.\n- A copy of the current file is saved first in **/MCP backups**.\n\nNothing was changed. Confirm to execute.\n\n*After your approval a copy of the current content is kept in the backup folder and the content of the version below is written back to the file; Nextcloud versioning applies as to any edit, according to its policy.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_version_restore",
+                            "title": "Restore file version",
+                            "action": "files_version_restore",
+                            "path": "/Docs/old.md",
+                            "version": {
+                                "revision": "1759100000",
+                                "timestamp": "<timestamp#1>",
+                                "size": 13,
+                                "mime": "text/markdown",
+                                "name": "old.md"
+                            },
+                            "timezone": "UTC",
+                            "current": {
+                                "etag": "<etag#1>",
+                                "size": 13
+                            },
+                            "backup": "/MCP backups",
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": true,
+                            "consequence": "The previous content stays available in the backup folder. Nextcloud may also keep versions of the file, according to its versioning policy.",
+                            "message": "Nothing was changed. After your approval a copy of the current content is kept in the backup folder and the content of the version below is written back to the file; Nextcloud versioning applies as to any edit, according to its policy."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Docs": "dir #101",
+                        "/alice/files/Docs/old.md": "#102 current bytes"
+                    },
+                    "ops": []
+                },
+                "tokens": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "Version restore uses the supplied ETag rather than a PlanState."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "path": "/Docs/old.md",
+                "version": "1759100000"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Restore file version**\n\nBring **/Docs/old.md** back to the version of 09/28/2025 22:53.\n\n- Size: 13 B → 13 B\n- The current content is replaced by that version.\n- A copy of the current file is saved first in **/MCP backups**.\n\nNothing was changed. Confirm to execute.\n\n*After your approval a copy of the current content is kept in the backup folder and the content of the version below is written back to the file; Nextcloud versioning applies as to any edit, according to its policy.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_version_restore",
+                            "title": "Restore file version",
+                            "action": "files_version_restore",
+                            "path": "/Docs/old.md",
+                            "version": {
+                                "revision": "1759100000",
+                                "timestamp": "<timestamp#1>",
+                                "size": 13,
+                                "mime": "text/markdown",
+                                "name": "old.md"
+                            },
+                            "timezone": "UTC",
+                            "current": {
+                                "etag": "<etag#1>",
+                                "size": 13
+                            },
+                            "backup": "/MCP backups",
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": true,
+                            "consequence": "The previous content stays available in the backup folder. Nextcloud may also keep versions of the file, according to its versioning policy.",
+                            "message": "Nothing was changed. After your approval a copy of the current content is kept in the backup folder and the content of the version below is written back to the file; Nextcloud versioning applies as to any edit, according to its policy."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Docs": "dir #101",
+                        "/alice/files/Docs/old.md": "#102 current bytes"
+                    },
+                    "ops": []
+                },
+                "tokens": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "path": "/Docs/old.md",
+                "version": "1759100000",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"path\": \"/Docs/old.md\",\n    \"size\": 13,\n    \"etag\": \"e102+\",\n    \"access\": {\n        \"scope\": \"personal\",\n        \"owner\": \"alice\",\n        \"ownerDisplayName\": \"Alice\",\n        \"permissions\": {\n            \"read\": true,\n            \"update\": true,\n            \"create\": true,\n            \"delete\": true,\n            \"share\": true\n        }\n    },\n    \"backup\": \"/MCP backups/Docs/old.md.20260921-141320.bak\",\n    \"version\": \"1759100000\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Docs": "dir #101",
+                        "/alice/files/Docs/old.md": "#102 version bytes",
+                        "/alice/files/MCP backups": "dir #103",
+                        "/alice/files/MCP backups/Docs": "dir #104",
+                        "/alice/files/MCP backups/Docs/old.md.20260921-141320.bak": "#105 current bytes"
+                    },
+                    "ops": [
+                        "mkdir /alice/files/MCP backups",
+                        "mkdir /alice/files/MCP backups/Docs",
+                        "create /alice/files/MCP backups/Docs/old.md.20260921-141320.bak",
+                        "write /alice/files/MCP backups/Docs/old.md.20260921-141320.bak",
+                        "write /alice/files/Docs/old.md"
+                    ]
+                },
+                "tokens": []
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "path": "/Docs/old.md",
+                "version": "1759100000",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Docs": "dir #101",
+                        "/alice/files/Docs/old.md": "#102 version bytes",
+                        "/alice/files/MCP backups": "dir #103",
+                        "/alice/files/MCP backups/Docs": "dir #104",
+                        "/alice/files/MCP backups/Docs/old.md.20260921-141320.bak": "#105 current bytes"
+                    },
+                    "ops": [
+                        "mkdir /alice/files/MCP backups",
+                        "mkdir /alice/files/MCP backups/Docs",
+                        "create /alice/files/MCP backups/Docs/old.md.20260921-141320.bak",
+                        "write /alice/files/MCP backups/Docs/old.md.20260921-141320.bak",
+                        "write /alice/files/Docs/old.md"
+                    ]
+                },
+                "tokens": []
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "path": "/Docs/old.md",
+                "version": "1759100000"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Docs": "dir #101",
+                        "/alice/files/Docs/old.md": "#102 version bytes",
+                        "/alice/files/MCP backups": "dir #103",
+                        "/alice/files/MCP backups/Docs": "dir #104",
+                        "/alice/files/MCP backups/Docs/old.md.20260921-141320.bak": "#105 current bytes"
+                    },
+                    "ops": [
+                        "mkdir /alice/files/MCP backups",
+                        "mkdir /alice/files/MCP backups/Docs",
+                        "create /alice/files/MCP backups/Docs/old.md.20260921-141320.bak",
+                        "write /alice/files/MCP backups/Docs/old.md.20260921-141320.bak",
+                        "write /alice/files/Docs/old.md"
+                    ]
+                },
+                "tokens": []
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "path": "/Docs/old.md",
+                "version": "1759100000",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Docs": "dir #101",
+                        "/alice/files/Docs/old.md": "#102 version bytes",
+                        "/alice/files/MCP backups": "dir #103",
+                        "/alice/files/MCP backups/Docs": "dir #104",
+                        "/alice/files/MCP backups/Docs/old.md.20260921-141320.bak": "#105 current bytes"
+                    },
+                    "ops": [
+                        "mkdir /alice/files/MCP backups",
+                        "mkdir /alice/files/MCP backups/Docs",
+                        "create /alice/files/MCP backups/Docs/old.md.20260921-141320.bak",
+                        "write /alice/files/MCP backups/Docs/old.md.20260921-141320.bak",
+                        "write /alice/files/Docs/old.md"
+                    ]
+                },
+                "tokens": []
+            }
+        },
+        {
+            "step": "hidden",
+            "arguments": {
+                "path": "/Docs/old.md",
+                "version": "1759100000",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Docs": "dir #101",
+                        "/alice/files/Docs/old.md": "#102 version bytes",
+                        "/alice/files/MCP backups": "dir #103",
+                        "/alice/files/MCP backups/Docs": "dir #104",
+                        "/alice/files/MCP backups/Docs/old.md.20260921-141320.bak": "#105 current bytes"
+                    },
+                    "ops": [
+                        "mkdir /alice/files/MCP backups",
+                        "mkdir /alice/files/MCP backups/Docs",
+                        "create /alice/files/MCP backups/Docs/old.md.20260921-141320.bak",
+                        "write /alice/files/MCP backups/Docs/old.md.20260921-141320.bak",
+                        "write /alice/files/Docs/old.md"
+                    ]
+                },
+                "tokens": []
+            }
+        }
+    ]
+}

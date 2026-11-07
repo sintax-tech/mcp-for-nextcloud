@@ -5,10 +5,12 @@
  */
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Forms\Creation;
-use OCA\Mcp\Tools\Forms\Creation\{CreateFormContext,CreatePolicyBoundary,FormsCreateNativeFactory};
-use OCA\Mcp\Tools\Forms\FormsServices;
-use OCA\Mcp\Service\GuestRestrictions;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Modules\Forms\Creation\CreateFormContext;
+use OCA\Mcp\Modules\Forms\Creation\CreatePolicyBoundary;
+use OCA\Mcp\Modules\Forms\Integration\FormsCreateNativeFactory;
+use OCA\Mcp\Modules\Forms\Integration\FormsServices;
+use OCA\Mcp\Access\Guests\GuestRestrictions;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 
 /** Separates stage admission gates from the native-constructor runtime proofs. */

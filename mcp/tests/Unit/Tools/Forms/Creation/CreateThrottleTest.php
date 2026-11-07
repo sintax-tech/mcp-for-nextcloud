@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Forms\Creation;
-use OCA\Mcp\Tools\Forms\Creation\CreateNativeThrottle;
+use OCA\Mcp\Modules\Forms\Integration\CreateNativeThrottle;
 use PHPUnit\Framework\TestCase;
 require_once __DIR__ . '/NativeNoSuchFormException.php';
 

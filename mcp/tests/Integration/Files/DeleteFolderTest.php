@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Files;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Exclusion\ExclusionTestCase;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
 use OCA\Mcp\Tests\Integration\Support\McpClient;
@@ -40,7 +40,7 @@ final class DeleteFolderTest extends ExclusionTestCase {
 			self::assertTrue($this->exists(self::ALICE, $path . '/nested/a.txt'));
 			$reply = $client->write('files_delete', ['path' => $path, 'id' => $plan->structured()['id'], 'etag' => $plan->structured()['etag']]);
 			self::assertTrue($reply->ok(), $reply->describe());
-			self::assertSame('removed_destination_unconfirmed', $reply->json()['status']);
+			DeleteReceiptAssertions::observedInOwnTrash($reply->json());
 			self::assertFalse($this->exists(self::ALICE, $path));
 			$session = Server::get(\OCP\IUserSession::class);
 			$before = $session->getUser();
@@ -95,7 +95,7 @@ final class DeleteFolderTest extends ExclusionTestCase {
 		self::assertTrue($reply->isError(), $reply->describe());
 		self::assertSame('after change', $this->node(self::ALICE, $path . '/child.txt')->getContent());
 		self::assertTrue($this->mcp()->write('files_delete', ['path' => '/'])->isError());
-		$writer = Server::get(\OCA\Mcp\Service\Policy\PolicyWriter::class);
+		$writer = Server::get(\OCA\Mcp\Access\Policy\PolicyWriter::class);
 		$state = Server::get(\OCA\Mcp\Db\PolicyStateMapper::class);
 		$writer->setResourceScope($state->state()['revision'], 'admin', self::ALICE, 'files', [(string)$file->getParent()->getId()]);
 		try {
@@ -125,7 +125,7 @@ final class DeleteFolderTest extends ExclusionTestCase {
 				};
 				$dispatcher->addListener($name, $listener);
 				try {
-					$result = Server::get(GrantPolicy::class)->within(self::ALICE, fn () => Server::get(\OCA\Mcp\Tools\ToolRegistry::class)->call('files_delete', ['path' => $this->path('home', $leaf), 'confirm' => true], self::ALICE));
+					$result = Server::get(GrantPolicy::class)->within(self::ALICE, fn () => Server::get(\OCA\Mcp\Mcp\Tools\ToolRegistry::class)->call('files_delete', ['path' => $this->path('home', $leaf), 'confirm' => true], self::ALICE));
 					self::assertTrue($result['isError'] ?? false, json_encode($result));
 					$data = json_decode($result['content'][0]['text'], true);
 					self::assertSame($partial ? 'uncertain' : 'preserved', $data['status']);

@@ -12,10 +12,10 @@ use OCA\Deck\BadRequestException;
 use OCA\Deck\Exceptions\ConflictException;
 use OCA\Deck\NoPermissionException;
 use OCA\Deck\StatusException;
-use OCA\Mcp\Tools\Deck\DeckConflictException;
-use OCA\Mcp\Tools\Deck\DeckErrors;
-use OCA\Mcp\Tools\Deck\DeckMessages;
-use OCA\Mcp\Tools\Deck\DeckSessionException;
+use OCA\Mcp\Modules\Deck\Failures\DeckConflictException;
+use OCA\Mcp\Modules\Deck\Integration\DeckErrors;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
+use OCA\Mcp\Modules\Deck\Failures\DeckSessionException;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\MultipleObjectsReturnedException;
 use PHPUnit\Framework\TestCase;
@@ -32,16 +32,16 @@ final class DeckErrorsTest extends TestCase {
 	 */
 	public static function mappingProvider(): array {
 		return [
-			'no permission' => [new NoPermissionException('Permission denied'), DeckMessages::errorNotFoundOrForbidden()],
-			'does not exist' => [new DoesNotExistException('gone'), DeckMessages::errorNotFoundOrForbidden()],
-			'multiple objects' => [new MultipleObjectsReturnedException('ambiguous'), DeckMessages::errorNotFoundOrForbidden()],
-			'archived status' => [new StatusException('board archived'), DeckMessages::errorNotAllowed()],
-			'archived item' => [new ArchivedItemException('card archived'), DeckMessages::errorNotAllowed()],
-			'bad request' => [new BadRequestException('too long'), DeckMessages::errorInvalid()],
-			'conflict' => [new ConflictException('stale'), DeckMessages::errorConflict()],
-			'own conflict' => [new DeckConflictException(DeckMessages::errorConflict()), DeckMessages::errorConflict()],
-			'session not bound' => [new DeckSessionException('session user differs'), DeckMessages::errorSessionNotBound()],
-			'unexpected' => [new RuntimeException('connection to 10.0.0.5 refused'), DeckMessages::errorGeneric()],
+			'no permission' => [new NoPermissionException('Permission denied'), \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotFoundOrForbidden()],
+			'does not exist' => [new DoesNotExistException('gone'), \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotFoundOrForbidden()],
+			'multiple objects' => [new MultipleObjectsReturnedException('ambiguous'), \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotFoundOrForbidden()],
+			'archived status' => [new StatusException('board archived'), \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotAllowed()],
+			'archived item' => [new ArchivedItemException('card archived'), \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotAllowed()],
+			'bad request' => [new BadRequestException('too long'), \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorInvalid()],
+			'conflict' => [new ConflictException('stale'), \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorConflict()],
+			'own conflict' => [new DeckConflictException(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorConflict()), \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorConflict()],
+			'session not bound' => [new DeckSessionException('session user differs'), \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorSessionNotBound()],
+			'unexpected' => [new RuntimeException('connection to 10.0.0.5 refused'), \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorGeneric()],
 		];
 	}
 
@@ -60,7 +60,7 @@ final class DeckErrorsTest extends TestCase {
 	public function testGenericMessageLeaksNoDetail(): void {
 		$message = DeckErrors::messageFor(new RuntimeException('SELECT * FROM deck_cards failed at /srv/data'));
 
-		self::assertSame(DeckMessages::errorGeneric(), $message);
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorGeneric(), $message);
 		self::assertStringNotContainsString('deck_cards', $message);
 		self::assertStringNotContainsString('/srv/data', $message);
 	}

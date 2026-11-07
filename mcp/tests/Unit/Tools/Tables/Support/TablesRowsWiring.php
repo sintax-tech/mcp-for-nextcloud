@@ -7,11 +7,11 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Tables\Support;
 
-use OCA\Mcp\Tools\PlanState;
-use OCA\Mcp\Tools\Tables\Columns\ColumnLookup;
-use OCA\Mcp\Tools\Tables\Handler\ListRowsHandler;
-use OCA\Mcp\Tools\Tables\Rows\RowReader;
-use OCA\Mcp\Tools\Tables\Rows\TablesSessionGuard;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Modules\Tables\Reading\ColumnLookup;
+use OCA\Mcp\Modules\Tables\Reading\ListRowsHandler;
+use OCA\Mcp\Modules\Tables\Reading\RowReader;
+use OCA\Mcp\Modules\Tables\TablesSessionGuard;
 use OCP\IConfig;
 use OCP\IUser;
 use OCP\IUserSession;

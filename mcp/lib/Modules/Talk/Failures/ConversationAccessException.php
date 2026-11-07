@@ -1,0 +1,25 @@
+<?php
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+declare(strict_types=1);
+
+namespace OCA\Mcp\Modules\Talk\Failures;
+
+use RuntimeException;
+
+/**
+ * A conversation exists but this user cannot use it for this operation. Carries the cause only for logging: the
+ * caller answers with a generic message so the module never reveals whether a room exists but is closed.
+ */
+class ConversationAccessException extends RuntimeException {
+	/**
+	 * Retains the existing conversation refusal and its optional original cause.
+	 * @param string $message existing public refusal message
+	 * @param \Throwable|null $previous original failure retained for the server log
+	 */
+	public function __construct(string $message, ?\Throwable $previous = null) {
+		parent::__construct($message, 0, $previous);
+	}
+}

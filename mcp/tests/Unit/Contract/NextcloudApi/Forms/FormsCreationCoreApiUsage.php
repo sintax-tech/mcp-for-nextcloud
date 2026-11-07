@@ -18,7 +18,7 @@ final class FormsCreationCoreApiUsage {
 	];
 	// Historical NC31 is still checked by the aggregate contract; the actual app floor is NC32. Forms5.3.0's graph
 	// accepts IMailer, whereas later pins request IEmailValidator (present from NC32); neither is accessed on NC31.
-	public const VERSION_GATED = ['OCP\\Mail\\IEmailValidator' => ['missing' => ['31'], 'fallback' => 'OCP\\Mail\\IMailer', 'by' => \OCA\Mcp\Tools\Forms\Creation\CreateNativeArguments::class]];
+	public const VERSION_GATED = ['OCP\\Mail\\IEmailValidator' => ['missing' => ['31'], 'fallback' => 'OCP\\Mail\\IMailer', 'by' => \OCA\Mcp\Modules\Forms\Integration\CreateNativeArguments::class]];
 	public const NAME_CLASHES = [
 		'OCP\\Files\\File::getData' => 'OCP\\AppFramework\\Http\\DataResponse::getData in Tools/Forms/Creation/CreateFormWriter',
 		'OCP\\Files\\FileInfo::getData' => 'OCP\\AppFramework\\Http\\DataResponse::getData in Tools/Forms/Creation/CreateFormWriter',

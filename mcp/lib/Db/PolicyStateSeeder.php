@@ -24,21 +24,21 @@ use OCP\IDBConnection;
  * row is a storage failure, not a default.
  */
 final class PolicyStateSeeder {
-    public function __construct(private IDBConnection $db) {}
+	public function __construct(private IDBConnection $db) {}
 
-    /** @throws Exception for any database failure other than the row already existing */
-    public function seed(): void {
-        $qb = $this->db->getQueryBuilder();
-        $qb->insert(PolicyStateMapper::TABLE);
-        foreach (['id' => 1, 'revision' => 0, 'lock_seq' => 0, 'auth_epoch' => 0] as $column => $value) {
-            $qb->setValue($column, $qb->createNamedParameter($value, IQueryBuilder::PARAM_INT));
-        }
-        try {
-            $qb->executeStatement();
-        } catch (Exception $e) {
-            if ($e->getReason() !== Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
-                throw $e;
-            }
-        }
-    }
+	/** @throws Exception for any database failure other than the row already existing */
+	public function seed(): void {
+		$qb = $this->db->getQueryBuilder();
+		$qb->insert(PolicyStateMapper::TABLE);
+		foreach (['id' => 1, 'revision' => 0, 'lock_seq' => 0, 'auth_epoch' => 0] as $column => $value) {
+			$qb->setValue($column, $qb->createNamedParameter($value, IQueryBuilder::PARAM_INT));
+		}
+		try {
+			$qb->executeStatement();
+		} catch (Exception $e) {
+			if ($e->getReason() !== Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
+				throw $e;
+			}
+		}
+	}
 }

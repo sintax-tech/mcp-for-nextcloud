@@ -1,0 +1,76 @@
+{
+    "steps": [
+        {
+            "step": "shared-unconfirmed",
+            "request": {
+                "calendar": "/remote.php/dav/calendars/alice/team/",
+                "uid": "task",
+                "confirm": true,
+                "etag": "<etag#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Confirm the change to the shared collection with confirm_shared=true."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "1": {
+                    "task.ics": {
+                        "id": 1000,
+                        "uri": "task.ics",
+                        "etag": "<etag#1>",
+                        "data": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:task\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Original\r\nSTATUS:NEEDS-ACTION\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "deleted": false
+                    }
+                }
+            }
+        },
+        {
+            "step": "shared-confirmed",
+            "request": {
+                "calendar": "/remote.php/dav/calendars/alice/team/",
+                "uid": "task",
+                "confirm": true,
+                "etag": "<etag#1>",
+                "confirm_shared": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"uid\": \"task\",\n    \"calendar\": \"/remote.php/dav/calendars/alice/team/\",\n    \"deleted\": true,\n    \"recoverable\": true\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "1": {
+                    "task-deleted.ics": {
+                        "uri": "task-deleted.ics",
+                        "deleted": true,
+                        "id": 1000,
+                        "etag": "<etag#1>",
+                        "data": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:task\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Original\r\nSTATUS:NEEDS-ACTION\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                    }
+                }
+            }
+        }
+    ]
+}

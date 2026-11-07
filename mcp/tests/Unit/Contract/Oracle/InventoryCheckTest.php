@@ -1,0 +1,135 @@
+<?php
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+declare(strict_types=1);
+
+namespace OCA\Mcp\Tests\Unit\Contract\Oracle;
+
+use PHPUnit\Framework\TestCase;
+
+/**
+ * The inventory gate accepts a run only when every baseline test ran and failed or was skipped exactly where it did.
+ */
+final class InventoryCheckTest extends TestCase {
+	/** @return void the baseline itself passes */
+	public function testTheBaselineRunPasses(): void {
+		$check = $this->check();
+		$this->assertTrue($check->check($this->report(['A::one' => '', 'A::two' => 'failure', 'B::three' => ''])), implode("\n", $check->problems));
+	}
+
+	/** @return void a baseline test reported as skipped or incomplete did not run, even with the expected failures kept */
+	public function testSkippedOrIncompleteBaselineTestsFail(): void {
+		foreach (['skipped', 'incomplete'] as $kind) {
+			$check = $this->check();
+			$this->assertFalse($check->check($this->report(['A::one' => $kind, 'A::two' => 'failure', 'B::three' => $kind])));
+			$this->assertContains('missing from the run: A::one', $check->problems);
+			$this->assertContains('skipped but not in the baseline: B::three', $check->problems);
+			$this->assertSame(1, $check->ran);
+		}
+	}
+
+	/** @return void a missing test, a new failure, a fixed failure and an unreadable report all fail */
+	public function testOtherDifferencesFail(): void {
+		$check = $this->check();
+		$this->assertFalse($check->check($this->report(['A::one' => '', 'A::two' => 'failure'])));
+		$this->assertSame(['missing from the run: B::three'], $check->problems);
+		$this->assertFalse($check->check($this->report(['A::one' => 'error', 'A::two' => 'failure', 'B::three' => ''])));
+		$this->assertSame(['failing but not in the baseline: A::one'], $check->problems);
+		$this->assertFalse($check->check($this->report(['A::one' => '', 'A::two' => '', 'B::three' => ''])));
+		$this->assertSame(['baseline failure no longer failing: A::two'], $check->problems);
+		$this->assertFalse($check->check('not xml'));
+		$this->assertFalse($check->check('<testsuites/>'));
+	}
+
+	/** @return void a skip the baseline authorizes passes only while it stays a skip */
+	public function testAuthorizedSkipMustStaySkipped(): void {
+		$check = new InventoryCheck(['A::one', 'A::two'], [], ['A::two']);
+		$this->assertTrue($check->check($this->report(['A::one' => '', 'A::two' => 'skipped'])), implode("\n", $check->problems));
+		$this->assertFalse($check->check($this->report(['A::one' => '', 'A::two' => ''])));
+		$this->assertSame(['baseline skip that ran or vanished: A::two'], $check->problems);
+	}
+
+	/** @return void the FQCN map of a move renames the baseline identities */
+	public function testMapRenamesBaselineClasses(): void {
+		$check = new InventoryCheck(['Old\\A::one'], [], [], ['Old\\A' => 'New\\A']);
+		$this->assertTrue($check->check($this->report(['New\\A::one' => ''])), implode("\n", $check->problems));
+	}
+
+	/** @return void only exact permitted environment skips can skip; they must still exist and may also pass */
+	public function testEnvironmentSkipPermissionIsClosed(): void {
+		$check = new InventoryCheck(['A::one', 'A::two'], ['A::two'], [], [], ['A::one']);
+		foreach (['', 'skipped'] as $outcome) {
+			$this->assertTrue($check->check($this->report(['A::one' => $outcome, 'A::two' => 'failure'])));
+		}
+		foreach ([['A::two' => 'failure'], ['A::one' => 'incomplete', 'A::two' => 'failure'],
+			['A::one' => 'error', 'A::two' => 'failure'], ['A::one' => '', 'A::two' => 'failure', 'B::other' => 'skipped']] as $cases) {
+			$this->assertFalse($check->check($this->report($cases)), 'Permission must not hide missing tests, incomplete tests, errors or other skips');
+		}
+	}
+
+	/** @return InventoryCheck a baseline of three tests, A::two failing */
+	private function check(): InventoryCheck {
+		return new InventoryCheck(['A::one', 'A::two', 'B::three'], ['A::two'], []);
+	}
+
+	/** @return void missing or non-file baseline inputs can never silently become an empty inventory */
+	public function testEveryBaselineFileMustBeReadable(): void {
+		$dir = sys_get_temp_dir() . '/mcp-inventory-' . bin2hex(random_bytes(8));
+		mkdir($dir);
+		$names = ['tests-inventory.txt', 'environment-failures.txt', 'skipped.txt', 'environment-skips.tsv'];
+		try {
+			foreach ($names as $absent) {
+				foreach ($names as $name) {
+					file_put_contents($dir . '/' . $name, '');
+				}
+				unlink($dir . '/' . $absent);
+				foreach ([false, true] as $directory) {
+					if ($directory) {
+						mkdir($dir . '/' . $absent);
+					}
+					try {
+						InventoryCheck::fromBaseline($dir);
+						$this->fail('A missing/unreadable baseline must fail: ' . $absent);
+					} catch (\RuntimeException $error) {
+						$this->assertStringContainsString($absent, $error->getMessage());
+					}
+					if ($directory) {
+						rmdir($dir . '/' . $absent);
+					}
+				}
+			}
+			foreach (['A::one', "\twritten reason without an identity"] as $invalid) {
+				file_put_contents($dir . '/environment-skips.tsv', $invalid);
+				try {
+					InventoryCheck::fromBaseline($dir);
+					$this->fail('An environment skip must have an exact identity and reason');
+				} catch (\RuntimeException $error) {
+					$this->assertStringContainsString('exact identity and written reason', $error->getMessage());
+				}
+			}
+		} finally {
+			foreach ($names as $name) {
+				if (is_file($dir . '/' . $name)) {
+					unlink($dir . '/' . $name);
+				}
+			}
+			rmdir($dir);
+		}
+	}
+
+	/**
+	 * @param array<string, string> $cases identity => '' (passed), 'failure', 'error', 'skipped' or 'incomplete'
+	 * @return string a JUnit report with those cases
+	 */
+	private function report(array $cases): string {
+		$xml = '<testsuites><testsuite name="unit">';
+		foreach ($cases as $id => $outcome) {
+			[$class, $name] = explode('::', $id, 2);
+			$xml .= '<testcase class="' . htmlspecialchars($class) . '" name="' . htmlspecialchars($name) . '">'
+				. ($outcome === '' ? '' : '<' . $outcome . '/>') . '</testcase>';
+		}
+		return $xml . '</testsuite></testsuites>';
+	}
+}

@@ -1,0 +1,38 @@
+{
+    "flow": "settings.hidden-tags-unavailable",
+    "steps": [
+        {
+            "step": "initial",
+            "state": {
+                "config": {
+                    "hidden_system_tags": "[\"10\",\"11\"]"
+                },
+                "appConfig": []
+            }
+        },
+        {
+            "step": "tags cannot be checked: 503, the previous selection is kept",
+            "request": {
+                "route": "tags#update",
+                "user": "root",
+                "body": {
+                    "tagIds": [
+                        10
+                    ]
+                }
+            },
+            "response": {
+                "status": 503,
+                "json": {
+                    "error": "tags_unavailable"
+                }
+            },
+            "state": {
+                "config": {
+                    "hidden_system_tags": "[\"10\",\"11\"]"
+                },
+                "appConfig": []
+            }
+        }
+    ]
+}

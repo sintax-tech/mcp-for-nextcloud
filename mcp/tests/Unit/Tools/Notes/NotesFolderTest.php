@@ -8,20 +8,20 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Notes;
 
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
-use OCA\Mcp\Tools\ArgumentValidator;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\Common\SharedWriteGuard;
-use OCA\Mcp\Tools\Notes\NotesFolderNotice;
-use OCA\Mcp\Tools\Notes\NotesFolderResolver;
-use OCA\Mcp\Tools\Notes\NotesModule;
-use OCA\Mcp\Tools\Notes\NotesRepository;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\Common\CommonMessages;
-use OCA\Mcp\Tools\WriteGate;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
+use OCA\Mcp\Modules\Notes\Reading\NotesFolderNotice;
+use OCA\Mcp\Modules\Notes\Locating\NotesFolderResolver;
+use OCA\Mcp\Modules\Notes\NotesModule;
+use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
+use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use OCP\App\IAppManager;
 use OCP\Files\IRootFolder;
 use OCP\IL10N;
@@ -280,7 +280,7 @@ final class NotesFolderTest extends TestCase {
 		$users->method('get')->willReturn($this->createMock(IUser::class));
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
 		$config = $this->config->mock($this);
-		$module = new NotesModule(new NotesRepository($this->root(), $config, $this->guard, $this->resolver()), $apps, $users,
+		$module = NotesTestModule::build(new NotesRepository($this->root(), $config, $this->guard, $this->resolver()), $apps, $users,
 			new SharedWriteGuard($access), $access, $this->guard);
 		$definition = array_column($module->definitions(), null, 'name')[$name];
 		$published = WriteGate::publish($definition);

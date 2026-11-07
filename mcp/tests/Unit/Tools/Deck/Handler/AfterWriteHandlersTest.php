@@ -13,21 +13,21 @@ use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Stack;
 use OCA\Deck\NoPermissionException;
 use OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestHelpers;
-use OCA\Mcp\Tools\ArgumentValidationException;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
-use OCA\Mcp\Tools\Deck\DeckConflictException;
-use OCA\Mcp\Tools\Deck\DeckMessages;
-use OCA\Mcp\Tools\Deck\DeckRefusalException;
-use OCA\Mcp\Tools\Deck\DeckSessionException;
-use OCA\Mcp\Tools\Deck\DeckUnconfirmedException;
-use OCA\Mcp\Tools\Deck\Handler\CreateBoardHandler;
-use OCA\Mcp\Tools\Deck\Handler\CreateCardHandler;
-use OCA\Mcp\Tools\Deck\Handler\CreateStackHandler;
-use OCA\Mcp\Tools\Deck\Handler\DeleteBoardHandler;
-use OCA\Mcp\Tools\Deck\Handler\DeleteCardHandler;
-use OCA\Mcp\Tools\Deck\Handler\DeleteStackHandler;
-use OCA\Mcp\Tools\Deck\Handler\EditCardHandler;
-use OCA\Mcp\Tools\Deck\Handler\MoveCardHandler;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
+use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Failures\DeckConflictException;
+use OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages as DeckMessages;
+use OCA\Mcp\Modules\Deck\Failures\DeckRefusalException;
+use OCA\Mcp\Modules\Deck\Failures\DeckSessionException;
+use OCA\Mcp\Modules\Deck\Failures\DeckUnconfirmedException;
+use OCA\Mcp\Modules\Deck\Structure\CreateBoardHandler;
+use OCA\Mcp\Modules\Deck\Creation\CreateCardHandler;
+use OCA\Mcp\Modules\Deck\Structure\CreateStackHandler;
+use OCA\Mcp\Modules\Deck\Structure\DeleteBoardHandler;
+use OCA\Mcp\Modules\Deck\Deletion\DeleteCardHandler;
+use OCA\Mcp\Modules\Deck\Structure\DeleteStackHandler;
+use OCA\Mcp\Modules\Deck\Editing\EditCardHandler;
+use OCA\Mcp\Modules\Deck\Moving\MoveCardHandler;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -77,7 +77,7 @@ final class AfterWriteHandlersTest extends TestCase {
 		self::assertArrayNotHasKey('isError', $result);
 		self::assertStringNotContainsString(self::SECRET, $this->text($result));
 		$payload = $this->payload($result);
-		self::assertContains(DeckMessages::writtenThenFailed(), $payload['warnings']);
+		self::assertContains(\OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::writtenThenFailed(), $payload['warnings']);
 		self::assertContains(\RuntimeException::class, array_column(array_column($this->logged, 1), 'exception'));
 
 		return $payload;
@@ -86,13 +86,13 @@ final class AfterWriteHandlersTest extends TestCase {
 	/** @param array<string, mixed> $result */
 	private function assertUnconfirmed(array $result, string $readWith): void {
 		self::assertArrayNotHasKey('isError', $result, 'nunca um erro que convide a repetir');
-		self::assertSame(['confirmed' => false, 'message' => DeckMessages::writeUnconfirmed($readWith)], $this->payload($result));
+		self::assertSame(['confirmed' => false, 'message' => \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::writeUnconfirmed($readWith)], $this->payload($result));
 	}
 
 	/** @param array<string, mixed> $result */
 	private function assertPlainError(array $result): void {
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::errorGeneric(), $this->text($result));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorGeneric(), $this->text($result));
 	}
 
 	private function cards(DeckGatewayInterface $gateway): array {
@@ -161,7 +161,7 @@ final class AfterWriteHandlersTest extends TestCase {
 
 			$result = $this->cards($gateway)['edit']->handle(['cardId' => 7, 'title' => 'Novo'], 'alice');
 			self::assertArrayNotHasKey('isError', $result);
-			self::assertContains(DeckMessages::writtenThenFailed(), $this->payload($result)['warnings']);
+			self::assertContains(\OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::writtenThenFailed(), $this->payload($result)['warnings']);
 		}
 	}
 
@@ -184,7 +184,7 @@ final class AfterWriteHandlersTest extends TestCase {
 			->willReturn($this->card(['id' => 7, 'title' => 'Novo', 'lastModified' => 1_700_000_100]));
 		$result = $this->cards($edit)['edit']->handle(['cardId' => 7, 'title' => 'Novo'], 'alice');
 		self::assertArrayNotHasKey('isError', $result);
-		self::assertContains(DeckMessages::writtenThenFailed(), $this->payload($result)['warnings']);
+		self::assertContains(\OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::writtenThenFailed(), $this->payload($result)['warnings']);
 	}
 
 	/** The validation exception of this app is a refusal before the write: never read back. */
@@ -248,6 +248,18 @@ final class AfterWriteHandlersTest extends TestCase {
 		self::assertSame('Novo', $payload['title']);
 	}
 
+	/** The read-back comes without its board; an edit never changes it, so the board of the card read before stands. */
+	public function testAnEditReadBackKeepsTheBoardOfTheCardReadBefore(): void {
+		$gateway = $this->gatewayOwnedBy('alice');
+		$gateway->method('findCard')->willReturn($this->card(['id' => 7, 'title' => 'Antigo', 'lastModified' => 1_700_000_000,
+			'relatedBoard' => new Board(['id' => 20])]));
+		$gateway->method('updateCard')->willThrowException($this->afterWrite());
+		$gateway->method('cardState')->willReturn($this->card(['id' => 7, 'title' => 'Novo', 'lastModified' => 1_700_000_100]));
+
+		$payload = $this->assertWrittenWithWarning($this->cards($gateway)['edit']->handle(['cardId' => 7, 'title' => 'Novo'], 'alice'));
+		self::assertSame(20, $payload['boardId']);
+	}
+
 	public function testAnEditReadBackUnchangedIsTheUsualError(): void {
 		$gateway = $this->editGateway();
 		$gateway->method('cardState')->willReturn($this->card(['id' => 7, 'title' => 'Antigo', 'lastModified' => 1_700_000_000]));
@@ -294,7 +306,7 @@ final class AfterWriteHandlersTest extends TestCase {
 		$gateway->method('cardAssignments')->willThrowException(new \RuntimeException('db gone'));
 
 		$payload = $this->payload($this->cards($gateway)['edit']->handle(['cardId' => 7, 'assign' => ['pedro']], 'alice'));
-		self::assertSame([['uid' => 'pedro', 'reason' => DeckMessages::writeUnconfirmed('deck_read_card')]], $payload['failed']);
+		self::assertSame([['uid' => 'pedro', 'reason' => \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::writeUnconfirmed('deck_read_card')]], $payload['failed']);
 	}
 
 	// --- deck_move_card -----------------------------------------------------------------------------------------
@@ -434,9 +446,9 @@ final class AfterWriteHandlersTest extends TestCase {
 		$board = (new DeleteBoardHandler($gateway, $this->logger))->handle(['boardId' => 4, 'confirm' => true], 'alice');
 
 		self::assertTrue($stack['isError']);
-		self::assertSame(DeckMessages::errorStackReceivedCards(true), $this->text($stack));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorStackReceivedCards(true), $this->text($stack));
 		self::assertTrue($board['isError']);
-		self::assertSame(DeckMessages::errorBoardReceivedCards(true), $this->text($board));
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorBoardReceivedCards(true), $this->text($board));
 	}
 
 	/** The undo failed and the list or board sits in the Deck trash with the new card: partial, never an error. */
@@ -451,9 +463,9 @@ final class AfterWriteHandlersTest extends TestCase {
 		$board = (new DeleteBoardHandler($gateway, $this->logger))->handle(['boardId' => 4, 'confirm' => true], 'alice');
 
 		self::assertArrayNotHasKey('isError', $stack);
-		self::assertSame(['partial' => true, 'message' => DeckMessages::errorStackReceivedCards(false)], $this->payload($stack));
+		self::assertSame(['partial' => true, 'message' => \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorStackReceivedCards(false)], $this->payload($stack));
 		self::assertArrayNotHasKey('isError', $board);
-		self::assertSame(['partial' => true, 'message' => DeckMessages::errorBoardReceivedCards(false)], $this->payload($board));
+		self::assertSame(['partial' => true, 'message' => \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorBoardReceivedCards(false)], $this->payload($board));
 	}
 
 	/** The gateway already read the list again and could not tell: the handler does not read it a second time. */
@@ -503,8 +515,8 @@ final class AfterWriteHandlersTest extends TestCase {
 		self::assertArrayNotHasKey('isError', $result);
 		$payload = $this->payload($result);
 		self::assertSame('probable', $payload['confirmed']);
-		self::assertContains(DeckMessages::probablyCreated(), $payload['warnings']);
-		self::assertNotContains(DeckMessages::writtenThenFailed(), $payload['warnings'], 'o que é só provável não é dado como gravado');
+		self::assertContains(\OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::probablyCreated(), $payload['warnings']);
+		self::assertNotContains(\OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::writtenThenFailed(), $payload['warnings'], 'o que é só provável não é dado como gravado');
 
 		return $payload;
 	}
@@ -522,7 +534,7 @@ final class AfterWriteHandlersTest extends TestCase {
 
 		$payload = $this->assertProbable($this->cards($gateway)['create']->handle(['stackId' => 10, 'title' => 'Fechar', 'assignees' => ['pedro']], 'alice'));
 		self::assertSame(41, $payload['id']);
-		self::assertContains(DeckMessages::probableCardNotAssigned(), $payload['warnings']);
+		self::assertContains(\OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::probableCardNotAssigned(), $payload['warnings']);
 	}
 
 	public function testAListFoundByHeuristicIsProbable(): void {
@@ -550,11 +562,11 @@ final class AfterWriteHandlersTest extends TestCase {
 		self::assertSame(['id' => 3, 'title' => 'Projeto', 'confirmed' => 'probable'], $payload['created']['board']);
 		self::assertSame([], $payload['created']['stacks']);
 		self::assertSame([
-			['kind' => 'list', 'title' => 'A fazer', 'reason' => DeckMessages::probableParentNotBuilt(), 'cardsNotCreated' => 2],
-			['kind' => 'list', 'title' => 'Feito', 'reason' => DeckMessages::probableParentNotBuilt(), 'cardsNotCreated' => 0],
+			['kind' => 'list', 'title' => 'A fazer', 'reason' => \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::probableParentNotBuilt(), 'cardsNotCreated' => 2],
+			['kind' => 'list', 'title' => 'Feito', 'reason' => \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::probableParentNotBuilt(), 'cardsNotCreated' => 0],
 		], $payload['failed']);
 		self::assertFalse($payload['complete']);
-		self::assertContains(DeckMessages::probablyCreated(), $payload['warnings']);
+		self::assertContains(\OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::probablyCreated(), $payload['warnings']);
 	}
 
 	/** A list found by heuristic gets no card; a card found by heuristic gets no assignment. */
@@ -579,9 +591,9 @@ final class AfterWriteHandlersTest extends TestCase {
 
 		self::assertSame([['id' => 20, 'title' => 'Provável', 'confirmed' => 'probable', 'cards' => []],
 			['id' => 21, 'title' => 'Exata', 'cards' => [['id' => 50, 'title' => 'Um', 'confirmed' => 'probable']]]], $payload['created']['stacks']);
-		self::assertSame([['kind' => 'card', 'list' => 'Provável', 'title' => 'Um', 'reason' => DeckMessages::probableParentNotBuilt()]], $payload['failed']);
+		self::assertSame([['kind' => 'card', 'list' => 'Provável', 'title' => 'Um', 'reason' => \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::probableParentNotBuilt()]], $payload['failed']);
 		self::assertFalse($payload['complete']);
-		self::assertContains(DeckMessages::probableCardNotAssigned(), $payload['warnings']);
+		self::assertContains(\OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::probableCardNotAssigned(), $payload['warnings']);
 	}
 
 	// --- deck_create_board --------------------------------------------------------------------------------------
@@ -646,7 +658,7 @@ final class AfterWriteHandlersTest extends TestCase {
 		self::assertSame([['id' => 50, 'title' => 'Um', 'confirmed' => 'probable']], $payload['created']['stacks'][0]['cards']);
 		self::assertSame([], $payload['failed'], 'nada que foi ou pode ter sido gravado vai para failed');
 		self::assertFalse($payload['complete']);
-		self::assertContains(DeckMessages::probablyCreated(), $payload['warnings']);
-		self::assertContains(DeckMessages::boardItemUnconfirmed('card', 'Dois'), $payload['warnings']);
+		self::assertContains(\OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::probablyCreated(), $payload['warnings']);
+		self::assertContains(\OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::boardItemUnconfirmed('card', 'Dois'), $payload['warnings']);
 	}
 }

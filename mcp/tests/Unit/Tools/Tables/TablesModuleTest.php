@@ -8,16 +8,17 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Tables;
 
 use InvalidArgumentException;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\GuestRestrictions;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantCatalog;
+use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
+use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesHandlers;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesScene;
-use OCA\Mcp\Tools\PreviewsWrites;
-use OCA\Mcp\Tools\Tables\TablesModule;
-use OCA\Mcp\Tools\ToolRegistry;
-use OCA\Mcp\Tools\WriteGate;
+use OCA\Mcp\Mcp\Tools\PreviewsWrites;
+use OCA\Mcp\Modules\Tables\TablesModule;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use OCP\App\IAppManager;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -57,7 +58,7 @@ final class TablesModuleTest extends TestCase {
 	 */
 	public function testTheModulePublishesFourReadToolsOfTheTablesApp(): void {
 		$all = TablesHandlers::module($this, TablesScene::app())->definitions();
-		$this->assertSame([...self::TOOLS, ...array_keys(self::WRITES)], array_column($all, 'name'));
+		$this->assertSame([...self::TOOLS, ...array_keys(self::WRITES), 'tables_create_table', 'tables_update_table', 'tables_create_column', 'tables_update_column', 'tables_create_view', 'tables_update_view', 'tables_share_node', 'tables_unshare_node'], array_column($all, 'name'));
 		$definitions = array_slice($all, 0, 4);
 		foreach ($definitions as $definition) {
 			$this->assertSame(['tables', 'read', 'tables'], [$definition['module'], $definition['operation'], $definition['app']]);
@@ -72,7 +73,7 @@ final class TablesModuleTest extends TestCase {
 		}
 		$this->assertSame(['table_id', 'view_id'], array_keys($definitions[2]['inputSchema']['properties']));
 		$this->assertSame(['table_id', 'view_id', 'filter', 'search', 'sort', 'limit', 'cursor'], array_keys($definitions[3]['inputSchema']['properties']));
-		foreach (array_slice($all, 4) as $definition) {
+		foreach (array_slice($all, 4, 2) as $definition) {
 			$this->assertSame(['tables', self::WRITES[$definition['name']], 'tables'], [$definition['module'], $definition['operation'], $definition['app']]);
 			$this->assertTrue(WriteGate::isWrite($definition), $definition['name']);
 			$this->assertFalse($definition['inputSchema']['additionalProperties']);
@@ -93,7 +94,7 @@ final class TablesModuleTest extends TestCase {
 	 * @return void
 	 */
 	public function testTheCatalogOffersReadingTables(): void {
-		$this->assertSame(['read', 'create', 'edit'], GrantPolicy::CATALOG['tables']);
+		$this->assertSame(['read', 'create', 'edit', 'schema', 'share'], GrantCatalog::CATALOG['tables']);
 		$this->assertNotContains('tables', GrantPolicy::DENIED_READS);
 		$this->assertTrue($this->policy->granted('alice', 'tables', 'read'));
 		$this->assertFalse($this->policy->granted('alice', 'tables', 'create'));
@@ -191,4 +192,18 @@ final class TablesModuleTest extends TestCase {
 		}
 		return new ToolRegistry([TablesHandlers::module($this, TablesScene::app())], $this->policy, $apps, $users, $this->createMock(LoggerInterface::class), $guests);
 	}
+	public function testTheTestContainerRefusesUnregisteredCollaborators(): void {
+		$module = TablesHandlers::module($this, TablesScene::app());
+		$container = (new \ReflectionProperty(\OCA\Mcp\Mcp\Tools\CatalogModule::class, 'container'))->getValue($module);
+		foreach ([\stdClass::class, \OCA\Mcp\Modules\Tables\Writing\TextCellValue::class] as $id) {
+			self::assertFalse($container->has($id));
+			try {
+				$container->get($id);
+				self::fail('An unregistered collaborator was silently constructed');
+			} catch (\LogicException $error) {
+				self::assertSame("no Tables test service $id", $error->getMessage());
+			}
+		}
+	}
+
 }

@@ -7,12 +7,12 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Settings;
 
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Compat\AppEnablement;
-use OCA\Mcp\Service\ConnectionList;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\LogsAccess;
-use OCA\Mcp\Tools\Files\OcrSupport;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Platform\Compat\AppEnablement;
+use OCA\Mcp\OAuth\Connections\ConnectionList;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Logs\LogsAccess;
+use OCA\Mcp\Modules\Files\Images\OcrSupport;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\IURLGenerator;
@@ -22,66 +22,77 @@ use OCP\Settings\ISettings;
  * Admin page in the app's own "MCP for Cloud" section, in blocks: status (endpoint, service switch, version,
  * user summary), OAuth clients, hidden files & tags, OCR, the users × permissions matrix, the groups that may read
  * the server log and the active connections. The matrix, OAuth clients, tags and log groups are loaded and saved by
- * js/admin-grants.js; the connections by js/connections.js.
+ * src/admin/matrix/start.js; the connections by src/shared/connections.js, all in js/mcp-admin.js.
  */
 class AdminSettings implements ISettings {
-    /** Product name of each optional app with a minimum version, as the administrator knows it in the app list. */
-    public const APP_NAMES = ['deck' => 'Deck', 'spreed' => 'Talk', 'mail' => 'Mail', 'tables' => 'Tables', 'forms' => 'Forms', 'polls' => 'Polls'];
+	/** Product name of each optional app with a minimum version, as the administrator knows it in the app list. */
+	public const APP_NAMES = ['deck' => 'Deck', 'spreed' => 'Talk', 'mail' => 'Mail', 'tables' => 'Tables', 'forms' => 'Forms', 'polls' => 'Polls', 'collectives' => 'Collectives'];
 
-    public function __construct(
-        private GrantPolicy $policy,
-        private IURLGenerator $urlGenerator,
-        private OcrSupport $ocr,
-        private IAppManager $appManager,
-        private ConnectionList $connections,
-        private LogsAccess $logs,
-    ) {}
+	/**
+	 * @param GrantPolicy $policy current admin grant policy
+	 * @param IURLGenerator $urlGenerator native endpoint URL generator
+	 * @param OcrSupport $ocr optional OCR capability
+	 * @param IAppManager $appManager native app versions and enablement
+	 * @param ConnectionList $connections active client counts
+	 * @param LogsAccess $logs native log availability
+	 * @param AdminPanels $panels public native panel renderer
+	 */
+	public function __construct(
+		private GrantPolicy $policy,
+		private IURLGenerator $urlGenerator,
+		private OcrSupport $ocr,
+		private IAppManager $appManager,
+		private ConnectionList $connections,
+		private LogsAccess $logs,
+		private AdminPanels $panels,
+	) {}
 
-    /** @return TemplateResponse the rendered settings section */
-    public function getForm(): TemplateResponse {
-        try {
-            // Eligible by an individual Allow or by a group that may grant it; connected needs both.
-            $eligible = count($this->policy->flaggedUsers(GrantPolicy::ELIGIBLE_KEY));
-            $connected = count($this->policy->connectedUsers());
-        } catch (PolicyUnavailable) {
-            // No total is better than a wrong one: the cards show a dash, never a fictitious zero.
-            $eligible = $connected = null;
-        }
-        return new TemplateResponse('mcp', 'admin', [
-            'endpoint' => $this->urlGenerator->linkToRouteAbsolute('mcp.mcp.post'),
-            'serviceEnabled' => $this->policy->globalEnabled(),
-            'ocrActive' => $this->ocr->isActive(),
-            'ocrUrl' => OcrSupport::APP_URL,
-            'version' => $this->appManager->getAppVersion('mcp'),
-            'eligibleUsers' => $eligible,
-            'connectedUsers' => $connected,
-            'activeConnections' => $this->connections->count(),
-            'unsupportedApps' => $this->unsupportedApps(),
-            'logsAvailable' => $this->logs->available(),
-            'logType' => $this->logs->logType(),
-        ], '');
-    }
+	/** @return TemplateResponse the rendered settings section */
+	public function getForm(): TemplateResponse {
+		try {
+			// Eligible by an individual Allow or by a group that may grant it; connected needs both.
+			$eligible = count($this->policy->flaggedUsers(GrantPolicy::ELIGIBLE_KEY));
+			$connected = count($this->policy->connectedUsers());
+		} catch (PolicyUnavailable) {
+			// No total is better than a wrong one: the cards show a dash, never a fictitious zero.
+			$eligible = $connected = null;
+		}
+		return new TemplateResponse('mcp', 'admin', [
+			'renderAdminPanel' => [$this->panels, 'render'],
+			'endpoint' => $this->urlGenerator->linkToRouteAbsolute('mcp.mcp.post'),
+			'serviceEnabled' => $this->policy->globalEnabled(),
+			'ocrActive' => $this->ocr->isActive(),
+			'ocrUrl' => OcrSupport::APP_URL,
+			'version' => $this->appManager->getAppVersion('mcp'),
+			'eligibleUsers' => $eligible,
+			'connectedUsers' => $connected,
+			'activeConnections' => $this->connections->count(),
+			'unsupportedApps' => $this->unsupportedApps(),
+			'logsAvailable' => $this->logs->available(),
+			'logType' => $this->logs->logType(),
+		], '');
+	}
 
-    /**
-     * Optional apps that are enabled but older than MCP supports: their tools are hidden, and the page says why.
-     *
-     * @return list<array{name:string, installed:string, required:string}> one entry per such app
-     */
-    private function unsupportedApps(): array {
-        return array_map(static fn (array $app): array => [
-            'name' => self::APP_NAMES[$app['app']] ?? $app['app'],
-            'installed' => $app['installed'],
-            'required' => $app['required'],
-        ], AppEnablement::unsupported($this->appManager));
-    }
+	/**
+	 * Optional apps that are enabled but older than MCP supports: their tools are hidden, and the page says why.
+	 *
+	 * @return list<array{name:string, installed:string, required:string}> one entry per such app
+	 */
+	private function unsupportedApps(): array {
+		return array_map(static fn (array $app): array => [
+			'name' => self::APP_NAMES[$app['app']] ?? $app['app'],
+			'installed' => $app['installed'],
+			'required' => $app['required'],
+		], AppEnablement::unsupported($this->appManager));
+	}
 
-    /** @return string settings section id, the app's own "MCP for Cloud" entry */
-    public function getSection(): string {
-        return AdminSection::ID;
-    }
+	/** @return string settings section id, the app's own "MCP for Cloud" entry */
+	public function getSection(): string {
+		return AdminSection::ID;
+	}
 
-    /** @return int ordering within the section */
-    public function getPriority(): int {
-        return 50;
-    }
+	/** @return int ordering within the section */
+	public function getPriority(): int {
+		return 50;
+	}
 }

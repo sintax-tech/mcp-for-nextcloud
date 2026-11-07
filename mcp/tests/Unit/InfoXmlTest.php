@@ -21,117 +21,118 @@ use PHPUnit\Framework\TestCase;
  * of it, so reordering or dropping a child element fails here too.
  */
 final class InfoXmlTest extends TestCase {
-    /** Official app schema, vendored in tests/fixtures. */
-    private const SCHEMA = __DIR__ . '/../fixtures/info.xsd';
+	/** Official app schema, vendored in tests/fixtures. */
+	private const SCHEMA = __DIR__ . '/../fixtures/info.xsd';
 
-    /** App manifest checked against the schema. */
-    private const MANIFEST = __DIR__ . '/../../appinfo/info.xml';
+	/** App manifest checked against the schema. */
+	private const MANIFEST = __DIR__ . '/../../appinfo/info.xml';
 
-    /** The manifest must be well-formed and satisfy the official schema. */
-    public function testInfoXmlIsValidAgainstTheOfficialSchema(): void {
-        $previous = libxml_use_internal_errors(true);
-        try {
-            libxml_clear_errors();
-            $document = new DOMDocument();
-            $loaded = $document->load(self::MANIFEST);
-            $loadErrors = libxml_get_errors();
-            libxml_clear_errors();
-            $valid = $loaded && $document->schemaValidate(self::SCHEMA);
-            $schemaErrors = libxml_get_errors();
-            libxml_clear_errors();
-        } finally {
-            libxml_use_internal_errors($previous);
-        }
-        $this->assertTrue($loaded, 'appinfo/info.xml must be well-formed XML: ' . $this->messages($loadErrors));
-        $this->assertTrue($valid, 'appinfo/info.xml must satisfy ' . basename(self::SCHEMA) . ': ' . $this->messages($schemaErrors));
-    }
+	/** The manifest must be well-formed and satisfy the official schema. */
+	public function testInfoXmlIsValidAgainstTheOfficialSchema(): void {
+		$previous = libxml_use_internal_errors(true);
+		try {
+			libxml_clear_errors();
+			$document = new DOMDocument();
+			$loaded = $document->load(self::MANIFEST);
+			$loadErrors = libxml_get_errors();
+			libxml_clear_errors();
+			$valid = $loaded && $document->schemaValidate(self::SCHEMA);
+			$schemaErrors = libxml_get_errors();
+			libxml_clear_errors();
+		} finally {
+			libxml_use_internal_errors($previous);
+		}
+		$this->assertTrue($loaded, 'appinfo/info.xml must be well-formed XML: ' . $this->messages($loadErrors));
+		$this->assertTrue($valid, 'appinfo/info.xml must satisfy ' . basename(self::SCHEMA) . ': ' . $this->messages($schemaErrors));
+	}
 
-    /** @return \SimpleXMLElement the parsed manifest */
-    private function manifest(): \SimpleXMLElement {
-        $manifest = simplexml_load_file(self::MANIFEST);
-        $this->assertInstanceOf(\SimpleXMLElement::class, $manifest);
-        return $manifest;
-    }
+	/** @return \SimpleXMLElement the parsed manifest */
+	private function manifest(): \SimpleXMLElement {
+		$manifest = simplexml_load_file(self::MANIFEST);
+		$this->assertInstanceOf(\SimpleXMLElement::class, $manifest);
+		return $manifest;
+	}
 
-    /**
-     * @param string $element name, summary or description
-     * @return array<string, string> its text per language, "en" for the untagged one
-     */
-    private function localized(string $element): array {
-        $texts = [];
-        foreach ($this->manifest()->{$element} as $node) {
-            $texts[(string)($node['lang'] ?? 'en')] = trim((string)$node);
-        }
-        return $texts;
-    }
+	/**
+	 * @param string $element name, summary or description
+	 * @return array<string, string> its text per language, "en" for the untagged one
+	 */
+	private function localized(string $element): array {
+		$texts = [];
+		foreach ($this->manifest()->{$element} as $node) {
+			$texts[(string)($node['lang'] ?? 'en')] = trim((string)$node);
+		}
+		return $texts;
+	}
 
-    /**
-     * The store shows the summary and the description in English, Brazilian Portuguese, Spanish and German.
-     * The name is not translated: it is a single <name> without lang (see the test below).
-     */
-    public function testSummaryAndDescriptionComeInEveryLanguageOfTheApp(): void {
-        StoreLocaleContract::languages(['summary' => $this->localized('summary'), 'description' => $this->localized('description')]);
-    }
+	/**
+	 * The store shows the summary and the description in English, Brazilian Portuguese, Spanish and German.
+	 * The name is not translated: it is a single <name> without lang (see the test below).
+	 */
+	public function testSummaryAndDescriptionComeInEveryLanguageOfTheApp(): void {
+		StoreLocaleContract::languages(['summary' => $this->localized('summary'), 'description' => $this->localized('description')]);
+	}
 
-    /**
-     * Exactly one <name>, without a lang attribute. Nextcloud's InfoParser turns repeated
-     * <name> elements into an array, and the admin app list then shows that array as raw JSON.
-     */
-    public function testTheNameIsASingleUntranslatedElement(): void {
-        $names = $this->manifest()->name;
-        $this->assertCount(1, $names, 'appinfo/info.xml must have exactly one <name>');
-        $this->assertNull($names[0]['lang'], '<name> must not carry a lang attribute');
-        $this->assertSame('MCP for Cloud', trim((string)$names[0]));
-    }
+	/**
+	 * Exactly one <name>, without a lang attribute. Nextcloud's InfoParser turns repeated
+	 * <name> elements into an array, and the admin app list then shows that array as raw JSON.
+	 */
+	public function testTheNameIsASingleUntranslatedElement(): void {
+		$names = $this->manifest()->name;
+		$this->assertCount(1, $names, 'appinfo/info.xml must have exactly one <name>');
+		$this->assertNull($names[0]['lang'], '<name> must not carry a lang attribute');
+		$this->assertSame('MCP for Cloud', trim((string)$names[0]));
+	}
 
-    /** The description says what the app does, how it keeps the user in control and which clients connect to it. */
-    public function testTheDescriptionListsTheModulesTheSafeguardsAndTheClients(): void {
-        StoreLocaleContract::descriptions($this->localized('description'));
-    }
+	/** The description says what the app does, how it keeps the user in control and which clients connect to it. */
+	public function testTheDescriptionListsTheModulesTheSafeguardsAndTheClients(): void {
+		StoreLocaleContract::descriptions($this->localized('description'));
+	}
 
-    public function testStoreMetadataPointsAtThePublicRepository(): void {
-        $manifest = $this->manifest();
-        $repository = 'https://github.com/sintax-tech/mcp-for-nextcloud';
+	public function testStoreMetadataPointsAtThePublicRepository(): void {
+		$manifest = $this->manifest();
+		$repository = 'https://github.com/sintax-tech/mcp-for-nextcloud';
 
-        $this->assertSame('mcp', (string)$manifest->id);
-        $this->assertSame($repository, (string)$manifest->website);
-        $this->assertSame($repository . '/issues', (string)$manifest->bugs);
-        $this->assertSame($repository . '.git', (string)$manifest->repository);
-        $this->assertSame('git', (string)$manifest->repository['type']);
-        $this->assertSame('Jhonatan Jaworski', (string)$manifest->author);
-        $this->assertSame('jhonatan@sintax.tech', (string)$manifest->author['mail']);
-        $this->assertSame(['ai', 'integration', 'tools'], array_map('strval', iterator_to_array($manifest->category, false)));
-        $this->assertSame('AGPL-3.0-or-later', (string)$manifest->licence);
-    }
+		$this->assertSame('mcp', (string)$manifest->id);
+		$this->assertSame(FinalStoreLocaleContract::VERSION, (string)$manifest->version);
+		$this->assertSame($repository, (string)$manifest->website);
+		$this->assertSame($repository . '/issues', (string)$manifest->bugs);
+		$this->assertSame($repository . '.git', (string)$manifest->repository);
+		$this->assertSame('git', (string)$manifest->repository['type']);
+		$this->assertSame('Jhonatan Jaworski', (string)$manifest->author);
+		$this->assertSame('jhonatan@sintax.tech', (string)$manifest->author['mail']);
+		$this->assertSame(['ai', 'integration', 'tools'], array_map('strval', iterator_to_array($manifest->category, false)));
+		$this->assertSame('AGPL-3.0-or-later', (string)$manifest->licence);
+	}
 
-    /** The two screenshots live in the repository's root screenshots/ folder on main, outside the app package, under the names agreed for the listing. */
-    public function testScreenshotsComeFromTheRepository(): void {
-        $base = 'https://raw.githubusercontent.com/sintax-tech/mcp-for-nextcloud/main/screenshots/';
+	/** The two screenshots live in the repository's root screenshots/ folder on main, outside the app package, under the names agreed for the listing. */
+	public function testScreenshotsComeFromTheRepository(): void {
+		$base = 'https://raw.githubusercontent.com/sintax-tech/mcp-for-nextcloud/main/screenshots/';
 
-        $this->assertSame([$base . 'admin.png', $base . 'plan.png'], array_map('strval', iterator_to_array($this->manifest()->screenshot, false)));
-    }
+		$this->assertSame([$base . 'admin.png', $base . 'plan.png'], array_map('strval', iterator_to_array($this->manifest()->screenshot, false)));
+	}
 
-    /**
-     * Nextcloud 32 to 35, each checked by the API contracts; the code and the contracts also cover 31, which is not
-     * declared. PHP from 8.2, the platform of composer.json and of the bundled vendor/: 32 and 33 still run on it, 35
-     * requires 8.3 by itself, so nothing may need a later PHP than 8.2.
-     */
-    public function testDependenciesDeclareNextcloud32To35AndPhp82(): void {
-        $dependencies = $this->manifest()->dependencies;
+	/**
+	 * Nextcloud 32 to 35, each checked by the API contracts; the code and the contracts also cover 31, which is not
+	 * declared. PHP from 8.2, the platform of composer.json and of the bundled vendor/: 32 and 33 still run on it, 35
+	 * requires 8.3 by itself, so nothing may need a later PHP than 8.2.
+	 */
+	public function testDependenciesDeclareNextcloud32To35AndPhp82(): void {
+		$dependencies = $this->manifest()->dependencies;
 
-        $this->assertSame(['32', '35'], [(string)$dependencies->nextcloud['min-version'], (string)$dependencies->nextcloud['max-version']]);
-        $this->assertSame('8.2', (string)$dependencies->php['min-version']);
-        $this->assertNull($dependencies->php['max-version']);
-        $composer = json_decode((string)file_get_contents(dirname(self::MANIFEST, 2) . '/composer.json'), true);
-        $this->assertSame('>=8.2', $composer['require']['php']);
-        $this->assertSame('8.2', $composer['config']['platform']['php']);
-    }
+		$this->assertSame(['32', '35'], [(string)$dependencies->nextcloud['min-version'], (string)$dependencies->nextcloud['max-version']]);
+		$this->assertSame('8.2', (string)$dependencies->php['min-version']);
+		$this->assertNull($dependencies->php['max-version']);
+		$composer = json_decode((string)file_get_contents(dirname(self::MANIFEST, 2) . '/composer.json'), true);
+		$this->assertSame('>=8.2', $composer['require']['php']);
+		$this->assertSame('8.2', $composer['config']['platform']['php']);
+	}
 
-    /**
-     * @param list<LibXMLError> $errors collected by libxml during the last step
-     * @return string their messages, one per line, for the failure report
-     */
-    private function messages(array $errors): string {
-        return trim(implode("\n", array_map(static fn (LibXMLError $error): string => trim($error->message), $errors)));
-    }
+	/**
+	 * @param list<LibXMLError> $errors collected by libxml during the last step
+	 * @return string their messages, one per line, for the failure report
+	 */
+	private function messages(array $errors): string {
+		return trim(implode("\n", array_map(static fn (LibXMLError $error): string => trim($error->message), $errors)));
+	}
 }

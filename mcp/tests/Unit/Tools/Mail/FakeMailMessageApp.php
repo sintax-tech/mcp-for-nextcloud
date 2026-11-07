@@ -392,9 +392,9 @@ final class FakeMailMessageApp extends FakeMailApp {
 	 * @param string $body plain text
 	 * @return object a record of what OCA\Mail\Model\NewMessageData would hold
 	 */
-	public function newMessageData(string $userId, object $account, string $to, string $cc, string $bcc, string $subject, string $body): object {
+	public function newMessageData(string $userId, object $account, string $to, string $cc, string $bcc, string $subject, string $body, bool $html = false): object {
 		$this->assertOn();
-		return (object)['account' => $account, 'to' => $to, 'cc' => $cc, 'bcc' => $bcc, 'subject' => $subject, 'body' => $body, 'attachments' => [], 'html' => false];
+		return (object)['account' => $account, 'to' => $to, 'cc' => $cc, 'bcc' => $bcc, 'subject' => $subject, 'body' => $body, 'attachments' => [], 'html' => $html];
 	}
 
 	/**
@@ -511,7 +511,7 @@ final class FakeMailMessageApp extends FakeMailApp {
 	 */
 	private function assertOn(): void {
 		if (!$this->enabled) {
-			throw new \OCA\Mcp\Tools\Mail\MailUnavailableException();
+			throw new \OCA\Mcp\Modules\Mail\MailUnavailableException();
 		}
 	}
 

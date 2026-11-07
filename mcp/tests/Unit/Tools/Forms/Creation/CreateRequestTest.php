@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Forms\Creation;
 
-use OCA\Mcp\Tools\ArgumentValidationException;
-use OCA\Mcp\Tools\Forms\Creation\CreateFormRequest;
-use OCA\Mcp\Tools\Forms\Creation\CreateFormTypes;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
+use OCA\Mcp\Modules\Forms\Creation\CreateFormRequest;
+use OCA\Mcp\Modules\Forms\Creation\CreateFormTypes;
 use PHPUnit\Framework\TestCase;
 
 /** Discriminates closed input semantics, fidelity and whole-request budgets before any native call. */

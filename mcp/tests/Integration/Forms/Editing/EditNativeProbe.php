@@ -6,8 +6,14 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Forms\Editing;
 
-use OCA\Mcp\Tools\Forms\Editing\{EditNativeFactory,EditContext,EditState,EditPlan,EditRequest,EditWriter};
-use OCA\Mcp\Tools\Forms\Creation\{CreateNativeArguments,CreateNativeThrottle};
+use OCA\Mcp\Modules\Forms\Integration\EditNativeFactory;
+use OCA\Mcp\Modules\Forms\Editing\EditContext;
+use OCA\Mcp\Modules\Forms\Integration\EditState;
+use OCA\Mcp\Modules\Forms\Editing\EditPlan;
+use OCA\Mcp\Modules\Forms\Editing\EditRequest;
+use OCA\Mcp\Modules\Forms\Editing\EditWriter;
+use OCA\Mcp\Modules\Forms\Integration\CreateNativeArguments;
+use OCA\Mcp\Modules\Forms\Integration\CreateNativeThrottle;
 use OCA\Mcp\Tests\Integration\Forms\FormsScene;
 use OCP\Server;
 
@@ -33,7 +39,7 @@ final class EditNativeProbe {
 		if(str_starts_with($case,'config-')){$session->setUser($capture);$config=Server::get(\OCA\Forms\Service\ConfigService::class);$config->canCreateForms();}
 		if(str_starts_with($case,'submission-')){$session->setUser($capture);Server::get(\OCA\Forms\Service\SubmissionService::class);}
 		$session->setUser($actor);$factory=Server::get(EditNativeFactory::class);
-		try{$c=$factory->open(FormsScene::OWNER);}catch(\OCA\Mcp\Tools\ToolFailure $e){if(!$negative){throw $e;}return ['scenario'=>$case,'accepted'=>false,'sentinelHasNoShares'=>true];}
+		try{$c=$factory->open(FormsScene::OWNER);}catch(\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e){if(!$negative){throw $e;}return ['scenario'=>$case,'accepted'=>false,'sentinelHasNoShares'=>true];}
 		if($negative){throw new \RuntimeException('Captured wrong FormsService was accepted');}
 		if($c->controller===$cached||$c->config===$config){throw new \RuntimeException('Cached captured graph reused');}
 		if($case==='scoped-config'){return EditScopedConfigProbe::run($c);}
@@ -41,12 +47,12 @@ final class EditNativeProbe {
 		$state=Server::get(EditState::class);$plans=Server::get(EditPlan::class);$before=$state->read($c,$r,FormsScene::OWNER);$effect=$state->effect($c,$r,$before);$plan=$plans->of($r,$c,$before,$effect,FormsScene::OWNER);
 
 		if($case==='external-revoke'){
-			$policy=Server::get(\OCA\Mcp\Service\GrantPolicy::class);
+			$policy=Server::get(\OCA\Mcp\Access\Grants\GrantPolicy::class);
 			try{return $policy->within(FormsScene::OWNER,function()use($policy,$factory,$state,$plans,$c,$r,$before,$effect,$plan):array{
 				if(!$policy->granted(FormsScene::OWNER,'forms','edit')){throw new \RuntimeException('Outer operation must start granted');}
 				$writer=new EditWriter(new EditRevokingFactory($factory),$state,$plans,Server::get(CreateNativeThrottle::class));
 				try{$writer->write($c,$r,$before,$effect,$plan,FormsScene::OWNER);throw new \RuntimeException('Externally revoked grant reached sink');}
-				catch(\OCA\Mcp\Tools\ToolFailure){
+				catch(\OCA\Mcp\Mcp\Tools\Results\ToolFailure){
 					if(!$policy->granted(FormsScene::OWNER,'forms','edit')||$state->read($c,$r,FormsScene::OWNER)!==$before){throw new \RuntimeException('Outer snapshot or zero-effect state was not preserved');}
 					return ['scenario'=>'external-revoke','accepted'=>false,'outerSnapshotStillGranted'=>true,'renewedBoundaryRefused'=>true,'nativeStateUnchanged'=>true];
 				}

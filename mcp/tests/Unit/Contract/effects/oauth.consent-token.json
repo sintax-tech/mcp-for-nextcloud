@@ -1,0 +1,584 @@
+{
+    "flow": "oauth.consent-token",
+    "steps": [
+        {
+            "step": "initial",
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 2,
+                    "authEpoch": 0,
+                    "generations": []
+                },
+                "codes": [],
+                "tokens": [],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "consent page keeps the request in the session only",
+            "request": {
+                "route": "o_auth#authorize",
+                "user": "alice",
+                "params": {
+                    "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                    "redirect_uri": "https://callback.example.test/cb",
+                    "response_type": "code",
+                    "code_challenge_method": "S256",
+                    "code_challenge": "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+                    "state": "st-1",
+                    "scope": "mcp"
+                }
+            },
+            "response": {
+                "status": 200,
+                "template": "consent",
+                "params": {
+                    "account": "Alice",
+                    "action": "/route/mcp.o_auth.consent",
+                    "blocked": false,
+                    "client": "Synthetic",
+                    "clientHost": "Synthetic",
+                    "customClient": true,
+                    "error": null,
+                    "loopback": false,
+                    "nativeClient": false,
+                    "pending": "<pending#1>",
+                    "redirectHost": "callback.example.test",
+                    "unavailable": false
+                }
+            },
+            "state": {
+                "session": {
+                    "mcp_oauth_pending": [
+                        [
+                            "<pending#1>",
+                            {
+                                "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                                "client_name": "Synthetic",
+                                "redirect_uris": [
+                                    "https://callback.example.test/cb"
+                                ],
+                                "client_generation": "1",
+                                "redirect_uri": "https://callback.example.test/cb",
+                                "state": "st-1",
+                                "code_challenge": "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+                                "resource": "https://cloud.example.org/apps/mcp/",
+                                "scope": "mcp",
+                                "issuer": "https://cloud.example.org"
+                            }
+                        ]
+                    ]
+                },
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 2,
+                    "authEpoch": 0,
+                    "generations": []
+                },
+                "codes": [],
+                "tokens": [],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "allow issues a code and connects alice",
+            "request": {
+                "route": "o_auth#consent",
+                "user": "alice",
+                "params": {
+                    "pending": "<pending#1>",
+                    "decision": "allow"
+                }
+            },
+            "response": {
+                "status": 200,
+                "template": "oauth-redirect",
+                "params": {
+                    "target": {
+                        "url": "https://callback.example.test/cb",
+                        "query": {
+                            "code": "<code#2>",
+                            "iss": "https://cloud.example.org",
+                            "state": "st-1"
+                        }
+                    }
+                },
+                "headers": {
+                    "Cache-Control": "no-store",
+                    "Pragma": "no-cache",
+                    "Referrer-Policy": "no-referrer"
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 3,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [
+                    {
+                        "code_hash": "<hash of code#2>",
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "redirect_uri": "https://callback.example.test/cb",
+                        "code_challenge": "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "expires_at": 1800000300,
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 1
+                    }
+                ],
+                "tokens": [],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "an unsupported grant type writes nothing",
+            "request": {
+                "route": "o_auth#token",
+                "user": "",
+                "params": {
+                    "grant_type": "password"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "unsupported_grant_type",
+                    "error_description": "Unsupported grant_type"
+                },
+                "headers": {
+                    "Cache-Control": "no-store",
+                    "Pragma": "no-cache"
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 3,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [
+                    {
+                        "code_hash": "<hash of code#2>",
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "redirect_uri": "https://callback.example.test/cb",
+                        "code_challenge": "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "expires_at": 1800000300,
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 1
+                    }
+                ],
+                "tokens": [],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "a wrong verifier spends the code and issues nothing",
+            "request": {
+                "route": "o_auth#token",
+                "user": "",
+                "params": {
+                    "grant_type": "authorization_code",
+                    "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                    "code": "<code#2>",
+                    "code_verifier": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                    "redirect_uri": "https://callback.example.test/cb"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "invalid_grant",
+                    "error_description": "Invalid authorization code"
+                },
+                "throttled": {
+                    "action": "mcp_oauth_token"
+                },
+                "headers": {
+                    "Cache-Control": "no-store",
+                    "Pragma": "no-cache"
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 3,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "a second consent page",
+            "request": {
+                "route": "o_auth#authorize",
+                "user": "alice",
+                "params": {
+                    "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                    "redirect_uri": "https://callback.example.test/cb",
+                    "response_type": "code",
+                    "code_challenge_method": "S256",
+                    "code_challenge": "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+                    "state": "st-1",
+                    "scope": "mcp"
+                }
+            },
+            "response": {
+                "status": 200,
+                "template": "consent",
+                "params": {
+                    "account": "Alice",
+                    "action": "/route/mcp.o_auth.consent",
+                    "blocked": false,
+                    "client": "Synthetic",
+                    "clientHost": "Synthetic",
+                    "customClient": true,
+                    "error": null,
+                    "loopback": false,
+                    "nativeClient": false,
+                    "pending": "<pending#3>",
+                    "redirectHost": "callback.example.test",
+                    "unavailable": false
+                }
+            },
+            "state": {
+                "session": {
+                    "mcp_oauth_pending": [
+                        [
+                            "<pending#3>",
+                            {
+                                "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                                "client_name": "Synthetic",
+                                "redirect_uris": [
+                                    "https://callback.example.test/cb"
+                                ],
+                                "client_generation": "1",
+                                "redirect_uri": "https://callback.example.test/cb",
+                                "state": "st-1",
+                                "code_challenge": "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+                                "resource": "https://cloud.example.org/apps/mcp/",
+                                "scope": "mcp",
+                                "issuer": "https://cloud.example.org"
+                            }
+                        ]
+                    ]
+                },
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 3,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "allow again issues a fresh code",
+            "request": {
+                "route": "o_auth#consent",
+                "user": "alice",
+                "params": {
+                    "pending": "<pending#3>",
+                    "decision": "allow"
+                }
+            },
+            "response": {
+                "status": 200,
+                "template": "oauth-redirect",
+                "params": {
+                    "target": {
+                        "url": "https://callback.example.test/cb",
+                        "query": {
+                            "code": "<code#4>",
+                            "iss": "https://cloud.example.org",
+                            "state": "st-1"
+                        }
+                    }
+                },
+                "headers": {
+                    "Cache-Control": "no-store",
+                    "Pragma": "no-cache",
+                    "Referrer-Policy": "no-referrer"
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 3,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "3",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [
+                    {
+                        "code_hash": "<hash of code#4>",
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "redirect_uri": "https://callback.example.test/cb",
+                        "code_challenge": "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "expires_at": 1800000300,
+                        "auth_global_epoch": "0",
+                        "auth_gen": "3",
+                        "id": 2
+                    }
+                ],
+                "tokens": [],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "the exchange issues one grant",
+            "request": {
+                "route": "o_auth#token",
+                "user": "",
+                "params": {
+                    "grant_type": "authorization_code",
+                    "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                    "code": "<code#4>",
+                    "code_verifier": "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",
+                    "redirect_uri": "https://callback.example.test/cb"
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "access_token": "<at#5>",
+                    "token_type": "Bearer",
+                    "expires_in": 3600,
+                    "refresh_token": "<rt#6>",
+                    "scope": "mcp"
+                },
+                "headers": {
+                    "Cache-Control": "no-store",
+                    "Pragma": "no-cache"
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 3,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "3",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#5>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#6>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "3",
+                        "id": 3
+                    }
+                ],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "a replayed code is refused and throttled",
+            "request": {
+                "route": "o_auth#token",
+                "user": "",
+                "params": {
+                    "grant_type": "authorization_code",
+                    "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                    "code": "<code#4>",
+                    "code_verifier": "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",
+                    "redirect_uri": "https://callback.example.test/cb"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "invalid_grant",
+                    "error_description": "Invalid authorization code"
+                },
+                "throttled": {
+                    "action": "mcp_oauth_token"
+                },
+                "headers": {
+                    "Cache-Control": "no-store",
+                    "Pragma": "no-cache"
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 3,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "3",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#5>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#6>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "3",
+                        "id": 3
+                    }
+                ],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        }
+    ]
+}

@@ -1,0 +1,521 @@
+{
+    "tool": "files_delete",
+    "grant": "files.delete",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "path": "/Projetos/antigo"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Delete file or folder**\n\nDelete folder: **/Projetos/antigo**\nInspected tree: 2 files, 2 folders (including the source), 10 bytes.\nDeletion supports files and completely inspected folders in Local personal home storage, including shared originals and descendants of local received shares with native DELETE permission. Shared impact requires confirm_shared. Received share roots, other mounts, personal and selected scope roots, and current or historical backup folders are refused. Folders are refused while exclusion tags are configured. Folder limits are 2,000 nodes, 1 GiB and 64 levels.\nTry the trash bin first: Nextcloud tries to move the item to the trash bin and may permanently delete it if that fails, even after the available preventive checks. Recovery is not guaranteed. Grant this permission only if you accept this risk and maintain backups.\n\nNothing was changed. Confirm to execute.\n\n*Try the trash bin first: Nextcloud tries to move the item to the trash bin and may permanently delete it if that fails, even after the available preventive checks. Recovery is not guaranteed. Grant this permission only if you accept this risk and maintain backups. Deletion supports files and completely inspected folders in Local personal home storage, including shared originals and descendants of local received shares with native DELETE permission. Shared impact requires confirm\\_shared. Received share roots, other mounts, personal and selected scope roots, and current or historical backup folders are refused. Folders are refused while exclusion tags are configured. Folder limits are 2,000 nodes, 1 GiB and 64 levels.*\n\n*To confirm, repeat the call with etag `e302`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_delete",
+                            "title": "Delete file or folder",
+                            "action": "files_delete",
+                            "path": "/Projetos/antigo",
+                            "id": 302,
+                            "etag": "<etag#1>",
+                            "size": 0,
+                            "shared": false,
+                            "requiresSharedConfirmation": false,
+                            "recoveryGuaranteed": false,
+                            "backupCreated": false,
+                            "message": "Try the trash bin first: Nextcloud tries to move the item to the trash bin and may permanently delete it if that fails, even after the available preventive checks. Recovery is not guaranteed. Grant this permission only if you accept this risk and maintain backups. Deletion supports files and completely inspected folders in Local personal home storage, including shared originals and descendants of local received shares with native DELETE permission. Shared impact requires confirm_shared. Received share roots, other mounts, personal and selected scope roots, and current or historical backup folders are refused. Folders are refused while exclusion tags are configured. Folder limits are 2,000 nodes, 1 GiB and 64 levels.",
+                            "trashDestination": "own_trash",
+                            "nodeType": "folder",
+                            "tree": {
+                                "nodes": 4,
+                                "files": 2,
+                                "folders": 2,
+                                "bytes": 10,
+                                "shared": false
+                            }
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/": 300,
+                    "/Projetos": 301,
+                    "/Projetos/antigo": 302,
+                    "/Projetos/antigo/notas.txt": 303,
+                    "/Projetos/antigo/sub": 304,
+                    "/Projetos/antigo/sub/plano.txt": 305,
+                    "/Projetos/arquivo": 306,
+                    "/Projetos/arquivo/notas.txt": 307,
+                    "/Projetos/arquivo/sub": 308,
+                    "/Projetos/arquivo/sub/plano.txt": 309,
+                    "/Projetos/resto": 310,
+                    "/Projetos/resto/notas.txt": 311,
+                    "/Projetos/resto/sub": 312,
+                    "/Projetos/resto/sub/plano.txt": 313
+                },
+                "trash": [],
+                "calls": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "path": "/Projetos/antigo",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/": 300,
+                    "/Projetos": 301,
+                    "/Projetos/antigo": 302,
+                    "/Projetos/antigo/notas.txt": 303,
+                    "/Projetos/antigo/sub": 304,
+                    "/Projetos/antigo/sub/plano.txt": 305,
+                    "/Projetos/arquivo": 306,
+                    "/Projetos/arquivo/notas.txt": 307,
+                    "/Projetos/arquivo/sub": 308,
+                    "/Projetos/arquivo/sub/plano.txt": 309,
+                    "/Projetos/resto": 310,
+                    "/Projetos/resto/notas.txt": 311,
+                    "/Projetos/resto/sub": 312,
+                    "/Projetos/resto/sub/plano.txt": 313
+                },
+                "trash": [],
+                "calls": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "path": "/Projetos/antigo",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Delete file or folder**\n\nDelete folder: **/Projetos/antigo**\nInspected tree: 2 files, 2 folders (including the source), 10 bytes.\nDeletion supports files and completely inspected folders in Local personal home storage, including shared originals and descendants of local received shares with native DELETE permission. Shared impact requires confirm_shared. Received share roots, other mounts, personal and selected scope roots, and current or historical backup folders are refused. Folders are refused while exclusion tags are configured. Folder limits are 2,000 nodes, 1 GiB and 64 levels.\nTry the trash bin first: Nextcloud tries to move the item to the trash bin and may permanently delete it if that fails, even after the available preventive checks. Recovery is not guaranteed. Grant this permission only if you accept this risk and maintain backups.\n\nNothing was changed. Confirm to execute.\n\n*Try the trash bin first: Nextcloud tries to move the item to the trash bin and may permanently delete it if that fails, even after the available preventive checks. Recovery is not guaranteed. Grant this permission only if you accept this risk and maintain backups. Deletion supports files and completely inspected folders in Local personal home storage, including shared originals and descendants of local received shares with native DELETE permission. Shared impact requires confirm\\_shared. Received share roots, other mounts, personal and selected scope roots, and current or historical backup folders are refused. Folders are refused while exclusion tags are configured. Folder limits are 2,000 nodes, 1 GiB and 64 levels.*\n\n*To confirm, repeat the call with etag `e302`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_delete",
+                            "title": "Delete file or folder",
+                            "action": "files_delete",
+                            "path": "/Projetos/antigo",
+                            "id": 302,
+                            "etag": "<etag#1>",
+                            "size": 0,
+                            "shared": false,
+                            "requiresSharedConfirmation": false,
+                            "recoveryGuaranteed": false,
+                            "backupCreated": false,
+                            "message": "Try the trash bin first: Nextcloud tries to move the item to the trash bin and may permanently delete it if that fails, even after the available preventive checks. Recovery is not guaranteed. Grant this permission only if you accept this risk and maintain backups. Deletion supports files and completely inspected folders in Local personal home storage, including shared originals and descendants of local received shares with native DELETE permission. Shared impact requires confirm_shared. Received share roots, other mounts, personal and selected scope roots, and current or historical backup folders are refused. Folders are refused while exclusion tags are configured. Folder limits are 2,000 nodes, 1 GiB and 64 levels.",
+                            "trashDestination": "own_trash",
+                            "nodeType": "folder",
+                            "tree": {
+                                "nodes": 4,
+                                "files": 2,
+                                "folders": 2,
+                                "bytes": 10,
+                                "shared": false
+                            }
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/": 300,
+                    "/Projetos": 301,
+                    "/Projetos/antigo": 302,
+                    "/Projetos/antigo/notas.txt": 303,
+                    "/Projetos/antigo/sub": 304,
+                    "/Projetos/antigo/sub/plano.txt": 305,
+                    "/Projetos/arquivo": 306,
+                    "/Projetos/arquivo/notas.txt": 307,
+                    "/Projetos/arquivo/sub": 308,
+                    "/Projetos/arquivo/sub/plano.txt": 309,
+                    "/Projetos/resto": 310,
+                    "/Projetos/resto/notas.txt": 311,
+                    "/Projetos/resto/sub": 312,
+                    "/Projetos/resto/sub/plano.txt": 313
+                },
+                "trash": [],
+                "calls": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "files_delete carries no plan_state: the client echoes the id and ETag of the plan, and a folder whose tree changed in between is refused as a conflict, never answered with a new plan"
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "path": "/Projetos/antigo"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Delete file or folder**\n\nDelete folder: **/Projetos/antigo**\nInspected tree: 2 files, 2 folders (including the source), 10 bytes.\nDeletion supports files and completely inspected folders in Local personal home storage, including shared originals and descendants of local received shares with native DELETE permission. Shared impact requires confirm_shared. Received share roots, other mounts, personal and selected scope roots, and current or historical backup folders are refused. Folders are refused while exclusion tags are configured. Folder limits are 2,000 nodes, 1 GiB and 64 levels.\nTry the trash bin first: Nextcloud tries to move the item to the trash bin and may permanently delete it if that fails, even after the available preventive checks. Recovery is not guaranteed. Grant this permission only if you accept this risk and maintain backups.\n\nNothing was changed. Confirm to execute.\n\n*Try the trash bin first: Nextcloud tries to move the item to the trash bin and may permanently delete it if that fails, even after the available preventive checks. Recovery is not guaranteed. Grant this permission only if you accept this risk and maintain backups. Deletion supports files and completely inspected folders in Local personal home storage, including shared originals and descendants of local received shares with native DELETE permission. Shared impact requires confirm\\_shared. Received share roots, other mounts, personal and selected scope roots, and current or historical backup folders are refused. Folders are refused while exclusion tags are configured. Folder limits are 2,000 nodes, 1 GiB and 64 levels.*\n\n*To confirm, repeat the call with etag `e302`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_delete",
+                            "title": "Delete file or folder",
+                            "action": "files_delete",
+                            "path": "/Projetos/antigo",
+                            "id": 302,
+                            "etag": "<etag#1>",
+                            "size": 0,
+                            "shared": false,
+                            "requiresSharedConfirmation": false,
+                            "recoveryGuaranteed": false,
+                            "backupCreated": false,
+                            "message": "Try the trash bin first: Nextcloud tries to move the item to the trash bin and may permanently delete it if that fails, even after the available preventive checks. Recovery is not guaranteed. Grant this permission only if you accept this risk and maintain backups. Deletion supports files and completely inspected folders in Local personal home storage, including shared originals and descendants of local received shares with native DELETE permission. Shared impact requires confirm_shared. Received share roots, other mounts, personal and selected scope roots, and current or historical backup folders are refused. Folders are refused while exclusion tags are configured. Folder limits are 2,000 nodes, 1 GiB and 64 levels.",
+                            "trashDestination": "own_trash",
+                            "nodeType": "folder",
+                            "tree": {
+                                "nodes": 4,
+                                "files": 2,
+                                "folders": 2,
+                                "bytes": 10,
+                                "shared": false
+                            }
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/": 300,
+                    "/Projetos": 301,
+                    "/Projetos/antigo": 302,
+                    "/Projetos/antigo/notas.txt": 303,
+                    "/Projetos/antigo/sub": 304,
+                    "/Projetos/antigo/sub/plano.txt": 305,
+                    "/Projetos/arquivo": 306,
+                    "/Projetos/arquivo/notas.txt": 307,
+                    "/Projetos/arquivo/sub": 308,
+                    "/Projetos/arquivo/sub/plano.txt": 309,
+                    "/Projetos/resto": 310,
+                    "/Projetos/resto/notas.txt": 311,
+                    "/Projetos/resto/sub": 312,
+                    "/Projetos/resto/sub/plano.txt": 313
+                },
+                "trash": [],
+                "calls": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "path": "/Projetos/antigo",
+                "confirm": true,
+                "id": 302,
+                "etag": "<etag#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"status\": \"removed_destination_unconfirmed\",\n    \"path\": \"/Projetos/antigo\",\n    \"idBefore\": 302,\n    \"recoveryConfirmed\": false,\n    \"message\": \"The folder is no longer at its original path. Its trash destination and recoverability have not been confirmed. No recovery copy was created by MCP. Try the trash bin first: Nextcloud tries to move the item to the trash bin and may permanently delete it if that fails, even after the available preventive checks. Recovery is not guaranteed. Grant this permission only if you accept this risk and maintain backups.\",\n    \"trash\": \"not_confirmed\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/": 300,
+                    "/Projetos": 301,
+                    "/Projetos/arquivo": 306,
+                    "/Projetos/arquivo/notas.txt": 307,
+                    "/Projetos/arquivo/sub": 308,
+                    "/Projetos/arquivo/sub/plano.txt": 309,
+                    "/Projetos/resto": 310,
+                    "/Projetos/resto/notas.txt": 311,
+                    "/Projetos/resto/sub": 312,
+                    "/Projetos/resto/sub/plano.txt": 313
+                },
+                "trash": [
+                    {
+                        "id": 302,
+                        "path": "/Projetos/antigo",
+                        "type": "dir",
+                        "nodes": 4
+                    }
+                ],
+                "calls": [
+                    "delete /alice/files/Projetos/antigo"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "path": "/Projetos/arquivo",
+                "confirm": true,
+                "id": 306,
+                "etag": "<etag#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/": 300,
+                    "/Projetos": 301,
+                    "/Projetos/arquivo": 306,
+                    "/Projetos/arquivo/notas.txt": 307,
+                    "/Projetos/arquivo/sub": 308,
+                    "/Projetos/arquivo/sub/plano.txt": 309,
+                    "/Projetos/resto": 310,
+                    "/Projetos/resto/notas.txt": 311,
+                    "/Projetos/resto/sub": 312,
+                    "/Projetos/resto/sub/plano.txt": 313
+                },
+                "trash": [
+                    {
+                        "id": 302,
+                        "path": "/Projetos/antigo",
+                        "type": "dir",
+                        "nodes": 4
+                    }
+                ],
+                "calls": [
+                    "delete /alice/files/Projetos/antigo"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "path": "/Projetos/arquivo"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Delete file or folder**\n\nDelete folder: **/Projetos/arquivo**\nInspected tree: 2 files, 2 folders (including the source), 10 bytes.\nDeletion supports files and completely inspected folders in Local personal home storage, including shared originals and descendants of local received shares with native DELETE permission. Shared impact requires confirm_shared. Received share roots, other mounts, personal and selected scope roots, and current or historical backup folders are refused. Folders are refused while exclusion tags are configured. Folder limits are 2,000 nodes, 1 GiB and 64 levels.\nTry the trash bin first: Nextcloud tries to move the item to the trash bin and may permanently delete it if that fails, even after the available preventive checks. Recovery is not guaranteed. Grant this permission only if you accept this risk and maintain backups.\n\nNothing was changed. Confirm to execute.\n\n*Try the trash bin first: Nextcloud tries to move the item to the trash bin and may permanently delete it if that fails, even after the available preventive checks. Recovery is not guaranteed. Grant this permission only if you accept this risk and maintain backups. Deletion supports files and completely inspected folders in Local personal home storage, including shared originals and descendants of local received shares with native DELETE permission. Shared impact requires confirm\\_shared. Received share roots, other mounts, personal and selected scope roots, and current or historical backup folders are refused. Folders are refused while exclusion tags are configured. Folder limits are 2,000 nodes, 1 GiB and 64 levels.*\n\n*To confirm, repeat the call with etag `e306`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_delete",
+                            "title": "Delete file or folder",
+                            "action": "files_delete",
+                            "path": "/Projetos/arquivo",
+                            "id": 306,
+                            "etag": "<etag#2>",
+                            "size": 0,
+                            "shared": false,
+                            "requiresSharedConfirmation": false,
+                            "recoveryGuaranteed": false,
+                            "backupCreated": false,
+                            "message": "Try the trash bin first: Nextcloud tries to move the item to the trash bin and may permanently delete it if that fails, even after the available preventive checks. Recovery is not guaranteed. Grant this permission only if you accept this risk and maintain backups. Deletion supports files and completely inspected folders in Local personal home storage, including shared originals and descendants of local received shares with native DELETE permission. Shared impact requires confirm_shared. Received share roots, other mounts, personal and selected scope roots, and current or historical backup folders are refused. Folders are refused while exclusion tags are configured. Folder limits are 2,000 nodes, 1 GiB and 64 levels.",
+                            "trashDestination": "own_trash",
+                            "nodeType": "folder",
+                            "tree": {
+                                "nodes": 4,
+                                "files": 2,
+                                "folders": 2,
+                                "bytes": 10,
+                                "shared": false
+                            }
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/": 300,
+                    "/Projetos": 301,
+                    "/Projetos/arquivo": 306,
+                    "/Projetos/arquivo/notas.txt": 307,
+                    "/Projetos/arquivo/sub": 308,
+                    "/Projetos/arquivo/sub/plano.txt": 309,
+                    "/Projetos/resto": 310,
+                    "/Projetos/resto/notas.txt": 311,
+                    "/Projetos/resto/sub": 312,
+                    "/Projetos/resto/sub/plano.txt": 313
+                },
+                "trash": [
+                    {
+                        "id": 302,
+                        "path": "/Projetos/antigo",
+                        "type": "dir",
+                        "nodes": 4
+                    }
+                ],
+                "calls": [
+                    "delete /alice/files/Projetos/antigo"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "path": "/Projetos/arquivo",
+                "confirm": true,
+                "id": 306,
+                "etag": "<etag#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"status\": \"removed_destination_unconfirmed\",\n    \"path\": \"/Projetos/arquivo\",\n    \"idBefore\": 306,\n    \"recoveryConfirmed\": false,\n    \"message\": \"The folder is no longer at its original path. Its trash destination and recoverability have not been confirmed. No recovery copy was created by MCP. Try the trash bin first: Nextcloud tries to move the item to the trash bin and may permanently delete it if that fails, even after the available preventive checks. Recovery is not guaranteed. Grant this permission only if you accept this risk and maintain backups.\",\n    \"trash\": \"not_confirmed\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/": 300,
+                    "/Projetos": 301,
+                    "/Projetos/resto": 310,
+                    "/Projetos/resto/notas.txt": 311,
+                    "/Projetos/resto/sub": 312,
+                    "/Projetos/resto/sub/plano.txt": 313
+                },
+                "trash": [
+                    {
+                        "id": 302,
+                        "path": "/Projetos/antigo",
+                        "type": "dir",
+                        "nodes": 4
+                    },
+                    {
+                        "id": 306,
+                        "path": "/Projetos/arquivo",
+                        "type": "dir",
+                        "nodes": 4
+                    }
+                ],
+                "calls": [
+                    "delete /alice/files/Projetos/antigo",
+                    "delete /alice/files/Projetos/arquivo"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "arguments": {
+                "path": "/Projetos/resto",
+                "confirm": true,
+                "id": 310,
+                "etag": "<etag#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/": 300,
+                    "/Projetos": 301,
+                    "/Projetos/resto": 310,
+                    "/Projetos/resto/notas.txt": 311,
+                    "/Projetos/resto/sub": 312,
+                    "/Projetos/resto/sub/plano.txt": 313
+                },
+                "trash": [
+                    {
+                        "id": 302,
+                        "path": "/Projetos/antigo",
+                        "type": "dir",
+                        "nodes": 4
+                    },
+                    {
+                        "id": 306,
+                        "path": "/Projetos/arquivo",
+                        "type": "dir",
+                        "nodes": 4
+                    }
+                ],
+                "calls": [
+                    "delete /alice/files/Projetos/antigo",
+                    "delete /alice/files/Projetos/arquivo"
+                ]
+            }
+        }
+    ]
+}

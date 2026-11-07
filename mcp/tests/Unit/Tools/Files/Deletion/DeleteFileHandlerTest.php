@@ -7,12 +7,12 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files\Deletion;
 
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
-use OCA\Mcp\Tools\Common\LockAwareWrite;
-use OCA\Mcp\Tools\Files\Deletion\DeleteEligibility;
-use OCA\Mcp\Tools\Files\Deletion\DeleteMessages;
-use OCA\Mcp\Tools\Files\Deletion\DeleteOutcome;
-use OCA\Mcp\Tools\Files\Handler\DeleteFileHandler;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
+use OCA\Mcp\Modules\Files\Deletion\DeleteEligibility;
+use OCA\Mcp\Modules\Files\Deletion\DeleteMessages;
+use OCA\Mcp\Modules\Files\Deletion\DeleteOutcome;
+use OCA\Mcp\Modules\Files\Deletion\DeleteFileHandler;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 
 /** Discriminates void veto, successful removal, changed source and partial failures; no trash claim from void. */
@@ -36,7 +36,7 @@ final class DeleteFileHandlerTest extends TestCase {
 	/** @return DeleteFileHandler Handler with two real resolutions through the synthetic view. */
 	private function handler(): DeleteFileHandler {
 		$this->eligibility->method('file')->willReturnCallback(fn () => $this->tree->node('/alice/files/a.txt'));
-		return new DeleteFileHandler($this->eligibility, $this->locks, new \Psr\Log\NullLogger(), new \OCA\Mcp\Tools\Files\Deletion\DeleteTrashVeto($this->createMock(\OCP\EventDispatcher\IEventDispatcher::class)));
+		return new DeleteFileHandler($this->eligibility, $this->locks, new \Psr\Log\NullLogger(), new \OCA\Mcp\Modules\Files\Integration\DeleteTrashVeto($this->createMock(\OCP\EventDispatcher\IEventDispatcher::class)));
 	}
 
 	/** @return void Preview reads identity/ETag and the risk, creating neither a copy nor a deletion. */
@@ -69,7 +69,7 @@ final class DeleteFileHandlerTest extends TestCase {
 		$file->expects(self::once())->method('delete')->willReturn(null);
 		$this->eligibility->method('file')->willReturn($file);
 		$handler = new DeleteFileHandler($this->eligibility, $this->locks, new \Psr\Log\NullLogger(),
-			new \OCA\Mcp\Tools\Files\Deletion\DeleteTrashVeto($this->createMock(\OCP\EventDispatcher\IEventDispatcher::class)));
+			new \OCA\Mcp\Modules\Files\Integration\DeleteTrashVeto($this->createMock(\OCP\EventDispatcher\IEventDispatcher::class)));
 		$result = $handler->handle($this->tree->node('/alice/files'), 'alice', ['path' => '/a.txt']);
 		self::assertSame([], $this->tree->ops);
 		self::assertTrue($result['isError']);
@@ -97,7 +97,7 @@ final class DeleteFileHandlerTest extends TestCase {
 			return $file;
 		});
 		try {
-			(new DeleteFileHandler($this->eligibility, $this->locks, new \Psr\Log\NullLogger(), new \OCA\Mcp\Tools\Files\Deletion\DeleteTrashVeto($this->createMock(\OCP\EventDispatcher\IEventDispatcher::class))))->handle($this->tree->node('/alice/files'), 'alice', ['path' => '/a.txt']);
+			(new DeleteFileHandler($this->eligibility, $this->locks, new \Psr\Log\NullLogger(), new \OCA\Mcp\Modules\Files\Integration\DeleteTrashVeto($this->createMock(\OCP\EventDispatcher\IEventDispatcher::class))))->handle($this->tree->node('/alice/files'), 'alice', ['path' => '/a.txt']);
 			self::fail('Expected revalidation refusal');
 		} catch (ToolFailure) {
 			self::assertSame([], $this->tree->ops);
@@ -117,7 +117,7 @@ final class DeleteFileHandlerTest extends TestCase {
 		$logger = $this->createMock(\Psr\Log\LoggerInterface::class);
 		$logger->method('warning')->willThrowException(new \RuntimeException('logger failure'));
 		$handler = new DeleteFileHandler($this->eligibility, $this->locks, $logger,
-			new \OCA\Mcp\Tools\Files\Deletion\DeleteTrashVeto($this->createMock(\OCP\EventDispatcher\IEventDispatcher::class)));
+			new \OCA\Mcp\Modules\Files\Integration\DeleteTrashVeto($this->createMock(\OCP\EventDispatcher\IEventDispatcher::class)));
 		$result = $handler->handle($this->tree->node('/alice/files'), 'alice', ['path' => '/a.txt']);
 		self::assertTrue($result['isError']);
 		self::assertSame('uncertain', json_decode($result['content'][0]['text'], true)['status']);
@@ -132,7 +132,7 @@ final class DeleteFileHandlerTest extends TestCase {
 		$logger->expects(self::once())->method('warning')->with('MCP file deletion cache invalidation failed',
 			['app' => 'mcp', 'exception_class' => \RuntimeException::class]);
 		$handler = new DeleteFileHandler($this->eligibility, $this->locks, $logger,
-			new \OCA\Mcp\Tools\Files\Deletion\DeleteTrashVeto($this->createMock(\OCP\EventDispatcher\IEventDispatcher::class)));
+			new \OCA\Mcp\Modules\Files\Integration\DeleteTrashVeto($this->createMock(\OCP\EventDispatcher\IEventDispatcher::class)));
 		$result = $handler->handle($this->tree->node('/alice/files'), 'alice', ['path' => '/a.txt']);
 		self::assertTrue($result['isError']);
 		self::assertSame('uncertain', json_decode($result['content'][0]['text'], true)['status']);

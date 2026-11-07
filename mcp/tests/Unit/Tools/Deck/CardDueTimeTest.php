@@ -10,10 +10,10 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 use DateTimeImmutable;
 use DateTimeZone;
 use InvalidArgumentException;
-use OCA\Mcp\Tools\Deck\BoardBlueprint;
-use OCA\Mcp\Tools\Deck\CardDueDate;
-use OCA\Mcp\Tools\Deck\CardDueDateView;
-use OCA\Mcp\Tools\Deck\CardInput;
+use OCA\Mcp\Modules\Deck\Structure\BoardBlueprint;
+use OCA\Mcp\Modules\Deck\DueDates\CardDueDate;
+use OCA\Mcp\Modules\Deck\DueDates\CardDueDateView;
+use OCA\Mcp\Modules\Deck\Editing\CardInput;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -147,7 +147,7 @@ final class CardDueTimeTest extends TestCase {
 		$args = ['title' => 'Timed board', 'stacks' => [['title' => 'Todo', 'cards' => [['title' => 'Timed', 'duedate' => '2026-10-01T15:30']]]]];
 		self::assertSame('2026-10-01T15:30', BoardBlueprint::parse($args, 'alice', new DateTimeZone('Asia/Tokyo'))['stacks'][0]['cards'][0]['duedate']);
 		$args['stacks'][0]['cards'][0]['duedate'] = '2026-09-06T00:00';
-		$this->expectException(\OCA\Mcp\Tools\ArgumentValidationException::class);
+		$this->expectException(\OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException::class);
 		BoardBlueprint::parse($args, 'alice', new DateTimeZone('America/Santiago'));
 	}
 }

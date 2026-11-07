@@ -19,13 +19,13 @@ use OCP\Migration\IRepairStep;
  * reach the same insert-if-absent the migration's postSchemaChange uses.
  */
 final class PolicyStateSeedStep implements IRepairStep {
-    public function __construct(private PolicyStateSeeder $seeder) {}
+	public function __construct(private PolicyStateSeeder $seeder) {}
 
-    public function getName(): string {
-        return 'Seed the MCP policy state';
-    }
+	public function getName(): string {
+		return 'Seed the MCP policy state';
+	}
 
-    public function run(IOutput $output): void {
-        $this->seeder->seed();
-    }
+	public function run(IOutput $output): void {
+		$this->seeder->seed();
+	}
 }

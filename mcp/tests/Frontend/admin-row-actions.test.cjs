@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Behavioral tests of the row actions of the permission matrix (S5 of the admin redesign): js/admin-row-actions.js runs
- * unchanged against a stub of window.McpAdminMatrix and a minimal DOM, and the row pieces of js/admin-grants.js (the line
+ * Behavioral tests of the row actions of the permission matrix (S5 of the admin redesign): src/admin/admin-row-actions.js runs
+ * unchanged against a stub of window.McpAdminMatrix and a minimal DOM, and the row pieces of src/admin/admin-grants.js (the line
  * under the name and the "With exceptions" filter) are cut out of the source and run against stubs.
  */
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const fs = require('node:fs')
 const path = require('node:path')
 
@@ -94,7 +94,7 @@ function setup({ overrides = true, clipboard = true } = {}) {
 		if (clipboard === 'refuses') throw new Error('NotAllowedError')
 		log.copied.push(text)
 	} } }
-	vm.runInNewContext(fs.readFileSync(path.join(root, 'js/admin-row-actions.js'), 'utf8'), { window, document, navigator, t, Event: class { constructor(type) { this.type = type } } })
+	vm.runInNewContext(require('./AdminManifest.cjs').script('admin-row-actions.js'), { window, document, navigator, t, Event: class { constructor(type) { this.type = type } } })
 	const button = (uid) => {
 		const trigger = window.McpRowActions.button(users.find((user) => user.uid === uid))
 		block.append(trigger)
@@ -203,13 +203,11 @@ test('a copy the browser refuses is reported, and without a clipboard the item i
 	assert.equal(none.menu.children[3].disabled, true)
 })
 
-/* The row pieces of js/admin-grants.js. */
+/* The row pieces of src/admin/admin-grants.js. */
 
-const grants = fs.readFileSync(path.join(root, 'js/admin-grants.js'), 'utf8')
+const grants = require('./AdminManifest.cjs').script('admin-grants.js')
 function cut(declaration) {
-	const start = grants.indexOf('\t' + declaration)
-	assert.ok(start > 0, declaration + ' was found in js/admin-grants.js')
-	return grants.slice(start, grants.indexOf('\n\t}\n', start) + 4)
+	return require('./AdminManifest.cjs').operation(declaration)
 }
 
 function rowsKit(kinds) {
@@ -239,9 +237,9 @@ function rowsKit(kinds) {
 		visiblePermissionColumns: () => 9,
 		window: { McpAdminExceptions: { kindOf: (uid) => ({ kind: kinds[uid] }) } },
 	}
-	vm.runInNewContext([cut('const OWN_SOURCES = '), cut('function hasException('), cut('function applyExceptionsFilter('), cut('function userLine(')].join('\n')
-		+ '\nthis.apply = applyExceptionsFilter; this.userLine = userLine', sandbox)
-	return { sandbox, tbody, all, exceptions, rows: () => tbody.rows }
+	vm.runInNewContext([cut('const OWN_SOURCES = '), cut('function hasException('), cut('function applyExceptionsFilter('), cut('function userLine('), cut('function attachExceptions(')].join('\n')
+		+ '\nattachExceptions(); this.apply = applyExceptionsFilter; this.userLine = userLine', sandbox)
+	return { sandbox, tbody, all, exceptions, rows: () => tbody.rows, choose: (only) => (only ? exceptions : all).listeners.click[0]() }
 }
 
 test('"With exceptions (N)" counts the people of the page with a real exception and shows only them when chosen', () => {
@@ -251,27 +249,23 @@ test('"With exceptions (N)" counts the people of the page with a real exception 
 	assert.equal(kit.exceptions.title, 'People on this page with an individual value that differs from what they inherit')
 	assert.equal(kit.all.getAttribute('aria-pressed'), 'true')
 	assert.ok(kit.rows().every((row) => !row.hidden), 'everyone while "All" is chosen')
-	kit.sandbox.state.exceptionsOnly = true
-	kit.sandbox.apply()
+	kit.choose(true)
 	assert.equal(kit.exceptions.getAttribute('aria-pressed'), 'true')
 	assert.deepEqual(kit.rows().filter((row) => !row.hidden).map((row) => row.dataset.uid), ['ana'])
 })
 
 test('while the classification is pending the count is not shown and nobody is hidden; an empty result says so', () => {
 	const pending = rowsKit({ ana: 'pending', bruno: 'redundant' })
-	pending.sandbox.state.exceptionsOnly = true
-	pending.sandbox.apply()
+	pending.choose(true)
 	assert.equal(pending.exceptions.textContent, 'With exceptions')
 	assert.deepEqual(pending.rows().filter((row) => !row.hidden).map((row) => row.dataset.uid), ['ana'], 'unknown is shown, never hidden')
 
 	const none = rowsKit({ ana: 'redundant', bruno: null })
-	none.sandbox.state.exceptionsOnly = true
-	none.sandbox.apply()
+	none.choose(true)
 	const empty = none.tbody.children.find((child) => child.classes.has('mcp-only-empty'))
 	assert.equal(empty.textContent, 'No one on this page has an exception.')
 	assert.equal(empty.children[0].colSpan, 13)
-	none.sandbox.state.exceptionsOnly = false
-	none.sandbox.apply()
+	none.choose(false)
 	assert.equal(none.tbody.children.find((child) => child.classes.has('mcp-only-empty')), undefined, 'and it goes with the filter')
 })
 

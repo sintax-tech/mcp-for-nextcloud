@@ -21,31 +21,31 @@ use OCP\Migration\SimpleMigrationStep;
  * transaction with the move that produced it.
  */
 class Version000800Date20261002000000 extends SimpleMigrationStep {
-    /**
-     * @param IOutput $output migration output
-     * @param Closure(): ISchemaWrapper $schemaClosure current schema
-     * @param array<string, mixed> $options migration options
-     * @return ISchemaWrapper|null the changed schema
-     */
-    public function changeSchema(IOutput $output, Closure $schemaClosure, array $options): ?ISchemaWrapper {
-        /** @var ISchemaWrapper $schema */
-        $schema = $schemaClosure();
-        if ($schema->hasTable('mcp_file_batches')) {
-            return null;
-        }
-        $table = $schema->createTable('mcp_file_batches');
-        $table->addColumn('id', Types::BIGINT, ['autoincrement' => true, 'notnull' => true, 'unsigned' => true]);
-        $table->addColumn('user_id', Types::STRING, ['notnull' => true, 'length' => 64]);
-        $table->addColumn('created_at', Types::BIGINT, ['notnull' => true, 'unsigned' => true]);
-        // [{from, to, toId}] — toId is what makes the undo safe: it only puts back the node it moved.
-        $table->addColumn('moves_json', Types::TEXT, ['notnull' => true]);
-        // The folders the batch itself created, which the undo may remove again while they are empty.
-        $table->addColumn('dirs_json', Types::TEXT, ['notnull' => true]);
-        $table->addColumn('undone_at', Types::BIGINT, ['notnull' => false, 'unsigned' => true]);
-        $table->setPrimaryKey(['id']);
-        // The undo always looks a batch up by owner, and the retention purge walks by age.
-        $table->addIndex(['user_id'], 'mcp_file_batch_uid');
-        $table->addIndex(['created_at'], 'mcp_file_batch_created');
-        return $schema;
-    }
+	/**
+	 * @param IOutput $output migration output
+	 * @param Closure(): ISchemaWrapper $schemaClosure current schema
+	 * @param array<string, mixed> $options migration options
+	 * @return ISchemaWrapper|null the changed schema
+	 */
+	public function changeSchema(IOutput $output, Closure $schemaClosure, array $options): ?ISchemaWrapper {
+		/** @var ISchemaWrapper $schema */
+		$schema = $schemaClosure();
+		if ($schema->hasTable('mcp_file_batches')) {
+			return null;
+		}
+		$table = $schema->createTable('mcp_file_batches');
+		$table->addColumn('id', Types::BIGINT, ['autoincrement' => true, 'notnull' => true, 'unsigned' => true]);
+		$table->addColumn('user_id', Types::STRING, ['notnull' => true, 'length' => 64]);
+		$table->addColumn('created_at', Types::BIGINT, ['notnull' => true, 'unsigned' => true]);
+		// [{from, to, toId}] — toId is what makes the undo safe: it only puts back the node it moved.
+		$table->addColumn('moves_json', Types::TEXT, ['notnull' => true]);
+		// The folders the batch itself created, which the undo may remove again while they are empty.
+		$table->addColumn('dirs_json', Types::TEXT, ['notnull' => true]);
+		$table->addColumn('undone_at', Types::BIGINT, ['notnull' => false, 'unsigned' => true]);
+		$table->setPrimaryKey(['id']);
+		// The undo always looks a batch up by owner, and the retention purge walks by age.
+		$table->addIndex(['user_id'], 'mcp_file_batch_uid');
+		$table->addIndex(['created_at'], 'mcp_file_batch_created');
+		return $schema;
+	}
 }

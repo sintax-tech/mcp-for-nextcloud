@@ -8,10 +8,10 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 
 use DateTimeZone;
-use OCA\Mcp\Tools\Mail\MailCursor;
-use OCA\Mcp\Tools\Mail\MailMessages;
-use OCA\Mcp\Tools\Mail\MailSearchCriteria;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Modules\Mail\Reading\MailCursor;
+use OCA\Mcp\Modules\Mail\Presentation\MailMessages;
+use OCA\Mcp\Modules\Mail\Reading\MailSearchCriteria;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 
 /**

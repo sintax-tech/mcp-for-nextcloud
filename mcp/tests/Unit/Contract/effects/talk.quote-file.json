@@ -1,0 +1,496 @@
+{
+    "tool": "talk_quote_file",
+    "grant": "talk.quote",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "attachment_id": 15,
+                "message": "See report"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Quote file in Talk**\n\nA message will be published in **Project** citing the file **report.pdf**.\n\nCaption shown with the citation:\n\n> See report\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user exactly as it will be sent to the conversation 'Project', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "talk_quote_file",
+                            "title": "Quote file in Talk",
+                            "action": "talk_quote_file",
+                            "conversation": {
+                                "token": "abcd1234",
+                                "displayName": "Project"
+                            },
+                            "draft": {
+                                "message": "See report",
+                                "file": {
+                                    "attachmentId": 15,
+                                    "name": "report.pdf",
+                                    "size": 6,
+                                    "mimeType": "application/pdf"
+                                }
+                            },
+                            "message": "Show this plan to the user exactly as it will be sent to the conversation 'Project', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": [
+                    {
+                        "node": 101,
+                        "id": "15",
+                        "type": 10,
+                        "with": "abcd1234",
+                        "by": "alice",
+                        "permissions": 1
+                    }
+                ]
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "attachment_id": 15,
+                "message": "See report",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": [
+                    {
+                        "node": 101,
+                        "id": "15",
+                        "type": 10,
+                        "with": "abcd1234",
+                        "by": "alice",
+                        "permissions": 1
+                    }
+                ]
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "attachment_id": 15,
+                "message": "See report",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Quote file in Talk**\n\nA message will be published in **Project** citing the file **report.pdf**.\n\nCaption shown with the citation:\n\n> See report\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user exactly as it will be sent to the conversation 'Project', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "talk_quote_file",
+                            "title": "Quote file in Talk",
+                            "action": "talk_quote_file",
+                            "conversation": {
+                                "token": "abcd1234",
+                                "displayName": "Project"
+                            },
+                            "draft": {
+                                "message": "See report",
+                                "file": {
+                                    "attachmentId": 15,
+                                    "name": "report.pdf",
+                                    "size": 6,
+                                    "mimeType": "application/pdf"
+                                }
+                            },
+                            "message": "Show this plan to the user exactly as it will be sent to the conversation 'Project', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": [
+                    {
+                        "node": 101,
+                        "id": "15",
+                        "type": 10,
+                        "with": "abcd1234",
+                        "by": "alice",
+                        "permissions": 1
+                    }
+                ]
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "Talk does not sign a PlanState; it revalidates the conversation and arguments at execution."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "attachment_id": 15,
+                "message": "See report"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Quote file in Talk**\n\nA message will be published in **Project** citing the file **report.pdf**.\n\nCaption shown with the citation:\n\n> See report\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user exactly as it will be sent to the conversation 'Project', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "talk_quote_file",
+                            "title": "Quote file in Talk",
+                            "action": "talk_quote_file",
+                            "conversation": {
+                                "token": "abcd1234",
+                                "displayName": "Project"
+                            },
+                            "draft": {
+                                "message": "See report",
+                                "file": {
+                                    "attachmentId": 15,
+                                    "name": "report.pdf",
+                                    "size": 6,
+                                    "mimeType": "application/pdf"
+                                }
+                            },
+                            "message": "Show this plan to the user exactly as it will be sent to the conversation 'Project', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": [
+                    {
+                        "node": 101,
+                        "id": "15",
+                        "type": 10,
+                        "with": "abcd1234",
+                        "by": "alice",
+                        "permissions": 1
+                    }
+                ]
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "attachment_id": 15,
+                "message": "See report",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"conversation_token\": \"abcd1234\",\n    \"messageId\": 55,\n    \"attachmentId\": 15\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "messages": [
+                    {
+                        "id": 55,
+                        "room": "abcd1234",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "{\"message\":\"file_shared\",\"parameters\":{\"share\":\"15\",\"metaData\":{\"caption\":\"See report\"}}}",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    }
+                ],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": [
+                    {
+                        "node": 101,
+                        "id": "15",
+                        "type": 10,
+                        "with": "abcd1234",
+                        "by": "alice",
+                        "permissions": 1
+                    }
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "attachment_id": 15,
+                "message": "See report",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [
+                    {
+                        "id": 55,
+                        "room": "abcd1234",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "{\"message\":\"file_shared\",\"parameters\":{\"share\":\"15\",\"metaData\":{\"caption\":\"See report\"}}}",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    }
+                ],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": [
+                    {
+                        "node": 101,
+                        "id": "15",
+                        "type": 10,
+                        "with": "abcd1234",
+                        "by": "alice",
+                        "permissions": 1
+                    }
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "attachment_id": 15,
+                "message": "See report"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [
+                    {
+                        "id": 55,
+                        "room": "abcd1234",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "{\"message\":\"file_shared\",\"parameters\":{\"share\":\"15\",\"metaData\":{\"caption\":\"See report\"}}}",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    }
+                ],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": [
+                    {
+                        "node": 101,
+                        "id": "15",
+                        "type": 10,
+                        "with": "abcd1234",
+                        "by": "alice",
+                        "permissions": 1
+                    }
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "attachment_id": 15,
+                "message": "See report",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [
+                    {
+                        "id": 55,
+                        "room": "abcd1234",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "{\"message\":\"file_shared\",\"parameters\":{\"share\":\"15\",\"metaData\":{\"caption\":\"See report\"}}}",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    }
+                ],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": [
+                    {
+                        "node": 101,
+                        "id": "15",
+                        "type": 10,
+                        "with": "abcd1234",
+                        "by": "alice",
+                        "permissions": 1
+                    }
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "attachment_id": 15,
+                "message": "See report",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "attachment not found in this conversation"
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "messages": [
+                    {
+                        "id": 55,
+                        "room": "abcd1234",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "{\"message\":\"file_shared\",\"parameters\":{\"share\":\"15\",\"metaData\":{\"caption\":\"See report\"}}}",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    }
+                ],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": [
+                    {
+                        "node": 101,
+                        "id": "15",
+                        "type": 10,
+                        "with": "abcd1234",
+                        "by": "alice",
+                        "permissions": 1
+                    }
+                ]
+            }
+        }
+    ]
+}

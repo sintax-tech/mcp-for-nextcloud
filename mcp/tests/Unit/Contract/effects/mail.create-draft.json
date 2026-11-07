@@ -1,0 +1,537 @@
+{
+    "tool": "mail_create_draft",
+    "grant": "mail.draft",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "account_id": 1,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada."
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create a mail draft**\n\nNew draft in **Drafts**\nAccount: alice@example.com\n- To: bob@example.com\n- Cc: carol@example.com\n- Bcc: auditoria@example.com\n- Subject: **Proposta revisada**\n\n> Olá Bob,\n> segue a proposta revisada.\n\n*The draft is only saved in the Drafts folder; nothing is sent.*\n*Each confirmation creates one more draft; confirming this plan again creates a second one.*\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "mail_create_draft",
+                            "title": "Create a mail draft",
+                            "action": "mail_create_draft",
+                            "target": {
+                                "accountId": 1,
+                                "draftsMailboxId": 7,
+                                "account": "alice@example.com",
+                                "draftsPath": "Drafts"
+                            },
+                            "draft": {
+                                "to": [
+                                    "bob@example.com"
+                                ],
+                                "cc": [
+                                    "carol@example.com"
+                                ],
+                                "bcc": [
+                                    "auditoria@example.com"
+                                ],
+                                "subject": "Proposta revisada",
+                                "body": "Olá Bob,\nsegue a proposta revisada.",
+                                "html": false
+                            },
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "notes": [
+                                "The draft is only saved in the Drafts folder; nothing is sent.",
+                                "Each confirmation creates one more draft; confirming this plan again creates a second one."
+                            ],
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "drafts": [],
+                "calls": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "account_id": 1,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada.",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "drafts": [],
+                "calls": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "account_id": 1,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada.",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create a mail draft**\n\nNew draft in **Drafts**\nAccount: alice@example.com\n- To: bob@example.com\n- Cc: carol@example.com\n- Bcc: auditoria@example.com\n- Subject: **Proposta revisada**\n\n> Olá Bob,\n> segue a proposta revisada.\n\n*The draft is only saved in the Drafts folder; nothing is sent.*\n*Each confirmation creates one more draft; confirming this plan again creates a second one.*\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "mail_create_draft",
+                            "title": "Create a mail draft",
+                            "action": "mail_create_draft",
+                            "target": {
+                                "accountId": 1,
+                                "draftsMailboxId": 7,
+                                "account": "alice@example.com",
+                                "draftsPath": "Drafts"
+                            },
+                            "draft": {
+                                "to": [
+                                    "bob@example.com"
+                                ],
+                                "cc": [
+                                    "carol@example.com"
+                                ],
+                                "bcc": [
+                                    "auditoria@example.com"
+                                ],
+                                "subject": "Proposta revisada",
+                                "body": "Olá Bob,\nsegue a proposta revisada.",
+                                "html": false
+                            },
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "notes": [
+                                "The draft is only saved in the Drafts folder; nothing is sent.",
+                                "Each confirmation creates one more draft; confirming this plan again creates a second one."
+                            ],
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "drafts": [],
+                "calls": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "arguments": {
+                "account_id": 1,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada.",
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create a mail draft**\n\nNew draft in **Rascunhos**\nAccount: alice@example.com\n- To: bob@example.com\n- Cc: carol@example.com\n- Bcc: auditoria@example.com\n- Subject: **Proposta revisada**\n\n> Olá Bob,\n> segue a proposta revisada.\n\n*The draft is only saved in the Drafts folder; nothing is sent.*\n*Each confirmation creates one more draft; confirming this plan again creates a second one.*\n\n### Warnings\n\n- The account, the Drafts folder or the draft is not what the user approved; nothing was saved. Show this new plan and ask again.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "mail_create_draft",
+                            "title": "Create a mail draft",
+                            "action": "mail_create_draft",
+                            "target": {
+                                "accountId": 1,
+                                "draftsMailboxId": 10,
+                                "account": "alice@example.com",
+                                "draftsPath": "Rascunhos"
+                            },
+                            "draft": {
+                                "to": [
+                                    "bob@example.com"
+                                ],
+                                "cc": [
+                                    "carol@example.com"
+                                ],
+                                "bcc": [
+                                    "auditoria@example.com"
+                                ],
+                                "subject": "Proposta revisada",
+                                "body": "Olá Bob,\nsegue a proposta revisada.",
+                                "html": false
+                            },
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "notes": [
+                                "The draft is only saved in the Drafts folder; nothing is sent.",
+                                "Each confirmation creates one more draft; confirming this plan again creates a second one."
+                            ],
+                            "plan_state": "<plan_state#2>",
+                            "warnings": [
+                                {
+                                    "message": "The account, the Drafts folder or the draft is not what the user approved; nothing was saved. Show this new plan and ask again."
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "state": {
+                "drafts": [],
+                "calls": []
+            }
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "account_id": 1,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada."
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create a mail draft**\n\nNew draft in **Rascunhos**\nAccount: alice@example.com\n- To: bob@example.com\n- Cc: carol@example.com\n- Bcc: auditoria@example.com\n- Subject: **Proposta revisada**\n\n> Olá Bob,\n> segue a proposta revisada.\n\n*The draft is only saved in the Drafts folder; nothing is sent.*\n*Each confirmation creates one more draft; confirming this plan again creates a second one.*\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "mail_create_draft",
+                            "title": "Create a mail draft",
+                            "action": "mail_create_draft",
+                            "target": {
+                                "accountId": 1,
+                                "draftsMailboxId": 10,
+                                "account": "alice@example.com",
+                                "draftsPath": "Rascunhos"
+                            },
+                            "draft": {
+                                "to": [
+                                    "bob@example.com"
+                                ],
+                                "cc": [
+                                    "carol@example.com"
+                                ],
+                                "bcc": [
+                                    "auditoria@example.com"
+                                ],
+                                "subject": "Proposta revisada",
+                                "body": "Olá Bob,\nsegue a proposta revisada.",
+                                "html": false
+                            },
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "notes": [
+                                "The draft is only saved in the Drafts folder; nothing is sent.",
+                                "Each confirmation creates one more draft; confirming this plan again creates a second one."
+                            ],
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "drafts": [],
+                "calls": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "account_id": 1,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada.",
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"created\": true,\n    \"accountId\": 1,\n    \"draftsMailboxId\": 10,\n    \"draftsUrl\": \"https://cloud.example/index.php/apps/mail/box/10\",\n    \"uid\": 500,\n    \"sent\": false\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "drafts": [
+                    {
+                        "mailbox": "Rascunhos",
+                        "to": "bob@example.com",
+                        "cc": "carol@example.com",
+                        "bcc": "auditoria@example.com",
+                        "subject": "Proposta revisada",
+                        "body": "Olá Bob,\nsegue a proposta revisada.",
+                        "attachments": [],
+                        "html": false,
+                        "previous": null,
+                        "uid": 500
+                    }
+                ],
+                "calls": [
+                    "imap:append:Rascunhos"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "account_id": 1,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada.",
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "drafts": [
+                    {
+                        "mailbox": "Rascunhos",
+                        "to": "bob@example.com",
+                        "cc": "carol@example.com",
+                        "bcc": "auditoria@example.com",
+                        "subject": "Proposta revisada",
+                        "body": "Olá Bob,\nsegue a proposta revisada.",
+                        "attachments": [],
+                        "html": false,
+                        "previous": null,
+                        "uid": 500
+                    }
+                ],
+                "calls": [
+                    "imap:append:Rascunhos"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "account_id": 1,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada."
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "drafts": [
+                    {
+                        "mailbox": "Rascunhos",
+                        "to": "bob@example.com",
+                        "cc": "carol@example.com",
+                        "bcc": "auditoria@example.com",
+                        "subject": "Proposta revisada",
+                        "body": "Olá Bob,\nsegue a proposta revisada.",
+                        "attachments": [],
+                        "html": false,
+                        "previous": null,
+                        "uid": 500
+                    }
+                ],
+                "calls": [
+                    "imap:append:Rascunhos"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "account_id": 1,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada.",
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "drafts": [
+                    {
+                        "mailbox": "Rascunhos",
+                        "to": "bob@example.com",
+                        "cc": "carol@example.com",
+                        "bcc": "auditoria@example.com",
+                        "subject": "Proposta revisada",
+                        "body": "Olá Bob,\nsegue a proposta revisada.",
+                        "attachments": [],
+                        "html": false,
+                        "previous": null,
+                        "uid": 500
+                    }
+                ],
+                "calls": [
+                    "imap:append:Rascunhos"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "Mail drafts live in the Mail app, not in Files: no system tag or excluded folder can hide an account or its Drafts folder from MCP"
+        }
+    ]
+}

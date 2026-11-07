@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Tests of the Mail levels and tooltips of the admin page: js/admin-levels.js gives Mail its own level names, and
- * js/admin-levels.js also describes the seven Mail operations and warns before a Mail write is granted. The levels are None, Accounts and folders, Messages, Messages and attachments, Messages,
+ * Tests of the Mail levels and tooltips of the admin page: src/admin/admin-levels.js gives Mail its own level names, and
+ * src/admin/admin-levels.js also describes the seven Mail operations and warns before a Mail write is granted. The levels are None, Accounts and folders, Messages, Messages and attachments, Messages,
  * attachments and flags, Messages, attachments, flags and moving, the same with drafts, and with sending, never Edit or Full: no level
  * that existed before names a newer operation, and an operation without the ones before it stays a custom choice.
  */
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const fs = require('node:fs')
 const path = require('node:path')
 
@@ -20,23 +20,23 @@ const plain = (value) => JSON.parse(JSON.stringify(value))
 /**
  * The admin scripts run in one context, in the order the template loads them.
  *
- * @param {string[]} files scripts under js/
+ * @param {string[]} files scripts under src/admin/
  * @return {object} the context, with t() returning its source text
  */
 function load(files) {
 	const context = { t: (app, text) => text }
 	for (const file of files) {
-		vm.runInNewContext(fs.readFileSync(path.join(root, 'js', file), 'utf8'), context)
+		vm.runInNewContext(require('./AdminManifest.cjs').script(file), context)
 	}
 	return context
 }
 
-/** @return {string[]} GrantPolicy::CATALOG['mail'], read from the PHP source */
+/** @return {string[]} GrantCatalog::CATALOG['mail'], read from the PHP source */
 function mailOperations() {
-	const policy = fs.readFileSync(path.join(root, 'lib/Service/GrantPolicy.php'), 'utf8')
+	const policy = require('./AdminTemplates.cjs').read(path.join(root, 'lib/Access/Grants/GrantCatalog.php'), 'utf8')
 	const line = policy.match(/'mail' => \[([^\]]*)\]/)
-	assert.ok(line, 'the Mail entry of GrantPolicy::CATALOG')
-	return [...line[1].matchAll(/'(\w+)'/g)].map((match) => match[1])
+	assert.ok(line, 'the Mail entry of GrantCatalog::CATALOG')
+	return [...line[1].matchAll(/'([\w.]+)'/g)].map((match) => match[1])
 }
 
 test('Mail levels are None, Accounts and folders, Messages, Messages and attachments, with flags, with moving, with drafts and with sending', () => {
@@ -96,8 +96,8 @@ test('the Mail tooltips describe the seven operations and nothing else', () => {
 	assert.equal(Grants.operationHint('mail', 'send'), 'Send new messages through the mail account, which cannot be undone, after a plan the user confirms; starts off')
 	assert.equal(Grants.operationHint('mail', 'other'), null)
 	assert.equal(Grants.operationHint('files', 'read'), null)
-	const grants = fs.readFileSync(path.join(root, 'js/admin-grants.js'), 'utf8')
-	assert.match(grants, /McpAdminMailGrants\.operationHint\(module, operation\)/)
+	const grants = require('./AdminManifest.cjs').script('admin-grants.js')
+	assert.match(grants, /mailGrants\.operationHint\(module, operation\)/)
 	assert.match(grants, /folders: t\('mcp', 'Accounts and folders'\)/)
 	assert.match(grants, /messages: t\('mcp', 'Messages'\)/)
 	assert.match(grants, /attachments: t\('mcp', 'Messages and attachments'\)/)
@@ -111,18 +111,18 @@ test('the Mail tooltips describe the seven operations and nothing else', () => {
 	assert.match(grants, /send: t\('mcp', 'Messages, attachments, flags, moving, drafts and sending'\)/)
 	assert.match(grants, /send: t\('mcp', 'send'\)/)
 	for (const file of ['admin-groups.js', 'admin-inspector.js']) {
-		assert.match(fs.readFileSync(path.join(root, 'js', file), 'utf8'), /attachments: t\('mcp', 'attachments'\), flags: t\('mcp', 'flags'\), draft: t\('mcp', 'draft'\), send: t\('mcp', 'send'\)/, file)
+		assert.match(require('./AdminManifest.cjs').script(file), /attachments: t\('mcp', 'attachments'\), flags: t\('mcp', 'flags'\), draft: t\('mcp', 'draft'\), send: t\('mcp', 'send'\)/, file)
 	}
-	const template = fs.readFileSync(path.join(root, 'templates/admin.php'), 'utf8')
-	assert.equal(template.indexOf("'admin-level-names'"), -1, 'the level names live in js/admin-levels.js (issue #21)')
-	assert.equal(template.indexOf("'admin-mail-grants'"), -1, 'the Mail warnings live in js/admin-levels.js')
-	assert.ok(template.indexOf("'admin-levels'") < template.indexOf("'admin-grants'"), 'Mail tooltips load with the levels, before the grants')
+	const template = require('./AdminTemplates.cjs').read(path.join(root, 'templates/admin.php'), 'utf8')
+	assert.equal(template.indexOf("'admin-level-names'"), -1, 'the level names live in the access levels (issue #21)')
+	assert.equal(template.indexOf("'admin-mail-grants'"), -1, 'the Mail warnings live in src/admin/access/levels/mail.js')
+	assert.ok(require('./AdminManifest.cjs').loadsBefore('admin/admin-levels.js', 'admin/admin-grants.js'), 'Mail tooltips load with the levels, before the grants')
 })
 
 test('granting a Mail write asks first, and only a Mail write does', () => {
 	const asked = []
 	const context = { t: (app, text) => text, confirm: (text) => { asked.push(text); return false } }
-	vm.runInNewContext(fs.readFileSync(path.join(root, 'js', 'admin-levels.js'), 'utf8'), context)
+	vm.runInNewContext(require('./AdminManifest.cjs').script('admin-levels.js'), context)
 	const Grants = context.McpAdminMailGrants
 	assert.deepEqual(plain(Grants.WRITE_OPERATIONS), ['flags', 'move', 'draft', 'send'])
 	assert.equal(Grants.writeWarning([{ module: 'mail', operation: 'messages' }, { module: 'files', operation: 'edit' }]), null)
@@ -141,9 +141,9 @@ test('granting a Mail write asks first, and only a Mail write does', () => {
 })
 
 test('every way of granting asks before a Mail write: matrix cell, bulk, popover and group policy', () => {
-	const read = (file) => fs.readFileSync(path.join(root, 'js', file), 'utf8')
-	assert.match(read('admin-grants.js'), /McpAdminMailGrants\.confirmWrites\(\[\{ module, operation: body\.operation \}\]\)/, 'matrix cell')
-	assert.match(read('admin-grants.js'), /McpAdminMailGrants\.writeWarning\(plan\.changes\.filter/, 'bulk change')
-	assert.match(read('admin-level-popover.js'), /McpAdminMailGrants\.confirmWrites\(commands\.filter\(\(command\) => command\.state === 'allow'\)\)/, 'popover')
-	assert.match(read('admin-groups.js'), /action === 'save' && window\.McpAdminMailGrants && !window\.McpAdminMailGrants\.confirmWrites\(/, 'group policy')
+	const read = (file) => require('./AdminManifest.cjs').script(file)
+	assert.match(read('admin-grants.js'), /mailGrants\.confirmWrites\(\[\{ module, operation: body\.operation \}\]\)/, 'matrix cell')
+	assert.match(read('admin-grants.js'), /mailGrants\.writeWarning\(plan\.changes\.filter/, 'bulk change')
+	assert.match(read('admin-level-popover.js'), /mailGrants\.confirmWrites\(commands\.filter\(\(command\) => command\.state === 'allow'\)\)/, 'popover')
+	assert.match(read('admin-groups.js'), /action === 'save' && window\.OCA\.Mcp\.Admin\.mailGrants && !window\.OCA\.Mcp\.Admin\.mailGrants\.confirmWrites\(/, 'group policy')
 })

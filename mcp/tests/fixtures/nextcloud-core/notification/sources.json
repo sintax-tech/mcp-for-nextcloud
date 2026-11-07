@@ -1,0 +1,17 @@
+{
+	"purpose": "Official Nextcloud notification manager loaded by tests/Unit/Modules/Deck/AssignmentPushDeferralTest.php (issue #26). Verbatim copies; do not edit.",
+	"32": {
+		"tag": "v32.0.15",
+		"files": {
+			"Manager.php": {"source": "https://raw.githubusercontent.com/nextcloud/server/v32.0.15/lib/private/Notification/Manager.php", "sha256": "d0dbc4506af7fea1f5c20e2cfd7e2436d219539de224eaa41272d2c220bb1f40"},
+			"IManager.php": {"source": "https://raw.githubusercontent.com/nextcloud/server/v32.0.15/lib/public/Notification/IManager.php", "sha256": "63094a585483d67198113aedf25c40773447c0cd0144ab7ce4cf0d05a56708b1"}
+		}
+	},
+	"35": {
+		"tag": "v35.0.1",
+		"files": {
+			"Manager.php": {"source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/lib/private/Notification/Manager.php", "sha256": "2004df899d1c5673e27161b619fb15cb9c4f731aa04e98e75b02c97cb323b25d"},
+			"IManager.php": {"source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/lib/public/Notification/IManager.php", "sha256": "2c72762172f19063b34daef5c225c19c51d4e69927f36aec5ed33a66600da3c3"}
+		}
+	}
+}

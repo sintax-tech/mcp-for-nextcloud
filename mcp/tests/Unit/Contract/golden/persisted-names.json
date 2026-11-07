@@ -1,0 +1,101 @@
+{
+    "persisted": {
+        "background-jobs (oc_jobs.class)": [
+            "OCA\\Mcp\\BackgroundJob\\PolicyCleanupJob",
+            "OCA\\Mcp\\BackgroundJob\\ReconcileJob"
+        ],
+        "repair-steps": [
+            "OCA\\Mcp\\Migration\\PolicyStateSeedStep",
+            "OCA\\Mcp\\Migration\\CimdHostsSeedStep",
+            "OCA\\Mcp\\Migration\\PolicyStateSeedStep",
+            "OCA\\Mcp\\Migration\\CimdHostsSeedStep"
+        ],
+        "commands": [
+            "OCA\\Mcp\\Command\\CalendarSelftest"
+        ],
+        "settings": [
+            "OCA\\Mcp\\Settings\\AdminSettings",
+            "OCA\\Mcp\\Settings\\AdminSection",
+            "OCA\\Mcp\\Settings\\PersonalSettings",
+            "OCA\\Mcp\\Settings\\PersonalSection"
+        ],
+        "migrations (oc_migrations.version)": [
+            "OCA\\Mcp\\Migration\\Version000500Date20260930000000",
+            "OCA\\Mcp\\Migration\\Version000700Date20261001000000",
+            "OCA\\Mcp\\Migration\\Version000800Date20261002000000",
+            "OCA\\Mcp\\Migration\\Version000800Date20261002010000",
+            "OCA\\Mcp\\Migration\\Version001002Date20261008000000",
+            "OCA\\Mcp\\Migration\\Version001100Date20261014000000",
+            "OCA\\Mcp\\Migration\\Version001100Date20261015000000",
+            "OCA\\Mcp\\Migration\\Version001100Date20261015010000",
+            "OCA\\Mcp\\Migration\\Version001100Date20261015020000",
+            "OCA\\Mcp\\Migration\\Version001100Date20261016000000",
+            "OCA\\Mcp\\Migration\\Version001205Date20261106000000"
+        ]
+    },
+    "di": {
+        "registerService": [
+            "OCA\\Mcp\\Platform\\FileAccess\\WriteVisibility",
+            "OCA\\Mcp\\Platform\\FileAccess\\ActorRoot",
+            "OCA\\Mcp\\Access\\ResourceScope\\ScopeReader",
+            "OCA\\Mcp\\Access\\ResourceScope\\FileReferenceScope",
+            "OCA\\Mcp\\Mcp\\Resources\\FileTextResource",
+            "OCA\\Mcp\\Mcp\\Resources\\NoteResource",
+            "OCA\\Mcp\\Access\\ResourceScope\\NativeCalendars",
+            "OCA\\Mcp\\Modules\\Calendar\\Selftest\\CalendarSelftestReader",
+            "OCA\\Mcp\\Modules\\Calendar\\Writing\\CalendarDav",
+            "OCA\\Mcp\\Modules\\Calendar\\Locating\\CalendarStore",
+            "OCA\\Mcp\\Modules\\Calendar\\Writing\\EmbeddedDavDispatcher",
+            "OCA\\Mcp\\Platform\\Dav\\CalDavObjects",
+            "OCA\\Mcp\\Platform\\Dav\\CalDavWrite",
+            "OCA\\Mcp\\Access\\ResourceScope\\ScopedCalendarLookup",
+            "OCA\\Mcp\\Access\\References\\ReadableCalendarEvent",
+            "OCA\\Mcp\\Modules\\Contacts\\Locating\\ContactStore",
+            "OCA\\Mcp\\Modules\\Contacts\\Writing\\ContactDav",
+            "OCA\\Mcp\\Modules\\Tasks\\Locating\\TaskStore",
+            "OCA\\Mcp\\Modules\\Deck\\Integration\\DeckGatewayInterface",
+            "OCA\\Mcp\\Modules\\Deck\\Integration\\CardStatusGatewayInterface",
+            "OCA\\Mcp\\Access\\References\\ReadableDeckCard",
+            "OCA\\Mcp\\Modules\\Talk\\Integration\\TalkServices",
+            "OCA\\Mcp\\Access\\Guests\\NativeGuests",
+            "OCA\\Mcp\\Modules\\Mail\\Creation\\MailDraftHtmlPurifier",
+            "OCA\\Mcp\\Modules\\Polls\\Contracts\\PollWriteReader",
+            "OCA\\Mcp\\Modules\\Polls\\Contracts\\PollWriteNative",
+            "OCA\\Mcp\\Modules\\Collectives\\Integration\\CollectivesMarkdownPolicy",
+            "OCA\\Mcp\\Mcp\\Tools\\Discovery\\CapabilityRegistry",
+            "OCA\\Mcp\\Mcp\\Tools\\ToolRegistry",
+            "OCA\\Mcp\\Mcp\\Resources\\ResourceRegistry",
+            "OCA\\Mcp\\Mcp\\Protocol\\McpProtocol"
+        ],
+        "registerEventListener": [
+            "OCP\\User\\Events\\UserChangedEvent -> OCA\\Mcp\\OAuth\\Revocation\\UserRevocationListener @0",
+            "OCP\\User\\Events\\BeforeUserDeletedEvent -> OCA\\Mcp\\Listener\\UserCauseListener @0",
+            "OCP\\User\\Events\\UserDeletedEvent -> OCA\\Mcp\\Listener\\UserCauseListener @0",
+            "OCP\\Group\\Events\\BeforeUserRemovedEvent -> OCA\\Mcp\\Listener\\UserCauseListener @0",
+            "OCP\\Group\\Events\\UserRemovedEvent -> OCA\\Mcp\\Listener\\UserCauseListener @0",
+            "OCP\\Group\\Events\\BeforeGroupDeletedEvent -> OCA\\Mcp\\Listener\\GroupLifecycleListener @0",
+            "OCP\\Group\\Events\\GroupDeletedEvent -> OCA\\Mcp\\Listener\\GroupLifecycleListener @0",
+            "OCP\\Group\\Events\\BeforeGroupCreatedEvent -> OCA\\Mcp\\Listener\\GroupLifecycleListener @0",
+            "OCP\\Group\\Events\\GroupCreatedEvent -> OCA\\Mcp\\Listener\\GroupLifecycleListener @0"
+        ],
+        "registerMiddleware": [
+            "OCA\\Mcp\\Middleware\\DeferredFlushMiddleware"
+        ],
+        "MODULES": [
+            "OCA\\Mcp\\Modules\\Files\\FilesModule",
+            "OCA\\Mcp\\Modules\\Notes\\NotesModule",
+            "OCA\\Mcp\\Modules\\Calendar\\CalendarModule",
+            "OCA\\Mcp\\Modules\\Contacts\\ContactsModule",
+            "OCA\\Mcp\\Modules\\Tasks\\TasksModule",
+            "OCA\\Mcp\\Modules\\Deck\\DeckModule",
+            "OCA\\Mcp\\Modules\\Talk\\TalkModule",
+            "OCA\\Mcp\\Modules\\People\\PeopleModule",
+            "OCA\\Mcp\\Modules\\Logs\\LogsModule",
+            "OCA\\Mcp\\Modules\\Mail\\MailModule",
+            "OCA\\Mcp\\Modules\\Tables\\TablesModule",
+            "OCA\\Mcp\\Modules\\Forms\\FormsModule",
+            "OCA\\Mcp\\Modules\\Polls\\PollsModule",
+            "OCA\\Mcp\\Modules\\Collectives\\CollectivesModule"
+        ]
+    }
+}

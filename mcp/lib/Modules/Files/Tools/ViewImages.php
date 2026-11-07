@@ -1,0 +1,48 @@
+<?php
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+declare(strict_types=1);
+
+namespace OCA\Mcp\Modules\Files\Tools;
+
+use OCA\Mcp\Modules\Files\Presentation\ImageMessages;
+use OCA\Mcp\Modules\Files\Images\ImageTools;
+use OCA\Mcp\Modules\Files\Presentation\FilesSchema;
+use OCA\Mcp\Mcp\Tools\ToolDefinition;
+use OCA\Mcp\Mcp\Tools\Tool;
+use OCA\Mcp\Mcp\Tools\ToolContext;
+
+/** Publishes files_images_view and delegates to the component that returns a batch of images through the image service. */
+final class ViewImages implements Tool {
+	/**
+	 * @param \OCA\Mcp\Modules\Files\Reading\ViewImagesHandler $handler executor that returns a batch of images through the image service
+	 */
+	public function __construct(private \OCA\Mcp\Modules\Files\Reading\ViewImagesHandler $handler) {
+	}
+
+	/** @return ToolDefinition unchanged static definition */
+	public static function definition(): ToolDefinition {
+		return FilesSchema::definition(['name' => 'files_images_view', 'module' => 'files', 'operation' => 'read',
+				'description' => ImageMessages::imagesViewTool(),
+				'inputSchema' => FilesSchema::schema([
+					'paths' => ['type' => 'array', 'minItems' => 1, 'maxItems' => ImageTools::BATCH_MAX_ITEMS,
+						'items' => ['type' => 'string', 'minLength' => 1], 'description' => ImageMessages::imagePaths()],
+					'folder' => ['type' => 'string', 'minLength' => 1, 'description' => ImageMessages::imageFolder()],
+					'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => ImageTools::BATCH_MAX_ITEMS,
+						'default' => ImageTools::BATCH_MAX_ITEMS],
+					'max_size' => ['type' => 'integer', 'minimum' => ImageTools::MIN_MAX_SIZE, 'maximum' => ImageTools::MAX_MAX_SIZE,
+						'default' => ImageTools::DEFAULT_MAX_SIZE, 'description' => ImageMessages::imageMaxSize()],
+				])]);
+	}
+
+	/**
+	 * @param array<string,mixed> $arguments validated tool arguments
+	 * @param ToolContext $context authenticated invocation
+	 * @return array<string,mixed> unchanged result
+	 */
+	public function execute(array $arguments, ToolContext $context): array {
+		return $this->handler->handle($arguments, $context->userId);
+	}
+}

@@ -10,44 +10,44 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Files_Versions\Versions\FakeVersion;
 use OCA\Files_Versions\Versions\FakeVersionManager;
-use OCA\Mcp\Checkout\CheckoutTokenStore;
-use OCA\Mcp\OAuth\TokenHasher;
-use OCA\Mcp\Service\FileWritePolicy;
-use OCA\Mcp\Service\FileWritePolicyUnavailable;
-use OCA\Mcp\Service\UserTimezone;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutTokenStore;
+use OCA\Mcp\OAuth\Storage\TokenHasher;
+use OCA\Mcp\Access\FileTypes\FileWritePolicy;
+use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
+use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tests\Unit\InMemoryAppConfig;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\Tools\Common\FakeLock;
-use OCA\Mcp\Tests\Unit\Tools\Common\FakeLockManager;
+use OCA\Mcp\Tests\Unit\Platform\FileAccess\FakeLock;
+use OCA\Mcp\Tests\Unit\Platform\FileAccess\FakeLockManager;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
-use OCA\Mcp\Tools\Common\FileTypeDenied;
-use OCA\Mcp\Tools\Common\FileTypeGuard;
-use OCA\Mcp\Tools\Common\FileTypeMessages;
-use OCA\Mcp\Tools\Common\LockWriteFailure;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\Common\SharedWriteGuard;
-use OCA\Mcp\Tools\Files\BatchStore;
-use OCA\Mcp\Tools\Files\CheckoutService;
-use OCA\Mcp\Tools\Files\ContentCommit;
-use OCA\Mcp\Tools\Files\ContentTypeGate;
-use OCA\Mcp\Tools\Files\ContentWritePlan;
-use OCA\Mcp\Tools\Files\FileBackup;
-use OCA\Mcp\Tools\Files\FilesMessages;
-use OCA\Mcp\Tools\Files\FilesModule;
-use OCA\Mcp\Tools\Files\Handler\EditFileHandler;
-use OCA\Mcp\Tools\Files\Handler\ReplaceFileHandler;
-use OCA\Mcp\Tools\Files\Handler\RestoreVersionHandler;
-use OCA\Mcp\Tools\Files\ImageTools;
-use OCA\Mcp\Tools\Files\MovePlanner;
-use OCA\Mcp\Tools\Files\MoveReport;
-use OCA\Mcp\Tools\Files\OcrSupport;
-use OCA\Mcp\Tools\Files\Reorganization;
-use OCA\Mcp\Tools\Files\TextExtractor;
-use OCA\Mcp\Tools\Files\VersionRestore;
-use OCA\Mcp\Tools\Files\VersionTools;
-use OCA\Mcp\Tools\Common\CommonMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Access\FileTypes\FileTypeDenied;
+use OCA\Mcp\Access\FileTypes\FileTypeGuard;
+use OCA\Mcp\Access\FileTypes\FileTypeMessages;
+use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
+use OCA\Mcp\Modules\Files\Reorganization\BatchStore;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutService;
+use OCA\Mcp\Modules\Files\Writing\ContentCommit;
+use OCA\Mcp\Modules\Files\Writing\ContentTypeGate;
+use OCA\Mcp\Modules\Files\Writing\ContentWritePlan;
+use OCA\Mcp\Modules\Files\Backups\FileBackup;
+use OCA\Mcp\Modules\Files\Presentation\EditingMessages;
+use OCA\Mcp\Modules\Files\FilesModule;
+use OCA\Mcp\Modules\Files\Editing\EditFileHandler;
+use OCA\Mcp\Modules\Files\Editing\ReplaceFileHandler;
+use OCA\Mcp\Modules\Files\Editing\RestoreVersionHandler;
+use OCA\Mcp\Modules\Files\Images\ImageTools;
+use OCA\Mcp\Modules\Files\Reorganization\MovePlanner;
+use OCA\Mcp\Modules\Files\Integration\MoveReport;
+use OCA\Mcp\Modules\Files\Images\OcrSupport;
+use OCA\Mcp\Modules\Files\Reorganization\Reorganization;
+use OCA\Mcp\Modules\Files\Extraction\TextExtractor;
+use OCA\Mcp\Modules\Files\Integration\VersionRestore;
+use OCA\Mcp\Modules\Files\Integration\VersionTools;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\File;
@@ -152,10 +152,10 @@ final class FileContentTypePolicyTest extends TestCase {
 		$container = $this->createMock(ContainerInterface::class);
 		$container->method('get')->willReturnCallback(fn (string $id): ?object => $id === self::MANAGER ? $this->manager : null);
 		$versionRestore = new VersionRestore($apps, $users, $this->gate, $access, $container, $lockService, null);
-		$versions = new VersionTools($apps, $users, $extractor, $backup, $access, $container, new OcrSupport($apps), $lockService, null, $versionRestore);
+		$versions = new VersionTools($apps, $users, $backup, $access, $container, $lockService, null, $versionRestore);
 		$report = new MoveReport($this->createMock(ContainerInterface::class), $this->tree->shareManager(), $apps);
-		$reorganization = new Reorganization($access, new SharedWriteGuard($access), $report, $users);
-		$imageTools = new ImageTools(
+		$reorganization = \OCA\Mcp\Tests\Unit\Tools\Files\FilesCatalogWiring::reorganization($access, new SharedWriteGuard($access), $report, $users);
+		$imageTools = FilesImageWiring::build(
 			$this->createMock(\OCP\IPreview::class),
 			$access,
 			$iConfig,
@@ -166,7 +166,7 @@ final class FileContentTypePolicyTest extends TestCase {
 			$this->createMock(ContainerInterface::class),
 			$db,
 		);
-		$this->module = new FilesModule(
+		$this->module = \OCA\Mcp\Tests\Unit\Tools\Files\FilesCatalogWiring::module(
 			$this->tree->filesystemRoot(),
 			$extractor,
 			$backup,
@@ -177,7 +177,7 @@ final class FileContentTypePolicyTest extends TestCase {
 			new CheckoutService($urls, $iConfig, $time, new TokenHasher($iConfig), $this->createMock(CheckoutTokenStore::class), $apps, $users),
 			$versions,
 			$reorganization,
-			new MovePlanner($reorganization, $access, new SharedWriteGuard($access)),
+			new MovePlanner(($reorganization)->copyMoveContext(), $access, new SharedWriteGuard($access)),
 			new BatchStore($db),
 			$time,
 			$imageTools,
@@ -393,11 +393,11 @@ final class FileContentTypePolicyTest extends TestCase {
 		$this->allow(['txt']);
 		$path = $this->put('a.php', 'alpha', 'text/plain');
 		$missing = $this->planFailure('files_replace', ['path' => $path, 'old' => 'nope', 'new' => 'x']);
-		$this->assertSame(FilesMessages::snippetMissing(), $missing->getMessage());
+		$this->assertSame(EditingMessages::snippetMissing(), $missing->getMessage());
 		$this->assertNotInstanceOf(FileTypeDenied::class, $missing);
 
 		$raw = $this->failure('files_replace', ['path' => $path, 'old' => "\xE3", 'new' => 'x']);
-		$this->assertSame(FilesMessages::snippetNotUtf8(), $raw->getMessage());
+		$this->assertSame(EditingMessages::snippetNotUtf8(), $raw->getMessage());
 		$this->assertSame([], $this->tree->ops);
 	}
 
@@ -412,14 +412,14 @@ final class FileContentTypePolicyTest extends TestCase {
 		$pdf = $this->put('a.pdf', '%PDF', 'application/pdf');
 		$pngBefore = $this->node($png);
 		$picture = $this->failure('files_edit', ['path' => $png, 'content' => 'x']);
-		$this->assertSame(FilesMessages::notText(), $picture->getMessage());
-		$this->assertSame(FilesMessages::notText(), $this->planFailure('files_edit', ['path' => $pdf, 'content' => 'x'])->getMessage());
+		$this->assertSame(EditingMessages::notText(), $picture->getMessage());
+		$this->assertSame(EditingMessages::notText(), $this->planFailure('files_edit', ['path' => $pdf, 'content' => 'x'])->getMessage());
 		$this->assertUntouched($png, 'PNG', $pngBefore['etag']);
 
 		$php = $this->put('a.php', '<?php ');
 		$huge = $this->failure('files_edit', ['path' => $php, 'content' => str_repeat('x', FilesModule::MAX_EDIT_BYTES + 1)]);
-		$this->assertSame(FilesMessages::editTooLarge(FilesModule::MAX_EDIT_BYTES), $huge->getMessage());
-		$this->assertSame(FilesMessages::backupPath(), $this->failure('files_edit', ['path' => '/MCP backups/a.txt', 'content' => 'x'])->getMessage());
+		$this->assertSame(EditingMessages::editTooLarge(FilesModule::MAX_EDIT_BYTES), $huge->getMessage());
+		$this->assertSame(EditingMessages::backupPath(), $this->failure('files_edit', ['path' => '/MCP backups/a.txt', 'content' => 'x'])->getMessage());
 
 		$txt = $this->put('a.txt', 'alpha');
 		$stalePlan = $this->planFailure('files_edit', ['path' => $php, 'content' => 'x', 'etag' => 'stale']);
@@ -560,7 +560,7 @@ final class FileContentTypePolicyTest extends TestCase {
 		$this->manager->ops = [];
 		$this->manager->versions = [];
 		$missing = $this->planFailure('files_version_restore', ['path' => $this->put('a.txt', 'alpha'), 'version' => 'nope']);
-		$this->assertSame(FilesMessages::versionMissing('nope'), $missing->getMessage());
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionMissing('nope'), $missing->getMessage());
 		$this->assertSame([], $this->backups());
 	}
 
@@ -692,7 +692,7 @@ final class FileContentTypePolicyTest extends TestCase {
 
 		$done = $this->failure('files_edit', ['path' => $path, 'content' => 'beta']);
 		$relative = $this->keptBackup($path, 'alpha', $before['etag']);
-		$this->assertSame(FilesMessages::writeFailed($relative), $done->getMessage());
+		$this->assertSame(EditingMessages::writeFailed($relative), $done->getMessage());
 		$this->assertNotInstanceOf(FileTypeDenied::class, $done);
 		$this->assertSame(3, $this->gate->calls);
 	}
@@ -724,7 +724,7 @@ final class FileContentTypePolicyTest extends TestCase {
 
 		$done = $this->failure('files_version_restore', ['path' => $path, 'version' => '1']);
 		$relative = $this->keptBackup($path, 'current', $before['etag']);
-		$this->assertSame(FilesMessages::writeFailed($relative), $done->getMessage());
+		$this->assertSame(EditingMessages::writeFailed($relative), $done->getMessage());
 		$this->assertNotContains('rollback', $this->manager->ops);
 		$this->assertSame(3, $this->gate->calls);
 	}
@@ -754,7 +754,7 @@ final class FileContentTypePolicyTest extends TestCase {
 	 * @return void
 	 */
 	public function testFileBackupDoesNotReadThePolicy(): void {
-		$source = (string)file_get_contents(__DIR__ . '/../../../../lib/Tools/Files/FileBackup.php');
+		$source = (string)file_get_contents(dirname(__DIR__, 4) . '/lib/Modules/Files/Backups/FileBackup.php');
 		$this->assertStringNotContainsString('FileTypeGuard', $source);
 		$this->assertStringNotContainsString('FileWritePolicy', $source);
 		$this->assertStringNotContainsString('ContentTypeGate', $source);
@@ -767,14 +767,14 @@ final class FileContentTypePolicyTest extends TestCase {
 	 * @return void
 	 */
 	public function testEditReplaceAndRestoreDelegateOutOfTheLargeModules(): void {
-		$files = (string)file_get_contents(__DIR__ . '/../../../../lib/Tools/Files/FilesModule.php');
-		$versions = (string)file_get_contents(__DIR__ . '/../../../../lib/Tools/Files/VersionTools.php');
+		$files = (string)file_get_contents(dirname(__DIR__, 4) . '/lib/Modules/Files/FilesModule.php');
+		$versions = (string)file_get_contents(dirname(__DIR__, 4) . '/lib/Modules/Files/Integration/VersionTools.php');
 		$this->assertStringNotContainsString('->putContent', $files);
 		$this->assertStringNotContainsString('->rollback', $files);
 		$this->assertStringNotContainsString('->putContent', $versions);
 		$this->assertStringNotContainsString('->rollback', $versions);
 		$this->assertStringContainsString('VersionRestore is not wired', $versions);
-		$this->assertStringContainsString('EditFileHandler is not wired', $files);
+		$this->assertStringContainsString('EditFileHandler is not wired', (string)file_get_contents(dirname(__DIR__, 4) . '/lib/Modules/Files/Editing/EditFileAction.php'));
 	}
 }
 

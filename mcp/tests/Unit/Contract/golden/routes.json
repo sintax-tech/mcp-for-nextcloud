@@ -1,0 +1,334 @@
+{
+    "routes": [
+        {
+            "name": "mcp#post",
+            "url": "/",
+            "verb": "POST",
+            "resolves": "McpController::post"
+        },
+        {
+            "name": "mcp#get",
+            "url": "/",
+            "verb": "GET",
+            "resolves": "McpController::get"
+        },
+        {
+            "name": "mcp#delete",
+            "url": "/",
+            "verb": "DELETE",
+            "resolves": "McpController::delete"
+        },
+        {
+            "name": "checkout#download",
+            "url": "/checkout/{token}",
+            "verb": "GET",
+            "resolves": "CheckoutController::download"
+        },
+        {
+            "name": "checkout#upload",
+            "url": "/checkout/{token}",
+            "verb": "PUT",
+            "resolves": "CheckoutController::upload"
+        },
+        {
+            "name": "checkout#uploadPost",
+            "url": "/checkout/{token}",
+            "verb": "POST",
+            "resolves": "CheckoutController::uploadPost"
+        },
+        {
+            "name": "settings#personal",
+            "url": "/settings/personal",
+            "verb": "POST",
+            "resolves": "SettingsController::personal"
+        },
+        {
+            "name": "grants#index",
+            "url": "/api/grants",
+            "verb": "GET",
+            "resolves": "GrantsController::index"
+        },
+        {
+            "name": "grants#bulk",
+            "url": "/api/grants/bulk",
+            "verb": "POST",
+            "resolves": "GrantsController::bulk"
+        },
+        {
+            "name": "grants#commands",
+            "url": "/api/grants/commands",
+            "verb": "POST",
+            "resolves": "GrantsController::commands"
+        },
+        {
+            "name": "override_preview#index",
+            "url": "/api/grants/commands/preview",
+            "verb": "POST",
+            "resolves": "OverridePreviewController::index"
+        },
+        {
+            "name": "grants#undo",
+            "url": "/api/grants/undo",
+            "verb": "POST",
+            "resolves": "GrantsController::undo"
+        },
+        {
+            "name": "grants#update",
+            "url": "/api/grants/{uid}",
+            "verb": "PUT",
+            "resolves": "GrantsController::update"
+        },
+        {
+            "name": "grants#service",
+            "url": "/api/service",
+            "verb": "PUT",
+            "resolves": "GrantsController::service"
+        },
+        {
+            "name": "group_directory#index",
+            "url": "/api/group-directory",
+            "verb": "GET",
+            "resolves": "GroupDirectoryController::index"
+        },
+        {
+            "name": "group_directory#detail",
+            "url": "/api/group-directory/detail",
+            "verb": "GET",
+            "resolves": "GroupDirectoryController::detail"
+        },
+        {
+            "name": "unknown_group_grants#index",
+            "url": "/api/group-grants/unknown",
+            "verb": "GET",
+            "resolves": "UnknownGroupGrantsController::index"
+        },
+        {
+            "name": "unknown_group_grants#clear",
+            "url": "/api/group-grants/unknown",
+            "verb": "DELETE",
+            "resolves": "UnknownGroupGrantsController::clear"
+        },
+        {
+            "name": "grants#group",
+            "url": "/api/group-grants",
+            "verb": "GET",
+            "resolves": "GrantsController::group"
+        },
+        {
+            "name": "grants#previewGroup",
+            "url": "/api/group-grants/preview",
+            "verb": "POST",
+            "resolves": "GrantsController::previewGroup"
+        },
+        {
+            "name": "grants#saveGroup",
+            "url": "/api/group-grants",
+            "verb": "PUT",
+            "resolves": "GrantsController::saveGroup"
+        },
+        {
+            "name": "grants#oauthClients",
+            "url": "/api/oauth-clients",
+            "verb": "GET",
+            "resolves": "GrantsController::oauthClients"
+        },
+        {
+            "name": "grants#updateOauthClients",
+            "url": "/api/oauth-clients",
+            "verb": "PUT",
+            "resolves": "GrantsController::updateOauthClients"
+        },
+        {
+            "name": "scope#show",
+            "url": "/api/scope/{uid}/{module}",
+            "verb": "GET",
+            "resolves": "ScopeController::show"
+        },
+        {
+            "name": "scope#candidates",
+            "url": "/api/scope/{uid}/{module}/candidates",
+            "verb": "GET",
+            "resolves": "ScopeController::candidates"
+        },
+        {
+            "name": "scope#update",
+            "url": "/api/scope/{uid}/{module}",
+            "verb": "PUT",
+            "resolves": "ScopeController::update"
+        },
+        {
+            "name": "inspector#access",
+            "url": "/api/inspector/access",
+            "verb": "GET",
+            "resolves": "InspectorController::access"
+        },
+        {
+            "name": "inspector#path",
+            "url": "/api/inspector/path",
+            "verb": "GET",
+            "resolves": "InspectorController::path"
+        },
+        {
+            "name": "inspector#calendar",
+            "url": "/api/inspector/calendar",
+            "verb": "GET",
+            "resolves": "InspectorController::calendar"
+        },
+        {
+            "name": "grants#logsAccess",
+            "url": "/api/logs-access",
+            "verb": "GET",
+            "resolves": "GrantsController::logsAccess"
+        },
+        {
+            "name": "grants#updateLogsAccess",
+            "url": "/api/logs-access",
+            "verb": "PUT",
+            "resolves": "GrantsController::updateLogsAccess"
+        },
+        {
+            "name": "logs_privacy#show",
+            "url": "/api/logs-privacy",
+            "verb": "GET",
+            "resolves": "LogsPrivacyController::show"
+        },
+        {
+            "name": "logs_privacy#update",
+            "url": "/api/logs-privacy",
+            "verb": "PUT",
+            "resolves": "LogsPrivacyController::update"
+        },
+        {
+            "name": "connections#index",
+            "url": "/api/connections",
+            "verb": "GET",
+            "resolves": "ConnectionsController::index"
+        },
+        {
+            "name": "connections#revokeUser",
+            "url": "/api/connections/users/{uid}",
+            "verb": "DELETE",
+            "resolves": "ConnectionsController::revokeUser"
+        },
+        {
+            "name": "connections#destroy",
+            "url": "/api/connections/{id}",
+            "verb": "DELETE",
+            "requirements": {
+                "id": "\\d+"
+            },
+            "resolves": "ConnectionsController::destroy"
+        },
+        {
+            "name": "my_connections#index",
+            "url": "/api/my/connections",
+            "verb": "GET",
+            "resolves": "MyConnectionsController::index"
+        },
+        {
+            "name": "my_scope#index",
+            "url": "/api/my/scope",
+            "verb": "GET",
+            "resolves": "MyScopeController::index"
+        },
+        {
+            "name": "my_connections#destroy",
+            "url": "/api/my/connections/{id}",
+            "verb": "DELETE",
+            "requirements": {
+                "id": "\\d+"
+            },
+            "resolves": "MyConnectionsController::destroy"
+        },
+        {
+            "name": "backup_settings#show",
+            "url": "/api/backup-settings",
+            "verb": "GET",
+            "resolves": "BackupSettingsController::show"
+        },
+        {
+            "name": "backup_settings#update",
+            "url": "/api/backup-settings",
+            "verb": "PUT",
+            "resolves": "BackupSettingsController::update"
+        },
+        {
+            "name": "file_write_policy#show",
+            "url": "/api/file-write-policy",
+            "verb": "GET",
+            "resolves": "FileWritePolicyController::show"
+        },
+        {
+            "name": "file_write_policy#update",
+            "url": "/api/file-write-policy",
+            "verb": "PUT",
+            "resolves": "FileWritePolicyController::update"
+        },
+        {
+            "name": "checkout_limit#show",
+            "url": "/api/checkout-limit",
+            "verb": "GET",
+            "resolves": "CheckoutLimitController::show"
+        },
+        {
+            "name": "checkout_limit#update",
+            "url": "/api/checkout-limit",
+            "verb": "PUT",
+            "resolves": "CheckoutLimitController::update"
+        },
+        {
+            "name": "tags#index",
+            "url": "/api/admin/tags",
+            "verb": "GET",
+            "resolves": "TagsController::index"
+        },
+        {
+            "name": "tags#update",
+            "url": "/api/admin/tags",
+            "verb": "PUT",
+            "resolves": "TagsController::update"
+        },
+        {
+            "name": "metadata#protectedResource",
+            "url": "/.well-known/oauth-protected-resource",
+            "verb": "GET",
+            "resolves": "MetadataController::protectedResource"
+        },
+        {
+            "name": "metadata#authorizationServer",
+            "url": "/.well-known/openid-configuration",
+            "verb": "GET",
+            "resolves": "MetadataController::authorizationServer"
+        },
+        {
+            "name": "metadata#oauthServer",
+            "url": "/.well-known/oauth-authorization-server",
+            "verb": "GET",
+            "resolves": "MetadataController::oauthServer"
+        },
+        {
+            "name": "metadata#jwks",
+            "url": "/.well-known/jwks.json",
+            "verb": "GET",
+            "resolves": "MetadataController::jwks"
+        },
+        {
+            "name": "o_auth#authorize",
+            "url": "/oauth/authorize",
+            "verb": "GET",
+            "resolves": "OAuthController::authorize"
+        },
+        {
+            "name": "o_auth#consent",
+            "url": "/oauth/authorize",
+            "verb": "POST",
+            "resolves": "OAuthController::consent"
+        },
+        {
+            "name": "o_auth#token",
+            "url": "/oauth/token",
+            "verb": "POST",
+            "resolves": "OAuthController::token"
+        }
+    ]
+}

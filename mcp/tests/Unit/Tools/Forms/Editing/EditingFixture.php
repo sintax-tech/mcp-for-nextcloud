@@ -137,15 +137,15 @@ class EditingFixture {
 	private function apply(bool $option,array $patch,int $id): mixed {
 		$this->calls[] = $patch; if ($this->voidWithoutWrite) { return null; } if ($this->statusWithoutWrite) { return new \OCP\AppFramework\Http\DataResponse($id); }
 		$target = $option ? $this->option : $this->question;
-		if (isset($patch['extraSettings'])) { $patch['extraSettings'] = \OCA\Mcp\Tools\Forms\Editing\EditSettings::stored($patch['extraSettings']); }
+		if (isset($patch['extraSettings'])) { $patch['extraSettings'] = \OCA\Mcp\Modules\Forms\Editing\EditSettings::stored($patch['extraSettings']); }
 		$target->data = array_replace($target->data,$patch);
 		if ($this->throwAfterTarget) { throw new \RuntimeException('private post-target detail'); }
-		if (!$option && $this->form->fields['confirmationEmailQuestionId']===2 && !\OCA\Mcp\Tools\Forms\Editing\EditState::email($this->question->data)) { $this->form->fields['confirmationEmailQuestionId']=null; }
+		if (!$option && $this->form->fields['confirmationEmailQuestionId']===2 && !\OCA\Mcp\Modules\Forms\Integration\EditState::email($this->question->data)) { $this->form->fields['confirmationEmailQuestionId']=null; }
 		$this->form->fields['lockedBy']='alice';$this->form->fields['lockedUntil']=time()+900;$this->form->fields['lastUpdated']=time();
 		$this->deleted=$this->deleteAfterTarget; return new \OCP\AppFramework\Http\DataResponse($id);
 	}
 	/** Supplies separate mapper identities in a per-operation native-shaped graph.
-	 * @return \OCA\Mcp\Tools\Forms\Editing\EditContext Synthetic graph.
+	 * @return \OCA\Mcp\Modules\Forms\Editing\EditContext Synthetic graph.
 	 */
-	public function context(): \OCA\Mcp\Tools\Forms\Editing\EditContext { return new \OCA\Mcp\Tools\Forms\Editing\EditContext('5.4.1',$this,$this,$this,new EditingReader($this,'questions'),new EditingReader($this,'options'),new EditingReader($this,'shares')); }
+	public function context(): \OCA\Mcp\Modules\Forms\Editing\EditContext { return new \OCA\Mcp\Modules\Forms\Editing\EditContext('5.4.1',$this,$this,$this,new EditingReader($this,'questions'),new EditingReader($this,'options'),new EditingReader($this,'shares')); }
 }

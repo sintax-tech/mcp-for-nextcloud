@@ -1,0 +1,111 @@
+<?php
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+declare(strict_types=1);
+namespace OCA\Mcp\Tests\Unit\Access\Policy\Transactions;
+
+use OCA\Mcp\Access\Policy\{PolicyWriter, PolicyEventProcessor, PolicyOutbox, PolicyUnavailable, SnapshotInvalidated};
+use OCA\Mcp\Db\{AuthUsersMapper, GroupGrantsMapper, GroupLifeMapper, PolicyEventsMapper, PolicyStateMapper, RecheckMapper};
+use OCA\Mcp\OAuth\Storage\OAuthStore;
+use OCA\Mcp\Tests\Unit\InMemoryConfig;
+use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\Config\IUserConfig;
+use OCP\{IConfig, IAppConfig, IDBConnection, IUserManager};
+use PHPUnit\Framework\TestCase;
+
+final class ExecutionScenario extends TestCase {
+	public const CASES = ['success', 'noop', 'stale', 'external-transaction', 'snapshot-retry', 'deadlock', 'exhausted', 'commit-uncertain', 'rollback-failed', 'cache-before', 'cache-local', 'cache-after', 'cache-after-failure', 'cleanup-pending', 'invalid-return', 'cut', 'epoch', 'cause', 'issuance', 'under-mutex', 'expected-retry', 'nested'];
+
+	public function record(string $case): array {
+		$trace = []; $ids = []; $objects = []; $attempts = 0; $clears = 0; $inside = false; $saved = null;
+		$row = ['revision' => '0', 'lock_seq' => '0', 'auth_epoch' => '0'];
+		$events = []; $generations = ['issue_seq' => '2', 'revoked_below' => '0'];
+		$causes = $case === 'cause' || $case === 'issuance' ? [['causeKey' => 'test', 'gen' => '1']] : [];
+		$log = static function (string $op, mixed ...$args) use (&$trace): void { $trace[] = [$op, ...$args]; };
+		$db = $this->createMock(IDBConnection::class);
+		$db->method('inTransaction')->willReturnCallback(function () use (&$inside): bool { return $inside; });
+		$db->method('beginTransaction')->willReturnCallback(function () use (&$inside, &$saved, &$row, &$events, &$generations, &$causes, $log): void {
+			$log('begin'); $saved = [$row, $events, $generations, $causes]; $inside = true;
+		});
+		$db->method('commit')->willReturnCallback(function () use (&$inside, $case, $log): void {
+			$log('commit'); $inside = false;
+			if ($case === 'commit-uncertain') { throw new \RuntimeException('lost commit response'); }
+		});
+		$db->method('rollBack')->willReturnCallback(function () use (&$inside, &$saved, &$row, &$events, &$generations, &$causes, $case, $log): void {
+			$log('rollback');
+			if ($case === 'rollback-failed') { throw new \RuntimeException('lost rollback response'); }
+			[$row, $events, $generations, $causes] = $saved; $inside = false;
+		});
+		$state = $this->createMock(PolicyStateMapper::class);
+		$state->method('state')->willReturnCallback(function () use (&$row, $log): array { $log('state', $row); return $row; });
+		$state->method('acquire')->willReturnCallback(function () use (&$row, $log): void { $log('mutex'); $row['lock_seq'] = (string)((int)$row['lock_seq'] + 1); });
+		$state->method('compareAndSet')->willReturnCallback(function ($revision) use (&$row, $log): void { $log('cas', $revision); $row['revision'] = (string)((int)$revision + 1); });
+		$state->method('advanceAuthEpoch')->willReturnCallback(function ($epoch) use (&$row, $log): string { $log('epoch', $epoch); return $row['auth_epoch'] = (string)((int)$epoch + 1); });
+		$mapper = $this->createMock(PolicyEventsMapper::class);
+		$mapper->method('append')->willReturnCallback(function ($id, $kind, $payload) use (&$events, $log): void { $log('append', $id, $kind, $payload); $events[] = compact('id', 'kind', 'payload'); });
+		$userConfig = $this->createMock(IUserConfig::class);
+		$userConfig->method('clearCache')->willReturnCallback(fn ($uid, $lazy) => $log('user-cache', $uid, $lazy));
+		$apps = $this->createMock(IAppConfig::class);
+		$apps->method('clearCache')->willReturnCallback(function ($lazy) use (&$clears, $case, $log): void {
+			$log('app-cache', ++$clears, $lazy);
+			$fail = ['cache-before' => 1, 'cache-local' => 2, 'cache-after' => 3, 'cache-after-failure' => 3][$case] ?? 0;
+			if ($clears === $fail) { throw new \RuntimeException('injected cache failure'); }
+		});
+		$auth = $this->createMock(AuthUsersMapper::class);
+		$auth->method('generations')->willReturnCallback(function ($uid) use (&$generations, $log): array { $log('generations', $uid, $generations); return $generations; });
+		$auth->method('cut')->willReturnCallback(function ($uid, $cut) use (&$generations, $log): bool { $log('cut', $uid, $cut); $changed = $generations['revoked_below'] !== $cut; $generations['revoked_below'] = $cut; return $changed; });
+		$rechecks = $this->createMock(RecheckMapper::class);
+		$rechecks->method('causes')->willReturnCallback(function ($uid) use (&$causes, $log): array { $log('causes', $uid, $causes); return $causes; });
+		$rechecks->method('consume')->willReturnCallback(function ($uid, $key, $gen) use (&$causes, $log): bool { $log('consume', $uid, $key, $gen); $causes = []; return true; });
+		$processor = $this->createMock(PolicyEventProcessor::class);
+		$processor->method('afterCommit')->willReturnCallback(function ($outbox) use ($case, &$inside, $log): bool { self::assertFalse($inside); $log('delivery', $outbox); return $case !== 'cleanup-pending'; });
+		$data = new InMemoryConfig();
+		$config = $data->mock($this); $data->app['mcp']['enabled'] = '0';
+		$writer = new PolicyWriter($db, $state, $mapper, $config, $userConfig, $apps, $this->createMock(IUserManager::class), $this->createMock(ITimeFactory::class), $auth, $rechecks, $processor, new GroupGrantsMapper($db), new GroupLifeMapper($db), new \OCA\Mcp\Access\Policy\Credentials\CredentialHolders($this->createMock(OAuthStore::class), $auth));
+		$prepare = function ($observed, $id) use (&$inside, &$ids, $case, $log): string {
+			self::assertFalse($inside); self::assertMatchesRegularExpression('/^[a-f0-9]{32}$/D', $id); $ids[] = $id;
+			$log('prepare', $observed, $id); if ($case === 'external-transaction') { $inside = true; } return 'prepared';
+		};
+		$apply = function ($snapshot, $current, $id, PolicyOutbox $outbox) use (&$inside, &$attempts, &$objects, $case, $log, $writer): mixed {
+			self::assertTrue($inside); self::assertSame('prepared', $snapshot); ++$attempts; $objects[] = $outbox;
+			$writer->holdLifecycles([]); $log('apply', $current, $id, $attempts);
+			$outbox->add(PolicyEventsMapper::KIND_AUDIT, ['attempt' => $attempts]);
+			if (in_array($case, ['snapshot-retry', 'expected-retry'], true) && $attempts === 1) { throw new SnapshotInvalidated(); }
+			if ($case === 'exhausted') { throw new SnapshotInvalidated(); }
+			if ($case === 'deadlock' && $attempts === 1) { throw self::deadlock(); }
+			if ($case === 'rollback-failed' || $case === 'cache-after-failure') { throw new \LogicException('local failed'); }
+			return $case === 'invalid-return' ? 1 : $case !== 'noop';
+		};
+		$result = null; $error = null;
+		try {
+			if ($case === 'cut') { $writer->revokeCredentials('alice'); }
+			elseif ($case === 'epoch') { $writer->setGlobalEnabled(false); }
+			elseif ($case === 'cause') { $result = $writer->processCauses('alice', fn () => ['test' => false]); }
+			elseif ($case === 'issuance') {
+				$result = $writer->runCredential('alice', fn () => 'issuance', function ($snapshot, $current, $generation) use ($log): bool { $log('issued-after-cut', $snapshot, $current, $generation); return false; }, fn () => ['test' => true]);
+			} elseif ($case === 'under-mutex') { $result = $writer->underMutex(function () use (&$inside): string { self::assertTrue($inside); return 'local-result'; }); }
+			else { if ($case === 'nested') { $inside = true; } $result = $writer->runAdmin($case === 'stale' ? '1' : '0', ['alice', 'alice', 'bob'], $prepare, $apply); }
+		} catch (\Throwable $failure) { $error = self::error($failure); }
+		self::assertLessThanOrEqual(1, count(array_unique($ids)), 'logical command id must survive retry');
+		self::assertSame(count($objects), count(array_unique(array_map(spl_object_id(...), $objects))), 'outbox is fresh per attempt');
+		try { $writer->holdLifecycles([]); $outside = 'accepted'; } catch (\LogicException $e) { $outside = $e->getMessage(); }
+		try { $writer->assertUsable(); $usable = true; } catch (PolicyUnavailable) { $usable = false; }
+		$record = compact('result', 'error', 'trace', 'row', 'events', 'generations', 'causes', 'attempts', 'outside', 'usable', 'inside');
+		// Replace only random logical command IDs, retaining their bijection, suffixes and retry relationships.
+		$encoded = json_encode($record, JSON_THROW_ON_ERROR);
+		$seen = []; $encoded = preg_replace_callback('/\b[a-f0-9]{32}\b/', static function ($match) use (&$seen): string { return $seen[$match[0]] ??= 'command-' . (count($seen) + 1); }, $encoded);
+		return json_decode($encoded, true, 512, JSON_THROW_ON_ERROR);
+	}
+
+	private static function error(\Throwable $e): array {
+		return ['class' => $e::class, 'message' => $e->getMessage(), 'code' => $e->getCode(), 'uncertain' => $e instanceof PolicyUnavailable ? $e->uncertain : null, 'previous' => $e->getPrevious() === null ? null : self::error($e->getPrevious())];
+	}
+
+	private static function deadlock(): \OCP\DB\Exception {
+		return new class('deadlock') extends \OCP\DB\Exception {
+			public function getReason(): ?int { return self::REASON_DEADLOCK; }
+		};
+	}
+}

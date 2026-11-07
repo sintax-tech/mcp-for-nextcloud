@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Tables\Rows;
 
-use OCA\Mcp\Tools\Tables\Rows\RowsMessages;
-use OCA\Mcp\Tools\Tables\Rows\RowsRefusal;
-use OCA\Mcp\Tools\Tables\Rows\TablesSessionGuard;
+use OCA\Mcp\Modules\Tables\Presentation\RowsMessages;
+use OCA\Mcp\Modules\Tables\Reading\RowsRefusal;
+use OCA\Mcp\Modules\Tables\TablesSessionGuard;
 use OCP\IUser;
 use OCP\IUserSession;
 use PHPUnit\Framework\TestCase;

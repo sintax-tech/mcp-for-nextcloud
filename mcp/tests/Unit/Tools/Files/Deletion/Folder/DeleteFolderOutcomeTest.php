@@ -7,7 +7,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files\Deletion\Folder;
 
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
-use OCA\Mcp\Tools\Files\Deletion\Folder\DeleteFolderOutcome;
+use OCA\Mcp\Modules\Files\Deletion\Folder\DeleteFolderOutcome;
 use PHPUnit\Framework\TestCase;
 
 /** Distinguishes root survival from measured preservation of every inspected descendant. */

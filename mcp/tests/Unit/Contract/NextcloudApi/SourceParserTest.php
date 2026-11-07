@@ -15,42 +15,42 @@ use PHPUnit\Framework\TestCase;
  * 35 marks password parameters with `#[SensitiveParameter]`, which the parser used to stop at.
  */
 final class SourceParserTest extends TestCase {
-    private string $tree;
+	private string $tree;
 
-    protected function setUp(): void {
-        parent::setUp();
-        $this->tree = sys_get_temp_dir() . '/mcp-source-parser-' . bin2hex(random_bytes(6));
-        mkdir($this->tree . '/lib/public/Sample', 0700, true);
-    }
+	protected function setUp(): void {
+		parent::setUp();
+		$this->tree = sys_get_temp_dir() . '/mcp-source-parser-' . bin2hex(random_bytes(6));
+		mkdir($this->tree . '/lib/public/Sample', 0700, true);
+	}
 
-    protected function tearDown(): void {
-        foreach (glob($this->tree . '/lib/public/Sample/*.php') ?: [] as $file) {
-            unlink($file);
-        }
-        foreach (['/lib/public/Sample', '/lib/public', '/lib', ''] as $directory) {
-            rmdir($this->tree . $directory);
-        }
-        parent::tearDown();
-    }
+	protected function tearDown(): void {
+		foreach (glob($this->tree . '/lib/public/Sample/*.php') ?: [] as $file) {
+			unlink($file);
+		}
+		foreach (['/lib/public/Sample', '/lib/public', '/lib', ''] as $directory) {
+			rmdir($this->tree . $directory);
+		}
+		parent::tearDown();
+	}
 
-    /** @return array<string, list<string>> the method signatures the parser reads from the class source */
-    private function methodsOf(string $body): array {
-        file_put_contents($this->tree . '/lib/public/Sample/Event.php', "<?php\nnamespace OCP\\Sample;\n\nuse SensitiveParameter;\n\n$body\n");
-        $surface = (new SourceParser($this->tree))->surface('OCP\\Sample\\Event');
-        $this->assertNotNull($surface);
-        return $surface['methods'];
-    }
+	/** @return array<string, list<string>> the method signatures the parser reads from the class source */
+	private function methodsOf(string $body): array {
+		file_put_contents($this->tree . '/lib/public/Sample/Event.php', "<?php\nnamespace OCP\\Sample;\n\nuse SensitiveParameter;\n\n$body\n");
+		$surface = (new SourceParser($this->tree))->surface('OCP\\Sample\\Event');
+		$this->assertNotNull($surface);
+		return $surface['methods'];
+	}
 
-    public function testSelectsTheNamedClassAfterAHelperInterface(): void {
-        $methods = $this->methodsOf(<<<'PHP'
+	public function testSelectsTheNamedClassAfterAHelperInterface(): void {
+		$methods = $this->methodsOf(<<<'PHP'
             interface Helper { public function unrelated(string $value): void; }
             class Event { public function intended(int $id): void {} }
             PHP);
-        self::assertSame(['intended' => ['id']], $methods);
-    }
+		self::assertSame(['intended' => ['id']], $methods);
+	}
 
-    public function testAnAttributeOnAPromotedParameterKeepsEveryParameter(): void {
-        $methods = $this->methodsOf(<<<'PHP'
+	public function testAnAttributeOnAPromotedParameterKeepsEveryParameter(): void {
+		$methods = $this->methodsOf(<<<'PHP'
             class Event {
                 public function __construct(
                     #[SensitiveParameter]
@@ -61,22 +61,22 @@ final class SourceParserTest extends TestCase {
             }
             PHP);
 
-        $this->assertSame(['password', 'context?'], $methods['__construct']);
-    }
+		$this->assertSame(['password', 'context?'], $methods['__construct']);
+	}
 
-    public function testAnAttributeOnAnOrdinaryParameterKeepsEveryParameter(): void {
-        $methods = $this->methodsOf(<<<'PHP'
+	public function testAnAttributeOnAnOrdinaryParameterKeepsEveryParameter(): void {
+		$methods = $this->methodsOf(<<<'PHP'
             class Event {
                 public function setPassword(#[SensitiveParameter] string $password, int $ttl = 0): void {
                 }
             }
             PHP);
 
-        $this->assertSame(['password', 'ttl?'], $methods['setPassword']);
-    }
+		$this->assertSame(['password', 'ttl?'], $methods['setPassword']);
+	}
 
-    public function testSeveralAttributesWithArgumentsAndOverManyLinesKeepEveryParameter(): void {
-        $methods = $this->methodsOf(<<<'PHP'
+	public function testSeveralAttributesWithArgumentsAndOverManyLinesKeepEveryParameter(): void {
+		$methods = $this->methodsOf(<<<'PHP'
             class Event {
                 #[\Override]
                 public function check(
@@ -97,16 +97,16 @@ final class SourceParserTest extends TestCase {
             }
             PHP);
 
-        $this->assertSame(['secret', 'options?', '...rest'], $methods['check']);
-        $this->assertSame(['value'], $methods['after'], 'the methods after an attributed signature are still read');
-    }
+		$this->assertSame(['secret', 'options?', '...rest'], $methods['check']);
+		$this->assertSame(['value'], $methods['after'], 'the methods after an attributed signature are still read');
+	}
 
-    /**
-     * The types are what tells a parameter that kept its name but changed meaning, as Deck 1.19 turned
-     * `CardService::update(?string $color)` into `?OptionalNullableValue $color`.
-     */
-    public function testParameterTypesAreReadResolvedAndAlignedWithTheNames(): void {
-        file_put_contents($this->tree . '/lib/public/Sample/Event.php', <<<'PHP'
+	/**
+	 * The types are what tells a parameter that kept its name but changed meaning, as Deck 1.19 turned
+	 * `CardService::update(?string $color)` into `?OptionalNullableValue $color`.
+	 */
+	public function testParameterTypesAreReadResolvedAndAlignedWithTheNames(): void {
+		file_put_contents($this->tree . '/lib/public/Sample/Event.php', <<<'PHP'
             <?php
             namespace OCP\Sample;
 
@@ -128,18 +128,18 @@ final class SourceParserTest extends TestCase {
                 }
             }
             PHP);
-        $surface = (new SourceParser($this->tree))->surface('OCP\\Sample\\Event');
+		$surface = (new SourceParser($this->tree))->surface('OCP\\Sample\\Event');
 
-        $this->assertSame(['id', 'color?', 'wrapped?', 'union?', 'promoted?', 'byReference?', 'dnf?', 'untyped?', '...rest'], $surface['methods']['update']);
-        $this->assertSame([
-            'int', '?string', '?OCA\\Deck\\Model\\OptionalNullableValue', 'OCP\\Sample\\Local|Other\\Thing|null',
-            'Fully\\Qualified', '', '(OCP\\Sample\\Local&Other\\Thing)|null', '', 'string',
-        ], $surface['types']['update']);
-    }
+		$this->assertSame(['id', 'color?', 'wrapped?', 'union?', 'promoted?', 'byReference?', 'dnf?', 'untyped?', '...rest'], $surface['methods']['update']);
+		$this->assertSame([
+			'int', '?string', '?OCA\\Deck\\Model\\OptionalNullableValue', 'OCP\\Sample\\Local|Other\\Thing|null',
+			'Fully\\Qualified', '', '(OCP\\Sample\\Local&Other\\Thing)|null', '', 'string',
+		], $surface['types']['update']);
+	}
 
-    /** A trait's public methods are the class's own: `use Trait;` in the body was skipped, and they went missing. */
-    public function testMethodsOfAUsedTraitBelongToTheClass(): void {
-        file_put_contents($this->tree . '/lib/public/Sample/Helper.php', <<<'PHP'
+	/** A trait's public methods are the class's own: `use Trait;` in the body was skipped, and they went missing. */
+	public function testMethodsOfAUsedTraitBelongToTheClass(): void {
+		file_put_contents($this->tree . '/lib/public/Sample/Helper.php', <<<'PHP'
             <?php
             namespace OCP\Sample;
 
@@ -151,8 +151,8 @@ final class SourceParserTest extends TestCase {
                 }
             }
             PHP);
-        file_put_contents($this->tree . '/lib/public/Sample/Other.php', "<?php\nnamespace OCP\\Sample;\n\ntrait Other {\n    public function fromTrait(): void {\n    }\n}\n");
-        $methods = $this->methodsOf(<<<'PHP'
+		file_put_contents($this->tree . '/lib/public/Sample/Other.php', "<?php\nnamespace OCP\\Sample;\n\ntrait Other {\n    public function fromTrait(): void {\n    }\n}\n");
+		$methods = $this->methodsOf(<<<'PHP'
             class Event {
                 use Helper, Other {
                     Helper::fromTrait insteadof Other;
@@ -165,17 +165,17 @@ final class SourceParserTest extends TestCase {
             }
             PHP);
 
-        $this->assertSame(['fromTrait' => ['value'], 'own' => []], $methods);
-    }
+		$this->assertSame(['fromTrait' => ['value'], 'own' => []], $methods);
+	}
 
-    public function testSignaturesWithoutAttributesAreReadAsBefore(): void {
-        $methods = $this->methodsOf(<<<'PHP'
+	public function testSignaturesWithoutAttributesAreReadAsBefore(): void {
+		$methods = $this->methodsOf(<<<'PHP'
             class Event {
                 public function send(object $chat, ?string $message = null, array $meta = [], string ...$tags): void {
                 }
             }
             PHP);
 
-        $this->assertSame(['chat', 'message?', 'meta?', '...tags'], $methods['send']);
-    }
+		$this->assertSame(['chat', 'message?', 'meta?', '...tags'], $methods['send']);
+	}
 }

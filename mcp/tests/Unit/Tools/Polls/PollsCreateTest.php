@@ -7,8 +7,9 @@
 declare (strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 
-use OCA\Mcp\Tools\{ArgumentValidationException, ToolFailure, PlanChanged};
-use OCA\Mcp\Tools\Polls\Create\{CreateRequest, CreateDefaults};
+use OCA\Mcp\Mcp\{Tools\Validation\ArgumentValidationException, Tools\Results\ToolFailure, Confirmation\PlanChanged};
+use OCA\Mcp\Modules\Polls\Creation\CreateDefaults;
+use OCA\Mcp\Modules\Polls\Creation\CreateRequest;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 /** Discriminates preview/no effects, native persisted-versus-transient values, independent grants and failure phases. */

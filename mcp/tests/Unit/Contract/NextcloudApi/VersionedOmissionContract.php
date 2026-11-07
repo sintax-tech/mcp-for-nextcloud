@@ -7,7 +7,7 @@
 declare (strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi;
 
-use OCA\Mcp\Tools\Polls\Create\CreateDefaults;
+use OCA\Mcp\Modules\Polls\Creation\CreateDefaults;
 use PHPUnit\Framework\Assert;
 /** Explicit omission, distinct from a fallback API. All ordinary version gates keep the original contract. */
 final class VersionedOmissionContract {

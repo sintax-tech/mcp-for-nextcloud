@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 
 use OCA\Mail\Exception\ClientException;
-use OCA\Mcp\Tools\Mail\MailServices;
-use OCA\Mcp\Tools\Mail\MailUnavailableException;
+use OCA\Mcp\Modules\Mail\Integration\MailServices;
+use OCA\Mcp\Modules\Mail\MailUnavailableException;
 use OCP\App\IAppManager;
 use OCP\IUserManager;
 use PHPUnit\Framework\TestCase;

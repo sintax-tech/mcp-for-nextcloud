@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Behavioral tests of js/admin-overrides.js (T3 UI side, T4, T16) with Node's built-in runner and a minimal DOM. The
- * script runs unchanged against a stub of window.McpAdminMatrix, the surface js/admin-grants.js exposes.
+ * Behavioral tests of src/admin/admin-overrides.js (T3 UI side, T4, T16) with Node's built-in runner and a minimal DOM. The
+ * script runs unchanged against a stub of window.McpAdminMatrix, the surface src/admin/admin-grants.js exposes.
  */
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const fs = require('node:fs')
 const path = require('node:path')
 
@@ -74,7 +74,7 @@ class Element {
 const plain = (value) => JSON.parse(JSON.stringify(value))
 const tick = async () => { for (let i = 0; i < 12; i++) await new Promise(setImmediate) }
 const REVISION = '9007199254740993'
-const source = fs.readFileSync(path.join(__dirname, '../../js/admin-overrides.js'), 'utf8')
+const source = require('./AdminManifest.cjs').script('admin-overrides.js')
 
 const origin = (kind, groupIds = []) => ({ source: kind, groupIds })
 /** A matrix row of the API: `overrides` maps "module:operation" ("eligible" for Can connect) to a source. */
@@ -173,7 +173,7 @@ function app(users, answer = () => [200, { revision: '9007199254740994', changed
 		flush: () => { for (const [id, action] of [...timers]) { timers.delete(id); action() } },
 		rowBox: (uid) => rows.get(uid).querySelector('input.mcp-row-select'),
 		// The reset of a row is the "Give everything back to inheritance…" item of its actions menu
-		// (js/admin-row-actions.js), which calls resetUser() with the menu button as the control to give the focus back to.
+		// (src/admin/admin-row-actions.js), which calls resetUser() with the menu button as the control to give the focus back to.
 		rowButton: (uid) => {
 			const person = data.users.find((candidate) => candidate.uid === uid)
 			if (!window.McpAdminOverrides.hasOverrides(person)) return null
@@ -478,7 +478,7 @@ test('T16: while a change is saving the controls are locked and a second reset i
 })
 
 test('O1: undoing a 503 without uncertainty keeps the table, offers the same undo again and does not reload', async () => {
-	const source = fs.readFileSync(path.join(__dirname, '../../js/admin-grants.js'), 'utf8')
+	const source = require('./AdminManifest.cjs').script('admin-grants.js')
 	const start = source.indexOf('\tasync function undoBulk(')
 	const end = source.indexOf('\n\t}\n', start) + 4
 	const notices = []
@@ -499,7 +499,7 @@ test('O1: undoing a 503 without uncertainty keeps the table, offers the same und
 		reloadLocked: async () => { reloads++ },
 		announce: () => {},
 	}
-	vm.runInNewContext(source.slice(start, end) + '\nthis.undoBulk = undoBulk', context)
+	vm.runInNewContext(require('./AdminManifest.cjs').operation('async function undoBulk('), context)
 	await context.undoBulk('receipt-1', '7')
 	assert.equal(reloads, 0)
 	assert.equal(notices.length, 1)
@@ -574,7 +574,7 @@ test('S5: in the operations view only a real exception is outlined; a repeated v
 	assert.ok(!repeated.cell.classes.has('mcp-override-exception'))
 	assert.match(repeated.box.getAttribute('aria-label'), /Individual override: denied — the same as inherited$/)
 	assert.ok(!decorate('pending').cell.classes.has('mcp-override-exception'), 'nothing is outlined before the answer')
-	delete ui.window.McpAdminExceptions
+	delete ui.window.OCA.Mcp.Admin.exceptions
 	const without = new Element('td', ui.document)
 	ui.window.McpAdminOverrides.decorateCell(without, new Element('input', ui.document), alice(), 'notes', 'edit')
 	assert.ok(without.classes.has('mcp-override-exception'), 'without the classification every individual value is outlined')
@@ -808,7 +808,7 @@ test('S4: the review of redundant values resets exactly the cells it names, user
 test('S6: the selection bar appears with a selection, sets a level or "Can connect" for exactly the selected people, and clears', async () => {
 	const ui = app([alice(), bob(), carol()])
 	const levels = {}
-	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js/admin-levels.js'), 'utf8'), levels)
+	vm.runInNewContext(require('./AdminManifest.cjs').levelsSource(), levels)
 	ui.window.McpAdminLevels = levels.McpAdminLevels
 	const bar = ui.toolbar.querySelector('div.mcp-selection-bar')
 	assert.equal(bar.hidden, true, 'no bar without a selection')
@@ -849,7 +849,7 @@ test('S6: the select-all box heads the selection column and keeps its accessible
 
 test('issue #11 matrix: an unreadable reset response uses real api uncertainty recovery, with no success or undo', async () => {
 	const ui = app([alice()], () => [200, new SyntaxError('HTML proxy response')])
-	const matrixSource = fs.readFileSync(path.join(__dirname, '../../js/admin-grants.js'), 'utf8')
+	const matrixSource = require('./AdminManifest.cjs').script('admin-grants.js')
 	const start = matrixSource.indexOf('\tasync function api(')
 	const end = matrixSource.indexOf('\n\t}\n', start) + 4
 	const matrix = ui.window.McpAdminMatrix
@@ -861,7 +861,7 @@ test('issue #11 matrix: an unreadable reset response uses real api uncertainty r
 			return { ok: true, status: 200, json: async () => { if (data instanceof Error) throw data; return data } }
 		},
 	}
-	vm.runInNewContext(matrixSource.slice(start, end) + '\nthis.api = api', context)
+	vm.runInNewContext(require('./AdminManifest.cjs').operation('async function api('), context)
 	matrix.api = context.api
 	await ui.rowButton('alice').click()
 	await ui.panelButton('confirm').click()

@@ -1,0 +1,37 @@
+{
+    "steps": [
+        {
+            "step": "read-pdf",
+            "request": {
+                "path": "/emoji.pdf"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Aá😀"
+                            },
+                            {
+                                "type": "text",
+                                "text": "{\n    \"path\": \"/emoji.pdf\",\n    \"etag\": \"e101\",\n    \"size\": 972,\n    \"mime\": \"application/pdf\",\n    \"access\": {\n        \"scope\": \"personal\",\n        \"owner\": \"alice\",\n        \"ownerDisplayName\": \"Alice\",\n        \"permissions\": {\n            \"read\": true,\n            \"update\": true,\n            \"create\": true,\n            \"delete\": true,\n            \"share\": true\n        }\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "sourceSha256": "23a73cbc3f2f6a048505c262ec9d574a31ea1ecaded8eb496d130f8e11c14f19",
+                "sourceBytes": 972,
+                "writes": [],
+                "opened": [
+                    "/alice/files/emoji.pdf"
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,209 @@
+{
+	"base": "46006682",
+	"limit": 300,
+	"final": [
+		{
+			"ceiling": 598,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Controller",
+				"GrantsController"
+			]
+		},
+		{
+			"ceiling": 354,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Db",
+				"GroupLifeMapper"
+			]
+		},
+		{
+			"ceiling": 471,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Db",
+				"ResourceScopeMapper"
+			]
+		},
+		{
+			"ceiling": 384,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Listener",
+				"GroupLifecycleListener"
+			]
+		},
+		{
+			"ceiling": 377,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"OAuth",
+				"OAuthStore"
+			]
+		},
+		{
+			"ceiling": 354,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"OAuth",
+				"TokenService"
+			]
+		},
+		{
+			"ceiling": 484,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Service",
+				"GrantPolicy"
+			]
+		},
+		{
+			"ceiling": 547,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Service",
+				"McpProtocol"
+			]
+		},
+		{
+			"ceiling": 451,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Service",
+				"Policy",
+				"PolicyEventPayload"
+			]
+		},
+		{
+			"ceiling": 448,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Calendar",
+				"CalendarMessages"
+			]
+		},
+		{
+			"ceiling": 541,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Calendar",
+				"CalendarPlanRenderer"
+			]
+		},
+		{
+			"ceiling": 317,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Calendar",
+				"EmbeddedDavDispatcher"
+			]
+		},
+		{
+			"ceiling": 382,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Calendar",
+				"Scheduling",
+				"PlanWarnings"
+			]
+		},
+		{
+			"ceiling": 436,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Common",
+				"LockAwareWrite"
+			]
+		},
+		{
+			"ceiling": 441,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Common",
+				"OutputReferenceFilter"
+			]
+		},
+		{
+			"ceiling": 312,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Contacts",
+				"SystemContacts"
+			]
+		},
+		{
+			"ceiling": 341,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Files",
+				"FileCreation"
+			]
+		},
+		{
+			"ceiling": 377,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Talk",
+				"TalkPlanRenderer"
+			]
+		},
+		{
+			"ceiling": 386,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Tasks",
+				"TaskData"
+			]
+		},
+		{
+			"ceiling": 406,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Tasks",
+				"TasksPlanRenderer"
+			]
+		},
+		{
+			"ceiling": 414,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"ToolGuide"
+			]
+		}
+	],
+	"transitional": []
+}

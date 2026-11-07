@@ -10,21 +10,20 @@ declare(strict_types=1);
  * - pages: tables_list_rows through the real ToolRegistry, following nextCursor to the end (at most the input's
  *   `maxPages`, 50 by default); the session holds the input's `session` user (default: the user, "" for no session
  *   user), so a test can prove the guard;
+ * - compare: both complete MCP pages and the native RowService result in this same actor request; neither is sorted
+ *   by the harness. The scene declares Amount ASC, row-id ASC explicitly to make the native view order total;
  * - column-default: sets the text default of a column of the scene through ColumnMapper, as a column edit stores it,
  *   and answers the previous one, so a test can change the hidden column's default alone and restore it;
  * - native: what RowService::findAllByView()/findAllByTable() returns for the user (session = user), as formatRows() gives
  *   it, or the class of the exception the Tables app throws.
  */
 
-use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Tables\Rows\RowsCellScene;
-use OCA\Mcp\Tools\Tables\TablesModule;
-use OCA\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Tests\Integration\Tables\Rows\RowsActorReads;
 use OCP\App\IAppManager;
 use OCP\IUserManager;
 use OCP\IUserSession;
 use OCP\Server;
-use Psr\Log\LoggerInterface;
 
 require dirname(__DIR__, 2) . '/bootstrap.php';
 [, $uid, $action] = $argv;
@@ -43,25 +42,10 @@ $apps->loadApp('tables');
 
 switch ($action) {
 	case 'pages':
-		$policy = Server::get(GrantPolicy::class);
-		$registry = new ToolRegistry([Server::get(TablesModule::class)], $policy, $apps, $users, Server::get(LoggerInterface::class));
-		$pages = [];
-		$arguments = $in['arguments'];
-		for ($i = 0; $i < (int)($in['maxPages'] ?? 50); $i++) {
-			try {
-				$result = $policy->within($uid, static fn (): array => $registry->call('tables_list_rows', $arguments, $uid));
-			} catch (InvalidArgumentException) {
-				$pages[] = ['refused' => true];
-				break;
-			}
-			$pages[] = $result;
-			$page = ($result['isError'] ?? false) ? null : json_decode($result['content'][0]['text'], true);
-			if (!is_array($page) || ($page['nextCursor'] ?? null) === null) {
-				break;
-			}
-			$arguments['cursor'] = $page['nextCursor'];
-		}
-		$out = ['pages' => $pages];
+		$out = RowsActorReads::forUser($uid, $apps, $users)->pages($in);
+		break;
+	case 'compare':
+		$out = RowsActorReads::forUser($uid, $apps, $users)->compare($in);
 		break;
 	case 'column-default':
 		$columnId = (int)$in['column'];
@@ -75,13 +59,7 @@ switch ($action) {
 		$columns->update($entity);
 		break;
 	case 'native':
-		$rows = Server::get('OCA\\Tables\\Service\\RowService');
-		try {
-			$found = isset($in['view_id']) ? $rows->findAllByView((int)$in['view_id'], $uid, null, null) : $rows->findAllByTable((int)$in['table_id'], $uid, null, null);
-			$out = ['rows' => array_map(static fn (array $row): array => ['id' => (int)$row['id'], 'data' => $row['data']], $rows->formatRows($found))];
-		} catch (Throwable $e) {
-			$out = ['error' => $e::class];
-		}
+		$out = RowsActorReads::forUser($uid, $apps, $users)->native($in);
 		break;
 	default:
 		throw new RuntimeException('Unknown action ' . $action);

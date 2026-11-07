@@ -9,8 +9,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Contacts;
 
 use OCA\DAV\CardDAV\CardDavBackend;
-use OCA\Mcp\Service\FileWritePolicy;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\FileTypes\FileWritePolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Exclusion\ExclusionTestCase;
 use OCA\Mcp\Tests\Integration\Support\ToolReply;
 use OCP\App\IAppManager;

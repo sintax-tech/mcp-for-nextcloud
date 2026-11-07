@@ -11,10 +11,10 @@ namespace OCA\Circles\Model;
  * Native Member constants used by the adapter; behavior is exercised through controlled objects below.
  */
 class Member {
-    public const LEVEL_NONE = 0;
-    public const LEVEL_MEMBER = 1;
-    public const TYPE_USER = 1;
-    public const TYPE_GROUP = 2;
-    public const TYPE_MAIL = 4;
-    public const TYPE_CIRCLE = 16;
+	public const LEVEL_NONE = 0;
+	public const LEVEL_MEMBER = 1;
+	public const TYPE_USER = 1;
+	public const TYPE_GROUP = 2;
+	public const TYPE_MAIL = 4;
+	public const TYPE_CIRCLE = 16;
 }

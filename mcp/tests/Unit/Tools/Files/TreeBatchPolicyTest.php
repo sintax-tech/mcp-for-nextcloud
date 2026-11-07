@@ -7,10 +7,14 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
-use OCA\Mcp\Service\FileWritePolicy;
-use OCA\Mcp\Tools\Common\FileTypeDenied;
-use OCA\Mcp\Tools\Files\{Batch, CopyMoveContext, FileTypePreflight, ListedTreeCopy, ReorganizationLimits};
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Access\FileTypes\FileWritePolicy;
+use OCA\Mcp\Access\FileTypes\FileTypeDenied;
+use OCA\Mcp\Modules\Files\Reorganization\Batch;
+use OCA\Mcp\Modules\Files\Reorganization\CopyMoveContext;
+use OCA\Mcp\Modules\Files\Reorganization\FileTypePreflight;
+use OCA\Mcp\Modules\Files\Reorganization\ListedTreeCopy;
+use OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 
 /** Both T15-6 milestones: no effects on whole preflight denial, and exact listed-copy partial receipts. */
@@ -29,7 +33,7 @@ final class TreeBatchPolicyTest extends FilesToolsTestCase {
 
 	/** @return CopyMoveContext The very same real context and injected policy used by the module. */
 	private function context(): CopyMoveContext {
-		return (new \ReflectionProperty($this->module, 'reorganization'))->getValue($this->module)->copyMoveContext();
+		return FilesCatalogWiring::of($this->module)->named('reorganization')->copyMoveContext();
 	}
 
 	/** A forbidden child refuses both plans/confirmations, without creating any target or batch row.
@@ -70,7 +74,7 @@ final class TreeBatchPolicyTest extends FilesToolsTestCase {
 		self::assertArrayNotHasKey('/alice/files/copy/a.php', $this->tree->nodes);
 		self::assertArrayNotHasKey('/alice/files/copy/a.txt', $this->tree->nodes);
 		self::assertContains('/copy/a.txt', $result['not_copied']);
-		self::assertContains(['path' => '/copy/a.txt', 'reason' => \OCA\Mcp\Tools\Common\CommonMessages::notFound()], $result['conflicts']);
+		self::assertContains(['path' => '/copy/a.txt', 'reason' => \OCA\Mcp\Platform\FileAccess\CommonMessages::notFound()], $result['conflicts']);
 		self::assertSame('alpha', $root->get('src.php/a.php')->getContent());
 		self::assertSame('beta', $root->get('copy/sub/b.txt')->getContent());
 		self::assertSame([], array_filter($this->tree->ops, static fn ($op) => str_starts_with($op, 'delete')));
@@ -101,7 +105,7 @@ final class TreeBatchPolicyTest extends FilesToolsTestCase {
 		$plan = $this->plan('files_move_batch', $args);
 		self::assertFalse($plan['ok']);
 		self::assertContains(['from' => '/src.php/a.txt', 'to' => '/New/stage.php',
-			'reason' => \OCA\Mcp\Tools\Common\FileTypeMessages::denied()], $plan['denied']);
+			'reason' => \OCA\Mcp\Access\FileTypes\FileTypeMessages::denied()], $plan['denied']);
 		$this->failure('files_move_batch', $args);
 		self::assertSame([], $this->tree->ops);
 		self::assertArrayNotHasKey('/alice/files/New', $this->tree->nodes);
@@ -225,7 +229,7 @@ final class TreeBatchPolicyTest extends FilesToolsTestCase {
 	public function testHiddenDescendantRefusesGenericallyBeforeAnyTypeDetail(): void {
 		$source = $this->tree->node('/alice/files/src.php');
 		$hidden = $this->tree->addFile('/alice/files/src.php/hidden.php', 'hidden', 'text/plain');
-		$visible = $this->createMock(\OCA\Mcp\Service\Scope\FilesAccessGuard::class);
+		$visible = $this->createMock(\OCA\Mcp\Access\ResourceScope\FilesAccessGuard::class);
 		$visible->method('isVisible')->willReturnCallback(static fn (\OCP\Files\Node $node): bool => (int)$node->getId() !== $hidden);
 		$old = $this->context();
 		$context = new CopyMoveContext($old->reorganization, $old->access, $old->report, $visible, $old->locks, CopyMovePolicyFixture::guard($this));
@@ -233,7 +237,7 @@ final class TreeBatchPolicyTest extends FilesToolsTestCase {
 			(new FileTypePreflight($context))->inspect($source, '/target', $context->policy()->snapshot(), true);
 			self::fail('Hidden descendants must refuse generically');
 		} catch (ToolFailure $e) {
-			self::assertSame(\OCA\Mcp\Tools\Common\CommonMessages::notFound(), $e->getMessage());
+			self::assertSame(\OCA\Mcp\Platform\FileAccess\CommonMessages::notFound(), $e->getMessage());
 			self::assertStringNotContainsString('hidden.php', $e->getMessage());
 			self::assertSame([], $this->tree->ops);
 		}
@@ -261,7 +265,7 @@ final class TreeBatchPolicyTest extends FilesToolsTestCase {
 					$args = ['from' => '/src.php', 'to' => '/target'];
 					$plan ? $this->plan($tool, $args) : $this->tool($tool, $args);
 					self::fail('D9 must refuse applicable folder writes');
-				} catch (\OCA\Mcp\Service\FileWritePolicyUnavailable) {
+				} catch (\OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable) {
 					self::assertSame([], $this->tree->ops);
 				}
 			}
@@ -342,11 +346,11 @@ final class TreeBatchPolicyTest extends FilesToolsTestCase {
 	 */
 	public function testVisibilityFailureKeepsReceiptSetsDisjoint(): void {
 		$old = $this->context();
-		$visible = $this->createMock(\OCA\Mcp\Service\Scope\FilesAccessGuard::class);
+		$visible = $this->createMock(\OCA\Mcp\Access\ResourceScope\FilesAccessGuard::class);
 		$visible->method('isVisible')->willReturn(true);
 		$visible->method('assertVisible')->willReturnCallback(static function (\OCP\Files\Node $node): void {
 			if ($node->getPath() === '/alice/files/copy/sub/b.txt') {
-				throw new ToolFailure(\OCA\Mcp\Tools\Common\CommonMessages::notFound());
+				throw new ToolFailure(\OCA\Mcp\Platform\FileAccess\CommonMessages::notFound());
 			}
 		});
 		$context = new CopyMoveContext($old->reorganization, $old->access, $old->report, $visible, $old->locks, CopyMovePolicyFixture::guard($this));
@@ -379,8 +383,8 @@ final class TreeBatchPolicyTest extends FilesToolsTestCase {
 				if ($path === $first['source'] && $kind !== 'bytes') {
 					throw match ($kind) {
 						'quota' => new \OCP\Files\NotEnoughSpaceException(),
-						'mapped-quota' => new ToolFailure(\OCA\Mcp\Tools\Common\CommonMessages::insufficientQuota()),
-						default => new \OCA\Mcp\Service\FileWritePolicyUnavailable(),
+						'mapped-quota' => new ToolFailure(\OCA\Mcp\Platform\FileAccess\CommonMessages::insufficientQuota()),
+						default => new \OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable(),
 					};
 				}
 			};
@@ -413,14 +417,14 @@ final class TreeBatchPolicyTest extends FilesToolsTestCase {
 			$this->tree->addFile('/alice/files/wide/' . $i . '.txt', 'x', 'text/plain');
 		}
 		$old = $this->context();
-		$visible = $this->createMock(\OCA\Mcp\Service\Scope\FilesAccessGuard::class);
+		$visible = $this->createMock(\OCA\Mcp\Access\ResourceScope\FilesAccessGuard::class);
 		$visible->method('isVisible')->willReturnCallback(static fn (\OCP\Files\Node $node): bool => !str_ends_with($node->getPath(), '/2009.txt'));
 		$context = new CopyMoveContext($old->reorganization, $old->access, $old->report, $visible, $old->locks, CopyMovePolicyFixture::guard($this));
 		try {
 			(new FileTypePreflight($context))->inspect($this->tree->node('/alice/files/wide'), '/target', $context->policy()->snapshot());
 			self::fail('Pending nodes cannot disclose their count');
 		} catch (ToolFailure $e) {
-			self::assertSame(\OCA\Mcp\Tools\Common\CommonMessages::notFound(), $e->getMessage());
+			self::assertSame(\OCA\Mcp\Platform\FileAccess\CommonMessages::notFound(), $e->getMessage());
 			self::assertSame([], $this->tree->ops);
 		}
 	}
@@ -440,7 +444,7 @@ final class TreeBatchPolicyTest extends FilesToolsTestCase {
 			$preflight->inspect($source, '/target.txt', $snapshot);
 			self::fail('Projected work must remain bounded');
 		} catch (ToolFailure $e) {
-			self::assertSame(\OCA\Mcp\Tools\Files\FileTreeMessages::tooManyNodes(ReorganizationLimits::NODES), $e->getMessage());
+			self::assertSame(\OCA\Mcp\Modules\Files\Presentation\FileTreeMessages::tooManyNodes(ReorganizationLimits::NODES), $e->getMessage());
 			self::assertStringNotContainsString('copied', $e->getMessage());
 		}
 	}
@@ -456,7 +460,7 @@ final class TreeBatchPolicyTest extends FilesToolsTestCase {
 		], $context->policy()->snapshot());
 		self::assertCount(2, $out);
 		self::assertSame(['/stage.php', '/final.php'], array_column($out, 'to'));
-		self::assertSame(array_fill(0, 2, \OCA\Mcp\Tools\Common\FileTypeMessages::denied()), array_column($out, 'reason'));
+		self::assertSame(array_fill(0, 2, \OCA\Mcp\Access\FileTypes\FileTypeMessages::denied()), array_column($out, 'reason'));
 		self::assertSame([], $this->tree->ops);
 	}
 

@@ -6,11 +6,11 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Files;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Exclusion\ExclusionTestCase;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
 use OCA\Mcp\Tests\Integration\Support\McpClient;
-use OCA\Mcp\Tools\Files\Deletion\DeleteMessages;
+use OCA\Mcp\Modules\Files\Deletion\DeleteMessages;
 use OCP\IAppConfig;
 use OCP\IUserManager;
 use OCP\IUserSession;
@@ -45,7 +45,7 @@ final class DeleteFileTest extends ExclusionTestCase {
 			self::assertSame('fd1 exact native bytes', $file->getContent());
 			$reply = $client->write('files_delete', ['path' => $path, 'id' => $plan->structured()['id'], 'etag' => $plan->structured()['etag']]);
 			self::assertTrue($reply->ok(), $reply->describe());
-			self::assertSame('removed_destination_unconfirmed', $reply->json()['status']);
+			DeleteReceiptAssertions::observedInOwnTrash($reply->json());
 			self::assertFalse($reply->json()['recoveryConfirmed']);
 			self::assertFalse($this->exists(self::ALICE, $path));
 			$this->restore($file->getName(), $path);
@@ -137,7 +137,7 @@ final class DeleteFileTest extends ExclusionTestCase {
 	/** @return void Scope exclusion answers like missing, and native trash OFF refuses without deleting. */
 	public function testScopeAndAppOffRefuse(): void {
 		$file = $this->makeFile('home', 'scoped.txt', 'keep');
-		$writer = Server::get(\OCA\Mcp\Service\Policy\PolicyWriter::class);
+		$writer = Server::get(\OCA\Mcp\Access\Policy\PolicyWriter::class);
 		$state = Server::get(\OCA\Mcp\Db\PolicyStateMapper::class);
 		$writer->setResourceScope($state->state()['revision'], 'admin', self::ALICE, 'files', []);
 		try {
@@ -161,9 +161,9 @@ final class DeleteFileTest extends ExclusionTestCase {
 
 	/** @return void Default, configured and historical NFC-equivalent reservations never reach deletion. */
 	public function testCurrentHistoricAndUnicodeBackupNamesAreRefused(): void {
-		$before = Server::get(\OCA\Mcp\Service\BackupSettingsDocument::class)->read();
+		$before = Server::get(\OCA\Mcp\Platform\Backups\BackupSettingsDocument::class)->read();
 		$config = Server::get(IAppConfig::class);
-		$writer = Server::get(\OCA\Mcp\Service\BackupSettingsWriter::class);
+		$writer = Server::get(\OCA\Mcp\Access\Settings\BackupSettingsWriter::class);
 		$state = Server::get(\OCA\Mcp\Db\PolicyStateMapper::class);
 		try {
 			foreach (['Réservé', '.fd1-current'] as $name) {
@@ -185,16 +185,16 @@ final class DeleteFileTest extends ExclusionTestCase {
 				}
 			}
 		} finally {
-			$before === null ? $config->deleteKey('mcp', \OCA\Mcp\Service\BackupLocation::KEY)
-				: $config->setValueString('mcp', \OCA\Mcp\Service\BackupLocation::KEY, $before, false);
-			Server::get(\OCA\Mcp\Service\BackupLocation::class)->invalidate();
+			$before === null ? $config->deleteKey('mcp', \OCA\Mcp\Platform\Backups\BackupLocation::KEY)
+				: $config->setValueString('mcp', \OCA\Mcp\Platform\Backups\BackupLocation::KEY, $before, false);
+			Server::get(\OCA\Mcp\Platform\Backups\BackupLocation::class)->invalidate();
 		}
 	}
 
 	/** @return void A real Noop provider is refused even if the configured locking switch still says enabled. */
 	public function testActualNoopLockingProviderIsRefused(): void {
 		$file = $this->makeFile('home', 'noop.txt', 'keep');
-		$gate = Server::get(\OCA\Mcp\Tools\Files\Deletion\DeleteBackendGate::class);
+		$gate = Server::get(\OCA\Mcp\Modules\Files\Integration\DeleteBackendGate::class);
 		$property = new \ReflectionProperty($gate, 'locking');
 		$before = $property->getValue($gate);
 		$property->setValue($gate, new \OC\Lock\NoopLockingProvider());
@@ -202,7 +202,7 @@ final class DeleteFileTest extends ExclusionTestCase {
 			try {
 				$gate->check($file, self::ALICE);
 				self::fail('Actual Noop locking must refuse');
-			} catch (\OCA\Mcp\Tools\ToolFailure $error) {
+			} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $error) {
 				self::assertStringContainsString('Nothing was deleted', $error->getMessage());
 				self::assertSame('keep', $file->getContent());
 			}

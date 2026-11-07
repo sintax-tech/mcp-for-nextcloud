@@ -7,18 +7,18 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
-use OCA\Mcp\Tools\ArgumentValidationException;
-use OCA\Mcp\Tools\Mail\Draft\MailDraftMessages;
-use OCA\Mcp\Tools\Mail\Draft\MailDraftPlanRenderer;
-use OCA\Mcp\Tools\Mail\Draft\MailDraftTools;
-use OCA\Mcp\Tools\Mail\MailGateway;
-use OCA\Mcp\Tools\Mail\MailMessages;
-use OCA\Mcp\Tools\PlanChanged;
-use OCA\Mcp\Tools\PlanState;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
+use OCA\Mcp\Modules\Mail\Presentation\MailDraftMessages;
+use OCA\Mcp\Modules\Mail\Presentation\MailDraftPlanRenderer;
+use OCA\Mcp\Modules\Mail\Creation\MailDraftTools;
+use OCA\Mcp\Modules\Mail\Integration\MailGateway;
+use OCA\Mcp\Modules\Mail\Presentation\MailMessages;
+use OCA\Mcp\Mcp\Confirmation\PlanChanged;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
@@ -78,7 +78,7 @@ final class MailDraftToolsTest extends TestCase {
 		$this->assertSame([], $this->app->drafts);
 		$this->assertSame(['accountId' => 11, 'draftsMailboxId' => 3, 'account' => 'alice@example.com', 'draftsPath' => 'Drafts'], $plan['target']);
 		$this->assertSame(['to' => ['bob@example.com'], 'cc' => ['carol@example.com'], 'bcc' => ['dave@example.com'], 'subject' => 'Budget review',
-			'body' => self::DRAFT['body']], $plan['draft']);
+			'body' => self::DRAFT['body'], 'html' => false], $plan['draft']);
 		$this->assertSame([MailDraftMessages::notSent(), MailDraftMessages::eachConfirmCreates()], $plan['notes']);
 		$this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $plan[PlanState::ARGUMENT]);
 

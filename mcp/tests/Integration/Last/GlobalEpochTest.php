@@ -12,18 +12,18 @@ use OCA\Mcp\BackgroundJob\PolicyCleanupJob;
 use OCA\Mcp\Db\AuthUsersMapper;
 use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\PolicyStateMapper;
-use OCA\Mcp\OAuth\AccessTokenAuthenticator;
-use OCA\Mcp\OAuth\AuthorizationRequest;
-use OCA\Mcp\OAuth\ClientMetadata;
-use OCA\Mcp\OAuth\OAuthException;
-use OCA\Mcp\OAuth\OAuthStore;
-use OCA\Mcp\OAuth\TokenHasher;
-use OCA\Mcp\OAuth\TokenOwnerGate;
-use OCA\Mcp\OAuth\TokenService;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Policy\DecimalCounter;
-use OCA\Mcp\Service\Policy\PolicyEventProcessor;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\OAuth\Tokens\AccessTokenAuthenticator;
+use OCA\Mcp\OAuth\Authorization\AuthorizationRequest;
+use OCA\Mcp\OAuth\Clients\ClientMetadata;
+use OCA\Mcp\OAuth\Authorization\OAuthException;
+use OCA\Mcp\OAuth\Storage\OAuthStore;
+use OCA\Mcp\OAuth\Storage\TokenHasher;
+use OCA\Mcp\OAuth\Tokens\TokenOwnerGate;
+use OCA\Mcp\OAuth\Tokens\TokenService;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Platform\Numbers\DecimalCounter;
+use OCA\Mcp\Access\Policy\PolicyEventProcessor;
+use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\IJobList;
@@ -42,31 +42,31 @@ use RuntimeException;
  * (epoch, generation) from the column defaults the upgrade ALTER added.
  */
 final class GlobalEpochTest extends OAuthAccountTestCase {
-    public function testSwitchingTheServiceOffMovesTheGlobalEpochAndOnlyLaterCredentialsWork(): void {
-        $second = $this->openIndependentConnection();
-        $grant = $this->exchange($this->consent());
-        // Written as 1.0.8 wrote it, without the new columns: (epoch, generation) come from the column defaults, which
-        // in an upgrade cell are those of the ALTER that added them.
-        $now = time();
-        Server::get(OAuthStore::class)->insertToken(['user_id' => $this->uid, 'client_id' => self::CLIENT, 'resource' => self::RESOURCE,
-            'scope' => 'mcp', 'access_hash' => Server::get(TokenHasher::class)->hash('ncmcp_at_' . $this->uid), 'access_expires' => $now + 60,
-            'refresh_hash' => hash('sha256', 'legacy' . $this->uid), 'refresh_expires' => $now + 60, 'created_at' => $now], $now);
-        $legacy = ['access_token' => 'ncmcp_at_' . $this->uid];
-        $this->assertSame([['0', '1'], [$this->epoch, '2']], $this->stamps($second, 'mcp_oauth_tokens'));
-        if ($this->epoch === '0') {
-            $this->assertSame($this->uid, $this->bearer($legacy), 'a defaulted row is valid at epoch 0');
-        }
-        $policy = Server::get(GrantPolicy::class);
-        $policy->setGlobalEnabled(false);
-        $moved = DecimalCounter::increment($this->epoch);
-        $this->assertSame($moved, (new PolicyStateMapper($second))->state()['auth_epoch']);
-        $this->assertSame([], $this->stamps($second, 'mcp_oauth_tokens'));
-        $policy->setGlobalEnabled(true);
-        $this->assertNull($this->bearer($grant));
-        $this->assertNull($this->bearer($legacy));
-        $policy->setConnected($this->uid, true);
-        $fresh = $this->exchange($this->consent());
-        $this->assertSame([[$moved, '3']], $this->stamps($second, 'mcp_oauth_tokens'));
-        $this->assertSame($this->uid, $this->bearer($fresh));
-    }
+	public function testSwitchingTheServiceOffMovesTheGlobalEpochAndOnlyLaterCredentialsWork(): void {
+		$second = $this->openIndependentConnection();
+		$grant = $this->exchange($this->consent());
+		// Written as 1.0.8 wrote it, without the new columns: (epoch, generation) come from the column defaults, which
+		// in an upgrade cell are those of the ALTER that added them.
+		$now = time();
+		Server::get(OAuthStore::class)->insertToken(['user_id' => $this->uid, 'client_id' => self::CLIENT, 'resource' => self::RESOURCE,
+			'scope' => 'mcp', 'access_hash' => Server::get(TokenHasher::class)->hash('ncmcp_at_' . $this->uid), 'access_expires' => $now + 60,
+			'refresh_hash' => hash('sha256', 'legacy' . $this->uid), 'refresh_expires' => $now + 60, 'created_at' => $now], $now);
+		$legacy = ['access_token' => 'ncmcp_at_' . $this->uid];
+		$this->assertSame([['0', '1'], [$this->epoch, '2']], $this->stamps($second, 'mcp_oauth_tokens'));
+		if ($this->epoch === '0') {
+			$this->assertSame($this->uid, $this->bearer($legacy), 'a defaulted row is valid at epoch 0');
+		}
+		$policy = Server::get(GrantPolicy::class);
+		$policy->setGlobalEnabled(false);
+		$moved = DecimalCounter::increment($this->epoch);
+		$this->assertSame($moved, (new PolicyStateMapper($second))->state()['auth_epoch']);
+		$this->assertSame([], $this->stamps($second, 'mcp_oauth_tokens'));
+		$policy->setGlobalEnabled(true);
+		$this->assertNull($this->bearer($grant));
+		$this->assertNull($this->bearer($legacy));
+		$policy->setConnected($this->uid, true);
+		$fresh = $this->exchange($this->consent());
+		$this->assertSame([[$moved, '3']], $this->stamps($second, 'mcp_oauth_tokens'));
+		$this->assertSame($this->uid, $this->bearer($fresh));
+	}
 }

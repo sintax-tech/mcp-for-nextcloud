@@ -15,7 +15,7 @@ declare(strict_types=1);
  *   one row whose only "needle" is in the Secret note; Notes of the first row is a long text with line breaks within the
  *   cell budget of tables_list_rows, of the second a longer text past it;
  * - view "Open events" shows Item, Amount, Status and Tags (not Notes), filters on the hidden Secret note (contains "ok"), sorts by
- *   Amount, and is shared with mcp-it-rows-viewer and is the one node of the application "Rows app" of
+ *   Amount then row id (both ASC), and is shared with mcp-it-rows-viewer and is the one node of the application "Rows app" of
  *   mcp-it-rows-member;
  * - view "Broken" filters on the column of "Other", another table, and is shared with mcp-it-rows-viewer;
  * - "Events" is shared with mcp-it-rows-reader to read and with mcp-it-rows-creator to create rows only.
@@ -144,7 +144,7 @@ try {
 	}
 
 	$open = (int)$api('POST', "/index.php/apps/tables/api/1/tables/$events/views", ['title' => 'Open events', 'emoji' => null])['id'];
-	$configure($open, [$item, $amount, $status, $tags], [[['columnId' => $secret, 'operator' => 'contains', 'value' => 'ok']]], [['columnId' => $amount, 'mode' => 'ASC']]);
+	$configure($open, [$item, $amount, $status, $tags], [[['columnId' => $secret, 'operator' => 'contains', 'value' => 'ok']]], [['columnId' => $amount, 'mode' => 'ASC'], ['columnId' => -1, 'mode' => 'ASC']]);
 	$broken = (int)$api('POST', "/index.php/apps/tables/api/1/tables/$events/views", ['title' => 'Broken', 'emoji' => null])['id'];
 	$configure($broken, [$item], [[['columnId' => $elsewhere, 'operator' => 'contains', 'value' => 'x']]], []);
 

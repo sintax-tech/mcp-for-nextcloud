@@ -7,7 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Forms;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Tests\Integration\Support\ServiceSwitchFixture;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\Http;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
@@ -16,12 +17,26 @@ use OCP\Server;
 
 /** P1–P9 on real pinned Forms services/entities and authenticated MCP, never a mock runtime proof. */
 final class McpFormsTest extends IntegrationTestCase {
+	/** @var ServiceSwitchFixture|null Per-test service switch, absent when the opt-in skips setup. */
+	private ?ServiceSwitchFixture $serviceSwitch = null;
+
 	/** Requires the explicitly provisioned Forms cell; unsupported ordinary cells do not invent fixture state.
 	 * @return void
 	 */
 	protected function setUp(): void {
 		parent::setUp();
 		if (getenv('MCP_IT_WITH_FORMS') !== '1') { self::markTestSkipped('Requires the explicit Forms cell.'); }
+
+		$this->serviceSwitch = ServiceSwitchFixture::open();
+	}
+
+	/** @return void Restore the service switch even when the HTTP test fails. */
+	protected function tearDown(): void {
+		try {
+			$this->serviceSwitch?->restore();
+		} finally {
+			parent::tearDown();
+		}
 	}
 
 	/** Checks native context cold/warm, captured null/other, and lazy when the core/PHP support it.

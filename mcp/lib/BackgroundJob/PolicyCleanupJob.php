@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\BackgroundJob;
 
-use OCA\Mcp\Service\Policy\PolicyEventProcessor;
+use OCA\Mcp\Access\Policy\PolicyEventProcessor;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\TimedJob;
 
@@ -18,16 +18,16 @@ use OCP\BackgroundJob\TimedJob;
  * not run, because validation refuses expired and revoked credentials and token requests flush a bounded batch.
  */
 class PolicyCleanupJob extends TimedJob {
-    public const INTERVAL = 86400;
+	public const INTERVAL = 86400;
 
-    public function __construct(ITimeFactory $time, private PolicyEventProcessor $processor) {
-        parent::__construct($time);
-        $this->setInterval(self::INTERVAL);
-        $this->setTimeSensitivity(self::TIME_INSENSITIVE);
-    }
+	public function __construct(ITimeFactory $time, private PolicyEventProcessor $processor) {
+		parent::__construct($time);
+		$this->setInterval(self::INTERVAL);
+		$this->setTimeSensitivity(self::TIME_INSENSITIVE);
+	}
 
-    /** @param mixed $argument unused */
-    protected function run($argument): void {
-        $this->processor->maintenance();
-    }
+	/** @param mixed $argument unused */
+	protected function run($argument): void {
+		$this->processor->maintenance();
+	}
 }

@@ -7,7 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Polls;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Tests\Integration\Support\ServiceSwitchFixture;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\{LoginFactory,McpClient,Credential};
 use OCP\Server;
@@ -16,6 +17,9 @@ use PHPUnit\Framework\Attributes\Group;
 /** Real authenticated creation and authorized native/SQL observations in the disposable official Polls cells. */
 #[Group('polls')]
 final class McpPollsCreateHttpTest extends IntegrationTestCase {
+	/** @var ServiceSwitchFixture|null Per-test service switch, absent when the opt-in skips setup. */
+	private ?ServiceSwitchFixture $serviceSwitch = null;
+
 	/** @var array<string,Credential> fixture credentials, never printed */
 	private static array $credentials=[];
 	/** @return void separate creation policy from read/protected-read grants */
@@ -25,14 +29,23 @@ final class McpPollsCreateHttpTest extends IntegrationTestCase {
 		$p=Server::get(GrantPolicy::class);
 		foreach(PollsScene::USERS as$uid){$p->setGrant($uid,'polls','create',true);foreach(['read','results','links']as$op){$p->setGrant($uid,'polls',$op,false);}}
 		Server::get(\OCA\Polls\Model\Settings\AppSettings::class)->setBooleanSetting('allowPollCreation',true);
+
+		$this->serviceSwitch = ServiceSwitchFixture::open();
 	}
 	/** @return void restore the read fixtures' expected policy, without deleting native evidence from this cell */
 	protected function tearDown(): void {
-		if(getenv('MCP_IT_WITH_POLLS')==='1'){
-			$p=Server::get(GrantPolicy::class);foreach(PollsScene::USERS as$uid){$p->setGrant($uid,'polls','create',false);$p->setGrant($uid,'polls','read',true);}
-			Server::get(\OCA\Polls\Model\Settings\AppSettings::class)->setBooleanSetting('allowPollCreation',true);
+		try {
+			$this->serviceSwitch?->restore();
+		} finally {
+			try {
+				if(getenv('MCP_IT_WITH_POLLS')==='1'){
+					$p=Server::get(GrantPolicy::class);foreach(PollsScene::USERS as$uid){$p->setGrant($uid,'polls','create',false);$p->setGrant($uid,'polls','read',true);}
+					Server::get(\OCA\Polls\Model\Settings\AppSettings::class)->setBooleanSetting('allowPollCreation',true);
+				}
+			} finally {
+				parent::tearDown();
+			}
 		}
-		parent::tearDown();
 	}
 	/**
 	 * Authenticated endpoint; credentials are reused only within this cell.
@@ -61,9 +74,7 @@ final class McpPollsCreateHttpTest extends IntegrationTestCase {
 			foreach(['allow_maybe','allow_comment','hide_booked_up','use_no']as$key){$this->assertSame(1,(int)$back['raw'][$key]);}
 			if(str_starts_with(getenv('MCP_IT_POLLS_VERSION'),'8.')){$this->assertArrayNotHasKey('timezoneName',$back['observable']);$this->assertArrayNotHasKey('timezone_name',$back['raw']);}
 			else{$this->assertNull($back['observable']['timezoneName']);$this->assertNull($back['raw']['timezone_name']);}
-			$expected=array_map(static fn(array $r):array=>array_intersect_key($r,array_flip(['text','timestamp','duration'])),$out['options']);
-			$actual=array_map(static fn(array $r):array=>array_intersect_key($r,array_flip(['text','timestamp','duration'])),$back['options']);
-			$this->assertSame($plan['options'],$expected);$this->assertSame($expected,$actual);
+			PollsCreateOptionComparison::assertPlanAndNative($plan['options'], $out['options'], $back['options']);
 			$after=PollsScene::snapshot();$this->assertSame($before['polls_polls']['count']+1,$after['polls_polls']['count']);$this->assertSame($before['polls_options']['count']+2,$after['polls_options']['count']);
 			foreach(['polls_votes','polls_share','polls_comments']as$table){if(isset($before[$table])){$this->assertSame($before[$table],$after[$table]);}}
 		}}

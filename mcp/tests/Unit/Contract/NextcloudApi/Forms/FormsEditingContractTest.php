@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi\Forms;
 
-use OCA\Mcp\Tools\Forms\Editing\EditSettings;
+use OCA\Mcp\Modules\Forms\Editing\EditSettings;
 use PHPUnit\Framework\TestCase;
 
 /** Binds the closed MCP edit domain and native PATCH effects to four hashed source fixtures, not runtime. */
@@ -43,7 +43,7 @@ final class FormsEditingContractTest extends TestCase {
 			$native=self::nativeTypes($f['sources']['Constants']['source']);
 			$ours=EditSettings::TYPES;sort($ours);sort($native);self::assertSame($native,$ours,$pin);
 		}
-		$source=file_get_contents(__DIR__.'/../../../../../lib/Tools/Forms/Editing/EditNativeFactory.php');
+		$source=file_get_contents(__DIR__.'/../../../../../lib/Modules/Forms/Integration/EditNativeFactory.php');
 		self::assertStringContainsString("new \\OCA\\Forms\\Service\\ConfigService('forms',",$source);
 		self::assertStringContainsString('CreateNativeArguments::submission',$source);
 		self::assertStringContainsString('new \\OCA\\Forms\\Controller\\ApiController(...$args)',$source);

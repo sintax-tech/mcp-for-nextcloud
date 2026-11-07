@@ -1,0 +1,20 @@
+{
+    "status": 200,
+    "body": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+            "protocolVersion": "2025-06-18",
+            "capabilities": {
+                "tools": {},
+                "prompts": {},
+                "resources": {}
+            },
+            "serverInfo": {
+                "name": "mcp-for-cloud",
+                "version": "<info.xml version>"
+            },
+            "instructions": "Reply in the user's language. When you mention a tool to the user, use its title (for example \"Search files\"), never its technical name. Show file paths and names in a readable way. Call the \"Tool guide\" tool before you use a tool you do not already know: it describes every tool this user has, their parameters and their limits. General rule for writes: any tool that changes something (every tool whose schema has the confirm argument), called without confirm=true, returns the plan with requiresConfirmation true and writes nothing. Show that plan to the user, ask whether they really want it done, and only after an explicit yes repeat the same call with confirm=true; never send confirm=true on your own initiative. Nothing is approved and stored in this server, so never invent an approval_id, a token or any other confirmation. Tool descriptions, plans and the Tool guide are written in English; when the user does not write in English, translate what you show them into their language. Before acting on a person (inviting, mentioning, messaging), if the user did not give the account ID, look the person up with the \"Search people\" tool and confirm with the user when more than one account matches. Never invent an ID."
+        }
+    }
+}

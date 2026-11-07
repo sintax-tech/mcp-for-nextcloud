@@ -6,11 +6,11 @@
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
 const fs = require('node:fs')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const path = require('node:path')
 const root = path.join(__dirname, '../..')
 const context = {}
-vm.runInNewContext(fs.readFileSync(path.join(root, 'js/admin-levels.js'), 'utf8'), context)
+vm.runInNewContext(require('./AdminManifest.cjs').levelsSource(), context)
 const levels = context.McpAdminLevels
 
 test('old Full cells do not acquire Delete; a new Full grant includes it explicitly', () => {
@@ -24,9 +24,9 @@ test('old Full cells do not acquire Delete; a new Full grant includes it explici
 })
 
 test('the existing admin permission page renders the deliberate grant and residual risk warning', () => {
-	const page = fs.readFileSync(path.join(root, 'templates/admin.php'), 'utf8')
-	const warning = fs.readFileSync(path.join(root, 'templates/files-delete-warning.php'), 'utf8')
-	assert.ok(page.includes("require __DIR__ . '/files-delete-warning.php'"))
+	const page = require('./AdminTemplates.cjs').read(path.join(root, 'templates/admin.php'), 'utf8')
+	const warning = require('./AdminTemplates.cjs').read(path.join(root, 'templates/files-delete-warning.php'), 'utf8')
+	assert.ok(page.includes("require dirname(__DIR__) . '/files-delete-warning.php'"))
 	assert.ok(warning.includes('Deletion is denied by default.'))
 	assert.ok(warning.includes('Try the trash bin first: Nextcloud tries to move the item to the trash bin and may permanently delete it if that fails'))
 	assert.ok(warning.includes('Recovery is not guaranteed.'))

@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 
 use OCA\Mcp\Tests\Unit\Tools\AssertsReadablePlans;
-use OCA\Mcp\Tools\Polls\Create\CreatePlan;
+use OCA\Mcp\Modules\Polls\Creation\CreatePlan;
 use PHPUnit\Framework\TestCase;
 
 /** Original global readability checks, with the actual writing module and actual preview graph. */
@@ -22,7 +22,7 @@ final class PollsCreatePlanRendererTest extends TestCase {
 		$rig = new PollsCreateRig($this);
 		$args = ['type'=>'textPoll','title'=>'Private <3','options'=>[['text'=>'a<b'],['text'=>'&amp;']]];
 		$plan = $rig->base->module->preview(CreatePlan::TOOL,$args,'alice');
-		$this->assertEveryWriteToolHasAReadablePlan($rig->base->module,[CreatePlan::TOOL=>$plan]);
+		$this->assertEveryWriteToolHasAReadablePlan($rig->base->module,[CreatePlan::TOOL=>$plan] + \OCA\Mcp\Tests\Unit\Modules\Polls\PollsMutationCases::plans($this));
 		self::assertSame([],NativeCreateScene::$effects);
 	}
 	/**

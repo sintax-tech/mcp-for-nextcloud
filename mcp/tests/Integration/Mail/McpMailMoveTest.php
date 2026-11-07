@@ -7,11 +7,11 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Mail;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
-use OCA\Mcp\Tools\Mail\MailMessages;
-use OCA\Mcp\Tools\Mail\Move\MailMoveMessages;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Modules\Mail\Presentation\MailMessages;
+use OCA\Mcp\Modules\Mail\Presentation\MailMoveMessages;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\Server;
 use PHPUnit\Framework\Attributes\Group;

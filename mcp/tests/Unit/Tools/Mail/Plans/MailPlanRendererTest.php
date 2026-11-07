@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Mail\Plans;
 
 use OCA\Mcp\Tests\Unit\Tools\AssertsReadablePlans;
-use OCA\Mcp\Tools\WriteGate;
+use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\TestCase;
 

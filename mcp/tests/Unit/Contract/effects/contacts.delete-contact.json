@@ -1,0 +1,570 @@
+{
+    "tool": "contacts_delete_contact",
+    "grant": "contacts.delete",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Delete contact**\n\nDeleting the contact **Maria Souza** from the address book *Contatos*.\nPERMANENT DELETION: Nextcloud has no contact trash bin.\nA copy of the card (.vcf) is saved in */MCP backups/Contacts/Contatos* before the deletion; if that copy fails, nothing is deleted.\nThe card stays there: import the file through Contacts to bring the contact back.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "contacts_delete_contact",
+                            "title": "Delete contact",
+                            "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                            "action": "contacts_delete_contact",
+                            "addressbook": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Contatos",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/addressbooks/users/alice/personal/"
+                            },
+                            "etag": "<etag#1>",
+                            "before": {
+                                "uid": "c1",
+                                "name": "Maria Souza",
+                                "organization": "",
+                                "title": "",
+                                "note": "",
+                                "url": "",
+                                "emails": [
+                                    "c1@example.invalid"
+                                ],
+                                "phones": [],
+                                "properties": [
+                                    {
+                                        "name": "VERSION",
+                                        "group": null,
+                                        "value": "3.0",
+                                        "serialized": "VERSION:3.0\r\n"
+                                    },
+                                    {
+                                        "name": "UID",
+                                        "group": null,
+                                        "value": "c1",
+                                        "serialized": "UID:c1\r\n"
+                                    },
+                                    {
+                                        "name": "FN",
+                                        "group": null,
+                                        "value": "Maria Souza",
+                                        "serialized": "FN:Maria Souza\r\n"
+                                    },
+                                    {
+                                        "name": "N",
+                                        "group": null,
+                                        "value": "Souza;Maria;;;",
+                                        "serialized": "N:Souza;Maria;;;\r\n"
+                                    },
+                                    {
+                                        "name": "EMAIL",
+                                        "group": null,
+                                        "value": "c1@example.invalid",
+                                        "serialized": "EMAIL;TYPE=WORK:c1@example.invalid\r\n"
+                                    },
+                                    {
+                                        "name": "X-CUSTOM",
+                                        "group": null,
+                                        "value": "intocado",
+                                        "serialized": "X-CUSTOM;X-PARAM=keep:intocado\r\n"
+                                    }
+                                ],
+                                "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:c1@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                            },
+                            "after": null,
+                            "shared": [],
+                            "recoverable": false,
+                            "consequence": "PERMANENT DELETION: Nextcloud has no contact trash bin.",
+                            "permanent": true,
+                            "warning": "PERMANENT DELETION: Nextcloud has no contact trash bin.",
+                            "backup": {
+                                "required": true,
+                                "directory": "/MCP backups/Contacts/Contatos",
+                                "format": "vcf",
+                                "message": "A verified vCard copy will be saved before deletion. If the backup fails, nothing will be deleted."
+                            }
+                        }
+                    }
+                }
+            },
+            "state": {
+                "cards": {
+                    "1": {
+                        "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:c1@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n",
+                        "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:João Lima\r\nN:Lima;João;;;\r\nEMAIL;TYPE=WORK:c2@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                    }
+                },
+                "dav": [],
+                "backups": [],
+                "files": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "cards": {
+                    "1": {
+                        "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:c1@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n",
+                        "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:João Lima\r\nN:Lima;João;;;\r\nEMAIL;TYPE=WORK:c2@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                    }
+                },
+                "dav": [],
+                "backups": [],
+                "files": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Delete contact**\n\nDeleting the contact **Maria Souza** from the address book *Contatos*.\nPERMANENT DELETION: Nextcloud has no contact trash bin.\nA copy of the card (.vcf) is saved in */MCP backups/Contacts/Contatos* before the deletion; if that copy fails, nothing is deleted.\nThe card stays there: import the file through Contacts to bring the contact back.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "contacts_delete_contact",
+                            "title": "Delete contact",
+                            "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                            "action": "contacts_delete_contact",
+                            "addressbook": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Contatos",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/addressbooks/users/alice/personal/"
+                            },
+                            "etag": "<etag#1>",
+                            "before": {
+                                "uid": "c1",
+                                "name": "Maria Souza",
+                                "organization": "",
+                                "title": "",
+                                "note": "",
+                                "url": "",
+                                "emails": [
+                                    "c1@example.invalid"
+                                ],
+                                "phones": [],
+                                "properties": [
+                                    {
+                                        "name": "VERSION",
+                                        "group": null,
+                                        "value": "3.0",
+                                        "serialized": "VERSION:3.0\r\n"
+                                    },
+                                    {
+                                        "name": "UID",
+                                        "group": null,
+                                        "value": "c1",
+                                        "serialized": "UID:c1\r\n"
+                                    },
+                                    {
+                                        "name": "FN",
+                                        "group": null,
+                                        "value": "Maria Souza",
+                                        "serialized": "FN:Maria Souza\r\n"
+                                    },
+                                    {
+                                        "name": "N",
+                                        "group": null,
+                                        "value": "Souza;Maria;;;",
+                                        "serialized": "N:Souza;Maria;;;\r\n"
+                                    },
+                                    {
+                                        "name": "EMAIL",
+                                        "group": null,
+                                        "value": "c1@example.invalid",
+                                        "serialized": "EMAIL;TYPE=WORK:c1@example.invalid\r\n"
+                                    },
+                                    {
+                                        "name": "X-CUSTOM",
+                                        "group": null,
+                                        "value": "intocado",
+                                        "serialized": "X-CUSTOM;X-PARAM=keep:intocado\r\n"
+                                    }
+                                ],
+                                "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:c1@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                            },
+                            "after": null,
+                            "shared": [],
+                            "recoverable": false,
+                            "consequence": "PERMANENT DELETION: Nextcloud has no contact trash bin.",
+                            "permanent": true,
+                            "warning": "PERMANENT DELETION: Nextcloud has no contact trash bin.",
+                            "backup": {
+                                "required": true,
+                                "directory": "/MCP backups/Contacts/Contatos",
+                                "format": "vcf",
+                                "message": "A verified vCard copy will be saved before deletion. If the backup fails, nothing will be deleted."
+                            }
+                        }
+                    }
+                }
+            },
+            "state": {
+                "cards": {
+                    "1": {
+                        "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:c1@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n",
+                        "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:João Lima\r\nN:Lima;João;;;\r\nEMAIL;TYPE=WORK:c2@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                    }
+                },
+                "dav": [],
+                "backups": [],
+                "files": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "The Contacts module keeps no plan fingerprint (no PlanState/PlanChanged). The plan returns the ETag of the contact and the confirmed call carries it: when the card changed in between, the ETag no longer matches and the call is refused as a conflict before any backup or delete (asserted outside the golden); the CardDAV delete itself carries it as If-Match."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Delete contact**\n\nDeleting the contact **Maria Souza** from the address book *Contatos*.\nPERMANENT DELETION: Nextcloud has no contact trash bin.\nA copy of the card (.vcf) is saved in */MCP backups/Contacts/Contatos* before the deletion; if that copy fails, nothing is deleted.\nThe card stays there: import the file through Contacts to bring the contact back.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "contacts_delete_contact",
+                            "title": "Delete contact",
+                            "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                            "action": "contacts_delete_contact",
+                            "addressbook": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Contatos",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/addressbooks/users/alice/personal/"
+                            },
+                            "etag": "<etag#1>",
+                            "before": {
+                                "uid": "c1",
+                                "name": "Maria Souza",
+                                "organization": "",
+                                "title": "",
+                                "note": "",
+                                "url": "",
+                                "emails": [
+                                    "c1@example.invalid"
+                                ],
+                                "phones": [],
+                                "properties": [
+                                    {
+                                        "name": "VERSION",
+                                        "group": null,
+                                        "value": "3.0",
+                                        "serialized": "VERSION:3.0\r\n"
+                                    },
+                                    {
+                                        "name": "UID",
+                                        "group": null,
+                                        "value": "c1",
+                                        "serialized": "UID:c1\r\n"
+                                    },
+                                    {
+                                        "name": "FN",
+                                        "group": null,
+                                        "value": "Maria Souza",
+                                        "serialized": "FN:Maria Souza\r\n"
+                                    },
+                                    {
+                                        "name": "N",
+                                        "group": null,
+                                        "value": "Souza;Maria;;;",
+                                        "serialized": "N:Souza;Maria;;;\r\n"
+                                    },
+                                    {
+                                        "name": "EMAIL",
+                                        "group": null,
+                                        "value": "c1@example.invalid",
+                                        "serialized": "EMAIL;TYPE=WORK:c1@example.invalid\r\n"
+                                    },
+                                    {
+                                        "name": "X-CUSTOM",
+                                        "group": null,
+                                        "value": "intocado",
+                                        "serialized": "X-CUSTOM;X-PARAM=keep:intocado\r\n"
+                                    }
+                                ],
+                                "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:c1@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                            },
+                            "after": null,
+                            "shared": [],
+                            "recoverable": false,
+                            "consequence": "PERMANENT DELETION: Nextcloud has no contact trash bin.",
+                            "permanent": true,
+                            "warning": "PERMANENT DELETION: Nextcloud has no contact trash bin.",
+                            "backup": {
+                                "required": true,
+                                "directory": "/MCP backups/Contacts/Contatos",
+                                "format": "vcf",
+                                "message": "A verified vCard copy will be saved before deletion. If the backup fails, nothing will be deleted."
+                            }
+                        }
+                    }
+                }
+            },
+            "state": {
+                "cards": {
+                    "1": {
+                        "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:c1@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n",
+                        "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:João Lima\r\nN:Lima;João;;;\r\nEMAIL;TYPE=WORK:c2@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                    }
+                },
+                "dav": [],
+                "backups": [],
+                "files": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "confirm": true,
+                "etag": "<etag#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"uri\": \"c1.vcf\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\",\n    \"deleted\": true,\n    \"permanent\": true,\n    \"recoverable\": false,\n    \"backupPath\": \"/MCP backups/Contacts/Contatos/Maria Souza.20260310-090000-<random-backup-suffix#1>.vcf\",\n    \"message\": \"The contact was permanently deleted. Import the saved vCard through Contacts to recover it.\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "cards": {
+                    "1": {
+                        "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:João Lima\r\nN:Lima;João;;;\r\nEMAIL;TYPE=WORK:c2@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                    }
+                },
+                "dav": [
+                    "delete personal/c1.vcf"
+                ],
+                "backups": [
+                    {
+                        "path": "/alice/files/MCP backups/Contacts/Contatos/Maria Souza.20260310-090000-<random-backup-suffix#1>.vcf",
+                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:c1@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                    }
+                ],
+                "files": [
+                    "mkdir /alice/files/MCP backups",
+                    "mkdir /alice/files/MCP backups/Contacts",
+                    "mkdir /alice/files/MCP backups/Contacts/Contatos",
+                    "create /alice/files/MCP backups/Contacts/Contatos/Maria Souza.20260310-090000-<random-backup-suffix#1>.vcf"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c2.vcf",
+                "confirm": true,
+                "etag": "<etag#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "cards": {
+                    "1": {
+                        "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:João Lima\r\nN:Lima;João;;;\r\nEMAIL;TYPE=WORK:c2@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                    }
+                },
+                "dav": [
+                    "delete personal/c1.vcf"
+                ],
+                "backups": [
+                    {
+                        "path": "/alice/files/MCP backups/Contacts/Contatos/Maria Souza.20260310-090000-<random-backup-suffix#1>.vcf",
+                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:c1@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                    }
+                ],
+                "files": [
+                    "mkdir /alice/files/MCP backups",
+                    "mkdir /alice/files/MCP backups/Contacts",
+                    "mkdir /alice/files/MCP backups/Contacts/Contatos",
+                    "create /alice/files/MCP backups/Contacts/Contatos/Maria Souza.20260310-090000-<random-backup-suffix#1>.vcf"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c2.vcf"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "cards": {
+                    "1": {
+                        "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:João Lima\r\nN:Lima;João;;;\r\nEMAIL;TYPE=WORK:c2@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                    }
+                },
+                "dav": [
+                    "delete personal/c1.vcf"
+                ],
+                "backups": [
+                    {
+                        "path": "/alice/files/MCP backups/Contacts/Contatos/Maria Souza.20260310-090000-<random-backup-suffix#1>.vcf",
+                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:c1@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                    }
+                ],
+                "files": [
+                    "mkdir /alice/files/MCP backups",
+                    "mkdir /alice/files/MCP backups/Contacts",
+                    "mkdir /alice/files/MCP backups/Contacts/Contatos",
+                    "create /alice/files/MCP backups/Contacts/Contatos/Maria Souza.20260310-090000-<random-backup-suffix#1>.vcf"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c2.vcf",
+                "confirm": true,
+                "etag": "<etag#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "cards": {
+                    "1": {
+                        "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:João Lima\r\nN:Lima;João;;;\r\nEMAIL;TYPE=WORK:c2@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                    }
+                },
+                "dav": [
+                    "delete personal/c1.vcf"
+                ],
+                "backups": [
+                    {
+                        "path": "/alice/files/MCP backups/Contacts/Contatos/Maria Souza.20260310-090000-<random-backup-suffix#1>.vcf",
+                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:c1@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                    }
+                ],
+                "files": [
+                    "mkdir /alice/files/MCP backups",
+                    "mkdir /alice/files/MCP backups/Contacts",
+                    "mkdir /alice/files/MCP backups/Contacts/Contatos",
+                    "create /alice/files/MCP backups/Contacts/Contatos/Maria Souza.20260310-090000-<random-backup-suffix#1>.vcf"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "Contacts are CardDAV objects, not Files nodes: no system tag or excluded folder can hide an address book or a card from MCP (VisibilityGuard and FilesAccessGuard do not apply). The accounts catalog is read-only by design and foreign books are not found: permission refusals, not visibility."
+        }
+    ]
+}

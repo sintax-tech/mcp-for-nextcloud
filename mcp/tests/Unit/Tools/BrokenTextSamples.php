@@ -15,7 +15,7 @@ use OCA\Mcp\Tests\Unit\Tools\Mail\AttachmentSamples;
  *
  * - {@see self::pdf()}: a one-page PDF whose Type0 font maps glyphs through a ToUnicode CMap; glyph 3 maps to the UTF-16
  *   surrogate pair D83D DE00 (U+1F600). smalot/pdfparser writes each half as its own CESU-8 sequence (ED A0 BD ED B8 80),
- *   which json_encode refuses as "Malformed UTF-8 characters".
+ *   which json_encode refuses as "Malformed UTF-8 characters", up to PHP 8.3, and as "?" since PHP 8.4.27 and 8.5.12.
  * - {@see self::docx()} and {@see self::odt()}: document XML declared and written in Windows-1252 ("ação" is stored as
  *   the single bytes E7 E3), with the numeric entities &#x20AC; and &#233;, which decode into UTF-8 next to those bytes.
  */
@@ -43,11 +43,22 @@ final class BrokenTextSamples {
 	 * @return string the PDF, with a correct cross-reference table
 	 */
 	public static function pdf(): string {
+		return self::pdfMapping(' 3 beginbfchar <0001> <0041> <0002> <00E1> <0003> <D83DDE00> endbfchar', '000100020003');
+	}
+
+	/**
+	 * A one-page PDF whose Type0 font maps two-byte glyph codes through the given ToUnicode sections.
+	 *
+	 * @param string $sections the bfchar and bfrange sections of the CMap
+	 * @param string $glyphs the glyph codes shown, in hexadecimal
+	 * @return string the PDF, with a correct cross-reference table
+	 */
+	public static function pdfMapping(string $sections, string $glyphs): string {
 		$cmap = '/CIDInit /ProcSet findresource begin 12 dict begin begincmap /CMapName /Mcp-Issue25 def'
 			. ' 1 begincodespacerange <0000> <FFFF> endcodespacerange'
-			. ' 3 beginbfchar <0001> <0041> <0002> <00E1> <0003> <D83DDE00> endbfchar'
+			. $sections
 			. ' endcmap CMapName currentdict /CMap defineresource pop end end';
-		$content = 'BT /F1 12 Tf 20 100 Td <000100020003> Tj ET';
+		$content = 'BT /F1 12 Tf 20 100 Td <' . $glyphs . '> Tj ET';
 		$objects = [
 			'<< /Type /Catalog /Pages 2 0 R >>',
 			'<< /Type /Pages /Kids [3 0 R] /Count 1 >>',

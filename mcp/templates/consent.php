@@ -3,6 +3,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
+declare(strict_types=1);
 /**
  * OAuth consent page (guest layout). Shows the client name from its metadata document next to the client_id host
  * and the redirect host; the form posts with the Nextcloud CSRF token.
@@ -26,7 +27,7 @@
 <?php if ($_['error'] !== null): ?>
     <h2><?php p($l->t('Connection not possible')); ?></h2>
     <p class="mcp-error"><?php p($l->t('The authorization request is invalid.')); ?></p>
-    <?php if ($_['error'] === \OCA\Mcp\OAuth\ClientMetadataDownloader::TIMEOUT_MESSAGE): ?>
+    <?php if ($_['error'] === \OCA\Mcp\OAuth\Clients\ClientMetadataDownloader::TIMEOUT_MESSAGE): ?>
         <p class="mcp-hosts"><?php p($l->t('The client did not send its metadata document in time. Try connecting again shortly.')); ?></p>
     <?php else: ?>
         <p class="mcp-hosts"><?php p($_['error']); ?></p>

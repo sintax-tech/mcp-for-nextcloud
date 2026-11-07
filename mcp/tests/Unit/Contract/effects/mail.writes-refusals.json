@@ -1,0 +1,343 @@
+{
+    "refusals": [
+        {
+            "refusal": "send-without-plan-state",
+            "tool": "mail_send_message",
+            "arguments": {
+                "confirm": true,
+                "account_id": 1,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada."
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "plan_state: required with confirm: true; send the plan_state of the plan",
+                        "data": {
+                            "field": "plan_state",
+                            "rule": "required with confirm: true; send the plan_state of the plan"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "outbox": [],
+                "drafts": [],
+                "moved": [],
+                "calls": []
+            }
+        },
+        {
+            "refusal": "send-without-recipient",
+            "tool": "mail_send_message",
+            "arguments": {
+                "to": [],
+                "cc": [],
+                "bcc": [],
+                "account_id": 1,
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada.",
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "to: A message needs at least one recipient in To, Cc or Bcc.",
+                        "data": {
+                            "field": "to",
+                            "rule": "A message needs at least one recipient in To, Cc or Bcc."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "outbox": [],
+                "drafts": [],
+                "moved": [],
+                "calls": []
+            }
+        },
+        {
+            "refusal": "send-from-an-account-without-sent-folder",
+            "tool": "mail_send_message",
+            "arguments": {
+                "account_id": 2,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada.",
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "This mail account has no Sent folder in the Mail app, and the Mail app does not send without one; open the account in Mail once, or choose its Sent folder in the account settings."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "outbox": [],
+                "drafts": [],
+                "moved": [],
+                "calls": []
+            }
+        },
+        {
+            "refusal": "send-from-another-users-account",
+            "tool": "mail_send_message",
+            "arguments": {
+                "account_id": 99,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada.",
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Mail account not found."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "outbox": [],
+                "drafts": [],
+                "moved": [],
+                "calls": []
+            }
+        },
+        {
+            "refusal": "draft-without-drafts-folder",
+            "tool": "mail_create_draft",
+            "arguments": {
+                "account_id": 2,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada.",
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "This mail account has no Drafts folder in the Mail app; open the account in Mail once, or choose its Drafts folder in the account settings."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "outbox": [],
+                "drafts": [],
+                "moved": [],
+                "calls": []
+            }
+        },
+        {
+            "refusal": "draft-with-bcc-on-a-mail-that-drops-it",
+            "tool": "mail_create_draft",
+            "arguments": {
+                "account_id": 1,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada.",
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "The Mail app installed here would save this draft without its Bcc recipients (that needs Mail 5.10.11 or later); nothing was saved. Leave Bcc empty or ask an administrator to update Mail."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "outbox": [],
+                "drafts": [],
+                "moved": [],
+                "calls": []
+            }
+        },
+        {
+            "refusal": "move-to-a-folder-of-another-account",
+            "tool": "mail_move_message",
+            "arguments": {
+                "mailbox_id": 20,
+                "message_id": 50,
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "A message can only be moved to a folder of its own mail account, as in the Mail app."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "outbox": [],
+                "drafts": [],
+                "moved": [],
+                "calls": []
+            }
+        },
+        {
+            "refusal": "move-to-a-folder-that-holds-no-messages",
+            "tool": "mail_move_message",
+            "arguments": {
+                "mailbox_id": 11,
+                "message_id": 50,
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "This mail folder only groups other folders and holds no messages."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "outbox": [],
+                "drafts": [],
+                "moved": [],
+                "calls": []
+            }
+        },
+        {
+            "refusal": "move-to-a-missing-folder",
+            "tool": "mail_move_message",
+            "arguments": {
+                "mailbox_id": 404,
+                "message_id": 50,
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Mail folder not found."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "outbox": [],
+                "drafts": [],
+                "moved": [],
+                "calls": []
+            }
+        }
+    ]
+}

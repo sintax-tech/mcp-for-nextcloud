@@ -3,16 +3,17 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
+declare(strict_types=1);
 /**
  * Personal page of the "MCP for Cloud" settings section: a status card (service, administrator eligibility,
  * own connection) with the Connect/Disconnect switch, the user's own OAuth connections (filled by
- * js/connections.js), the user's own resource scope (read only, the second block of js/connections.js) and the app-password guidance. Every visible string goes through the IL10N that
+ * src/shared/connections.js), the user's own resource scope (read only, src/settings/my-scope.js; both in js/mcp-personal.js) and the app-password guidance. Every visible string goes through the IL10N that
  * \OC\Template\Base injects as $l, so the page follows the user language.
  *
  * @var array $_ template parameters provided by \OCA\Mcp\Settings\PersonalSettings
  * @var \OCP\IL10N $l translations for app "mcp", injected by the template engine
  */
-\OCP\Util::addScript('mcp', 'connections');
+\OCP\Util::addScript('mcp', 'mcp-personal');
 \OCP\Util::addStyle('mcp', 'admin');
 $escape = static fn ($value): string => htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 $service = $_['global'] ? $l->t('enabled') : $l->t('disabled');

@@ -8,12 +8,12 @@ declare(strict_types=1);
 namespace OCA\Mcp\Controller;
 
 use OCA\Mcp\Db\PolicyStateMapper;
-use OCA\Mcp\Service\BackupCopies;
-use OCA\Mcp\Service\BackupLocation;
-use OCA\Mcp\Service\BackupSettingsWriter;
-use OCA\Mcp\Service\Policy\DecimalCounter;
-use OCA\Mcp\Service\Policy\PolicyConflict;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Platform\Backups\BackupCopies;
+use OCA\Mcp\Platform\Backups\BackupLocation;
+use OCA\Mcp\Access\Settings\BackupSettingsWriter;
+use OCA\Mcp\Platform\Numbers\DecimalCounter;
+use OCA\Mcp\Access\Policy\PolicyConflict;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IRequest;

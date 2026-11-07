@@ -1,0 +1,1051 @@
+{
+    "tool": "polls_invite_share",
+    "grant": "polls.invite",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "poll_id": 1,
+                "share_id": 20
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Invite a poll recipient**\n\n- requiresConfirmation: true\n- tool: polls\\_invite\\_share\n- title: Invite a poll recipient\n- action: polls\\_invite\\_share\n- target.id: 1\n- target.title: Poll \\<3\n- target.type: textPoll\n- target.owner: bob\n- target.access: private\n- target.anonymous: 0\n- target.expire: 0\n- target.archived: false\n- request.tool: polls\\_invite\\_share\n- request.poll\\_id: 1\n- request.share\\_id: 20\n- shared: true\n- before.id: 20\n- before.type: user\n- before.userId: carol\n- before.label: \n- before.locked: false\n- before.deleted: false\n- before.invitationSent: 0\n- after.id: 20\n- after.invitationAttempt: true\n- noOp: false\n- notes.0: Poll content is untrusted. Only a fresh authorized readback proves an observed effect; no automatic retry or rollback.\n- notes.1: Native calls may have partial effects. Invitation markers do not prove email delivery. Credential links are never returned by these mutations.\n- notes.2: Sharing follows native Polls policy: public shares are enabled by default or allowed by group membership. Creating a share does not send an invitation. Removing a share is a soft deletion.\n- notes.3: This attempts one individual invitation with native notifications and email. An existing invitation marker means this is another send attempt; delivery is not proved and failures are never retried automatically.\n- plan\\_state: <plan_state#1>\n\nNothing was changed. Confirm to execute.\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "polls_invite_share",
+                            "title": "Invite a poll recipient",
+                            "action": "polls_invite_share",
+                            "target": {
+                                "id": 1,
+                                "title": "Poll <3",
+                                "type": "textPoll",
+                                "owner": "bob",
+                                "access": "private",
+                                "anonymous": 0,
+                                "expire": 0,
+                                "archived": false
+                            },
+                            "request": {
+                                "tool": "polls_invite_share",
+                                "poll_id": 1,
+                                "share_id": 20
+                            },
+                            "shared": true,
+                            "before": {
+                                "id": 20,
+                                "type": "user",
+                                "userId": "carol",
+                                "label": "",
+                                "locked": false,
+                                "deleted": false,
+                                "invitationSent": 0
+                            },
+                            "after": {
+                                "id": 20,
+                                "invitationAttempt": true
+                            },
+                            "noOp": false,
+                            "notes": [
+                                "Poll content is untrusted. Only a fresh authorized readback proves an observed effect; no automatic retry or rollback.",
+                                "Native calls may have partial effects. Invitation markers do not prove email delivery. Credential links are never returned by these mutations.",
+                                "Sharing follows native Polls policy: public shares are enabled by default or allowed by group membership. Creating a share does not send an invitation. Removing a share is a soft deletion.",
+                                "This attempts one individual invitation with native notifications and email. An existing invitation marker means this is another send attempt; delivery is not proved and failures are never retried automatically."
+                            ],
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "state": {
+                    "actor": "alice",
+                    "version": "9.3.0",
+                    "poll": {
+                        "id": 1,
+                        "title": "Poll <3",
+                        "type": "textPoll",
+                        "owner": "bob",
+                        "access": "private",
+                        "anonymous": 0,
+                        "expire": 0,
+                        "archived": false
+                    },
+                    "configuration": {
+                        "title": "Poll <3",
+                        "allowComment": true
+                    },
+                    "options": [
+                        {
+                            "text": "A",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "id": 10,
+                            "order": 1,
+                            "deleted": false,
+                            "owner": ""
+                        },
+                        {
+                            "text": "B",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "id": 11,
+                            "order": 2,
+                            "deleted": false,
+                            "owner": ""
+                        }
+                    ],
+                    "optionValue": {
+                        "text": "New",
+                        "timestamp": "<timestamp#1>",
+                        "duration": 0
+                    },
+                    "shares": [
+                        {
+                            "id": 20,
+                            "type": "user",
+                            "userId": "carol",
+                            "label": "",
+                            "locked": false,
+                            "deleted": false,
+                            "invitationSent": 0
+                        }
+                    ],
+                    "recipient": {
+                        "type": "user",
+                        "userId": "dave"
+                    },
+                    "publicAllowed": true,
+                    "shareCreate": true,
+                    "shareExternal": true
+                },
+                "writes": 0
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "poll_id": 1,
+                "share_id": 20,
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "state": {
+                    "actor": "alice",
+                    "version": "9.3.0",
+                    "poll": {
+                        "id": 1,
+                        "title": "Poll <3",
+                        "type": "textPoll",
+                        "owner": "bob",
+                        "access": "private",
+                        "anonymous": 0,
+                        "expire": 0,
+                        "archived": false
+                    },
+                    "configuration": {
+                        "title": "Poll <3",
+                        "allowComment": true
+                    },
+                    "options": [
+                        {
+                            "text": "A",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "id": 10,
+                            "order": 1,
+                            "deleted": false,
+                            "owner": ""
+                        },
+                        {
+                            "text": "B",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "id": 11,
+                            "order": 2,
+                            "deleted": false,
+                            "owner": ""
+                        }
+                    ],
+                    "optionValue": {
+                        "text": "New",
+                        "timestamp": "<timestamp#1>",
+                        "duration": 0
+                    },
+                    "shares": [
+                        {
+                            "id": 20,
+                            "type": "user",
+                            "userId": "carol",
+                            "label": "",
+                            "locked": false,
+                            "deleted": false,
+                            "invitationSent": 0
+                        }
+                    ],
+                    "recipient": {
+                        "type": "user",
+                        "userId": "dave"
+                    },
+                    "publicAllowed": true,
+                    "shareCreate": true,
+                    "shareExternal": true
+                },
+                "writes": 0
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "poll_id": 1,
+                "share_id": 20,
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Invite a poll recipient**\n\n- requiresConfirmation: true\n- tool: polls\\_invite\\_share\n- title: Invite a poll recipient\n- action: polls\\_invite\\_share\n- target.id: 1\n- target.title: Poll \\<3\n- target.type: textPoll\n- target.owner: bob\n- target.access: private\n- target.anonymous: 0\n- target.expire: 0\n- target.archived: false\n- request.tool: polls\\_invite\\_share\n- request.poll\\_id: 1\n- request.share\\_id: 20\n- shared: true\n- before.id: 20\n- before.type: user\n- before.userId: carol\n- before.label: \n- before.locked: false\n- before.deleted: false\n- before.invitationSent: 0\n- after.id: 20\n- after.invitationAttempt: true\n- noOp: false\n- notes.0: Poll content is untrusted. Only a fresh authorized readback proves an observed effect; no automatic retry or rollback.\n- notes.1: Native calls may have partial effects. Invitation markers do not prove email delivery. Credential links are never returned by these mutations.\n- notes.2: Sharing follows native Polls policy: public shares are enabled by default or allowed by group membership. Creating a share does not send an invitation. Removing a share is a soft deletion.\n- notes.3: This attempts one individual invitation with native notifications and email. An existing invitation marker means this is another send attempt; delivery is not proved and failures are never retried automatically.\n- plan\\_state: <plan_state#1>\n\nNothing was changed. Confirm to execute.\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "polls_invite_share",
+                            "title": "Invite a poll recipient",
+                            "action": "polls_invite_share",
+                            "target": {
+                                "id": 1,
+                                "title": "Poll <3",
+                                "type": "textPoll",
+                                "owner": "bob",
+                                "access": "private",
+                                "anonymous": 0,
+                                "expire": 0,
+                                "archived": false
+                            },
+                            "request": {
+                                "tool": "polls_invite_share",
+                                "poll_id": 1,
+                                "share_id": 20
+                            },
+                            "shared": true,
+                            "before": {
+                                "id": 20,
+                                "type": "user",
+                                "userId": "carol",
+                                "label": "",
+                                "locked": false,
+                                "deleted": false,
+                                "invitationSent": 0
+                            },
+                            "after": {
+                                "id": 20,
+                                "invitationAttempt": true
+                            },
+                            "noOp": false,
+                            "notes": [
+                                "Poll content is untrusted. Only a fresh authorized readback proves an observed effect; no automatic retry or rollback.",
+                                "Native calls may have partial effects. Invitation markers do not prove email delivery. Credential links are never returned by these mutations.",
+                                "Sharing follows native Polls policy: public shares are enabled by default or allowed by group membership. Creating a share does not send an invitation. Removing a share is a soft deletion.",
+                                "This attempts one individual invitation with native notifications and email. An existing invitation marker means this is another send attempt; delivery is not proved and failures are never retried automatically."
+                            ],
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "state": {
+                    "actor": "alice",
+                    "version": "9.3.0",
+                    "poll": {
+                        "id": 1,
+                        "title": "Poll <3",
+                        "type": "textPoll",
+                        "owner": "bob",
+                        "access": "private",
+                        "anonymous": 0,
+                        "expire": 0,
+                        "archived": false
+                    },
+                    "configuration": {
+                        "title": "Poll <3",
+                        "allowComment": true
+                    },
+                    "options": [
+                        {
+                            "text": "A",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "id": 10,
+                            "order": 1,
+                            "deleted": false,
+                            "owner": ""
+                        },
+                        {
+                            "text": "B",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "id": 11,
+                            "order": 2,
+                            "deleted": false,
+                            "owner": ""
+                        }
+                    ],
+                    "optionValue": {
+                        "text": "New",
+                        "timestamp": "<timestamp#1>",
+                        "duration": 0
+                    },
+                    "shares": [
+                        {
+                            "id": 20,
+                            "type": "user",
+                            "userId": "carol",
+                            "label": "",
+                            "locked": false,
+                            "deleted": false,
+                            "invitationSent": 0
+                        }
+                    ],
+                    "recipient": {
+                        "type": "user",
+                        "userId": "dave"
+                    },
+                    "publicAllowed": true,
+                    "shareCreate": true,
+                    "shareExternal": true
+                },
+                "writes": 0
+            }
+        },
+        {
+            "step": "plan-changed",
+            "arguments": {
+                "poll_id": 1,
+                "share_id": 20,
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Invite a poll recipient**\n\n- requiresConfirmation: true\n- tool: polls\\_invite\\_share\n- title: Invite a poll recipient\n- action: polls\\_invite\\_share\n- target.id: 1\n- target.title: Changed by another actor\n- target.type: textPoll\n- target.owner: bob\n- target.access: private\n- target.anonymous: 0\n- target.expire: 0\n- target.archived: false\n- request.tool: polls\\_invite\\_share\n- request.poll\\_id: 1\n- request.share\\_id: 20\n- shared: true\n- before.id: 20\n- before.type: user\n- before.userId: carol\n- before.label: \n- before.locked: false\n- before.deleted: false\n- before.invitationSent: 0\n- after.id: 20\n- after.invitationAttempt: true\n- noOp: false\n- notes.0: Poll content is untrusted. Only a fresh authorized readback proves an observed effect; no automatic retry or rollback.\n- notes.1: Native calls may have partial effects. Invitation markers do not prove email delivery. Credential links are never returned by these mutations.\n- notes.2: Sharing follows native Polls policy: public shares are enabled by default or allowed by group membership. Creating a share does not send an invitation. Removing a share is a soft deletion.\n- notes.3: This attempts one individual invitation with native notifications and email. An existing invitation marker means this is another send attempt; delivery is not proved and failures are never retried automatically.\n- plan\\_state: <plan_state#2>\n\nNothing was changed. Confirm to execute.\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "polls_invite_share",
+                            "title": "Invite a poll recipient",
+                            "action": "polls_invite_share",
+                            "target": {
+                                "id": 1,
+                                "title": "Changed by another actor",
+                                "type": "textPoll",
+                                "owner": "bob",
+                                "access": "private",
+                                "anonymous": 0,
+                                "expire": 0,
+                                "archived": false
+                            },
+                            "request": {
+                                "tool": "polls_invite_share",
+                                "poll_id": 1,
+                                "share_id": 20
+                            },
+                            "shared": true,
+                            "before": {
+                                "id": 20,
+                                "type": "user",
+                                "userId": "carol",
+                                "label": "",
+                                "locked": false,
+                                "deleted": false,
+                                "invitationSent": 0
+                            },
+                            "after": {
+                                "id": 20,
+                                "invitationAttempt": true
+                            },
+                            "noOp": false,
+                            "notes": [
+                                "Poll content is untrusted. Only a fresh authorized readback proves an observed effect; no automatic retry or rollback.",
+                                "Native calls may have partial effects. Invitation markers do not prove email delivery. Credential links are never returned by these mutations.",
+                                "Sharing follows native Polls policy: public shares are enabled by default or allowed by group membership. Creating a share does not send an invitation. Removing a share is a soft deletion.",
+                                "This attempts one individual invitation with native notifications and email. An existing invitation marker means this is another send attempt; delivery is not proved and failures are never retried automatically."
+                            ],
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "state": {
+                    "actor": "alice",
+                    "version": "9.3.0",
+                    "poll": {
+                        "id": 1,
+                        "title": "Changed by another actor",
+                        "type": "textPoll",
+                        "owner": "bob",
+                        "access": "private",
+                        "anonymous": 0,
+                        "expire": 0,
+                        "archived": false
+                    },
+                    "configuration": {
+                        "title": "Poll <3",
+                        "allowComment": true
+                    },
+                    "options": [
+                        {
+                            "text": "A",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "id": 10,
+                            "order": 1,
+                            "deleted": false,
+                            "owner": ""
+                        },
+                        {
+                            "text": "B",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "id": 11,
+                            "order": 2,
+                            "deleted": false,
+                            "owner": ""
+                        }
+                    ],
+                    "optionValue": {
+                        "text": "New",
+                        "timestamp": "<timestamp#1>",
+                        "duration": 0
+                    },
+                    "shares": [
+                        {
+                            "id": 20,
+                            "type": "user",
+                            "userId": "carol",
+                            "label": "",
+                            "locked": false,
+                            "deleted": false,
+                            "invitationSent": 0
+                        }
+                    ],
+                    "recipient": {
+                        "type": "user",
+                        "userId": "dave"
+                    },
+                    "publicAllowed": true,
+                    "shareCreate": true,
+                    "shareExternal": true
+                },
+                "writes": 0
+            }
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "poll_id": 1,
+                "share_id": 20
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Invite a poll recipient**\n\n- requiresConfirmation: true\n- tool: polls\\_invite\\_share\n- title: Invite a poll recipient\n- action: polls\\_invite\\_share\n- target.id: 1\n- target.title: Changed by another actor\n- target.type: textPoll\n- target.owner: bob\n- target.access: private\n- target.anonymous: 0\n- target.expire: 0\n- target.archived: false\n- request.tool: polls\\_invite\\_share\n- request.poll\\_id: 1\n- request.share\\_id: 20\n- shared: true\n- before.id: 20\n- before.type: user\n- before.userId: carol\n- before.label: \n- before.locked: false\n- before.deleted: false\n- before.invitationSent: 0\n- after.id: 20\n- after.invitationAttempt: true\n- noOp: false\n- notes.0: Poll content is untrusted. Only a fresh authorized readback proves an observed effect; no automatic retry or rollback.\n- notes.1: Native calls may have partial effects. Invitation markers do not prove email delivery. Credential links are never returned by these mutations.\n- notes.2: Sharing follows native Polls policy: public shares are enabled by default or allowed by group membership. Creating a share does not send an invitation. Removing a share is a soft deletion.\n- notes.3: This attempts one individual invitation with native notifications and email. An existing invitation marker means this is another send attempt; delivery is not proved and failures are never retried automatically.\n- plan\\_state: <plan_state#2>\n\nNothing was changed. Confirm to execute.\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "polls_invite_share",
+                            "title": "Invite a poll recipient",
+                            "action": "polls_invite_share",
+                            "target": {
+                                "id": 1,
+                                "title": "Changed by another actor",
+                                "type": "textPoll",
+                                "owner": "bob",
+                                "access": "private",
+                                "anonymous": 0,
+                                "expire": 0,
+                                "archived": false
+                            },
+                            "request": {
+                                "tool": "polls_invite_share",
+                                "poll_id": 1,
+                                "share_id": 20
+                            },
+                            "shared": true,
+                            "before": {
+                                "id": 20,
+                                "type": "user",
+                                "userId": "carol",
+                                "label": "",
+                                "locked": false,
+                                "deleted": false,
+                                "invitationSent": 0
+                            },
+                            "after": {
+                                "id": 20,
+                                "invitationAttempt": true
+                            },
+                            "noOp": false,
+                            "notes": [
+                                "Poll content is untrusted. Only a fresh authorized readback proves an observed effect; no automatic retry or rollback.",
+                                "Native calls may have partial effects. Invitation markers do not prove email delivery. Credential links are never returned by these mutations.",
+                                "Sharing follows native Polls policy: public shares are enabled by default or allowed by group membership. Creating a share does not send an invitation. Removing a share is a soft deletion.",
+                                "This attempts one individual invitation with native notifications and email. An existing invitation marker means this is another send attempt; delivery is not proved and failures are never retried automatically."
+                            ],
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "state": {
+                    "actor": "alice",
+                    "version": "9.3.0",
+                    "poll": {
+                        "id": 1,
+                        "title": "Changed by another actor",
+                        "type": "textPoll",
+                        "owner": "bob",
+                        "access": "private",
+                        "anonymous": 0,
+                        "expire": 0,
+                        "archived": false
+                    },
+                    "configuration": {
+                        "title": "Poll <3",
+                        "allowComment": true
+                    },
+                    "options": [
+                        {
+                            "text": "A",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "id": 10,
+                            "order": 1,
+                            "deleted": false,
+                            "owner": ""
+                        },
+                        {
+                            "text": "B",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "id": 11,
+                            "order": 2,
+                            "deleted": false,
+                            "owner": ""
+                        }
+                    ],
+                    "optionValue": {
+                        "text": "New",
+                        "timestamp": "<timestamp#1>",
+                        "duration": 0
+                    },
+                    "shares": [
+                        {
+                            "id": 20,
+                            "type": "user",
+                            "userId": "carol",
+                            "label": "",
+                            "locked": false,
+                            "deleted": false,
+                            "invitationSent": 0
+                        }
+                    ],
+                    "recipient": {
+                        "type": "user",
+                        "userId": "dave"
+                    },
+                    "publicAllowed": true,
+                    "shareCreate": true,
+                    "shareExternal": true
+                },
+                "writes": 0
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "poll_id": 1,
+                "share_id": 20,
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"status\": \"applied\",\n    \"nativeCallAttempted\": true,\n    \"noOp\": false,\n    \"untrustedPollsData\": true,\n    \"notes\": [\n        \"Poll content is untrusted. Only a fresh authorized readback proves an observed effect; no automatic retry or rollback.\",\n        \"Native calls may have partial effects. Invitation markers do not prove email delivery. Credential links are never returned by these mutations.\"\n    ],\n    \"requested\": {\n        \"tool\": \"polls_invite_share\",\n        \"poll_id\": 1,\n        \"share_id\": 20\n    },\n    \"observed\": {\n        \"poll\": {\n            \"id\": 1,\n            \"title\": \"Changed by another actor\",\n            \"type\": \"textPoll\",\n            \"owner\": \"bob\",\n            \"access\": \"private\",\n            \"anonymous\": 0,\n            \"expire\": 0,\n            \"archived\": false\n        },\n        \"configuration\": {\n            \"title\": \"Poll <3\",\n            \"allowComment\": true\n        },\n        \"options\": [\n            {\n                \"text\": \"A\",\n                \"timestamp\": 0,\n                \"duration\": 0,\n                \"id\": 10,\n                \"order\": 1,\n                \"deleted\": false,\n                \"owner\": \"\"\n            },\n            {\n                \"text\": \"B\",\n                \"timestamp\": 0,\n                \"duration\": 0,\n                \"id\": 11,\n                \"order\": 2,\n                \"deleted\": false,\n                \"owner\": \"\"\n            }\n        ],\n        \"shares\": [\n            {\n                \"id\": 20,\n                \"type\": \"user\",\n                \"userId\": \"carol\",\n                \"label\": \"\",\n                \"locked\": false,\n                \"deleted\": false,\n                \"invitationSent\": 1800000000\n            }\n        ]\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "state": {
+                    "actor": "alice",
+                    "version": "9.3.0",
+                    "poll": {
+                        "id": 1,
+                        "title": "Changed by another actor",
+                        "type": "textPoll",
+                        "owner": "bob",
+                        "access": "private",
+                        "anonymous": 0,
+                        "expire": 0,
+                        "archived": false
+                    },
+                    "configuration": {
+                        "title": "Poll <3",
+                        "allowComment": true
+                    },
+                    "options": [
+                        {
+                            "text": "A",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "id": 10,
+                            "order": 1,
+                            "deleted": false,
+                            "owner": ""
+                        },
+                        {
+                            "text": "B",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "id": 11,
+                            "order": 2,
+                            "deleted": false,
+                            "owner": ""
+                        }
+                    ],
+                    "optionValue": {
+                        "text": "New",
+                        "timestamp": "<timestamp#1>",
+                        "duration": 0
+                    },
+                    "shares": [
+                        {
+                            "id": 20,
+                            "type": "user",
+                            "userId": "carol",
+                            "label": "",
+                            "locked": false,
+                            "deleted": false,
+                            "invitationSent": 1800000000
+                        }
+                    ],
+                    "recipient": {
+                        "type": "user",
+                        "userId": "dave"
+                    },
+                    "publicAllowed": true,
+                    "shareCreate": true,
+                    "shareExternal": true
+                },
+                "writes": 1
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "poll_id": 1,
+                "share_id": 20,
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "state": {
+                    "actor": "alice",
+                    "version": "9.3.0",
+                    "poll": {
+                        "id": 1,
+                        "title": "Changed by another actor",
+                        "type": "textPoll",
+                        "owner": "bob",
+                        "access": "private",
+                        "anonymous": 0,
+                        "expire": 0,
+                        "archived": false
+                    },
+                    "configuration": {
+                        "title": "Poll <3",
+                        "allowComment": true
+                    },
+                    "options": [
+                        {
+                            "text": "A",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "id": 10,
+                            "order": 1,
+                            "deleted": false,
+                            "owner": ""
+                        },
+                        {
+                            "text": "B",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "id": 11,
+                            "order": 2,
+                            "deleted": false,
+                            "owner": ""
+                        }
+                    ],
+                    "optionValue": {
+                        "text": "New",
+                        "timestamp": "<timestamp#1>",
+                        "duration": 0
+                    },
+                    "shares": [
+                        {
+                            "id": 20,
+                            "type": "user",
+                            "userId": "carol",
+                            "label": "",
+                            "locked": false,
+                            "deleted": false,
+                            "invitationSent": 1800000000
+                        }
+                    ],
+                    "recipient": {
+                        "type": "user",
+                        "userId": "dave"
+                    },
+                    "publicAllowed": true,
+                    "shareCreate": true,
+                    "shareExternal": true
+                },
+                "writes": 1
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "poll_id": 1,
+                "share_id": 20
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "state": {
+                    "actor": "alice",
+                    "version": "9.3.0",
+                    "poll": {
+                        "id": 1,
+                        "title": "Changed by another actor",
+                        "type": "textPoll",
+                        "owner": "bob",
+                        "access": "private",
+                        "anonymous": 0,
+                        "expire": 0,
+                        "archived": false
+                    },
+                    "configuration": {
+                        "title": "Poll <3",
+                        "allowComment": true
+                    },
+                    "options": [
+                        {
+                            "text": "A",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "id": 10,
+                            "order": 1,
+                            "deleted": false,
+                            "owner": ""
+                        },
+                        {
+                            "text": "B",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "id": 11,
+                            "order": 2,
+                            "deleted": false,
+                            "owner": ""
+                        }
+                    ],
+                    "optionValue": {
+                        "text": "New",
+                        "timestamp": "<timestamp#1>",
+                        "duration": 0
+                    },
+                    "shares": [
+                        {
+                            "id": 20,
+                            "type": "user",
+                            "userId": "carol",
+                            "label": "",
+                            "locked": false,
+                            "deleted": false,
+                            "invitationSent": 1800000000
+                        }
+                    ],
+                    "recipient": {
+                        "type": "user",
+                        "userId": "dave"
+                    },
+                    "publicAllowed": true,
+                    "shareCreate": true,
+                    "shareExternal": true
+                },
+                "writes": 1
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "poll_id": 1,
+                "share_id": 20,
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "state": {
+                    "actor": "alice",
+                    "version": "9.3.0",
+                    "poll": {
+                        "id": 1,
+                        "title": "Changed by another actor",
+                        "type": "textPoll",
+                        "owner": "bob",
+                        "access": "private",
+                        "anonymous": 0,
+                        "expire": 0,
+                        "archived": false
+                    },
+                    "configuration": {
+                        "title": "Poll <3",
+                        "allowComment": true
+                    },
+                    "options": [
+                        {
+                            "text": "A",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "id": 10,
+                            "order": 1,
+                            "deleted": false,
+                            "owner": ""
+                        },
+                        {
+                            "text": "B",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "id": 11,
+                            "order": 2,
+                            "deleted": false,
+                            "owner": ""
+                        }
+                    ],
+                    "optionValue": {
+                        "text": "New",
+                        "timestamp": "<timestamp#1>",
+                        "duration": 0
+                    },
+                    "shares": [
+                        {
+                            "id": 20,
+                            "type": "user",
+                            "userId": "carol",
+                            "label": "",
+                            "locked": false,
+                            "deleted": false,
+                            "invitationSent": 1800000000
+                        }
+                    ],
+                    "recipient": {
+                        "type": "user",
+                        "userId": "dave"
+                    },
+                    "publicAllowed": true,
+                    "shareCreate": true,
+                    "shareExternal": true
+                },
+                "writes": 1
+            }
+        },
+        {
+            "step": "hidden",
+            "arguments": {
+                "poll_id": 1,
+                "share_id": 20,
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Polls is unavailable for this request."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "state": {
+                    "actor": "alice",
+                    "version": "9.3.0",
+                    "poll": {
+                        "id": 1,
+                        "title": "Changed by another actor",
+                        "type": "textPoll",
+                        "owner": "bob",
+                        "access": "private",
+                        "anonymous": 0,
+                        "expire": 0,
+                        "archived": false
+                    },
+                    "configuration": {
+                        "title": "Poll <3",
+                        "allowComment": true
+                    },
+                    "options": [
+                        {
+                            "text": "A",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "id": 10,
+                            "order": 1,
+                            "deleted": false,
+                            "owner": ""
+                        },
+                        {
+                            "text": "B",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "id": 11,
+                            "order": 2,
+                            "deleted": false,
+                            "owner": ""
+                        }
+                    ],
+                    "optionValue": {
+                        "text": "New",
+                        "timestamp": "<timestamp#1>",
+                        "duration": 0
+                    },
+                    "shares": [
+                        {
+                            "id": 20,
+                            "type": "user",
+                            "userId": "carol",
+                            "label": "",
+                            "locked": false,
+                            "deleted": false,
+                            "invitationSent": 1800000000
+                        }
+                    ],
+                    "recipient": {
+                        "type": "user",
+                        "userId": "dave"
+                    },
+                    "publicAllowed": true,
+                    "shareCreate": true,
+                    "shareExternal": true
+                },
+                "writes": 1
+            }
+        }
+    ]
+}

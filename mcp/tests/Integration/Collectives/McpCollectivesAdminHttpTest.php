@@ -15,6 +15,7 @@ use OCA\Mcp\Tests\Integration\Support\LoginFactory;
 use OCA\Mcp\Tests\Integration\Support\McpClient;
 use OCA\Mcp\Tests\Integration\Support\ServiceSwitchFixture;
 use OCA\Mcp\Tests\Integration\Support\ToolReply;
+use OCP\IConfig;
 use OCP\IGroupManager;
 use OCP\IUserManager;
 use OCP\Server;
@@ -24,18 +25,21 @@ use PHPUnit\Framework\Attributes\Group;
  * Creating a collective and managing its members (C04, #22) over the real MCP endpoint, with an app password, against
  * the pinned Collectives and Teams of the cell. Every write is refused without its grant, its plan is shown to change
  * nothing by reading Collectives and Teams themselves in this process ({@see NativeTeamsProbe}), and the confirmed call
- * is read back the same way. Runs only on Nextcloud 33 to 35, where the C04 tools exist (decision D7). The members the
- * test adds are removed again, also when it fails, so the outsider of {@see McpCollectivesHttpTest} stays an outsider.
+ * is read back the same way. Runs only on Nextcloud 33 to 35, where the C04 tools exist (decision D7). Everything the
+ * test changes is captured first and put back exactly by {@see CollectivesAdminHttpActors}, also when it fails, so the
+ * outsider of {@see McpCollectivesHttpTest} stays an outsider; a membership that existed before makes the test skip.
  */
 #[Group('collectives')]
 final class McpCollectivesAdminHttpTest extends IntegrationTestCase {
-	/** Group the member tests add and remove; created here when the cell has none. */
-	private const GROUP = 'mcp-it-c04';
+	/** Group the member tests add and remove. */
+	private const GROUP = CollectivesAdminHttpActors::GROUP;
 
 	/** @var array<string, Credential> app passwords by account, never printed */
 	private static array $credentials = [];
 	/** @var ServiceSwitchFixture|null per-test service switch, absent when the opt-in skips setup */
 	private ?ServiceSwitchFixture $serviceSwitch = null;
+	/** @var CollectivesAdminHttpActors|null what the test changes in the cell, absent when the opt-in skips setup */
+	private ?CollectivesAdminHttpActors $actors = null;
 
 	/** @return void runs only in a cell provisioned with Collectives on Nextcloud 33 to 35 */
 	protected function setUp(): void {
@@ -44,28 +48,18 @@ final class McpCollectivesAdminHttpTest extends IntegrationTestCase {
 			$this->markTestSkipped('Collectives cell on Nextcloud 33 to 35 only (MCP_IT_WITH_COLLECTIVES=1)');
 		}
 		$this->serviceSwitch = ServiceSwitchFixture::open();
-		$policy = Server::get(GrantPolicy::class);
-		foreach ([$this->owner(), $this->outsider()] as $uid) {
-			$policy->setEligible($uid, true);
-			$policy->setConnected($uid, true);
+		$this->actors = new CollectivesAdminHttpActors(Server::get(GrantPolicy::class), Server::get(IConfig::class), Server::get(IGroupManager::class),
+			Server::get(IUserManager::class), $this->owner(), $this->outsider());
+		$present = $this->actors->enable($this->wiki());
+		if ($present !== []) {
+			$this->markTestSkipped('The cell already has these memberships, which the test would change: ' . implode(', ', $present));
 		}
-		$this->grant('collective.create', true);
-		$this->grant('members', true);
-		$groups = Server::get(IGroupManager::class);
-		$group = $groups->get(self::GROUP) ?? $groups->createGroup(self::GROUP);
-		$group->addUser(Server::get(IUserManager::class)->get($this->outsider()));
 	}
 
-	/** @return void the grants and the service switch as they were, and no membership left behind */
+	/** @return void the memberships, the access, the group and the service switch exactly as they were, step by step */
 	protected function tearDown(): void {
 		try {
-			if ($this->serviceSwitch !== null) {
-				$team = NativeTeamsProbe::team($this->wiki(), $this->owner());
-				NativeTeamsProbe::removeIfPresent($this->owner(), $team, '1:' . $this->outsider());
-				NativeTeamsProbe::removeIfPresent($this->owner(), $team, '2:' . self::GROUP);
-				$this->grant('collective.create', false);
-				$this->grant('members', false);
-			}
+			$this->actors?->restore();
 		} finally {
 			try {
 				$this->serviceSwitch?->restore();
@@ -96,7 +90,7 @@ final class McpCollectivesAdminHttpTest extends IntegrationTestCase {
 	 * @return void
 	 */
 	private function grant(string $operation, bool $allowed): void {
-		Server::get(GrantPolicy::class)->setGrant($this->owner(), 'collectives', $operation, $allowed);
+		$this->actors?->grant($operation, $allowed);
 	}
 
 	/**

@@ -18,10 +18,13 @@ use Psr\Container\ContainerInterface;
 /**
  * The member tools of C04b in the process of the cell's Nextcloud 33 to 35 with Collectives and Teams, inside one
  * request, like {@see CollectiveFoundingSessionTest}: the Teams manager the gateway uses is the one Collectives uses,
- * every native failure inside the actor's session leaves no current user and no bypass behind, and resolving a group
- * seals the session for the rest of the request (`FederatedUserService::getGroupCircle` may set the Teams app as the
- * current app, which `stopSession` does not clear). A fresh session and gateway are built per test, so the seal of one
- * test never reaches another. The private state is read by test-only reflection.
+ * every native failure that happens after a Teams session was opened leaves no current user and no bypass behind, and
+ * resolving a group seals the session for the rest of the request (`FederatedUserService::getGroupCircle` sets the
+ * Teams app as the current app, which `stopSession` does not clear). Each failure is placed after the session opens:
+ * an unknown team or member inside the actor's session, a Collectives read that opens the session and then fails
+ * (injected through the container, as `CircleHelper` does when its query throws), and an addition whose group was
+ * resolved (current app set) before Teams refused the unknown team. A fresh session and gateway are built per test,
+ * so the seal of one test never reaches another. The private state is read by test-only reflection.
  */
 #[Group('collectives')]
 final class TeamsGatewaySessionTest extends IntegrationTestCase {
@@ -82,11 +85,9 @@ final class TeamsGatewaySessionTest extends IntegrationTestCase {
 		$this->assertClean('reading');
 	}
 
-	/** @return void native failures inside the actor's session: an unknown collective, member and team */
+	/** @return void native failures after the actor's session opened: an unknown member and team, inside the session */
 	public function testFailuresInsideTheSessionLeaveItClosed(): void {
 		$owner = (string)getenv('MCP_IT_COLLECTIVES_OWNER');
-		$this->assertInstanceOf(ToolFailure::class, $this->failing(fn () => $this->gateway->collective(2147483000, $owner)));
-		$this->assertClean('unknown collective');
 		$this->failing(fn () => $this->gateway->level($owner, 'no-such-member', 4));
 		$this->assertClean('unknown member level');
 		$this->failing(fn () => $this->gateway->remove($owner, 'no-such-member'));
@@ -95,12 +96,64 @@ final class TeamsGatewaySessionTest extends IntegrationTestCase {
 		$this->assertClean('unknown team');
 	}
 
-	/** @return void resolving a group seals the session even when it fails; only the readback of that call opens it again */
+	/**
+	 * @return void a Collectives read that opens a Teams session and fails before closing it, as `CircleHelper` does
+	 *     when its query throws: the gateway closes it
+	 */
+	public function testACollectiveReadThatFailsInsideItsSessionLeavesItClosed(): void {
+		$owner = (string)getenv('MCP_IT_COLLECTIVES_OWNER');
+		$server = Server::get(ContainerInterface::class);
+		$teams = Server::get('OCA\\Circles\\CirclesManager');
+		$failing = new class($teams) extends \OCA\Collectives\Service\CollectiveService {
+			/** @param object $teams the shared Teams manager */
+			public function __construct(private object $teams) {
+			}
+
+			/** @return \OCA\Collectives\Db\Collective never: the session is opened, then the query fails */
+			public function getCollective(int $id, string $userId): \OCA\Collectives\Db\Collective {
+				$this->teams->startSession($this->teams->getLocalFederatedUser($userId));
+				throw new \RuntimeException('injected after the Teams session opened');
+			}
+		};
+		$container = new class($server, $failing) implements ContainerInterface {
+			/** @param ContainerInterface $server the server container @param object $collectives the failing service */
+			public function __construct(private ContainerInterface $server, private object $collectives) {
+			}
+
+			/** @return mixed the failing collective service, or what the server resolves */
+			public function get(string $id): mixed {
+				return $id === 'OCA\\Collectives\\Service\\CollectiveService' ? $this->collectives : $this->server->get($id);
+			}
+
+			/** @return bool whether the server resolves it */
+			public function has(string $id): bool {
+				return $this->server->has($id);
+			}
+		};
+		$gateway = new TeamsGateway($container, new TeamsSession($container));
+		$this->assertInstanceOf(ToolFailure::class, $this->failing(fn () => $gateway->collective(NativeTeamsProbe::collectives($owner)['MCP Wiki'], $owner)));
+		$this->assertClean('collective read');
+	}
+
+	/**
+	 * @return void an addition whose group was resolved, which sets the Teams app as current app, then refused by Teams
+	 *     for an unknown team: the session is closed and sealed; only the readback of that call opens it again
+	 */
 	public function testAGroupResolutionSealsTheSession(): void {
 		$owner = (string)getenv('MCP_IT_COLLECTIVES_OWNER');
 		$team = NativeTeamsProbe::team(NativeTeamsProbe::collectives($owner)['MCP Wiki'], $owner);
-		$this->failing(fn () => $this->gateway->add($owner, $team, TeamsGateway::TYPE_GROUP, 'mcp-it-no-such-group-' . bin2hex(random_bytes(3))));
-		$this->assertClean('group resolution');
+		$groups = Server::get(\OCP\IGroupManager::class);
+		$created = $groups->get(CollectivesAdminHttpActors::GROUP) === null;
+		$group = $created ? $groups->createGroup(CollectivesAdminHttpActors::GROUP) : $groups->get(CollectivesAdminHttpActors::GROUP);
+		try {
+			$this->failing(fn () => $this->gateway->add($owner, 'no-such-team', TeamsGateway::TYPE_GROUP, CollectivesAdminHttpActors::GROUP));
+			$this->assertNotNull(self::read($this->identities(), 'currentApp'), 'the group was resolved before Teams refused the team');
+			$this->assertClean('group resolution');
+		} finally {
+			if ($created) {
+				$group->delete();
+			}
+		}
 		$this->assertInstanceOf(ToolFailure::class, $this->failing(fn () => $this->gateway->team($owner, $team)), 'sealed for any other Teams call');
 		$this->assertNotSame([], $this->gateway->team($owner, $team, true)['members'], 'the readback of the call still reads, as the actor');
 		$this->assertClean('readback');

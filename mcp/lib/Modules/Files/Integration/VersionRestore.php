@@ -72,7 +72,11 @@ final class VersionRestore {
 	 * (Nextcloud 32 to 35, handleAppLocks) catches the refusal of a Text or Office lock and repeats the write inside
 	 * that app's lock scope, over the document still open in the editor. The file then shows the restore time as its
 	 * modification time and the change as an edit, where the core rollback would show the version's time and a restore.
-	 * Without a lock provider no lock can exist, and the core rollback runs as before.
+	 * Without a lock provider no lock can exist, and the core rollback runs as before, except for the listed current
+	 * version ({@see VersionStream::isCurrent()}): Storage::rollback() (files_versions 32 to 35) first copies the file to
+	 * files_versions/<path>.v<mtime> without creating the folders that copy needs, so for a file in a folder that has
+	 * no stored version yet the copy fails and the rollback ends in an Error. That version is written through the file
+	 * on every server, as with a lock provider.
 	 *
 	 * The shared-write guard runs in the handler before this call, so the confirmation payload is a
 	 * non-error result produced there and never reaches this class.
@@ -100,7 +104,7 @@ final class VersionRestore {
 		try {
 			$this->visibilityGuard?->assertVisible($file);
 			$backup->assertWritablePath($path);
-			if ($this->locks !== null && $this->locks->providerAvailable()) {
+			if (VersionStream::isCurrent($version, $file) || ($this->locks !== null && $this->locks->providerAvailable())) {
 				$this->writeVersion($manager, $version, $file, $path, $viewerUid);
 			} else {
 				// Immediately before the native rollback, still after the backup.
@@ -137,7 +141,8 @@ final class VersionRestore {
 	 * operation", as the restore of a team folder file showed. The copy lives in memory up to {@see self::COPY_MEMORY}
 	 * bytes and spills to a temporary file beyond that, so a large version costs no more memory than that.
 	 *
-	 * The type policy is read again after that stream is closed and immediately before putContent.
+	 * The type policy is read again after that stream is closed and immediately before putContent. Without
+	 * {@see LockAwareWrite} wired, the write runs without the lock check, as the rollback it replaces would.
 	 *
 	 * @param object $manager The files_versions manager.
 	 * @param object $version The IVersion to bring back.
@@ -152,7 +157,6 @@ final class VersionRestore {
 	 * @throws FileWritePolicyUnavailable When the policy cannot be read after the backup. The caller keeps the backup.
 	 */
 	private function writeVersion(object $manager, object $version, File $file, string $path, string $viewerUid): void {
-		$locks = $this->locks ?? throw new \LogicException('LockAwareWrite is not wired');
 		// The listed current version has no stored file; VersionStream reads it from the file itself.
 		$stream = VersionStream::open($manager, $version, $file);
 		if (!is_resource($stream)) {
@@ -172,11 +176,13 @@ final class VersionRestore {
 				}
 			}
 			$this->types->assertCurrentName($file);
-			NodeAccess::mutate(fn () => $locks->run(static function () use ($file, $content): void {
+			$write = static function () use ($file, $content): void {
 				// Rewound inside, so a repeated write by the lock check starts from the first byte.
 				rewind($content);
 				$file->putContent($content);
-			}, $file, $viewerUid, $path), $this->visibilityGuard);
+			};
+			NodeAccess::mutate(fn () => $this->locks !== null ? $this->locks->run($write, $file, $viewerUid, $path) : $write(),
+				$this->visibilityGuard);
 		} finally {
 			if (is_resource($content)) {
 				fclose($content);

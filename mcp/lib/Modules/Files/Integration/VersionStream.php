@@ -30,10 +30,19 @@ final class VersionStream {
 		try {
 			return $manager->read($version);
 		} catch (NotFoundException $e) {
-			if ((string)$version->getRevisionId() !== (string)$file->getMTime()) {
+			if (!self::isCurrent($version, $file)) {
 				throw $e;
 			}
 			return $file->fopen('r');
 		}
+	}
+
+	/**
+	 * @param object $version the IVersion, as getVersionsForFile() returned it
+	 * @param File $file the file the version belongs to
+	 * @return bool whether the version is the current content, listed under the file's mtime
+	 */
+	public static function isCurrent(object $version, File $file): bool {
+		return (string)$version->getRevisionId() === (string)$file->getMTime();
 	}
 }

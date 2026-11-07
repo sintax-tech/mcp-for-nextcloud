@@ -4,6 +4,8 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 
 ## 1.3.1 — 2026-11-07
 
+Fix release on top of 1.3.0. No database change and no permission change; updating from 1.3.0 needs no step. Only HTML mail drafts (`mail_create_draft` with `html: true`) change: they work again on servers with libxml2 2.14 or later, a loose `&` no longer refuses a draft, and some HTML that 1.3.0 accepted on older libxml2 is now refused with the same message on every server, as listed below. Plain-text drafts and every other tool behave as in 1.3.0.
+
 ### Fixed
 
 - **HTML mail drafts were always refused on servers with libxml2 2.14 or later ([#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30)):** on Ubuntu 25.10 and 26.04, Debian testing and other systems whose libxml2 parses HTML with the HTML5 tokenizer, every `mail_create_draft` call with `html: true` failed with "The HTML draft could not be safely parsed and sanitized; nothing was saved." The UTF-8 hint the sanitizer adds before parsing became an extra comment there, which was counted as content removed by the engine. Nothing unsafe was ever saved, but the feature did not work. The hint no longer reaches the sanitizer on any libxml version. Servers with older libxml2 (Ubuntu 24.04, Debian 12 and 13, the official Nextcloud Docker images) were not affected. The newer parser does not wrap bare top-level text in a paragraph, so a draft such as `<a>ok</a>` is saved as `ok` there and as `<p>ok</p>` on older libxml2; both are safe.

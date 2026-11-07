@@ -88,24 +88,16 @@ path = [
   "mcp/tests/fixtures/calendar-characterization.json",
   "mcp/tests/fixtures/contacts-characterization.json",
   "mcp/tests/fixtures/mail-draft-html-corpus.json",
-  "mcp/tests/fixtures/nextcloud-api/collectives/collectives-admin-behavior.json",
   "mcp/tests/fixtures/nextcloud-api/collectives/collectives-admin-sources.json",
   "mcp/tests/fixtures/nextcloud-api/collectives/collectives-ast-subset.json",
   "mcp/tests/fixtures/nextcloud-api/collectives/collectives-behavior.json",
   "mcp/tests/fixtures/nextcloud-api/collectives/collectives-external-leaves.json",
   "mcp/tests/fixtures/nextcloud-api/collectives/collectives-php-functions.json",
-  "mcp/tests/fixtures/nextcloud-api/collectives/collectives-read-chains.json",
   "mcp/tests/fixtures/nextcloud-api/collectives/collectives-sources.json",
   "mcp/tests/fixtures/nextcloud-api/collectives/collectives-sql-sources.json",
-  "mcp/tests/fixtures/nextcloud-api/forms/5.3.0.json",
-  "mcp/tests/fixtures/nextcloud-api/forms/5.3.7.json",
-  "mcp/tests/fixtures/nextcloud-api/forms/5.4.0.json",
-  "mcp/tests/fixtures/nextcloud-api/forms/5.4.1.json",
   "mcp/tests/fixtures/nextcloud-api/forms/core-sources.json",
   "mcp/tests/fixtures/nextcloud-api/forms/pins.json",
   "mcp/tests/fixtures/nextcloud-api/polls/polls-behavior.json",
-  "mcp/tests/fixtures/nextcloud-api/polls/polls-create.json",
-  "mcp/tests/fixtures/nextcloud-api/polls/polls-mutation.json",
   "mcp/tests/fixtures/nextcloud-api/polls/polls-sources.json",
   "mcp/tests/fixtures/nextcloud-core/notification/sources.json",
   "mcp/tests/fixtures/talk-characterization.json",
@@ -116,16 +108,127 @@ precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
 
-# Original copyright of the upstream source excerpts embedded in this JSON fixture.
+# Authored fixture metadata and the original notices of embedded upstream source excerpts.
+[[annotations]]
+path = ["mcp/tests/fixtures/nextcloud-api/collectives/collectives-admin-behavior.json"]
+precedence = "override"
+SPDX-FileCopyrightText = [
+  "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>",
+  "2026 Nextcloud GmbH and Nextcloud contributors",
+]
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["mcp/tests/fixtures/nextcloud-api/collectives/collectives-read-chains.json"]
+precedence = "override"
+SPDX-FileCopyrightText = [
+  "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>",
+  "2021 Nextcloud GmbH and Nextcloud contributors",
+]
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["mcp/tests/fixtures/nextcloud-api/forms/5.3.0.json"]
+precedence = "override"
+SPDX-FileCopyrightText = [
+  "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>",
+  "2017 Nextcloud GmbH and Nextcloud contributors",
+  "2019 Nextcloud GmbH and Nextcloud contributors",
+  "2020 Nextcloud GmbH and Nextcloud contributors",
+  "2021 Nextcloud GmbH and Nextcloud contributors",
+  "2022 Nextcloud GmbH and Nextcloud contributors",
+  "2024 Nextcloud GmbH and Nextcloud contributors",
+  "2026 Nextcloud GmbH and Nextcloud contributors",
+]
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["mcp/tests/fixtures/nextcloud-api/forms/5.3.7.json"]
+precedence = "override"
+SPDX-FileCopyrightText = [
+  "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>",
+  "2017 Nextcloud GmbH and Nextcloud contributors",
+  "2019 Nextcloud GmbH and Nextcloud contributors",
+  "2020 Nextcloud GmbH and Nextcloud contributors",
+  "2021 Nextcloud GmbH and Nextcloud contributors",
+  "2022 Nextcloud GmbH and Nextcloud contributors",
+  "2024 Nextcloud GmbH and Nextcloud contributors",
+  "2026 Nextcloud GmbH and Nextcloud contributors",
+]
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["mcp/tests/fixtures/nextcloud-api/forms/5.4.0.json"]
+precedence = "override"
+SPDX-FileCopyrightText = [
+  "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>",
+  "2017 Nextcloud GmbH and Nextcloud contributors",
+  "2019 Nextcloud GmbH and Nextcloud contributors",
+  "2020 Nextcloud GmbH and Nextcloud contributors",
+  "2021 Nextcloud GmbH and Nextcloud contributors",
+  "2022 Nextcloud GmbH and Nextcloud contributors",
+  "2024 Nextcloud GmbH and Nextcloud contributors",
+  "2026 Nextcloud GmbH and Nextcloud contributors",
+]
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["mcp/tests/fixtures/nextcloud-api/forms/5.4.1.json"]
+precedence = "override"
+SPDX-FileCopyrightText = [
+  "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>",
+  "2017 Nextcloud GmbH and Nextcloud contributors",
+  "2019 Nextcloud GmbH and Nextcloud contributors",
+  "2020 Nextcloud GmbH and Nextcloud contributors",
+  "2021 Nextcloud GmbH and Nextcloud contributors",
+  "2022 Nextcloud GmbH and Nextcloud contributors",
+  "2024 Nextcloud GmbH and Nextcloud contributors",
+  "2026 Nextcloud GmbH and Nextcloud contributors",
+]
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["mcp/tests/fixtures/nextcloud-api/polls/polls-mutation.json"]
+precedence = "override"
+SPDX-FileCopyrightText = [
+  "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>",
+  "2017 Nextcloud contributors",
+  "2021 Nextcloud contributors",
+  "2022 Nextcloud contributors",
+  "2023 Nextcloud contributors",
+  "2024 Nextcloud contributors",
+  "2025 Nextcloud contributors",
+  "2026 Nextcloud contributors",
+]
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["mcp/tests/fixtures/nextcloud-api/tables/schema-api.json"]
+precedence = "override"
+SPDX-FileCopyrightText = [
+  "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>",
+  "2022 Nextcloud GmbH and Nextcloud contributors",
+  "2024 Nextcloud GmbH and Nextcloud contributors",
+  "2025 Nextcloud GmbH and Nextcloud contributors",
+  "2026 Nextcloud GmbH and Nextcloud contributors",
+]
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
 [[annotations]]
 path = ["mcp/tests/fixtures/nextcloud-api/tables/schema-patterns.json"]
 precedence = "override"
-SPDX-FileCopyrightText = ["2023 Nextcloud GmbH and Nextcloud contributors"]
+SPDX-FileCopyrightText = [
+  "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>",
+  "2023 Nextcloud GmbH and Nextcloud contributors",
+]
 SPDX-License-Identifier = "AGPL-3.0-or-later"
 
-# Original copyright of the upstream source excerpts embedded in this JSON fixture.
 [[annotations]]
 path = ["mcp/tests/fixtures/nextcloud-api/polls/polls-create.json"]
 precedence = "override"
-SPDX-FileCopyrightText = ["2017 Nextcloud contributors", "2025 Nextcloud contributors"]
+SPDX-FileCopyrightText = [
+  "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>",
+  "2017 Nextcloud contributors",
+  "2025 Nextcloud contributors",
+]
 SPDX-License-Identifier = "AGPL-3.0-or-later"

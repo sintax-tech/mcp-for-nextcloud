@@ -11,13 +11,16 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCP\IConfig;
 use OCP\IGroupManager;
 use OCP\IUserManager;
+use Throwable;
 
 /**
  * Owns what the C04 HTTP tests change in the cell and puts it back exactly, like TablesSchemaHttpActors: the owner's
  * and the outsider's MCP access and the owner's two C04 grants (resolved value through the official writer, then the
  * raw preference, an absent key included), the test group and the outsider's place in it, and the memberships of the
  * collective's team the tests add. Everything is captured before the first change; a membership that already existed
- * is never touched, so the tests refuse to run over it instead.
+ * is never touched, so the tests refuse to run over it instead. Restoring tries every item on its own, each membership,
+ * each access cell (writer and raw preference) and each group step, and raises one {@see RestoreFailures} at the end
+ * with all that failed: no restoration is skipped and no failure is hidden.
  */
 final class CollectivesAdminHttpActors {
 	/** Group the member tests add and remove. */
@@ -32,6 +35,12 @@ final class CollectivesAdminHttpActors {
 	/** @var list<string> memberships of the team (`type:userId`) absent before, which the tests may add */
 	private array $absent = [];
 	private ?string $team = null;
+	/** @var \Closure(int, string): string the team of a collective, read as its owner */
+	private \Closure $teamOf;
+	/** @var \Closure(string, string): array<string, mixed> the memberships of a team, by `type:userId` */
+	private \Closure $membersOf;
+	/** @var \Closure(string, string, string): void removes one membership, as the team's owner */
+	private \Closure $removeMembership;
 
 	/**
 	 * @param GrantPolicy $policy official writer and resolver of MCP access
@@ -40,9 +49,18 @@ final class CollectivesAdminHttpActors {
 	 * @param IUserManager $users accounts of the cell
 	 * @param string $owner the collective's owner
 	 * @param string $outsider the account outside the collective
+	 * @param (\Closure(int, string): string)|null $teamOf team of a collective; default {@see NativeTeamsProbe::team()}
+	 * @param (\Closure(string, string): array<string, mixed>)|null $membersOf memberships; default {@see NativeTeamsProbe::members()}
+	 * @param (\Closure(string, string, string): void)|null $removeMembership removal; default {@see NativeTeamsProbe::removeIfPresent()}
 	 */
 	public function __construct(private GrantPolicy $policy, private IConfig $config, private IGroupManager $groups,
-		private IUserManager $users, private string $owner, private string $outsider) {
+		private IUserManager $users, private string $owner, private string $outsider, ?\Closure $teamOf = null, ?\Closure $membersOf = null,
+		?\Closure $removeMembership = null) {
+		$this->teamOf = $teamOf ?? static fn (int $cid, string $uid): string => NativeTeamsProbe::team($cid, $uid);
+		$this->membersOf = $membersOf ?? static fn (string $uid, string $team): array => NativeTeamsProbe::members($uid, $team);
+		$this->removeMembership = $removeMembership ?? static function (string $uid, string $team, string $key): void {
+			NativeTeamsProbe::removeIfPresent($uid, $team, $key);
+		};
 	}
 
 	/**
@@ -62,8 +80,8 @@ final class CollectivesAdminHttpActors {
 				$this->before[$uid][$key] = ['raw' => in_array($key, $keys, true) ? $this->config->getUserValue($uid, 'mcp', $key) : null, 'allowed' => $allowed];
 			}
 		}
-		$this->team = NativeTeamsProbe::team($cid, $this->owner);
-		$members = NativeTeamsProbe::members($this->owner, $this->team);
+		$this->team = ($this->teamOf)($cid, $this->owner);
+		$members = ($this->membersOf)($this->owner, $this->team);
 		$watched = ['1:' . $this->outsider, '2:' . self::GROUP];
 		$present = array_values(array_intersect($watched, array_keys($members)));
 		$this->absent = array_values(array_diff($watched, $present));
@@ -96,53 +114,71 @@ final class CollectivesAdminHttpActors {
 		$this->policy->setGrant($this->owner, 'collectives', $operation, $allowed);
 	}
 
-	/** @return void every captured thing back as it was; each step runs even when an earlier one fails */
+	/**
+	 * Every captured thing back as it was. Each item is tried on its own, whatever the others did.
+	 * @return void
+	 * @throws RestoreFailures after every item was tried, when any of them failed
+	 */
 	public function restore(): void {
-		try {
-			foreach ($this->absent as $membership) {
-				NativeTeamsProbe::removeIfPresent($this->owner, (string)$this->team, $membership);
-			}
-		} finally {
+		$failures = [];
+		$attempt = static function (string $step, \Closure $work) use (&$failures): void {
 			try {
-				$this->restoreAccess();
-			} finally {
-				$this->restoreGroup();
+				$work();
+			} catch (Throwable $error) {
+				$failures[] = ['step' => $step, 'error' => $error];
 			}
+		};
+		foreach ($this->absent as $membership) {
+			$attempt('membership ' . $membership, fn () => ($this->removeMembership)($this->owner, (string)$this->team, $membership));
 		}
-	}
-
-	/** @return void resolved access through the writer, then exact raw preferences, absent keys included */
-	private function restoreAccess(): void {
+		$this->absent = [];
 		foreach ($this->before as $uid => $cells) {
 			foreach ($cells as $key => $before) {
-				if ($key === GrantPolicy::ELIGIBLE_KEY) {
-					$this->policy->setEligible($uid, $before['allowed']);
-				} elseif ($key === GrantPolicy::CONNECTED_KEY) {
-					$this->policy->setConnected($uid, $before['allowed']);
-				} else {
-					$this->policy->setGrant($uid, 'collectives', substr($key, strlen('grant_collectives_')), $before['allowed']);
-				}
-				if ($before['raw'] === null) {
-					$this->config->deleteUserValue($uid, 'mcp', $key);
-				} else {
-					$this->config->setUserValue($uid, 'mcp', $key, $before['raw']);
-				}
+				$attempt("$uid $key", fn () => $this->restoreCell($uid, $key, $before['allowed']));
+				$attempt("$uid $key raw", fn () => $before['raw'] === null
+					? $this->config->deleteUserValue($uid, 'mcp', $key) : $this->config->setUserValue($uid, 'mcp', $key, $before['raw']));
 			}
 		}
 		$this->before = [];
+		$attempt('group membership of the outsider', fn () => $this->restoreGroupMember());
+		$attempt('group', fn () => $this->restoreGroup());
+		if ($failures !== []) {
+			throw new RestoreFailures($failures);
+		}
 	}
 
-	/** @return void the outsider out of the group if this test put it there, and the group gone if this test created it */
-	private function restoreGroup(): void {
+	/**
+	 * @param string $uid an account
+	 * @param string $key a captured cell
+	 * @param bool $allowed its resolved value before the test
+	 * @return void the value back through the official writer
+	 */
+	private function restoreCell(string $uid, string $key, bool $allowed): void {
+		if ($key === GrantPolicy::ELIGIBLE_KEY) {
+			$this->policy->setEligible($uid, $allowed);
+		} elseif ($key === GrantPolicy::CONNECTED_KEY) {
+			$this->policy->setConnected($uid, $allowed);
+		} else {
+			$this->policy->setGrant($uid, 'collectives', substr($key, strlen('grant_collectives_')), $allowed);
+		}
+	}
+
+	/** @return void the outsider out of the group, if this test put it there */
+	private function restoreGroupMember(): void {
 		$group = $this->groups->get(self::GROUP);
 		$outsider = $this->users->get($this->outsider);
 		if ($group !== null && $outsider !== null && $this->outsiderAdded) {
 			$group->removeUser($outsider);
 		}
+		$this->outsiderAdded = false;
+	}
+
+	/** @return void the group gone, if this test created it */
+	private function restoreGroup(): void {
+		$group = $this->groups->get(self::GROUP);
 		if ($group !== null && $this->groupCreated) {
 			$group->delete();
 		}
-		$this->outsiderAdded = false;
 		$this->groupCreated = false;
 	}
 }

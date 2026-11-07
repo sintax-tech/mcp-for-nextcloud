@@ -279,6 +279,25 @@ final class TeamsScene {
 	}
 
 	/**
+	 * @param int $fileId file id asked for
+	 * @param bool $trashed whether trashed records are asked for; a new landing page is never trashed
+	 * @return array{fileId:int, lastUserId:string|null}|null the record of a created collective's landing page, only
+	 *     when Collectives stored one
+	 */
+	public static function record(int $fileId, bool $trashed): ?array {
+		self::$calls[] = 'record';
+		if (in_array('record', self::$failReads, true)) {
+			throw new \RuntimeException('page records could not be read');
+		}
+		foreach (self::$folders as $folder) {
+			if ($folder['landing'] === $fileId && $folder['registered'] && !$trashed) {
+				return ['fileId' => $fileId, 'lastUserId' => 'alice'];
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * @param int $id file id asked for
 	 * @return PageInfo|null the landing page of a created collective, with a last user only when it has a record
 	 */

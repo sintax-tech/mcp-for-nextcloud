@@ -9,14 +9,19 @@ namespace OCA\Mcp\Modules\Collectives\Integration;
 
 /**
  * The native members creating a collective reaches beyond the page surface: the collective service that creates the
- * team, the collective and its folder, the folder manager the receipt reads without creating anything, and the Teams
- * (Circles) manager that lists the teams the actor sees and closes the session the native code may leave open. The
+ * team, the collective and its folder, the folder manager the receipt reads without creating anything, the record of
+ * the landing page the receipt reads by file id, and the Teams (Circles) manager that lists the teams the actor sees
+ * and closes the session the native code may leave open. The
  * shapes are those of Collectives 4.0.0, 4.4.0, 4.5.0 and 4.7.1 and Circles 33 to 35; they are checked with the same
  * introspection as {@see CollectivesSurface}, without building any service.
  */
 final class FoundingSurface {
 	/** Native folder manager of the collectives' storage. */
 	public const FOLDERS = 'OCA\\Collectives\\Mount\\CollectiveFolderManager';
+	/** Native records of the pages, read by file id only. */
+	public const PAGE_RECORDS = 'OCA\\Collectives\\Db\\PageMapper';
+	/** Native record of one page. */
+	public const PAGE_RECORD = 'OCA\\Collectives\\Db\\Page';
 	/** Native Teams manager. */
 	public const TEAMS = 'OCA\\Circles\\CirclesManager';
 	/** Native team. */
@@ -37,7 +42,8 @@ final class FoundingSurface {
 		[CollectivesSurface::COLLECTIVES, 'getCollectives', ['string'], 'array'],
 		[CollectivesSurface::COLLECTIVES, 'getCollective', ['int', 'string'], CollectivesSurface::COLLECTIVE],
 		[CollectivesSurface::COLLECTIVE, 'getCircleId', [], 'string'],
-		[CollectivesSurface::PAGES, 'find', ['int', 'int', 'string'], CollectivesSurface::PAGE_INFO],
+		[self::PAGE_RECORDS, 'findByFileId', ['int', 'bool'], '?' . self::PAGE_RECORD],
+		[self::PAGE_RECORD, 'jsonSerialize', [], 'array'],
 		[self::FOLDERS, 'getRootPath', [], 'string'],
 		[self::FOLDERS, 'getFolder', ['int'], 'OCP\\Files\\Folder'],
 		[self::TEAMS, 'getLocalFederatedUser', ['string'], self::FEDERATED_USER],

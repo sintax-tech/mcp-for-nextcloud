@@ -7,8 +7,9 @@ declare(strict_types=1);
 
 /*
  * Strict doubles of the native Teams (Circles 33-35) and Collectives classes creating a collective reaches, with the
- * signatures of lib/CirclesManager.php, lib/Model/Circle.php, lib/Model/FederatedUser.php and
- * lib/Mount/CollectiveFolderManager.php (pinned in collectives-admin-sources.json). Their state lives in
+ * signatures of lib/CirclesManager.php, lib/Model/Circle.php, lib/Model/FederatedUser.php,
+ * lib/Mount/CollectiveFolderManager.php, lib/Db/PageMapper.php and lib/Db/Page.php (pinned in
+ * collectives-admin-sources.json). Their state lives in
  * {@see \OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene}. Members are plain objects of TeamMember, so this file
  * never declares OCA\Circles\Model\Member, which a Deck test stubs on its own.
  */
@@ -179,6 +180,31 @@ namespace OCA\Collectives\Mount {
 				TeamsScene::$root = true;
 			}
 			return TeamsScene::folder($id);
+		}
+	}
+}
+
+namespace OCA\Collectives\Db {
+	use OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene;
+
+	/** Double of a page record, with the serialized form of 4.0.0 to 4.7.1. */
+	class Page {
+		/** @param array{fileId:int, lastUserId:string|null} $data the record */
+		public function __construct(private array $data) {
+		}
+
+		/** @return array<string, mixed> the serialized record */
+		public function jsonSerialize(): array {
+			return $this->data;
+		}
+	}
+
+	/** Double of the page records: a plain read by file id, which never reaches the actor's mounts or Teams. */
+	class PageMapper {
+		/** @param int $fileId file of the page @param bool $trashed whether trashed records are asked for @return Page|null the record */
+		public function findByFileId(int $fileId, bool $trashed = false): ?Page {
+			$record = TeamsScene::record($fileId, $trashed);
+			return $record === null ? null : new Page($record);
 		}
 	}
 }

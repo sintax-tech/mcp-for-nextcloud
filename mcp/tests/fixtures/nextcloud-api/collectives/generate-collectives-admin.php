@@ -21,14 +21,17 @@ require __DIR__ . '/../../../../vendor/autoload.php';
  */
 final class CollectivesAdminFixtureGenerator {
 	/** Native classes added to the API fixtures. */
-	private const CLASSES = ['OCA\\Collectives\\Mount\\CollectiveFolderManager', 'OCA\\Circles\\CirclesManager',
-		'OCA\\Circles\\Model\\FederatedUser', 'OCA\\Circles\\Model\\Probes\\CircleProbe'];
+	private const CLASSES = ['OCA\\Collectives\\Mount\\CollectiveFolderManager', 'OCA\\Collectives\\Db\\PageMapper',
+		'OCA\\Collectives\\Db\\Page', 'OCA\\Circles\\CirclesManager', 'OCA\\Circles\\Model\\FederatedUser',
+		'OCA\\Circles\\Model\\Probes\\CircleProbe'];
 	/** @var array<string, list<string>> Collectives methods recorded, by file under lib/ */
 	private const COLLECTIVES = [
 		'Service/CollectiveService.php' => ['createCollective'],
 		'Service/CircleHelper.php' => ['existsCircle', 'createCircle', 'flagCircleAsAppManaged', 'startSession', 'startSuperSession'],
 		'Fs/NodeHelper.php' => ['sanitiseFilename'],
-		'Service/PageService.php' => ['getPageByFile'],
+		'Service/PageService.php' => ['getPageByFile', 'find', 'getCollectiveFolder'],
+		'Db/PageMapper.php' => ['findByFileId'],
+		'Fs/UserFolderHelper.php' => ['get'],
 		'Mount/CollectiveFolderManager.php' => ['getRootPath', 'getRootFolder', 'getFolder', 'initializeFolder'],
 		'Controller/CollectiveController.php' => ['create'],
 	];

@@ -202,14 +202,14 @@ final class CollectivesFoundingTest extends TestCase {
 		TeamsScene::$root = false;
 		TeamsScene::$folders[8] = ['landing' => 99, 'registered' => true];
 		$this->assertSame(['root' => false, 'folder' => false, 'landing' => false, 'registered' => null],
-			$rig->get(FoundingReadback::class)->pieces(8, 'alice'));
+			$rig->get(FoundingReadback::class)->pieces(8));
 		$this->assertFalse(TeamsScene::$root);
 		$this->assertNotContains('createRoot', TeamsScene::$calls);
 	}
 
 	/**
 	 * @return void a native read that fails inside the Teams session it opened leaves no current user and no bypass:
-	 *     the listing of the preflight, the listing of the receipt and the landing page of the receipt
+	 *     the listing of the preflight and the listing of the receipt
 	 */
 	public function testNativeReadsThatFailInsideTheirSessionAreClosed(): void {
 		$rig = new CollectivesRig($this);
@@ -226,14 +226,30 @@ final class CollectivesFoundingTest extends TestCase {
 		$this->assertSame('uncertain', $receipt['status']);
 		$this->assertNull(TeamsScene::$currentUser, 'receipt listing');
 		$this->assertFalse(TeamsScene::$bypass, 'receipt listing');
+	}
 
+	/**
+	 * @return void the landing page's record is read by its file id, never through the page service: on Nextcloud 35
+	 *     with Collectives 4.7.1 the page service resolves the actor's Collectives folder, mounted before the collective
+	 *     existed, and answers not found for every new collective, so each creation came back partial (H4)
+	 */
+	public function testTheLandingRecordIsReadWithoutThePageService(): void {
 		$module = (new CollectivesRig($this))->module();
 		TeamsScene::$failReads = ['find'];
 		$receipt = $this->confirm($module, ['name' => 'Projetos']);
+		$this->assertSame('applied', $receipt['status'], json_encode($receipt));
+		$this->assertSame(['root' => true, 'folder' => true, 'landing' => true, 'registered' => true], $receipt['pieces']);
+		$this->assertContains('record', TeamsScene::$calls);
+		$this->assertNotContains('failed:find', TeamsScene::$calls, 'the page service is not asked');
+	}
+
+	/** @return void a record that cannot be read leaves the registration unproven, and the receipt partial */
+	public function testAnUnreadableLandingRecordIsNotProven(): void {
+		$module = (new CollectivesRig($this))->module();
+		TeamsScene::$failReads = ['record'];
+		$receipt = $this->confirm($module, ['name' => 'Projetos']);
 		$this->assertSame('partial', $receipt['status']);
-		$this->assertNull($receipt['pieces']['registered']);
-		$this->assertNull(TeamsScene::$currentUser, 'receipt landing page');
-		$this->assertFalse(TeamsScene::$bypass, 'receipt landing page');
+		$this->assertSame(['root' => true, 'folder' => true, 'landing' => true, 'registered' => null], $receipt['pieces']);
 	}
 
 	/** @return void when the actor's identity cannot be resolved, the session is still closed */

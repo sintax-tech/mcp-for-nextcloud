@@ -149,6 +149,29 @@ final class CollectivesAdminContractTest extends TestCase {
 		}
 	}
 
+	/**
+	 * @return void the landing page's registration is read from the very record the page service reads, by file id and
+	 *     with a select only; the page service itself is not used, as it resolves the actor's Collectives folder, whose
+	 *     mounts predate a collective created in the same request (H4)
+	 */
+	public function testTheLandingRecordIsTheOneThePageServiceReads(): void {
+		foreach (self::behavior()['collectives'] as $version => $record) {
+			$m = $record['methods'];
+			$this->assertStringContainsString('$page = $this->pageMapper->findByFileId($file->getId());', $m['Service/PageService.php::getPageByFile'],
+				"$version: the page service reads the same record");
+			$find = $m['Db/PageMapper.php::findByFileId'];
+			$this->assertStringStartsWith('function findByFileId(int $fileId, bool $trashed = false): ?Page {', $find, $version);
+			$this->assertStringContainsString("\$qb->select('*')", $find, "$version: a plain read");
+			$this->assertMatchesRegularExpression('/\$trashed\) \{\s*\$andX\[\] = \$qb->expr\(\)->isNotNull\(\'trash_timestamp\'\);\s*\} else \{\s*\$andX\[\] = \$qb->expr\(\)->isNull\(\'trash_timestamp\'\);/',
+				$find, "$version: false asks for the live record");
+			$this->assertDoesNotMatchRegularExpression('/insert|update|delete|setupFS/i', $find, "$version: it writes nothing");
+			$this->assertStringContainsString('$folder = $this->getCollectiveFolder($collectiveId, $userId);', $m['Service/PageService.php::find'], $version);
+			$this->assertStringContainsString('$this->userFolderHelper->get($userId)->get($collectiveName);', $m['Service/PageService.php::getCollectiveFolder'],
+				"$version: find goes through the actor's Collectives folder");
+			$this->assertStringContainsString('$this->rootFolder->getUserFolder($userId);', $m['Fs/UserFolderHelper.php::get'], $version);
+		}
+	}
+
 	/** @return void the actor's Teams identity is read from a setting, and guests are refused natively only from 4.7.1 (C2, R2.4, D7) */
 	public function testIdentityGuestsAndTeamFolders(): void {
 		foreach (self::behavior()['circles'] as $version => $record) {

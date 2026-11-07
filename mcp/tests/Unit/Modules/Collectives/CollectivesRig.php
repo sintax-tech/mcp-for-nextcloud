@@ -112,7 +112,8 @@ final class CollectivesRig {
 		}
 		$instance = match ($class) {
 			'OCA\\Collectives\\Service\\CollectiveService', 'OCA\\Collectives\\Service\\PageService',
-			'OCA\\Collectives\\Service\\SearchService', 'OCA\\Circles\\CirclesManager', 'OCA\\Collectives\\Mount\\CollectiveFolderManager' => new $class(),
+			'OCA\\Collectives\\Service\\SearchService', 'OCA\\Circles\\CirclesManager', 'OCA\\Collectives\\Mount\\CollectiveFolderManager',
+			'OCA\\Collectives\\Db\\PageMapper' => new $class(),
 			ContainerInterface::class => $this->container(),
 			PlanState::class => new PlanState($this->config()),
 			IAppManager::class => $this->apps(),

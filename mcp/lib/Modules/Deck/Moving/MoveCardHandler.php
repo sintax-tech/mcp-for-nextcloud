@@ -83,8 +83,31 @@ final class MoveCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 				$warnings,
 			);
 
-			return $this->formatter->card($card) + ($warnings === [] ? [] : ['warnings' => $warnings]);
+			return $this->formatter->card($card, $this->landedBoard($userId, $card)) + ($warnings === [] ? [] : ['warnings' => $warnings]);
 		});
+	}
+
+	/**
+	 * Board the moved card is on now.
+	 *
+	 * `CardService::reorder()` answers the cards without their board, and the destination may be another board, so
+	 * it is read once the card has moved. The move already stands: a board that cannot be read is left out instead of
+	 * turning the move into an error that invites a second one.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param object $card Card the write or its read-back returned.
+	 * @return int|null The board, or null when Deck cannot tell it.
+	 */
+	private function landedBoard(string $userId, object $card): ?int {
+		$boardId = $card->getRelatedBoard()?->getId();
+		if ($boardId !== null) {
+			return (int)$boardId;
+		}
+		try {
+			return $this->gateway->cardBoardId($userId, (int)$card->getId());
+		} catch (\Throwable) {
+			return null;
+		}
 	}
 
 	/**

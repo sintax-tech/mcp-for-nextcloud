@@ -612,7 +612,7 @@
                         "content": [
                             {
                                 "type": "text",
-                                "text": "{\n    \"id\": 7,\n    \"stackId\": 2,\n    \"boardId\": null,\n    \"title\": \"Proposta comercial\",\n    \"description\": \"\",\n    \"type\": \"note\",\n    \"owner\": \"alice\",\n    \"order\": 0,\n    \"archived\": false,\n    \"done\": null,\n    \"duedate\": null,\n    \"dueAt\": null,\n    \"lastModified\": 1767323045,\n    \"assignedUsers\": [],\n    \"overdue\": false,\n    \"url\": null\n}"
+                                "text": "{\n    \"id\": 7,\n    \"stackId\": 2,\n    \"boardId\": 20,\n    \"title\": \"Proposta comercial\",\n    \"description\": \"\",\n    \"type\": \"note\",\n    \"owner\": \"alice\",\n    \"order\": 0,\n    \"archived\": false,\n    \"done\": null,\n    \"duedate\": null,\n    \"dueAt\": null,\n    \"lastModified\": 1767323045,\n    \"assignedUsers\": [],\n    \"overdue\": false,\n    \"url\": \"https://cloud.example.com/apps/deck/\"\n}"
                             }
                         ]
                     }

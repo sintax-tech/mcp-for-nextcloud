@@ -248,6 +248,18 @@ final class AfterWriteHandlersTest extends TestCase {
 		self::assertSame('Novo', $payload['title']);
 	}
 
+	/** The read-back comes without its board; an edit never changes it, so the board of the card read before stands. */
+	public function testAnEditReadBackKeepsTheBoardOfTheCardReadBefore(): void {
+		$gateway = $this->gatewayOwnedBy('alice');
+		$gateway->method('findCard')->willReturn($this->card(['id' => 7, 'title' => 'Antigo', 'lastModified' => 1_700_000_000,
+			'relatedBoard' => new Board(['id' => 20])]));
+		$gateway->method('updateCard')->willThrowException($this->afterWrite());
+		$gateway->method('cardState')->willReturn($this->card(['id' => 7, 'title' => 'Novo', 'lastModified' => 1_700_000_100]));
+
+		$payload = $this->assertWrittenWithWarning($this->cards($gateway)['edit']->handle(['cardId' => 7, 'title' => 'Novo'], 'alice'));
+		self::assertSame(20, $payload['boardId']);
+	}
+
 	public function testAnEditReadBackUnchangedIsTheUsualError(): void {
 		$gateway = $this->editGateway();
 		$gateway->method('cardState')->willReturn($this->card(['id' => 7, 'title' => 'Antigo', 'lastModified' => 1_700_000_000]));

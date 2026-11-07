@@ -101,7 +101,8 @@ final class EventAlarms {
 	public static function inspect(?VCalendar $calendar): array {
 		$out = ['managed' => [], 'preserved' => []];
 		$master = $calendar === null ? null : (new StoredEvent(0, '', '', $calendar))->master();
-		foreach ($master?->select('VALARM') ?? [] as $index => $alarm) {
+		// Sabre's remove() keeps the old keys; the position is what a fresh parse of the same object reports.
+		foreach (array_values($master?->select('VALARM') ?? []) as $index => $alarm) {
 			$offset = self::offset($alarm);
 			$row = [
 				'index' => $index, 'action' => (string)($alarm->ACTION ?? ''),

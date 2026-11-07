@@ -22,9 +22,7 @@ use PHPUnit\Framework\TestCase;
  */
 final class LogScannerTest extends TestCase {
 	private function scanner(IWriter $writer): LogScanner {
-		$factory = $this->createMock(ILogFactory::class);
-		$factory->method('get')->with('file')->willReturn($writer);
-		return new LogScanner(new LogReader($factory));
+		return new LogScanner(FileLogFixture::reader($this, $writer));
 	}
 
 	private static function filter(array $arguments = []): LogFilter {
@@ -35,7 +33,7 @@ final class LogScannerTest extends TestCase {
 		$log = new FakeFileLog(FakeFileLog::lines(120, static fn (int $i): array => []));
 		$window = $this->scanner($log)->scan(self::filter(), 0, 50);
 
-		$this->assertSame([[50, 0]], $log->calls);
+		$this->assertSame(['open'], $log->calls);
 		$this->assertSame(['entry 119', 'entry 70'], [$window['entries'][0]->message, $window['entries'][49]->message]);
 		$this->assertSame(50, $window['scanned']);
 		$this->assertSame(50, $window['nextOffset']);
@@ -53,7 +51,7 @@ final class LogScannerTest extends TestCase {
 		$scanner = $this->scanner($log);
 
 		$first = $scanner->scan(self::filter(['min_level' => 3]), 0, 5);
-		$this->assertSame([[LogScanner::SCAN_LIMIT, 0]], $log->calls, 'one read of the window, then the page is cut');
+		$this->assertSame(['open'], $log->calls, 'one handle; stop after the requested matching page');
 		$this->assertSame(['entry 290', 'entry 280', 'entry 270', 'entry 260', 'entry 250'], array_column($first['entries'], 'message'));
 		$this->assertSame(50, $first['scanned']);
 		$this->assertSame(50, $first['nextOffset']);
@@ -69,7 +67,7 @@ final class LogScannerTest extends TestCase {
 		$scanner = $this->scanner($log);
 
 		$window = $scanner->scan(self::filter(['app' => 'workflow_ocr']), 0, 50);
-		$this->assertSame([[LogScanner::SCAN_LIMIT, 0]], $log->calls);
+		$this->assertSame(['open'], $log->calls);
 		$this->assertSame([], $window['entries']);
 		$this->assertSame(LogScanner::SCAN_LIMIT, $window['scanned']);
 		$this->assertTrue($window['truncated']);
@@ -133,9 +131,18 @@ final class LogScannerTest extends TestCase {
 	public function testWithoutALimitTheWholeWindowIsCollected(): void {
 		$log = new FakeFileLog(FakeFileLog::lines(30, static fn (int $i): array => []));
 		$window = $this->scanner($log)->scan(self::filter(), 0, null);
-		$this->assertSame([[LogScanner::SCAN_LIMIT, 0]], $log->calls);
+		$this->assertSame(['open'], $log->calls);
 		$this->assertCount(30, $window['entries']);
 		$this->assertNull($window['nextOffset']);
+	}
+
+	/** @return void An unset loglevel uses the official warning threshold, rather than admitting debug entries. */
+	public function testTheDefaultLogLevelIsWarning(): void {
+		$config = $this->createMock(\OCP\IConfig::class);
+		$config->expects(self::once())->method('getSystemValueInt')->with('loglevel', 2)
+			->willReturnCallback(static fn (string $key, int $default): int => $default);
+		$reader = new LogReader($this->createMock(ILogFactory::class), $config);
+		self::assertSame(2, $reader->minimumLevel());
 	}
 
 	/** syslog, errorlog and systemd writers keep no file to read back. */
@@ -144,22 +151,32 @@ final class LogScannerTest extends TestCase {
 		$this->scanner($this->createMock(IWriter::class))->scan(self::filter(), 0, 10);
 	}
 
-	public function testAFailureOfTheCoreReaderIsARefusalWithoutDetails(): void {
-		$log = new class([]) extends \ArrayObject implements IWriter, \OCP\Log\IFileBased {
-			public function write(string $app, $message, int $level) {
-			}
-			public function getLogFilePath(): string {
-				return '/secret/path/nextcloud.log';
-			}
-			public function getEntries(int $limit = 50, int $offset = 0): array {
-				throw new \RuntimeException('fopen(/secret/path/nextcloud.log): failed');
-			}
-		};
+	/** @return void A not-yet-created log is an empty ended scan, as in the official reader. */
+	public function testAMissingLogIsAnEmptyEndedScan(): void {
+		$path = tempnam(sys_get_temp_dir(), 'mcp-it-missing-log-');
+		unlink($path);
+		$scan = $this->scanner(new OfficialFileLog($path, 2))->scan(self::filter(), 0, 10);
+		self::assertSame([], $scan['entries']);
+		self::assertSame(0, $scan['scanned']);
+		self::assertNull($scan['nextOffset']);
+		self::assertFalse($scan['truncated']);
+		self::assertFalse($scan['timeBudgetReached']);
+	}
+
+	/** @return void A directory remains refused as a non-regular log, independent of the process user. */
+	public function testANonRegularFileIsARefusalWithoutDetails(): void {
+		$path = tempnam(sys_get_temp_dir(), 'mcp-it-private-log-');
+		unlink($path);
+		mkdir($path);
 		try {
-			$this->scanner($log)->scan(self::filter(), 0, 10);
-			$this->fail('the failure must become a refusal');
-		} catch (ToolFailure $e) {
-			$this->assertStringNotContainsString('/secret', $e->getMessage());
+			try {
+				$this->scanner(new OfficialFileLog($path, 2))->scan(self::filter(), 0, 10);
+				$this->fail('A directory must remain refused as a non-regular log');
+			} catch (ToolFailure $error) {
+				self::assertStringNotContainsString($path, $error->getMessage());
+			}
+		} finally {
+			rmdir($path);
 		}
 	}
 
@@ -199,8 +216,8 @@ final class LogScannerTest extends TestCase {
 	}
 
 	/**
-	 * One getEntries per answer, whatever the filters: each call reopens the file from its end, so a second read
-	 * would cost the walk again and, with the log growing in between, return an entry twice.
+	 * One current-file handle per answer, whatever the filters: reopening from the end
+	 * would cost the walk again and could repeat entries if the file grew.
 	 */
 	public function testEveryAnswerReadsTheLogOnceAndNeverRepeatsAnEntry(): void {
 		// Sparse matches over a log larger than one block of the old reader, which read 500 entries and then the next.
@@ -223,6 +240,6 @@ final class LogScannerTest extends TestCase {
 	public function testAHighOffsetReadsOnlyWhatIsLeftOfTheBudget(): void {
 		$log = new FakeFileLog(FakeFileLog::lines(10, static fn (int $i): array => []));
 		$this->scanner($log)->scan(self::filter(['app' => 'x']), LogScanner::READ_BUDGET - 2000, 50);
-		$this->assertSame([[2000, LogScanner::READ_BUDGET - 2000]], $log->calls);
+		$this->assertSame(['open'], $log->calls);
 	}
 }

@@ -209,8 +209,7 @@ final class LogsCharacterizationTest extends TestCase {
 		}
 		$groups = $this->createMock(IGroupManager::class);
 		$groups->method('getBackends')->willReturn([new \OCA\Mcp\Tests\Unit\ArrayGroupBackend(static fn (): array => ['admin' => ['root']])]);
-		$factory = $this->createMock(ILogFactory::class);
-		$factory->method('get')->willReturn($this->brokenWriter ?? new FakeFileLog($this->encodedLines()));
+		$reader = FileLogFixture::reader($this, $this->brokenWriter ?? new FakeFileLog($this->encodedLines()));
 		$dispatcher = $this->createMock(IEventDispatcher::class);
 		$dispatcher->method('dispatchTyped')->willReturnCallback(function (Event $event): void {
 			if ($this->dispatcherDown) {
@@ -229,7 +228,7 @@ final class LogsCharacterizationTest extends TestCase {
 		$access = InMemoryConfig::logsAccess($this, $config, $groups, $mapper, new \OCA\Mcp\Tests\Unit\InMemoryLocks());
 		$guard = new VisibilityGuard($config, $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class));
 		$fileNames = new LogFileNames($this->appConfig->worker($this), $guard);
-		$scanner = new LogScanner(new LogReader($factory));
+		$scanner = new LogScanner($reader);
 		$audit = new LogAudit($dispatcher, $logger);
 		if ((new \ReflectionMethod(LogsModule::class, '__construct'))->getNumberOfParameters() === 5) {
 			return new LogsModule($access, $scanner, $audit, $config, $fileNames);

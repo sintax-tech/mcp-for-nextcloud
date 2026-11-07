@@ -474,6 +474,37 @@ final class VersionToolsTest extends TestCase {
 		$this->assertSame("# Ata\nolá", $this->tree->nodes['/alice/files' . $out['backup']]['content']);
 	}
 
+	/**
+	 * Without a lock provider (Nextcloud 32 and 33 images) the core rollback cannot bring that version back:
+	 * Storage::rollback() copies the file to files_versions/<path>.v<mtime> without creating the folders, and fails for
+	 * a file whose folder has no stored version yet. That version is written through the file there too.
+	 */
+	public function testTheListedCurrentVersionIsWrittenThroughTheFileWithoutALockProvider(): void {
+		$locks = new FakeLockManager();
+		$locks->available = false;
+		$current = (string)$this->file()->getMTime();
+		$this->manager->versions[0] = new FakeVersion($current, (int)$current, 9, 'text/markdown', 'ata.md');
+		$this->manager->versions[0]->noStoredFile = true;
+		$out = $this->lockedTools($locks)->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', $current, 'alice');
+		$this->assertSame($current, $out['version']);
+		$this->assertNotContains('rollback', $this->manager->ops);
+		$this->assertContains('write ' . self::FILE, $this->tree->ops);
+		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
+		$this->assertSame("# Ata\nolá", $this->tree->nodes['/alice/files' . $out['backup']]['content']);
+	}
+
+	/** The same without LockAwareWrite wired at all: the write goes through the file without a lock check. */
+	public function testTheListedCurrentVersionIsWrittenThroughTheFileWithoutLockAwareWrite(): void {
+		$current = (string)$this->file()->getMTime();
+		$this->manager->versions[0] = new FakeVersion($current, (int)$current, 9, 'text/markdown', 'ata.md');
+		$this->manager->versions[0]->noStoredFile = true;
+		$out = $this->tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', $current, 'alice');
+		$this->assertNotContains('rollback', $this->manager->ops);
+		$this->assertContains('write ' . self::FILE, $this->tree->ops);
+		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
+		$this->assertSame("# Ata\nolá", $this->tree->nodes['/alice/files' . $out['backup']]['content']);
+	}
+
 	/** An older version whose stored file disappeared after the lookup is still refused, and the refusal names the backup already taken. */
 	public function testAStoredVersionGoneAfterTheBackupIsRefusedAndNamesTheCopy(): void {
 		$this->manager->versions[1]->noStoredFile = true;

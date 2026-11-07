@@ -49,6 +49,31 @@ final class MailDraftHtmlSourceCheckTest extends TestCase {
 		yield 'element void only in HTML5' => ['<source><p>x</p></source><p>end</p>'];
 		yield 'foreign content' => ['<svg><p>x</p></svg><p>ok</p>'];
 		yield 'loose less-than sign' => ['<p>A < B</p>'];
+		yield 'element outside the known list' => ['<bgsound>A</bgsound><p>B</p>'];
+		yield 'HTML5-only element' => ['<section><p>A</p></section>'];
+		yield 'self-closing non-void element' => ['<ul><li/>one<li>two</li></ul>'];
+		yield 'end tag of a void element' => ['<p>a</br>b</p>'];
+		yield 'decoded angle bracket in a value' => ['<p><a href="https://a.test/?x=&lt;script&gt;">ok</a></p>'];
+		yield 'content after body' => ['<body><p>first</p></body><p>second</p>'];
+		yield 'content after html' => ['<html><body><p>first</p></body></html><p>second</p>'];
+		yield 'text after body inside a paragraph' => ['<body><p>x</body>y</p><p>end</p>'];
+		yield 'comment after body' => ['<body><p>x</p></body><!-- y -->'];
+		yield 'second body' => ['<body><p>a</p><body><p>b</p>'];
+		yield 'second html' => ['<html><p>a</p><html><p>b</p></html>'];
+		yield 'head after body' => ['<body><p>a</p></body><head><title>t</title></head>'];
+		yield 'head after content' => ['<p>a</p><head><title>t</title></head>'];
+		yield 'body element inside head' => ['<head><p>x</p></head><p>ok</p>'];
+		yield 'head without end tag' => ['<head><title>t</title><p>ok</p>'];
+		yield 'html after content' => ['<p>a</p><html><p>b</p></html>'];
+	}
+
+	/** @return void */
+	public function testOrderedWrappersVoidSelfClosingAndKnownRemovedElementsStillPass(): void {
+		$sanitizer = $this->sanitizer();
+		$result = $sanitizer->sanitize("<!-- c --><html><head><meta charset=\"utf-8\"/><title>t</title><style>p{}</style></head>\n<body><p>a<br/>b</p><hr /><p>c</p></body></html>\n");
+		$this->assertSame('<p>a<br>b</p><hr><p>c</p>', $result['body']);
+		$this->assertSame(['subtree' => 1, 'comment' => 1, 'wrapper' => 2], array_filter($result['removed']));
+		$this->assertSame('<p>ok</p>', $sanitizer->sanitize('<script>x</script><img src="x"/><p>ok</p>')['body']);
 	}
 
 	/** @param string $source refused source @return void */

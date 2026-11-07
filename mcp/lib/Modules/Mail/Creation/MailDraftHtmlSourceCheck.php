@@ -13,8 +13,9 @@ use OCA\Mcp\Modules\Mail\Presentation\MailDraftMessages;
  * Accepts only source syntax that legacy libxml and libxml 2.14+ (HTML5 tokenizer) parse alike, refusing the rest.
  *
  * The check does not emulate either parser. It reads the whole source, including comments and discarded subtrees,
- * as a sequence of well-formed comments, conditional delimiters, plain start and end tags, and text without "<";
- * anything else is refused, because the two parsers recover it differently and often silently.
+ * as a sequence of well-formed comments, conditional delimiters, plain start and end tags of known elements, and
+ * text without "<", in a wrapper order both parsers keep (MailDraftHtmlStructure); anything else is refused,
+ * because the two parsers recover it differently and often silently.
  */
 final class MailDraftHtmlSourceCheck {
 	/** Attribute name without characters the parsers read differently. */
@@ -25,13 +26,16 @@ final class MailDraftHtmlSourceCheck {
 	private const ATTRIBUTE = self::NAME . '(?:[\t\n ]*=[\t\n ]*' . self::VALUE . ')?';
 	/** One token at the current "<": comment, conditional delimiter, start tag or end tag; nothing else starts with "<". */
 	private const TOKEN = '~\G(?:<!--(?!-?>)(?:(?!--)[\s\S])*-->|<!\[(?:if\b[^\]>]*|endif)\]>'
-		. '|<([a-zA-Z][a-zA-Z0-9]*)((?:[\t\n ]+' . self::ATTRIBUTE . ')*)[\t\n ]*/?>|</[a-zA-Z][a-zA-Z0-9]*[\t\n ]*>)~';
+		. '|<([a-zA-Z][a-zA-Z0-9]*)((?:[\t\n ]+' . self::ATTRIBUTE . ')*)[\t\n ]*(/?)>|</([a-zA-Z][a-zA-Z0-9]*)[\t\n ]*>)~';
 	/**
-	 * Elements the parsers build differently: raw text until end of input, foreign content, and elements void only
-	 * in HTML5, which legacy libxml keeps open around the following content.
+	 * Elements outside the saved vocabulary that both parsers build alike: the document wrappers and head elements,
+	 * the subtrees the filter removes, and two HTML 4 wrappers the filter unwraps. Any other element is refused,
+	 * so obsolete, HTML5-only, foreign and unknown elements never reach parsers that build them differently.
 	 */
-	private const DIVERGENT = ['plaintext', 'xmp', 'listing', 'noembed', 'noframes', 'svg', 'math', 'embed', 'source', 'track',
-		'wbr', 'keygen'];
+	private const KNOWN = ['html', 'head', 'body', 'meta', 'title', 'base', 'link', 'script', 'style', 'iframe', 'object', 'form',
+		'template', 'noscript', 'textarea', 'img', 'font', 'center'];
+	/** Known elements without content or end tag; only these may end with "/>". */
+	private const VOID = ['br', 'hr', 'img', 'meta', 'link', 'base'];
 	/** Raw text or escapable raw text in at least one parser: content up to the end tag must not contain "<". */
 	private const RAW = ['script', 'style', 'title', 'textarea', 'iframe', 'noscript'];
 	/** Controls each parser handles differently in source text: C0 other than tab and line feed, and noncharacters. */
@@ -69,44 +73,85 @@ final class MailDraftHtmlSourceCheck {
 		if (preg_match(self::CONTROLS, $html) !== 0) {
 			throw new ToolFailure(MailDraftMessages::htmlInvalid());
 		}
+		$structure = new MailDraftHtmlStructure();
 		$out = '';
 		$offset = 0;
 		while (($next = strpos($html, '<', $offset)) !== false) {
-			$out .= MailDraftHtmlReferences::text(substr($html, $offset, $next - $offset));
+			$out .= self::text($structure, substr($html, $offset, $next - $offset));
 			if (preg_match(self::TOKEN, $html, $token, 0, $next) !== 1) {
 				throw new ToolFailure(MailDraftMessages::htmlInvalid());
 			}
 			$offset = $next + strlen($token[0]);
-			if (!isset($token[1]) || $token[1] === '') {
+			$name = strtolower(($token[1] ?? '') . ($token[4] ?? ''));
+			if ($name === '') {
+				$structure->comment();
 				$out .= $token[0];
 				continue;
 			}
+			self::known($name, ($token[4] ?? '') !== '', ($token[3] ?? '') !== '');
+			if (($token[4] ?? '') !== '') {
+				$structure->end($name);
+				$out .= $token[0];
+				continue;
+			}
+			$structure->start($name, in_array($name, self::VOID, true));
 			$out .= self::startTag($token[0], $token[1], $token[2]);
-			if (in_array(strtolower($token[1]), self::RAW, true)) {
+			if (in_array($name, self::RAW, true)) {
 				// Each parser ends raw text differently around "<"; plain text up to the end tag reads alike.
 				if (preg_match('~\G([^<]*)(</' . $token[1] . '[\t\n ]*>)~i', $html, $raw, 0, $offset) !== 1) {
 					throw new ToolFailure(MailDraftMessages::htmlInvalid());
 				}
+				$structure->end($name);
 				$out .= MailDraftHtmlReferences::text($raw[1]) . $raw[2];
 				$offset += strlen($raw[0]);
 			}
 		}
-		return $out . MailDraftHtmlReferences::text(substr($html, $offset));
+		$out .= self::text($structure, substr($html, $offset));
+		$structure->finish();
+		return $out;
 	}
 
 	/**
-	 * Refuses a divergent element or a repeated attribute name, compared case-insensitively, and checks every value.
+	 * Escapes and records text between tokens.
+	 *
+	 * @param MailDraftHtmlStructure $structure wrapper order of this source
+	 * @param string $text text without "<"
+	 * @return string the text to parse
+	 * @throws ToolFailure for misplaced text or an ambiguous reference
+	 */
+	private static function text(MailDraftHtmlStructure $structure, string $text): string {
+		$structure->text($text);
+		return MailDraftHtmlReferences::text($text);
+	}
+
+	/**
+	 * Accepts a known element, "/>" only on a void element, and an end tag only on an element with content.
+	 *
+	 * @param string $name lowercase element name
+	 * @param bool $end whether the token is an end tag
+	 * @param bool $selfClosing whether the start tag ends with "/>"
+	 * @return void
+	 * @throws ToolFailure for an unknown element or a misplaced "/>" or end tag
+	 */
+	private static function known(string $name, bool $end, bool $selfClosing): void {
+		$void = in_array($name, self::VOID, true);
+		if ((!in_array($name, MailDraftHtmlAllow::ELEMENTS, true) && !in_array($name, self::KNOWN, true))
+			|| ($end && $void) || ($selfClosing && !$void)) {
+			throw new ToolFailure(MailDraftMessages::htmlInvalid());
+		}
+	}
+
+	/**
+	 * Refuses a repeated attribute name, compared case-insensitively, and a value that holds "<" or ">" once decoded,
+	 * which the parsers serialize differently; checks every reference.
 	 *
 	 * @param string $tag whole start tag
 	 * @param string $name element name
 	 * @param string $attributes attribute list, each preceded by whitespace
 	 * @return string the tag to parse
-	 * @throws ToolFailure for a divergent element, a duplicate attribute or an ambiguous reference in a value
+	 * @throws ToolFailure for a duplicate attribute, an angle bracket or an ambiguous reference in a value
 	 */
 	private static function startTag(string $tag, string $name, string $attributes): string {
-		if (in_array(strtolower($name), self::DIVERGENT, true)) {
-			throw new ToolFailure(MailDraftMessages::htmlInvalid());
-		}
 		preg_match_all('~[\t\n ]+(' . self::NAME . ')(?:[\t\n ]*=[\t\n ]*(' . self::VALUE . '))?~', $attributes, $found, PREG_SET_ORDER);
 		$seen = [];
 		$out = '<' . $name;
@@ -118,8 +163,11 @@ final class MailDraftHtmlSourceCheck {
 			$seen[$key] = true;
 			$value = $attribute[2] ?? '';
 			$quote = $value !== '' && ($value[0] === '"' || $value[0] === "'") ? $value[0] : '';
-			$inner = $quote === '' ? $value : substr($value, 1, -1);
-			$out .= ' ' . $attribute[1] . ($value !== '' ? '=' . $quote . MailDraftHtmlReferences::text($inner) . $quote : '');
+			$inner = MailDraftHtmlReferences::text($quote === '' ? $value : substr($value, 1, -1));
+			if (strpbrk(html_entity_decode($inner, ENT_QUOTES | ENT_XHTML, 'UTF-8'), '<>') !== false) {
+				throw new ToolFailure(MailDraftMessages::htmlInvalid());
+			}
+			$out .= ' ' . $attribute[1] . ($value !== '' ? '=' . $quote . $inner . $quote : '');
 		}
 		return $out . substr($tag, strlen('<' . $name . $attributes));
 	}

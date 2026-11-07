@@ -18,7 +18,7 @@ use PHPUnit\Framework\TestCase;
  *
  * Each source either is refused or saves the same body and the same report, except the paragraph legacy parsers
  * insert around bare text (bodyHtml5). The fixture holds the 1.3.1 security review reproductions; refusedByEngine
- * marks sources only the real engine's restructuring refuses, on both parsers alike.
+ * marks sources only the real engine's restructuring refuses, and bodyEngine a body it reorders, on both parsers.
  */
 final class MailDraftHtmlParityTest extends TestCase {
 	/** @return iterable<string,array{array<string,mixed>}> fixture rows by position */
@@ -42,9 +42,23 @@ final class MailDraftHtmlParityTest extends TestCase {
 			return;
 		}
 		$this->assertFalse($refused, 'accepted: ' . json_encode($row['input'], JSON_UNESCAPED_UNICODE));
-		$this->assertSame(MailDraftHtmlCorpus::body($row), $result['body']);
+		$this->assertSame($this->body($row, $real), $result['body']);
 		$this->assertSame($row['removed'], array_filter($result['removed']));
 		$this->assertSame($row['removedUrls'] ?? [], $result['removedUrls']);
+	}
+
+	/**
+	 * The real engine may reorder table sections (tfoot before tbody) without changing the inventory or the report.
+	 *
+	 * @param array<string,mixed> $row expected outcome
+	 * @param bool $real whether the real engine runs
+	 * @return string expected saved body on this libxml and engine
+	 */
+	private function body(array $row, bool $real): string {
+		if (!$real || !isset($row['bodyEngine'])) {
+			return MailDraftHtmlCorpus::body($row);
+		}
+		return LIBXML_VERSION >= MailDraftHtmlCorpus::HTML5_PARSER && isset($row['bodyEngineHtml5']) ? $row['bodyEngineHtml5'] : $row['bodyEngine'];
 	}
 
 	/** @return bool whether MCP_MAIL_HTML_LIBRARY names the pinned real engine */

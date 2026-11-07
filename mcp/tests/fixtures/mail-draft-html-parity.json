@@ -542,10 +542,7 @@
     },
     {
         "input": "<p title=\"a>b & c\">ok</p>",
-        "body": "<p>ok</p>",
-        "removed": {
-            "attribute": 1
-        }
+        "refused": true
     },
     {
         "input": "<p title=\"a>b & c\" TITLE=two>ok</p>",
@@ -1205,10 +1202,7 @@
     },
     {
         "input": "<p title=\"a & b > c\">ok</p>",
-        "body": "<p>ok</p>",
-        "removed": {
-            "attribute": 1
-        }
+        "refused": true
     },
     {
         "input": "<p title=\"a>b\" title=\"c\">ok</p>",
@@ -1256,12 +1250,7 @@
     },
     {
         "input": "<a title=\"a & b > c\">ok</a>",
-        "body": "<p>ok</p>",
-        "bodyHtml5": "ok",
-        "removed": {
-            "attribute": 1,
-            "unwrapped-element": 1
-        }
+        "refused": true
     },
     {
         "input": "<a title=\"a>b\" title=\"c\">ok</a>",
@@ -1309,10 +1298,7 @@
     },
     {
         "input": "<div title=\"a & b > c\">ok</div>",
-        "body": "<div>ok</div>",
-        "removed": {
-            "attribute": 1
-        }
+        "refused": true
     },
     {
         "input": "<div title=\"a>b\" title=\"c\">ok</div>",
@@ -1360,10 +1346,7 @@
     },
     {
         "input": "<span title=\"a & b > c\">ok</span>",
-        "body": "<span>ok</span>",
-        "removed": {
-            "attribute": 1
-        }
+        "refused": true
     },
     {
         "input": "<span title=\"a>b\" title=\"c\">ok</span>",
@@ -1411,10 +1394,7 @@
     },
     {
         "input": "<pre title=\"a & b > c\">ok</pre>",
-        "body": "<pre>ok</pre>",
-        "removed": {
-            "attribute": 1
-        }
+        "refused": true
     },
     {
         "input": "<pre title=\"a>b\" title=\"c\">ok</pre>",
@@ -1462,10 +1442,7 @@
     },
     {
         "input": "<img x=\"</img>\"><p>A &copy B &Tab; &amp</p><p>end</p>",
-        "body": "<p>A &amp;copy B &amp;Tab; &amp;amp</p><p>end</p>",
-        "removed": {
-            "subtree": 1
-        }
+        "refused": true
     },
     {
         "input": "<img x=\"</img>\"><p>A&#106B</p><p>end</p>",
@@ -1951,18 +1928,11 @@
     },
     {
         "input": "<select><option>a</select><p>ok</p>",
-        "body": "<p>a</p><p>ok</p>",
-        "bodyHtml5": "a<p>ok</p>",
-        "removed": {
-            "unknown-tag": 2
-        }
+        "refused": true
     },
     {
         "input": "<p>ok</p><frameset>",
-        "body": "<p>ok</p>",
-        "removed": {
-            "unknown-tag": 1
-        }
+        "refused": true
     },
     {
         "input": "<object data=x><p>fallback</p></object><p>ok</p>",
@@ -1998,18 +1968,11 @@
     },
     {
         "input": "<p>a<input>b</p>",
-        "body": "<p>ab</p>",
-        "removed": {
-            "unknown-tag": 1
-        }
+        "refused": true
     },
     {
         "input": "<button>b</button><p>ok</p>",
-        "body": "<p>b</p><p>ok</p>",
-        "bodyHtml5": "b<p>ok</p>",
-        "removed": {
-            "unknown-tag": 1
-        }
+        "refused": true
     },
     {
         "input": "<p>a<wbr>b</p>",
@@ -2024,5 +1987,6924 @@
         "input": "<p>café — 😀</p>",
         "body": "<p>café — 😀</p>",
         "removed": {}
+    },
+    {
+        "input": "<p>Olá <strong>Ana</strong> &amp; equipe,</p><p>Veja <a href=\"https://example.com/?a=1&b=2\">o relatório</a>.</p>",
+        "body": "<p>Olá <strong>Ana</strong> &amp; equipe,</p><p>Veja <a href=\"https://example.com/?a=1&amp;b=2\">o relatório</a>.</p>",
+        "removed": {}
+    },
+    {
+        "input": "<ul><li>Primeiro</li><li><b>Segundo</b><br>continuação</li></ul><hr><ol><li>A</li><li>B</li></ol>",
+        "body": "<ul><li>Primeiro</li><li><b>Segundo</b><br>continuação</li></ul><hr><ol><li>A</li><li>B</li></ol>",
+        "removed": {}
+    },
+    {
+        "input": "<table><thead><tr><th>Produto</th><th>Valor</th></tr></thead><tbody><tr><td colspan=\"1\">A</td><td rowspan=\"2\">R$ 10</td></tr><tr><td>B</td></tr></tbody><tfoot><tr><td colspan=\"2\">Total</td></tr></tfoot></table>",
+        "body": "<table><thead><tr><th>Produto</th><th>Valor</th></tr></thead><tbody><tr><td colspan=\"1\">A</td><td rowspan=\"2\">R$ 10</td></tr><tr><td>B</td></tr></tbody><tfoot><tr><td colspan=\"2\">Total</td></tr></tfoot></table>",
+        "removed": {},
+        "bodyEngine": "<table><thead><tr><th>Produto</th><th>Valor</th></tr></thead><tfoot><tr><td colspan=\"2\">Total</td></tr></tfoot><tbody><tr><td colspan=\"1\">A</td><td rowspan=\"2\">R$ 10</td></tr><tr><td>B</td></tr></tbody></table>"
+    },
+    {
+        "input": "<blockquote><p>Citação <em>importante</em></p></blockquote><pre><code>x &lt; y &amp;&amp; z &gt; 0</code></pre>",
+        "body": "<blockquote><p>Citação <em>importante</em></p></blockquote><pre><code>x &lt; y &amp;&amp; z &gt; 0</code></pre>",
+        "removed": {}
+    },
+    {
+        "input": "<p title=\"Info > detalhe\" class=\"body\" style=\"color:red\" lang=\"pt-BR\">A&nbsp;B &copy; 2026 &euro; &quot;texto&quot; &apos;x&apos;</p>",
+        "refused": true
+    },
+    {
+        "input": "<div><p><a href=\"mailto:ana@example.com?subject=A%20B\">Enviar</a></p><br /><hr /></div>",
+        "body": "<div><p><a href=\"mailto:ana@example.com?subject=A%20B\">Enviar</a></p><br><hr></div>",
+        "removed": {}
+    },
+    {
+        "input": "<p>Comparação: x &lt; y; a &lt;b</p>",
+        "body": "<p>Comparação: x &lt; y; a &lt;b</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>Comparação: x < y; a <b</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>x < y</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>a <b</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>a <b>c</b></p>",
+        "body": "<p>a <b>c</b></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>before</p></p><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<p/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>text</p><p>end</p>",
+        "body": "<p>text</p><p>end</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p title=\"a > b\">text</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p title=\"a < b\">text</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p title=\"</p>\">text</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></b><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<b/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<b />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<b>text</b><p>end</p>",
+        "body": "<b>text</b><p>end</p>",
+        "removed": {}
+    },
+    {
+        "input": "<b title=\"a > b\">text</b><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<b title=\"a < b\">text</b><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<b title=\"</b>\">text</b><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></strong><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<strong/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<strong />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<strong>text</strong><p>end</p>",
+        "body": "<strong>text</strong><p>end</p>",
+        "removed": {}
+    },
+    {
+        "input": "<strong title=\"a > b\">text</strong><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<strong title=\"a < b\">text</strong><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<strong title=\"</strong>\">text</strong><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></ul><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<ul/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<ul />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<ul>text</ul><p>end</p>",
+        "body": "<ul>text</ul><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<ul title=\"a > b\">text</ul><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<ul title=\"a < b\">text</ul><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<ul title=\"</ul>\">text</ul><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></li><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<li/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<li />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<li>text</li><p>end</p>",
+        "body": "<li>text</li><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<li title=\"a > b\">text</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li title=\"a < b\">text</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li title=\"</li>\">text</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></ol><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<ol/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<ol />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<ol>text</ol><p>end</p>",
+        "body": "<ol>text</ol><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<ol title=\"a > b\">text</ol><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<ol title=\"a < b\">text</ol><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<ol title=\"</ol>\">text</ol><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></table><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<table/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<table />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<table>text</table><p>end</p>",
+        "body": "<table>text</table><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<table title=\"a > b\">text</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table title=\"a < b\">text</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table title=\"</table>\">text</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></tr><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr>text</tr><p>end</p>",
+        "body": "<tr>text</tr><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<tr title=\"a > b\">text</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr title=\"a < b\">text</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr title=\"</tr>\">text</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></td><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<td/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<td />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<td>text</td><p>end</p>",
+        "body": "<td>text</td><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<td title=\"a > b\">text</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td title=\"a < b\">text</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td title=\"</td>\">text</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></th><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<th/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<th />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<th>text</th><p>end</p>",
+        "body": "<th>text</th><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<th title=\"a > b\">text</th><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<th title=\"a < b\">text</th><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<th title=\"</th>\">text</th><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></thead><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<thead/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<thead />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<thead>text</thead><p>end</p>",
+        "body": "<thead>text</thead><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<thead title=\"a > b\">text</thead><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<thead title=\"a < b\">text</thead><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<thead title=\"</thead>\">text</thead><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></tbody><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<tbody/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<tbody />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<tbody>text</tbody><p>end</p>",
+        "body": "<tbody>text</tbody><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<tbody title=\"a > b\">text</tbody><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tbody title=\"a < b\">text</tbody><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tbody title=\"</tbody>\">text</tbody><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></tfoot><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<tfoot/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<tfoot />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<tfoot>text</tfoot><p>end</p>",
+        "body": "<tfoot>text</tfoot><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<tfoot title=\"a > b\">text</tfoot><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tfoot title=\"a < b\">text</tfoot><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tfoot title=\"</tfoot>\">text</tfoot><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></a><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<a/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<a />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<a>text</a><p>end</p>",
+        "body": "<p>text</p><p>end</p>",
+        "bodyHtml5": "text<p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        },
+        "bodyEngineHtml5": "text<p>end</p>"
+    },
+    {
+        "input": "<a title=\"a > b\">text</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a title=\"a < b\">text</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a title=\"</a>\">text</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></span><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<span/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<span />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<span>text</span><p>end</p>",
+        "body": "<span>text</span><p>end</p>",
+        "removed": {}
+    },
+    {
+        "input": "<span title=\"a > b\">text</span><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<span title=\"a < b\">text</span><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<span title=\"</span>\">text</span><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></div><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<div/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<div />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<div>text</div><p>end</p>",
+        "body": "<div>text</div><p>end</p>",
+        "removed": {}
+    },
+    {
+        "input": "<div title=\"a > b\">text</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div title=\"a < b\">text</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div title=\"</div>\">text</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></pre><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<pre/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<pre />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<pre>text</pre><p>end</p>",
+        "body": "<pre>text</pre><p>end</p>",
+        "removed": {}
+    },
+    {
+        "input": "<pre title=\"a > b\">text</pre><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<pre title=\"a < b\">text</pre><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<pre title=\"</pre>\">text</pre><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></code><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<code/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<code />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<code>text</code><p>end</p>",
+        "body": "<code>text</code><p>end</p>",
+        "removed": {}
+    },
+    {
+        "input": "<code title=\"a > b\">text</code><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<code title=\"a < b\">text</code><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<code title=\"</code>\">text</code><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></br><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<br />text<p>ok</p>",
+        "body": "<br>text<p>ok</p>",
+        "removed": {}
+    },
+    {
+        "input": "<br>text</br><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<br title=\"a > b\">text</br><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<br title=\"a < b\">text</br><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<br title=\"</br>\">text</br><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></hr><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<hr/><p>ok</p>",
+        "body": "<hr><p>ok</p>",
+        "removed": {}
+    },
+    {
+        "input": "<hr />text<p>ok</p>",
+        "body": "<hr>text<p>ok</p>",
+        "removed": {}
+    },
+    {
+        "input": "<hr>text</hr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<hr title=\"a > b\">text</hr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<hr title=\"a < b\">text</hr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<hr title=\"</hr>\">text</hr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></img><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<img/><p>ok</p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<img />text<p>ok</p>",
+        "body": "<p>text</p><p>ok</p>",
+        "bodyHtml5": "text<p>ok</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "bodyEngineHtml5": "text<p>ok</p>"
+    },
+    {
+        "input": "<img>text</img><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<img title=\"a > b\">text</img><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<img title=\"a < b\">text</img><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<img title=\"</img>\">text</img><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></input><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<input/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<input />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<input>text</input><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<input title=\"a > b\">text</input><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<input title=\"a < b\">text</input><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<input title=\"</input>\">text</input><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></meta><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<meta/><p>ok</p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<meta />text<p>ok</p>",
+        "body": "<p>text</p><p>ok</p>",
+        "bodyHtml5": "text<p>ok</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "bodyEngineHtml5": "text<p>ok</p>"
+    },
+    {
+        "input": "<meta>text</meta><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<meta title=\"a > b\">text</meta><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<meta title=\"a < b\">text</meta><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<meta title=\"</meta>\">text</meta><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></link><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<link/><p>ok</p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<link />text<p>ok</p>",
+        "body": "<p>text</p><p>ok</p>",
+        "bodyHtml5": "text<p>ok</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "bodyEngineHtml5": "text<p>ok</p>"
+    },
+    {
+        "input": "<link>text</link><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<link title=\"a > b\">text</link><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<link title=\"a < b\">text</link><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<link title=\"</link>\">text</link><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></base><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<base/><p>ok</p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<base />text<p>ok</p>",
+        "body": "<p>text</p><p>ok</p>",
+        "bodyHtml5": "text<p>ok</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "bodyEngineHtml5": "text<p>ok</p>"
+    },
+    {
+        "input": "<base>text</base><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<base title=\"a > b\">text</base><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<base title=\"a < b\">text</base><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<base title=\"</base>\">text</base><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></script><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<script/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<script />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<script>text</script><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<script title=\"a > b\">text</script><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<script title=\"a < b\">text</script><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<script title=\"</script>\">text</script><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></style><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<style/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<style />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<style>text</style><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<style title=\"a > b\">text</style><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<style title=\"a < b\">text</style><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<style title=\"</style>\">text</style><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></title><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<title/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<title />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<title>text</title><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<title title=\"a > b\">text</title><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<title title=\"a < b\">text</title><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<title title=\"</title>\">text</title><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></textarea><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<textarea/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<textarea />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<textarea>text</textarea><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<textarea title=\"a > b\">text</textarea><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<textarea title=\"a < b\">text</textarea><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<textarea title=\"</textarea>\">text</textarea><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></iframe><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<iframe/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<iframe />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<iframe>text</iframe><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<iframe title=\"a > b\">text</iframe><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<iframe title=\"a < b\">text</iframe><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<iframe title=\"</iframe>\">text</iframe><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></noscript><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<noscript/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<noscript />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<noscript>text</noscript><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<noscript title=\"a > b\">text</noscript><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<noscript title=\"a < b\">text</noscript><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<noscript title=\"</noscript>\">text</noscript><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></template><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<template/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<template />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<template>text</template><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<template title=\"a > b\">text</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template title=\"a < b\">text</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template title=\"</template>\">text</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></object><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<object/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<object />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<object>text</object><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<object title=\"a > b\">text</object><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<object title=\"a < b\">text</object><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<object title=\"</object>\">text</object><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></form><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<form/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<form />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<form>text</form><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<form title=\"a > b\">text</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form title=\"a < b\">text</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form title=\"</form>\">text</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></head><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<head/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<head />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<head>text</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head title=\"a > b\">text</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head title=\"a < b\">text</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head title=\"</head>\">text</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></body><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<body/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<body />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<body>text</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body title=\"a > b\">text</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body title=\"a < b\">text</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body title=\"</body>\">text</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></html><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<html/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<html />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<html>text</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html title=\"a > b\">text</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html title=\"a < b\">text</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html title=\"</html>\">text</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></svg><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<svg/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<svg />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<svg>text</svg><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<svg title=\"a > b\">text</svg><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<svg title=\"a < b\">text</svg><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<svg title=\"</svg>\">text</svg><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></math><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<math/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<math />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<math>text</math><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<math title=\"a > b\">text</math><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<math title=\"a < b\">text</math><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<math title=\"</math>\">text</math><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></source><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<source/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<source />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<source>text</source><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<source title=\"a > b\">text</source><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<source title=\"a < b\">text</source><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<source title=\"</source>\">text</source><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></embed><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<embed/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<embed />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<embed>text</embed><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<embed title=\"a > b\">text</embed><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<embed title=\"a < b\">text</embed><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<embed title=\"</embed>\">text</embed><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></select><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<select/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<select />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<select>text</select><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<select title=\"a > b\">text</select><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<select title=\"a < b\">text</select><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<select title=\"</select>\">text</select><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></option><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<option/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<option />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<option>text</option><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<option title=\"a > b\">text</option><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<option title=\"a < b\">text</option><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<option title=\"</option>\">text</option><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></button><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<button/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<button />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<button>text</button><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<button title=\"a > b\">text</button><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<button title=\"a < b\">text</button><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<button title=\"</button>\">text</button><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></frameset><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<frameset/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<frameset />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<frameset>text</frameset><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<frameset title=\"a > b\">text</frameset><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<frameset title=\"a < b\">text</frameset><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<frameset title=\"</frameset>\">text</frameset><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>before</p></frame><p>after</p>",
+        "refused": true
+    },
+    {
+        "input": "<frame/><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<frame />text<p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<frame>text</frame><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<frame title=\"a > b\">text</frame><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<frame title=\"a < b\">text</frame><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<frame title=\"</frame>\">text</frame><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p title=\"one\" TITLE=\"two\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a href = \"https://a.test/?a=1&b=2\">ok</a></p>",
+        "body": "<p><a href=\"https://a.test/?a=1&amp;b=2\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p title=\"a > b\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p\ttitle=\"one\"\tTITLE=\"two\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a\thref\t=\t\"https://a.test/?a=1&b=2\">ok</a></p>",
+        "body": "<p><a href=\"https://a.test/?a=1&amp;b=2\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p\ttitle=\"a > b\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p\ntitle=\"one\"\nTITLE=\"two\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a\nhref\n=\n\"https://a.test/?a=1&b=2\">ok</a></p>",
+        "body": "<p><a href=\"https://a.test/?a=1&amp;b=2\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p\ntitle=\"a > b\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p\rtitle=\"one\"\rTITLE=\"two\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a\rhref\r=\r\"https://a.test/?a=1&b=2\">ok</a></p>",
+        "body": "<p><a href=\"https://a.test/?a=1&amp;b=2\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p\rtitle=\"a > b\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p\r\ntitle=\"one\"\r\nTITLE=\"two\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a\r\nhref\r\n=\r\n\"https://a.test/?a=1&b=2\">ok</a></p>",
+        "body": "<p><a href=\"https://a.test/?a=1&amp;b=2\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p\r\ntitle=\"a > b\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\r\nB</p>",
+        "body": "<p>A\nB</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p\ftitle=\"one\"\fTITLE=\"two\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a\fhref\f=\f\"https://a.test/?a=1&b=2\">ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<p\ftitle=\"a > b\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p\u000btitle=\"one\"\u000bTITLE=\"two\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a\u000bhref\u000b=\u000b\"https://a.test/?a=1&b=2\">ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<p\u000btitle=\"a > b\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<ptitle=\"one\"TITLE=\"two\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><ahref=\"https://a.test/?a=1&b=2\">ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<ptitle=\"a > b\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p title=\"one\" TITLE=\"two\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a href = \"https://a.test/?a=1&b=2\">ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<p title=\"a > b\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A B</p>",
+        "body": "<p>A B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p title=\"one\" TITLE=\"two\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a href = \"https://a.test/?a=1&b=2\">ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<p title=\"a > b\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A B</p>",
+        "body": "<p>A B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p title=\"one\" TITLE=\"two\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a href = \"https://a.test/?a=1&b=2\">ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<p title=\"a > b\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A B</p>",
+        "body": "<p>A B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p​title=\"one\"​TITLE=\"two\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a​href​=​\"https://a.test/?a=1&b=2\">ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<p​title=\"a > b\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A​B</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<![CDATA[x]]><p>A & B</p>",
+        "refused": true
+    },
+    {
+        "input": "<![cdata[x]]><p>A & B</p>",
+        "refused": true
+    },
+    {
+        "input": "<![if IE]>x<![endif]><p>A & B</p>",
+        "body": "<p>x</p><p>A &amp; B</p>",
+        "bodyHtml5": "x<p>A &amp; B</p>",
+        "removed": {
+            "conditional": 2
+        },
+        "bodyEngineHtml5": "x<p>A &amp; B</p>"
+    },
+    {
+        "input": "<![IF IE]>x<![ENDIF]><p>A & B</p>",
+        "refused": true
+    },
+    {
+        "input": "<!--x--!><p>A & B</p>",
+        "refused": true
+    },
+    {
+        "input": "<!--x--><p>A & B</p>",
+        "body": "<p>A &amp; B</p>",
+        "removed": {
+            "comment": 1
+        }
+    },
+    {
+        "input": "<!-- x <!> --><p>A & B</p>",
+        "body": "<p>A &amp; B</p>",
+        "removed": {
+            "comment": 1
+        }
+    },
+    {
+        "input": "<!-- <![CDATA[ --><p>A & B</p>",
+        "body": "<p>A &amp; B</p>",
+        "removed": {
+            "comment": 1
+        }
+    },
+    {
+        "input": "<!----><p>A & B</p>",
+        "body": "<p>A &amp; B</p>",
+        "removed": {
+            "comment": 1
+        }
+    },
+    {
+        "input": "<!---><p>A & B</p>",
+        "refused": true
+    },
+    {
+        "input": "<!--><p>A & B</p>",
+        "refused": true
+    },
+    {
+        "input": "<!--x---><p>A & B</p>",
+        "refused": true
+    },
+    {
+        "input": "<!--x----><p>A & B</p>",
+        "refused": true
+    },
+    {
+        "input": "<!--x\n--><p>A & B</p>",
+        "body": "<p>A &amp; B</p>",
+        "removed": {
+            "comment": 1
+        }
+    },
+    {
+        "input": "<p>A&#x7f;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x80;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#129;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x81;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#130;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x82;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#131;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x83;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#132;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x84;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#133;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x85;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#134;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x86;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#135;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x87;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#136;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x88;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#137;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x89;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#138;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x8a;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#139;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x8b;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#140;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x8c;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#141;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x8d;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#142;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x8e;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#143;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x8f;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#144;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x90;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#145;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x91;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#146;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x92;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#147;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x93;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#148;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x94;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#149;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x95;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#150;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x96;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#151;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x97;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#152;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x98;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#153;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x99;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#154;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x9a;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#155;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x9b;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#156;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x9c;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#157;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x9d;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#158;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x9e;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A&#x9f;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#xa0;B</p>",
+        "body": "<p>A B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A­B</p>",
+        "body": "<p>A­B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&#173;B</p>",
+        "body": "<p>A­B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&#xad;B</p>",
+        "body": "<p>A­B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A﷏B</p>",
+        "body": "<p>A﷏B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&#64975;B</p>",
+        "body": "<p>A﷏B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&#xfdcf;B</p>",
+        "body": "<p>A﷏B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&#64976;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#xfdd0;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A﷯B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#65007;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#xfdef;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AﷰB</p>",
+        "body": "<p>AﷰB</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&#65008;B</p>",
+        "body": "<p>AﷰB</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&#xfdf0;B</p>",
+        "body": "<p>AﷰB</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A🿾B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#131070;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x1fffe;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A􏿽B</p>",
+        "body": "<p>A􏿽B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&#1114109;B</p>",
+        "body": "<p>A􏿽B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&#x10fffd;B</p>",
+        "body": "<p>A􏿽B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A􏿾B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#1114110;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#x10fffe;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&lt;script&gt;B</p>",
+        "body": "<p>A&lt;script&gt;B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=\"https://a.test/?x=&lt;script&gt;\">ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&amp;#x61;B</p>",
+        "body": "<p>A&amp;#x61;B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=\"https://a.test/?x=&amp;#x61;\">ok</a></p>",
+        "body": "<p><a href=\"https://a.test/?x=&amp;#x61;\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&NewLine;B</p>",
+        "body": "<p>A&amp;NewLine;B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=\"https://a.test/?x=&NewLine;\">ok</a></p>",
+        "body": "<p><a href=\"https://a.test/?x=&amp;NewLine;\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&Tab;B</p>",
+        "body": "<p>A&amp;Tab;B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=\"https://a.test/?x=&Tab;\">ok</a></p>",
+        "body": "<p><a href=\"https://a.test/?x=&amp;Tab;\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&colon;B</p>",
+        "body": "<p>A&amp;colon;B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=\"https://a.test/?x=&colon;\">ok</a></p>",
+        "body": "<p><a href=\"https://a.test/?x=&amp;colon;\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&AMP;B</p>",
+        "body": "<p>A&amp;AMP;B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=\"https://a.test/?x=&AMP;\">ok</a></p>",
+        "body": "<p><a href=\"https://a.test/?x=&amp;AMP;\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&notin;B</p>",
+        "body": "<p>A∉B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=\"https://a.test/?x=&notin;\">ok</a></p>",
+        "body": "<p><a href=\"https://a.test/?x=%E2%88%89\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&notit;B</p>",
+        "body": "<p>A&amp;notit;B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=\"https://a.test/?x=&notit;\">ok</a></p>",
+        "body": "<p><a href=\"https://a.test/?x=&amp;notit;\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&#00000000000000000000000000000000106;B</p>",
+        "body": "<p>AjB</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=\"https://a.test/?x=&#00000000000000000000000000000000106;\">ok</a></p>",
+        "body": "<p><a href=\"https://a.test/?x=j\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&#x000000000000000000000000000000006A;B</p>",
+        "body": "<p>AjB</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=\"https://a.test/?x=&#x000000000000000000000000000000006A;\">ok</a></p>",
+        "body": "<p><a href=\"https://a.test/?x=j\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&#x61script;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a href=\"https://a.test/?x=&#x61script;\">ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#106a;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a href=\"https://a.test/?x=&#106a;\">ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#X61;B</p>",
+        "body": "<p>AaB</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=\"https://a.test/?x=&#X61;\">ok</a></p>",
+        "body": "<p><a href=\"https://a.test/?x=a\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&#x;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a href=\"https://a.test/?x=&#x;\">ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a href=\"https://a.test/?x=&#;\">ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<script title=\"x > y\">a & b</SCRIPT><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<script title=\"x > y\">a &copy; b</SCRIPT><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<script title=\"x > y\">a &lt;b&gt; c</SCRIPT><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<script title=\"x > y\">a &#106; b</SCRIPT><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<script title=\"x > y\"><![CDATA[x]]></SCRIPT><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<script title=\"x > y\">x < y</SCRIPT><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<script title=\"x > y\">x </scriptx></SCRIPT><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<script title=\"x > y\">x <!-- hi --></SCRIPT><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<script title=\"x > y\">x < /script></SCRIPT><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<style title=\"x > y\">a & b</STYLE><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<style title=\"x > y\">a &copy; b</STYLE><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<style title=\"x > y\">a &lt;b&gt; c</STYLE><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<style title=\"x > y\">a &#106; b</STYLE><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<style title=\"x > y\"><![CDATA[x]]></STYLE><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<style title=\"x > y\">x < y</STYLE><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<style title=\"x > y\">x </scriptx></STYLE><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<style title=\"x > y\">x <!-- hi --></STYLE><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<style title=\"x > y\">x < /style></STYLE><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<title title=\"x > y\">a & b</TITLE><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<title title=\"x > y\">a &copy; b</TITLE><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<title title=\"x > y\">a &lt;b&gt; c</TITLE><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<title title=\"x > y\">a &#106; b</TITLE><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<title title=\"x > y\"><![CDATA[x]]></TITLE><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<title title=\"x > y\">x < y</TITLE><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<title title=\"x > y\">x </scriptx></TITLE><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<title title=\"x > y\">x <!-- hi --></TITLE><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<title title=\"x > y\">x < /title></TITLE><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<textarea title=\"x > y\">a & b</TEXTAREA><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<textarea title=\"x > y\">a &copy; b</TEXTAREA><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<textarea title=\"x > y\">a &lt;b&gt; c</TEXTAREA><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<textarea title=\"x > y\">a &#106; b</TEXTAREA><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<textarea title=\"x > y\"><![CDATA[x]]></TEXTAREA><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<textarea title=\"x > y\">x < y</TEXTAREA><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<textarea title=\"x > y\">x </scriptx></TEXTAREA><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<textarea title=\"x > y\">x <!-- hi --></TEXTAREA><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<textarea title=\"x > y\">x < /textarea></TEXTAREA><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<iframe title=\"x > y\">a & b</IFRAME><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<iframe title=\"x > y\">a &copy; b</IFRAME><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<iframe title=\"x > y\">a &lt;b&gt; c</IFRAME><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<iframe title=\"x > y\">a &#106; b</IFRAME><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<iframe title=\"x > y\"><![CDATA[x]]></IFRAME><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<iframe title=\"x > y\">x < y</IFRAME><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<iframe title=\"x > y\">x </scriptx></IFRAME><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<iframe title=\"x > y\">x <!-- hi --></IFRAME><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<iframe title=\"x > y\">x < /iframe></IFRAME><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<noscript title=\"x > y\">a & b</NOSCRIPT><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<noscript title=\"x > y\">a &copy; b</NOSCRIPT><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<noscript title=\"x > y\">a &lt;b&gt; c</NOSCRIPT><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<noscript title=\"x > y\">a &#106; b</NOSCRIPT><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<noscript title=\"x > y\"><![CDATA[x]]></NOSCRIPT><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<noscript title=\"x > y\">x < y</NOSCRIPT><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<noscript title=\"x > y\">x </scriptx></NOSCRIPT><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<noscript title=\"x > y\">x <!-- hi --></NOSCRIPT><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<noscript title=\"x > y\">x < /noscript></NOSCRIPT><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p />A</p><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><p>B</p>",
+        "body": "<p>A</p><p>B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><p>A</p></p><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><p><p>B</p></p><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<p title=\"a>b\"><p>A</p></p><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<b/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<b />A</b><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<b>A</b><p>B</p>",
+        "body": "<b>A</b><p>B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<b><p>A</p></b><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><b><p>B</p></b><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<b title=\"a>b\"><p>A</p></b><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<li/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<li />A</li><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<li>A</li><p>B</p>",
+        "body": "<li>A</li><p>B</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<li><p>A</p></li><p>B</p>",
+        "body": "<li><p>A</p></li><p>B</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<p>A</p><li><p>B</p></li><p>C</p>",
+        "body": "<p>A</p><li><p>B</p></li><p>C</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<li title=\"a>b\"><p>A</p></li><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<ul/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<ul />A</ul><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<ul>A</ul><p>B</p>",
+        "body": "<ul>A</ul><p>B</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<ul><p>A</p></ul><p>B</p>",
+        "body": "<ul><p>A</p></ul><p>B</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<p>A</p><ul><p>B</p></ul><p>C</p>",
+        "body": "<p>A</p><ul><p>B</p></ul><p>C</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<ul title=\"a>b\"><p>A</p></ul><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<a/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<a />A</a><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<a>A</a><p>B</p>",
+        "body": "<p>A</p><p>B</p>",
+        "bodyHtml5": "A<p>B</p>",
+        "removed": {
+            "unwrapped-element": 1
+        },
+        "bodyEngineHtml5": "A<p>B</p>"
+    },
+    {
+        "input": "<a><p>A</p></a><p>B</p>",
+        "body": "<p>A</p><p>B</p>",
+        "removed": {
+            "unwrapped-element": 1
+        }
+    },
+    {
+        "input": "<p>A</p><a><p>B</p></a><p>C</p>",
+        "body": "<p>A</p><p>B</p><p>C</p>",
+        "removed": {
+            "unwrapped-element": 1
+        }
+    },
+    {
+        "input": "<a title=\"a>b\"><p>A</p></a><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<div/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<div />A</div><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<div>A</div><p>B</p>",
+        "body": "<div>A</div><p>B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<div><p>A</p></div><p>B</p>",
+        "body": "<div><p>A</p></div><p>B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A</p><div><p>B</p></div><p>C</p>",
+        "body": "<p>A</p><div><p>B</p></div><p>C</p>",
+        "removed": {}
+    },
+    {
+        "input": "<div title=\"a>b\"><p>A</p></div><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<table/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<table />A</table><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<table>A</table><p>B</p>",
+        "body": "<table>A</table><p>B</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<table><p>A</p></table><p>B</p>",
+        "body": "<table><p>A</p></table><p>B</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<p>A</p><table><p>B</p></table><p>C</p>",
+        "body": "<p>A</p><table><p>B</p></table><p>C</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<table title=\"a>b\"><p>A</p></table><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr />A</tr><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr>A</tr><p>B</p>",
+        "body": "<tr>A</tr><p>B</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<tr><p>A</p></tr><p>B</p>",
+        "body": "<tr><p>A</p></tr><p>B</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<p>A</p><tr><p>B</p></tr><p>C</p>",
+        "body": "<p>A</p><tr><p>B</p></tr><p>C</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<tr title=\"a>b\"><p>A</p></tr><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<td/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<td />A</td><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<td>A</td><p>B</p>",
+        "body": "<td>A</td><p>B</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<td><p>A</p></td><p>B</p>",
+        "body": "<td><p>A</p></td><p>B</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<p>A</p><td><p>B</p></td><p>C</p>",
+        "body": "<p>A</p><td><p>B</p></td><p>C</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<td title=\"a>b\"><p>A</p></td><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<head/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<head />A</head><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<head>A</head><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><p>A</p></head><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><head><p>B</p></head><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<head title=\"a>b\"><p>A</p></head><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<body/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<body />A</body><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<body>A</body><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><p>A</p></body><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><body><p>B</p></body><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<body title=\"a>b\"><p>A</p></body><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<html/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<html />A</html><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<html>A</html><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><p>A</p></html><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><html><p>B</p></html><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<html title=\"a>b\"><p>A</p></html><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<template/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<template />A</template><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<template>A</template><p>B</p>",
+        "body": "<p>B</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<template><p>A</p></template><p>B</p>",
+        "body": "<p>B</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<p>A</p><template><p>B</p></template><p>C</p>",
+        "body": "<p>A</p><p>C</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<template title=\"a>b\"><p>A</p></template><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<object/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<object />A</object><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<object>A</object><p>B</p>",
+        "body": "<p>B</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<object><p>A</p></object><p>B</p>",
+        "body": "<p>B</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<p>A</p><object><p>B</p></object><p>C</p>",
+        "body": "<p>A</p><p>C</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<object title=\"a>b\"><p>A</p></object><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<form/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<form />A</form><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<form>A</form><p>B</p>",
+        "body": "<p>B</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<form><p>A</p></form><p>B</p>",
+        "body": "<p>B</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<p>A</p><form><p>B</p></form><p>C</p>",
+        "body": "<p>A</p><p>C</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<form title=\"a>b\"><p>A</p></form><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<select/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<select />A</select><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<select>A</select><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<select><p>A</p></select><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><select><p>B</p></select><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<select title=\"a>b\"><p>A</p></select><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<option/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<option />A</option><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<option>A</option><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<option><p>A</p></option><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><option><p>B</p></option><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<option title=\"a>b\"><p>A</p></option><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<button/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<button />A</button><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<button>A</button><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<button><p>A</p></button><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><button><p>B</p></button><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<button title=\"a>b\"><p>A</p></button><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<frameset/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<frameset />A</frameset><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<frameset>A</frameset><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<frameset><p>A</p></frameset><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><frameset><p>B</p></frameset><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<frameset title=\"a>b\"><p>A</p></frameset><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<frame/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<frame />A</frame><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<frame>A</frame><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<frame><p>A</p></frame><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><frame><p>B</p></frame><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<frame title=\"a>b\"><p>A</p></frame><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<image/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<image />A</image><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<image>A</image><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<image><p>A</p></image><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><image><p>B</p></image><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<image title=\"a>b\"><p>A</p></image><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<isindex/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<isindex />A</isindex><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<isindex>A</isindex><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<isindex><p>A</p></isindex><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><isindex><p>B</p></isindex><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<isindex title=\"a>b\"><p>A</p></isindex><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<command/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<command />A</command><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<command>A</command><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<command><p>A</p></command><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><command><p>B</p></command><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<command title=\"a>b\"><p>A</p></command><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<bgsound/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<bgsound />A</bgsound><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<bgsound>A</bgsound><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<bgsound><p>A</p></bgsound><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><bgsound><p>B</p></bgsound><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<bgsound title=\"a>b\"><p>A</p></bgsound><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<menuitem/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<menuitem />A</menuitem><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<menuitem>A</menuitem><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<menuitem><p>A</p></menuitem><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><menuitem><p>B</p></menuitem><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<menuitem title=\"a>b\"><p>A</p></menuitem><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<search/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<search />A</search><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<search>A</search><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<search><p>A</p></search><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><search><p>B</p></search><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<search title=\"a>b\"><p>A</p></search><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<dialog/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<dialog />A</dialog><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<dialog>A</dialog><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<dialog><p>A</p></dialog><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><dialog><p>B</p></dialog><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<dialog title=\"a>b\"><p>A</p></dialog><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<ruby/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<ruby />A</ruby><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<ruby>A</ruby><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<ruby><p>A</p></ruby><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><ruby><p>B</p></ruby><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<ruby title=\"a>b\"><p>A</p></ruby><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<rt/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<rt />A</rt><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<rt>A</rt><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<rt><p>A</p></rt><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><rt><p>B</p></rt><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<rt title=\"a>b\"><p>A</p></rt><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<rp/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<rp />A</rp><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<rp>A</rp><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<rp><p>A</p></rp><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><rp><p>B</p></rp><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<rp title=\"a>b\"><p>A</p></rp><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<optgroup/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<optgroup />A</optgroup><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<optgroup>A</optgroup><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<optgroup><p>A</p></optgroup><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><optgroup><p>B</p></optgroup><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<optgroup title=\"a>b\"><p>A</p></optgroup><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<col/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<col />A</col><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<col>A</col><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<col><p>A</p></col><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><col><p>B</p></col><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<col title=\"a>b\"><p>A</p></col><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<colgroup/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<colgroup />A</colgroup><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<colgroup>A</colgroup><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<colgroup><p>A</p></colgroup><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><colgroup><p>B</p></colgroup><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<colgroup title=\"a>b\"><p>A</p></colgroup><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<caption/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<caption />A</caption><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<caption>A</caption><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<caption><p>A</p></caption><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><caption><p>B</p></caption><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<caption title=\"a>b\"><p>A</p></caption><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<legend/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<legend />A</legend><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<legend>A</legend><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<legend><p>A</p></legend><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><legend><p>B</p></legend><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<legend title=\"a>b\"><p>A</p></legend><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<fieldset/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<fieldset />A</fieldset><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<fieldset>A</fieldset><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<fieldset><p>A</p></fieldset><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A</p><fieldset><p>B</p></fieldset><p>C</p>",
+        "refused": true
+    },
+    {
+        "input": "<fieldset title=\"a>b\"><p>A</p></fieldset><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<center/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<center />A</center><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<center>A</center><p>B</p>",
+        "body": "<p>A</p><p>B</p>",
+        "bodyHtml5": "A<p>B</p>",
+        "removed": {
+            "unknown-tag": 1
+        },
+        "bodyEngineHtml5": "A<p>B</p>"
+    },
+    {
+        "input": "<center><p>A</p></center><p>B</p>",
+        "body": "<p>A</p><p>B</p>",
+        "removed": {
+            "unknown-tag": 1
+        }
+    },
+    {
+        "input": "<p>A</p><center><p>B</p></center><p>C</p>",
+        "body": "<p>A</p><p>B</p><p>C</p>",
+        "removed": {
+            "unknown-tag": 1
+        }
+    },
+    {
+        "input": "<center title=\"a>b\"><p>A</p></center><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<font/>A<p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<font />A</font><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<font>A</font><p>B</p>",
+        "body": "<p>A</p><p>B</p>",
+        "bodyHtml5": "A<p>B</p>",
+        "removed": {
+            "unknown-tag": 1
+        },
+        "bodyEngineHtml5": "A<p>B</p>"
+    },
+    {
+        "input": "<font><p>A</p></font><p>B</p>",
+        "body": "<p>A</p><p>B</p>",
+        "removed": {
+            "unknown-tag": 1
+        }
+    },
+    {
+        "input": "<p>A</p><font><p>B</p></font><p>C</p>",
+        "body": "<p>A</p><p>B</p><p>C</p>",
+        "removed": {
+            "unknown-tag": 1
+        }
+    },
+    {
+        "input": "<font title=\"a>b\"><p>A</p></font><p>B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><p>x</p>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p/><p>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><p/>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>x</p><p>y</p><p>end</p>",
+        "body": "<p>x</p><p>y</p><p>end</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><li>x</li>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><li>x</p>y</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p/><li>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><li/>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>x</p><li>y</li><p>end</p>",
+        "body": "<p>x</p><li>y</li><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<p><table>x</table>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><table>x</p>y</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p/><table>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><table/>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>x</p><table>y</table><p>end</p>",
+        "body": "<p>x</p><table>y</table><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<p><tr>x</tr>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><tr>x</p>y</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p/><tr>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><tr/>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>x</p><tr>y</tr><p>end</p>",
+        "body": "<p>x</p><tr>y</tr><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<p><td>x</td>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><td>x</p>y</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p/><td>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><td/>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>x</p><td>y</td><p>end</p>",
+        "body": "<p>x</p><td>y</td><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<p><head>x</head>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><head>x</p>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p/><head>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><head/>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>x</p><head>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><body>x</body>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><body>x</p>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p/><body>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><body/>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>x</p><body>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><html>x</html>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><html>x</p>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p/><html>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><html/>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>x</p><html>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><template>x</template>y</p><p>end</p>",
+        "body": "<p>y</p><p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<p><template>x</p>y</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p/><template>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><template/>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>x</p><template>y</template><p>end</p>",
+        "body": "<p>x</p><p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<p><form>x</form>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><form>x</p>y</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p/><form>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><form/>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>x</p><form>y</form><p>end</p>",
+        "body": "<p>x</p><p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<p><div>x</div>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><div>x</p>y</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p/><div>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><div/>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>x</p><div>y</div><p>end</p>",
+        "body": "<p>x</p><div>y</div><p>end</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a>x</a>y</p><p>end</p>",
+        "body": "<p>xy</p><p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        }
+    },
+    {
+        "input": "<p><a>x</p>y</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p/><a>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a/>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>x</p><a>y</a><p>end</p>",
+        "body": "<p>x</p>y<p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        }
+    },
+    {
+        "input": "<li><p>x</p>y</li><p>end</p>",
+        "body": "<li><p>x</p>y</li><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<li><p>x</li>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li/><p>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li><p/>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li>x</li><p>y</p><p>end</p>",
+        "body": "<li>x</li><p>y</p><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<li><li>x</li>y</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li/><li>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li><li/>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li>x</li><li>y</li><p>end</p>",
+        "body": "<li>x</li><li>y</li><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<li><table>x</table>y</li><p>end</p>",
+        "body": "<li><table>x</table>y</li><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<li><table>x</li>y</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li/><table>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li><table/>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li>x</li><table>y</table><p>end</p>",
+        "body": "<li>x</li><table>y</table><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<li><tr>x</tr>y</li><p>end</p>",
+        "body": "<li><tr>x</tr>y</li><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<li><tr>x</li>y</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li/><tr>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li><tr/>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li>x</li><tr>y</tr><p>end</p>",
+        "body": "<li>x</li><tr>y</tr><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<li><td>x</td>y</li><p>end</p>",
+        "body": "<li><td>x</td>y</li><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<li><td>x</li>y</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li/><td>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li><td/>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li>x</li><td>y</td><p>end</p>",
+        "body": "<li>x</li><td>y</td><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<li><head>x</head>y</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li><head>x</li>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li/><head>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li><head/>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li>x</li><head>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li><body>x</body>y</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li><body>x</li>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li/><body>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li><body/>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li>x</li><body>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li><html>x</html>y</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li><html>x</li>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li/><html>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li><html/>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li>x</li><html>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li><template>x</template>y</li><p>end</p>",
+        "body": "<li>y</li><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<li><template>x</li>y</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li/><template>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li><template/>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li>x</li><template>y</template><p>end</p>",
+        "body": "<li>x</li><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<li><form>x</form>y</li><p>end</p>",
+        "body": "<li>y</li><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<li><form>x</li>y</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li/><form>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li><form/>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li>x</li><form>y</form><p>end</p>",
+        "body": "<li>x</li><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<li><div>x</div>y</li><p>end</p>",
+        "body": "<li><div>x</div>y</li><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<li><div>x</li>y</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li/><div>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li><div/>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li>x</li><div>y</div><p>end</p>",
+        "body": "<li>x</li><div>y</div><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<li><a>x</a>y</li><p>end</p>",
+        "body": "<li>xy</li><p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<li><a>x</li>y</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li/><a>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li><a/>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<li>x</li><a>y</a><p>end</p>",
+        "body": "<li>x</li>y<p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<table><p>x</p>y</table><p>end</p>",
+        "body": "<table><p>x</p>y</table><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<table><p>x</table>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table/><p>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table><p/>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table>x</table><p>y</p><p>end</p>",
+        "body": "<table>x</table><p>y</p><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<table><li>x</li>y</table><p>end</p>",
+        "body": "<table><li>x</li>y</table><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<table><li>x</table>y</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table/><li>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table><li/>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table>x</table><li>y</li><p>end</p>",
+        "body": "<table>x</table><li>y</li><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<table><table>x</table>y</table><p>end</p>",
+        "body": "<table><table>x</table>y</table><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<table/><table>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table><table/>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table>x</table><table>y</table><p>end</p>",
+        "body": "<table>x</table><table>y</table><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<table><tr>x</tr>y</table><p>end</p>",
+        "body": "<table><tr>x</tr>y</table><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<table><tr>x</table>y</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table/><tr>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table><tr/>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table>x</table><tr>y</tr><p>end</p>",
+        "body": "<table>x</table><tr>y</tr><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<table><td>x</td>y</table><p>end</p>",
+        "body": "<table><td>x</td>y</table><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<table><td>x</table>y</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table/><td>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table><td/>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table>x</table><td>y</td><p>end</p>",
+        "body": "<table>x</table><td>y</td><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<table><head>x</head>y</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table><head>x</table>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table/><head>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table><head/>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table>x</table><head>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table><body>x</body>y</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table><body>x</table>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table/><body>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table><body/>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table>x</table><body>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table><html>x</html>y</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table><html>x</table>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table/><html>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table><html/>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table>x</table><html>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table><template>x</template>y</table><p>end</p>",
+        "body": "<table>y</table><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<table><template>x</table>y</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table/><template>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table><template/>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table>x</table><template>y</template><p>end</p>",
+        "body": "<table>x</table><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<table><form>x</form>y</table><p>end</p>",
+        "body": "<table>y</table><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<table><form>x</table>y</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table/><form>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table><form/>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table>x</table><form>y</form><p>end</p>",
+        "body": "<table>x</table><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<table><div>x</div>y</table><p>end</p>",
+        "body": "<table><div>x</div>y</table><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<table><div>x</table>y</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table/><div>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table><div/>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table>x</table><div>y</div><p>end</p>",
+        "body": "<table>x</table><div>y</div><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<table><a>x</a>y</table><p>end</p>",
+        "body": "<table>xy</table><p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<table><a>x</table>y</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table/><a>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table><a/>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<table>x</table><a>y</a><p>end</p>",
+        "body": "<table>x</table>y<p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<tr><p>x</p>y</tr><p>end</p>",
+        "body": "<tr><p>x</p>y</tr><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<tr><p>x</tr>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr/><p>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr><p/>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr>x</tr><p>y</p><p>end</p>",
+        "body": "<tr>x</tr><p>y</p><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<tr><li>x</li>y</tr><p>end</p>",
+        "body": "<tr><li>x</li>y</tr><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<tr><li>x</tr>y</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr/><li>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr><li/>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr>x</tr><li>y</li><p>end</p>",
+        "body": "<tr>x</tr><li>y</li><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<tr><table>x</table>y</tr><p>end</p>",
+        "body": "<tr><table>x</table>y</tr><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<tr><table>x</tr>y</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr/><table>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr><table/>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr>x</tr><table>y</table><p>end</p>",
+        "body": "<tr>x</tr><table>y</table><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<tr><tr>x</tr>y</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr/><tr>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr><tr/>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr>x</tr><tr>y</tr><p>end</p>",
+        "body": "<tr>x</tr><tr>y</tr><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<tr><td>x</td>y</tr><p>end</p>",
+        "body": "<tr><td>x</td>y</tr><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<tr><td>x</tr>y</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr/><td>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr><td/>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr>x</tr><td>y</td><p>end</p>",
+        "body": "<tr>x</tr><td>y</td><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<tr><head>x</head>y</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr><head>x</tr>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr/><head>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr><head/>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr>x</tr><head>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr><body>x</body>y</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr><body>x</tr>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr/><body>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr><body/>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr>x</tr><body>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr><html>x</html>y</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr><html>x</tr>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr/><html>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr><html/>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr>x</tr><html>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr><template>x</template>y</tr><p>end</p>",
+        "body": "<tr>y</tr><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<tr><template>x</tr>y</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr/><template>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr><template/>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr>x</tr><template>y</template><p>end</p>",
+        "body": "<tr>x</tr><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<tr><form>x</form>y</tr><p>end</p>",
+        "body": "<tr>y</tr><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<tr><form>x</tr>y</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr/><form>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr><form/>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr>x</tr><form>y</form><p>end</p>",
+        "body": "<tr>x</tr><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<tr><div>x</div>y</tr><p>end</p>",
+        "body": "<tr><div>x</div>y</tr><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<tr><div>x</tr>y</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr/><div>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr><div/>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr>x</tr><div>y</div><p>end</p>",
+        "body": "<tr>x</tr><div>y</div><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<tr><a>x</a>y</tr><p>end</p>",
+        "body": "<tr>xy</tr><p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<tr><a>x</tr>y</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr/><a>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr><a/>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<tr>x</tr><a>y</a><p>end</p>",
+        "body": "<tr>x</tr>y<p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<td><p>x</p>y</td><p>end</p>",
+        "body": "<td><p>x</p>y</td><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<td><p>x</td>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td/><p>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td><p/>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td>x</td><p>y</p><p>end</p>",
+        "body": "<td>x</td><p>y</p><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<td><li>x</li>y</td><p>end</p>",
+        "body": "<td><li>x</li>y</td><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<td><li>x</td>y</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td/><li>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td><li/>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td>x</td><li>y</li><p>end</p>",
+        "body": "<td>x</td><li>y</li><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<td><table>x</table>y</td><p>end</p>",
+        "body": "<td><table>x</table>y</td><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<td><table>x</td>y</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td/><table>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td><table/>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td>x</td><table>y</table><p>end</p>",
+        "body": "<td>x</td><table>y</table><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<td><tr>x</tr>y</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td><tr>x</td>y</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td/><tr>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td><tr/>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td>x</td><tr>y</tr><p>end</p>",
+        "body": "<td>x</td><tr>y</tr><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<td><td>x</td>y</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td/><td>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td><td/>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td>x</td><td>y</td><p>end</p>",
+        "body": "<td>x</td><td>y</td><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<td><head>x</head>y</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td><head>x</td>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td/><head>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td><head/>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td>x</td><head>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td><body>x</body>y</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td><body>x</td>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td/><body>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td><body/>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td>x</td><body>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td><html>x</html>y</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td><html>x</td>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td/><html>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td><html/>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td>x</td><html>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td><template>x</template>y</td><p>end</p>",
+        "body": "<td>y</td><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<td><template>x</td>y</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td/><template>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td><template/>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td>x</td><template>y</template><p>end</p>",
+        "body": "<td>x</td><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<td><form>x</form>y</td><p>end</p>",
+        "body": "<td>y</td><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<td><form>x</td>y</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td/><form>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td><form/>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td>x</td><form>y</form><p>end</p>",
+        "body": "<td>x</td><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<td><div>x</div>y</td><p>end</p>",
+        "body": "<td><div>x</div>y</td><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<td><div>x</td>y</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td/><div>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td><div/>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td>x</td><div>y</div><p>end</p>",
+        "body": "<td>x</td><div>y</div><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<td><a>x</a>y</td><p>end</p>",
+        "body": "<td>xy</td><p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<td><a>x</td>y</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td/><a>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td><a/>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<td>x</td><a>y</a><p>end</p>",
+        "body": "<td>x</td>y<p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<head><p>x</p>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><p>x</head>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head/><p>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><p/>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head>x</head><p>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><li>x</li>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><li>x</head>y</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head/><li>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><li/>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head>x</head><li>y</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><table>x</table>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><table>x</head>y</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head/><table>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><table/>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head>x</head><table>y</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><tr>x</tr>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><tr>x</head>y</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head/><tr>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><tr/>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head>x</head><tr>y</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><td>x</td>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><td>x</head>y</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head/><td>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><td/>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head>x</head><td>y</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><head>x</head>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head/><head>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><head/>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head>x</head><head>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><body>x</body>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><body>x</head>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head/><body>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><body/>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head>x</head><body>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><html>x</html>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><html>x</head>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head/><html>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><html/>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head>x</head><html>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><template>x</template>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><template>x</head>y</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head/><template>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><template/>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head>x</head><template>y</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><form>x</form>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><form>x</head>y</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head/><form>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><form/>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head>x</head><form>y</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><div>x</div>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><div>x</head>y</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head/><div>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><div/>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head>x</head><div>y</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><a>x</a>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><a>x</head>y</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head/><a>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><a/>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head>x</head><a>y</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><p>x</p>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><p>x</body>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body/><p>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><p/>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body>x</body><p>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><li>x</li>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><li>x</body>y</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body/><li>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><li/>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body>x</body><li>y</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><table>x</table>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><table>x</body>y</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body/><table>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><table/>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body>x</body><table>y</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><tr>x</tr>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><tr>x</body>y</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body/><tr>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><tr/>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body>x</body><tr>y</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><td>x</td>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><td>x</body>y</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body/><td>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><td/>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body>x</body><td>y</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><head>x</head>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><head>x</body>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body/><head>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><head/>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body>x</body><head>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><body>x</body>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body/><body>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><body/>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body>x</body><body>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><html>x</html>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><html>x</body>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body/><html>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><html/>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body>x</body><html>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><template>x</template>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><template>x</body>y</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body/><template>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><template/>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body>x</body><template>y</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><form>x</form>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><form>x</body>y</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body/><form>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><form/>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body>x</body><form>y</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><div>x</div>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><div>x</body>y</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body/><div>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><div/>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body>x</body><div>y</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><a>x</a>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><a>x</body>y</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body/><a>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><a/>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<body>x</body><a>y</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><p>x</p>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><p>x</html>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html/><p>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><p/>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html>x</html><p>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><li>x</li>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><li>x</html>y</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html/><li>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><li/>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html>x</html><li>y</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><table>x</table>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><table>x</html>y</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html/><table>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><table/>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html>x</html><table>y</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><tr>x</tr>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><tr>x</html>y</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html/><tr>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><tr/>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html>x</html><tr>y</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><td>x</td>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><td>x</html>y</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html/><td>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><td/>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html>x</html><td>y</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><head>x</head>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><head>x</html>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html/><head>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><head/>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html>x</html><head>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><body>x</body>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><body>x</html>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html/><body>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><body/>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html>x</html><body>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><html>x</html>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html/><html>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><html/>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html>x</html><html>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><template>x</template>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><template>x</html>y</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html/><template>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><template/>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html>x</html><template>y</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><form>x</form>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><form>x</html>y</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html/><form>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><form/>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html>x</html><form>y</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><div>x</div>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><div>x</html>y</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html/><div>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><div/>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html>x</html><div>y</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><a>x</a>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><a>x</html>y</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html/><a>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><a/>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<html>x</html><a>y</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><p>x</p>y</template><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<template><p>x</template>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template/><p>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><p/>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template>x</template><p>y</p><p>end</p>",
+        "body": "<p>y</p><p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<template><li>x</li>y</template><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<template><li>x</template>y</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template/><li>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><li/>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template>x</template><li>y</li><p>end</p>",
+        "body": "<li>y</li><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<template><table>x</table>y</template><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<template><table>x</template>y</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template/><table>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><table/>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template>x</template><table>y</table><p>end</p>",
+        "body": "<table>y</table><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<template><tr>x</tr>y</template><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<template><tr>x</template>y</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template/><tr>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><tr/>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template>x</template><tr>y</tr><p>end</p>",
+        "body": "<tr>y</tr><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<template><td>x</td>y</template><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<template><td>x</template>y</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template/><td>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><td/>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template>x</template><td>y</td><p>end</p>",
+        "body": "<td>y</td><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<template><head>x</head>y</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><head>x</template>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template/><head>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><head/>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template>x</template><head>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><body>x</body>y</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><body>x</template>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template/><body>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><body/>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template>x</template><body>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><html>x</html>y</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><html>x</template>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template/><html>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><html/>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template>x</template><html>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><template>x</template>y</template><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<template/><template>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><template/>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template>x</template><template>y</template><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 2
+        }
+    },
+    {
+        "input": "<template><form>x</form>y</template><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<template><form>x</template>y</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template/><form>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><form/>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template>x</template><form>y</form><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 2
+        }
+    },
+    {
+        "input": "<template><div>x</div>y</template><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<template><div>x</template>y</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template/><div>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><div/>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template>x</template><div>y</div><p>end</p>",
+        "body": "<div>y</div><p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<template><a>x</a>y</template><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<template><a>x</template>y</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template/><a>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><a/>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template>x</template><a>y</a><p>end</p>",
+        "body": "<p>y</p><p>end</p>",
+        "bodyHtml5": "y<p>end</p>",
+        "removed": {
+            "subtree": 1,
+            "unwrapped-element": 1
+        },
+        "bodyEngineHtml5": "y<p>end</p>"
+    },
+    {
+        "input": "<form><p>x</p>y</form><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<form><p>x</form>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form/><p>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form><p/>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form>x</form><p>y</p><p>end</p>",
+        "body": "<p>y</p><p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<form><li>x</li>y</form><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<form><li>x</form>y</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form/><li>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form><li/>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form>x</form><li>y</li><p>end</p>",
+        "body": "<li>y</li><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<form><table>x</table>y</form><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<form><table>x</form>y</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form/><table>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form><table/>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form>x</form><table>y</table><p>end</p>",
+        "body": "<table>y</table><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<form><tr>x</tr>y</form><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<form><tr>x</form>y</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form/><tr>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form><tr/>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form>x</form><tr>y</tr><p>end</p>",
+        "body": "<tr>y</tr><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<form><td>x</td>y</form><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<form><td>x</form>y</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form/><td>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form><td/>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form>x</form><td>y</td><p>end</p>",
+        "body": "<td>y</td><p>end</p>",
+        "removed": {
+            "subtree": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<form><head>x</head>y</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form><head>x</form>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form/><head>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form><head/>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form>x</form><head>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form><body>x</body>y</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form><body>x</form>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form/><body>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form><body/>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form>x</form><body>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form><html>x</html>y</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form><html>x</form>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form/><html>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form><html/>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form>x</form><html>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form><template>x</template>y</form><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<form><template>x</form>y</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form/><template>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form><template/>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form>x</form><template>y</template><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 2
+        }
+    },
+    {
+        "input": "<form><form>x</form>y</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form/><form>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form><form/>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form>x</form><form>y</form><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 2
+        }
+    },
+    {
+        "input": "<form><div>x</div>y</form><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<form><div>x</form>y</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form/><div>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form><div/>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form>x</form><div>y</div><p>end</p>",
+        "body": "<div>y</div><p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<form><a>x</a>y</form><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<form><a>x</form>y</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form/><a>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form><a/>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form>x</form><a>y</a><p>end</p>",
+        "body": "<p>y</p><p>end</p>",
+        "bodyHtml5": "y<p>end</p>",
+        "removed": {
+            "subtree": 1,
+            "unwrapped-element": 1
+        },
+        "bodyEngineHtml5": "y<p>end</p>"
+    },
+    {
+        "input": "<div><p>x</p>y</div><p>end</p>",
+        "body": "<div><p>x</p>y</div><p>end</p>",
+        "removed": {}
+    },
+    {
+        "input": "<div><p>x</div>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div/><p>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div><p/>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div>x</div><p>y</p><p>end</p>",
+        "body": "<div>x</div><p>y</p><p>end</p>",
+        "removed": {}
+    },
+    {
+        "input": "<div><li>x</li>y</div><p>end</p>",
+        "body": "<div><li>x</li>y</div><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<div><li>x</div>y</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div/><li>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div><li/>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div>x</div><li>y</li><p>end</p>",
+        "body": "<div>x</div><li>y</li><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<div><table>x</table>y</div><p>end</p>",
+        "body": "<div><table>x</table>y</div><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<div><table>x</div>y</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div/><table>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div><table/>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div>x</div><table>y</table><p>end</p>",
+        "body": "<div>x</div><table>y</table><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<div><tr>x</tr>y</div><p>end</p>",
+        "body": "<div><tr>x</tr>y</div><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<div><tr>x</div>y</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div/><tr>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div><tr/>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div>x</div><tr>y</tr><p>end</p>",
+        "body": "<div>x</div><tr>y</tr><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<div><td>x</td>y</div><p>end</p>",
+        "body": "<div><td>x</td>y</div><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<div><td>x</div>y</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div/><td>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div><td/>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div>x</div><td>y</td><p>end</p>",
+        "body": "<div>x</div><td>y</td><p>end</p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<div><head>x</head>y</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div><head>x</div>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div/><head>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div><head/>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div>x</div><head>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div><body>x</body>y</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div><body>x</div>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div/><body>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div><body/>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div>x</div><body>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div><html>x</html>y</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div><html>x</div>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div/><html>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div><html/>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div>x</div><html>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div><template>x</template>y</div><p>end</p>",
+        "body": "<div>y</div><p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<div><template>x</div>y</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div/><template>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div><template/>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div>x</div><template>y</template><p>end</p>",
+        "body": "<div>x</div><p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<div><form>x</form>y</div><p>end</p>",
+        "body": "<div>y</div><p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<div><form>x</div>y</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div/><form>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div><form/>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div>x</div><form>y</form><p>end</p>",
+        "body": "<div>x</div><p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<div><div>x</div>y</div><p>end</p>",
+        "body": "<div><div>x</div>y</div><p>end</p>",
+        "removed": {}
+    },
+    {
+        "input": "<div/><div>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div><div/>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div>x</div><div>y</div><p>end</p>",
+        "body": "<div>x</div><div>y</div><p>end</p>",
+        "removed": {}
+    },
+    {
+        "input": "<div><a>x</a>y</div><p>end</p>",
+        "body": "<div>xy</div><p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        }
+    },
+    {
+        "input": "<div><a>x</div>y</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div/><a>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div><a/>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<div>x</div><a>y</a><p>end</p>",
+        "body": "<div>x</div>y<p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        }
+    },
+    {
+        "input": "<a><p>x</p>y</a><p>end</p>",
+        "body": "<p>x</p>y<p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        }
+    },
+    {
+        "input": "<a><p>x</a>y</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a/><p>x</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a><p/>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a>x</a><p>y</p><p>end</p>",
+        "body": "<p>x</p><p>y</p><p>end</p>",
+        "bodyHtml5": "x<p>y</p><p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        },
+        "bodyEngineHtml5": "x<p>y</p><p>end</p>"
+    },
+    {
+        "input": "<a><li>x</li>y</a><p>end</p>",
+        "body": "<li>x</li>y<p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<a><li>x</a>y</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a/><li>x</li><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a><li/>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a>x</a><li>y</li><p>end</p>",
+        "body": "<p>x</p><li>y</li><p>end</p>",
+        "bodyHtml5": "x<li>y</li><p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<a><table>x</table>y</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a><table>x</a>y</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a/><table>x</table><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a><table/>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a>x</a><table>y</table><p>end</p>",
+        "body": "<p>x</p><table>y</table><p>end</p>",
+        "bodyHtml5": "x<table>y</table><p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<a><tr>x</tr>y</a><p>end</p>",
+        "body": "<tr>x</tr>y<p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<a><tr>x</a>y</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a/><tr>x</tr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a><tr/>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a>x</a><tr>y</tr><p>end</p>",
+        "body": "<p>x</p><tr>y</tr><p>end</p>",
+        "bodyHtml5": "x<tr>y</tr><p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<a><td>x</td>y</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a><td>x</a>y</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a/><td>x</td><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a><td/>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a>x</a><td>y</td><p>end</p>",
+        "body": "<p>x</p><td>y</td><p>end</p>",
+        "bodyHtml5": "x<td>y</td><p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        },
+        "refusedByEngine": true
+    },
+    {
+        "input": "<a><head>x</head>y</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a><head>x</a>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a/><head>x</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a><head/>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a>x</a><head>y</head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a><body>x</body>y</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a><body>x</a>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a/><body>x</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a><body/>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a>x</a><body>y</body><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a><html>x</html>y</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a><html>x</a>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a/><html>x</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a><html/>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a>x</a><html>y</html><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a><template>x</template>y</a><p>end</p>",
+        "body": "<p>y</p><p>end</p>",
+        "bodyHtml5": "y<p>end</p>",
+        "removed": {
+            "subtree": 1,
+            "unwrapped-element": 1
+        },
+        "bodyEngineHtml5": "y<p>end</p>"
+    },
+    {
+        "input": "<a><template>x</a>y</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a/><template>x</template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a><template/>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a>x</a><template>y</template><p>end</p>",
+        "body": "<p>x</p><p>end</p>",
+        "bodyHtml5": "x<p>end</p>",
+        "removed": {
+            "subtree": 1,
+            "unwrapped-element": 1
+        },
+        "bodyEngineHtml5": "x<p>end</p>"
+    },
+    {
+        "input": "<a><form>x</form>y</a><p>end</p>",
+        "body": "<p>y</p><p>end</p>",
+        "bodyHtml5": "y<p>end</p>",
+        "removed": {
+            "subtree": 1,
+            "unwrapped-element": 1
+        },
+        "bodyEngineHtml5": "y<p>end</p>"
+    },
+    {
+        "input": "<a><form>x</a>y</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a/><form>x</form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a><form/>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a>x</a><form>y</form><p>end</p>",
+        "body": "<p>x</p><p>end</p>",
+        "bodyHtml5": "x<p>end</p>",
+        "removed": {
+            "subtree": 1,
+            "unwrapped-element": 1
+        },
+        "bodyEngineHtml5": "x<p>end</p>"
+    },
+    {
+        "input": "<a><div>x</div>y</a><p>end</p>",
+        "body": "<div>x</div>y<p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        }
+    },
+    {
+        "input": "<a><div>x</a>y</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a/><div>x</div><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a><div/>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a>x</a><div>y</div><p>end</p>",
+        "body": "<p>x</p><div>y</div><p>end</p>",
+        "bodyHtml5": "x<div>y</div><p>end</p>",
+        "removed": {
+            "unwrapped-element": 1
+        },
+        "bodyEngineHtml5": "x<div>y</div><p>end</p>"
+    },
+    {
+        "input": "<a><a>x</a>y</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a/><a>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a><a/>x</a><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<a>x</a><a>y</a><p>end</p>",
+        "body": "<p>xy</p><p>end</p>",
+        "bodyHtml5": "xy<p>end</p>",
+        "removed": {
+            "unwrapped-element": 2
+        },
+        "bodyEngineHtml5": "xy<p>end</p>"
+    },
+    {
+        "input": "<body><p>first</p></body><p>second</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><body><p>first</p></body></html><p>second</p>",
+        "refused": true
+    },
+    {
+        "input": "<body><p>first</p></body><body><p>second</p></body>",
+        "refused": true
+    },
+    {
+        "input": "<html><p>first</p></html><html><p>second</p></html>",
+        "refused": true
+    },
+    {
+        "input": "<ul><li/>one<li>two</li></ul>",
+        "refused": true
+    },
+    {
+        "input": "<ul><li/>one</ul>",
+        "refused": true
     }
 ]

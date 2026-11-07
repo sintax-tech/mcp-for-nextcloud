@@ -12,7 +12,7 @@ This release candidate combines the capability-module restructuring with all the
 
 - **Reading the current file version:** `files_version_read` now reads the current version listed by `files_versions_list` when the backend has no separate stored version file, instead of failing with a missing-file error. Other missing historical versions remain refused. This fixes a defect already present in 1.2.5.
 
-- **OAuth host withdrawal (#28):** removing an allowed CIMD host revokes its pending consents, authorization codes, access tokens and refresh tokens. Re-adding the host requires a new sign-in and never restores old credentials. Default hosts, client metadata parsing and registration methods are unchanged. This does not establish Zapia interoperability.
+- **OAuth host withdrawal (#28):** removing an allowed CIMD host revokes its pending consents, authorization codes, access tokens and refresh tokens. Re-adding the host requires a new sign-in and never restores old credentials. Authorization metadata now also advertises the `iss` response parameter already returned on success and redirectable errors (RFC 9207); consent keeps the issuer from the authorization request even if the router changes the `/index.php` prefix. Default hosts, client metadata parsing and registration methods are unchanged. Zapia interoperability still requires a verified remote MCP connector, registration method and callback from Zapia; its public connector guide does not document these details (checked 2026-11-07).
 
 ### Added
 

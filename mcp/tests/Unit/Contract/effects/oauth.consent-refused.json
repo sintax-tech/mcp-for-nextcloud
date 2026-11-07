@@ -122,7 +122,8 @@
                                 "state": "st-1",
                                 "code_challenge": "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
                                 "resource": "https://cloud.example.org/apps/mcp/",
-                                "scope": "mcp"
+                                "scope": "mcp",
+                                "issuer": "https://cloud.example.org"
                             }
                         ]
                     ]
@@ -247,7 +248,8 @@
                                 "state": "st-1",
                                 "code_challenge": "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
                                 "resource": "https://cloud.example.org/apps/mcp/",
-                                "scope": "mcp"
+                                "scope": "mcp",
+                                "issuer": "https://cloud.example.org"
                             }
                         ]
                     ]

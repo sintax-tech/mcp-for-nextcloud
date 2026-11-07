@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Controller;
 
-use OCA\Mcp\OAuth\Authorization\AuthorizationValidator;
+use OCA\Mcp\OAuth\Authorization\ServerMetadata;
 use OCA\Mcp\OAuth\Tokens\ResourceUrl;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
@@ -43,22 +43,7 @@ class MetadataController extends Controller {
 	#[PublicPage]
 	#[NoCSRFRequired]
 	public function authorizationServer(): JSONResponse {
-		return $this->json([
-			'issuer' => $this->urls->issuer(),
-			'authorization_endpoint' => $this->urls->endpoint('oauth/authorize'),
-			'token_endpoint' => $this->urls->endpoint('oauth/token'),
-			'jwks_uri' => $this->urls->endpoint('.well-known/jwks.json'),
-			'scopes_supported' => AuthorizationValidator::SCOPES,
-			'response_types_supported' => ['code'],
-			'response_modes_supported' => ['query'],
-			'grant_types_supported' => ['authorization_code', 'refresh_token'],
-			'code_challenge_methods_supported' => ['S256'],
-			'token_endpoint_auth_methods_supported' => ['none'],
-			'client_id_metadata_document_supported' => true,
-			// Required by OpenID Connect Discovery parsers; no ID tokens are issued (the openid scope is not offered).
-			'subject_types_supported' => ['public'],
-			'id_token_signing_alg_values_supported' => ['RS256'],
-		]);
+		return $this->json((new ServerMetadata($this->urls))->document());
 	}
 
 	/** @return JSONResponse same document as authorizationServer(), for clients probing the RFC 8414 name */

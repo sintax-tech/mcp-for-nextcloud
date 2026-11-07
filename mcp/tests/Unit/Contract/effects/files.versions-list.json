@@ -1,0 +1,242 @@
+[
+    {
+        "all": {
+            "path": "/ata.md",
+            "access": {
+                "scope": "personal",
+                "owner": "alice",
+                "ownerDisplayName": "Alice",
+                "permissions": {
+                    "read": true,
+                    "update": true,
+                    "create": true,
+                    "delete": true,
+                    "share": true
+                }
+            },
+            "versions": [
+                {
+                    "revision": "new",
+                    "timestamp": "<timestamp#1>",
+                    "size": 4,
+                    "mime": "text/markdown",
+                    "name": "ata.md"
+                },
+                {
+                    "revision": "10",
+                    "timestamp": "<timestamp#2>",
+                    "size": 10,
+                    "mime": "text/markdown",
+                    "name": "ata.md"
+                },
+                {
+                    "revision": "2",
+                    "timestamp": "<timestamp#2>",
+                    "size": 3,
+                    "mime": "text/markdown",
+                    "name": "ata.md"
+                },
+                {
+                    "revision": "old",
+                    "timestamp": "<timestamp#3>",
+                    "size": 3,
+                    "mime": "text/markdown",
+                    "name": "ata.md"
+                }
+            ],
+            "truncated": false
+        },
+        "limited": {
+            "path": "/ata.md",
+            "access": {
+                "scope": "personal",
+                "owner": "alice",
+                "ownerDisplayName": "Alice",
+                "permissions": {
+                    "read": true,
+                    "update": true,
+                    "create": true,
+                    "delete": true,
+                    "share": true
+                }
+            },
+            "versions": [
+                {
+                    "revision": "new",
+                    "timestamp": "<timestamp#1>",
+                    "size": 4,
+                    "mime": "text/markdown",
+                    "name": "ata.md"
+                },
+                {
+                    "revision": "10",
+                    "timestamp": "<timestamp#2>",
+                    "size": 10,
+                    "mime": "text/markdown",
+                    "name": "ata.md"
+                }
+            ],
+            "truncated": true
+        }
+    },
+    {
+        "all": {
+            "path": "/ata.md",
+            "access": {
+                "scope": "personal",
+                "owner": "alice",
+                "ownerDisplayName": "Alice",
+                "permissions": {
+                    "read": true,
+                    "update": true,
+                    "create": true,
+                    "delete": true,
+                    "share": true
+                }
+            },
+            "versions": [
+                {
+                    "revision": "new",
+                    "timestamp": "<timestamp#1>",
+                    "size": 4,
+                    "mime": "text/markdown",
+                    "name": "ata.md"
+                },
+                {
+                    "revision": "10",
+                    "timestamp": "<timestamp#2>",
+                    "size": 10,
+                    "mime": "text/markdown",
+                    "name": "ata.md"
+                },
+                {
+                    "revision": "2",
+                    "timestamp": "<timestamp#2>",
+                    "size": 3,
+                    "mime": "text/markdown",
+                    "name": "ata.md"
+                },
+                {
+                    "revision": "old",
+                    "timestamp": "<timestamp#3>",
+                    "size": 3,
+                    "mime": "text/markdown",
+                    "name": "ata.md"
+                }
+            ],
+            "truncated": false
+        },
+        "limited": {
+            "path": "/ata.md",
+            "access": {
+                "scope": "personal",
+                "owner": "alice",
+                "ownerDisplayName": "Alice",
+                "permissions": {
+                    "read": true,
+                    "update": true,
+                    "create": true,
+                    "delete": true,
+                    "share": true
+                }
+            },
+            "versions": [
+                {
+                    "revision": "new",
+                    "timestamp": "<timestamp#1>",
+                    "size": 4,
+                    "mime": "text/markdown",
+                    "name": "ata.md"
+                },
+                {
+                    "revision": "10",
+                    "timestamp": "<timestamp#2>",
+                    "size": 10,
+                    "mime": "text/markdown",
+                    "name": "ata.md"
+                }
+            ],
+            "truncated": true
+        }
+    },
+    {
+        "all": {
+            "path": "/ata.md",
+            "access": {
+                "scope": "personal",
+                "owner": "alice",
+                "ownerDisplayName": "Alice",
+                "permissions": {
+                    "read": true,
+                    "update": true,
+                    "create": true,
+                    "delete": true,
+                    "share": true
+                }
+            },
+            "versions": [
+                {
+                    "revision": "new",
+                    "timestamp": "<timestamp#1>",
+                    "size": 4,
+                    "mime": "text/markdown",
+                    "name": "ata.md"
+                },
+                {
+                    "revision": "10",
+                    "timestamp": "<timestamp#2>",
+                    "size": 10,
+                    "mime": "text/markdown",
+                    "name": "ata.md"
+                },
+                {
+                    "revision": "2",
+                    "timestamp": "<timestamp#2>",
+                    "size": 3,
+                    "mime": "text/markdown",
+                    "name": "ata.md"
+                },
+                {
+                    "revision": "old",
+                    "timestamp": "<timestamp#3>",
+                    "size": 3,
+                    "mime": "text/markdown",
+                    "name": "ata.md"
+                }
+            ],
+            "truncated": false
+        },
+        "limited": {
+            "path": "/ata.md",
+            "access": {
+                "scope": "personal",
+                "owner": "alice",
+                "ownerDisplayName": "Alice",
+                "permissions": {
+                    "read": true,
+                    "update": true,
+                    "create": true,
+                    "delete": true,
+                    "share": true
+                }
+            },
+            "versions": [
+                {
+                    "revision": "new",
+                    "timestamp": "<timestamp#1>",
+                    "size": 4,
+                    "mime": "text/markdown",
+                    "name": "ata.md"
+                },
+                {
+                    "revision": "10",
+                    "timestamp": "<timestamp#2>",
+                    "size": 10,
+                    "mime": "text/markdown",
+                    "name": "ata.md"
+                }
+            ],
+            "truncated": true
+        }
+    }
+]

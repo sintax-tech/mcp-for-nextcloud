@@ -58,7 +58,7 @@ final class VersionTools {
 	 */
 	public function list(Folder $root, File $file, string $path, int $limit, string $viewerUid): array {
 		$user = $this->requireVersioning($viewerUid);
-		$versions = $this->manager()->getVersionsForFile($user, $file);
+		$versions = VersionOrder::newestFirst($this->manager()->getVersionsForFile($user, $file));
 		$out = [];
 		foreach (array_slice($versions, 0, $limit) as $version) {
 			$out[] = [

@@ -4,7 +4,7 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 
 ## 1.3.1 — 2026-11-07
 
-Fix release on top of 1.3.0. No database change and no permission change; updating from 1.3.0 needs no step. Only HTML mail drafts (`mail_create_draft` with `html: true`) change: they work again on servers with libxml2 2.14 or later, a loose `&` no longer refuses a draft, and some HTML that 1.3.0 accepted on older libxml2 is now refused with the same message on every server, as listed below. Plain-text drafts and every other tool behave as in 1.3.0.
+Fix release on top of 1.3.0. No database change and no permission change; updating from 1.3.0 needs no step. Only HTML mail drafts (`mail_create_draft` with `html: true`) change: they now work on servers with libxml2 2.14 or later (1.3.0 refused them there), a loose `&` no longer refuses a draft, and some HTML that 1.3.0 accepted on older libxml2 is now refused with the same message on every server, as listed below. Plain-text drafts and every other tool behave as in 1.3.0.
 
 ### Fixed
 

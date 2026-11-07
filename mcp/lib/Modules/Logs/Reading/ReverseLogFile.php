@@ -16,6 +16,8 @@ final class ReverseLogFile {
 	private $handle;
 	private int $position;
 	private string $buffer = '';
+	/** @var list<string> Reverse-ordered fragments of at most one bounded line. */
+	private array $fragments = [];
 	private int $lineBytes = 0;
 	private bool $oversized = false;
 	public bool $timedOut = false;
@@ -45,22 +47,27 @@ final class ReverseLogFile {
 				return null;
 			}
 			$newline = strrpos($this->buffer, "\n");
+			$fragment = $newline === false ? $this->buffer : substr($this->buffer, $newline + 1);
+			$this->buffer = $newline === false ? '' : substr($this->buffer, 0, $newline);
+			$this->lineBytes += strlen($fragment);
+			if ($newline === false && $this->position > 0
+				&& ($this->lineBytes > self::MAX_LINE_BYTES || $this->oversized)) {
+				$this->oversized = true;
+				$this->fragments = [];
+			} elseif (!$this->oversized) {
+				$this->fragments[] = $fragment;
+			}
 			if ($newline !== false || $this->position === 0) {
-				$line = $newline === false ? $this->buffer : substr($this->buffer, $newline + 1);
-				$this->buffer = $newline === false ? '' : substr($this->buffer, 0, $newline);
-				$bytes = $this->lineBytes + strlen($line);
+				$bytes = $this->lineBytes;
 				$oversized = $this->oversized || $bytes > self::MAX_LINE_BYTES;
+				$line = $oversized ? '' : implode('', array_reverse($this->fragments));
 				$this->lineBytes = 0;
 				$this->oversized = false;
+				$this->fragments = [];
 				if ($bytes === 0) {
 					continue;
 				}
 				return ['entry' => $oversized ? null : json_decode($line), 'oversized' => $oversized, 'bytes' => $bytes];
-			}
-			if (strlen($this->buffer) > self::MAX_LINE_BYTES || $this->oversized) {
-				$this->oversized = true;
-				$this->lineBytes += strlen($this->buffer);
-				$this->buffer = '';
 			}
 			$length = min(self::BLOCK_BYTES, $this->position);
 			$this->position -= $length;
@@ -71,7 +78,7 @@ final class ReverseLogFile {
 			if ($chunk === false || strlen($chunk) !== $length) {
 				throw new RuntimeException('The current log changed or could not be read');
 			}
-			$this->buffer = $chunk . $this->buffer;
+			$this->buffer = $chunk;
 		}
 		return null;
 	}

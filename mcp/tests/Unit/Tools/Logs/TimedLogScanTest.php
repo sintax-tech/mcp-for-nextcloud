@@ -83,11 +83,26 @@ final class TimedLogScanTest extends TestCase {
 
 	/** @return void A line above 16 MiB is never decoded, occupies an explicit unparsed offset and cannot hide its neighbors. */
 	public function testOversizedLineIsReportedWithoutDroppingNeighboringEntries(): void {
+		$this->assertOversizedLine(3 * ReverseLogFile::MAX_LINE_BYTES);
+	}
+
+	/** @return void The first partial block above the cap is also rejected without decoding. */
+	public function testLineJustAboveTheCapIsReportedAsOversized(): void {
+		$this->assertOversizedLine(ReverseLogFile::MAX_LINE_BYTES + 1);
+	}
+
+	/** @param int $bytes Exact synthetic line length. @return void Assert bounded allocation and resumable neighbors. */
+	private function assertOversizedLine(int $bytes): void {
 		$path = tempnam(sys_get_temp_dir(), 'mcp-it-oversized-');
 		try {
 			$stream = fopen($path, 'wb');
 			fwrite($stream, "{\"level\":2,\"message\":\"older\"}\n{\"level\":2,\"message\":\"");
-			for ($i = 0; $i < 257; $i++) { fwrite($stream, str_repeat('x', ReverseLogFile::BLOCK_BYTES)); }
+			$remaining = $bytes - strlen('{"level":2,"message":""}');
+			while ($remaining > 0) {
+				$chunk = min($remaining, ReverseLogFile::BLOCK_BYTES);
+				fwrite($stream, str_repeat('x', $chunk));
+				$remaining -= $chunk;
+			}
 			fwrite($stream, "\"}\n{\"level\":2,\"message\":\"newer\"}\n");
 			fclose($stream);
 			$core = new OfficialFileLog($path, 2);
@@ -100,10 +115,13 @@ final class TimedLogScanTest extends TestCase {
 			self::assertSame(1, $rest['unparsed']);
 			self::assertSame('oversized', $rest['oversized'][0]['reason']);
 			self::assertSame(1, $rest['oversized'][0]['offset']);
-			self::assertGreaterThan(ReverseLogFile::MAX_LINE_BYTES, $rest['oversized'][0]['bytes']);
+			self::assertSame($bytes, $rest['oversized'][0]['bytes']);
 			self::assertSame(2, $rest['scanned']);
 			self::assertNull($rest['nextOffset']);
-			self::assertLessThan(64 * 1024 * 1024, memory_get_peak_usage() - $memory, 'Oversized line buffering must stay bounded');
+			self::assertLessThan(ReverseLogFile::MAX_LINE_BYTES + 24 * ReverseLogFile::BLOCK_BYTES,
+				memory_get_peak_usage() - $memory, 'Oversized buffering must not allocate a second line-sized string');
+			$resumed = $scanner->scan($this->filter([]), 2, 1);
+			self::assertSame(['older'], array_column($resumed['entries'], 'message'));
 		} finally { unlink($path); }
 	}
 }

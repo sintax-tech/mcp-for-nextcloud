@@ -609,5 +609,6 @@ final class NextcloudApiUsage {
 		...Tables\TablesApiUsage::NAME_CLASHES,
 		...Forms\FormsCreationCoreApiUsage::NAME_CLASHES,
 		...Polls\PollsApiUsage::NAME_CLASHES,
+		...Collectives\CollectivesApiUsage::NAME_CLASHES,
 	];
 }

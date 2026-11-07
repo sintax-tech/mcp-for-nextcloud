@@ -46,6 +46,16 @@ final class TeamsScene {
 	public static array $folders = [];
 	/** @var list<string> native reads (collectives, find) that fail inside the Teams session they open, as CircleHelper does */
 	public static array $failReads = [];
+	/** Whether a group resolution set the Teams app as the current app of the request. */
+	public static bool $currentApp = false;
+	/** Whether resolving a group fails after it set the current app. */
+	public static bool $failResolveGroup = false;
+	/** @var array<string, bool> accounts whose Teams identity is recorded, besides the actor */
+	public static array $identities = [];
+	/** Where a member write fails: null, `before` (refused in verify, nothing stored) or `after` (stored, then throws). */
+	public static ?string $failMember = null;
+	/** @var array<string, list<array{id:string, userId:string, type:int, level:int, status:string}>> memberships by team */
+	public static array $entries = [];
 
 	/** @return void three teams: Wiki (alice), Design (bob, with alice) and Secret (carol only, which alice cannot see) */
 	public static function reset(): void {
@@ -64,6 +74,102 @@ final class TeamsScene {
 		self::$root = true;
 		self::$folders = [];
 		self::$failReads = [];
+		self::$currentApp = false;
+		self::$failResolveGroup = false;
+		self::$identities = ['bob' => true];
+		self::$failMember = null;
+		self::$entries = ['circle-secret' => [
+			['id' => 'm-alice', 'userId' => 'alice', 'type' => 1, 'level' => 9, 'status' => 'Member'],
+			['id' => 'm-bob', 'userId' => 'bob', 'type' => 1, 'level' => 8, 'status' => 'Member'],
+			['id' => 'm-carol', 'userId' => 'carol', 'type' => 1, 'level' => 1, 'status' => 'Member'],
+			['id' => 'm-staff', 'userId' => 'staff', 'type' => 2, 'level' => 1, 'status' => 'Member'],
+			['id' => 'm-dave', 'userId' => 'dave', 'type' => 1, 'level' => 0, 'status' => 'Invited'],
+			['id' => 'm-erin', 'userId' => 'erin', 'type' => 1, 'level' => 0, 'status' => 'Requesting'],
+			['id' => 'm-frank', 'userId' => 'frank', 'type' => 1, 'level' => 0, 'status' => 'Blocked'],
+		]];
+	}
+
+	/** @param string $teamId a team @return list<object> its memberships, as Teams lists them */
+	public static function members(string $teamId): array {
+		if (!isset(self::$entries[$teamId])) {
+			return array_map(static fn (string $uid): object => new TeamMember($uid, 1, $uid === self::$teams[$teamId]['owner'] ? 9 : 1),
+				self::$teams[$teamId]['members']);
+		}
+		return array_map(static fn (array $e): object => new TeamMember($e['userId'], $e['type'], $e['level'], $e['status'], $e['id']), self::$entries[$teamId]);
+	}
+
+	/** @return int the session user's level in that team, as Teams checks the initiator */
+	private static function initiatorLevel(string $teamId): int {
+		foreach (self::$entries[$teamId] ?? [] as $e) {
+			if ($e['type'] === 1 && $e['userId'] === self::session()) {
+				return $e['level'];
+			}
+		}
+		return 0;
+	}
+
+	/**
+	 * `SingleMemberAdd`: the initiator must be a moderator; an existing member or invitation is refused, a request is
+	 * accepted, and a new member is an invitation in a team that requires them (35 `:264-298`).
+	 * @return object the membership
+	 */
+	public static function add(string $teamId, object $target): object {
+		self::$calls[] = 'addMember:' . $target->userId;
+		if (self::initiatorLevel($teamId) < 4 || self::$failMember === 'before') {
+			throw new \RuntimeException('FederatedItemBadRequestException 132');
+		}
+		foreach (self::$entries[$teamId] as &$e) {
+			if ($e['userId'] === $target->userId && $e['type'] === $target->type) {
+				if ($e['status'] !== 'Requesting') {
+					throw new \RuntimeException('FederatedItemBadRequestException 122');
+				}
+				$e['level'] = 1;
+				$e['status'] = 'Member';
+				return new TeamMember($e['userId'], $e['type'], 1, 'Member', $e['id']);
+			}
+		}
+		unset($e);
+		$invite = (self::$teams[$teamId]['config'] ?? 0) & 32;
+		$entry = ['id' => 'm-' . $target->userId, 'userId' => $target->userId, 'type' => $target->type, 'level' => $invite ? 0 : 1, 'status' => $invite ? 'Invited' : 'Member'];
+		self::$entries[$teamId][] = $entry;
+		if (self::$failMember === 'after') {
+			throw new \RuntimeException('memberPreparing failed');
+		}
+		return new TeamMember($entry['userId'], $entry['type'], $entry['level'], $entry['status'], $entry['id']);
+	}
+
+	/** `MemberLevel`: never the owner, never a pending member (35 `:136-158`). @return object the member */
+	public static function level(string $memberId, int $level): object {
+		self::$calls[] = 'levelMember:' . $memberId . ':' . $level;
+		foreach (self::$entries as $teamId => &$list) {
+			foreach ($list as &$e) {
+				if ($e['id'] === $memberId) {
+					if ($e['level'] === 9 || $e['status'] !== 'Member' || self::initiatorLevel($teamId) < 4 || self::$failMember === 'before') {
+						throw new \RuntimeException('FederatedItemBadRequestException');
+					}
+					$e['level'] = $level;
+					return new TeamMember($e['userId'], $e['type'], $level, 'Member', $memberId);
+				}
+			}
+		}
+		throw new \RuntimeException('MemberNotFoundException');
+	}
+
+	/** `MemberRemove`: never the owner (35 `:53-66`). */
+	public static function remove(string $memberId): void {
+		self::$calls[] = 'removeMember:' . $memberId;
+		foreach (self::$entries as $teamId => $list) {
+			foreach ($list as $i => $e) {
+				if ($e['id'] === $memberId) {
+					if ($e['level'] === 9 || self::initiatorLevel($teamId) <= $e['level'] || self::$failMember === 'before') {
+						throw new \RuntimeException('FederatedItemBadRequestException');
+					}
+					array_splice(self::$entries[$teamId], $i, 1);
+					return;
+				}
+			}
+		}
+		throw new \RuntimeException('MemberNotFoundException');
 	}
 
 	/**

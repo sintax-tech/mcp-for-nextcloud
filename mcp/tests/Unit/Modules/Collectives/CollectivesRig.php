@@ -24,6 +24,8 @@ use OCP\Files\Node;
 use OCP\IAppConfig;
 use OCP\IConfig;
 use OCP\IDBConnection;
+use OCP\IGroup;
+use OCP\IGroupManager;
 use OCP\IUser;
 use OCP\IUserManager;
 use OCP\IUserSession;
@@ -39,7 +41,7 @@ use ReflectionNamedType;
  */
 final class CollectivesRig {
 	/** @var list<string> granted operations of the collectives module */
-	public array $grants = ['read', 'create', 'edit', 'move', 'collective.create'];
+	public array $grants = ['read', 'create', 'edit', 'move', 'collective.create', 'members'];
 	public bool $appEnabled = true;
 	/** Installed Collectives version the app manager answers. */
 	public string $version = '4.7.1';
@@ -62,7 +64,9 @@ final class CollectivesRig {
 	public bool $fourBytes = true;
 	/** Classes autowiring takes from this rig instead of a blank mock. */
 	private const WIRED = [IAppManager::class, IConfig::class, IUserManager::class, IDBConnection::class, IFactory::class,
-		IRootFolder::class, GuestIdentity::class, ContainerInterface::class];
+		IRootFolder::class, GuestIdentity::class, ContainerInterface::class, IGroupManager::class];
+	/** Accounts of this server. */
+	private const ACCOUNTS = ['alice', 'bob', 'carol', 'dave', 'erin', 'frank', 'gina', 'hank', 'ivy', 'jack', 'kim'];
 	/** @var array<class-string, object> instances already built */
 	private array $built = [];
 
@@ -123,6 +127,7 @@ final class CollectivesRig {
 			IDBConnection::class => $this->database(),
 			IFactory::class => $this->languages(),
 			IRootFolder::class => $this->storage(),
+			IGroupManager::class => $this->groups(),
 			default => $this->autowire($class),
 		};
 		return $this->built[$class] = $instance;
@@ -162,7 +167,7 @@ final class CollectivesRig {
 	/** @return IUserManager knows alice */
 	private function users(): IUserManager {
 		$users = $this->mock(IUserManager::class);
-		$users->method('get')->willReturnCallback(fn (string $uid): ?IUser => $uid === 'alice' ? $this->user('alice') : null);
+		$users->method('get')->willReturnCallback(fn (string $uid): ?IUser => in_array($uid, self::ACCOUNTS, true) ? $this->user($uid) : null);
 		return $users;
 	}
 
@@ -177,6 +182,7 @@ final class CollectivesRig {
 	private function user(string $uid): IUser {
 		$user = $this->mock(IUser::class);
 		$user->method('getUID')->willReturn($uid);
+		$user->method('getDisplayName')->willReturn(ucfirst($uid));
 		return $user;
 	}
 
@@ -187,6 +193,7 @@ final class CollectivesRig {
 		$config->method('getUserValue')->willReturnCallback(fn (string $uid, string $app, string $key, mixed $default): string => match (true) {
 			$app === 'collectives' && $key === 'user_folder' => $this->folderSetting === '' ? (string)$default : $this->folderSetting,
 			$app === 'circles' && $key === 'userSingleId' && $uid === 'alice' => $this->teamsIdentity,
+			$app === 'circles' && $key === 'userSingleId' => isset(TeamsScene::$identities[$uid]) ? 'single-' . $uid : '',
 			default => (string)$default,
 		});
 		$config->expects(TestCase::never())->method('setUserValue');
@@ -198,6 +205,21 @@ final class CollectivesRig {
 		$guests = $this->mock(GuestIdentity::class);
 		$guests->method('isGuestAccount')->willReturnCallback(fn (): bool => $this->guestAccount ?? true);
 		return $guests;
+	}
+
+	/** @return IGroupManager the groups staff (3 accounts) and design (2 accounts) */
+	private function groups(): IGroupManager {
+		$groups = $this->mock(IGroupManager::class);
+		$groups->method('get')->willReturnCallback(function (string $gid): ?IGroup {
+			if (!in_array($gid, ['staff', 'design'], true)) {
+				return null;
+			}
+			$group = $this->mock(IGroup::class);
+			$group->method('count')->willReturn($gid === 'staff' ? 3 : 2);
+			$group->method('getDisplayName')->willReturn(ucfirst($gid));
+			return $group;
+		});
+		return $groups;
 	}
 
 	/** @return IDBConnection whose four-byte support is $this->fourBytes */

@@ -25,6 +25,9 @@ final class CollectivesPlanRendererTest extends TestCase {
 			'collectives_move' => $module->preview('collectives_move', ['collective_id' => 7, 'page_id' => $guide,
 				'parent_id' => CollectivesScene::$ids['Team/Readme.md'], 'title' => 'Manual'], 'alice'),
 			'collectives_create_collective' => $module->preview('collectives_create_collective', ['name' => 'Projetos', 'emoji' => '📘'], 'alice'),
+			'collectives_add_member' => $module->preview('collectives_add_member', ['collective_id' => 7, 'type' => 'user', 'id' => 'gina'], 'alice'),
+			'collectives_set_member_level' => $module->preview('collectives_set_member_level', ['collective_id' => 7, 'member_id' => 'm-carol', 'level' => 'moderator'], 'alice'),
+			'collectives_remove_member' => $module->preview('collectives_remove_member', ['collective_id' => 7, 'member_id' => 'm-carol'], 'alice'),
 		]);
 	}
 

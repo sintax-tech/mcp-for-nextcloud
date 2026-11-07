@@ -92,7 +92,7 @@ final class CollectivesScene {
 			throw new NotFoundException('Collective not found: ' . $id);
 		}
 		return new Collective(['id' => $id, 'name' => $data['name'], 'emoji' => '📘', 'circleId' => $data['circleId'] ?? 'circle-secret',
-			'canEdit' => $data['canEdit'], 'canShare' => false, 'shareToken' => 'share-token-secret', 'level' => 9]);
+			'canEdit' => $data['canEdit'], 'canShare' => false, 'shareToken' => 'share-token-secret', 'level' => $data['level'] ?? 9]);
 	}
 
 	/** @return Folder the folder of the collective; membership is the caller's (the page service checks it once per request) */

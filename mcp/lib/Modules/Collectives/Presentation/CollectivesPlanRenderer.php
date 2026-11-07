@@ -26,6 +26,10 @@ final class CollectivesPlanRenderer {
 				'collectives_move' => [Translator::t('Move page **%s** under *%s* as **%s**.', [PlanText::inline((string)$plan['page']['title']),
 					PlanText::inline((string)$plan['to']['parent_title']), PlanText::inline((string)$plan['to']['title'])])],
 				'collectives_create_collective' => [Translator::t('Create collective **%s** with a new team owned by you.', [PlanText::inline((string)$plan['name'])])],
+				'collectives_add_member' => [Translator::t('Add **%s** to collective *%s*.', [PlanText::inline((string)$plan['target']['display_name']), PlanText::inline((string)$plan['collective']['name'])])],
+				'collectives_set_member_level' => [Translator::t('Change the level of **%s** in collective *%s* to %s.', [PlanText::inline((string)$plan['member']['display_name']),
+					PlanText::inline((string)$plan['collective']['name']), PlanText::inline((string)$plan['level'])])],
+				'collectives_remove_member' => [Translator::t('Remove **%s** from collective *%s*.', [PlanText::inline((string)$plan['member']['display_name']), PlanText::inline((string)$plan['collective']['name'])])],
 				default => null,
 			};
 		} catch (\Throwable) {

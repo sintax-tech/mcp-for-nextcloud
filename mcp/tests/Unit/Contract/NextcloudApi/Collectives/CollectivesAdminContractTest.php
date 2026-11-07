@@ -9,6 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi\Collectives;
 
 use OCA\Mcp\Modules\Collectives\Integration\FoundingCapabilities;
 use OCA\Mcp\Modules\Collectives\Integration\FoundingSurface;
+use OCA\Mcp\Modules\Collectives\Integration\TeamsSurface;
 use OCA\Mcp\Modules\Collectives\Naming\CollectiveName;
 use PHPUnit\Framework\TestCase;
 
@@ -165,6 +166,50 @@ final class CollectivesAdminContractTest extends TestCase {
 		foreach (self::behavior()['collectives'] as $version => $record) {
 			$this->assertSame($version === '4.7.1', str_contains($record['methods']['Controller/CollectiveController.php::create'], 'isGuest()'),
 				"$version: native guest refusal; MCP refuses guests on every release");
+		}
+	}
+
+	/** @return void every Teams member the member tools name exists with its arity, and every constant has the proven value (C04b) */
+	public function testTeamsMembersAndConstants(): void {
+		foreach (FoundingCapabilities::MAJORS as $major) {
+			$classes = (require __DIR__ . '/../../../../fixtures/nextcloud-api/' . $major . '.php')['classes'];
+			foreach (TeamsSurface::MEMBERS as [$class, $method, $parameters]) {
+				$this->assertArrayHasKey($method, $classes[$class]['methods'] ?? [], "$class::$method in NC$major");
+				$this->assertCount(count($parameters), $classes[$class]['methods'][$method], "$class::$method arity in NC$major");
+			}
+			$recorded = self::behavior()['circles'][$major . '.0.0']['constants'];
+			foreach (TeamsSurface::CONSTANTS as [$class, $name, $value]) {
+				$this->assertSame($value, $recorded[substr($class, strrpos($class, '\\') + 1) . '::' . $name], "$class::$name in NC$major");
+			}
+		}
+	}
+
+	/** @return void the Teams rules the member tools plan around and report (C04 §13 C4–C6, §14 R2.4–R2.6, D3, D4) */
+	public function testTheMemberRulesOfTeams(): void {
+		foreach (FoundingCapabilities::MAJORS as $major) {
+			$m = self::behavior()['circles'][$major . '.0.0']['methods'];
+			$status = $m['FederatedItems/SingleMemberAdd.php::manageMemberStatus'];
+			$this->assertMatchesRegularExpression('/case Member::STATUS_REQUEST:\s*\$member->setLevel\(Member::LEVEL_MEMBER\);/', $status, "NC$major: a request is accepted");
+			$this->assertMatchesRegularExpression('/case Member::STATUS_INVITED:\s*throw/', $status, "NC$major: an invitation is not repeated");
+			$this->assertMatchesRegularExpression('/isConfig\(Circle::CFG_INVITE\)[^{]*\{\s*\$member->setStatus\(Member::STATUS_INVITED\);\s*\} else/', $status,
+				"NC$major: a new invitation keeps level 0");
+			$this->assertStringContainsString('insertOrUpdate($member)', $m['FederatedItems/SingleMemberAdd.php::generateMember'], "NC$major: verify already stores");
+			$this->assertStringContainsString('MembersLimitException', $m['Service/CircleService.php::confirmCircleNotFull'], "NC$major: 121 is MembersLimitException");
+			$this->assertMatchesRegularExpression('/\$level === Member::LEVEL_OWNER\)\s*\{\s*\$this->verifySwitchOwner/', $m['FederatedItems/MemberLevel.php::verify'], "NC$major: owner level is a transfer (D3)");
+			$this->assertStringContainsString('mustBeMember()', $m['FederatedItems/MemberLevel.php::verifyMemberLevel'], "NC$major: no level for a pending member");
+			$this->assertStringContainsString('cannotBeOwner()', $m['FederatedItems/MemberLevel.php::verifyMemberLevel'], "NC$major: the owner keeps its level");
+			$this->assertStringContainsString('cannotBeOwner()', $m['FederatedItems/MemberRemove.php::verify'], "NC$major: the owner is never removed");
+			$this->assertMatchesRegularExpression('/getUserType\(\) !== Member::TYPE_USER \|\| !\$member->isLocal\(\)\) \{\s*return;/', $m['Service/NotificationService.php::notificationInvited'],
+				"NC$major: only local accounts are notified, never groups");
+			$this->assertStringContainsString('setLocalCurrentApp(', $m['Service/FederatedUserService.php::getGroupCircle'], "NC$major: resolving a group sets the current app");
+			$this->assertStringContainsString('hasCurrentApp()', $m['Service/FederatedUserService.php::setMemberPatron'], "NC$major: the app is recorded as inviter then");
+			$this->assertMatchesRegularExpression('/if \(\$this->hasCurrentUser\(\)\) \{\s*return \$this->getCurrentUser\(\);/', $m['Service/FederatedUserService.php::getCurrentEntity'],
+				"NC$major: the readback as the actor wins over the current app");
+			$this->assertMatchesRegularExpression('/TYPE_MAIL\s*&& \$member->getUserType\(\) !== Member::TYPE_CONTACT/', $m['Listeners/Files/MemberAddedSendMail.php::handle'],
+				"NC$major: no direct email for accounts or groups");
+		}
+		foreach (self::behavior()['collectives'] as $version => $record) {
+			$this->assertStringContainsString('collective.level >= memberLevels.LEVEL_ADMIN', $record['adminGate'], "$version: members are managed by admins (D4)");
 		}
 	}
 }

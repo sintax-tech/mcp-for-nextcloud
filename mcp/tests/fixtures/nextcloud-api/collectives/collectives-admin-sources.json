@@ -15,9 +15,17 @@
             "collectives/lib/Service/PageService.php": "cbfd29fa855b8637c5527fa8b3e3ba226fa65ae7d46ff9adf438fc449ace4296",
             "collectives/lib/Mount/CollectiveFolderManager.php": "76c5e3d9bb35fc20784cb7707231aee31c093811e24ac5b3d78c08c57d6e1237",
             "collectives/lib/Controller/CollectiveController.php": "df987b48251d5e26d61df418af7e9f3ddf918b239992be879a65af857b593f08",
+            "collectives/src/stores/collectives.js": "aa41e1ef2893cb723dd3880d1715f2d23dd7ec40bdca21fa54a465d6d115e588",
             "circles/lib/CirclesManager.php": "bb9389b2e2c6cf220b3f0bf769e5ace3d85d90f25ee77337aa0d98a706fa5b3b",
+            "circles/lib/Service/FederatedUserService.php": "7f6e9a9c525800dbc07dc53f04801a600eac0421f927ab8270855f6621880b8e",
+            "circles/lib/FederatedItems/SingleMemberAdd.php": "dac2d7635219d079aa854b710585bc5dfa0000b8b9ef651dab3e0dd7a6572ca8",
+            "circles/lib/FederatedItems/MemberLevel.php": "87288764146f95a92305f15986118f61f5b62f7b76e9882986529108f952e8c1",
+            "circles/lib/FederatedItems/MemberRemove.php": "bdedd825cb4f3e13ea926a7e504352566c2eca2cfcd5aa870ed6e27910f909f7",
+            "circles/lib/Service/NotificationService.php": "6de636f3bb43fce144f65bc07dc63b38c8b894c32515c1d08962d6bc2edd7c89",
             "circles/lib/Service/CircleService.php": "1dbeb6df4fd195571b0208d205c3fd2756e93ab66fbaa8ccb3cf58278efed725",
-            "circles/lib/Service/FederatedUserService.php": "7f6e9a9c525800dbc07dc53f04801a600eac0421f927ab8270855f6621880b8e"
+            "circles/lib/Listeners/Files/MemberAddedSendMail.php": "ebd7bdc68758acfa7a43350a68e7e914bd599321bc37ef3b56fb2c8832e4f956",
+            "circles/lib/Model/Member.php": "41283b64a607be73ca3e6e777ee21efa407782fa8980782ccd866d6d2394d795",
+            "circles/lib/Model/Circle.php": "7f4ff726948da55a804d09a73a554d6b51926bc93ebfe8cfd0c8791fb7094278"
         }
     },
     "32": {
@@ -36,9 +44,17 @@
             "collectives/lib/Service/PageService.php": "cbfd29fa855b8637c5527fa8b3e3ba226fa65ae7d46ff9adf438fc449ace4296",
             "collectives/lib/Mount/CollectiveFolderManager.php": "76c5e3d9bb35fc20784cb7707231aee31c093811e24ac5b3d78c08c57d6e1237",
             "collectives/lib/Controller/CollectiveController.php": "df987b48251d5e26d61df418af7e9f3ddf918b239992be879a65af857b593f08",
+            "collectives/src/stores/collectives.js": "aa41e1ef2893cb723dd3880d1715f2d23dd7ec40bdca21fa54a465d6d115e588",
             "circles/lib/CirclesManager.php": "bb9389b2e2c6cf220b3f0bf769e5ace3d85d90f25ee77337aa0d98a706fa5b3b",
+            "circles/lib/Service/FederatedUserService.php": "58a9e2175660c601d3fab395b98b7d92d4c42c0001c0dfbebe7af77b77e62f4e",
+            "circles/lib/FederatedItems/SingleMemberAdd.php": "09474e7bd7608c9e88c77336d9c42434860d001c67f15c5148508aadd86251a8",
+            "circles/lib/FederatedItems/MemberLevel.php": "87288764146f95a92305f15986118f61f5b62f7b76e9882986529108f952e8c1",
+            "circles/lib/FederatedItems/MemberRemove.php": "bdedd825cb4f3e13ea926a7e504352566c2eca2cfcd5aa870ed6e27910f909f7",
+            "circles/lib/Service/NotificationService.php": "6de636f3bb43fce144f65bc07dc63b38c8b894c32515c1d08962d6bc2edd7c89",
             "circles/lib/Service/CircleService.php": "f073bf7073777135d5c1f99fd007761a000cc28399f7996b99cb882cc5325b91",
-            "circles/lib/Service/FederatedUserService.php": "58a9e2175660c601d3fab395b98b7d92d4c42c0001c0dfbebe7af77b77e62f4e"
+            "circles/lib/Listeners/Files/MemberAddedSendMail.php": "ebd7bdc68758acfa7a43350a68e7e914bd599321bc37ef3b56fb2c8832e4f956",
+            "circles/lib/Model/Member.php": "6da993feac2f08a7ceb6491b83713613ecd87e1312f97f37c15c6b1f3e213b12",
+            "circles/lib/Model/Circle.php": "f34a877cbbe3874d85b657f100d0a85cafbadc54198008bb080f45942cf57785"
         }
     },
     "33": {
@@ -58,9 +74,17 @@
             "collectives/lib/Mount/CollectiveFolderManager.php": "5a5a87d26fed91f2c2613e31e995814e940927b2cc1ba650b3ceaf5a2ed9b8bd",
             "collectives/lib/Controller/CollectiveController.php": "61c3d645ba2a4f83b7ada3d9271af386387fcedb66db102136b5935a675be0d1",
             "collectives/lib/Service/EmojiHelper.php": "13a3726f3d0d9b18b19eb15b6cd5b62f1f45b4717f90a9c14661445dabe982cd",
+            "collectives/src/stores/collectives.js": "95f17b044c7a3f4379691901b91b5eef236e0e3f52125fbeb763e7d407bdc5e2",
             "circles/lib/CirclesManager.php": "16e1cdc062c9b4caab3847d65e98aae96e40328d4238964a69e25a487be63adc",
-            "circles/lib/Service/CircleService.php": "3b79acdae335376c7eb9ce6890cdad16ed45d215bc3113bad0162559e368c6ce",
             "circles/lib/Service/FederatedUserService.php": "0bda5f753f79e46a2f3f8858507a7470d1ef77cd9b7d0c491afddd28d432fd4d",
+            "circles/lib/FederatedItems/SingleMemberAdd.php": "93e7e5661f7c4a75504b196fd0afe0c2089f207655b6d1488dc32f7680de87ac",
+            "circles/lib/FederatedItems/MemberLevel.php": "87288764146f95a92305f15986118f61f5b62f7b76e9882986529108f952e8c1",
+            "circles/lib/FederatedItems/MemberRemove.php": "bdedd825cb4f3e13ea926a7e504352566c2eca2cfcd5aa870ed6e27910f909f7",
+            "circles/lib/Service/NotificationService.php": "6de636f3bb43fce144f65bc07dc63b38c8b894c32515c1d08962d6bc2edd7c89",
+            "circles/lib/Service/CircleService.php": "3b79acdae335376c7eb9ce6890cdad16ed45d215bc3113bad0162559e368c6ce",
+            "circles/lib/Listeners/Files/MemberAddedSendMail.php": "ebd7bdc68758acfa7a43350a68e7e914bd599321bc37ef3b56fb2c8832e4f956",
+            "circles/lib/Model/Member.php": "6da993feac2f08a7ceb6491b83713613ecd87e1312f97f37c15c6b1f3e213b12",
+            "circles/lib/Model/Circle.php": "d534f4af20200ab921232993020a3de10e09b10c38d1aedfc5569fc40bde2b10",
             "circles/lib/ConfigLexicon.php": "40e894a36b3dc12dd52afb7675ce307dda0f715eb34723327b2e1a64cb23d9fa"
         }
     },
@@ -80,9 +104,17 @@
             "collectives/lib/Service/PageService.php": "964a5d0567fe239a94ff9021f7e8ef19e45bf9dfaddc3bd51dbbbc9acdf12916",
             "collectives/lib/Mount/CollectiveFolderManager.php": "662a6041faa0fe583d49e8dbd446ea3447b731805988cbaded6492322c87a2d9",
             "collectives/lib/Controller/CollectiveController.php": "df987b48251d5e26d61df418af7e9f3ddf918b239992be879a65af857b593f08",
+            "collectives/src/stores/collectives.js": "e4eb0940e36d4596d8fc78e789a000b8b1b1acb3c2aaf221a0440d9f7c39f91c",
             "circles/lib/CirclesManager.php": "2c14c226319411341b7fba6027fbc820e76a33e9e918f09fb4420a6f3dfcba28",
-            "circles/lib/Service/CircleService.php": "0a809c81a96b8fe73f9be32065cc844d3561b288c7f95414bee451180607c5c7",
             "circles/lib/Service/FederatedUserService.php": "0bda5f753f79e46a2f3f8858507a7470d1ef77cd9b7d0c491afddd28d432fd4d",
+            "circles/lib/FederatedItems/SingleMemberAdd.php": "93e7e5661f7c4a75504b196fd0afe0c2089f207655b6d1488dc32f7680de87ac",
+            "circles/lib/FederatedItems/MemberLevel.php": "87288764146f95a92305f15986118f61f5b62f7b76e9882986529108f952e8c1",
+            "circles/lib/FederatedItems/MemberRemove.php": "bdedd825cb4f3e13ea926a7e504352566c2eca2cfcd5aa870ed6e27910f909f7",
+            "circles/lib/Service/NotificationService.php": "6de636f3bb43fce144f65bc07dc63b38c8b894c32515c1d08962d6bc2edd7c89",
+            "circles/lib/Service/CircleService.php": "0a809c81a96b8fe73f9be32065cc844d3561b288c7f95414bee451180607c5c7",
+            "circles/lib/Listeners/Files/MemberAddedSendMail.php": "ebd7bdc68758acfa7a43350a68e7e914bd599321bc37ef3b56fb2c8832e4f956",
+            "circles/lib/Model/Member.php": "6da993feac2f08a7ceb6491b83713613ecd87e1312f97f37c15c6b1f3e213b12",
+            "circles/lib/Model/Circle.php": "d534f4af20200ab921232993020a3de10e09b10c38d1aedfc5569fc40bde2b10",
             "circles/lib/ConfigLexicon.php": "aefb568c1f26a501b50c0f98fd24bdf9fc1c3be776a2b10d37ebc2efe5a337f7"
         }
     },
@@ -103,9 +135,17 @@
             "collectives/lib/Mount/CollectiveFolderManager.php": "5143dba2acb883a1536cbd3b1ec914516619f44a2cbd2d644001ca0659b1d114",
             "collectives/lib/Controller/CollectiveController.php": "5ffaedf7e0ae6a1d54046c86ac9c54727d1a5c9b36e3679637b0ea15327453a4",
             "collectives/lib/Service/EmojiHelper.php": "d3c5d0c334cd5839481ad3c967272c84201a8a769101d823b25cc393135bd7d0",
+            "collectives/src/stores/collectives.js": "14725fcc0ace80d85b093d19850b488eea842bfb7014660687dcbf9b22870157",
             "circles/lib/CirclesManager.php": "bfd142e7968bda4464d032119358777af8dfd9f2848c5884d3d71db319f67c0a",
-            "circles/lib/Service/CircleService.php": "1d8d7582aa79153fcc5c73cfc0fd58a787dc23ec111595151346d61b8a5c009f",
             "circles/lib/Service/FederatedUserService.php": "d3905a8114a4c424a4d5c59b9adbe9c808d1b0a51a748738e10732fcd91b547b",
+            "circles/lib/FederatedItems/SingleMemberAdd.php": "36dc84cdacef4d42db15edbe64600a7b97940e233cf7931a59f5b17068801af8",
+            "circles/lib/FederatedItems/MemberLevel.php": "5cc321318aff86652db423e0a8c11cef9e83600cfe968c2314fb4bdb86b7330c",
+            "circles/lib/FederatedItems/MemberRemove.php": "5dcc74b611396bb03c1ae5d56bf57803846ae10d1f22a742f8457ce08bf34545",
+            "circles/lib/Service/NotificationService.php": "51a01181581592ececf605f724d1b3efac4a7df1e1e3b7371ccb8808be42df92",
+            "circles/lib/Service/CircleService.php": "1d8d7582aa79153fcc5c73cfc0fd58a787dc23ec111595151346d61b8a5c009f",
+            "circles/lib/Listeners/Files/MemberAddedSendMail.php": "f72df824685e5a1b9d7e076d47e660cca712c4ada3ae26a2e49f30714111867d",
+            "circles/lib/Model/Member.php": "4eda69248d7112b212d987f157641ff8ce50aaf220e4b266eb1177e0d5b015d8",
+            "circles/lib/Model/Circle.php": "47cbdbac6aa6f3ca8d947f24f43e4770e21a7074dad08d42f9615200d125218f",
             "circles/lib/ConfigLexicon.php": "8fb9a20d182d0b787d4f5cdfa3fa52e99979758da99979f8020b08449326a499"
         }
     }

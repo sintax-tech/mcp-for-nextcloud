@@ -174,7 +174,8 @@
                             "create": false,
                             "edit": false,
                             "move": false,
-                            "collective.create": false
+                            "collective.create": false,
+                            "members": false
                         }
                     },
                     "origins": {
@@ -485,6 +486,10 @@
                                 "collective.create": {
                                     "source": "default",
                                     "groupIds": []
+                                },
+                                "members": {
+                                    "source": "default",
+                                    "groupIds": []
                                 }
                             }
                         }
@@ -715,7 +720,8 @@
                             "create": false,
                             "edit": false,
                             "move": false,
-                            "collective.create": false
+                            "collective.create": false,
+                            "members": false
                         }
                     },
                     "origins": {
@@ -1024,6 +1030,10 @@
                                     "groupIds": []
                                 },
                                 "collective.create": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "members": {
                                     "source": "default",
                                     "groupIds": []
                                 }
@@ -1959,7 +1969,8 @@
                                         "create": false,
                                         "edit": false,
                                         "move": false,
-                                        "collective.create": false
+                                        "collective.create": false,
+                                        "members": false
                                     }
                                 },
                                 "origins": {
@@ -2268,6 +2279,10 @@
                                                 "groupIds": []
                                             },
                                             "collective.create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "members": {
                                                 "source": "default",
                                                 "groupIds": []
                                             }
@@ -2802,7 +2817,8 @@
                             "create": false,
                             "edit": false,
                             "move": false,
-                            "collective.create": false
+                            "collective.create": false,
+                            "members": false
                         }
                     },
                     "origins": {
@@ -3111,6 +3127,10 @@
                                     "groupIds": []
                                 },
                                 "collective.create": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "members": {
                                     "source": "default",
                                     "groupIds": []
                                 }

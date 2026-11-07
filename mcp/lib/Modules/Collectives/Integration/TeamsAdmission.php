@@ -25,6 +25,8 @@ use OCP\IUserManager;
 class TeamsAdmission {
 	/** Grant operation of creating a collective. */
 	public const CREATE_COLLECTIVE = 'collective.create';
+	/** Grant operation of listing and managing the members of a collective. */
+	public const MEMBERS = 'members';
 
 	/**
 	 * @param CollectivesAdmission $admission the admission of every Collectives call
@@ -51,8 +53,16 @@ class TeamsAdmission {
 		if ($operation === self::CREATE_COLLECTIVE && $this->guests->isGuestAccount($user)) {
 			throw new ToolFailure(FoundingMessages::guestsCannotCreate());
 		}
-		if ($this->config->getUserValue($uid, 'circles', 'userSingleId', '') === '') {
+		if (!$this->identityRecorded($uid)) {
 			throw new ToolFailure(FoundingMessages::teamsNotReady());
 		}
+	}
+
+	/**
+	 * @param string $uid an account
+	 * @return bool whether Teams already recorded its identity, read without resolving it
+	 */
+	public function identityRecorded(string $uid): bool {
+		return $this->config->getUserValue($uid, 'circles', 'userSingleId', '') !== '';
 	}
 }

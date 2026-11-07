@@ -894,8 +894,8 @@
  */
 /**
  * Access levels of Collectives: Read lists collectives and pages, reads and searches them, then Full adds creating,
- * editing and moving pages together. Creating a collective ('collective.create') is in no level: it is chosen operation
- * by operation, so no preset grants it and the presets stay what they were.
+ * editing and moving pages together. Creating a collective ('collective.create') and managing members ('members') are in
+ * no level: they are chosen operation by operation, so no preset grants them and the presets stay what they were.
  * Registered in window.OCA.Mcp.Admin.levelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
  */
 (function (root) {
@@ -903,7 +903,7 @@
 
 	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 	catalog.tiers.collectives = [['read'], ['create', 'edit', 'move']]
-	catalog.untiered = Object.assign(catalog.untiered || {}, { collectives: ['collective.create'] })
+	catalog.untiered = Object.assign(catalog.untiered || {}, { collectives: ['collective.create', 'members'] })
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
 /* admin/admin-levels.js */
@@ -1178,6 +1178,7 @@
 				read: t('mcp', 'read'),
 				schema: t('mcp', 'schema'), results: t('mcp', 'results'),
 				'collective.create': t('mcp', 'create collectives'),
+				members: t('mcp', 'manage members'),
 				edit: t('mcp', 'edit'),
 				create: t('mcp', 'create'),
 				move: t('mcp', 'move'),
@@ -1215,6 +1216,9 @@
 			}
 			if (module === 'collectives' && operation === 'collective.create') {
 				return t('mcp', 'Create new collectives, each with its own new team owned by the user; starts off')
+			}
+			if (module === 'collectives' && operation === 'members') {
+				return t('mcp', 'List the members of collectives and, as their admin, add, remove or change the level of members; starts off')
 			}
 			if (module === 'calendar' && operation === 'transfer') {
 				return t('mcp', 'Move an event to another person’s calendar')
@@ -6433,7 +6437,7 @@
 		 * @return {string}
 		 */
 		function operationName(operation) {
-			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), schema: t('mcp', 'schema'), 'collective.create': t('mcp', 'create collectives'), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
+			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), schema: t('mcp', 'schema'), 'collective.create': t('mcp', 'create collectives'), members: t('mcp', 'manage members'), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
 		}
 
 		/** Flatten and sort granted module and operation pairs for stable draft comparison.
@@ -8310,7 +8314,7 @@
 		 * @return {string}
 		 */
 		function operationName(operation) {
-			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), schema: t('mcp', 'schema'), 'collective.create': t('mcp', 'create collectives'), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
+			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), schema: t('mcp', 'schema'), 'collective.create': t('mcp', 'create collectives'), members: t('mcp', 'manage members'), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
 		}
 
 		/** The first check that blocks, by the code of the effective access (EffectiveResult::blockingGate).

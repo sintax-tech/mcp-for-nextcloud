@@ -33,9 +33,12 @@ final class CollectivesSchema {
 	 * @param array<string, array<string, mixed>> $properties input properties, in published order
 	 * @param list<string> $required required properties
 	 * @param list<string> $requires capabilities besides `collectives.native`
+	 * @param list<string>|null $grantAnyOf the grants that admit the tool instead of its operation, null for the operation
+	 * @param bool $destructiveHint whether the tool may take something away beyond what its operation says
 	 * @return ToolDefinition the definition of one Collectives tool
 	 */
-	public static function definition(string $name, string $operation, string $description, array $properties, array $required = [], array $requires = []): ToolDefinition {
+	public static function definition(string $name, string $operation, string $description, array $properties, array $required = [],
+		array $requires = [], ?array $grantAnyOf = null, bool $destructiveHint = false): ToolDefinition {
 		$schema = ['type' => 'object', 'properties' => $properties === [] ? new \stdClass() : $properties, 'additionalProperties' => false];
 		return new ToolDefinition(
 			name: $name,
@@ -44,6 +47,8 @@ final class CollectivesSchema {
 			description: $description,
 			inputSchema: $required === [] ? $schema : $schema + ['required' => $required],
 			app: 'collectives',
+			grantAnyOf: $grantAnyOf,
+			destructiveHint: $destructiveHint,
 			requires: [CollectivesCapabilities::KEY, ...$requires],
 		);
 	}
@@ -72,6 +77,11 @@ final class CollectivesSchema {
 			'cursor' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 256, 'description' => CollectivesMessages::PARAM_CURSOR],
 			'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => self::MAX_LIMIT, 'default' => self::DEFAULT_LIMIT, 'description' => CollectivesMessages::PARAM_LIMIT],
 		];
+	}
+
+	/** @return array<string, mixed> the member id property of the member tools */
+	public static function memberId(): array {
+		return ['type' => 'string', 'minLength' => 1, 'maxLength' => 64, 'description' => MembershipMessages::PARAM_MEMBER_ID];
 	}
 
 	/** @return array<string, mixed> the optimistic-concurrency ETag property */

@@ -35,9 +35,17 @@ final class CollectivesAdminFixtureGenerator {
 	/** @var array<string, list<string>> Circles methods recorded, by file under lib/ */
 	private const CIRCLES = [
 		'CirclesManager.php' => ['startSession', 'stopSession', 'startSuperSession', 'getCircles', 'createCircle'],
-		'Service/CircleService.php' => ['create', 'cleanCircleName'],
-		'Service/FederatedUserService.php' => ['getLocalFederatedUser'],
+		'Service/FederatedUserService.php' => ['getLocalFederatedUser', 'getGroupCircle', 'setMemberPatron', 'getCurrentEntity'],
+		'FederatedItems/SingleMemberAdd.php' => ['verify', 'generateMember', 'manageMemberStatus'],
+		'FederatedItems/MemberLevel.php' => ['verify', 'verifyMemberLevel', 'verifySwitchOwner'],
+		'FederatedItems/MemberRemove.php' => ['verify'],
+		'Service/NotificationService.php' => ['notificationInvited'],
+		'Service/CircleService.php' => ['create', 'cleanCircleName', 'confirmCircleNotFull'],
+		'Listeners/Files/MemberAddedSendMail.php' => ['handle'],
 	];
+	/** @var array<string, list<string>> native constants recorded, by class file under lib/ */
+	private const CONSTANTS = ['Model/Member.php' => ['LEVEL_NONE', 'LEVEL_MEMBER', 'LEVEL_MODERATOR', 'LEVEL_ADMIN', 'LEVEL_OWNER', 'TYPE_USER',
+		'TYPE_GROUP', 'STATUS_INVITED', 'STATUS_REQUEST', 'STATUS_MEMBER', 'STATUS_BLOCKED'], 'Model/Circle.php' => ['CFG_SINGLE', 'CFG_PERSONAL', 'CFG_INVITE']];
 	/** The notice Collectives returns when it adopts an existing team. */
 	public const ADOPTION = 'Created collective "%s" for existing team.';
 
@@ -70,8 +78,9 @@ final class CollectivesAdminFixtureGenerator {
 				$old = (string)file_get_contents($fixtureFile);
 				FixtureFile::write($fixtureFile, substr($old, 0, (int)strpos($old, 'return [')), $fixture);
 				$files = [];
-				$collectivesRecord = self::record($collectivesApp, self::COLLECTIVES, $files) + ['l10n' => self::adoption($collectivesApp)];
-				$circlesRecord = self::record($circlesApp, self::CIRCLES, $files) + [
+				$collectivesRecord = self::record($collectivesApp, self::COLLECTIVES, $files) + ['l10n' => self::adoption($collectivesApp),
+					'adminGate' => self::adminGate($collectivesApp, $files)];
+				$circlesRecord = self::record($circlesApp, self::CIRCLES, $files) + ['constants' => self::constants($circlesApp, $files),
 					'userSingleId' => self::userSingleId($circlesApp, $files),
 					'teamFolderListener' => is_file($circlesApp . '/lib/Listeners/TeamFolderLifecycleListener.php'),
 				];
@@ -155,6 +164,38 @@ final class CollectivesAdminFixtureGenerator {
 			}
 		}
 		return ['files' => $count, 'empty' => $empty];
+	}
+
+	/**
+	 * @param string $app the Circles root
+	 * @param array<string, string> $files SHA-256 of every file read; filled here
+	 * @return array<string, int|string> the native constants the member tools rely on, `Class::NAME` => value
+	 */
+	private static function constants(string $app, array &$files): array {
+		$found = [];
+		foreach (self::CONSTANTS as $file => $names) {
+			$files['circles/lib/' . $file] = hash_file('sha256', $app . '/lib/' . $file);
+			$source = (string)file_get_contents($app . '/lib/' . $file);
+			foreach ($names as $name) {
+				if (preg_match('/const ' . $name . " = ('([^']*)'|(-?\\d+));/", $source, $m) !== 1) {
+					throw new RuntimeException('Missing constant ' . $name);
+				}
+				$found[basename($file, '.php') . '::' . $name] = ($m[3] ?? '') !== '' ? (int)$m[3] : $m[2];
+			}
+		}
+		return $found;
+	}
+
+	/**
+	 * @param string $app the Collectives root
+	 * @param array<string, string> $files SHA-256 of every file read; filled here
+	 * @return string the getters of the collectives store that gate "Manage members" in the Collectives interface
+	 */
+	private static function adminGate(string $app, array &$files): string {
+		$path = $app . '/src/stores/collectives.js';
+		$files['collectives/src/stores/collectives.js'] = hash_file('sha256', $path);
+		$source = (string)file_get_contents($path);
+		return preg_match('/isCollectiveAdmin: \\(\\) => \\(collective\\) => \\{[^}]*\\}/', $source, $m) === 1 ? $m[0] : '';
 	}
 
 	/**

@@ -43,7 +43,8 @@ final class GrantCatalog {
 		// 'create' adds an empty page, 'edit' changes the Markdown of one and 'move' moves or renames one inside its
 		// collective, through Collectives; all three start denied. Deleting pages is not offered. 'collective.create' is
 		// one literal operation, not 'create' of pages: it creates a new collective with its own new team, and starts denied.
-		'collectives' => ['read', 'create', 'edit', 'move', 'collective.create'],
+		// 'members' lists the members of a collective and adds, removes or changes the level of one; it starts denied.
+		'collectives' => ['read', 'create', 'edit', 'move', 'collective.create', 'members'],
 	];
 
 	/** Prevents instantiation of the immutable catalog. */

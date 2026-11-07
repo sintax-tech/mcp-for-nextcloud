@@ -19,8 +19,16 @@ use Psr\Container\ContainerInterface;
  * helper closes them only after its `try/catch` (`CircleHelper.php:198-231`), so an exception may leave the current
  * user or the privileged bypass set on the shared Teams service for the rest of the request. MCP itself never starts a
  * privileged, app or occ session.
+ *
+ * Resolving a group makes Teams set the Teams app as the current app of the request, which `stopSession()` does not
+ * clear (`FederatedUserService::getGroupCircle`, 35 `:1159-1194`; `CirclesManager::stopSession`, 35 `:197-201`). So the
+ * session is sealed before that resolution: afterwards only the readback of the same call may open it again, in the
+ * actor's session, where Teams prefers the current user to the current app. An MCP request carries one call only.
  */
 class TeamsSession {
+	/** Whether a group resolution may have set the Teams app as the current app of this request. */
+	private bool $sealed = false;
+
 	/** @param ContainerInterface $container server container the Teams manager is shared in */
 	public function __construct(private ContainerInterface $container) {
 	}
@@ -29,10 +37,15 @@ class TeamsSession {
 	 * @template T
 	 * @param string $uid actor; the session acts as this account and never as another one
 	 * @param Closure(object): T $work what to do with the Teams manager while the session is open
+	 * @param bool $readback whether this is the readback of the call that sealed the session
 	 * @return T what the work returned
+	 * @throws ToolFailure when the session is sealed and this is not that readback
 	 * @throws \Throwable whatever the resolution or the work throws, after the session was closed
 	 */
-	public function asActor(string $uid, Closure $work): mixed {
+	public function asActor(string $uid, Closure $work, bool $readback = false): mixed {
+		if ($this->sealed && !$readback) {
+			throw new ToolFailure(CollectivesMessages::unavailable());
+		}
 		$teams = $this->manager();
 		try {
 			$teams->startSession($teams->getLocalFederatedUser($uid));
@@ -56,6 +69,11 @@ class TeamsSession {
 		} finally {
 			$teams->stopSession();
 		}
+	}
+
+	/** Seals the session before a resolution that may set the Teams app as the current app of the request. */
+	public function seal(): void {
+		$this->sealed = true;
 	}
 
 	/**

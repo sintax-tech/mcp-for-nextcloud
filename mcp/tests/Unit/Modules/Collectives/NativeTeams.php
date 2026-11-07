@@ -20,10 +20,12 @@ namespace OCA\Circles\Model\Probes {
 }
 
 namespace OCA\Circles\Model {
+	use OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene;
+
 	/** Double of a Teams identity. */
 	class FederatedUser {
-		/** @param string $userId the account */
-		public function __construct(public string $userId) {
+		/** @param string $userId the account or group @param int $type user or group */
+		public function __construct(public string $userId, public int $type = 1) {
 		}
 	}
 
@@ -55,12 +57,17 @@ namespace OCA\Circles\Model {
 
 		/** @return object the owner */
 		public function getOwner(): object {
-			return new \OCA\Mcp\Tests\Unit\Modules\Collectives\TeamMember($this->data['owner']);
+			return new \OCA\Mcp\Tests\Unit\Modules\Collectives\TeamMember($this->data['owner'], 1, 9);
 		}
 
 		/** @param int $limit ignored @return list<object> the members */
 		public function getMembers(int $limit = 0): array {
-			return array_map(static fn (string $uid): object => new \OCA\Mcp\Tests\Unit\Modules\Collectives\TeamMember($uid), $this->data['members']);
+			return TeamsScene::members($this->id);
+		}
+
+		/** @param int $flag settings asked about @param int $test ignored @return bool whether any is set */
+		public function isConfig(int $flag, int $test = 0): bool {
+			return ((TeamsScene::$teams[$this->id]['config'] ?? 0) & $flag) !== 0;
 		}
 	}
 }
@@ -79,6 +86,7 @@ namespace OCA\Circles {
 			if (TeamsScene::$failResolve) {
 				throw new \RuntimeException('identity could not be resolved');
 			}
+			TeamsScene::$identities[$userId] = true;
 			return new FederatedUser($userId);
 		}
 
@@ -104,6 +112,33 @@ namespace OCA\Circles {
 		/** @return list<Circle> the teams of the session's user */
 		public function getCircles(?CircleProbe $probe = null, bool $refreshCache = false): array {
 			return array_values(array_map(static fn (string $id): Circle => new Circle($id, TeamsScene::$teams[$id]), TeamsScene::visibleTo(TeamsScene::session())));
+		}
+
+		/** @param string $federatedId account or group @param int $type its type @return FederatedUser its identity; a group sets the Teams app */
+		public function getFederatedUser(string $federatedId, int $type = 0): FederatedUser {
+			if ($type === 2) {
+				TeamsScene::$calls[] = 'group-app';
+				TeamsScene::$currentApp = true;
+				if (TeamsScene::$failResolveGroup) {
+					throw new \RuntimeException('group could not be resolved');
+				}
+			}
+			return new FederatedUser($federatedId, $type);
+		}
+
+		/** @return object the membership Teams made */
+		public function addMember(string $circleId, FederatedUser $federatedUser): object {
+			return TeamsScene::add($circleId, $federatedUser);
+		}
+
+		/** @return object the member with its new level */
+		public function levelMember(string $memberId, int $level): object {
+			return TeamsScene::level($memberId, $level);
+		}
+
+		/** @param string $memberId the membership to end */
+		public function removeMember(string $memberId): void {
+			TeamsScene::remove($memberId);
 		}
 
 		/** @return Circle one team the session's user sees */

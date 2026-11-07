@@ -95,7 +95,8 @@
             "create",
             "edit",
             "move",
-            "collective.create"
+            "collective.create",
+            "members"
         ]
     },
     "DENIED_READS": [

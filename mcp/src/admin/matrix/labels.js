@@ -42,6 +42,7 @@
 				read: t('mcp', 'read'),
 				schema: t('mcp', 'schema'), results: t('mcp', 'results'),
 				'collective.create': t('mcp', 'create collectives'),
+				members: t('mcp', 'manage members'),
 				edit: t('mcp', 'edit'),
 				create: t('mcp', 'create'),
 				move: t('mcp', 'move'),
@@ -79,6 +80,9 @@
 			}
 			if (module === 'collectives' && operation === 'collective.create') {
 				return t('mcp', 'Create new collectives, each with its own new team owned by the user; starts off')
+			}
+			if (module === 'collectives' && operation === 'members') {
+				return t('mcp', 'List the members of collectives and, as their admin, add, remove or change the level of members; starts off')
 			}
 			if (module === 'calendar' && operation === 'transfer') {
 				return t('mcp', 'Move an event to another person’s calendar')

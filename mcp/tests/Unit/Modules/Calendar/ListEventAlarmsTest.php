@@ -81,6 +81,24 @@ final class ListEventAlarmsTest extends CalendarTestCase {
 		self::assertStringNotContainsString('Secret', json_encode($item, JSON_THROW_ON_ERROR));
 	}
 
+	/** @return void native read-only shares hide all reminder fields even on public events */
+	public function testReadOnlyShareHidesOwnerReminders(): void {
+		$this->addEvent(4, self::alarm('DISPLAY', '-PT5M', 'OwnerSecret')
+			. self::alarm('AUDIO', '-PT10M', 'OwnerAudio'), 'CLASS:PUBLIC');
+		$item = $this->items(self::READONLY)[0];
+		self::assertArrayNotHasKey('alarms', $item);
+		self::assertArrayNotHasKey('otherAlarms', $item);
+		self::assertStringNotContainsString('OwnerSecret', json_encode($item, JSON_THROW_ON_ERROR));
+	}
+
+	/** @return void a writable share still exposes its public event reminders */
+	public function testWritableShareShowsReminders(): void {
+		$this->addEvent(3, self::alarm('DISPLAY', '-PT5M', 'Team reminder'), 'CLASS:PUBLIC');
+		$item = $this->items(self::TEAM)[0];
+		self::assertSame([['minutesBefore' => 5, 'description' => 'Team reminder']], $item['alarms']);
+		self::assertSame(0, $item['otherAlarms']);
+	}
+
 	/** @return void recurrence overrides keep their own reminder projection */
 	public function testOccurrenceUsesItsOwnAlarms(): void {
 		$master = "UID:r\nDTSTART:20260310T100000Z\nDTEND:20260310T110000Z\nRRULE:FREQ=DAILY;COUNT=2\n"

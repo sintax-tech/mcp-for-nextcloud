@@ -10,14 +10,14 @@ use OCA\Mcp\Tests\Integration\Compat\LegacyCatalogContract;
 use PHPUnit\Framework\Assert;
 use UnexpectedValueException;
 
-/** Keeps the unit upgrade guards aligned with only the reviewed 1.2.2 catalog/default additions. */
+/** Keeps the unit upgrade guards aligned with only the reviewed 1.2.2 and approved 1.3.0 F00 catalog/default additions. */
 final class LegacyCatalogAssertions {
 	/** @var array<string, list<string>> Explicit operations added after the released baseline. */
 	private const MODULES = [
 		'mail' => ['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'],
-		'tables' => ['read', 'create', 'edit'],
+		'tables' => ['read', 'create', 'edit', 'schema', 'share'],
 		'forms' => ['read', 'results', 'create', 'edit'],
-		'polls' => ['read', 'results', 'links', 'create'],
+		'polls' => ['read', 'results', 'links', 'create', 'configure', 'options', 'options.remove', 'share', 'invite'],
 	];
 
 	/** @return void Legacy operations remain exact; missing and unreviewed additions fail. */

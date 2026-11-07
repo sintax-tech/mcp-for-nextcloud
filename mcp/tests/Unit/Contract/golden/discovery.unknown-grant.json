@@ -1155,7 +1155,7 @@
                     {
                         "name": "calendar_list_events",
                         "title": "List events",
-                        "description": "Lists events in a time range (default: next 7 days). calendar_list_events includes alarms (minutesBefore and description) for DISPLAY reminders relative to the start, and otherAlarms counts other reminders without exposing their details. Confidential events and read-only shares do not expose reminders.",
+                        "description": "Lists events in a time range (default: next 7 days). calendar_list_events includes alarms (minutesBefore and description) for DISPLAY reminders relative to the start, and otherAlarms counts other reminders without exposing their details. Confidential events and read-only shares do not expose reminders. A negative, non-integer or greater than 40320 minutesBefore value must be adjusted before reusing it in create/update.",
                         "inputSchema": {
                             "type": "object",
                             "properties": {

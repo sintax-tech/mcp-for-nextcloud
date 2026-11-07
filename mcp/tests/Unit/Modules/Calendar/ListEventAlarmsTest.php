@@ -60,6 +60,28 @@ final class ListEventAlarmsTest extends CalendarTestCase {
 		self::assertSame(0, $item['otherAlarms']);
 	}
 
+	/** @return iterable<string, array{string, int|float}> managed offsets outside the write input domain */
+	public static function existingOffsets(): iterable {
+		yield 'after start' => ['PT15M', -15];
+		yield 'fractional minute' => ['-PT90S', 1.5];
+		yield 'over four weeks' => ['-P5W', 50400];
+	}
+
+	/**
+	 * @param string $trigger existing trigger, managed by update
+	 * @param int|float $minutesBefore exact offset in minutes
+	 * @return void existing values remain visible and are never rounded or counted as unhandled
+	 */
+	#[DataProvider('existingOffsets')]
+	public function testExistingOffsetsRemainInAlarms(string $trigger, int|float $minutesBefore): void {
+		$this->addEvent(1, self::alarm('DISPLAY', $trigger, 'Existing reminder'));
+		$item = $this->items(self::PERSONAL)[0];
+		self::assertSame([['minutesBefore' => $minutesBefore, 'description' => 'Existing reminder']], $item['alarms']);
+		self::assertSame(0, $item['otherAlarms']);
+		Translator::reset();
+		self::assertStringContainsString('must be adjusted before reusing', EventAlarmListing::note());
+	}
+
 	/** @return void unhandled components are counted without leaking their description or action */
 	public function testOtherAlarmsAreOnlyCounted(): void {
 		$this->addEvent(1, self::alarm('DISPLAY', '-PT5M', 'Visible')

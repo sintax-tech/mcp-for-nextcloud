@@ -16,11 +16,11 @@ use OCA\Mcp\Platform\Dav\Calendar;
 /** Projects occurrence reminders without exposing confidential event content. */
 final class EventAlarmListing {
 	/** Fixed English description and guide note, matching the tool catalog convention. */
-	public const NOTE = 'calendar_list_events includes alarms (minutesBefore and description) for DISPLAY reminders relative to the start, and otherAlarms counts other reminders without exposing their details. Confidential events and read-only shares do not expose reminders.';
+	public const NOTE = 'calendar_list_events includes alarms (minutesBefore and description) for DISPLAY reminders relative to the start, and otherAlarms counts other reminders without exposing their details. Confidential events and read-only shares do not expose reminders. A negative, non-integer or greater than 40320 minutesBefore value must be adjusted before reusing it in create/update.';
 
 	/** @return string reminder guidance in the authenticated user's language */
 	public static function note(): string {
-		return Translator::t('calendar_list_events includes alarms (minutesBefore and description) for DISPLAY reminders relative to the start, and otherAlarms counts other reminders without exposing their details. Confidential events and read-only shares do not expose reminders.');
+		return Translator::t('calendar_list_events includes alarms (minutesBefore and description) for DISPLAY reminders relative to the start, and otherAlarms counts other reminders without exposing their details. Confidential events and read-only shares do not expose reminders. A negative, non-integer or greater than 40320 minutesBefore value must be adjusted before reusing it in create/update.');
 	}
 
 	/** Static projection only. */

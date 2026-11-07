@@ -278,6 +278,28 @@ final class RowWriteFlowTest extends TestCase {
 	}
 
 	/**
+	 * A whole number comes back from NumberBusiness::parseValue() as an integer while the plan expects a float, on every
+	 * pin: a text and a number kept as asked give no "different value" note, on a creation and on an update.
+	 *
+	 * @return void
+	 */
+	public function testAWholeNumberKeptAsAskedIsNotADifference(): void {
+		foreach (['1.0.0', '2.2.2', '2.3.2', '2.4.0'] as $version) {
+			$app = WriteScene::app($version);
+			$create = ['table_id' => 1, 'cells' => [['column_id' => 11, 'value' => 'Some text'], ['column_id' => 12, 'value' => 1]]];
+			$answer = $this->confirm($app, 'alice', self::CREATE, $create, $this->preview($app, 'alice', self::CREATE, $create));
+			$this->assertSame([['columnId' => 11, 'requested' => 'Some text', 'returned' => 'Some text'], ['columnId' => 12, 'requested' => 1, 'returned' => 1]],
+				$answer['cells'], $version);
+			$this->assertArrayNotHasKey('notes', $answer, $version);
+			$update = ['table_id' => 1, 'row_id' => $answer['target']['rowId'], 'cells' => [['column_id' => 12, 'value' => 42]]];
+			$answer = $this->confirm($app, 'alice', self::UPDATE, $update, $this->preview($app, 'alice', self::UPDATE, $update));
+			$this->assertSame([['columnId' => 12, 'requested' => 42, 'returned' => 42]], $answer['cells'], $version);
+			$this->assertArrayNotHasKey('notes', $answer, $version);
+			$this->assertSame(42.0, $app->row(1, $update['row_id'])['data'][12], "$version the mapper stores a float");
+		}
+	}
+
+	/**
 	 * The fake stores what the pinned mappers store and answers what RowService held in memory: a null number reaching the
 	 * sink before 2.3.2 would come back as null while 0 is stored, which is why it is refused before.
 	 *

@@ -78,7 +78,7 @@ class RowWriter {
 		$differs = false;
 		foreach ($prepared->cells as $cell) {
 			$value = $values[$cell['columnId']] ?? null;
-			$differs = $differs || $value !== $cell['effect'];
+			$differs = $differs || !RowReceiptComparison::same($target->columns[$cell['columnId']] ?? [], $cell['effect'], $value);
 			$cells[] = ['columnId' => $cell['columnId'], 'requested' => $cell['effect'], 'returned' => $value];
 		}
 		return ['rowId' => (int)($returned['id'] ?? $rowId ?? 0), 'cells' => $cells, 'differs' => $differs];

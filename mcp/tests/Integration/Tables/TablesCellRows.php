@@ -22,27 +22,8 @@ trait TablesCellRows {
 	 * @return array<string, list<array<string, mixed>>> rows by database table
 	 */
 	private function tablesAppRows(): array {
-		$db = Server::get(IDBConnection::class);
-		$prefix = (string)Server::get(IConfig::class)->getSystemValueString('dbtableprefix', 'oc_');
-		$schema = $db->getDatabaseProvider() === IDBConnection::PLATFORM_POSTGRES ? 'current_schema()' : 'DATABASE()';
-		$names = $db->executeQuery("SELECT table_name FROM information_schema.tables WHERE table_schema = $schema AND table_name LIKE ?",
-			[str_replace('_', '\\_', $prefix . 'tables_') . '%'])->fetchAll(\PDO::FETCH_COLUMN);
-		sort($names);
-		$this->assertContains($prefix . 'tables_tables', $names, 'the Tables app has its tables');
-		$rows = [];
-		foreach ($names as $name) {
-			// Names straight from the catalog, checked to be plain identifiers before they go into the statement.
-			$this->assertMatchesRegularExpression('/^[a-z0-9_]+$/', $name);
-			$result = $db->executeQuery('SELECT * FROM ' . $name);
-			$all = array_map(static function (array $row): array {
-				ksort($row);
-				return $row;
-			}, $result->fetchAll());
-			$result->closeCursor();
-			usort($all, static fn (array $a, array $b): int => strcmp(json_encode($a, JSON_THROW_ON_ERROR), json_encode($b, JSON_THROW_ON_ERROR)));
-			$rows[$name] = $all;
-		}
-		return $rows;
+		return (new TablesDatabaseRows(Server::get(IDBConnection::class),
+			Server::get(IConfig::class)->getSystemValueString('dbtableprefix', 'oc_')))->read();
 	}
 
 	/**

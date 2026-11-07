@@ -9,14 +9,12 @@
 
 name: Integration
 
-# Twelve jobs per run: pushes run only on main and, temporarily, on the 1.1.0 feature branches (feat/1-1-0-*) while
-# the harness and the 1.1.0 slices are proven; drop that pattern once 1.1.0 is merged. Other branches run through a
-# pull request or by hand.
+# Twelve verification jobs: NC32–35 on MariaDB, plus NC35 on PostgreSQL and SQLite, fresh and upgrade.
+# Branches other than main run through a pull request or by hand.
 on:
   push:
     branches:
       - main
-      - 'feat/1-1-0-*'
   pull_request:
   workflow_dispatch:
 
@@ -69,7 +67,15 @@ jobs:
       MCP_IT_DB: ${{ matrix.cell.db }}
       MCP_IT_DB_IMAGE: ${{ matrix.cell.db_image }}
       MCP_IT_MODE: ${{ matrix.mode }}
-      MCP_IT_BASELINE: v1.0.8
+      MCP_IT_BASELINE: v1.2.5
+      # Official archives are SHA-256 checked by harness.sh and each app cell.
+      # Collectives 4.7.1; Tables 1.0.10 (NC32), 2.2.2 (NC33/34), 2.3.2 (NC35).
+      MCP_IT_WITH_DECK: '1'
+      MCP_IT_WITH_MAIL: '1'
+      MCP_IT_WITH_TABLES: '1'
+      MCP_IT_WITH_FORMS: '1'
+      MCP_IT_WITH_POLLS: '1'
+      MCP_IT_WITH_COLLECTIVES: '1'
       HARNESS: mcp/tests/Integration/ci/harness.sh
     steps:
       - name: Check out the repository with its tags
@@ -95,7 +101,7 @@ jobs:
         run: sh "$HARNESS" install-app
       - name: Create fixture users and groups
         run: sh "$HARNESS" fixtures
-      - name: Provision groupfolders, local external storage, Talk and Notes
+      - name: Provision native apps and all six optional app fixtures
         run: sh "$HARNESS" provision
       - name: Record the runtime
         run: sh "$HARNESS" report
@@ -112,3 +118,6 @@ jobs:
           path: ${{ runner.temp }}/mcp-it/artifacts
           if-no-files-found: ignore
           retention-days: 14
+      - name: Clean up the disposable Mail server
+        if: always()
+        run: sh mcp/tests/Integration/ci/mail-cell.sh cleanup

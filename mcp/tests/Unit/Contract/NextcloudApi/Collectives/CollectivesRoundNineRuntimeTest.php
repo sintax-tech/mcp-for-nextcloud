@@ -101,10 +101,15 @@ final class CollectivesRoundNineRuntimeTest extends RuntimeTreeTestCase {
 		$this->check(['Magic' => 'public static ?Folder $f = null; public static function __callStatic($n, $a) { self::$f->newFile("s"); }',
 			'Entry' => 'public function read(Folder $f): void { Magic::$f = $f; Magic::anything(); }']);
 	}
-	/** @return void executes the independent runtime reproduction */
+	/** @return void proves hook rejection on every host and executes the reproduction where PHP supports hooks */
 	public function testPropertyHook(): void {
-		$this->check(['Hooked' => 'public function __construct(private Folder $f) {} public string $x { get { $this->f->newFile("h"); return "a"; } }',
-			'Entry' => 'public function read(Folder $f): void { $h = new Hooked($f); $x = $h->x; }']);
+		$classes = ['Hooked' => 'public function __construct(private Folder $f) {} public string $x { get { $this->f->newFile("h"); return "a"; } }',
+			'Entry' => 'public function read(Folder $f): void { $h = new Hooked($f); $x = $h->x; }'];
+		$r = $this->reach($classes, 'Entry::read');
+		$this->assertUnknown($r['unknown'], 'Entry', 'property hooks outside the closed subset');
+		if (PHP_VERSION_ID >= 80400) {
+			$this->runtimeAndUnknown($classes);
+		}
 	}
 	/** @return void executes the independent runtime reproduction */
 	public function testUsortClosureCompare(): void {

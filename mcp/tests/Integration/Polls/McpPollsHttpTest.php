@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Polls;
 
+use OCA\Mcp\Tests\Integration\Support\ServiceSwitchFixture;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\{LoginFactory,McpClient,Http,Credential};
 use OCA\Mcp\Access\Grants\GrantPolicy;
@@ -16,6 +17,9 @@ use PHPUnit\Framework\Attributes\Group;
 /** Real authenticated requests and native instrumentation in an isolated pinned Polls cell. */
 #[Group('polls')]
 final class McpPollsHttpTest extends IntegrationTestCase {
+	/** @var ServiceSwitchFixture|null Per-test service switch, absent when the opt-in skips setup. */
+	private ?ServiceSwitchFixture $serviceSwitch = null;
+
 	/** @var array<string,Credential> test credentials, never printed */
 	private static array $credentials=[];
 
@@ -27,7 +31,19 @@ final class McpPollsHttpTest extends IntegrationTestCase {
 		parent::setUp();
 		if (getenv('MCP_IT_WITH_POLLS')!=='1') {$this->markTestSkipped('Pinned Polls cell only');}
 		Server::get(\OCP\App\IAppManager::class)->loadApp('polls');
+
+		$this->serviceSwitch = ServiceSwitchFixture::open();
 	}
+
+	/** @return void Restore the service switch even when the HTTP test fails. */
+	protected function tearDown(): void {
+		try {
+			$this->serviceSwitch?->restore();
+		} finally {
+			parent::tearDown();
+		}
+	}
+
 
 	/**
 	 * Creates a scoped Basic or Bearer credential once, without exposing its token.

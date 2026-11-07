@@ -61,6 +61,7 @@ final class UpgradeBaselineContractTest extends TestCase {
 	public function testMatrixChecksTheNewCellBeforeRemovingOnlyThatCell(): void {
 		LegacyCatalogAssertions::matrix();
 		ScenePolicyAssertions::unchanged($this);
+		ServiceSwitchAssertions::roundTrip($this);
 		SnapshotClientAssertions::trusted($this);
 	}
 

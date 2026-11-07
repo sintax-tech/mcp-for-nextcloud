@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Forms\Editing;
 
+use OCA\Mcp\Tests\Integration\Support\ServiceSwitchFixture;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Modules\Forms\Integration\StructureCapabilities;
 use OCA\Mcp\Tests\Integration\Forms\{FormsApiScene, FormsScene, FormsState};
@@ -19,6 +20,9 @@ use PHPUnit\Framework\Attributes\Group;
 /** Minimal Bearer structure proof with native OCS readback, independent edit grant and forbidden grid conversion. */
 #[Group('forms')]
 final class McpFormsStructureHttpTest extends IntegrationTestCase {
+	/** @var ServiceSwitchFixture|null Per-test service switch, absent when the opt-in skips setup. */
+	private ?ServiceSwitchFixture $serviceSwitch = null;
+
 	/** Selects the explicit Forms cell.
 	 * @return void
 	 */
@@ -27,7 +31,19 @@ final class McpFormsStructureHttpTest extends IntegrationTestCase {
 		if (getenv('MCP_IT_WITH_FORMS') !== '1') {
 			self::markTestSkipped('Requires pinned Forms cell.');
 		}
+
+		$this->serviceSwitch = ServiceSwitchFixture::open();
 	}
+
+	/** @return void Restore the service switch even when the HTTP test fails. */
+	protected function tearDown(): void {
+		try {
+			$this->serviceSwitch?->restore();
+		} finally {
+			parent::tearDown();
+		}
+	}
+
 
 	/** Adds a question/options, reorders and deletes an option; refuses grid without changing native state.
 	 * @return void

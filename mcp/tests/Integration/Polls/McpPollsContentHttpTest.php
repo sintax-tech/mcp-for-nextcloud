@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Polls;
 
+use OCA\Mcp\Tests\Integration\Support\ServiceSwitchFixture;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\{LoginFactory, McpClient, Credential};
@@ -16,6 +17,9 @@ use PHPUnit\Framework\Attributes\Group;
 /** Real Basic/Bearer reads against native services, not a claim about real AI clients or all pinned runtimes. */
 #[Group('polls')]
 final class McpPollsContentHttpTest extends IntegrationTestCase {
+	/** @var ServiceSwitchFixture|null Per-test service switch, absent when the opt-in skips setup. */
+	private ?ServiceSwitchFixture $serviceSwitch = null;
+
 	/** @var array<int,array{id:int,options:list<int>}> scoped native fixtures */
 	private static array $scene = [];
 	/** @var array<string,Credential> credentials, never printed */
@@ -36,7 +40,19 @@ final class McpPollsContentHttpTest extends IntegrationTestCase {
 			$policy->setGrant($uid, 'polls', 'results', true);
 			$policy->setGrant($uid, 'polls', 'links', true);
 		}
+
+		$this->serviceSwitch = ServiceSwitchFixture::open();
 	}
+
+	/** @return void Restore the service switch even when the HTTP test fails. */
+	protected function tearDown(): void {
+		try {
+			$this->serviceSwitch?->restore();
+		} finally {
+			parent::tearDown();
+		}
+	}
+
 
 	/**
 	 * Authenticated real MCP endpoint.

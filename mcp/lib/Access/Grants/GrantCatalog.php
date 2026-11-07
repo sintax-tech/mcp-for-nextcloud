@@ -41,8 +41,9 @@ final class GrantCatalog {
 		'polls' => ['read', 'results', 'links', 'create', 'configure', 'options', 'options.remove', 'share', 'invite'],
 		// Collectives (#22): 'read' lists collectives and pages, reads and searches them; on by default like every read.
 		// 'create' adds an empty page, 'edit' changes the Markdown of one and 'move' moves or renames one inside its
-		// collective, through Collectives; all three start denied. Deleting pages is not offered.
-		'collectives' => ['read', 'create', 'edit', 'move'],
+		// collective, through Collectives; all three start denied. Deleting pages is not offered. 'collective.create' is
+		// one literal operation, not 'create' of pages: it creates a new collective with its own new team, and starts denied.
+		'collectives' => ['read', 'create', 'edit', 'move', 'collective.create'],
 	];
 
 	/** Prevents instantiation of the immutable catalog. */

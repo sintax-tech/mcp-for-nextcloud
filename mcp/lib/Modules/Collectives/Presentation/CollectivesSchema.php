@@ -32,9 +32,10 @@ final class CollectivesSchema {
 	 * @param string $description English description for the model
 	 * @param array<string, array<string, mixed>> $properties input properties, in published order
 	 * @param list<string> $required required properties
+	 * @param list<string> $requires capabilities besides `collectives.native`
 	 * @return ToolDefinition the definition of one Collectives tool
 	 */
-	public static function definition(string $name, string $operation, string $description, array $properties, array $required = []): ToolDefinition {
+	public static function definition(string $name, string $operation, string $description, array $properties, array $required = [], array $requires = []): ToolDefinition {
 		$schema = ['type' => 'object', 'properties' => $properties === [] ? new \stdClass() : $properties, 'additionalProperties' => false];
 		return new ToolDefinition(
 			name: $name,
@@ -43,7 +44,7 @@ final class CollectivesSchema {
 			description: $description,
 			inputSchema: $required === [] ? $schema : $schema + ['required' => $required],
 			app: 'collectives',
-			requires: [CollectivesCapabilities::KEY],
+			requires: [CollectivesCapabilities::KEY, ...$requires],
 		);
 	}
 

@@ -1,0 +1,169 @@
+<?php
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+declare(strict_types=1);
+
+namespace OCA\Mcp\Tests\Unit\Modules\Collectives;
+
+use OCA\Collectives\Db\Collective;
+use OCA\Collectives\Model\PageInfo;
+use OCA\Collectives\Service\CircleExistsException;
+use OCA\Collectives\Service\NotFoundException;
+use OCA\Collectives\Service\NotPermittedException;
+use OCA\Collectives\Service\UnprocessableEntityException;
+use OCP\Files\Folder;
+
+/**
+ * The Teams side of the Collectives scene: the teams, the one shared Teams session, and the creation of a collective
+ * as `CollectiveService::createCollective` does it in the pinned releases (`:169-247`): a privileged check of the name,
+ * a team in the actor's session closed after a `try/catch` without `finally`, the privileged "managed by Collectives"
+ * flag, the adoption of a team the actor administers, then the collective, its folder, the landing page and its record.
+ * Switches make it fail after any step, or change the world right before it runs.
+ */
+final class TeamsScene {
+	/** Root path of the collectives' storage. */
+	public const ROOT = 'appdata_x/collectives';
+
+	/** @var array<string, array{name:string, owner:string, members:list<string>, display?:string}> teams by single id */
+	public static array $teams = [];
+	/** Account of the open Teams session, null when none. */
+	public static ?string $currentUser = null;
+	/** Whether a privileged session is open. */
+	public static bool $bypass = false;
+	/** @var list<string> native calls worth asserting */
+	public static array $calls = [];
+	/** Whether resolving an identity fails. */
+	public static bool $failResolve = false;
+	/** Step the creation fails at: null, team-session, flag, collective, folder or page; `no-record` leaves the page without record. */
+	public static ?string $failAt = null;
+	/** @var (\Closure(): void)|null runs when the native creation starts, before it checks the name */
+	public static ?\Closure $beforeCreate = null;
+	/** Whether the collectives root exists. */
+	public static bool $root = true;
+	/** @var array<int, array{landing:int, registered:bool}> what each created collective has on disk */
+	public static array $folders = [];
+
+	/** @return void three teams: Wiki (alice), Design (bob, with alice) and Secret (carol only, which alice cannot see) */
+	public static function reset(): void {
+		require_once __DIR__ . '/NativeTeams.php';
+		self::$teams = [
+			'circle-secret' => ['name' => 'Wiki', 'owner' => 'alice', 'members' => ['alice']],
+			'team-design' => ['name' => 'Design Team', 'owner' => 'bob', 'members' => ['bob', 'alice']],
+			'team-hidden' => ['name' => 'Secret', 'owner' => 'carol', 'members' => ['carol']],
+		];
+		self::$currentUser = null;
+		self::$bypass = false;
+		self::$calls = [];
+		self::$failResolve = false;
+		self::$failAt = null;
+		self::$beforeCreate = null;
+		self::$root = true;
+		self::$folders = [];
+	}
+
+	/** @return string the account of the open session; listing without one fails, as upstream needs an initiator */
+	public static function session(): string {
+		return self::$currentUser ?? throw new \RuntimeException('InitiatorNotFoundException');
+	}
+
+	/** @param string $uid account @return list<string> ids of the teams that account is a member of */
+	public static function visibleTo(string $uid): array {
+		return array_keys(array_filter(self::$teams, static fn (array $team): bool => in_array($uid, $team['members'], true)));
+	}
+
+	/**
+	 * @param string $uid actor
+	 * @param string $lang language the landing page is written in
+	 * @param string $name name as given
+	 * @param string|null $emoji emoji
+	 * @return array{0: Collective, 1: string} the collective and the adoption notice, empty for a new team
+	 */
+	public static function createCollective(string $uid, string $lang, string $name, ?string $emoji): array {
+		self::$calls[] = 'createCollective:' . $lang;
+		self::$beforeCreate === null || (self::$beforeCreate)();
+		$safe = trim(str_replace(['*', '|', '\\', ':', '"', '<', '>', '?'], '', str_replace('/', '-', $name)), ' .') ?: 'New File';
+		self::$bypass = true;
+		$existing = array_keys(array_filter(self::$teams, static fn (array $team): bool => strcasecmp($team['name'], $safe) === 0));
+		self::$bypass = false;
+		$message = '';
+		if ($existing !== []) {
+			$team = $existing[0];
+			if (self::$teams[$team]['owner'] !== $uid) {
+				throw new CircleExistsException('A team with that name exists');
+			}
+			self::$calls[] = 'flag:' . $team;
+			$message = 'Coletivo "' . $safe . '" criado para o time existente.';
+			foreach (CollectivesScene::$collectives as $data) {
+				if (($data['circleId'] ?? null) === $team) {
+					throw new UnprocessableEntityException('Collective already exists.');
+				}
+			}
+		} else {
+			self::$currentUser = $uid;
+			if (self::$failAt === 'team-session') {
+				throw new NotPermittedException('Circle name is too short');
+			}
+			$team = 'team-' . (count(self::$teams) + 1);
+			self::$teams[$team] = ['name' => trim((string)preg_replace('/\s+/', ' ', $safe)), 'owner' => $uid, 'members' => [$uid]];
+			self::$currentUser = null;
+			self::$bypass = true;
+			self::$calls[] = 'flag:' . $team;
+			if (self::$failAt === 'flag') {
+				throw new NotPermittedException('flag failed');
+			}
+			self::$bypass = false;
+		}
+		if (self::$failAt === 'collective') {
+			throw new \RuntimeException('insert failed');
+		}
+		$id = max(array_keys(CollectivesScene::$collectives)) + 1;
+		CollectivesScene::$collectives[$id] = ['name' => self::$teams[$team]['name'], 'members' => self::$teams[$team]['members'], 'canEdit' => true, 'circleId' => $team];
+		if (self::$failAt === 'folder') {
+			throw new NotPermittedException('folder failed');
+		}
+		self::$root = true;
+		$landing = CollectivesScene::$tree->addFile('/' . self::ROOT . '/' . $id . '/Readme.md', '# Bem-vindo', 'text/markdown');
+		self::$folders[$id] = ['landing' => $landing, 'registered' => !in_array(self::$failAt, ['no-record', 'page'], true)];
+		if (self::$failAt === 'page') {
+			throw new NotFoundException('Unable to get landing page for collective');
+		}
+		return [CollectivesScene::collective($id, $uid), $message];
+	}
+
+	/** @param string $path absolute path @return bool whether it exists in the collectives' storage */
+	public static function exists(string $path): bool {
+		$relative = ltrim(substr($path, strlen('/' . self::ROOT)), '/');
+		if (!str_starts_with($path, '/' . self::ROOT) || !self::$root) {
+			return false;
+		}
+		$parts = $relative === '' ? [] : explode('/', $relative);
+		$folder = self::$folders[(int)($parts[0] ?? 0)] ?? null;
+		return match (count($parts)) {
+			0 => true,
+			1 => $folder !== null,
+			2 => $folder !== null && $parts[1] === 'Readme.md',
+			default => false,
+		};
+	}
+
+	/** @param int $id collective @return Folder its folder in the scene's tree */
+	public static function folder(int $id): Folder {
+		return CollectivesScene::$tree->node('/' . self::ROOT . '/' . $id);
+	}
+
+	/**
+	 * @param int $id file id asked for
+	 * @return PageInfo|null the landing page of a created collective, with a last user only when it has a record
+	 */
+	public static function landing(int $id): ?PageInfo {
+		foreach (self::$folders as $folder) {
+			if ($folder['landing'] === $id) {
+				return new PageInfo(['id' => $id, 'title' => 'Landing page', 'parentId' => 0, 'fileName' => 'Readme.md',
+					'lastUserId' => $folder['registered'] ? 'alice' : null]);
+			}
+		}
+		return null;
+	}
+}

@@ -1,0 +1,112 @@
+{
+    "31": {
+        "collectives": {
+            "version": "4.0.0",
+            "sha256": "7aef9874743fc4a36b68c12a9b900e5fe4081d510bd88df8a8e74a138bb8147e"
+        },
+        "circles": {
+            "version": "31.0.0",
+            "sha256": "349d8bd45ad492e232313f51f5a3c60f078e88cc8621ea475f465c34f1d32703"
+        },
+        "files": {
+            "collectives/lib/Service/CollectiveService.php": "4e5ee251516b29b75764e3d6005fc95e2aa9c6fc595b3b8425dd8da62d86cbac",
+            "collectives/lib/Service/CircleHelper.php": "5afa5716a8505dbb946ee9376d9fbc89b24918aa085b42619085c4856ad3cfae",
+            "collectives/lib/Fs/NodeHelper.php": "a73a63db578fe607604101ab8fbdd70cb6b68f09fb9383af50539ab451062a60",
+            "collectives/lib/Service/PageService.php": "cbfd29fa855b8637c5527fa8b3e3ba226fa65ae7d46ff9adf438fc449ace4296",
+            "collectives/lib/Mount/CollectiveFolderManager.php": "76c5e3d9bb35fc20784cb7707231aee31c093811e24ac5b3d78c08c57d6e1237",
+            "collectives/lib/Controller/CollectiveController.php": "df987b48251d5e26d61df418af7e9f3ddf918b239992be879a65af857b593f08",
+            "circles/lib/CirclesManager.php": "bb9389b2e2c6cf220b3f0bf769e5ace3d85d90f25ee77337aa0d98a706fa5b3b",
+            "circles/lib/Service/CircleService.php": "1dbeb6df4fd195571b0208d205c3fd2756e93ab66fbaa8ccb3cf58278efed725",
+            "circles/lib/Service/FederatedUserService.php": "7f6e9a9c525800dbc07dc53f04801a600eac0421f927ab8270855f6621880b8e"
+        }
+    },
+    "32": {
+        "collectives": {
+            "version": "4.0.0",
+            "sha256": "7aef9874743fc4a36b68c12a9b900e5fe4081d510bd88df8a8e74a138bb8147e"
+        },
+        "circles": {
+            "version": "32.0.0",
+            "sha256": "69118ca3b66579d2ea55d8d428c36efa18510d346ae6ca3986c61ad4c84d7d12"
+        },
+        "files": {
+            "collectives/lib/Service/CollectiveService.php": "4e5ee251516b29b75764e3d6005fc95e2aa9c6fc595b3b8425dd8da62d86cbac",
+            "collectives/lib/Service/CircleHelper.php": "5afa5716a8505dbb946ee9376d9fbc89b24918aa085b42619085c4856ad3cfae",
+            "collectives/lib/Fs/NodeHelper.php": "a73a63db578fe607604101ab8fbdd70cb6b68f09fb9383af50539ab451062a60",
+            "collectives/lib/Service/PageService.php": "cbfd29fa855b8637c5527fa8b3e3ba226fa65ae7d46ff9adf438fc449ace4296",
+            "collectives/lib/Mount/CollectiveFolderManager.php": "76c5e3d9bb35fc20784cb7707231aee31c093811e24ac5b3d78c08c57d6e1237",
+            "collectives/lib/Controller/CollectiveController.php": "df987b48251d5e26d61df418af7e9f3ddf918b239992be879a65af857b593f08",
+            "circles/lib/CirclesManager.php": "bb9389b2e2c6cf220b3f0bf769e5ace3d85d90f25ee77337aa0d98a706fa5b3b",
+            "circles/lib/Service/CircleService.php": "f073bf7073777135d5c1f99fd007761a000cc28399f7996b99cb882cc5325b91",
+            "circles/lib/Service/FederatedUserService.php": "58a9e2175660c601d3fab395b98b7d92d4c42c0001c0dfbebe7af77b77e62f4e"
+        }
+    },
+    "33": {
+        "collectives": {
+            "version": "4.5.0",
+            "sha256": "6f778fd461ec08c415621c720d2e385b58487fb3ef323f516e286f018b7bbfa3"
+        },
+        "circles": {
+            "version": "33.0.0",
+            "sha256": "dc9cc6e392f1ba2f994057ad4f053d2cb60efe191796c0d65ce5ea92cd7a1516"
+        },
+        "files": {
+            "collectives/lib/Service/CollectiveService.php": "2e87863a083a8207c7195ca89b2758a4c87c1ab5d9c68f47adedf3d58fc1a920",
+            "collectives/lib/Service/CircleHelper.php": "97666ea424d2abcd715746927fa95569d4929170512c010917b30263929f3038",
+            "collectives/lib/Fs/NodeHelper.php": "280bde8fc51a6beb4b36e516d3349725cd83d11dd3ec6ade042676129c4a28b8",
+            "collectives/lib/Service/PageService.php": "a45840674d7ea3de7b0f98a583ac653aa80c700f4a47f6e5a602dec398aa13a4",
+            "collectives/lib/Mount/CollectiveFolderManager.php": "5a5a87d26fed91f2c2613e31e995814e940927b2cc1ba650b3ceaf5a2ed9b8bd",
+            "collectives/lib/Controller/CollectiveController.php": "61c3d645ba2a4f83b7ada3d9271af386387fcedb66db102136b5935a675be0d1",
+            "collectives/lib/Service/EmojiHelper.php": "13a3726f3d0d9b18b19eb15b6cd5b62f1f45b4717f90a9c14661445dabe982cd",
+            "circles/lib/CirclesManager.php": "16e1cdc062c9b4caab3847d65e98aae96e40328d4238964a69e25a487be63adc",
+            "circles/lib/Service/CircleService.php": "3b79acdae335376c7eb9ce6890cdad16ed45d215bc3113bad0162559e368c6ce",
+            "circles/lib/Service/FederatedUserService.php": "0bda5f753f79e46a2f3f8858507a7470d1ef77cd9b7d0c491afddd28d432fd4d",
+            "circles/lib/ConfigLexicon.php": "40e894a36b3dc12dd52afb7675ce307dda0f715eb34723327b2e1a64cb23d9fa"
+        }
+    },
+    "34": {
+        "collectives": {
+            "version": "4.4.0",
+            "sha256": "71cb8dc77c8b4b3723e53d6ac43bf3d020d2036d7dff7590affbe83619aa18e8"
+        },
+        "circles": {
+            "version": "34.0.0",
+            "sha256": "bdcec19dcac57c99c9ffa929be4727b04f56d01fad6a2efc28cad2d92c5040c6"
+        },
+        "files": {
+            "collectives/lib/Service/CollectiveService.php": "4efd8d080270d29d27793eb4405681862e4d3bc77914b5c7f30bd05b1ede13fd",
+            "collectives/lib/Service/CircleHelper.php": "ecefc52167bf2e896020e28201560135cb3af23cdbbe0479f5f393ae9f9ed9c5",
+            "collectives/lib/Fs/NodeHelper.php": "a73a63db578fe607604101ab8fbdd70cb6b68f09fb9383af50539ab451062a60",
+            "collectives/lib/Service/PageService.php": "964a5d0567fe239a94ff9021f7e8ef19e45bf9dfaddc3bd51dbbbc9acdf12916",
+            "collectives/lib/Mount/CollectiveFolderManager.php": "662a6041faa0fe583d49e8dbd446ea3447b731805988cbaded6492322c87a2d9",
+            "collectives/lib/Controller/CollectiveController.php": "df987b48251d5e26d61df418af7e9f3ddf918b239992be879a65af857b593f08",
+            "circles/lib/CirclesManager.php": "2c14c226319411341b7fba6027fbc820e76a33e9e918f09fb4420a6f3dfcba28",
+            "circles/lib/Service/CircleService.php": "0a809c81a96b8fe73f9be32065cc844d3561b288c7f95414bee451180607c5c7",
+            "circles/lib/Service/FederatedUserService.php": "0bda5f753f79e46a2f3f8858507a7470d1ef77cd9b7d0c491afddd28d432fd4d",
+            "circles/lib/ConfigLexicon.php": "aefb568c1f26a501b50c0f98fd24bdf9fc1c3be776a2b10d37ebc2efe5a337f7"
+        }
+    },
+    "35": {
+        "collectives": {
+            "version": "4.7.1",
+            "sha256": "7c1d96526284ad53d0ac1c6844377e1b189449ceb3baf00199462f520fbc6d62"
+        },
+        "circles": {
+            "version": "35.0.0",
+            "sha256": "ceea2380b0e436881821127285cd06e3855c365cee84432f4f0829c2c7fb9586"
+        },
+        "files": {
+            "collectives/lib/Service/CollectiveService.php": "b1f041220ff6b2f6273ae663404b4833b3dc19b97b58e40e384d925f7061b883",
+            "collectives/lib/Service/CircleHelper.php": "97666ea424d2abcd715746927fa95569d4929170512c010917b30263929f3038",
+            "collectives/lib/Fs/NodeHelper.php": "280bde8fc51a6beb4b36e516d3349725cd83d11dd3ec6ade042676129c4a28b8",
+            "collectives/lib/Service/PageService.php": "3e70835e3a8edce8d6b896e39e32c9a7f0bd010223409642e3fe196e861895f9",
+            "collectives/lib/Mount/CollectiveFolderManager.php": "5143dba2acb883a1536cbd3b1ec914516619f44a2cbd2d644001ca0659b1d114",
+            "collectives/lib/Controller/CollectiveController.php": "5ffaedf7e0ae6a1d54046c86ac9c54727d1a5c9b36e3679637b0ea15327453a4",
+            "collectives/lib/Service/EmojiHelper.php": "d3c5d0c334cd5839481ad3c967272c84201a8a769101d823b25cc393135bd7d0",
+            "circles/lib/CirclesManager.php": "bfd142e7968bda4464d032119358777af8dfd9f2848c5884d3d71db319f67c0a",
+            "circles/lib/Service/CircleService.php": "1d8d7582aa79153fcc5c73cfc0fd58a787dc23ec111595151346d61b8a5c009f",
+            "circles/lib/Service/FederatedUserService.php": "d3905a8114a4c424a4d5c59b9adbe9c808d1b0a51a748738e10732fcd91b547b",
+            "circles/lib/ConfigLexicon.php": "8fb9a20d182d0b787d4f5cdfa3fa52e99979758da99979f8020b08449326a499"
+        }
+    }
+}

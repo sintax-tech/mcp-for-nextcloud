@@ -41,6 +41,7 @@
 				...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(),
 				read: t('mcp', 'read'),
 				schema: t('mcp', 'schema'), results: t('mcp', 'results'),
+				'collective.create': t('mcp', 'create collectives'),
 				edit: t('mcp', 'edit'),
 				create: t('mcp', 'create'),
 				move: t('mcp', 'move'),
@@ -75,6 +76,9 @@
 			}
 			if (module === 'logs' && operation === 'read') {
 				return t('mcp', 'Read and analyze the server log; starts off')
+			}
+			if (module === 'collectives' && operation === 'collective.create') {
+				return t('mcp', 'Create new collectives, each with its own new team owned by the user; starts off')
 			}
 			if (module === 'calendar' && operation === 'transfer') {
 				return t('mcp', 'Move an event to another person’s calendar')

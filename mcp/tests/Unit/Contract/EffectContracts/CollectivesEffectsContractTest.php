@@ -9,11 +9,13 @@ namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 
 use OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry;
 use OCA\Mcp\Modules\Collectives\Integration\CollectivesCapabilities;
+use OCA\Mcp\Modules\Collectives\Integration\FoundingCapabilities;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\CriticalFlow;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\EffectsGate;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\FlowRunner;
 use OCA\Mcp\Tests\Unit\Modules\Collectives\CollectivesRig;
 use OCA\Mcp\Tests\Unit\Modules\Collectives\CollectivesScene;
+use OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene;
 use OCP\App\IAppManager;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -27,17 +29,18 @@ final class CollectivesEffectsContractTest extends TestCase {
 	private EffectsGate $gate;
 	private CollectivesRig $rig;
 
-	/** @return void the scene, the module over the gate's policy and the collectives.native probe */
+	/** @return void the scene, the module over the gate's policy and the collectives.native and collectives.founding probes */
 	protected function setUp(): void {
 		$this->gate = new EffectsGate($this);
 		$this->rig = new CollectivesRig($this);
 		$this->rig->realPolicy = $this->gate->policy();
 		$apps = $this->createMock(IAppManager::class);
-		$apps->method('getAppVersion')->willReturn('4.7.1');
+		$apps->method('getAppVersion')->willReturnCallback(static fn (string $app): string => $app === 'circles' ? '35.0.0' : '4.7.1');
 		$apps->method('isEnabledForAnyone')->willReturn(true);
 		$logger = $this->createMock(LoggerInterface::class);
-		$this->gate->serve(fn (): array => [$this->rig->module()],
-			static fn (): CapabilityRegistry => new CapabilityRegistry([new CollectivesCapabilities($apps, 35, static fn (): bool => true)], $logger));
+		$native = new CollectivesCapabilities($apps, 35, static fn (): bool => true);
+		$this->gate->serve(fn (): array => [$this->rig->module()], static fn (): CapabilityRegistry => new CapabilityRegistry([$native,
+			new FoundingCapabilities($apps, $native, 35, static fn (): bool => true)], $logger));
 	}
 
 	/** @return array{files: array<string, array{id:int, content:string}>, orders: array<int, list<int>>, calls: list<string>} what Collectives holds */
@@ -51,6 +54,23 @@ final class CollectivesEffectsContractTest extends TestCase {
 		ksort($files);
 		return ['files' => $files, 'orders' => CollectivesScene::$orders, 'calls' => array_values(array_filter(CollectivesScene::$calls,
 			static fn (string $call): bool => in_array($call, ['create', 'move'], true)))];
+	}
+
+	/** @return array{collectives: array<int, array<string, mixed>>, teams: array<string, array<string, mixed>>, folders: array<int, array<string, mixed>>, calls: list<string>} what Collectives and Teams hold */
+	private function founded(): array {
+		return ['collectives' => CollectivesScene::$collectives, 'teams' => TeamsScene::$teams, 'folders' => TeamsScene::$folders,
+			'calls' => array_values(array_filter(TeamsScene::$calls, static fn (string $call): bool => str_starts_with($call, 'createCollective')))];
+	}
+
+	/** @return void collectives_create_collective: plan, strict confirm, effect (a team, a collective, its folder) and every refusal */
+	public function testCreatingACollective(): void {
+		$flow = (new CriticalFlow('create-collective', 'collectives_create_collective', 'collectives', 'collective.create',
+			// After the effect the name is taken: later steps plan a name nobody uses yet.
+			static fn (): array => ['name' => 'Projetos ' . count(CollectivesScene::$collectives), 'emoji' => '📘'], fn (): array => $this->founded()))
+			->withoutPlanChanged('The plan binds the name and emoji only: a name taken after the plan is refused before the call, and a team '
+				. 'adopted in the race is reported by the receipt (C04 C1/D6); both are frozen in CollectivesFoundingTest.')
+			->withoutVisibility('A new collective has no file to hide yet; the names it is checked against are those Collectives and Teams list for the actor.');
+		(new FlowRunner($this, $this->gate, 'collectives'))->run($flow);
 	}
 
 	/** @return void collectives_create under a leaf: plan, strict confirm, PlanChanged, effect and every refusal */

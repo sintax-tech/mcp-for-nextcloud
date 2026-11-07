@@ -40,6 +40,11 @@ namespace OCA\Collectives\Service {
 		public function getCollective(int $id, string $userId): Collective {
 			return CollectivesScene::collective($id, $userId);
 		}
+
+		/** @return array{0: Collective, 1: string} the collective and the adoption notice ({@see \OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene}) */
+		public function createCollective(string $userId, string $userLang, string $name, ?string $emoji = null): array {
+			return \OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene::createCollective($userId, $userLang, $name, $emoji);
+		}
 	}
 
 	/** Double of PageService; like upstream it keeps the collective it read for the rest of the request (v4.7.1 :77-84). */
@@ -75,6 +80,10 @@ namespace OCA\Collectives\Service {
 
 		/** @return PageInfo one page, read without writing; its parent's Readme.md must exist (getParentPageId) */
 		public function find(int $collectiveId, int $id, string $userId): PageInfo {
+			$landing = \OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene::landing($id);
+			if ($landing !== null) {
+				return $landing;
+			}
 			$this->cached($collectiveId, $userId);
 			CollectivesScene::$beforeFind === null || (CollectivesScene::$beforeFind)($id);
 			return CollectivesScene::find($id);
@@ -136,6 +145,11 @@ namespace OCA\Collectives\Db {
 		/** @return string name of the circle */
 		public function getName(): string {
 			return $this->data['name'];
+		}
+
+		/** @return string single id of the team */
+		public function getCircleId(): string {
+			return $this->data['circleId'];
 		}
 
 		/** @return array<string, mixed> native serialized form */

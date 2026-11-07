@@ -34,6 +34,9 @@ final class CollectivesGuideNotes {
 			'collectives_move keeps the current parent when parent_id is omitted; to move a page to the top level, give the id of '
 				. 'the landing page. index only places the page under a new parent: reordering under the same parent is not supported. '
 				. 'The landing page cannot move, nor can a page move under itself or into another collective.',
+			'collectives_create_collective creates a collective with its own new team, owned by the user and with no other member. '
+				. 'It refuses a name already used by a collective or team the user sees, and it needs Nextcloud 33 or later; '
+				. 'adding members and changing their level is done in Collectives or Teams.',
 		];
 	}
 }

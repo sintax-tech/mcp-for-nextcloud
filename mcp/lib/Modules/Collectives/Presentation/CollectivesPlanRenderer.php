@@ -25,6 +25,7 @@ final class CollectivesPlanRenderer {
 					[PlanText::inline((string)$plan['page']['title']), PlanText::inline((string)$plan['mode']), (int)$plan['bytes_before'], (int)$plan['bytes_after']])],
 				'collectives_move' => [Translator::t('Move page **%s** under *%s* as **%s**.', [PlanText::inline((string)$plan['page']['title']),
 					PlanText::inline((string)$plan['to']['parent_title']), PlanText::inline((string)$plan['to']['title'])])],
+				'collectives_create_collective' => [Translator::t('Create collective **%s** with a new team owned by you.', [PlanText::inline((string)$plan['name'])])],
 				default => null,
 			};
 		} catch (\Throwable) {

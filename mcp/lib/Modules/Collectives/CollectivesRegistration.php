@@ -10,12 +10,14 @@ namespace OCA\Mcp\Modules\Collectives;
 use OCA\Mcp\Mcp\Tools\ModuleRegistration;
 use OCA\Mcp\Modules\Collectives\Integration\CollectivesCapabilities;
 use OCA\Mcp\Modules\Collectives\Integration\CollectivesMarkdownPolicy;
+use OCA\Mcp\Modules\Collectives\Integration\FoundingCapabilities;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 
 /**
  * The DI of the Collectives module. Its tools and work classes are built by the container from their constructors;
  * native Collectives services are only resolved by the gateway, after admission. The module answers the
- * `collectives.native` capability through its probe, and binds its page writes to {@see CollectivesMarkdownPolicy}
+ * `collectives.native` capability through its probe, `collectives.founding` through the probe of creating a
+ * collective ({@see FoundingCapabilities}), and binds its page writes to {@see CollectivesMarkdownPolicy}
  * (decision C4 of #22, contract §4): only `.md` UTF-8 pages the page service resolved, in place of the Files
  * allowlist of #15, which `files_*` tools keep for the same folder.
  */
@@ -28,9 +30,10 @@ final class CollectivesRegistration implements ModuleRegistration {
 	}
 
 	/**
-	 * @return list<class-string<\OCA\Mcp\Mcp\Tools\CapabilityProbe>> the probe of the native Collectives shape
+	 * @return list<class-string<\OCA\Mcp\Mcp\Tools\CapabilityProbe>> the probes of the native Collectives shape and of
+	 *     creating a collective through Teams
 	 */
 	public function probes(): array {
-		return [CollectivesCapabilities::class];
+		return [CollectivesCapabilities::class, FoundingCapabilities::class];
 	}
 }

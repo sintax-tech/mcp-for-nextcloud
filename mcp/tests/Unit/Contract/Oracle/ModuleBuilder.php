@@ -59,6 +59,14 @@ final class ModuleBuilder {
 			$native = $this->collectivesNative;
 			return new \OCA\Mcp\Modules\Collectives\Integration\CollectivesCapabilities($apps, 35, static fn (): bool => $native);
 		}
+		if ($class === \OCA\Mcp\Modules\Collectives\Integration\FoundingCapabilities::class) {
+			$apps = $this->mock(IAppManager::class);
+			$apps->method('getAppVersion')->willReturnCallback(static fn (string $app): string => $app === 'circles' ? '35.0.0' : '4.7.1');
+			$apps->method('isEnabledForAnyone')->willReturn(true);
+			$native = $this->collectivesNative;
+			return new \OCA\Mcp\Modules\Collectives\Integration\FoundingCapabilities($apps,
+				$this->build(\OCA\Mcp\Modules\Collectives\Integration\CollectivesCapabilities::class), 35, static fn (): bool => $native);
+		}
 		$constructor = (new ReflectionClass($class))->getConstructor();
 		$args = [];
 		foreach ($constructor?->getParameters() ?? [] as $parameter) {

@@ -196,6 +196,7 @@ final class ToolPresentation {
 			'collectives_create' => Translator::t('Create collective page'),
 			'collectives_edit' => Translator::t('Edit collective page'),
 			'collectives_move' => Translator::t('Move collective page'),
+			'collectives_create_collective' => Translator::t('Create collective'),
 			// Tables
 			'tables_list_tables' => Translator::t('List tables'),
 			'tables_list_views' => Translator::t('List table views'),

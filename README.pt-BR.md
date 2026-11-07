@@ -37,6 +37,10 @@ Escritas exigem permissões explícitas e confirmação. Os planos descrevem imp
 
 Versões anteriores: veja o [Histórico](HISTORY.pt-BR.md).
 
+## Coletivos (1.3.0)
+
+Com o app Coletivos, as ferramentas listam coletivos e páginas, leem e buscam páginas, criam páginas vazias, editam o Markdown delas e as movem ou renomeiam dentro do coletivo; apagar páginas não é oferecido. `collectives_create_collective` cria um coletivo novo com um time novo próprio, de que a pessoa é dona e única integrante. Exige a permissão `collectives.collective.create`, negada por padrão e fora dos níveis prontos, e Nextcloud 33 a 35. Um nome já usado por um coletivo ou time que a pessoa vê é recusado, e contas de convidado não podem criar coletivos. Se, nesse meio tempo, surgir um time com esse nome administrado pela pessoa, o Coletivos usa esse time; o plano avisa e o recibo informa. No Nextcloud 35, o Times também pode criar uma pasta do time, conforme a configuração do administrador. Nada é repetido, desfeito ou reparado automaticamente. Pedido na [#22](https://github.com/sintax-tech/mcp-for-nextcloud/issues/22).
+
 ## HTML mail drafts (1.3.0)
 
 `mail_create_draft` accepts optional `html: true`; the default remains `false` (plain text). The existing `mail.draft` permission and confirmation apply. Mail's HTML sanitizer runs with a restricted configuration before planning and again before saving through `saveDraft`. Scripts, events, CSS, embedded content and all images (remote and `data:`) are forbidden. Links require an explicit `http`, `https` or `mailto` scheme.

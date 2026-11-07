@@ -37,6 +37,10 @@ Schreibzugriffe erfordern ausdrückliche Berechtigungen und Bestätigung. Pläne
 
 Frühere Versionen: siehe [Verlauf](HISTORY.de.md).
 
+## Kollektive (1.3.0)
+
+Mit der App Kollektive listen die Werkzeuge Kollektive und Seiten auf, lesen und durchsuchen Seiten, erstellen leere Seiten, bearbeiten deren Markdown und verschieben oder benennen sie innerhalb ihres Kollektivs um; das Löschen von Seiten wird nicht angeboten. `collectives_create_collective` erstellt ein neues Kollektiv mit einem eigenen neuen Team, das der Person gehört und kein weiteres Mitglied hat. Es braucht die Berechtigung `collectives.collective.create`, standardmäßig verweigert und in keiner Stufe enthalten, und Nextcloud 33 bis 35. Ein Name, den ein sichtbares Kollektiv oder Team schon trägt, wird abgelehnt, und Gastkonten können keine Kollektive erstellen. Taucht inzwischen ein Team dieses Namens auf, das die Person verwaltet, verwendet Kollektive dieses Team; der Plan warnt davor und der Beleg meldet es. Unter Nextcloud 35 kann Teams je nach Einstellung der Administration auch einen Teamordner anlegen. Nichts wird automatisch wiederholt, rückgängig gemacht oder repariert. Gewünscht in [#22](https://github.com/sintax-tech/mcp-for-nextcloud/issues/22).
+
 ## HTML mail drafts (1.3.0)
 
 `mail_create_draft` accepts optional `html: true`; the default remains `false` (plain text). The existing `mail.draft` permission and confirmation apply. Mail's HTML sanitizer runs with a restricted configuration before planning and again before saving through `saveDraft`. Scripts, events, CSS, embedded content and all images (remote and `data:`) are forbidden. Links require an explicit `http`, `https` or `mailto` scheme.

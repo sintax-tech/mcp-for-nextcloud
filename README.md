@@ -37,6 +37,10 @@ Writes require explicit permissions and confirmation. Plans describe shared impa
 
 Earlier releases: see [History](HISTORY.md).
 
+## Collectives (1.3.0)
+
+With the Collectives app, the tools list collectives and pages, read and search them, create empty pages, edit their Markdown and move or rename them inside their collective; deleting pages is not offered. `collectives_create_collective` creates a new collective with its own new team, owned by the user and with no other member. It needs the `collectives.collective.create` permission, denied by default and outside the presets, and Nextcloud 33 to 35. A name already used by a collective or team the user sees is refused, and guest accounts cannot create collectives. If, in the meantime, a team of that name administered by the user appears, Collectives uses that team; the plan warns about it and the receipt reports it. On Nextcloud 35, Teams may also create a team folder, depending on the administrator's settings. Nothing is retried, undone or repaired automatically. Requested in [#22](https://github.com/sintax-tech/mcp-for-nextcloud/issues/22).
+
 ## HTML mail drafts (1.3.0)
 
 `mail_create_draft` accepts optional `html: true`; the default remains `false` (plain text). The existing `mail.draft` permission and confirmation apply. Mail's HTML sanitizer runs with a restricted configuration before planning and again before saving through `saveDraft`. Scripts, events, CSS, embedded content and all images (remote and `data:`) are forbidden. Links require an explicit `http`, `https` or `mailto` scheme.

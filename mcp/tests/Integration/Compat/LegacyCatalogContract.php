@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Compat;
 
-/** Keeps the complete legacy operation matrix, explicitly allowing only the documented 1.2.2 and approved 1.3.0 F00 additions. */
+/** Keeps the complete legacy operation matrix, explicitly allowing only the documented 1.2.2 and approved 1.3.0 F00 and Collectives C01–C03 additions. */
 final class LegacyCatalogContract {
 	/**
 	 * @param array<string, list<string>> $baseline catalog actually read from the released 1.0.8 code
@@ -23,10 +23,12 @@ final class LegacyCatalogContract {
 			'tables' => ['read', 'create', 'edit', 'schema', 'share'],
 			'forms' => ['read', 'results', 'create', 'edit'],
 			'polls' => ['read', 'results', 'links', 'create', 'configure', 'options', 'options.remove', 'share', 'invite'],
+			// C01–C03 only; C04 must append its reviewed operations explicitly, with matching defaults.
+			'collectives' => ['read', 'create', 'edit', 'move'],
 		];
-		if (array_intersect(['mail', 'tables', 'forms', 'polls'], array_keys($baseline)) !== []
+		if (array_intersect(['mail', 'tables', 'forms', 'polls', 'collectives'], array_keys($baseline)) !== []
 			|| in_array('delete', $baseline['files'], true) || $current !== $expected) {
-			throw new \UnexpectedValueException('Legacy catalog changed beyond the documented 1.2.2 and approved 1.3.0 F00 additions');
+			throw new \UnexpectedValueException('Legacy catalog changed beyond the documented 1.2.2 and approved 1.3.0 F00 and Collectives C01–C03 additions');
 		}
 		return $baseline;
 	}
@@ -48,6 +50,7 @@ final class LegacyCatalogContract {
 					'tables' => ['read' => true, 'create' => false, 'edit' => false, 'schema' => false, 'share' => false],
 					'forms' => ['read' => true, 'results' => false, 'create' => false, 'edit' => false],
 					'polls' => ['read' => true, 'results' => false, 'links' => false, 'create' => false, 'configure' => false, 'options' => false, 'options.remove' => false, 'share' => false, 'invite' => false],
+					'collectives' => ['read' => true, 'create' => false, 'edit' => false, 'move' => false],
 				] as $module => $defaults) {
 					if (($row['grants'][$module] ?? null) !== $defaults) {
 						throw new \UnexpectedValueException("Unexpected $module defaults in the legacy matrix");

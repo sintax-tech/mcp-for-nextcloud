@@ -11,18 +11,25 @@ use OCA\Deck\Db\Assignment;
 use OCP\Notification\IManager;
 
 /**
- * Runs one Deck assignment with the assignee's push delivery deferred until the assignment is stored (issue #26).
+ * Retries one Deck assignment with the assignee's push delivered only after the assignment is stored (issue #26).
  *
  * Deck's `AssignmentService::assignUser()` notifies another assignee through `IManager::notify()` before it inserts
- * the assignment, and the Notifications app delivers that push inline. When the assignee has a push device, any
- * delivery error escaped `assignUser()` and nothing was assigned. Inside `defer()`, `notify()` stores the
- * notification and only queues the push; `flush()` delivers it after the insert, so a delivery error reaches the
- * caller as an error after the write, which the handler reports as "saved, then Deck failed".
+ * the assignment, and the Notifications app prepares and sends the push inline for an assignee with a push device.
+ * An error there ends the call before the insert. Inside `defer()`, `notify()` stores the notification and only
+ * queues the push; `flush()` sends it after the insert, so the error reaches the caller after the write, which the
+ * handler reports as "saved, then Deck failed".
  *
- * The deferral is closed only by the call that opened it: when another part of the request already defers,
- * `defer()` answers false and that owner keeps the flush, as `IManager::defer()` documents.
+ * Only retries come here, after every other assignment of the call took the direct path
+ * ({@see \OCA\Mcp\Modules\Deck\AssigneePasses}): when a flush fails, NC 32/35 `Manager::flush()` stops before it
+ * clears its deferral and Notifications' `Push::flushPayloads()` keeps the failing push queued, so nothing queued
+ * after it in this request can be sent. That deferral is still the one this instance opened: `defer()` answers false
+ * for it, and this instance keeps flushing it, so each later retry gets its own delivery attempt and its own error.
+ * A deferral someone else opened is left to them, as `IManager::defer()` documents.
  */
 final class DeferredAssignmentNotice {
+	/** Whether this instance opened the deferral that is open now and left it open after a failed flush. */
+	private bool $abandoned = false;
+
 	/**
 	 * Keep the notification manager the assignment runs under.
 	 *
@@ -36,15 +43,16 @@ final class DeferredAssignmentNotice {
 	/**
 	 * Runs the assignment with push delivery deferred, then delivers what it queued.
 	 *
-	 * A failed assignment still flushes the deferral it opened, so no later notification of the request stays
-	 * queued, and the assignment's own error is the one that reaches the caller.
+	 * A failed assignment still flushes the deferral this instance owns, and the assignment's own error is the one
+	 * that reaches the caller.
 	 *
 	 * @param \Closure(): Assignment $assign Deck call that stores the assignment.
 	 * @return Assignment The assignment Deck stored.
 	 * @throws \Throwable The assignment's error, or the delivery error raised after the assignment was stored.
 	 */
 	public function assign(\Closure $assign): Assignment {
-		if (!$this->notifications->defer()) {
+		$owner = $this->notifications->defer() || $this->abandoned;
+		if (!$owner) {
 			return $assign();
 		}
 		try {
@@ -53,9 +61,21 @@ final class DeferredAssignmentNotice {
 			$this->flushAfterFailure();
 			throw $e;
 		}
-		$this->notifications->flush();
+		$this->flush();
 
 		return $assignment;
+	}
+
+	/**
+	 * Delivers the queued pushes and records whether the deferral was left open.
+	 *
+	 * @return void
+	 * @throws \Throwable The delivery error; the deferral then stays this instance's.
+	 */
+	private function flush(): void {
+		$this->abandoned = true;
+		$this->notifications->flush();
+		$this->abandoned = false;
 	}
 
 	/**
@@ -65,7 +85,7 @@ final class DeferredAssignmentNotice {
 	 */
 	private function flushAfterFailure(): void {
 		try {
-			$this->notifications->flush();
+			$this->flush();
 		} catch (\Throwable) {
 			// The assignment error is the answer; a delivery error after it adds nothing the caller can act on.
 		}

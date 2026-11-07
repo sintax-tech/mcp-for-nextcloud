@@ -10,7 +10,9 @@ namespace OCA\Mcp\Modules\Deck\Integration;
 
 use OCA\Deck\Db\Acl;
 use OCA\Deck\Db\Assignment;
+use OCA\Deck\Db\CardMapper;
 use OCA\Deck\Db\StackMapper;
+use OCA\Deck\Notification\NotificationHelper;
 use OCA\Deck\Service\AssignmentService;
 use OCA\Deck\Service\PermissionService;
 use OCA\Mcp\L10n\Translator;
@@ -20,6 +22,9 @@ use OCP\Notification\IManager;
 
 /** Validates accounts against a board and assigns or unassigns them on a card. */
 final class DeckAssignments {
+	/** Deferral of the request's assignment retries, kept so a deferral left open by a failed delivery stays ours. */
+	private ?DeferredAssignmentNotice $deferred = null;
+
 	/**
 	 * Store the collaborators this area calls. A method binds the caller only when that method did before.
 	 *
@@ -65,23 +70,53 @@ final class DeckAssignments {
 	/**
 	 * Assigns one validated account through Deck's assignment service.
 	 *
-	 * The assignee's push delivery waits until the assignment is stored ({@see DeferredAssignmentNotice}).
+	 * The direct call is the one of 1.2.5: Deck notifies the assignee and the Notifications app sends the push inline.
+	 * A retry with `$deferDelivery` first withdraws the notification the failed attempt left, through Deck's own
+	 * `NotificationHelper::markCardAssignedAsRead()` as an unassignment does, so the assignee keeps a single one, and
+	 * then assigns with the push delivered after the insert ({@see DeferredAssignmentNotice}).
 	 * @param string $userId Authenticated caller.
 	 * @param int $cardId Created card.
 	 * @param string $assignee Account ID to assign.
+	 * @param bool $deferDelivery Retry of an assignment that failed before Deck stored it.
 	 * @return \OCA\Deck\Db\Assignment Persisted assignment.
-	 * @throws \Throwable When a concurrent change prevents assignment, or delivery fails after it was stored.
+	 * @throws \Throwable When a concurrent change prevents assignment, or a deferred delivery fails after the insert.
 	 * @see DeckGatewayInterface::assignCardUser()
 	 */
-	public function assignCardUser(string $userId, int $cardId, string $assignee): Assignment {
+	public function assignCardUser(string $userId, int $cardId, string $assignee, bool $deferDelivery = false): Assignment {
 		$this->services->bindUser($userId);
 		/** @var AssignmentService $assignments */
 		$assignments = $this->services->get(AssignmentService::class);
-		/** @var IManager $notifications */
-		$notifications = $this->services->get(IManager::class);
-		return (new DeferredAssignmentNotice($notifications))->assign(
-			static fn (): Assignment => $assignments->assignUser($cardId, $assignee)
-		);
+		if (!$deferDelivery) {
+			return $assignments->assignUser($cardId, $assignee);
+		}
+		$this->withdrawFailedNotice($cardId, $assignee);
+		if ($this->deferred === null) {
+			/** @var IManager $notifications */
+			$notifications = $this->services->get(IManager::class);
+			$this->deferred = new DeferredAssignmentNotice($notifications);
+		}
+		return $this->deferred->assign(static fn (): Assignment => $assignments->assignUser($cardId, $assignee));
+	}
+
+	/**
+	 * Withdraws the "card assigned" notification a failed attempt stored before its push failed.
+	 *
+	 * Best effort: when it cannot be withdrawn the assignee sees it twice, which never blocks the assignment.
+	 *
+	 * @param int $cardId Card of the failed attempt.
+	 * @param string $assignee Account the attempt notified.
+	 * @return void
+	 */
+	private function withdrawFailedNotice(int $cardId, string $assignee): void {
+		try {
+			/** @var CardMapper $cards */
+			$cards = $this->services->get(CardMapper::class);
+			/** @var NotificationHelper $helper */
+			$helper = $this->services->get(NotificationHelper::class);
+			$helper->markCardAssignedAsRead($cards->find($cardId), $assignee);
+		} catch (\Throwable) {
+			// The retry below decides the outcome; a duplicate notification is the only cost.
+		}
 	}
 
 	/**

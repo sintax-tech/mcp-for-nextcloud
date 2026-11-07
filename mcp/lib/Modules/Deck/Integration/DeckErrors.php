@@ -71,4 +71,30 @@ final class DeckErrors {
 
 		return \OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorGeneric();
 	}
+
+	/**
+	 * Whether an exception is none of the refusals this module or Deck explain, so it gets the generic message.
+	 *
+	 * An assignment that fails this way before Deck stores it is retried with the assignee's push deferred
+	 * ({@see \OCA\Mcp\Modules\Deck\AssigneePasses}); a refusal is final and never retried.
+	 *
+	 * @param \Throwable $exception What the Deck call raised.
+	 * @return bool True when no refusal of this module and no mapped Deck exception matches.
+	 */
+	public static function unexplained(\Throwable $exception): bool {
+		if ($exception instanceof \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException
+			|| $exception instanceof \OCA\Mcp\Modules\Deck\Failures\DeckUnconfirmedException
+			|| $exception instanceof \OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException) {
+			return false;
+		}
+		foreach (self::MAPPING as [$classes]) {
+			foreach ($classes as $class) {
+				if (is_a($exception, $class)) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
 }

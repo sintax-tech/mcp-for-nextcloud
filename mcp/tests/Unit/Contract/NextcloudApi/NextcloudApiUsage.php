@@ -606,6 +606,10 @@ final class NextcloudApiUsage {
 		'OCP\\BackgroundJob\\TimedJob::execute' => 'the app\'s own tools, in Tools/Calendar/CalendarModule and Service/Calendar/CalendarSelftestService',
 		'OCA\\Deck\\Db\\StackMapper::findByIds' => 'OCA\\Mail\\Db\\MessageMapper::findByIds, in Tools/Mail/MailMessageGateway',
 		'OCA\\Talk\\Service\\RoomService::setHasAttachments' => 'OCA\\Mail\\Service\\Search\\SearchQuery::setHasAttachments, in Tools/Mail/MailSearchCriteria',
+		// Issue #26: the assignment retry calls only markCardAssignedAsRead() on Deck's NotificationHelper.
+		'OCA\\Deck\\Notification\\NotificationHelper::setUserId' => 'OCA\\Deck\\Service\\BoardService::setUserId, in Modules/Deck/Integration/DeckServiceContext',
+		'OCA\\Deck\\Notification\\NotificationHelper::getCurrentUser' => 'OCA\\Polls\\UserSession::getCurrentUser, in Modules/Polls/Integration/PollsSessionGuard',
+		'OCA\\Deck\\Notification\\NotificationHelper::getUserId' => 'OCA\\Circles\\Model\\Member::getUserId and other getUserId() calls, in Modules/Deck/Integration/DeckRecipientDirectory and Forms/Mail/Polls integrations',
 		// The Nextcloud Tables app, kept with the Tables module's contract.
 		...Tables\TablesApiUsage::NAME_CLASHES,
 		...Forms\FormsCreationCoreApiUsage::NAME_CLASHES,

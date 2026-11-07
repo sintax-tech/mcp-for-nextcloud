@@ -90,19 +90,24 @@ final class CreateCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 			}
 
 			$assignmentFailed = false;
-			foreach ($assignees as $assignee) {
-				try {
-					$assignment = $this->afterWrite(
-						fn () => $this->gateway->assignCardUser($userId, (int)$card->getId(), $assignee['uid']),
+			$writes = [];
+			foreach ($assignees as $index => $assignee) {
+				$writes[$index] = function (bool $deferDelivery) use ($userId, $card, $assignee, &$warnings): mixed {
+					return $this->afterWrite(
+						fn () => $this->gateway->assignCardUser($userId, (int)$card->getId(), $assignee['uid'], $deferDelivery),
 						fn () => \OCA\Mcp\Modules\Deck\Integration\CardFormatter::assignmentOf($this->gateway->cardAssignments($userId, (int)$card->getId()), $assignee['uid']),
 						$warnings,
 					);
-					$card->setAssignedUsers([...($card->getAssignedUsers() ?? []), $assignment]);
-				} catch (\Throwable $e) {
+				};
+			}
+			foreach (\OCA\Mcp\Modules\Deck\AssigneePasses::run($writes) as $outcome) {
+				if ($outcome instanceof \Throwable) {
 					// Creation succeeded: never turn this into an error that encourages a duplicate retry.
-					$this->logger->warning('MCP Deck assignment failed after creation ({exception})', ['exception' => $e::class]);
+					$this->logger->warning('MCP Deck assignment failed after creation ({exception})', ['exception' => $outcome::class]);
 					$assignmentFailed = true;
+					continue;
 				}
+				$card->setAssignedUsers([...($card->getAssignedUsers() ?? []), $outcome]);
 			}
 			if ($assignmentFailed) {
 				$warnings[] = Translator::t('The card was created, but one or more assignees could not be assigned. Read the card before retrying assignment in Deck.');

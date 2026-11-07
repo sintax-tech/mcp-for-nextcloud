@@ -14,7 +14,8 @@ use OCP\Server;
 
 /**
  * A notifier that fails while Deck notifications are prepared, standing in for any notifier, key or encryption step
- * the Notifications app runs only for a recipient with a push device (issue #26). Off unless the test switches it on.
+ * the Notifications app runs only for a recipient with a push device (issue #26). Off unless the test switches it on,
+ * for every recipient (`1`) or for one (`user:<uid>`).
  */
 final class PrepareFault implements INotifier {
 	/** @return string Notifier identifier. */
@@ -35,8 +36,8 @@ final class PrepareFault implements INotifier {
 	 * @throws UnknownNotificationException For everything else.
 	 */
 	public function prepare(INotification $notification, string $languageCode): INotification {
-		if ($notification->getApp() === 'deck'
-			&& Server::get(\OCP\IConfig::class)->getAppValue('mcp_deck_probe', 'prepare_fault', '') === '1') {
+		$fault = Server::get(\OCP\IConfig::class)->getAppValue('mcp_deck_probe', 'prepare_fault', '');
+		if ($notification->getApp() === 'deck' && ($fault === '1' || $fault === 'user:' . $notification->getUser())) {
 			throw new \RuntimeException('Synthetic notifier failure');
 		}
 		throw new UnknownNotificationException();

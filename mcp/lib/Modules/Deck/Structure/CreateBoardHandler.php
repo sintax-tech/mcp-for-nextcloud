@@ -129,6 +129,10 @@ final class CreateBoardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 		$unconfirmed = 0;
 		$probables = $probableBoard ? 1 : 0;
 		$cardTotal = 0;
+		/** @var list<\Closure(bool): mixed> $writes Assignment of every created card, run after all cards exist. */
+		$writes = [];
+		/** @var list<string> $writeTitles Card title of each entry of $writes. */
+		$writeTitles = [];
 
 		foreach ($blueprint['stacks'] as $position => $wanted) {
 			if ($probableBoard) {
@@ -195,21 +199,26 @@ final class CreateBoardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 				}
 
 				foreach ($card['assignees'] as $assignee) {
-					try {
-						$this->afterWrite(
-							fn () => $this->gateway->assignCardUser($userId, (int)$created->getId(), $assignee),
+					$writeTitles[] = $card['title'];
+					$writes[] = function (bool $deferDelivery) use ($userId, $created, $assignee, &$warnings): mixed {
+						return $this->afterWrite(
+							fn () => $this->gateway->assignCardUser($userId, (int)$created->getId(), $assignee, $deferDelivery),
 							fn () => \OCA\Mcp\Modules\Deck\Integration\CardFormatter::assignmentOf($this->gateway->cardAssignments($userId, (int)$created->getId()), $assignee),
 							$warnings,
 						);
-					} catch (\Throwable $e) {
-						// The card exists: never turn this into something that invites a second attempt.
-						$this->logger->warning('MCP Deck assignment failed after creation ({exception})', ['exception' => $e::class]);
-						$warnings[] = Translator::t('The card \'%s\' was created, but an assignee could not be assigned. Read the card before retrying in Deck.', [$card['title']]);
-					}
+					};
 				}
 			}
 			$cardTotal += count($cards);
 			$stacks[] = ['id' => (int)$stack->getId(), 'title' => $wanted['title']] + ($probableStack ? ['confirmed' => 'probable'] : []) + ['cards' => $cards];
+		}
+		// All cards first: a retried assignment must never come before another card's direct one (issue #26).
+		foreach (\OCA\Mcp\Modules\Deck\AssigneePasses::run($writes) as $index => $outcome) {
+			if ($outcome instanceof \Throwable) {
+				// The card exists: never turn this into something that invites a second attempt.
+				$this->logger->warning('MCP Deck assignment failed after creation ({exception})', ['exception' => $outcome::class]);
+				$warnings[] = Translator::t('The card \'%s\' was created, but an assignee could not be assigned. Read the card before retrying in Deck.', [$writeTitles[$index]]);
+			}
 		}
 
 		$summary = $probableBoard ? \OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages::probablyCreated() : $this->summary($boardTitle, count($stacks), $cardTotal, count($failed));

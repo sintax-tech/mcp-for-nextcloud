@@ -46,9 +46,13 @@ final class AssignmentProbeApp {
 		}
 	}
 
-	/** @param bool $on Whether the probe's notifier fails while Deck notifications are prepared. @return void */
-	public function prepareFault(bool $on): void {
-		Server::get(\OCP\IConfig::class)->setAppValue(self::ID, 'prepare_fault', $on ? '1' : '0');
+	/**
+	 * @param bool $on Whether the probe's notifier fails while Deck notifications are prepared.
+	 * @param string|null $uid Only for this recipient; null for every recipient.
+	 * @return void
+	 */
+	public function prepareFault(bool $on, ?string $uid = null): void {
+		Server::get(\OCP\IConfig::class)->setAppValue(self::ID, 'prepare_fault', !$on ? '0' : ($uid === null ? '1' : 'user:' . $uid));
 	}
 
 	/** @return list<array<string,mixed>> Test-only phase metadata; never credentials or notification content. */

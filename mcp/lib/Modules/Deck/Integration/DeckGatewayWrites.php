@@ -58,10 +58,12 @@ interface DeckGatewayWrites {
 	 * @param string $userId Authenticated caller.
 	 * @param int $cardId Created card.
 	 * @param string $assignee Account ID to assign.
+	 * @param bool $deferDelivery Retry of an assignment that failed before Deck stored it: the assignee's push is
+	 *     delivered after the insert (issue #26). False is the direct Deck call of 1.2.5.
 	 * @return \OCA\Deck\Db\Assignment Persisted assignment.
-	 * @throws \Throwable When a concurrent change prevents assignment.
+	 * @throws \Throwable When a concurrent change prevents assignment, or the deferred delivery fails after it.
 	 */
-	public function assignCardUser(string $userId, int $cardId, string $assignee): \OCA\Deck\Db\Assignment;
+	public function assignCardUser(string $userId, int $cardId, string $assignee, bool $deferDelivery = false): \OCA\Deck\Db\Assignment;
 
 	/**
 	 * Removes one account from the assignees of a card through Deck's assignment service.

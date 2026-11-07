@@ -140,8 +140,8 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 	}
 
 	/** {@inheritDoc} */
-	public function assignCardUser(string $userId, int $cardId, string $assignee): Assignment {
-		return $this->assignments->assignCardUser($userId, $cardId, $assignee);
+	public function assignCardUser(string $userId, int $cardId, string $assignee, bool $deferDelivery = false): Assignment {
+		return $this->assignments->assignCardUser($userId, $cardId, $assignee, $deferDelivery);
 	}
 
 	/** {@inheritDoc} */

@@ -119,14 +119,15 @@ final class PushDeviceFixture {
 	 *
 	 * @param string $uid Account receiving pushes.
 	 * @param int $port Local port of the proxy the device names.
+	 * @param string $path Path prefix of the proxy URL, so the requests of each device can be told apart.
 	 * @return array{status: int, headers: string, body: string} OCS answer of the registration.
 	 */
-	public function registerProxyDevice(string $uid, int $port): array {
+	public function registerProxyDevice(string $uid, int $port, string $path = ''): array {
 		$this->allowLocalHosts();
 		$credential = LoginFactory::basic($uid);
 		$key = openssl_pkey_get_details(openssl_pkey_new(['private_key_bits' => 2048, 'private_key_type' => OPENSSL_KEYTYPE_RSA]));
 		$answer = $this->ocs($credential, 'POST', '/push', ['pushTokenHash' => hash('sha512', random_bytes(32)),
-			'devicePublicKey' => (string)$key['key'], 'proxyServer' => 'http://localhost:' . $port . '/']);
+			'devicePublicKey' => (string)$key['key'], 'proxyServer' => 'http://localhost:' . $port . '/' . ($path === '' ? '' : $path . '/')]);
 		$this->devices[] = ['credential' => $credential, 'kind' => 'push'];
 		return $answer;
 	}

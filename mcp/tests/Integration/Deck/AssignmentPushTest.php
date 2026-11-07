@@ -150,4 +150,49 @@ final class AssignmentPushTest extends IntegrationTestCase {
 			$browser?->close(); $probe?->close(); $devices->close(); $scene->close();
 		}
 	}
+
+	/**
+	 * One call assigns a recipient whose push fails to prepare, then a healthy one, both with a device: both are
+	 * assigned, the healthy one still receives its push, and the failing one keeps a single notification.
+	 *
+	 * @return void
+	 */
+	public function testAFailingRecipientDoesNotCostTheNextOneItsPush(): void {
+		$scene = new FunctionalDeckScene();
+		$devices = new PushDeviceFixture();
+		$probe = null;
+		try {
+			$bad = $scene->uid(0); $actor = $scene->uid(1); $healthy = $scene->uid(2);
+			$f = $scene->seed($bad, $actor);
+			$devices->startProxy(200);
+			foreach ([[$bad, 'bad'], [$healthy, 'healthy']] as [$uid, $path]) {
+				$registered = $devices->registerProxyDevice($uid, PushDeviceFixture::PROXY_PORT, $path);
+				self::assertContains($registered['status'], [200, 201], $registered['body']);
+			}
+			$probe = new AssignmentProbeApp();
+			$probe->prepareFault(true, $bad);
+			$before = count($devices->proxyRequests());
+
+			$client = new McpClient(LoginFactory::bearer($actor));
+			$out = $this->data($client->write('deck_edit_card', ['cardId' => $f['card'], 'assign' => [$bad, $healthy], 'confirm_shared' => true]));
+			$saved = FunctionalDeckScene::run($actor, 'read', ['card' => $f['card']])['assignees'];
+			$byMcp = array_slice($devices->proxyRequests(), $before);
+			$toHealthy = array_values(array_filter($byMcp, static fn (array $r): bool => str_starts_with($r['path'], '/healthy/')));
+			$manager = \OCP\Server::get(\OCP\Notification\IManager::class);
+			$notice = $manager->createNotification()->setApp('deck')->setUser($bad)->setObject('card', (string)$f['card']);
+			$notices = $manager->getCount($notice);
+			file_put_contents('/tmp/mcp-it-observations.txt', json_encode(['issue26' => 'batch: failing recipient then healthy',
+				'mcp' => $out, 'saved' => $saved, 'proxyPaths' => array_column($byMcp, 'path'), 'badNotices' => $notices],
+				JSON_THROW_ON_ERROR) . "\n", FILE_APPEND);
+
+			self::assertEqualsCanonicalizing([$bad, $healthy], $out['assigned'], json_encode($out));
+			self::assertSame([], $out['failed'], json_encode($out));
+			self::assertNotSame([], $out['warnings'] ?? [], json_encode($out));
+			self::assertEqualsCanonicalizing([$bad, $healthy], $saved);
+			self::assertNotSame([], $toHealthy, 'The healthy recipient did not receive its push: ' . json_encode($byMcp));
+			self::assertSame(1, $notices);
+		} finally {
+			$probe?->close(); $devices->close(); $scene->close();
+		}
+	}
 }

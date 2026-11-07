@@ -317,3 +317,16 @@ class DeckShareProvider {
 	public function getSharesByPath(\OCP\Files\Node $path): array { throw new \RuntimeException('stub'); }
 }
 }
+namespace OCA\Deck\Notification {
+	/** Deck's notification helper: only the method the assignment retry calls (issue #26). */
+	class NotificationHelper {
+		/**
+		 * @param \OCA\Deck\Db\Card $card Card whose "card assigned" notification is withdrawn.
+		 * @param string $userId Account that was notified.
+		 * @return void
+		 */
+		public function markCardAssignedAsRead(\OCA\Deck\Db\Card $card, string $userId): void {
+			throw new \LogicException('Stub: expected a PHPUnit mock.');
+		}
+	}
+}

@@ -113,6 +113,7 @@ final class McpTablesSchemaShareHttpTest extends IntegrationTestCase {
 			$nativeView = $native->api('GET', 'views/' . $view['id']);
 			self::assertSame($id, $nativeView['tableId']);
 			self::assertSame('HTTP view', $nativeView['title']);
+			Tables240HttpProof::run($client, $native, $id, $column['id'], $view['id']);
 
 			$shareArgs = ['node_type' => 'table', 'node_id' => $id,
 				'recipient' => ['type' => 'user', 'id' => WriteCellScene::READER],

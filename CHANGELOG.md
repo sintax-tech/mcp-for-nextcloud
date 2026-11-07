@@ -2,6 +2,10 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## 1.3.0 — Unreleased
+
+- **Tables 2.4.0:** add an exact, source-pinned schema/sharing profile on Nextcloud 33–35, with full native API introspection. View layouts/card sources are preserved and column changes that would clear a card source are refused. Read/row APIs and every column parser are covered by additional official-source contracts; existing row grants and relation ACL checks stay unchanged. A SHA-checked local archive opt-in adds a separate NC35 integration proof without replacing the existing matrix pins.
+
 ## 1.3.0-rc.1 — 2026-11-06
 
 **Database migration on update:** this version includes `Version001205Date20261106000000` for CIMD host trust and credential generations ([#28](https://github.com/sintax-tech/mcp-for-nextcloud/issues/28)), the first database migration since 1.1.0. Nextcloud runs the migration and the `CimdHostsSeedStep` post-migration repair step. The effective CIMD host allowlist is preserved. Credentials issued to hosts that remain allowed survive with `client_gen = 1`. Credentials from a host that was never allowed no longer authenticate or refresh; an administrator must allow the intended host and the client must sign in again.

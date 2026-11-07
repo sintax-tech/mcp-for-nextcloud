@@ -36,6 +36,7 @@ final class CalendarGuideNotes {
 				. 'the event itself out. An appointment of a guest sitting entirely inside the old slot is not reported.',
 			'Dates and times arrive as they will be stored, and are read back in the timezone of the account; a '
 				. 'recurring event is expanded into its occurrences before it reaches the user.',
+			EventAlarmListing::note(),
 			'send_invitations hands the invitation to the CalDAV scheduling of the server. The plan and the result '
 				. 'say whether the server has e-mail invitations switched on (imipEnabled); when it is off, say so to '
 				. 'the user instead of claiming an e-mail was sent.',

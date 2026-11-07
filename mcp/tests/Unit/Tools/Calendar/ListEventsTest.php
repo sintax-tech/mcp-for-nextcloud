@@ -19,7 +19,7 @@ final class ListEventsTest extends CalendarTestCase {
 		$this->store->addObject(1, 'a.ics', self::ics("UID:a\nSUMMARY:Reunião\nLOCATION:Sala 1\nDTSTART:20260310T130000Z\nDTEND:20260310T140000Z"));
 		$this->assertSame([[
 			'uid' => 'a', 'summary' => 'Reunião', 'start' => '2026-03-10T13:00:00.000Z', 'end' => '2026-03-10T14:00:00.000Z',
-			'location' => 'Sala 1', 'allDay' => false, 'calendar' => self::PERSONAL,
+			'location' => 'Sala 1', 'allDay' => false, 'calendar' => self::PERSONAL, 'alarms' => [], 'otherAlarms' => 0,
 		]], $this->list(['calendar' => self::PERSONAL]));
 	}
 

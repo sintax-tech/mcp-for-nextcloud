@@ -3,6 +3,7 @@
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
 		{"path":"lib/Modules/Files/Integration/VersionOrder.php","fqcn":"OCA\\Mcp\\Modules\\Files\\Integration\\VersionOrder","target":"stays","owner":"Modules\\Files","ticket":null},
+		{"path":"lib/Modules/Calendar/Presentation/EventAlarmListing.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Presentation\\EventAlarmListing","target":"stays","owner":"Modules\\Calendar","ticket":null},
 		{"path":"lib/Modules/Calendar/Presentation/CalendarTimingFormatter.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Presentation\\CalendarTimingFormatter","target":"stays","owner":"Modules\\Calendar","ticket":null},
 		{"path":"lib/OAuth/Authorization/ServerMetadata.php","fqcn":"OCA\\Mcp\\OAuth\\Authorization\\ServerMetadata","target":"stays","owner":"OAuth","ticket":null},
 		{"path":"lib/Modules/Files/Reorganization/TreeWalk.php","fqcn":"OCA\\Mcp\\Modules\\Files\\Reorganization\\TreeWalk","target":"stays","owner":"Modules\\Files","ticket":null},

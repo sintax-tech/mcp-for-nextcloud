@@ -10,6 +10,8 @@ This release candidate combines the capability-module restructuring with all the
 
 ### Fixed
 
+- **Event reminders in listings:** `calendar_list_events` now returns the DISPLAY reminders relative to the start managed by MCP under `alarms` with the same keys accepted by create/update (`minutesBefore` and `description`), and counts other reminders in `otherAlarms`; confidential events and read-only shares expose none. Existing negative, non-integer or greater than 40320 offsets remain visible and must be adjusted before reuse in create/update.
+
 - **Reading the current file version:** `files_version_read` now reads the current version listed by `files_versions_list` when the backend has no separate stored version file, instead of failing with a missing-file error. Other missing historical versions remain refused. This fixes a defect already present in 1.2.5.
 
 - **File version order:** `files_versions_list` now returns versions newest first and applies `limit` after ordering, as its description states. This fixes a defect already present in 1.2.5.

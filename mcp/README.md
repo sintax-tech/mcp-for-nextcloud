@@ -11,7 +11,7 @@ The exact URL of the instance appears on the administration and personal pages.
 
 ## What's new in 1.3.0
 
-The app is organized into capability modules, following the architecture proposed by @marcjoancr in [#14](https://github.com/sintax-tech/mcp-for-nextcloud/pull/14). Existing permissions and the administration and personal screens keep their behavior.
+The app is organized into capability modules, following the architecture proposed by @marcjoancr in [#14](https://github.com/sintax-tech/mcp-for-nextcloud/pull/14). New permissions use the existing matrix layout.
 
 - **OAuth host withdrawal ([#28](https://github.com/sintax-tech/mcp-for-nextcloud/issues/28)):** removing a CIMD host revokes its pending consents, codes and tokens. Re-adding it does not restore credentials: sign in again. This does not establish Zapia interoperability.
 - **HTML mail drafts ([#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30)):** `mail_create_draft` accepts `html: true`; plain text remains the default. The plan shows sanitized HTML, and confirmation saves a draft without a signature or sending mail.
@@ -20,9 +20,58 @@ The app is organized into capability modules, following the architecture propose
 - **Reading the current file version:** `files_version_read` reads the listed current version when there is no separate historical file, fixing a defect present in 1.2.5. Other missing versions remain refused.
 - **Deck assignment ([#26](https://github.com/sintax-tech/mcp-for-nextcloud/issues/26)):** investigated without an assignment code change; the reported failure was not reproduced, and the issue remains open.
 
+- **Permissions:** new Tables `schema`/`share` and Polls `configure`/`options`/`options.remove`/`share`/`invite` grants start denied. Presets preserve independent grants outside their levels; None explicitly denies all. Polls levels and labels remain those of 1.2.5, in the existing matrix layout.
+- **Calendar reminders ([#24](https://github.com/sintax-tech/mcp-for-nextcloud/issues/24)):** create/update accepts up to five DISPLAY reminders relative to the event start. Omission preserves alarms on update; `alarms: []` removes only that DISPLAY/start subset. Other alarms and recurrence overrides remain; notification delivery is not verified.
+- **Forms structure ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** add, reorder or delete questions/options and change a question type with the existing `forms.edit` grant on the checked Forms 5.3.0, 5.3.7, 5.4.0 and 5.4.1 APIs. The Edit forms help warns that existing grants include these operations. Deletion can orphan answers; deleting an upload question can trigger asynchronous folder cleanup. Confirmation is required.
+- **Polls writing ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** configure or change poll state, manage/remove/restore options, manage shares and send an individual invitation, with separate grants and native editing permission. No automatic vote or automatic retry; an invitation receipt does not prove delivery.
+- **Tables schema and sharing ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** create/update tables, columns and views with `tables.schema`; share/revoke user/group access with `tables.share`. Initial supported ranges are Tables 1.0.10 ≤ version < 1.0.11 on NC32, and 2.2.2 ≤ version < 2.2.3 or 2.3.1 ≤ version < 2.3.3 on NC33–35, with a matching native API. These ranges are separate from existing row tools; no schema deletion or public link is exposed.
+- **Collectives ([#22](https://github.com/sintax-tech/mcp-for-nextcloud/issues/22)):** list, read and search pages; create, edit Markdown, move and rename within a collective using native permissions and separate write grants. Supported native API ranges are 4.0.0 to below 4.8.0 on NC32–33, 4.4.0 to below 4.8.0 on NC34, and 4.5.0 to below 4.8.0 on NC35. Content search is refused on Collectives 4.0.0; title search remains available. Page deletion, attachments, templates, membership and sharing management are outside this feature.
+
 **Updating runs a database migration and the CIMD initialization repair step.** Credentials for hosts that remain allowed survive. Credentials from hosts that were never allowed can no longer authenticate or refresh; an administrator must allow the intended host and the client must sign in again. The existing host allowlist is preserved.
 
 [Full changes](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/CHANGELOG.md).
+
+## Permission updates (1.3.0)
+
+The new default-denied grants are `tables.schema`, `tables.share`, `polls.configure`, `polls.options`, `polls.options.remove`, `polls.share` and `polls.invite`. `options.remove` is one exact operation. Existing presets keep their 1.2.5 operation sets and labels and preserve independent grants outside those sets. None is the explicit exception: it denies all operations. The matrix layout, bulk changes and Undo remain; choose new grants explicitly.
+
+`forms.edit` already granted to a user now includes the seven structure operations below. The Edit forms help explains adding, reordering and deleting questions/options and changing a question type; review existing grants. Collectives has independent `read`, `create`, `edit` and `move` grants: read starts allowed, writes denied. `files.*` does not grant `collectives.*`, or vice versa. Native permissions still apply.
+
+## Calendar reminders (1.3.0)
+
+`calendar_create_event` and `calendar_update_event` accept optional `alarms`, a list of 0–5 objects with integer `minutesBefore` from 0 to 40320 and optional `description` of at most 65536 characters. Omitted or empty descriptions use the final event title, or "Event reminder" when that title is empty. Duplicate reminders are retained. Without `alarms`, behavior remains unchanged: create adds none and update preserves existing VALARM components.
+
+When present on update, the list replaces only valid DISPLAY alarms relative to the master event's start; `[]` removes that subset. Absolute, end-relative, AUDIO/EMAIL and unrecognized alarms remain. Overrides keep their own alarms; this does not update every recurrence. The plan shows replaced and preserved alarms. The receipt reports server observation, not notification delivery on a device. Existing confirmation, shared-calendar checks and DAV ETag rules apply. L01 adds no `plan_state` or approval token: on update, omitting the event ETag leaves changes between preview and confirmation unprotected. There is no new alarm grant, automatic retry or rollback.
+
+## Forms structure writes (1.3.0)
+
+Seven operations use the existing `forms.edit` and native EDIT permission: `forms_add_question`, `forms_reorder_questions`, `forms_add_option`, `forms_reorder_options`, `forms_delete_question`, `forms_delete_option` and `forms_change_question_type`. These are separate from the existing point-edit tools. New structure writes require the checked Forms versions 5.3.0, 5.3.7, 5.4.0 or 5.4.1 and the expected native API; unsupported shapes hide/refuse these operations.
+
+Plans require confirmation with their `plan_state`, plus `confirm_shared` where applicable. Reordering must name the complete relevant set. Deleting a question logically removes it and can leave answers/options orphaned; deleting an option is irreversible and can leave answer references orphaned. No restoration is exposed. Deleting an upload question can schedule native asynchronous upload-folder deletion: MCP neither examines those files nor verifies job completion. Changing a question type does not convert existing answers; `grid` and `datetime` are refused as target types. Structural writes can renew the native lock and clear the confirmation-email selector, without sending email. Receipts distinguish observed, partial and uncertain effects; no retry or rollback.
+
+## Polls writing (1.3.0)
+
+The ten additions are `polls_update_poll`, `polls_set_poll_state`, `polls_add_option`, `polls_update_option`, `polls_reorder_options`, `polls_remove_option`, `polls_restore_option`, `polls_add_share`, `polls_update_share` and `polls_invite_share`. They use their separate configure/options/options.remove/share/invite grants and require native editor access, even where a participant could propose an option in the native UI. Polls levels and labels remain exactly those of 1.2.5.
+
+The checked source families are NC32/Polls8.6.3, NC33/9.0.7, NC34/9.1.4 and NC35/9.3.0; writing also requires the supported API shape. `allowDownload` and `timezoneName` are available only in the checked 9.x branch. Access mode, anonymity, type, owner and permanent deletion are outside these tools. Reorder applies to the full active option set of a nonexpired text poll. Soft removal/restoration can hide or reveal old votes; it does not cast a vote.
+
+Sharing follows the actor's native policy. Public shares require public sharing to be allowed; writes never return public tokens or URLs. Delegating an admin share grants editing rights. Invitations target one active individual share and can notify/send email; the recorded native marker does not prove delivery. Confirm the plan with its `plan_state`; results may be partial or uncertain after a native attempt, with no automatic retry or rollback.
+
+## Tables schema and sharing (1.3.0)
+
+The eight additions are `tables_create_table`, `tables_update_table`, `tables_create_column`, `tables_update_column`, `tables_create_view`, `tables_update_view`, `tables_share_node` and `tables_unshare_node`. `tables.schema` and `tables.share` are independent and denied by default; row Read/Full presets do not grant them. Existing resources require native manage permission, not merely row create/update permission.
+
+The initial schema/sharing ranges are Tables `[1.0.10,1.0.11)` on NC32, `[2.2.2,2.2.3)` or `[2.3.1,2.3.3)` on NC33–35, with matching native signatures and fields. The upper bound is excluded. This does not narrow existing reading/row-writing support or promise schema writing for every Tables 1.0.0+ installation. Older 1.0.0/2.0.0 adapters and 2.4.0 remain disabled for this feature.
+
+Create uses only the custom table template and one entity per call. No schema deletion, owner transfer, public link or federated resource write is exposed. Column type/subtype cannot be changed; existing relation columns cannot be edited. View updates can hide rows without deleting them. User/group sharing requires explicit permissions; native manage/delete bits grant those powers in the native UI even without an MCP schema-deletion tool. Changing permissions on an existing share requires separately confirmed revocation and creation.
+
+Plans name the exact changes and need `plan_state`, confirmation and `confirm_shared` for another owner's table. Native DTO updates may rewrite omitted fields; a concurrent native edit can be overwritten between validation and writing, without a cross-service CAS guarantee. Fresh authorized observation reports the requested, different/possibly partial or unverified state. There is no automatic retry, rollback, backup or guaranteed Undo; repeated creation can duplicate an entity.
+
+## Collectives pages (1.3.0)
+
+`collectives_list`, `collectives_pages`, `collectives_read` and `collectives_search` read accessible collectives/pages; `collectives_create`, `collectives_edit` and `collectives_move` create, edit Markdown, move or rename pages inside an existing collective. Native membership and permissions, hidden-file rules and resource scopes still apply. Writes use their separate grants and confirmed plans. Create does not aggregate content; create first, then edit. Edit accepts full content, append or one unique replacement, with ETag state checks; an open collaborative Text session has no shared CAS guarantee.
+
+The approved native API ranges are Collectives 4.0.0 to below 4.8.0 on NC32–33, 4.4.0 to below 4.8.0 on NC34, and 4.5.0 to below 4.8.0 on NC35, subject to API shape checks. On 4.0.0, content search is refused; title search remains. Where content search is supported, the index can lag. Moving/renaming can turn a leaf parent into a folder, notify members and break path-based links; IDs remain stable. In-place sibling reordering, page deletion, attachments, templates, collective creation, members and sharing management are outside the feature. No automatic retry or rollback; direct `files.*` access to the mounted Markdown remains separate.
 
 ## Earlier updates (1.2.2–1.2.5)
 
@@ -54,7 +103,7 @@ Mail generates a MIME plain text alternative with Horde, which may differ from t
 ## 1.2.2 scope and permissions
 
 - **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** opt-in message search/reading, attachment text and native links; separate default-denied grants for flags, same-account moves, new drafts (plain text by default, optional sanitized HTML) and plain-text sending. Reading does not mark messages read. Accounts/folders remain available through `mail.read`; message and attachment access need their own grants.
-- **Tables ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** discover tables/views/columns, read authorized rows and create or edit one row. View filters and native ACLs apply; schema and view writes are later work.
+- **Tables ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** discover tables/views/columns, read authorized rows and create or edit one row. View filters and native ACLs apply.
 - **Forms ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** discover structure and existing authorized links, read native own/all submissions with `forms.results`, create private forms with initial questions/options and PATCH one existing question or option. Read/results/create/edit are independent; adding, deleting, reordering or changing the type of existing questions/options is outside this release. Creation can have the documented native upload-folder effects; point editing can renew the native lock or clear confirmation-email selection, as shown in its plan.
 - **Polls ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** discover polls/options/status, read votes/results and existing links within native permission limits, and create a private simple text/date poll with 0–100 initial options. `polls.results` and `polls.links` are separate default-denied grants. Managing existing poll settings/options and broader invitation/link workflows remain outside this release.
 - **Files ([#20](https://github.com/sintax-tech/mcp-for-nextcloud/issues/20)):** separate default-denied `files.delete`, including eligible Local files/folders and permitted shared descendants, with explicit confirmation and residual recovery risk. Received share roots and unsupported backends remain refused; see the deletion section below.

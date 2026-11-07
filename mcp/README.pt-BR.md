@@ -11,7 +11,7 @@ A URL exata da instância aparece nas páginas de administração e pessoal.
 
 ## Novidades da 1.3.0
 
-O app está organizado em módulos de capacidade, seguindo a arquitetura proposta por @marcjoancr na [#14](https://github.com/sintax-tech/mcp-for-nextcloud/pull/14). As permissões existentes e as telas de administração e pessoal mantêm seu comportamento.
+O app está organizado em módulos de capacidade, seguindo a arquitetura proposta por @marcjoancr na [#14](https://github.com/sintax-tech/mcp-for-nextcloud/pull/14). As novas permissões usam o layout existente da matriz.
 
 - **Retirada de host OAuth ([#28](https://github.com/sintax-tech/mcp-for-nextcloud/issues/28)):** retirar um host CIMD revoga seus consentimentos pendentes, códigos e tokens. Recolocá-lo não restaura as credenciais: é preciso entrar de novo. Isso não comprova interoperabilidade com Zapia.
 - **Rascunhos de e-mail HTML ([#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30)):** `mail_create_draft` aceita `html: true`; texto simples continua sendo o padrão. O plano mostra o HTML sanitizado, e a confirmação salva um rascunho sem assinatura e sem enviar e-mail.
@@ -20,9 +20,58 @@ O app está organizado em módulos de capacidade, seguindo a arquitetura propost
 - **Leitura da versão atual do arquivo:** `files_version_read` lê a versão atual listada quando não há um arquivo histórico separado, corrigindo um defeito presente na 1.2.5. Outras versões ausentes continuam recusadas.
 - **Atribuição no Deck ([#26](https://github.com/sintax-tech/mcp-for-nextcloud/issues/26)):** investigada sem mudar o código de atribuição; a falha relatada não foi reproduzida, e a issue continua aberta.
 
+- **Permissões:** os novos grants `schema`/`share` do Tables e `configure`/`options`/`options.remove`/`share`/`invite` do Polls começam negados. Presets preservam grants independentes fora dos seus níveis; Nenhum nega tudo explicitamente. Níveis e rótulos do Polls continuam iguais aos da 1.2.5, no layout existente da matriz.
+- **Lembretes do Calendário ([#24](https://github.com/sintax-tech/mcp-for-nextcloud/issues/24)):** criar/editar aceita até cinco lembretes DISPLAY relativos ao início do evento. Omitir o campo preserva os alarmes na edição; `alarms: []` remove só esse subconjunto DISPLAY/início. Outros alarmes e exceções da recorrência permanecem; a entrega da notificação não é verificada.
+- **Estrutura do Forms ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** adicionar, reordenar ou excluir perguntas/opções e trocar o tipo de uma pergunta com o grant `forms.edit` existente nas APIs conferidas do Forms 5.3.0, 5.3.7, 5.4.0 e 5.4.1. A ajuda de Editar formulários avisa que as concessões existentes incluem essas operações. A exclusão pode deixar respostas órfãs; excluir uma pergunta de upload pode disparar limpeza assíncrona de pastas. Exige confirmação.
+- **Escrita no Polls ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** configurar ou mudar o estado da enquete, gerenciar/remover/restaurar opções, gerenciar compartilhamentos e enviar um convite individual, com grants separados e permissão nativa de edição. Sem voto automático nem retry automático; o recibo de convite não comprova entrega.
+- **Schema e compartilhamento no Tables ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** criar/editar tabelas, colunas e views com `tables.schema`; compartilhar/revogar acesso de usuário/grupo com `tables.share`. Faixas iniciais: Tables 1.0.10 ≤ versão < 1.0.11 no NC32, e 2.2.2 ≤ versão < 2.2.3 ou 2.3.1 ≤ versão < 2.3.3 no NC33–35, com API nativa compatível. São faixas separadas das ferramentas de linhas; não há exclusão de schema nem link público.
+- **Collectives ([#22](https://github.com/sintax-tech/mcp-for-nextcloud/issues/22)):** listar, ler e buscar páginas; criar, editar Markdown, mover e renomear dentro de um coletivo com permissões nativas e grants de escrita separados. Faixas da API nativa suportada: 4.0.0 até antes de 4.8.0 no NC32–33, 4.4.0 até antes de 4.8.0 no NC34 e 4.5.0 até antes de 4.8.0 no NC35. A busca por conteúdo é recusada no Collectives 4.0.0; a busca por título continua disponível. Exclusão de páginas, anexos, modelos, membros e gestão de compartilhamentos ficam fora desse recurso.
+
 **A atualização executa uma migração de banco e o repair step de inicialização CIMD.** Credenciais de hosts que continuam permitidos sobrevivem. Credenciais de hosts que nunca foram permitidos deixam de autenticar ou renovar tokens; o administrador precisa permitir o host desejado e o cliente precisa entrar de novo. A lista existente de hosts permitidos é preservada.
 
 [Mudanças completas](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/CHANGELOG.md).
+
+## Atualização das permissões (1.3.0)
+
+Os novos grants negados por padrão são `tables.schema`, `tables.share`, `polls.configure`, `polls.options`, `polls.options.remove`, `polls.share` e `polls.invite`. `options.remove` é uma operação exata. Os presets existentes mantêm os conjuntos e rótulos da 1.2.5 e preservam grants independentes fora desses conjuntos. Nenhum é a exceção explícita: nega todas as operações. Layout da matriz, alterações em lote e Desfazer permanecem; escolha os novos grants explicitamente.
+
+O `forms.edit` já concedido passa a incluir as sete operações de estrutura abaixo. A ajuda de Editar formulários explica adição, reordenação e exclusão de perguntas/opções e troca de tipo; reveja concessões existentes. Collectives tem grants independentes `read`, `create`, `edit` e `move`: leitura começa permitida, escritas negadas. `files.*` não concede `collectives.*`, nem o contrário. As permissões nativas continuam valendo.
+
+## Lembretes do Calendário (1.3.0)
+
+`calendar_create_event` e `calendar_update_event` aceitam `alarms` opcional, uma lista de 0–5 objetos com `minutesBefore` inteiro de 0 a 40320 e `description` opcional de até 65536 caracteres. Descrição omitida ou vazia usa o título final do evento ou "Event reminder" quando esse título está vazio. Lembretes duplicados são mantidos. Sem `alarms`, o comportamento continua: criar não acrescenta alarmes e editar preserva os VALARM existentes.
+
+Na edição, uma lista presente substitui só os DISPLAY válidos relativos ao início do evento master; `[]` remove esse subconjunto. Alarmes absolutos, relativos ao fim, AUDIO/EMAIL e não reconhecidos permanecem. Exceções da recorrência mantêm seus próprios alarmes; isso não atualiza cada ocorrência. O plano mostra substituídos e preservados. O recibo informa observação no servidor, não entrega da notificação no dispositivo. Continuam a confirmação, a proteção de calendário compartilhado e as regras DAV de ETag. L01 não acrescenta `plan_state` nem token de aprovação: na edição, omitir o ETag do evento deixa sem proteção as mudanças entre prévia e confirmação. Não há grant de alarme novo, retry ou rollback automático.
+
+## Escrita de estrutura no Forms (1.3.0)
+
+Sete operações usam o `forms.edit` existente e a permissão EDIT nativa: `forms_add_question`, `forms_reorder_questions`, `forms_add_option`, `forms_reorder_options`, `forms_delete_question`, `forms_delete_option` e `forms_change_question_type`. São separadas das ferramentas pontuais existentes. As novas escritas exigem Forms 5.3.0, 5.3.7, 5.4.0 ou 5.4.1 conferido e a API nativa esperada; formas não suportadas ocultam/recusam essas operações.
+
+Planos exigem confirmação com seu `plan_state` e `confirm_shared` quando aplicável. Reordenar exige o conjunto relevante completo. Excluir pergunta a remove logicamente e pode deixar respostas/opções órfãs; excluir opção é irreversível e pode deixar referências de respostas órfãs. Não há restauração exposta. Excluir pergunta de upload pode agendar exclusão assíncrona nativa das pastas: o MCP não examina esses arquivos nem verifica o término do job. Trocar tipo não converte respostas existentes; `grid` e `datetime` são recusados como alvo. A escrita pode renovar o lock nativo e limpar o seletor de e-mail de confirmação, sem enviar e-mail. Recibos distinguem efeitos observados, parciais e incertos; sem retry ou rollback.
+
+## Escrita no Polls (1.3.0)
+
+As dez adições são `polls_update_poll`, `polls_set_poll_state`, `polls_add_option`, `polls_update_option`, `polls_reorder_options`, `polls_remove_option`, `polls_restore_option`, `polls_add_share`, `polls_update_share` e `polls_invite_share`. Usam grants separados configure/options/options.remove/share/invite e exigem edição nativa, mesmo quando um participante poderia propor opção pela interface nativa. Níveis e rótulos do Polls permanecem exatamente os da 1.2.5.
+
+Famílias de fontes conferidas: NC32/Polls8.6.3, NC33/9.0.7, NC34/9.1.4 e NC35/9.3.0; a escrita também exige a forma suportada da API. `allowDownload` e `timezoneName` só estão disponíveis no ramo 9.x conferido. Modo de acesso, anonimato, tipo, dono e exclusão definitiva ficam fora. Reordenar usa o conjunto completo de opções ativas de enquete de texto não expirada. Remover/restaurar logicamente pode esconder/reexibir votos antigos; não cria voto.
+
+Compartilhar segue a política nativa do ator. Shares públicas exigem compartilhamento público permitido; escritas nunca devolvem tokens ou URLs públicos. Delegar share admin concede edição. Convites atingem um share individual ativo e podem notificar/enviar e-mail; o marcador nativo registrado não comprova entrega. Confirme o plano com seu `plan_state`; depois de uma tentativa nativa o resultado pode ser parcial ou incerto, sem retry ou rollback automático.
+
+## Schema e compartilhamento no Tables (1.3.0)
+
+As oito adições são `tables_create_table`, `tables_update_table`, `tables_create_column`, `tables_update_column`, `tables_create_view`, `tables_update_view`, `tables_share_node` e `tables_unshare_node`. `tables.schema` e `tables.share` são independentes e negados por padrão; os presets Ler/Total de linhas não os concedem. Recursos existentes exigem manage nativo, não apenas criar/editar linhas.
+
+Faixas iniciais de schema/compartilhamento: Tables `[1.0.10,1.0.11)` no NC32, `[2.2.2,2.2.3)` ou `[2.3.1,2.3.3)` no NC33–35, com assinaturas e campos nativos compatíveis. O limite superior é exclusivo. Isso não restringe a leitura/escrita de linhas existente nem promete schema em toda instalação Tables 1.0.0+. Adaptadores antigos 1.0.0/2.0.0 e 2.4.0 continuam desabilitados para esse recurso.
+
+Criar usa só o template custom e uma entidade por chamada. Não há exclusão de schema, transferência de dono, link público ou escrita em recurso federado. Tipo/subtipo de coluna não muda; colunas relation existentes não podem ser editadas. Editar view pode ocultar linhas sem apagá-las. Compartilhamento com usuário/grupo exige permissões explícitas; bits nativos manage/delete dão esses poderes na interface nativa mesmo sem ferramenta MCP de exclusão de schema. Alterar permissões de um share existente exige revogar e criar com confirmações separadas.
+
+Planos nomeiam as mudanças e exigem `plan_state`, confirmação e `confirm_shared` para tabela de outro dono. DTOs nativos podem regravar campos omitidos; edição nativa concorrente pode ser sobrescrita entre validação e escrita, sem garantia de CAS entre serviços. Observação nova e autorizada relata estado pedido, diferente/possivelmente parcial ou não verificado. Sem retry, rollback, backup ou Desfazer garantido; repetir criação pode duplicar a entidade.
+
+## Páginas do Collectives (1.3.0)
+
+`collectives_list`, `collectives_pages`, `collectives_read` e `collectives_search` leem coletivos/páginas acessíveis; `collectives_create`, `collectives_edit` e `collectives_move` criam, editam Markdown, movem ou renomeiam dentro de um coletivo existente. Vínculo e permissões nativos, regras de arquivos ocultos e restrições de recursos continuam. Escritas usam grants próprios e planos confirmados. Criar não agrega conteúdo; crie e depois edite. Editar aceita conteúdo completo, acréscimo ou substituição única, com checagem do estado ETag; uma sessão colaborativa do Text aberta não compartilha garantia de CAS.
+
+Faixas aprovadas da API: Collectives 4.0.0 até antes de 4.8.0 no NC32–33, 4.4.0 até antes de 4.8.0 no NC34 e 4.5.0 até antes de 4.8.0 no NC35, sujeitas à forma da API. No 4.0.0 a busca por conteúdo é recusada; a busca por título permanece. Onde a busca por conteúdo é suportada, o índice pode atrasar. Mover/renomear pode transformar pai-folha em pasta, notificar membros e quebrar links por caminho; IDs permanecem. Reordenar irmãos no mesmo pai, excluir páginas, anexos, modelos, criar coletivo, membros e gerir compartilhamentos ficam fora. Sem retry ou rollback; acesso direto por `files.*` ao Markdown montado continua separado.
 
 ## Atualizações anteriores (1.2.2–1.2.5)
 
@@ -54,7 +103,7 @@ Mail generates a MIME plain text alternative with Horde, which may differ from t
 ## Escopo e permissões da 1.2.2
 
 - **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** busca/leitura de mensagens, texto de anexos e links nativos por permissões opcionais; grants separados e negados por padrão para sinalizações, mover na mesma conta, novos rascunhos (texto simples por padrão, HTML sanitizado opcional) e envio em texto simples. Ler não marca mensagens como lidas. Contas/pastas continuam em `mail.read`; mensagens e anexos exigem grants próprios.
-- **Tables ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** descobrir tabelas/views/colunas, ler linhas autorizadas e criar ou editar uma linha. Filtros de view e ACLs nativas continuam; escrita de schema e views fica para depois.
+- **Tables ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** descobrir tabelas/views/colunas, ler linhas autorizadas e criar ou editar uma linha. Filtros de view e ACLs nativas continuam.
 - **Forms ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** descobrir estrutura e links existentes autorizados, ler submissões próprias/todas conforme acesso nativo com `forms.results`, criar formulários privados com perguntas/opções iniciais e fazer PATCH de uma pergunta ou opção existente. Read/results/create/edit são independentes; adicionar, excluir, reordenar ou trocar tipo de perguntas/opções existentes fica fora. A criação pode ter os efeitos nativos documentados nas pastas de uploads; a edição pontual pode renovar o lock nativo ou limpar a seleção de email de confirmação, como indicado no plano.
 - **Polls ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** descobrir enquetes/opções/status, ler votos/resultados e links existentes nos limites nativos, e criar enquete privada simples text/date com 0–100 opções iniciais. `polls.results` e `polls.links` são grants separados e negados por padrão. Gestão de configurações/opções existentes e fluxos mais amplos de convites/links ficam fora.
 - **Arquivos ([#20](https://github.com/sintax-tech/mcp-for-nextcloud/issues/20)):** `files.delete` separado e negado por padrão, incluindo arquivos/pastas Local elegíveis e descendentes compartilhados permitidos, com confirmação explícita e risco residual de recuperação. Raízes recebidas e backends sem suporte continuam recusados; veja a seção de exclusão abaixo.

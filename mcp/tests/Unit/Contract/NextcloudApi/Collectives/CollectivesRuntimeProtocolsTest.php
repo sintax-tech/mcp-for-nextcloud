@@ -48,10 +48,23 @@ final class CollectivesRuntimeProtocolsTest extends RuntimeTreeTestCase {
 		foreach (['in_array($m, ["a"]);', 'array_search($m, ["a"]);', 'max($m, "b");', 'min([$m, "b"]);',
 			'$items = [$m, "b"]; sort($items);', 'array_unique([$m, "b"]);', 'array_keys([$m], "a");',
 			'array_column([["id" => 1]], $m);', 'array_column([["id" => 1, "a" => 2]], "id", $m);',
-			'array_combine([$m], [1]);', 'property_exists(new \\stdClass(), $m);', 'range($m, "b");'] as $statement) {
+			'array_combine([$m], [1]);', 'property_exists(new \\stdClass(), $m);'] as $statement) {
 			$r = $this->text($statement);
 			$this->assertArrayHasKey('OCA\\Collectives\\Service\\Text::__toString', $r['methods'], $statement);
 		}
+	}
+
+	/** @return void PHP 8.2 keeps the graph's extra string-conversion edge conservative; newer runtimes execute it. */
+	public function testRangeConversionIsConservativeOnEverySupportedPhpVersion(): void {
+		$legacy = PHP_VERSION_ID < 80300;
+		$r = $this->runtimeAndUnknown([
+			'Text' => 'public function __construct(private Folder $f) {}
+				public function __toString(): string { $this->f->newFile("convert"); return "a"; }',
+			'Entry' => 'public function read(Folder $f): void { $m = new Text($f); range($m, "b"); }',
+		], $legacy ? 0 : 1, false, $legacy ? 'Object of class OCA\\Collectives\\Service\\Text could not be converted to int' : '');
+		$this->assertArrayHasKey('OCA\\Collectives\\Service\\Text::__toString', $r['methods']);
+		$this->assertContains('OCP\\Files\\Folder::newFile', $r['leaves']);
+		$this->assertSame([], $r['unknown']);
 	}
 
 	/** @return void Countable::count is an ordinary followed body rather than an opaque function leaf */

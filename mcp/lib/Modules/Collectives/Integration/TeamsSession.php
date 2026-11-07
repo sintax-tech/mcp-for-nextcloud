@@ -22,8 +22,9 @@ use Psr\Container\ContainerInterface;
  *
  * Resolving a group makes Teams set the Teams app as the current app of the request, which `stopSession()` does not
  * clear (`FederatedUserService::getGroupCircle`, 35 `:1159-1194`; `CirclesManager::stopSession`, 35 `:197-201`). So the
- * session is sealed before that resolution: afterwards only the readback of the same call may open it again, in the
- * actor's session, where Teams prefers the current user to the current app. An MCP request carries one call only.
+ * session is sealed before that resolution: afterwards no native call of the module runs in this request, through
+ * {@see self::asActor()} or {@see self::closingAfter()} alike, except the readback of the same call, in the actor's
+ * session, where Teams prefers the current user to the current app. An MCP request carries one call only.
  */
 class TeamsSession {
 	/** Whether a group resolution may have set the Teams app as the current app of this request. */
@@ -43,9 +44,7 @@ class TeamsSession {
 	 * @throws \Throwable whatever the resolution or the work throws, after the session was closed
 	 */
 	public function asActor(string $uid, Closure $work, bool $readback = false): mixed {
-		if ($this->sealed && !$readback) {
-			throw new ToolFailure(CollectivesMessages::unavailable());
-		}
+		$this->assertOpen($readback);
 		$teams = $this->manager();
 		try {
 			$teams->startSession($teams->getLocalFederatedUser($uid));
@@ -60,14 +59,26 @@ class TeamsSession {
 	 * @template T
 	 * @param Closure(): T $work the native call
 	 * @return T what it returned
+	 * @throws ToolFailure when the session is sealed
 	 * @throws \Throwable whatever it threw, after the session was closed
 	 */
 	public function closingAfter(Closure $work): mixed {
+		$this->assertOpen(false);
 		$teams = $this->manager();
 		try {
 			return $work();
 		} finally {
 			$teams->stopSession();
+		}
+	}
+
+	/**
+	 * @param bool $readback whether this is the readback of the call that sealed the session
+	 * @throws ToolFailure when the session is sealed and this is not that readback
+	 */
+	private function assertOpen(bool $readback): void {
+		if ($this->sealed && !$readback) {
+			throw new ToolFailure(CollectivesMessages::unavailable());
 		}
 	}
 

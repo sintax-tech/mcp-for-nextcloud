@@ -128,6 +128,16 @@ final class CollectivesMembersTest extends TestCase {
 		$this->refused(fn () => $module->call('collectives_list_members', ['collective_id' => 7], 'alice'));
 	}
 
+	/** @return void reproduction B-R2 of the review: after a group was resolved, no page write of C01-C03 crosses the seal */
+	public function testTheSealRefusesAnExistingPageWrite(): void {
+		$module = (new CollectivesRig($this))->module();
+		$this->confirm($module, 'collectives_add_member', ['collective_id' => 7, 'type' => 'group', 'id' => 'design']);
+		$this->assertTrue(TeamsScene::$currentApp);
+		$this->refused(fn () => $this->confirm($module, 'collectives_create', ['collective_id' => 7, 'parent_id' => CollectivesScene::$ids['Guide.md'], 'title' => 'After sealed group']));
+		$this->assertNotContains('create', CollectivesScene::$calls, 'no page was created');
+		$this->refused(fn () => $module->call('collectives_list', [], 'alice'));
+	}
+
 	/** @return void a refusal of Teams leaves the membership as it was but may have recorded the identity; a failure after storing is partial */
 	public function testRefusalsAndFailuresAfterTheAttempt(): void {
 		$module = (new CollectivesRig($this))->module();

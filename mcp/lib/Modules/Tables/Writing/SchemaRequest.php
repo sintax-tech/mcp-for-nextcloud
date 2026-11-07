@@ -8,7 +8,6 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Tables\Writing;
 
 use OCA\Mcp\Modules\Tables\Presentation\SchemaMessages;
-
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Modules\Tables\Presentation\SchemaToolSchema;

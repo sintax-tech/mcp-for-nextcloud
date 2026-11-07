@@ -12,7 +12,10 @@ use OCA\Mcp\Modules\Tables\Integration\CreateViewAction;
 
 /** CreateView effect-free plan. */
 final class CreateViewPreview {
-	/** @param SchemaFlow $flow Common protocol. @param CreateViewAction $action Tool-specific authorized intent. */
+	/**
+	 * @param SchemaFlow $flow Common protocol.
+	 * @param CreateViewAction $action Tool-specific authorized intent.
+	 */
 	public function __construct(private SchemaFlow $flow, private CreateViewAction $action) {}
 	/**
 	 * @param array<string,mixed> $args Tool arguments.

@@ -34,15 +34,23 @@ final class SchemaToolSchema {
 				$properties['recipient'] = self::object(['type' => ['type' => 'string', 'enum' => ['user', 'group']], 'id' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 255]], ['type', 'id']);
 				$properties['permissions'] = self::object(array_fill_keys(['read', 'create', 'update', 'delete', 'manage'], $bool), ['read', 'create', 'update', 'delete', 'manage']);
 				$required = [...$required, 'recipient', 'permissions'];
-			} else { $properties['share_id'] = $id;
-			$required[] = 'share_id'; }
+			} else {
+				$properties['share_id'] = $id;
+				$required[] = 'share_id';
+			}
 		} else {
-			if ($action !== 'create_table') { $properties['table_id'] = $id;
-			$required[] = 'table_id'; }
-			if ($action === 'update_column') { $properties['column_id'] = $id;
-			$required[] = 'column_id'; }
-			if ($action === 'update_view') { $properties['view_id'] = $id;
-			$required[] = 'view_id'; }
+			if ($action !== 'create_table') {
+				$properties['table_id'] = $id;
+				$required[] = 'table_id';
+			}
+			if ($action === 'update_column') {
+				$properties['column_id'] = $id;
+				$required[] = 'column_id';
+			}
+			if ($action === 'update_view') {
+				$properties['view_id'] = $id;
+				$required[] = 'view_id';
+			}
 			$patch = ['title' => $title, 'description' => $text, 'emoji' => $emoji];
 			if (str_ends_with($action, 'column')) {
 				$patch = ['title' => $title, 'description' => $text, 'mandatory' => $bool, 'options' => ['type' => 'array', 'maxItems' => 20, 'description' => 'Unique {name,value} entries. Each value is checked against the column type; no raw JSON.']];

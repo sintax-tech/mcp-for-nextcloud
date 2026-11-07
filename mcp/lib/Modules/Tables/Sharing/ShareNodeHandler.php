@@ -12,7 +12,10 @@ use OCA\Mcp\Modules\Tables\Integration\ShareNodeAction;
 
 /** ShareNode confirmed effect. */
 final class ShareNodeHandler {
-	/** @param SchemaFlow $flow Common protocol. @param ShareNodeAction $action Tool-specific authorized intent. */
+	/**
+	 * @param SchemaFlow $flow Common protocol.
+	 * @param ShareNodeAction $action Tool-specific authorized intent.
+	 */
 	public function __construct(private SchemaFlow $flow, private ShareNodeAction $action) {}
 	/**
 	 * @param array<string,mixed> $args Tool arguments.

@@ -1,5 +1,8 @@
 {
-	"_license": ["SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>", "SPDX-License-Identifier: AGPL-3.0-or-later"],
+    "_license": [
+        "SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>",
+        "SPDX-License-Identifier: AGPL-3.0-or-later"
+    ],
     "1.0.0": [
         [
             "OCA\\Tables\\Service\\TableService",

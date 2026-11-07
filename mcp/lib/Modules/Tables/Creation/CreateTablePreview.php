@@ -12,7 +12,10 @@ use OCA\Mcp\Modules\Tables\Integration\CreateTableAction;
 
 /** CreateTable effect-free plan. */
 final class CreateTablePreview {
-	/** @param SchemaFlow $flow Common protocol. @param CreateTableAction $action Tool-specific authorized intent. */
+	/**
+	 * @param SchemaFlow $flow Common protocol.
+	 * @param CreateTableAction $action Tool-specific authorized intent.
+	 */
 	public function __construct(private SchemaFlow $flow, private CreateTableAction $action) {}
 	/**
 	 * @param array<string,mixed> $args Tool arguments.

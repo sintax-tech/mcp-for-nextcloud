@@ -15,10 +15,24 @@ interface SchemaAction {
 	public function operation(): string;
 	/** @return list<string> Specific confirmation notes. */
 	public function notes(): array;
-	/** @param array $args Validated request. @param string $uid Caller. @param string $profile Proven API. @return array Native preparation. */
+	/**
+	 * @param array<string,mixed> $args Validated request.
+	 * @param string $uid Caller.
+	 * @param string $profile Proven API.
+	 * @return array<string,mixed> Native preparation.
+	 */
 	public function prepare(array $args, string $uid, string $profile): array;
-	/** @param array $prepared Revalidated preparation. @param string $uid Caller. @return int|null Returned entity ID. */
+	/**
+	 * @param array<string,mixed> $prepared Revalidated preparation.
+	 * @param string $uid Caller.
+	 * @return int|null Returned entity ID.
+	 */
 	public function apply(array $prepared, string $uid): ?int;
-	/** @param array $prepared Revalidated preparation. @param int|null $returned Native ID. @param string $uid Caller. @return array Authorized observation. */
+	/**
+	 * @param array<string,mixed> $prepared Revalidated preparation.
+	 * @param int|null $returned Native ID.
+	 * @param string $uid Caller.
+	 * @return array<string,mixed> Authorized observation.
+	 */
 	public function observe(array $prepared, ?int $returned, string $uid): array;
 }

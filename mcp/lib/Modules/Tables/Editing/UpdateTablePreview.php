@@ -12,7 +12,10 @@ use OCA\Mcp\Modules\Tables\Integration\UpdateTableAction;
 
 /** UpdateTable effect-free plan. */
 final class UpdateTablePreview {
-	/** @param SchemaFlow $flow Common protocol. @param UpdateTableAction $action Tool-specific authorized intent. */
+	/**
+	 * @param SchemaFlow $flow Common protocol.
+	 * @param UpdateTableAction $action Tool-specific authorized intent.
+	 */
 	public function __construct(private SchemaFlow $flow, private UpdateTableAction $action) {}
 	/**
 	 * @param array<string,mixed> $args Tool arguments.

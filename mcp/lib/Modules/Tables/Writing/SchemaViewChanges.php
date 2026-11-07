@@ -8,9 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Tables\Writing;
 
 use OCA\Mcp\Modules\Tables\Reading\RowsRefusal;
-
 use OCA\Mcp\Modules\Tables\Reading\RowFilterDomain;
-
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 
@@ -30,8 +28,10 @@ final class SchemaViewChanges {
 			$settings = [];
 			$oldSettings = $before['columnSettings'] ?? $before['columns'] ?? [];
 			$byId = [];
-			foreach ($oldSettings as $setting) { $setting = (array)$setting;
-			if (isset($setting['columnId'])) $byId[(int)$setting['columnId']] = $setting; }
+			foreach ($oldSettings as $setting) {
+				$setting = (array)$setting;
+				if (isset($setting['columnId'])) $byId[(int)$setting['columnId']] = $setting;
+			}
 			foreach (SchemaRequest::ids($patch['columns'], 'patch.columns') as $order => $id) {
 				self::column($id, $columns);
 				$settings[] = array_replace($byId[$id] ?? ['columnId' => $id, 'readonly' => false, 'mandatory' => false], ['order' => $order]);
@@ -73,8 +73,10 @@ final class SchemaViewChanges {
 					if ($key === 'filter') {
 						try { $rule = (new RowFilterDomain($profile))->condition($id, $columns[$id], $rule['operator'], $rule['value']); }
 						catch (RowsRefusal) { SchemaRequest::invalid('patch.filter'); }
-					} else { unset($rule['column_id']);
-					$rule = ['columnId' => $id] + $rule; }
+					} else {
+						unset($rule['column_id']);
+						$rule = ['columnId' => $id] + $rule;
+					}
 					$out[] = $rule;
 				}
 				$all[] = $out;

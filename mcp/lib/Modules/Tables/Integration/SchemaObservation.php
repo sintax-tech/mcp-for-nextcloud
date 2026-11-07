@@ -8,7 +8,6 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Tables\Integration;
 
 use OCA\Mcp\Modules\Tables\Writing\SchemaReceiptComparison;
-
 use OCA\Mcp\Modules\Tables\Presentation\{SchemaSnapshot, SchemaMessages};
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
@@ -16,18 +15,28 @@ use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 class SchemaObservation {
 	/** @param SchemaTargetReader $reader Uncached native metadata boundary. */
 	public function __construct(private SchemaTargetReader $reader) {}
-	/** @param array $p Prepared node. @param int|null $id Native target ID. @param string $uid Caller. @return array Fresh authorized metadata. */
+	/**
+	 * @param array<string,mixed> $p Prepared node.
+	 * @param int|null $id Native target ID.
+	 * @param string $uid Caller.
+	 * @return array<string,mixed> Fresh authorized metadata.
+	 */
 	public function node(array $p, ?int $id, string $uid): array {
 		$a = $p['arguments'];
 		if ($id === null) throw new ToolFailure(SchemaMessages::uncertain());
 		$node = $this->reader->target($p['kind'], $id, $uid, $p['kind'] !== 'table' ? $a['table_id'] : null);
 		return SchemaSnapshot::of(SchemaNativeSnapshot::of($node), $p['kind']);
 	}
-	/** @param array $p New column intent. @param int|null $id Native new ID. @param string $uid Caller. @return array Column plus view-membership verification. */
+	/**
+	 * @param array<string,mixed> $p New column intent.
+	 * @param int|null $id Native new ID.
+	 * @param string $uid Caller.
+	 * @return array<string,mixed> Column plus view-membership verification.
+	 */
 	public function columnCreated(array $p, ?int $id, string $uid): array {
 		$a = $p['arguments'];
 		$observed = $this->node($p, $id, $uid);
-		if ( ($a['view_ids'] ?? []) !== []) {
+		if (($a['view_ids'] ?? []) !== []) {
 			$observed['views'] = [];
 			$observed['viewsVerified'] = true;
 			foreach ($a['view_ids'] as $viewId) {
@@ -42,11 +51,24 @@ class SchemaObservation {
 		}
 		return $observed;
 	}
-	/** @param array $p Share intent. @param string $uid Caller. @return array Fresh share. */
+	/**
+	 * @param array<string,mixed> $p Share intent.
+	 * @param string $uid Caller.
+	 * @return array<string,mixed> Fresh share.
+	 */
 	public function sharing(array $p, string $uid): array { return $this->shares($p, $uid, false); }
-	/** @param array $p Revocation intent. @param string $uid Caller. @return array Empty only when the share is gone. */
+	/**
+	 * @param array<string,mixed> $p Revocation intent.
+	 * @param string $uid Caller.
+	 * @return array<string,mixed> Empty only when the share is gone.
+	 */
 	public function revocation(array $p, string $uid): array { return $this->shares($p, $uid, true); }
-	/** @param array $p Authorized intent. @param string $uid Caller. @param bool $revoke Revocation. @return array Whitelisted observed share. */
+	/**
+	 * @param array<string,mixed> $p Authorized intent.
+	 * @param string $uid Caller.
+	 * @param bool $revoke Revocation.
+	 * @return array<string,mixed> Whitelisted observed share.
+	 */
 	private function shares(array $p, string $uid, bool $revoke): array {
 		$a = $p['arguments'];
 

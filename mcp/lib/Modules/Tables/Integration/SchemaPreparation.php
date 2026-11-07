@@ -57,7 +57,12 @@ class SchemaPreparation {
 		$p['after'] = array_replace($p['before'], $p['changes']);
 		return $p;
 	}
-	/** @param array $p Authorized base intent. @param bool $create New column. @param string $uid Caller. @return array Validated column intent. */
+	/**
+	 * @param array<string,mixed> $p Authorized base intent.
+	 * @param bool $create New column.
+	 * @param string $uid Caller.
+	 * @return array<string,mixed> Validated column intent.
+	 */
 	public function column(array $p, bool $create, string $uid): array {
 		$a = $p['arguments'];
 		$before = $p['preserved'] ?? [];
@@ -77,7 +82,11 @@ class SchemaPreparation {
 		$p['after'] = array_replace($p['before'], $p['changes']);
 		return $p;
 	}
-	/** @param array $p Authorized view. @param string $uid Caller. @return array Validated view intent. */
+	/**
+	 * @param array<string,mixed> $p Authorized view.
+	 * @param string $uid Caller.
+	 * @return array<string,mixed> Validated view intent.
+	 */
 	public function view(array $p, string $uid): array {
 		$a = $p['arguments'];
 		$changes = $p['changes'];
@@ -90,16 +99,23 @@ class SchemaPreparation {
 		if (array_key_exists('columnSettings', $p['changes'])) $p['after']['columns'] = array_column($p['changes']['columnSettings'], 'columnId');
 		return $p;
 	}
-	/** @param array $p Authorized node. @param string $uid Caller. @return array Explicit share intent. */
+	/**
+	 * @param array<string,mixed> $p Authorized node.
+	 * @param string $uid Caller.
+	 * @return array<string,mixed> Explicit share intent.
+	 */
 	public function sharing(array $p, string $uid): array {
 		$a = $p['arguments'];
 		$this->policy->check($a['recipient'], $uid);
 		return $this->shares->of(false, $p, $this->reader->shares($a['node_type'], $a['node_id'], $uid));
 	}
-	/** @param array $p Authorized node. @param string $uid Caller. @return array Bound revocation intent. */
+	/**
+	 * @param array<string,mixed> $p Authorized node.
+	 * @param string $uid Caller.
+	 * @return array<string,mixed> Bound revocation intent.
+	 */
 	public function revocation(array $p, string $uid): array {
 		$a = $p['arguments'];
 		return $this->shares->of(true, $p, $this->reader->shares($a['node_type'], $a['node_id'], $uid));
 	}
-
 }

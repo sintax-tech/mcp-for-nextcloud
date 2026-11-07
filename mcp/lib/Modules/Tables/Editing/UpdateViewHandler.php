@@ -12,7 +12,10 @@ use OCA\Mcp\Modules\Tables\Integration\UpdateViewAction;
 
 /** UpdateView confirmed effect. */
 final class UpdateViewHandler {
-	/** @param SchemaFlow $flow Common protocol. @param UpdateViewAction $action Tool-specific authorized intent. */
+	/**
+	 * @param SchemaFlow $flow Common protocol.
+	 * @param UpdateViewAction $action Tool-specific authorized intent.
+	 */
 	public function __construct(private SchemaFlow $flow, private UpdateViewAction $action) {}
 	/**
 	 * @param array<string,mixed> $args Tool arguments.

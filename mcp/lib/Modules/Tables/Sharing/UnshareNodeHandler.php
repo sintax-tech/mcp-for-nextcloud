@@ -12,7 +12,10 @@ use OCA\Mcp\Modules\Tables\Integration\UnshareNodeAction;
 
 /** UnshareNode confirmed effect. */
 final class UnshareNodeHandler {
-	/** @param SchemaFlow $flow Common protocol. @param UnshareNodeAction $action Tool-specific authorized intent. */
+	/**
+	 * @param SchemaFlow $flow Common protocol.
+	 * @param UnshareNodeAction $action Tool-specific authorized intent.
+	 */
 	public function __construct(private SchemaFlow $flow, private UnshareNodeAction $action) {}
 	/**
 	 * @param array<string,mixed> $args Tool arguments.

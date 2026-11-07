@@ -12,7 +12,10 @@ use OCA\Mcp\Modules\Tables\Integration\UpdateColumnAction;
 
 /** UpdateColumn confirmed effect. */
 final class UpdateColumnHandler {
-	/** @param SchemaFlow $flow Common protocol. @param UpdateColumnAction $action Tool-specific authorized intent. */
+	/**
+	 * @param SchemaFlow $flow Common protocol.
+	 * @param UpdateColumnAction $action Tool-specific authorized intent.
+	 */
 	public function __construct(private SchemaFlow $flow, private UpdateColumnAction $action) {}
 	/**
 	 * @param array<string,mixed> $args Tool arguments.

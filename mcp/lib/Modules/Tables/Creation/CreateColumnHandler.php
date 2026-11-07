@@ -12,7 +12,10 @@ use OCA\Mcp\Modules\Tables\Integration\CreateColumnAction;
 
 /** CreateColumn confirmed effect. */
 final class CreateColumnHandler {
-	/** @param SchemaFlow $flow Common protocol. @param CreateColumnAction $action Tool-specific authorized intent. */
+	/**
+	 * @param SchemaFlow $flow Common protocol.
+	 * @param CreateColumnAction $action Tool-specific authorized intent.
+	 */
 	public function __construct(private SchemaFlow $flow, private CreateColumnAction $action) {}
 	/**
 	 * @param array<string,mixed> $args Tool arguments.

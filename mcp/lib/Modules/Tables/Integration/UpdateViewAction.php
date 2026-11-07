@@ -11,7 +11,11 @@ use OCA\Mcp\Modules\Tables\Presentation\SchemaMessages;
 
 /** Tool-specific UpdateView intent, native sink and observation. */
 final class UpdateViewAction implements SchemaAction {
-	/** @param SchemaPreparation $preparation Authorization. @param SchemaNativeWriter $writer Native sink. @param SchemaObservation $observation Fresh readback. */
+	/**
+	 * @param SchemaPreparation $preparation Authorization.
+	 * @param SchemaNativeWriter $writer Native sink.
+	 * @param SchemaObservation $observation Fresh readback.
+	 */
 	public function __construct(private SchemaPreparation $preparation, private SchemaNativeWriter $writer, private SchemaObservation $observation) {}
 	/** {@inheritDoc} */
 	public function name(): string { return 'update_view'; }

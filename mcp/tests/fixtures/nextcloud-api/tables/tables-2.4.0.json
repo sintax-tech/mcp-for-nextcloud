@@ -1,0 +1,5003 @@
+{
+    "version": "2.4.0",
+    "url": "https://github.com/nextcloud-releases/tables/releases/download/v2.4.0/tables-v2.4.0.tar.gz",
+    "archiveSha256": "47847b64ee65a58afd2a8ac3f943c53128a927a1b321ed94c4a322daa6b5eb99",
+    "server": {
+        "version": "35.0.0",
+        "files": {
+            "lib/public/AppFramework/Db/Entity.php": "658aef736eef71a230672c57941f89530229bfa1f449082506ba82a56110c735",
+            "lib/public/AppFramework/Db/QBMapper.php": "4f3e2bdf5cc1bd36a54ca8e89e78ea2648412e63b4bcfa93eeb7f97536d4058e"
+        }
+    },
+    "surfaces": {
+        "OCA\\Tables\\AppInfo\\Application": {
+            "kind": "class",
+            "methods": {
+                "__construct": [],
+                "boot": [
+                    "context"
+                ],
+                "register": [
+                    "context"
+                ],
+                "registerCloudFederationProviderManager": [
+                    "manager"
+                ]
+            },
+            "types": {
+                "__construct": [],
+                "boot": [
+                    "OCP\\AppFramework\\Bootstrap\\IBootContext"
+                ],
+                "register": [
+                    "OCP\\AppFramework\\Bootstrap\\IRegistrationContext"
+                ],
+                "registerCloudFederationProviderManager": [
+                    "OCP\\Federation\\ICloudFederationProviderManager"
+                ]
+            },
+            "constants": [
+                "APP_ID",
+                "NAV_ENTRY_MODE_ALL",
+                "NAV_ENTRY_MODE_HIDDEN",
+                "NAV_ENTRY_MODE_RECIPIENTS",
+                "NODE_TYPE_TABLE",
+                "NODE_TYPE_VIEW",
+                "OWNER_TYPE_USER",
+                "PERMISSION_ALL",
+                "PERMISSION_CREATE",
+                "PERMISSION_DELETE",
+                "PERMISSION_MANAGE",
+                "PERMISSION_OWNER",
+                "PERMISSION_READ",
+                "PERMISSION_UPDATE"
+            ],
+            "properties": [],
+            "fields": [],
+            "external": []
+        },
+        "OCA\\Tables\\Constants\\ViewLayout": {
+            "kind": "enum",
+            "methods": {
+                "normalize": [
+                    "layout"
+                ],
+                "tryFromMixed": [
+                    "layout"
+                ]
+            },
+            "types": {
+                "normalize": [
+                    "mixed"
+                ],
+                "tryFromMixed": [
+                    "mixed"
+                ]
+            },
+            "constants": [
+                "GALLERY",
+                "TABLE",
+                "TILES"
+            ],
+            "properties": [],
+            "fields": [],
+            "external": []
+        },
+        "OCA\\Tables\\Db\\Column": {
+            "kind": "class",
+            "methods": {
+                "__call": [
+                    "methodName",
+                    "args"
+                ],
+                "__construct": [],
+                "columnToProperty": [
+                    "columnName"
+                ],
+                "fromDto": [
+                    "data"
+                ],
+                "fromParams": [
+                    "params"
+                ],
+                "fromRow": [
+                    "row"
+                ],
+                "getCustomSettingsArray": [],
+                "getFieldTypes": [],
+                "getSelectionOptionsArray": [],
+                "getSelectionOptionsCollection": [],
+                "getType": [],
+                "getUpdatedFields": [],
+                "getUsergroupDefaultArray": [],
+                "isValidMetaTypeId": [
+                    "metaTypeId"
+                ],
+                "jsonSerialize": [],
+                "propertyToColumn": [
+                    "property"
+                ],
+                "resetUpdatedFields": [],
+                "setSelectionOptionsCollection": [
+                    "selectionOptions"
+                ],
+                "setUsergroupDefaultArray": [
+                    "array"
+                ],
+                "setter": [
+                    "name",
+                    "args"
+                ],
+                "slugify": [
+                    "attributeName"
+                ]
+            },
+            "types": {
+                "__call": [
+                    "string",
+                    "array"
+                ],
+                "__construct": [],
+                "columnToProperty": [
+                    "string"
+                ],
+                "fromDto": [
+                    "OCA\\Tables\\Dto\\Column"
+                ],
+                "fromParams": [
+                    "array"
+                ],
+                "fromRow": [
+                    "array"
+                ],
+                "getCustomSettingsArray": [],
+                "getFieldTypes": [],
+                "getSelectionOptionsArray": [],
+                "getSelectionOptionsCollection": [],
+                "getType": [],
+                "getUpdatedFields": [],
+                "getUsergroupDefaultArray": [],
+                "isValidMetaTypeId": [
+                    "int"
+                ],
+                "jsonSerialize": [],
+                "propertyToColumn": [
+                    "string"
+                ],
+                "resetUpdatedFields": [],
+                "setSelectionOptionsCollection": [
+                    "OCA\\Tables\\Model\\SelectionOptions"
+                ],
+                "setUsergroupDefaultArray": [
+                    "array"
+                ],
+                "setter": [
+                    "string",
+                    "array"
+                ],
+                "slugify": [
+                    "string"
+                ]
+            },
+            "constants": [
+                "META_ID_TITLE",
+                "RELATION_LABEL_COLUMN",
+                "RELATION_TARGET_ID",
+                "RELATION_TARGET_SET_BY",
+                "RELATION_TYPE",
+                "RELATION_TYPE_TABLE",
+                "RELATION_TYPE_VIEW",
+                "SUBTYPE_DATETIME_DATE",
+                "SUBTYPE_DATETIME_TIME",
+                "SUBTYPE_SELECTION_CHECK",
+                "SUBTYPE_SELECTION_MULTI",
+                "SUBTYPE_TEXT_LINE",
+                "TYPE_DATETIME",
+                "TYPE_META_CREATED_AT",
+                "TYPE_META_CREATED_BY",
+                "TYPE_META_ID",
+                "TYPE_META_UPDATED_AT",
+                "TYPE_META_UPDATED_BY",
+                "TYPE_NUMBER",
+                "TYPE_RELATION",
+                "TYPE_SELECTION",
+                "TYPE_TEXT",
+                "TYPE_USERGROUP"
+            ],
+            "properties": [],
+            "fields": [
+                "_fieldTypes",
+                "createdAt",
+                "createdBy",
+                "createdByDisplayName",
+                "customSettings",
+                "datetimeDefault",
+                "description",
+                "id",
+                "lastEditAt",
+                "lastEditBy",
+                "lastEditByDisplayName",
+                "mandatory",
+                "numberDecimals",
+                "numberDefault",
+                "numberMax",
+                "numberMin",
+                "numberPrefix",
+                "numberSuffix",
+                "orderWeight",
+                "selectionDefault",
+                "selectionOptions",
+                "showUserStatus",
+                "subtype",
+                "tableId",
+                "technicalName",
+                "textAllowedPattern",
+                "textDefault",
+                "textMaxLength",
+                "textUnique",
+                "title",
+                "type",
+                "usergroupDefault",
+                "usergroupMultipleItems",
+                "usergroupSelectGroups",
+                "usergroupSelectTeams",
+                "usergroupSelectUsers",
+                "uuid",
+                "viewColumnInformation"
+            ],
+            "external": [
+                "JsonSerializable"
+            ]
+        },
+        "OCA\\Tables\\Db\\ColumnMapper": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "db",
+                    "logger"
+                ],
+                "countColumns": [
+                    "tableId"
+                ],
+                "delete": [
+                    "entity"
+                ],
+                "find": [
+                    "id"
+                ],
+                "findAll": [
+                    "id"
+                ],
+                "findAllByTable": [
+                    "tableId"
+                ],
+                "findAllByTableIds": [
+                    "tableIds"
+                ],
+                "findAllIdsByTable": [
+                    "tableID"
+                ],
+                "findByUuid": [
+                    "uuid"
+                ],
+                "getColumnTypes": [
+                    "neededColumnIds"
+                ],
+                "getTableName": [],
+                "insert": [
+                    "entity"
+                ],
+                "insertOrUpdate": [
+                    "entity"
+                ],
+                "preloadColumns": [
+                    "columns",
+                    "filters?",
+                    "sorts?"
+                ],
+                "update": [
+                    "entity"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "OCP\\IDBConnection",
+                    "Psr\\Log\\LoggerInterface"
+                ],
+                "countColumns": [
+                    "int"
+                ],
+                "delete": [
+                    "OCP\\AppFramework\\Db\\Entity"
+                ],
+                "find": [
+                    "int"
+                ],
+                "findAll": [
+                    "array"
+                ],
+                "findAllByTable": [
+                    "int"
+                ],
+                "findAllByTableIds": [
+                    "array"
+                ],
+                "findAllIdsByTable": [
+                    "int"
+                ],
+                "findByUuid": [
+                    "string"
+                ],
+                "getColumnTypes": [
+                    "array"
+                ],
+                "getTableName": [],
+                "insert": [
+                    "OCP\\AppFramework\\Db\\Entity"
+                ],
+                "insertOrUpdate": [
+                    "OCP\\AppFramework\\Db\\Entity"
+                ],
+                "preloadColumns": [
+                    "array",
+                    "?array",
+                    "?array"
+                ],
+                "update": [
+                    "OCP\\AppFramework\\Db\\Entity"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "db",
+                "entityClass",
+                "table",
+                "tableName"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Db\\Context": {
+            "kind": "class",
+            "methods": {
+                "__call": [
+                    "methodName",
+                    "args"
+                ],
+                "__construct": [],
+                "columnToProperty": [
+                    "columnName"
+                ],
+                "fromParams": [
+                    "params"
+                ],
+                "fromRow": [
+                    "row"
+                ],
+                "getFieldTypes": [],
+                "getUpdatedFields": [],
+                "jsonSerialize": [],
+                "propertyToColumn": [
+                    "property"
+                ],
+                "resetUpdatedFields": [],
+                "slugify": [
+                    "attributeName"
+                ]
+            },
+            "types": {
+                "__call": [
+                    "string",
+                    "array"
+                ],
+                "__construct": [],
+                "columnToProperty": [
+                    "string"
+                ],
+                "fromParams": [
+                    "array"
+                ],
+                "fromRow": [
+                    "array"
+                ],
+                "getFieldTypes": [],
+                "getUpdatedFields": [],
+                "jsonSerialize": [],
+                "propertyToColumn": [
+                    "string"
+                ],
+                "resetUpdatedFields": [],
+                "slugify": [
+                    "string"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "_fieldTypes",
+                "description",
+                "icon",
+                "id",
+                "name",
+                "nodes",
+                "ownerId",
+                "ownerType",
+                "pages",
+                "sharing"
+            ],
+            "external": [
+                "JsonSerializable"
+            ]
+        },
+        "OCA\\Tables\\Db\\ContextMapper": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "db",
+                    "userHelper",
+                    "groupHelper"
+                ],
+                "delete": [
+                    "entity"
+                ],
+                "findAll": [
+                    "userId?"
+                ],
+                "findAllContainingNode": [
+                    "nodeType",
+                    "nodeId",
+                    "userId"
+                ],
+                "findById": [
+                    "contextId",
+                    "userId?"
+                ],
+                "findForNavBar": [
+                    "userId"
+                ],
+                "findIdToNameMap": [
+                    "ids"
+                ],
+                "getTableName": [],
+                "insert": [
+                    "entity"
+                ],
+                "insertOrUpdate": [
+                    "entity"
+                ],
+                "update": [
+                    "entity"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "OCP\\IDBConnection",
+                    "OCA\\Tables\\Helper\\UserHelper",
+                    "OCA\\Tables\\Helper\\GroupHelper"
+                ],
+                "delete": [
+                    "OCP\\AppFramework\\Db\\Entity"
+                ],
+                "findAll": [
+                    "?string"
+                ],
+                "findAllContainingNode": [
+                    "int",
+                    "int",
+                    "string"
+                ],
+                "findById": [
+                    "int",
+                    "?string"
+                ],
+                "findForNavBar": [
+                    "string"
+                ],
+                "findIdToNameMap": [
+                    "array"
+                ],
+                "getTableName": [],
+                "insert": [
+                    "OCP\\AppFramework\\Db\\Entity"
+                ],
+                "insertOrUpdate": [
+                    "OCP\\AppFramework\\Db\\Entity"
+                ],
+                "update": [
+                    "OCP\\AppFramework\\Db\\Entity"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "db",
+                "entityClass",
+                "groupHelper",
+                "table",
+                "tableName",
+                "userHelper"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Db\\Row2": {
+            "kind": "class",
+            "methods": {
+                "addCell": [
+                    "columnId",
+                    "value"
+                ],
+                "filterDataByAliasByColumns": [
+                    "columns"
+                ],
+                "filterDataByColumns": [
+                    "columns"
+                ],
+                "getChangedCells": [],
+                "getCreatedAt": [],
+                "getCreatedBy": [],
+                "getData": [],
+                "getDataByAlias": [],
+                "getId": [],
+                "getLastEditAt": [],
+                "getLastEditBy": [],
+                "getTableId": [],
+                "insertOrUpdateCell": [
+                    "entry"
+                ],
+                "jsonSerialize": [],
+                "markAsLoaded": [],
+                "setCreatedAt": [
+                    "time"
+                ],
+                "setCreatedBy": [
+                    "userId"
+                ],
+                "setData": [
+                    "data"
+                ],
+                "setDataByAlias": [
+                    "dataByAlias"
+                ],
+                "setId": [
+                    "id"
+                ],
+                "setLastEditAt": [
+                    "time"
+                ],
+                "setLastEditBy": [
+                    "userId"
+                ],
+                "setTableId": [
+                    "tableId"
+                ],
+                "toPublicRow": [
+                    "previousValues?"
+                ]
+            },
+            "types": {
+                "addCell": [
+                    "int",
+                    ""
+                ],
+                "filterDataByAliasByColumns": [
+                    "array"
+                ],
+                "filterDataByColumns": [
+                    "array"
+                ],
+                "getChangedCells": [],
+                "getCreatedAt": [],
+                "getCreatedBy": [],
+                "getData": [],
+                "getDataByAlias": [],
+                "getId": [],
+                "getLastEditAt": [],
+                "getLastEditBy": [],
+                "getTableId": [],
+                "insertOrUpdateCell": [
+                    "array"
+                ],
+                "jsonSerialize": [],
+                "markAsLoaded": [],
+                "setCreatedAt": [
+                    "string"
+                ],
+                "setCreatedBy": [
+                    "string"
+                ],
+                "setData": [
+                    "array|OCA\\Tables\\Model\\RowDataInput"
+                ],
+                "setDataByAlias": [
+                    "array"
+                ],
+                "setId": [
+                    "int"
+                ],
+                "setLastEditAt": [
+                    "string"
+                ],
+                "setLastEditBy": [
+                    "string"
+                ],
+                "setTableId": [
+                    "int"
+                ],
+                "toPublicRow": [
+                    "?array"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [],
+            "external": [
+                "JsonSerializable"
+            ]
+        },
+        "OCA\\Tables\\Db\\Row2Mapper": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "userId",
+                    "db",
+                    "logger",
+                    "userHelper",
+                    "rowSleeveMapper",
+                    "columnsHelper",
+                    "columnMapper"
+                ],
+                "countRowsForTable": [
+                    "tableId"
+                ],
+                "countRowsForTables": [
+                    "tableIds"
+                ],
+                "countRowsForView": [
+                    "view",
+                    "userId"
+                ],
+                "delete": [
+                    "row"
+                ],
+                "deleteAllForTable": [
+                    "tableId",
+                    "columns"
+                ],
+                "deleteDataForColumn": [
+                    "column"
+                ],
+                "find": [
+                    "id",
+                    "columns"
+                ],
+                "findAll": [
+                    "showColumnIds",
+                    "tableId",
+                    "limit?",
+                    "offset?",
+                    "filter?",
+                    "sort?",
+                    "userId?"
+                ],
+                "findNextId": [
+                    "offsetId?"
+                ],
+                "getTableIdForRow": [
+                    "rowId"
+                ],
+                "insert": [
+                    "row",
+                    "userId?"
+                ],
+                "isRowInViewPresent": [
+                    "rowId",
+                    "view",
+                    "userId"
+                ],
+                "setUserId": [
+                    "userId"
+                ],
+                "update": [
+                    "row",
+                    "userId?"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "?string",
+                    "OCP\\IDBConnection",
+                    "Psr\\Log\\LoggerInterface",
+                    "OCA\\Tables\\Helper\\UserHelper",
+                    "OCA\\Tables\\Db\\RowSleeveMapper",
+                    "OCA\\Tables\\Helper\\ColumnsHelper",
+                    "OCA\\Tables\\Db\\ColumnMapper"
+                ],
+                "countRowsForTable": [
+                    "int"
+                ],
+                "countRowsForTables": [
+                    "array"
+                ],
+                "countRowsForView": [
+                    "OCA\\Tables\\Db\\View",
+                    "string"
+                ],
+                "delete": [
+                    "OCA\\Tables\\Db\\Row2"
+                ],
+                "deleteAllForTable": [
+                    "int",
+                    "array"
+                ],
+                "deleteDataForColumn": [
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "find": [
+                    "int",
+                    "array"
+                ],
+                "findAll": [
+                    "array",
+                    "int",
+                    "?int",
+                    "?int",
+                    "?array",
+                    "?array",
+                    "?string"
+                ],
+                "findNextId": [
+                    "int"
+                ],
+                "getTableIdForRow": [
+                    "int"
+                ],
+                "insert": [
+                    "OCA\\Tables\\Db\\Row2",
+                    "?string"
+                ],
+                "isRowInViewPresent": [
+                    "int",
+                    "OCA\\Tables\\Db\\View",
+                    "string"
+                ],
+                "setUserId": [
+                    "string"
+                ],
+                "update": [
+                    "OCA\\Tables\\Db\\Row2",
+                    "?string"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "columnMapper",
+                "userHelper"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Db\\Share": {
+            "kind": "class",
+            "methods": {
+                "__call": [
+                    "methodName",
+                    "args"
+                ],
+                "__construct": [],
+                "columnToProperty": [
+                    "columnName"
+                ],
+                "fromParams": [
+                    "params"
+                ],
+                "fromRow": [
+                    "row"
+                ],
+                "getFieldTypes": [],
+                "getUpdatedFields": [],
+                "jsonSerialize": [],
+                "propertyToColumn": [
+                    "property"
+                ],
+                "resetUpdatedFields": [],
+                "slugify": [
+                    "attributeName"
+                ]
+            },
+            "types": {
+                "__call": [
+                    "string",
+                    "array"
+                ],
+                "__construct": [],
+                "columnToProperty": [
+                    "string"
+                ],
+                "fromParams": [
+                    "array"
+                ],
+                "fromRow": [
+                    "array"
+                ],
+                "getFieldTypes": [],
+                "getUpdatedFields": [],
+                "jsonSerialize": [],
+                "propertyToColumn": [
+                    "string"
+                ],
+                "resetUpdatedFields": [],
+                "slugify": [
+                    "string"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "_fieldTypes",
+                "createdAt",
+                "id",
+                "lastEditAt",
+                "nodeId",
+                "nodeType",
+                "password",
+                "permissionCreate",
+                "permissionDelete",
+                "permissionManage",
+                "permissionRead",
+                "permissionUpdate",
+                "receiver",
+                "receiverDisplayName",
+                "receiverType",
+                "sender",
+                "token"
+            ],
+            "external": [
+                "JsonSerializable"
+            ]
+        },
+        "OCA\\Tables\\Db\\ShareMapper": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "logger",
+                    "db"
+                ],
+                "changeReceiverForNode": [
+                    "nodeType",
+                    "nodeId",
+                    "newReceiver",
+                    "oldReceiver",
+                    "sender"
+                ],
+                "delete": [
+                    "entity"
+                ],
+                "deleteByNode": [
+                    "nodeId",
+                    "nodeType"
+                ],
+                "deleteByReceiver": [
+                    "receiver",
+                    "receiverType"
+                ],
+                "find": [
+                    "id"
+                ],
+                "findAllRaw": [],
+                "findAllSharesFor": [
+                    "nodeType",
+                    "receivers",
+                    "userId",
+                    "receiverType?"
+                ],
+                "findAllSharesForNode": [
+                    "nodeType",
+                    "nodeId",
+                    "sender?",
+                    "excluded?"
+                ],
+                "findAllSharesForNodeFor": [
+                    "nodeType",
+                    "nodeId",
+                    "receiver",
+                    "receiverType?"
+                ],
+                "findAllSharesForNodeTo": [
+                    "nodeType",
+                    "nodeId",
+                    "receivingUser",
+                    "receivingGroups",
+                    "receivingCircles"
+                ],
+                "findAllSharesForTablesAndContexts": [
+                    "tableIds",
+                    "contextIds"
+                ],
+                "findByToken": [
+                    "token"
+                ],
+                "findRemoteSharesForNode": [
+                    "nodeId",
+                    "nodeType"
+                ],
+                "findShareForNode": [
+                    "nodeId",
+                    "nodeType",
+                    "receiver",
+                    "receiverType?"
+                ],
+                "findSharedNodeIdsByType": [],
+                "getTableName": [],
+                "insert": [
+                    "entity"
+                ],
+                "insertOrUpdate": [
+                    "entity"
+                ],
+                "update": [
+                    "entity"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "Psr\\Log\\LoggerInterface",
+                    "OCP\\IDBConnection"
+                ],
+                "changeReceiverForNode": [
+                    "string",
+                    "int",
+                    "string",
+                    "string",
+                    "string"
+                ],
+                "delete": [
+                    "OCP\\AppFramework\\Db\\Entity"
+                ],
+                "deleteByNode": [
+                    "int",
+                    "string"
+                ],
+                "deleteByReceiver": [
+                    "string",
+                    "string"
+                ],
+                "find": [
+                    "int"
+                ],
+                "findAllRaw": [],
+                "findAllSharesFor": [
+                    "string",
+                    "array",
+                    "string",
+                    "?string"
+                ],
+                "findAllSharesForNode": [
+                    "string",
+                    "int",
+                    "string",
+                    "array"
+                ],
+                "findAllSharesForNodeFor": [
+                    "string",
+                    "int",
+                    "string",
+                    "?string"
+                ],
+                "findAllSharesForNodeTo": [
+                    "string",
+                    "int",
+                    "string",
+                    "array",
+                    "array"
+                ],
+                "findAllSharesForTablesAndContexts": [
+                    "array",
+                    "array"
+                ],
+                "findByToken": [
+                    "OCA\\Tables\\Service\\ValueObject\\ShareToken"
+                ],
+                "findRemoteSharesForNode": [
+                    "int",
+                    "string"
+                ],
+                "findShareForNode": [
+                    "int",
+                    "string",
+                    "string",
+                    "?string"
+                ],
+                "findSharedNodeIdsByType": [],
+                "getTableName": [],
+                "insert": [
+                    "OCP\\AppFramework\\Db\\Entity"
+                ],
+                "insertOrUpdate": [
+                    "OCP\\AppFramework\\Db\\Entity"
+                ],
+                "update": [
+                    "OCP\\AppFramework\\Db\\Entity"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "db",
+                "entityClass",
+                "logger",
+                "table",
+                "tableName"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Db\\Table": {
+            "kind": "class",
+            "methods": {
+                "__call": [
+                    "methodName",
+                    "args"
+                ],
+                "__construct": [],
+                "columnToProperty": [
+                    "columnName"
+                ],
+                "fromParams": [
+                    "params"
+                ],
+                "fromRow": [
+                    "row"
+                ],
+                "getColumnOrderArray": [],
+                "getColumnOrderSettingsArray": [],
+                "getFieldTypes": [],
+                "getSortArray": [],
+                "getUpdatedFields": [],
+                "isFederated": [],
+                "jsonSerialize": [],
+                "propertyToColumn": [
+                    "property"
+                ],
+                "resetUpdatedFields": [],
+                "setter": [
+                    "name",
+                    "args"
+                ],
+                "slugify": [
+                    "attributeName"
+                ]
+            },
+            "types": {
+                "__call": [
+                    "string",
+                    "array"
+                ],
+                "__construct": [],
+                "columnToProperty": [
+                    "string"
+                ],
+                "fromParams": [
+                    "array"
+                ],
+                "fromRow": [
+                    "array"
+                ],
+                "getColumnOrderArray": [],
+                "getColumnOrderSettingsArray": [],
+                "getFieldTypes": [],
+                "getSortArray": [],
+                "getUpdatedFields": [],
+                "isFederated": [],
+                "jsonSerialize": [],
+                "propertyToColumn": [
+                    "string"
+                ],
+                "resetUpdatedFields": [],
+                "setter": [
+                    "string",
+                    "array"
+                ],
+                "slugify": [
+                    "string"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "_fieldTypes",
+                "archived",
+                "columnOrder",
+                "columns",
+                "columnsCount",
+                "createdAt",
+                "createdBy",
+                "description",
+                "emoji",
+                "externalId",
+                "favorite",
+                "hasShares",
+                "id",
+                "isShared",
+                "lastEditAt",
+                "lastEditBy",
+                "onSharePermissions",
+                "ownerDisplayName",
+                "ownership",
+                "rowsCount",
+                "shareToken",
+                "sort",
+                "title",
+                "uuid",
+                "views"
+            ],
+            "external": [
+                "JsonSerializable"
+            ]
+        },
+        "OCA\\Tables\\Db\\TableMapper": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "db",
+                    "userHelper"
+                ],
+                "delete": [
+                    "entity"
+                ],
+                "find": [
+                    "id"
+                ],
+                "findAll": [
+                    "userId?"
+                ],
+                "findByExternalIdAndToken": [
+                    "externalId",
+                    "shareToken"
+                ],
+                "findByUuid": [
+                    "uuid"
+                ],
+                "findIdToTitleMap": [
+                    "ids"
+                ],
+                "findMany": [
+                    "ids"
+                ],
+                "getDbConnection": [],
+                "getTableName": [],
+                "insert": [
+                    "entity"
+                ],
+                "insertOrUpdate": [
+                    "entity"
+                ],
+                "isFederated": [
+                    "id"
+                ],
+                "search": [
+                    "term?",
+                    "userId?",
+                    "limit?",
+                    "offset?"
+                ],
+                "update": [
+                    "entity"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "OCP\\IDBConnection",
+                    "OCA\\Tables\\Helper\\UserHelper"
+                ],
+                "delete": [
+                    "OCP\\AppFramework\\Db\\Entity"
+                ],
+                "find": [
+                    "int"
+                ],
+                "findAll": [
+                    "?string"
+                ],
+                "findByExternalIdAndToken": [
+                    "int",
+                    "string"
+                ],
+                "findByUuid": [
+                    "string"
+                ],
+                "findIdToTitleMap": [
+                    "array"
+                ],
+                "findMany": [
+                    "array"
+                ],
+                "getDbConnection": [],
+                "getTableName": [],
+                "insert": [
+                    "OCP\\AppFramework\\Db\\Entity"
+                ],
+                "insertOrUpdate": [
+                    "OCP\\AppFramework\\Db\\Entity"
+                ],
+                "isFederated": [
+                    "int"
+                ],
+                "search": [
+                    "?string",
+                    "?string",
+                    "?int",
+                    "?int"
+                ],
+                "update": [
+                    "OCP\\AppFramework\\Db\\Entity"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "cache",
+                "db",
+                "entityClass",
+                "table",
+                "tableName"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Db\\View": {
+            "kind": "class",
+            "methods": {
+                "__call": [
+                    "methodName",
+                    "args"
+                ],
+                "__construct": [],
+                "columnToProperty": [
+                    "columnName"
+                ],
+                "findColumnSettingsForColumn": [
+                    "columnId"
+                ],
+                "fromParams": [
+                    "params"
+                ],
+                "fromRow": [
+                    "row"
+                ],
+                "getColumnIds": [],
+                "getColumnsArray": [],
+                "getColumnsSettingsArray": [],
+                "getFieldTypes": [],
+                "getFilterArray": [],
+                "getLayoutNormalized": [],
+                "getSortArray": [],
+                "getUpdatedFields": [],
+                "getViewSettingsObject": [],
+                "isFederated": [],
+                "jsonSerialize": [],
+                "propertyToColumn": [
+                    "property"
+                ],
+                "resetUpdatedFields": [],
+                "setColumnsArray": [
+                    "array"
+                ],
+                "setFilterArray": [
+                    "array"
+                ],
+                "setSortArray": [
+                    "array"
+                ],
+                "setter": [
+                    "name",
+                    "args"
+                ],
+                "slugify": [
+                    "attributeName"
+                ]
+            },
+            "types": {
+                "__call": [
+                    "string",
+                    "array"
+                ],
+                "__construct": [],
+                "columnToProperty": [
+                    "string"
+                ],
+                "findColumnSettingsForColumn": [
+                    "int"
+                ],
+                "fromParams": [
+                    "array"
+                ],
+                "fromRow": [
+                    "array"
+                ],
+                "getColumnIds": [],
+                "getColumnsArray": [],
+                "getColumnsSettingsArray": [],
+                "getFieldTypes": [],
+                "getFilterArray": [],
+                "getLayoutNormalized": [],
+                "getSortArray": [],
+                "getUpdatedFields": [],
+                "getViewSettingsObject": [],
+                "isFederated": [],
+                "jsonSerialize": [],
+                "propertyToColumn": [
+                    "string"
+                ],
+                "resetUpdatedFields": [],
+                "setColumnsArray": [
+                    "array"
+                ],
+                "setFilterArray": [
+                    "array"
+                ],
+                "setSortArray": [
+                    "array"
+                ],
+                "setter": [
+                    "string",
+                    "array"
+                ],
+                "slugify": [
+                    "string"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "_fieldTypes",
+                "columns",
+                "createdAt",
+                "createdBy",
+                "description",
+                "emoji",
+                "externalId",
+                "favorite",
+                "filter",
+                "hasShares",
+                "id",
+                "isShared",
+                "lastEditAt",
+                "lastEditBy",
+                "layout",
+                "onSharePermissions",
+                "ownerDisplayName",
+                "ownership",
+                "rowsCount",
+                "shareToken",
+                "sidebarOrder",
+                "sort",
+                "tableId",
+                "technicalName",
+                "title",
+                "uuid",
+                "viewSettings"
+            ],
+            "external": [
+                "JsonSerializable"
+            ]
+        },
+        "OCA\\Tables\\Db\\ViewMapper": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "db",
+                    "userHelper"
+                ],
+                "delete": [
+                    "entity"
+                ],
+                "find": [
+                    "id"
+                ],
+                "findAll": [
+                    "tableId?"
+                ],
+                "findByExternalIdAndToken": [
+                    "externalId",
+                    "shareToken"
+                ],
+                "findByUuid": [
+                    "uuid"
+                ],
+                "findIdToTitleMap": [
+                    "ids"
+                ],
+                "findMany": [
+                    "ids"
+                ],
+                "getTableName": [],
+                "insert": [
+                    "entity"
+                ],
+                "insertOrUpdate": [
+                    "entity"
+                ],
+                "isFederated": [
+                    "id"
+                ],
+                "search": [
+                    "term?",
+                    "userId?",
+                    "limit?",
+                    "offset?"
+                ],
+                "update": [
+                    "entity"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "OCP\\IDBConnection",
+                    "OCA\\Tables\\Helper\\UserHelper"
+                ],
+                "delete": [
+                    "OCP\\AppFramework\\Db\\Entity"
+                ],
+                "find": [
+                    "int"
+                ],
+                "findAll": [
+                    "?int"
+                ],
+                "findByExternalIdAndToken": [
+                    "int",
+                    "string"
+                ],
+                "findByUuid": [
+                    "string"
+                ],
+                "findIdToTitleMap": [
+                    "array"
+                ],
+                "findMany": [
+                    "array"
+                ],
+                "getTableName": [],
+                "insert": [
+                    "OCP\\AppFramework\\Db\\Entity"
+                ],
+                "insertOrUpdate": [
+                    "OCP\\AppFramework\\Db\\Entity"
+                ],
+                "isFederated": [
+                    "int"
+                ],
+                "search": [
+                    "?string",
+                    "?string",
+                    "?int",
+                    "?int"
+                ],
+                "update": [
+                    "OCP\\AppFramework\\Db\\Entity"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "cache",
+                "db",
+                "entityClass",
+                "table",
+                "tableName"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Dto\\Column": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "title?",
+                    "technicalName?",
+                    "type?",
+                    "subtype?",
+                    "mandatory?",
+                    "description?",
+                    "textDefault?",
+                    "textAllowedPattern?",
+                    "textMaxLength?",
+                    "textUnique?",
+                    "numberDefault?",
+                    "numberMin?",
+                    "numberMax?",
+                    "numberDecimals?",
+                    "numberPrefix?",
+                    "numberSuffix?",
+                    "selectionOptions?",
+                    "selectionDefault?",
+                    "datetimeDefault?",
+                    "usergroupDefault?",
+                    "usergroupMultipleItems?",
+                    "usergroupSelectUsers?",
+                    "usergroupSelectGroups?",
+                    "usergroupSelectTeams?",
+                    "showUserStatus?",
+                    "customSettings?",
+                    "uuid?"
+                ],
+                "createFromArray": [
+                    "data"
+                ],
+                "getCustomSettings": [],
+                "getDatetimeDefault": [],
+                "getDescription": [],
+                "getNumberDecimals": [],
+                "getNumberDefault": [],
+                "getNumberMax": [],
+                "getNumberMin": [],
+                "getNumberPrefix": [],
+                "getNumberSuffix": [],
+                "getSelectionDefault": [],
+                "getSelectionOptions": [],
+                "getShowUserStatus": [],
+                "getSubtype": [],
+                "getTechnicalName": [],
+                "getTextAllowedPattern": [],
+                "getTextDefault": [],
+                "getTextMaxLength": [],
+                "getTextUnique": [],
+                "getTitle": [],
+                "getType": [],
+                "getUsergroupDefault": [],
+                "getUsergroupMultipleItems": [],
+                "getUsergroupSelectGroups": [],
+                "getUsergroupSelectTeams": [],
+                "getUsergroupSelectUsers": [],
+                "getUuid": [],
+                "isMandatory": []
+            },
+            "types": {
+                "__construct": [
+                    "?string",
+                    "?string",
+                    "?string",
+                    "?string",
+                    "?bool",
+                    "?string",
+                    "?string",
+                    "?string",
+                    "?int",
+                    "?bool",
+                    "?float",
+                    "?float",
+                    "?float",
+                    "?int",
+                    "?string",
+                    "?string",
+                    "?string",
+                    "?string",
+                    "?string",
+                    "?string",
+                    "?bool",
+                    "?bool",
+                    "?bool",
+                    "?bool",
+                    "?bool",
+                    "?string",
+                    "?string"
+                ],
+                "createFromArray": [
+                    "array"
+                ],
+                "getCustomSettings": [],
+                "getDatetimeDefault": [],
+                "getDescription": [],
+                "getNumberDecimals": [],
+                "getNumberDefault": [],
+                "getNumberMax": [],
+                "getNumberMin": [],
+                "getNumberPrefix": [],
+                "getNumberSuffix": [],
+                "getSelectionDefault": [],
+                "getSelectionOptions": [],
+                "getShowUserStatus": [],
+                "getSubtype": [],
+                "getTechnicalName": [],
+                "getTextAllowedPattern": [],
+                "getTextDefault": [],
+                "getTextMaxLength": [],
+                "getTextUnique": [],
+                "getTitle": [],
+                "getType": [],
+                "getUsergroupDefault": [],
+                "getUsergroupMultipleItems": [],
+                "getUsergroupSelectGroups": [],
+                "getUsergroupSelectTeams": [],
+                "getUsergroupSelectUsers": [],
+                "getUuid": [],
+                "isMandatory": []
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [],
+            "external": []
+        },
+        "OCA\\Tables\\Errors\\NotFoundError": {
+            "kind": "class",
+            "methods": [],
+            "types": [],
+            "constants": [],
+            "properties": [],
+            "fields": [],
+            "external": [
+                "Exception"
+            ]
+        },
+        "OCA\\Tables\\Errors\\PermissionError": {
+            "kind": "class",
+            "methods": [],
+            "types": [],
+            "constants": [],
+            "properties": [],
+            "fields": [],
+            "external": [
+                "Exception"
+            ]
+        },
+        "OCA\\Tables\\Helper\\CircleHelper": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "logger",
+                    "appManager",
+                    "l10n"
+                ],
+                "circleExists": [
+                    "circleId",
+                    "userId"
+                ],
+                "getCircleDisplayName": [
+                    "circleId",
+                    "userId"
+                ],
+                "getCircleIdsForUser": [
+                    "userId"
+                ],
+                "getUserCircles": [
+                    "userId"
+                ],
+                "getUserIdsInCircle": [
+                    "circleId"
+                ],
+                "isCirclesEnabled": []
+            },
+            "types": {
+                "__construct": [
+                    "Psr\\Log\\LoggerInterface",
+                    "OCP\\App\\IAppManager",
+                    "OCP\\IL10N"
+                ],
+                "circleExists": [
+                    "string",
+                    "string"
+                ],
+                "getCircleDisplayName": [
+                    "string",
+                    "string"
+                ],
+                "getCircleIdsForUser": [
+                    "string"
+                ],
+                "getUserCircles": [
+                    "string"
+                ],
+                "getUserIdsInCircle": [
+                    "string"
+                ],
+                "isCirclesEnabled": []
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [],
+            "external": []
+        },
+        "OCA\\Tables\\Helper\\ColumnsHelper": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "userHelper",
+                    "circleHelper"
+                ],
+                "getColumnBusinessObject": [
+                    "column"
+                ],
+                "resolveSearchValue": [
+                    "placeholder",
+                    "userId",
+                    "column?"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "OCA\\Tables\\Helper\\UserHelper",
+                    "OCA\\Tables\\Helper\\CircleHelper"
+                ],
+                "getColumnBusinessObject": [
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "resolveSearchValue": [
+                    "string",
+                    "string",
+                    "?OCA\\Tables\\Db\\Column"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "columns"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Model\\ColumnSettings": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "columnSettings"
+                ],
+                "columnInformation": [],
+                "createFromInputArray": [
+                    "inputColumnSettings",
+                    "columnsMap?"
+                ],
+                "createViewSettingsFromInputArray": [
+                    "inputColumnSettings",
+                    "columnsMap?"
+                ],
+                "jsonSerialize": []
+            },
+            "types": {
+                "__construct": [
+                    "array"
+                ],
+                "columnInformation": [],
+                "createFromInputArray": [
+                    "array",
+                    "array"
+                ],
+                "createViewSettingsFromInputArray": [
+                    "array",
+                    "array"
+                ],
+                "jsonSerialize": []
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "columnSettings"
+            ],
+            "external": [
+                "JsonSerializable"
+            ]
+        },
+        "OCA\\Tables\\Model\\FilterSet": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "filterGroups"
+                ],
+                "createFromInputArray": [
+                    "data",
+                    "columnsMap?"
+                ],
+                "jsonSerialize": []
+            },
+            "types": {
+                "__construct": [
+                    "array"
+                ],
+                "createFromInputArray": [
+                    "array",
+                    "array"
+                ],
+                "jsonSerialize": []
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "filterGroups"
+            ],
+            "external": [
+                "JsonSerializable"
+            ]
+        },
+        "OCA\\Tables\\Model\\SortRuleSet": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "sortRules"
+                ],
+                "createFromInputArray": [
+                    "data",
+                    "columnsMap?"
+                ],
+                "jsonSerialize": []
+            },
+            "types": {
+                "__construct": [
+                    "array"
+                ],
+                "createFromInputArray": [
+                    "array",
+                    "array"
+                ],
+                "jsonSerialize": []
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "sortRules"
+            ],
+            "external": [
+                "JsonSerializable"
+            ]
+        },
+        "OCA\\Tables\\Model\\ViewSettings": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "cardBackgroundSource?",
+                    "cardTitleSource?"
+                ],
+                "createFromInputArray": [
+                    "data",
+                    "columnsMap?"
+                ],
+                "createFromStoredArray": [
+                    "data"
+                ],
+                "getCardBackgroundSource": [],
+                "getCardTitleSource": [],
+                "jsonSerialize": [],
+                "remapSources": [
+                    "viewSettings",
+                    "columnIdMap"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "?int",
+                    "?int"
+                ],
+                "createFromInputArray": [
+                    "array",
+                    "?array"
+                ],
+                "createFromStoredArray": [
+                    "array"
+                ],
+                "getCardBackgroundSource": [],
+                "getCardTitleSource": [],
+                "jsonSerialize": [],
+                "remapSources": [
+                    "array",
+                    "array"
+                ]
+            },
+            "constants": [
+                "SOURCE_KEYS"
+            ],
+            "properties": [],
+            "fields": [
+                "cardBackgroundSource",
+                "cardTitleSource"
+            ],
+            "external": [
+                "JsonSerializable"
+            ]
+        },
+        "OCA\\Tables\\Model\\ViewUpdateInput": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "title?",
+                    "technicalName?",
+                    "description?",
+                    "emoji?",
+                    "columnSettings?",
+                    "filterSet?",
+                    "sortRuleSet?",
+                    "sidebarOrder?",
+                    "layout?",
+                    "viewSettings?"
+                ],
+                "fromInputArray": [
+                    "data",
+                    "columnsMap?"
+                ],
+                "normalizeLayout": [
+                    "layout"
+                ],
+                "updateDetail": []
+            },
+            "types": {
+                "__construct": [
+                    "?OCA\\Tables\\Service\\ValueObject\\Title",
+                    "?string",
+                    "?string",
+                    "?OCA\\Tables\\Service\\ValueObject\\Emoji",
+                    "?OCA\\Tables\\Model\\ColumnSettings",
+                    "?OCA\\Tables\\Model\\FilterSet",
+                    "?OCA\\Tables\\Model\\SortRuleSet",
+                    "?int",
+                    "?string",
+                    "?OCA\\Tables\\Model\\ViewSettings"
+                ],
+                "fromInputArray": [
+                    "array",
+                    "array"
+                ],
+                "normalizeLayout": [
+                    "mixed"
+                ],
+                "updateDetail": []
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "columnSettings",
+                "description",
+                "emoji",
+                "filterSet",
+                "layout",
+                "sidebarOrder",
+                "sort",
+                "sortRuleSet",
+                "technicalName",
+                "title",
+                "viewSettings"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\ColumnService": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "permissionsService",
+                    "logger",
+                    "userId",
+                    "mapper",
+                    "tableMapper",
+                    "viewService",
+                    "rowService",
+                    "activityManager",
+                    "notificationHelper",
+                    "l",
+                    "userHelper",
+                    "columnDtoValidator",
+                    "auditLogService"
+                ],
+                "create": [
+                    "userId",
+                    "tableId",
+                    "viewId",
+                    "columnDto",
+                    "selectedViewIds?"
+                ],
+                "delete": [
+                    "id",
+                    "skipRowCleanup?",
+                    "userId?"
+                ],
+                "find": [
+                    "id",
+                    "userId?"
+                ],
+                "findAllByManagedView": [
+                    "view",
+                    "userId"
+                ],
+                "findAllByTable": [
+                    "tableId",
+                    "userId?",
+                    "table?"
+                ],
+                "findAllByView": [
+                    "viewId",
+                    "userId?"
+                ],
+                "findOrCreateColumnsByTitleForTableAsArray": [
+                    "tableId",
+                    "viewId",
+                    "titles",
+                    "dataTypes",
+                    "userId",
+                    "createUnknownColumns",
+                    "countCreatedColumns",
+                    "countMatchingColumns"
+                ],
+                "formatColumns": [
+                    "columns"
+                ],
+                "formatColumnsForPublicShare": [
+                    "columns"
+                ],
+                "getColumnsCount": [
+                    "tableId"
+                ],
+                "importColumn": [
+                    "table",
+                    "column"
+                ],
+                "setPublicContext": [],
+                "update": [
+                    "columnId",
+                    "userId",
+                    "columnDto"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "OCA\\Tables\\Service\\PermissionsService",
+                    "Psr\\Log\\LoggerInterface",
+                    "?string",
+                    "OCA\\Tables\\Db\\ColumnMapper",
+                    "OCA\\Tables\\Db\\TableMapper",
+                    "OCA\\Tables\\Service\\ViewService",
+                    "OCA\\Tables\\Service\\RowService",
+                    "OCA\\Tables\\Activity\\ActivityManager",
+                    "OCA\\Tables\\Notification\\NotificationHelper",
+                    "OCP\\IL10N",
+                    "OCA\\Tables\\Helper\\UserHelper",
+                    "OCA\\Tables\\Validation\\ColumnDtoValidator",
+                    "OCA\\Tables\\Service\\Support\\AuditLogServiceInterface"
+                ],
+                "create": [
+                    "?string",
+                    "?int",
+                    "?int",
+                    "OCA\\Tables\\Dto\\Column",
+                    "array"
+                ],
+                "delete": [
+                    "int",
+                    "bool",
+                    "?string"
+                ],
+                "find": [
+                    "int",
+                    "?string"
+                ],
+                "findAllByManagedView": [
+                    "OCA\\Tables\\Db\\View",
+                    "string"
+                ],
+                "findAllByTable": [
+                    "int",
+                    "?string",
+                    "?OCA\\Tables\\Db\\Table"
+                ],
+                "findAllByView": [
+                    "int",
+                    "?string"
+                ],
+                "findOrCreateColumnsByTitleForTableAsArray": [
+                    "?int",
+                    "?int",
+                    "array",
+                    "array",
+                    "?string",
+                    "bool",
+                    "int",
+                    "int"
+                ],
+                "formatColumns": [
+                    "array"
+                ],
+                "formatColumnsForPublicShare": [
+                    "array"
+                ],
+                "getColumnsCount": [
+                    "int"
+                ],
+                "importColumn": [
+                    "OCA\\Tables\\Db\\Table",
+                    "array"
+                ],
+                "setPublicContext": [],
+                "update": [
+                    "int",
+                    "?string",
+                    "OCA\\Tables\\Dto\\Column"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "isPublicContext",
+                "logger",
+                "permissionsService",
+                "userId"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\ColumnTypes\\DatetimeBusiness": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "logger"
+                ],
+                "canBeParsed": [
+                    "value",
+                    "column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseValue": [
+                    "value",
+                    "column"
+                ],
+                "validateValue": [
+                    "value",
+                    "column",
+                    "userId",
+                    "tableId",
+                    "rowId"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "Psr\\Log\\LoggerInterface"
+                ],
+                "canBeParsed": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "validateValue": [
+                    "mixed",
+                    "OCA\\Tables\\Db\\Column",
+                    "string",
+                    "int",
+                    "?int"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "logger"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\ColumnTypes\\DatetimeDateBusiness": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "logger"
+                ],
+                "canBeParsed": [
+                    "value",
+                    "column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseValue": [
+                    "value",
+                    "column"
+                ],
+                "validateValue": [
+                    "value",
+                    "column",
+                    "userId",
+                    "tableId",
+                    "rowId"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "Psr\\Log\\LoggerInterface"
+                ],
+                "canBeParsed": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "validateValue": [
+                    "mixed",
+                    "OCA\\Tables\\Db\\Column",
+                    "string",
+                    "int",
+                    "?int"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "logger"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\ColumnTypes\\DatetimeTimeBusiness": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "logger"
+                ],
+                "canBeParsed": [
+                    "value",
+                    "column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseValue": [
+                    "value",
+                    "column"
+                ],
+                "validateValue": [
+                    "value",
+                    "column",
+                    "userId",
+                    "tableId",
+                    "rowId"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "Psr\\Log\\LoggerInterface"
+                ],
+                "canBeParsed": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "validateValue": [
+                    "mixed",
+                    "OCA\\Tables\\Db\\Column",
+                    "string",
+                    "int",
+                    "?int"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "logger"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\ColumnTypes\\IColumnTypeBusiness": {
+            "kind": "interface",
+            "methods": {
+                "canBeParsed": [
+                    "value",
+                    "column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseValue": [
+                    "value",
+                    "column"
+                ],
+                "validateValue": [
+                    "value",
+                    "column",
+                    "userId",
+                    "tableId",
+                    "rowId"
+                ]
+            },
+            "types": {
+                "canBeParsed": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "validateValue": [
+                    "mixed",
+                    "OCA\\Tables\\Db\\Column",
+                    "string",
+                    "int",
+                    "?int"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\ColumnTypes\\NumberBusiness": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "logger"
+                ],
+                "canBeParsed": [
+                    "value",
+                    "column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseValue": [
+                    "value",
+                    "column"
+                ],
+                "validateValue": [
+                    "value",
+                    "column",
+                    "userId",
+                    "tableId",
+                    "rowId"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "Psr\\Log\\LoggerInterface"
+                ],
+                "canBeParsed": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "validateValue": [
+                    "mixed",
+                    "OCA\\Tables\\Db\\Column",
+                    "string",
+                    "int",
+                    "?int"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "logger"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\ColumnTypes\\NumberProgressBusiness": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "logger"
+                ],
+                "canBeParsed": [
+                    "value",
+                    "column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseValue": [
+                    "value",
+                    "column"
+                ],
+                "validateValue": [
+                    "value",
+                    "column",
+                    "userId",
+                    "tableId",
+                    "rowId"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "Psr\\Log\\LoggerInterface"
+                ],
+                "canBeParsed": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "validateValue": [
+                    "mixed",
+                    "OCA\\Tables\\Db\\Column",
+                    "string",
+                    "int",
+                    "?int"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "logger"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\ColumnTypes\\NumberStarsBusiness": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "logger"
+                ],
+                "canBeParsed": [
+                    "value",
+                    "column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseValue": [
+                    "value",
+                    "column"
+                ],
+                "validateValue": [
+                    "value",
+                    "column",
+                    "userId",
+                    "tableId",
+                    "rowId"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "Psr\\Log\\LoggerInterface"
+                ],
+                "canBeParsed": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "validateValue": [
+                    "mixed",
+                    "OCA\\Tables\\Db\\Column",
+                    "string",
+                    "int",
+                    "?int"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "logger"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\ColumnTypes\\RelationBusiness": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "logger",
+                    "relationService"
+                ],
+                "canBeParsed": [
+                    "value",
+                    "column?"
+                ],
+                "canBeParsedDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseValue": [
+                    "value",
+                    "column?"
+                ],
+                "validateValue": [
+                    "value",
+                    "column",
+                    "userId",
+                    "tableId",
+                    "rowId"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "Psr\\Log\\LoggerInterface",
+                    "OCA\\Tables\\Service\\RelationService"
+                ],
+                "canBeParsed": [
+                    "",
+                    "?OCA\\Tables\\Db\\Column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseValue": [
+                    "",
+                    "?OCA\\Tables\\Db\\Column"
+                ],
+                "validateValue": [
+                    "mixed",
+                    "OCA\\Tables\\Db\\Column",
+                    "string",
+                    "int",
+                    "?int"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "logger"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\ColumnTypes\\SelectionBusiness": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "logger"
+                ],
+                "canBeParsed": [
+                    "value",
+                    "column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseValue": [
+                    "value",
+                    "column"
+                ],
+                "validateValue": [
+                    "value",
+                    "column",
+                    "userId",
+                    "tableId",
+                    "rowId"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "Psr\\Log\\LoggerInterface"
+                ],
+                "canBeParsed": [
+                    "mixed",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "validateValue": [
+                    "mixed",
+                    "OCA\\Tables\\Db\\Column",
+                    "string",
+                    "int",
+                    "?int"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "logger"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\ColumnTypes\\SelectionCheckBusiness": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "logger"
+                ],
+                "canBeParsed": [
+                    "value",
+                    "column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseValue": [
+                    "value",
+                    "column"
+                ],
+                "validateValue": [
+                    "value",
+                    "column",
+                    "userId",
+                    "tableId",
+                    "rowId"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "Psr\\Log\\LoggerInterface"
+                ],
+                "canBeParsed": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "validateValue": [
+                    "mixed",
+                    "OCA\\Tables\\Db\\Column",
+                    "string",
+                    "int",
+                    "?int"
+                ]
+            },
+            "constants": [
+                "PATTERN_NEGATIVE",
+                "PATTERN_POSITIVE"
+            ],
+            "properties": [],
+            "fields": [
+                "logger"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\ColumnTypes\\SelectionMultiBusiness": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "logger"
+                ],
+                "canBeParsed": [
+                    "value",
+                    "column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseValue": [
+                    "value",
+                    "column"
+                ],
+                "validateValue": [
+                    "value",
+                    "column",
+                    "userId",
+                    "tableId",
+                    "rowId"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "Psr\\Log\\LoggerInterface"
+                ],
+                "canBeParsed": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "validateValue": [
+                    "mixed",
+                    "OCA\\Tables\\Db\\Column",
+                    "string",
+                    "int",
+                    "?int"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "logger"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\ColumnTypes\\SuperBusiness": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "logger"
+                ],
+                "canBeParsed": [
+                    "value",
+                    "column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseValue": [
+                    "value",
+                    "column"
+                ],
+                "validateValue": [
+                    "value",
+                    "column",
+                    "userId",
+                    "tableId",
+                    "rowId"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "Psr\\Log\\LoggerInterface"
+                ],
+                "canBeParsed": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "validateValue": [
+                    "mixed",
+                    "OCA\\Tables\\Db\\Column",
+                    "string",
+                    "int",
+                    "?int"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "logger"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\ColumnTypes\\TextLineBusiness": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "logger",
+                    "row2Mapper",
+                    "n"
+                ],
+                "canBeParsed": [
+                    "value",
+                    "column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseValue": [
+                    "value",
+                    "column"
+                ],
+                "validateValue": [
+                    "value",
+                    "column",
+                    "userId",
+                    "tableId",
+                    "rowId"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "Psr\\Log\\LoggerInterface",
+                    "OCA\\Tables\\Db\\Row2Mapper",
+                    "OCP\\IL10N"
+                ],
+                "canBeParsed": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "validateValue": [
+                    "mixed",
+                    "OCA\\Tables\\Db\\Column",
+                    "string",
+                    "int",
+                    "?int"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "logger"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\ColumnTypes\\TextLinkBusiness": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "logger",
+                    "n"
+                ],
+                "canBeParsed": [
+                    "value",
+                    "column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseValue": [
+                    "value",
+                    "column"
+                ],
+                "validateValue": [
+                    "value",
+                    "column",
+                    "userId",
+                    "tableId",
+                    "rowId"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "Psr\\Log\\LoggerInterface",
+                    "OCP\\IL10N"
+                ],
+                "canBeParsed": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "validateValue": [
+                    "mixed",
+                    "OCA\\Tables\\Db\\Column",
+                    "string",
+                    "int",
+                    "?int"
+                ]
+            },
+            "constants": [
+                "ALLOWED_PROTOCOLS"
+            ],
+            "properties": [],
+            "fields": [
+                "logger"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\ColumnTypes\\TextLongBusiness": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "logger"
+                ],
+                "canBeParsed": [
+                    "value",
+                    "column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseValue": [
+                    "value",
+                    "column"
+                ],
+                "validateValue": [
+                    "value",
+                    "column",
+                    "userId",
+                    "tableId",
+                    "rowId"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "Psr\\Log\\LoggerInterface"
+                ],
+                "canBeParsed": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "validateValue": [
+                    "mixed",
+                    "OCA\\Tables\\Db\\Column",
+                    "string",
+                    "int",
+                    "?int"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "logger"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\ColumnTypes\\TextRichBusiness": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "logger"
+                ],
+                "canBeParsed": [
+                    "value",
+                    "column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseValue": [
+                    "value",
+                    "column"
+                ],
+                "validateValue": [
+                    "value",
+                    "column",
+                    "userId",
+                    "tableId",
+                    "rowId"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "Psr\\Log\\LoggerInterface"
+                ],
+                "canBeParsed": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "validateValue": [
+                    "mixed",
+                    "OCA\\Tables\\Db\\Column",
+                    "string",
+                    "int",
+                    "?int"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "logger"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\ColumnTypes\\UsergroupBusiness": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "logger",
+                    "circleHelper",
+                    "userManager",
+                    "groupManager"
+                ],
+                "canBeParsed": [
+                    "value",
+                    "column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseDisplayValue": [
+                    "value",
+                    "column"
+                ],
+                "parseValue": [
+                    "value",
+                    "column"
+                ],
+                "validateValue": [
+                    "value",
+                    "column",
+                    "userId",
+                    "tableId",
+                    "rowId"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "Psr\\Log\\LoggerInterface",
+                    "OCA\\Tables\\Helper\\CircleHelper",
+                    "OCP\\IUserManager",
+                    "OCP\\IGroupManager"
+                ],
+                "canBeParsed": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "canBeParsedDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseDisplayValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "parseValue": [
+                    "",
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "validateValue": [
+                    "mixed",
+                    "OCA\\Tables\\Db\\Column",
+                    "string",
+                    "int",
+                    "?int"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "circleHelper",
+                "groupManager",
+                "logger",
+                "userManager"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\ContextService": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "contextMapper",
+                    "contextNodeRelMapper",
+                    "pageMapper",
+                    "pageContentMapper",
+                    "logger",
+                    "permissionsService",
+                    "userManager",
+                    "auditLogService",
+                    "dbc",
+                    "shareService",
+                    "isCLI",
+                    "navigationManager",
+                    "urlGenerator",
+                    "tableMapper",
+                    "viewMapper"
+                ],
+                "addNodeRelToPage": [
+                    "nodeRel",
+                    "order?",
+                    "pageId?"
+                ],
+                "addNodeToContext": [
+                    "context",
+                    "nodeId",
+                    "nodeType",
+                    "permissions"
+                ],
+                "addNodeToContextAndStartpage": [
+                    "contextId",
+                    "nodeId",
+                    "nodeType",
+                    "permissions",
+                    "order",
+                    "userId"
+                ],
+                "addNodeToContextById": [
+                    "contextId",
+                    "nodeId",
+                    "nodeType",
+                    "permissions",
+                    "userId"
+                ],
+                "addToNavigation": [
+                    "userId"
+                ],
+                "compareSchemeChanges": [
+                    "contextId",
+                    "updateScheme",
+                    "userId"
+                ],
+                "create": [
+                    "name",
+                    "iconName",
+                    "description",
+                    "nodes",
+                    "ownerId",
+                    "ownerType"
+                ],
+                "delete": [
+                    "contextId",
+                    "userId"
+                ],
+                "deleteNodeRel": [
+                    "nodeId",
+                    "nodeType"
+                ],
+                "findAll": [
+                    "userId"
+                ],
+                "findById": [
+                    "id",
+                    "userId"
+                ],
+                "findForNavigation": [
+                    "userId"
+                ],
+                "getScheme": [
+                    "contextId",
+                    "userId"
+                ],
+                "importContext": [
+                    "table",
+                    "context",
+                    "tableOldId"
+                ],
+                "importScheme": [
+                    "contextId",
+                    "name",
+                    "iconName",
+                    "description",
+                    "nodes",
+                    "tables",
+                    "userId"
+                ],
+                "removeNodeFromContext": [
+                    "nodeRelation"
+                ],
+                "removeNodeFromContextAndPages": [
+                    "nodeRelationId"
+                ],
+                "removeNodeFromContextById": [
+                    "nodeRelationId"
+                ],
+                "removeNodeRelFromAllPages": [
+                    "nodeRelation"
+                ],
+                "transfer": [
+                    "contextId",
+                    "newOwnerId",
+                    "newOwnerType"
+                ],
+                "update": [
+                    "contextId",
+                    "userId",
+                    "name",
+                    "iconName",
+                    "description",
+                    "nodes"
+                ],
+                "updateContentOrder": [
+                    "pageId",
+                    "contents"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "OCA\\Tables\\Db\\ContextMapper",
+                    "OCA\\Tables\\Db\\ContextNodeRelationMapper",
+                    "OCA\\Tables\\Db\\PageMapper",
+                    "OCA\\Tables\\Db\\PageContentMapper",
+                    "Psr\\Log\\LoggerInterface",
+                    "OCA\\Tables\\Service\\PermissionsService",
+                    "OCP\\IUserManager",
+                    "OCA\\Tables\\Service\\Support\\AuditLogServiceInterface",
+                    "OCP\\IDBConnection",
+                    "OCA\\Tables\\Service\\ShareService",
+                    "bool",
+                    "OCP\\INavigationManager",
+                    "OCP\\IURLGenerator",
+                    "OCA\\Tables\\Db\\TableMapper",
+                    "OCA\\Tables\\Db\\ViewMapper"
+                ],
+                "addNodeRelToPage": [
+                    "OCA\\Tables\\Db\\ContextNodeRelation",
+                    "?int",
+                    "?int"
+                ],
+                "addNodeToContext": [
+                    "OCA\\Tables\\Db\\Context",
+                    "int",
+                    "int",
+                    "int"
+                ],
+                "addNodeToContextAndStartpage": [
+                    "int",
+                    "int",
+                    "int",
+                    "int",
+                    "int",
+                    "string"
+                ],
+                "addNodeToContextById": [
+                    "int",
+                    "int",
+                    "int",
+                    "int",
+                    "?string"
+                ],
+                "addToNavigation": [
+                    "string"
+                ],
+                "compareSchemeChanges": [
+                    "int",
+                    "array",
+                    "string"
+                ],
+                "create": [
+                    "string",
+                    "string",
+                    "string",
+                    "array",
+                    "string",
+                    "int"
+                ],
+                "delete": [
+                    "int",
+                    "string"
+                ],
+                "deleteNodeRel": [
+                    "int",
+                    "int"
+                ],
+                "findAll": [
+                    "?string"
+                ],
+                "findById": [
+                    "int",
+                    "?string"
+                ],
+                "findForNavigation": [
+                    "string"
+                ],
+                "getScheme": [
+                    "int",
+                    "string"
+                ],
+                "importContext": [
+                    "OCA\\Tables\\Db\\Table",
+                    "array",
+                    "int"
+                ],
+                "importScheme": [
+                    "int",
+                    "string",
+                    "string",
+                    "string",
+                    "array",
+                    "array",
+                    "string"
+                ],
+                "removeNodeFromContext": [
+                    "OCA\\Tables\\Db\\ContextNodeRelation"
+                ],
+                "removeNodeFromContextAndPages": [
+                    "int"
+                ],
+                "removeNodeFromContextById": [
+                    "int"
+                ],
+                "removeNodeRelFromAllPages": [
+                    "OCA\\Tables\\Db\\ContextNodeRelation"
+                ],
+                "transfer": [
+                    "int",
+                    "string",
+                    "int"
+                ],
+                "update": [
+                    "int",
+                    "string",
+                    "?string",
+                    "?string",
+                    "?string",
+                    "?array"
+                ],
+                "updateContentOrder": [
+                    "int",
+                    "array"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "navigationManager",
+                "urlGenerator"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\PermissionsService": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "logger",
+                    "userId",
+                    "tableMapper",
+                    "viewMapper",
+                    "shareMapper",
+                    "contextMapper",
+                    "userHelper",
+                    "circleHelper",
+                    "isCLI"
+                ],
+                "canAccessContextById": [
+                    "contextId",
+                    "userId?"
+                ],
+                "canAccessNodeById": [
+                    "nodeType",
+                    "nodeId",
+                    "userId?"
+                ],
+                "canAccessView": [
+                    "view",
+                    "userId?"
+                ],
+                "canChangeElementOwner": [
+                    "element",
+                    "userId"
+                ],
+                "canCreateColumns": [
+                    "table",
+                    "userId?"
+                ],
+                "canCreateRows": [
+                    "element",
+                    "nodeType?",
+                    "userId?"
+                ],
+                "canCreateRowsById": [
+                    "nodeType",
+                    "nodeId",
+                    "userId?"
+                ],
+                "canDeleteColumnsByTableId": [
+                    "tableId",
+                    "userId?"
+                ],
+                "canDeleteRowsByTableId": [
+                    "tableId?",
+                    "userId?"
+                ],
+                "canDeleteRowsByViewId": [
+                    "viewId",
+                    "userId?"
+                ],
+                "canManageContext": [
+                    "context",
+                    "userId?"
+                ],
+                "canManageContextById": [
+                    "contextId",
+                    "userId?"
+                ],
+                "canManageElementById": [
+                    "elementId",
+                    "nodeType?",
+                    "userId?"
+                ],
+                "canManageNodeById": [
+                    "nodeType",
+                    "nodeId",
+                    "userId?"
+                ],
+                "canManageTable": [
+                    "table",
+                    "userId?"
+                ],
+                "canManageTableById": [
+                    "tableId",
+                    "userId?"
+                ],
+                "canManageView": [
+                    "view",
+                    "userId?"
+                ],
+                "canManageViewById": [
+                    "viewId",
+                    "userId?"
+                ],
+                "canReadColumnsByTableId": [
+                    "tableId",
+                    "userId?"
+                ],
+                "canReadColumnsByViewId": [
+                    "viewId",
+                    "userId?"
+                ],
+                "canReadRelationTarget": [
+                    "relationType",
+                    "targetId",
+                    "userId?"
+                ],
+                "canReadRowsByElement": [
+                    "element",
+                    "nodeType",
+                    "userId?"
+                ],
+                "canReadRowsByElementId": [
+                    "elementId",
+                    "nodeType",
+                    "userId?"
+                ],
+                "canReadShare": [
+                    "share",
+                    "userId?"
+                ],
+                "canReadTable": [
+                    "table",
+                    "userId?"
+                ],
+                "canUpdateColumnsByTableId": [
+                    "tableId",
+                    "userId?"
+                ],
+                "canUpdateRowsByTableId": [
+                    "tableId",
+                    "userId?"
+                ],
+                "canUpdateRowsByViewId": [
+                    "viewId",
+                    "userId?"
+                ],
+                "canUpdateTable": [
+                    "table",
+                    "userId?"
+                ],
+                "getPermissionArrayForNodeFromContexts": [
+                    "nodeId",
+                    "nodeType",
+                    "userId"
+                ],
+                "getPermissionIfAvailableThroughContext": [
+                    "nodeId",
+                    "nodeType",
+                    "userId"
+                ],
+                "getSharedPermissionsIfSharedWithMe": [
+                    "elementId",
+                    "elementType",
+                    "userId"
+                ],
+                "isNodeOwnerById": [
+                    "nodeType",
+                    "nodeId",
+                    "userId?"
+                ],
+                "preCheckUserId": [
+                    "userId?",
+                    "canBeEmpty?"
+                ],
+                "setPublicContext": []
+            },
+            "types": {
+                "__construct": [
+                    "Psr\\Log\\LoggerInterface",
+                    "?string",
+                    "OCA\\Tables\\Db\\TableMapper",
+                    "OCA\\Tables\\Db\\ViewMapper",
+                    "OCA\\Tables\\Db\\ShareMapper",
+                    "OCA\\Tables\\Db\\ContextMapper",
+                    "OCA\\Tables\\Helper\\UserHelper",
+                    "OCA\\Tables\\Helper\\CircleHelper",
+                    "bool"
+                ],
+                "canAccessContextById": [
+                    "int",
+                    "?string"
+                ],
+                "canAccessNodeById": [
+                    "int",
+                    "int",
+                    "?string"
+                ],
+                "canAccessView": [
+                    "OCA\\Tables\\Db\\View",
+                    "?string"
+                ],
+                "canChangeElementOwner": [
+                    "",
+                    "string"
+                ],
+                "canCreateColumns": [
+                    "OCA\\Tables\\Db\\Table",
+                    "?string"
+                ],
+                "canCreateRows": [
+                    "",
+                    "string",
+                    "?string"
+                ],
+                "canCreateRowsById": [
+                    "int",
+                    "int",
+                    "?string"
+                ],
+                "canDeleteColumnsByTableId": [
+                    "int",
+                    "?string"
+                ],
+                "canDeleteRowsByTableId": [
+                    "?int",
+                    "?string"
+                ],
+                "canDeleteRowsByViewId": [
+                    "int",
+                    "?string"
+                ],
+                "canManageContext": [
+                    "OCA\\Tables\\Db\\Context",
+                    "?string"
+                ],
+                "canManageContextById": [
+                    "int",
+                    "?string"
+                ],
+                "canManageElementById": [
+                    "int",
+                    "string",
+                    "?string"
+                ],
+                "canManageNodeById": [
+                    "int",
+                    "int",
+                    "?string"
+                ],
+                "canManageTable": [
+                    "OCA\\Tables\\Db\\Table",
+                    "?string"
+                ],
+                "canManageTableById": [
+                    "int",
+                    "?string"
+                ],
+                "canManageView": [
+                    "OCA\\Tables\\Db\\View",
+                    "?string"
+                ],
+                "canManageViewById": [
+                    "int",
+                    "?string"
+                ],
+                "canReadColumnsByTableId": [
+                    "int",
+                    "?string"
+                ],
+                "canReadColumnsByViewId": [
+                    "int",
+                    "?string"
+                ],
+                "canReadRelationTarget": [
+                    "string",
+                    "int",
+                    "?string"
+                ],
+                "canReadRowsByElement": [
+                    "",
+                    "string",
+                    "?string"
+                ],
+                "canReadRowsByElementId": [
+                    "int",
+                    "string",
+                    "?string"
+                ],
+                "canReadShare": [
+                    "OCA\\Tables\\Db\\Share",
+                    "?string"
+                ],
+                "canReadTable": [
+                    "OCA\\Tables\\Db\\Table",
+                    "?string"
+                ],
+                "canUpdateColumnsByTableId": [
+                    "int",
+                    "?string"
+                ],
+                "canUpdateRowsByTableId": [
+                    "int",
+                    "?string"
+                ],
+                "canUpdateRowsByViewId": [
+                    "int",
+                    "?string"
+                ],
+                "canUpdateTable": [
+                    "OCA\\Tables\\Db\\Table",
+                    "?string"
+                ],
+                "getPermissionArrayForNodeFromContexts": [
+                    "int",
+                    "string",
+                    "string"
+                ],
+                "getPermissionIfAvailableThroughContext": [
+                    "int",
+                    "string",
+                    "string"
+                ],
+                "getSharedPermissionsIfSharedWithMe": [
+                    "int",
+                    "string",
+                    "string"
+                ],
+                "isNodeOwnerById": [
+                    "int",
+                    "int",
+                    "?string"
+                ],
+                "preCheckUserId": [
+                    "?string",
+                    "bool"
+                ],
+                "setPublicContext": []
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "isCLI",
+                "logger",
+                "userId"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\RowService": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "logger",
+                    "userId",
+                    "permissionsService",
+                    "columnMapper",
+                    "viewMapper",
+                    "tableMapper",
+                    "row2Mapper",
+                    "eventDispatcher",
+                    "columnsHelper",
+                    "activityManager",
+                    "notificationHelper",
+                    "connection"
+                ],
+                "create": [
+                    "tableId",
+                    "viewId",
+                    "data",
+                    "userId?"
+                ],
+                "delete": [
+                    "id",
+                    "viewId",
+                    "userId",
+                    "tableId?"
+                ],
+                "deleteAllByTable": [
+                    "tableId",
+                    "userId?"
+                ],
+                "deleteColumnDataFromRows": [
+                    "column"
+                ],
+                "find": [
+                    "rowId"
+                ],
+                "findAllByTable": [
+                    "tableId",
+                    "userId",
+                    "limit?",
+                    "offset?"
+                ],
+                "findAllByView": [
+                    "viewId",
+                    "userId",
+                    "limit?",
+                    "offset?"
+                ],
+                "formatRows": [
+                    "rows"
+                ],
+                "formatRowsForPublicShare": [
+                    "rows"
+                ],
+                "getRowsCount": [
+                    "tableId"
+                ],
+                "getRowsCountForTables": [
+                    "tableIds"
+                ],
+                "getViewRowsCount": [
+                    "view",
+                    "userId"
+                ],
+                "importRow": [
+                    "table",
+                    "row"
+                ],
+                "isRowInViewPresent": [
+                    "rowId",
+                    "viewId",
+                    "userId"
+                ],
+                "setPublicContext": [],
+                "updateSet": [
+                    "id",
+                    "viewId",
+                    "data",
+                    "userId",
+                    "tableId"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "Psr\\Log\\LoggerInterface",
+                    "?string",
+                    "OCA\\Tables\\Service\\PermissionsService",
+                    "OCA\\Tables\\Db\\ColumnMapper",
+                    "OCA\\Tables\\Db\\ViewMapper",
+                    "OCA\\Tables\\Db\\TableMapper",
+                    "OCA\\Tables\\Db\\Row2Mapper",
+                    "OCP\\EventDispatcher\\IEventDispatcher",
+                    "OCA\\Tables\\Helper\\ColumnsHelper",
+                    "OCA\\Tables\\Activity\\ActivityManager",
+                    "OCA\\Tables\\Notification\\NotificationHelper",
+                    "OCP\\IDBConnection"
+                ],
+                "create": [
+                    "?int",
+                    "?int",
+                    "OCA\\Tables\\Model\\RowDataInput|array",
+                    "?string"
+                ],
+                "delete": [
+                    "int",
+                    "?int",
+                    "string",
+                    "?int"
+                ],
+                "deleteAllByTable": [
+                    "int",
+                    "?string"
+                ],
+                "deleteColumnDataFromRows": [
+                    "OCA\\Tables\\Db\\Column"
+                ],
+                "find": [
+                    "int"
+                ],
+                "findAllByTable": [
+                    "int",
+                    "string",
+                    "?int",
+                    "?int"
+                ],
+                "findAllByView": [
+                    "int",
+                    "string",
+                    "?int",
+                    "?int"
+                ],
+                "formatRows": [
+                    "array"
+                ],
+                "formatRowsForPublicShare": [
+                    "array"
+                ],
+                "getRowsCount": [
+                    "int"
+                ],
+                "getRowsCountForTables": [
+                    "array"
+                ],
+                "getViewRowsCount": [
+                    "OCA\\Tables\\Db\\View",
+                    "string"
+                ],
+                "importRow": [
+                    "OCA\\Tables\\Db\\Table",
+                    "array"
+                ],
+                "isRowInViewPresent": [
+                    "int",
+                    "int",
+                    "string"
+                ],
+                "setPublicContext": [],
+                "updateSet": [
+                    "int",
+                    "?int",
+                    "array",
+                    "string",
+                    "?int"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "isPublicContext",
+                "logger",
+                "permissionsService",
+                "userId"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\ShareService": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "permissionsService",
+                    "logger",
+                    "userId",
+                    "mapper",
+                    "tableMapper",
+                    "viewMapper",
+                    "userHelper",
+                    "groupHelper",
+                    "circleHelper",
+                    "contextNavigationMapper",
+                    "dbc",
+                    "secureRandom",
+                    "userManager",
+                    "hasher",
+                    "shareManager",
+                    "federationService",
+                    "auditLogService"
+                ],
+                "assertPublicShareAccessible": [
+                    "share"
+                ],
+                "changeReceiverForNode": [
+                    "nodeType",
+                    "nodeId",
+                    "newOwnerUserId",
+                    "userId",
+                    "sender"
+                ],
+                "changeSenderForNode": [
+                    "nodeType",
+                    "nodeId",
+                    "newOwnerUserId",
+                    "userId?"
+                ],
+                "checkPassword": [
+                    "share",
+                    "password"
+                ],
+                "create": [
+                    "dto"
+                ],
+                "createLinkShare": [
+                    "node",
+                    "password?"
+                ],
+                "delete": [
+                    "id"
+                ],
+                "deleteAllForContext": [
+                    "context"
+                ],
+                "deleteAllForTable": [
+                    "table"
+                ],
+                "deleteAllForView": [
+                    "view"
+                ],
+                "deleteForShareReview": [
+                    "id"
+                ],
+                "find": [
+                    "id"
+                ],
+                "findAll": [
+                    "nodeType",
+                    "nodeId",
+                    "userId?",
+                    "enhanceShares?"
+                ],
+                "findByToken": [
+                    "token"
+                ],
+                "findSharedWithUserIds": [
+                    "elementId",
+                    "elementType"
+                ],
+                "findTablesSharedWithMe": [
+                    "userId?"
+                ],
+                "findUserIdsForShareReceiver": [
+                    "receiverType",
+                    "receiverId"
+                ],
+                "findViewsSharedWithMe": [
+                    "userId?"
+                ],
+                "formatForOutput": [
+                    "share"
+                ],
+                "formatShares": [
+                    "items"
+                ],
+                "getSharedPermissionsIfSharedWithMe": [
+                    "elementId",
+                    "elementType?",
+                    "userId?"
+                ],
+                "hasLinkShare": [
+                    "node"
+                ],
+                "importShare": [
+                    "nodeId",
+                    "share",
+                    "userId"
+                ],
+                "isPublicShareAccessible": [
+                    "share"
+                ],
+                "setPublicContext": [],
+                "transferSharesForContext": [
+                    "contextId",
+                    "newOwnerId",
+                    "oldOwnerId"
+                ],
+                "updateDisplayMode": [
+                    "shareId",
+                    "displayMode",
+                    "userId"
+                ],
+                "updatePermission": [
+                    "id",
+                    "permissions"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "OCA\\Tables\\Service\\PermissionsService",
+                    "Psr\\Log\\LoggerInterface",
+                    "?string",
+                    "OCA\\Tables\\Db\\ShareMapper",
+                    "OCA\\Tables\\Db\\TableMapper",
+                    "OCA\\Tables\\Db\\ViewMapper",
+                    "OCA\\Tables\\Helper\\UserHelper",
+                    "OCA\\Tables\\Helper\\GroupHelper",
+                    "OCA\\Tables\\Helper\\CircleHelper",
+                    "OCA\\Tables\\Db\\ContextNavigationMapper",
+                    "OCP\\IDBConnection",
+                    "OCP\\Security\\ISecureRandom",
+                    "OCP\\IUserManager",
+                    "OCP\\Security\\IHasher",
+                    "OCP\\Share\\IManager",
+                    "OCA\\Tables\\Service\\FederationService",
+                    "OCA\\Tables\\Service\\Support\\AuditLogServiceInterface"
+                ],
+                "assertPublicShareAccessible": [
+                    "OCA\\Tables\\Db\\Share"
+                ],
+                "changeReceiverForNode": [
+                    "string",
+                    "int",
+                    "string",
+                    "string",
+                    "string"
+                ],
+                "changeSenderForNode": [
+                    "string",
+                    "int",
+                    "string",
+                    "?string"
+                ],
+                "checkPassword": [
+                    "OCA\\Tables\\Db\\Share",
+                    "string"
+                ],
+                "create": [
+                    "OCA\\Tables\\Service\\ValueObject\\ShareCreate"
+                ],
+                "createLinkShare": [
+                    "OCA\\Tables\\Db\\Table|OCA\\Tables\\Db\\View",
+                    "?string"
+                ],
+                "delete": [
+                    "int"
+                ],
+                "deleteAllForContext": [
+                    "OCA\\Tables\\Db\\Context"
+                ],
+                "deleteAllForTable": [
+                    "OCA\\Tables\\Db\\Table"
+                ],
+                "deleteAllForView": [
+                    "OCA\\Tables\\Db\\View"
+                ],
+                "deleteForShareReview": [
+                    "int"
+                ],
+                "find": [
+                    "int"
+                ],
+                "findAll": [
+                    "string",
+                    "int",
+                    "?string",
+                    "bool"
+                ],
+                "findByToken": [
+                    "OCA\\Tables\\Service\\ValueObject\\ShareToken"
+                ],
+                "findSharedWithUserIds": [
+                    "int",
+                    "string"
+                ],
+                "findTablesSharedWithMe": [
+                    "?string"
+                ],
+                "findUserIdsForShareReceiver": [
+                    "string",
+                    "string"
+                ],
+                "findViewsSharedWithMe": [
+                    "?string"
+                ],
+                "formatForOutput": [
+                    "OCA\\Tables\\Db\\Share"
+                ],
+                "formatShares": [
+                    "array"
+                ],
+                "getSharedPermissionsIfSharedWithMe": [
+                    "int",
+                    "string",
+                    "?string"
+                ],
+                "hasLinkShare": [
+                    "OCA\\Tables\\Db\\Table|OCA\\Tables\\Db\\View"
+                ],
+                "importShare": [
+                    "int",
+                    "array",
+                    "string"
+                ],
+                "isPublicShareAccessible": [
+                    "OCA\\Tables\\Db\\Share"
+                ],
+                "setPublicContext": [],
+                "transferSharesForContext": [
+                    "int",
+                    "string",
+                    "string"
+                ],
+                "updateDisplayMode": [
+                    "int",
+                    "int",
+                    "string"
+                ],
+                "updatePermission": [
+                    "int",
+                    "array"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "isPublicContext",
+                "logger",
+                "permissionsService",
+                "userId"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\TableService": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "permissionsService",
+                    "logger",
+                    "userId",
+                    "mapper",
+                    "tableTemplateService",
+                    "columnService",
+                    "rowService",
+                    "viewService",
+                    "shareService",
+                    "userHelper",
+                    "favoritesService",
+                    "eventDispatcher",
+                    "contextService",
+                    "appManager",
+                    "dbc",
+                    "l",
+                    "themingDefaults",
+                    "activityManager",
+                    "federationService",
+                    "auditLogService"
+                ],
+                "compareTableSchemeChanges": [
+                    "id",
+                    "updateScheme"
+                ],
+                "create": [
+                    "title",
+                    "template",
+                    "emoji",
+                    "description?",
+                    "userId?",
+                    "uuid?"
+                ],
+                "delete": [
+                    "id",
+                    "userId?"
+                ],
+                "find": [
+                    "id",
+                    "skipTableEnhancement?",
+                    "userId?"
+                ],
+                "findAll": [
+                    "userId?",
+                    "skipTableEnhancement?",
+                    "skipSharedTables?",
+                    "createTutorial?"
+                ],
+                "formatTables": [
+                    "tables"
+                ],
+                "getScheme": [
+                    "id",
+                    "userId?"
+                ],
+                "importTable": [
+                    "table",
+                    "userId"
+                ],
+                "search": [
+                    "term",
+                    "limit?",
+                    "offset?",
+                    "userId?"
+                ],
+                "setOwner": [
+                    "id",
+                    "newOwnerUserId",
+                    "userId?"
+                ],
+                "setPublicContext": [],
+                "update": [
+                    "id",
+                    "title",
+                    "emoji",
+                    "description",
+                    "archived?",
+                    "userId?",
+                    "columnSettings?",
+                    "sort?"
+                ],
+                "updateTableStructure": [
+                    "tableId",
+                    "columns",
+                    "views",
+                    "columnOrder?",
+                    "sort?",
+                    "userId?"
+                ],
+                "validateTableScheme": [
+                    "tableScheme"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "OCA\\Tables\\Service\\PermissionsService",
+                    "Psr\\Log\\LoggerInterface",
+                    "?string",
+                    "OCA\\Tables\\Db\\TableMapper",
+                    "OCA\\Tables\\Service\\TableTemplateService",
+                    "OCA\\Tables\\Service\\ColumnService",
+                    "OCA\\Tables\\Service\\RowService",
+                    "OCA\\Tables\\Service\\ViewService",
+                    "OCA\\Tables\\Service\\ShareService",
+                    "OCA\\Tables\\Helper\\UserHelper",
+                    "OCA\\Tables\\Service\\FavoritesService",
+                    "OCP\\EventDispatcher\\IEventDispatcher",
+                    "OCA\\Tables\\Service\\ContextService",
+                    "OCP\\App\\IAppManager",
+                    "OCP\\IDBConnection",
+                    "OCP\\IL10N",
+                    "OCP\\Defaults",
+                    "OCA\\Tables\\Activity\\ActivityManager",
+                    "OCA\\Tables\\Service\\FederationService",
+                    "OCA\\Tables\\Service\\Support\\AuditLogServiceInterface"
+                ],
+                "compareTableSchemeChanges": [
+                    "int",
+                    "array"
+                ],
+                "create": [
+                    "string",
+                    "string",
+                    "?string",
+                    "?string",
+                    "?string",
+                    "?string"
+                ],
+                "delete": [
+                    "int",
+                    "?string"
+                ],
+                "find": [
+                    "int",
+                    "bool",
+                    "?string"
+                ],
+                "findAll": [
+                    "?string",
+                    "bool",
+                    "bool",
+                    "bool"
+                ],
+                "formatTables": [
+                    "array"
+                ],
+                "getScheme": [
+                    "int",
+                    "?string"
+                ],
+                "importTable": [
+                    "array",
+                    "string"
+                ],
+                "search": [
+                    "string",
+                    "int",
+                    "int",
+                    "?string"
+                ],
+                "setOwner": [
+                    "int",
+                    "string",
+                    "?string"
+                ],
+                "setPublicContext": [],
+                "update": [
+                    "int",
+                    "?string",
+                    "?string",
+                    "?string",
+                    "?bool",
+                    "?string",
+                    "?OCA\\Tables\\Model\\ColumnSettings",
+                    "?OCA\\Tables\\Model\\SortRuleSet"
+                ],
+                "updateTableStructure": [
+                    "int",
+                    "array",
+                    "array",
+                    "array",
+                    "array",
+                    "?string"
+                ],
+                "validateTableScheme": [
+                    "array"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "appManager",
+                "eventDispatcher",
+                "favoritesService",
+                "isPublicContext",
+                "l",
+                "logger",
+                "permissionsService",
+                "themingDefaults",
+                "userHelper",
+                "userId"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\ValueObject\\Emoji": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "emoji"
+                ],
+                "__toString": []
+            },
+            "types": {
+                "__construct": [
+                    "string"
+                ],
+                "__toString": []
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "emoji"
+            ],
+            "external": [
+                "Stringable"
+            ]
+        },
+        "OCA\\Tables\\Service\\ValueObject\\ShareCreate": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "nodeId",
+                    "nodeType",
+                    "receiver",
+                    "receiverType",
+                    "permissionRead",
+                    "permissionCreate",
+                    "permissionUpdate",
+                    "permissionDelete",
+                    "permissionManage",
+                    "displayMode",
+                    "password?",
+                    "shareToken?"
+                ],
+                "getDisplayMode": [],
+                "getNodeId": [],
+                "getNodeType": [],
+                "getPassword": [],
+                "getPermissionCreate": [],
+                "getPermissionDelete": [],
+                "getPermissionManage": [],
+                "getPermissionRead": [],
+                "getPermissionUpdate": [],
+                "getReceiver": [],
+                "getReceiverType": [],
+                "getShareToken": [],
+                "setShareToken": [
+                    "token"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "int",
+                    "string",
+                    "string",
+                    "string",
+                    "bool",
+                    "bool",
+                    "bool",
+                    "bool",
+                    "bool",
+                    "int",
+                    "?string",
+                    "?OCA\\Tables\\Service\\ValueObject\\ShareToken"
+                ],
+                "getDisplayMode": [],
+                "getNodeId": [],
+                "getNodeType": [],
+                "getPassword": [],
+                "getPermissionCreate": [],
+                "getPermissionDelete": [],
+                "getPermissionManage": [],
+                "getPermissionRead": [],
+                "getPermissionUpdate": [],
+                "getReceiver": [],
+                "getReceiverType": [],
+                "getShareToken": [],
+                "setShareToken": [
+                    "OCA\\Tables\\Service\\ValueObject\\ShareToken"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [],
+            "external": []
+        },
+        "OCA\\Tables\\Service\\ValueObject\\Title": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "title"
+                ],
+                "__toString": []
+            },
+            "types": {
+                "__construct": [
+                    "string"
+                ],
+                "__toString": []
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "title"
+            ],
+            "external": [
+                "Stringable"
+            ]
+        },
+        "OCA\\Tables\\Service\\ValueObject\\ViewColumnInformation": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "columnId",
+                    "order",
+                    "readonly?",
+                    "mandatory?"
+                ],
+                "fromArray": [
+                    "data"
+                ],
+                "getId": [],
+                "getOrder": [],
+                "isMandatory": [],
+                "isReadonly": [],
+                "jsonSerialize": [],
+                "offsetExists": [
+                    "offset"
+                ],
+                "offsetGet": [
+                    "offset"
+                ],
+                "offsetSet": [
+                    "offset",
+                    "value"
+                ],
+                "offsetUnset": [
+                    "offset"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "int",
+                    "int",
+                    "bool",
+                    "bool"
+                ],
+                "fromArray": [
+                    "array"
+                ],
+                "getId": [],
+                "getOrder": [],
+                "isMandatory": [],
+                "isReadonly": [],
+                "jsonSerialize": [],
+                "offsetExists": [
+                    "mixed"
+                ],
+                "offsetGet": [
+                    "mixed"
+                ],
+                "offsetSet": [
+                    "mixed",
+                    "mixed"
+                ],
+                "offsetUnset": [
+                    "mixed"
+                ]
+            },
+            "constants": [
+                "KEY_ID",
+                "KEY_MANDATORY",
+                "KEY_ORDER",
+                "KEY_READONLY"
+            ],
+            "properties": [],
+            "fields": [
+                "data"
+            ],
+            "external": [
+                "ArrayAccess",
+                "JsonSerializable"
+            ]
+        },
+        "OCA\\Tables\\Service\\ViewService": {
+            "kind": "class",
+            "methods": {
+                "__construct": [
+                    "permissionsService",
+                    "logger",
+                    "userId",
+                    "mapper",
+                    "shareService",
+                    "rowService",
+                    "userHelper",
+                    "favoritesService",
+                    "eventDispatcher",
+                    "contextService",
+                    "l",
+                    "federationService",
+                    "activityManager",
+                    "auditLogService"
+                ],
+                "addColumnToView": [
+                    "view",
+                    "column",
+                    "userId?"
+                ],
+                "create": [
+                    "title",
+                    "emoji",
+                    "table",
+                    "userId?",
+                    "technicalName?",
+                    "uuid?",
+                    "layout?"
+                ],
+                "delete": [
+                    "id",
+                    "userId?"
+                ],
+                "deleteAllByTable": [
+                    "table",
+                    "userId?"
+                ],
+                "deleteByObject": [
+                    "view",
+                    "userId?"
+                ],
+                "deleteColumnDataFromViews": [
+                    "columnId",
+                    "table"
+                ],
+                "find": [
+                    "id",
+                    "skipEnhancement?",
+                    "userId?"
+                ],
+                "findAll": [
+                    "table",
+                    "userId?"
+                ],
+                "findSharedViewsWithMe": [
+                    "userId?"
+                ],
+                "formatViews": [
+                    "items"
+                ],
+                "importView": [
+                    "tableId",
+                    "view",
+                    "userId"
+                ],
+                "search": [
+                    "term",
+                    "limit?",
+                    "offset?",
+                    "userId?"
+                ],
+                "setPublicContext": [],
+                "update": [
+                    "id",
+                    "data",
+                    "userId?",
+                    "skipTableEnhancement?"
+                ]
+            },
+            "types": {
+                "__construct": [
+                    "OCA\\Tables\\Service\\PermissionsService",
+                    "Psr\\Log\\LoggerInterface",
+                    "?string",
+                    "OCA\\Tables\\Db\\ViewMapper",
+                    "OCA\\Tables\\Service\\ShareService",
+                    "OCA\\Tables\\Service\\RowService",
+                    "OCA\\Tables\\Helper\\UserHelper",
+                    "OCA\\Tables\\Service\\FavoritesService",
+                    "OCP\\EventDispatcher\\IEventDispatcher",
+                    "OCA\\Tables\\Service\\ContextService",
+                    "OCP\\IL10N",
+                    "OCA\\Tables\\Service\\FederationService",
+                    "OCA\\Tables\\Activity\\ActivityManager",
+                    "OCA\\Tables\\Service\\Support\\AuditLogServiceInterface"
+                ],
+                "addColumnToView": [
+                    "OCA\\Tables\\Db\\View",
+                    "OCA\\Tables\\Db\\Column",
+                    "?string"
+                ],
+                "create": [
+                    "string",
+                    "?string",
+                    "OCA\\Tables\\Db\\Table",
+                    "?string",
+                    "?string",
+                    "?string",
+                    "?string"
+                ],
+                "delete": [
+                    "int",
+                    "?string"
+                ],
+                "deleteAllByTable": [
+                    "OCA\\Tables\\Db\\Table",
+                    "?string"
+                ],
+                "deleteByObject": [
+                    "OCA\\Tables\\Db\\View",
+                    "?string"
+                ],
+                "deleteColumnDataFromViews": [
+                    "int",
+                    "OCA\\Tables\\Db\\Table"
+                ],
+                "find": [
+                    "int",
+                    "bool",
+                    "?string"
+                ],
+                "findAll": [
+                    "OCA\\Tables\\Db\\Table",
+                    "?string"
+                ],
+                "findSharedViewsWithMe": [
+                    "?string"
+                ],
+                "formatViews": [
+                    "array"
+                ],
+                "importView": [
+                    "int",
+                    "array",
+                    "string"
+                ],
+                "search": [
+                    "string",
+                    "int",
+                    "int",
+                    "?string"
+                ],
+                "setPublicContext": [],
+                "update": [
+                    "int",
+                    "OCA\\Tables\\Model\\ViewUpdateInput",
+                    "?string",
+                    "bool"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [
+                "eventDispatcher",
+                "favoritesService",
+                "isPublicContext",
+                "l",
+                "logger",
+                "permissionsService",
+                "userHelper",
+                "userId"
+            ],
+            "external": []
+        },
+        "OCA\\Tables\\Validation\\ColumnDtoValidator": {
+            "kind": "class",
+            "methods": {
+                "validate": [
+                    "columnDto",
+                    "requiresTitle?"
+                ]
+            },
+            "types": {
+                "validate": [
+                    "OCA\\Tables\\Dto\\Column",
+                    "bool"
+                ]
+            },
+            "constants": [],
+            "properties": [],
+            "fields": [],
+            "external": []
+        }
+    },
+    "files": {
+        "AppInfo/Application.php": "81fa99bbc347787852174fb2483239e5baa2948dd7209c379fe07b91969922c3",
+        "Constants/ViewLayout.php": "33f4b21b4d30d2e4dc53582e141930170c671b39144a2070711944e3688881f1",
+        "Db/Column.php": "6e0cc11361c06047d075ddc7aff1186d414f73ea99173230b7758c8e653011db",
+        "Db/ColumnMapper.php": "b9944069d35452c84d0543ff882688f68240a7529066e74b8d243fbda2841e9a",
+        "Db/Context.php": "7b75540c2bb97a38fb7ea102056f933473c5ade3a8bc412ef44722520fcab927",
+        "Db/ContextMapper.php": "8384a5af55ef045fc50588534afc6c949f6606c598d3a173e39215fa9c5139e5",
+        "Db/Row2.php": "67e7a8d0d092affa2953901a251cbad9a9bf408e7e29266aca68920d820a1096",
+        "Db/Row2Mapper.php": "c668a86f92b253abb29c4c0f7a830e2dd8d5dde627449beae2cab3878fc51113",
+        "Db/Share.php": "e931d68b4715252d243f65f4abbfa7141a0a6d22858d139f5e16f9f1b8971ee0",
+        "Db/ShareMapper.php": "4cd060aea5bb673d7897881c0bb2ad9639fb71a36729b8567c4be465498eff9f",
+        "Db/Table.php": "28ac9078857cf87c61a779e5e9af01650244df55e05a8688d0b97bf1e8ab4bd1",
+        "Db/TableMapper.php": "d0876a500448bd808e2a614f4e8e0260eaa10b2f063dbc11d6f5cca86be1d397",
+        "Db/View.php": "0173c616eca7fd857c6158aa538eaa9df0265da726c6f190145e9e98e61cdca7",
+        "Db/ViewMapper.php": "6eeca9d8a034214488f2b461bb1d995d3b5a7e58b95c76af0e0220e1478ebc00",
+        "Dto/Column.php": "c252f253811de9f0f12192a3f4aef88879c1ce8552147835cc5dd350f10032f3",
+        "Errors/NotFoundError.php": "aebf00d9e868c72912315cf9cd66deadeea34725c4338024c266267e3e70fd70",
+        "Errors/PermissionError.php": "9a5a89e7688dd61679f274eca3a0b97bc5f084595d659d8177eb746b91baeac4",
+        "Helper/CircleHelper.php": "9f86c7db6f4868dfc809af8fffe846d21ea95308c6f4ea4519cc4022bff3f5fa",
+        "Helper/ColumnsHelper.php": "31acac25e160c3af7f536fb9067a610dd87ac918600646489897f896b77bc507",
+        "Model/ColumnSettings.php": "512315d1cd018e874da6720bbca0d1d2f4fc4e0df4d39543a459f53f6befb3e3",
+        "Model/FilterSet.php": "3ae9eeb662787085e3de9dad874417f1a6efea6819208bb04caf1b9438a127f8",
+        "Model/SortRuleSet.php": "d8265f760e5a196387154a9ac4916e620e301366610711705949fe02d7d498cf",
+        "Model/ViewSettings.php": "e1c71504b0cfe5766eb4c8a3e612e6cc73c0a9b7ff47133855bf545c47b037d8",
+        "Model/ViewUpdateInput.php": "72b774fb6f5999910363a7650777710c6eea052c1778b80b64d98bf2baf24bf0",
+        "Service/ColumnService.php": "adf5dce02dbcf10a808e5a09bb92806f6a2b1b66b799c18b7ef562ab5184cb3a",
+        "Service/ColumnTypes/DatetimeBusiness.php": "ab25d9e6f89be46a05213bc01543c4aa400e6c4e970f3a8bff50f80586aadc7e",
+        "Service/ColumnTypes/DatetimeDateBusiness.php": "1695df630d9ddae40f4fd5f5d455b920323d76d3a1e1d768f8212ba27fae573e",
+        "Service/ColumnTypes/DatetimeTimeBusiness.php": "7e12fb375599878de9178c92893868456678b9c75332aa0ec29c6df2fe27177c",
+        "Service/ColumnTypes/IColumnTypeBusiness.php": "4593a4da6825c65257a222c5621091d3d8e570f72b3ed1616e1d456b94563ea1",
+        "Service/ColumnTypes/NumberBusiness.php": "90b41f1cd635e641d4590214a5279ebd12b0d96794407a16e9b870c901fae296",
+        "Service/ColumnTypes/NumberProgressBusiness.php": "1507d79b91e9202066ef6a4120dd741961bed36fc196b31042d2a0bd354d5d61",
+        "Service/ColumnTypes/NumberStarsBusiness.php": "63b34032ea78b33096ea53d79948d731a9eb63753bf0ea95d2340bc22859e7a9",
+        "Service/ColumnTypes/RelationBusiness.php": "c1a4ec52a8505947b3fe79266b66cdab262e15d9e4fc70d25c8393860d165504",
+        "Service/ColumnTypes/SelectionBusiness.php": "4dd882579e6a884896793e5aa8ede21a5f53e6a1f56dc8ed067129bd33b9afac",
+        "Service/ColumnTypes/SelectionCheckBusiness.php": "58edb5307c8b79f5543e5b1ed14e5ea6e3ceec1c7d4baec8f4973794bb6446a3",
+        "Service/ColumnTypes/SelectionMultiBusiness.php": "482d59c39beb4da2c0d183544da98241785424150a9ccadd2f28f22700033bbd",
+        "Service/ColumnTypes/SuperBusiness.php": "c4ef6393e131d63845fb989b00b299820af6d9003eaab35aca3c9fd69f839782",
+        "Service/ColumnTypes/TextLineBusiness.php": "c5d695e26c12e64a65cf7a431aa62103fae4fbfeb24ae9d2b0f2438a53ceab68",
+        "Service/ColumnTypes/TextLinkBusiness.php": "a78790be41c58cd963dd0a0a782b8ac46b6fdd53cb97cb81434ac8459f4510d9",
+        "Service/ColumnTypes/TextLongBusiness.php": "04f89c77946b61a2dd14d4b9221dbfcb1c41ed59cd234341cff10e290cdee382",
+        "Service/ColumnTypes/TextRichBusiness.php": "e955205c4b40467fe025c367fb4f514bdcf26c53d812657177009818b4f39cc2",
+        "Service/ColumnTypes/UsergroupBusiness.php": "8770257483b05612dcf03dc503f40d1d27844977f12235e215516494ec69b409",
+        "Service/ContextService.php": "897c19e635bb0a7cc7f744b8ad2f8f08e27bca7a1785d0710c31a2ee1af640c7",
+        "Service/PermissionsService.php": "cae29a5bf0ed220b290bc141d07443d49bc66d228626a82001919b0a5593c204",
+        "Service/RowService.php": "2b3f3f5abf0fee58545ac1a24422d58f4d127edc8c98d52f0e75d6bf4f1f2786",
+        "Service/ShareService.php": "94a9db429795e0b35e2a0c97dbaa4cacff7b542776a52606dffba9a300f0803c",
+        "Service/TableService.php": "8939767788c2074f369dff4d2cfb5ac1a6360b6d0107eeb7fe687988a8bfd14d",
+        "Service/ValueObject/Emoji.php": "87e0ddd09670b771526a974dcfc098acae877b0c2f0047b645fe467ef19c1481",
+        "Service/ValueObject/ShareCreate.php": "fc02dea336b4b7b5c9c5e8f80868d7f591a1173242a47e00eec823766b6140e3",
+        "Service/ValueObject/Title.php": "0215ba23aabd2c677268448755b403d67c5f7960b397b24f867c1e530ba02c91",
+        "Service/ValueObject/ViewColumnInformation.php": "86be7c1770a8dd346a671f7ea881c203f98f421ef0b664965a3cc9c278941e01",
+        "Service/ViewService.php": "320415add85939f39b8c817fd24d08274dc82f5a3b99c411b850da5596f8d64c",
+        "Validation/ColumnDtoValidator.php": "9b51b5d410d000e1ac1023ba8a9e009caa2bdfacb6418ee0f9ee7541e1781d1f"
+    },
+    "identicalRowSources": {
+        "Service/RowService.php": "2b3f3f5abf0fee58545ac1a24422d58f4d127edc8c98d52f0e75d6bf4f1f2786",
+        "Db/Row2Mapper.php": "c668a86f92b253abb29c4c0f7a830e2dd8d5dde627449beae2cab3878fc51113",
+        "Db/RowCellNumberMapper.php": "343b31acf720a91cdabd8b7afce36d5c33b6481378cd78d0eca6c6ce4a750065",
+        "Db/RowCellSelectionMapper.php": "5f00921671646d6f6d8149879f6ae593de11e19162ef32a507fded5384f2d799",
+        "Helper/ColumnsHelper.php": "31acac25e160c3af7f536fb9067a610dd87ac918600646489897f896b77bc507",
+        "Service/ColumnTypes/DatetimeBusiness.php": "ab25d9e6f89be46a05213bc01543c4aa400e6c4e970f3a8bff50f80586aadc7e",
+        "Service/ColumnTypes/DatetimeDateBusiness.php": "1695df630d9ddae40f4fd5f5d455b920323d76d3a1e1d768f8212ba27fae573e",
+        "Service/ColumnTypes/DatetimeTimeBusiness.php": "7e12fb375599878de9178c92893868456678b9c75332aa0ec29c6df2fe27177c",
+        "Service/ColumnTypes/IColumnTypeBusiness.php": "4593a4da6825c65257a222c5621091d3d8e570f72b3ed1616e1d456b94563ea1",
+        "Service/ColumnTypes/NumberBusiness.php": "90b41f1cd635e641d4590214a5279ebd12b0d96794407a16e9b870c901fae296",
+        "Service/ColumnTypes/NumberProgressBusiness.php": "1507d79b91e9202066ef6a4120dd741961bed36fc196b31042d2a0bd354d5d61",
+        "Service/ColumnTypes/NumberStarsBusiness.php": "63b34032ea78b33096ea53d79948d731a9eb63753bf0ea95d2340bc22859e7a9",
+        "Service/ColumnTypes/RelationBusiness.php": "c1a4ec52a8505947b3fe79266b66cdab262e15d9e4fc70d25c8393860d165504",
+        "Service/ColumnTypes/SelectionBusiness.php": "4dd882579e6a884896793e5aa8ede21a5f53e6a1f56dc8ed067129bd33b9afac",
+        "Service/ColumnTypes/SelectionCheckBusiness.php": "58edb5307c8b79f5543e5b1ed14e5ea6e3ceec1c7d4baec8f4973794bb6446a3",
+        "Service/ColumnTypes/SelectionMultiBusiness.php": "482d59c39beb4da2c0d183544da98241785424150a9ccadd2f28f22700033bbd",
+        "Service/ColumnTypes/SuperBusiness.php": "c4ef6393e131d63845fb989b00b299820af6d9003eaab35aca3c9fd69f839782",
+        "Service/ColumnTypes/TextLineBusiness.php": "c5d695e26c12e64a65cf7a431aa62103fae4fbfeb24ae9d2b0f2438a53ceab68",
+        "Service/ColumnTypes/TextLinkBusiness.php": "a78790be41c58cd963dd0a0a782b8ac46b6fdd53cb97cb81434ac8459f4510d9",
+        "Service/ColumnTypes/TextLongBusiness.php": "04f89c77946b61a2dd14d4b9221dbfcb1c41ed59cd234341cff10e290cdee382",
+        "Service/ColumnTypes/TextRichBusiness.php": "e955205c4b40467fe025c367fb4f514bdcf26c53d812657177009818b4f39cc2",
+        "Service/ColumnTypes/UsergroupBusiness.php": "8770257483b05612dcf03dc503f40d1d27844977f12235e215516494ec69b409"
+    },
+    "rowWrite": {
+        "referenceVersion": "2.3.2",
+        "referenceArchiveSha256": "29953270010587fc8c0a95cfaba7b167adafb93d2f1a0a5a89e42f2d2be1cf28",
+        "facts": {
+            "checkParse": {
+                "positiveOnly": true,
+                "givesTrueOrFalse": true,
+                "acceptsNull": true
+            },
+            "starsParseCastsToInt": true,
+            "progressParseCastsToInt": true,
+            "singleParse": "string",
+            "multiParse": {
+                "nullIsEmpty": true,
+                "sorts": true
+            },
+            "usergroupParseNullIsEmpty": true,
+            "usergroupValidatesTeamsForTheCaller": true,
+            "numberParseNullIsEmpty": true,
+            "linkParse": {
+                "titlePatternBeforeJson": true,
+                "keepsCompleteJson": true,
+                "checksProviders": true
+            },
+            "relationReadsTargetFirst": {
+                "parse": true,
+                "validateSkipsNull": true
+            },
+            "create": {
+                "validatesBeforeEnhancing": true,
+                "eventsAfterInsert": true
+            },
+            "enhancer": {
+                "operators": true,
+                "skipsVisible": true,
+                "firstMatchWins": true
+            },
+            "updateSet": {
+                "readsAndUpdates": true,
+                "eventAfterUpdate": true
+            },
+            "insertWithoutTransaction": true,
+            "updateWithoutTransaction": true,
+            "numberLimits": {
+                "applied": true,
+                "everySubtype": true
+            },
+            "mappers": {
+                "numberFloats": true,
+                "numberNullStaysEmpty": true,
+                "singleKeepsRaw": true
+            }
+        }
+    }
+}

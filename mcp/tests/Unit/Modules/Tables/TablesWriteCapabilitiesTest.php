@@ -18,7 +18,7 @@ final class TablesWriteCapabilitiesTest extends TestCase {
 	/** @return void Every supported range is bounded; unproved families/prereleases remain hidden. */
 	public function testVersionBoundaries(): void {
 		foreach ([['1.0.10',32,true],['1.0.9',32,false],['1.0.11',32,false],['1.0.10',33,false],['2.2.2',33,true],['2.2.3',35,false],
-			['2.3.0',35,false],['2.3.1',35,true],['2.3.2',35,true],['2.3.3',35,false],['2.4.0',35,false],['2.3.2',36,false],['2.3.2-rc.1',35,false],['2.0.0',34,false],['1.0.0',32,false]] as [$version,$major,$allowed]) {
+			['2.3.0',35,false],['2.3.1',35,true],['2.3.2',35,true],['2.3.3',35,false],['2.4.0',35,true],['2.4.0',33,true],['2.4.0',34,true],['2.4.0',32,false],['2.4.0',36,false],['2.4.1',35,false],['2.4.0-rc.1',35,false],['2.3.2',36,false],['2.3.2-rc.1',35,false],['2.0.0',34,false],['1.0.0',32,false]] as [$version,$major,$allowed]) {
 			$probe = $this->probe($version, $major);
 			$this->assertSame($allowed, $probe->supports('tables.native_schema_api'), $version . '/' . $major);
 		}
@@ -26,7 +26,7 @@ final class TablesWriteCapabilitiesTest extends TestCase {
 	}
 	/** @return void No individual missing native member is silently accepted. */
 	public function testEachConsumedMemberIsRequired(): void {
-		foreach (['1.0.10' => 32, '2.2.2' => 34, '2.3.2' => 35] as $profile => $major) {
+		foreach (['1.0.10' => 32, '2.2.2' => 34, '2.3.2' => 35, '2.4.0' => 35] as $profile => $major) {
 			$members = SchemaApiShape::members($profile);
 			foreach ($members as $missing) {
 				$key = str_contains($missing[0], 'Share') ? 'tables.native_sharing_api' : 'tables.native_schema_api';

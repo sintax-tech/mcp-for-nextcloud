@@ -424,3 +424,13 @@ The default Colima profile is shared and is always left running. Artifacts and c
 The issue #26 automation control is a real local Database account whose random creation password is discarded, absent from the browser-login fixture. It is assigned/unassigned as a recipient and also writes through an OAuth Bearer credential only; no interactive login is performed. The test records its actual backend and checks last-login zero before issuing the credential. This models credential-only automation usage, not a specialized service-account backend or the reporter’s unspecified account provisioning. That backend distinction remains outside the proof.
 
 CardStatusPersistenceTest also rereads the persisted native activity stream in a new process for the other board member after each transition. Both pinned Deck versions must emit exactly one card_update_done, card_update_archive, card_update_unarchive and card_update_undone for the corresponding confirmed call, with the actual actor/card/affected account. A no-op must add no activity. This is a read-only DB oracle of native publication, not a claim of push delivery.
+
+### Additional Tables 2.4.0 source pin
+
+The default Tables pins stay unchanged. To exercise the independently supported 2.4.0 profile, download the official `tables-v2.4.0.tar.gz` release and run a separate NC35 cell (after obtaining the shared engine slot):
+
+```sh
+MCP_IT_WITH_TABLES=1 MCP_IT_TABLES_ARCHIVE=/absolute/path/tables-v2.4.0.tar.gz   sh mcp/tests/Integration/ci/run-local.sh 35 mariadb fresh
+```
+
+The archive is copied to the disposable harness tools directory and must match SHA256 `47847b64ee65a58afd2a8ac3f943c53128a927a1b321ed94c4a322daa6b5eb99` before extraction. NC32/33/34 refuse this opt-in; the app profile itself is supported on NC33–35, while this additional runtime proof deliberately uses NC35. `test-env` reports 2.4.0, so the same discovery/read/row/schema/share scenarios run with the correct independent parser expectation. The schema HTTP scenario additionally configures gallery/card sources through native Tables, refuses source-removing MCP column patches without any database change, and confirms an allowed rename while preserving layout/cards in native readback. No user-instance data is used.

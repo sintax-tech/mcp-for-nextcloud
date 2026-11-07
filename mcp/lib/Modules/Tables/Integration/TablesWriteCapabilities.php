@@ -24,14 +24,7 @@ class TablesWriteCapabilities implements CapabilityProbe {
 	public function keys(): array { return ['tables.native_schema_api', 'tables.native_sharing_api']; }
 	/** @return string|null Native family proven by source comparisons; unknown/prerelease versions stay closed. */
 	public function profile(): ?string {
-		$version = (string)$this->apps->getAppVersion('tables');
-		$major = $this->major ?? (int)Util::getVersion()[0];
-		if (!preg_match('/^\d+\.\d+\.\d+$/D', $version) || !in_array($major, [32, 33, 34, 35], true)) return null;
-		foreach ([['1.0.10', '1.0.11', [32], '1.0.10'], ['2.2.2', '2.2.3', [33, 34, 35], '2.2.2'], ['2.3.1', '2.3.3', [33, 34, 35], '2.3.2']] as [$min, $max, $majors, $profile]) {
-			if (in_array($major, $majors, true) && version_compare($version, $min, '>=') && version_compare($version, $max, '<')) return $profile;
-		}
-		// Positional 1.0.0 / 2.0.0 adapters require supplemental runtime proof before enabling a range.
-		return null;
+		return SchemaVersionFamily::of((string)$this->apps->getAppVersion('tables'), $this->major ?? (int)Util::getVersion()[0]);
 	}
 	/**
 	 * @param string $key Known capability key.
@@ -45,7 +38,7 @@ class TablesWriteCapabilities implements CapabilityProbe {
 		if ($members === []) return false;
 		foreach ($members as $entry) {
 			$isShare = str_contains($entry[0], 'Share');
-			$common = str_contains($entry[0], 'PermissionsService') || in_array($entry[0], [
+			$common = SchemaViewShape::common($entry[0]) || str_contains($entry[0], 'PermissionsService') || in_array($entry[0], [
 				'OCA\\Tables\\Db\\Table', 'OCA\\Tables\\Db\\View', 'OCA\\Tables\\Db\\TableMapper', 'OCA\\Tables\\Db\\ViewMapper', 'OCA\\Tables\\Db\\ContextMapper'], true);
 			if ($key === 'tables.native_schema_api' && $isShare) continue;
 			if ($key === 'tables.native_sharing_api' && !$isShare && !$common) continue;

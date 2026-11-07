@@ -57,7 +57,7 @@ class SchemaColumnInput {
 			if (array_key_exists($key, $native) && $native[$key] !== null && !is_string($native[$key])) $native[$key] = json_encode($native[$key], JSON_THROW_ON_ERROR);
 		}
 		foreach ($changes['options'] ?? [] as $option) if (($option['name'] ?? '') === 'selectionDefault' && $option['value'] === null) $native['selectionDefault'] = 'null';
-		if ($current !== null && $profile === '2.3.2' && (isset($native['selectionDefault']) || isset($native['selectionOptions']))) {
+		if ($current !== null && SchemaVersionFamily::modernDto($profile) && (isset($native['selectionDefault']) || isset($native['selectionOptions']))) {
 			// Always send both halves so native normalization cannot drop preserved choices/defaults.
 			$native['selectionOptions'] = json_encode($data['selectionOptions'] ?? [], JSON_THROW_ON_ERROR);
 			$native['selectionDefault'] = json_encode($data['selectionDefault'] ?? null, JSON_THROW_ON_ERROR);

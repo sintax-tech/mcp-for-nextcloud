@@ -33,4 +33,6 @@ final class SchemaMessages {
 	public static function filterGroups(): string { return Translator::t('Rules within a filter group use AND; filter groups use OR. Existing relation references are preserved without editing.'); }
 	/** @return string Typed request rule without client data. */
 	public static function invalidRule(): string { return Translator::t('Use the declared Tables schema and a value supported by this column and API.'); }
+	/** @return string Why a column selection cannot implicitly erase existing card sources. */
+	public static function cardSourcePreservation(): string { return Translator::t("This change would clear the view's card title/background source; keep that column selected, or omit view_ids for a view that shows all columns."); }
 }

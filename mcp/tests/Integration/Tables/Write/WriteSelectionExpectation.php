@@ -17,8 +17,8 @@ final class WriteSelectionExpectation {
 	 * @return int|string Exact PHP type produced by that pin's parser, before database access.
 	 */
 	public static function parsedId(string $version, int $id): int|string {
-		$fixture = json_decode(file_get_contents(dirname(__DIR__, 3) . '/fixtures/nextcloud-api/tables/tables-write.json'), true, 512, JSON_THROW_ON_ERROR);
-		return match ($fixture['versions'][$version]['singleParse'] ?? null) {
+		$fixture = WriteParserPin::facts($version);
+		return match ($fixture['singleParse'] ?? null) {
 			'string' => (string)$id,
 			'integer' => $id,
 			default => throw new RuntimeException('Unproven Tables pin for the single-selection parser expectation'),

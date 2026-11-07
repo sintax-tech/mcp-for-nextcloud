@@ -14,8 +14,8 @@ use PHPUnit\Framework\TestCase;
 
 /** Executes the real upstream DTO/model sources, isolated by pinned release. No network or containers. */
 final class NativeFactoriesTest extends TestCase {
-	/** @return iterable<string,array> Five source pins, including the disabled positional families. */
-	public static function pins(): iterable { foreach (['1.0.0', '1.0.10', '2.0.0', '2.2.2', '2.3.2'] as $v) yield $v => [$v]; }
+	/** @return iterable<string,array> Six source pins, including the disabled positional families. */
+	public static function pins(): iterable { foreach (['1.0.0', '1.0.10', '2.0.0', '2.2.2', '2.3.2', '2.4.0'] as $v) yield $v => [$v]; }
 	/**
 	 * @param string $pin Official source pin.
 	 * @return void
@@ -63,7 +63,7 @@ final class NativeFactoriesTest extends TestCase {
 		$this->assertSame(1.0, $result['dto']->getNumberMin());
 		$this->assertNull($result['dto']->getType());
 		$this->assertNull($result['dto']->getSubtype());
-		if (in_array($pin, ['1.0.10', '2.2.2', '2.3.2'], true)) {
+		if (in_array($pin, ['1.0.10', '2.2.2', '2.3.2', '2.4.0'], true)) {
 			$team = ['title' => 'Team', 'type' => 'usergroup', 'subtype' => '', 'options' => [
 				['name' => 'usergroupDefault', 'value' => [['id' => 'team-1', 'type' => 2]]], ['name' => 'usergroupSelectTeams', 'value' => true]]];
 			try { $factory->of($team, null, 'alice', $pin); $this->fail('Ineligible team accepted'); }
@@ -71,7 +71,7 @@ final class NativeFactoriesTest extends TestCase {
 			$circles->allowed = true; $allowed = $factory->of($team, null, 'alice', $pin);
 			$this->assertSame([['id' => 'team-1', 'type' => 2]], json_decode($allowed['dto']->getUsergroupDefault(), true));
 		}
-		if (in_array($pin, ['1.0.10', '2.2.2', '2.3.2'], true)) {
+		if (in_array($pin, ['1.0.10', '2.2.2', '2.3.2', '2.4.0'], true)) {
 			$text = ['title' => 'Old', 'type' => 'text', 'subtype' => 'line', 'textMaxLength' => -1];
 			if ($pin === '1.0.10') {
 				$this->assertSame(-1, $factory->of(['title' => 'Changed'], $text, 'alice', $pin)['dto']->getTextMaxLength());
@@ -105,7 +105,7 @@ final class NativeFactoriesTest extends TestCase {
 			$this->assertCount(3, $detail);
 			foreach ($detail as $value) $this->assertSame([], $value->jsonSerialize());
 			$description = SchemaViewInput::of(['description' => '0'], $pin);
-			$this->assertSame($pin === '2.3.2' ? 1 : 0, iterator_count($description->updateDetail()));
+			$this->assertSame(in_array($pin, ['2.3.2', '2.4.0'], true) ? 1 : 0, iterator_count($description->updateDetail()));
 		}
 	}
 }

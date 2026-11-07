@@ -21,7 +21,7 @@ final class SchemaSnapshot {
 		}
 		$keys = ['id', 'tableId', 'title', 'description', 'emoji'];
 		if ($kind === 'table') $keys[] = 'archived';
-		if ($kind === 'view') $keys = [...$keys, 'columns', 'columnSettings', 'filter', 'sort'];
+		if ($kind === 'view') $keys = SchemaViewSnapshot::keys($keys);
 		if ($kind === 'column') {
 			$keys = [...$keys, 'type', 'subtype', 'mandatory'];
 			foreach (ColumnOptions::TYPE_FIELDS[$data['type'] ?? ''] ?? [] as $field) $keys[] = $field;

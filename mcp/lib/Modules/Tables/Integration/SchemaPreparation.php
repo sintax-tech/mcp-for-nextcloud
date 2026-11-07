@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Tables\Integration;
 
 use OCA\Mcp\Modules\Tables\Writing\SchemaViewChanges;
+use OCA\Mcp\Modules\Tables\Writing\SchemaViewPreservation;
 use OCA\Mcp\Modules\Tables\Sharing\ShareChanges;
 use OCA\Mcp\Modules\Tables\Presentation\SchemaSnapshot;
 
@@ -71,7 +72,7 @@ class SchemaPreparation {
 		$p['views'] = [];
 		foreach ($a['view_ids'] ?? [] as $viewId) {
 			$view = $this->reader->target('view', $viewId, $uid, $a['table_id']);
-			$p['views'][$viewId] = SchemaSnapshot::of((array)$view->jsonSerialize(), 'view');
+			$p['views'][$viewId] = SchemaViewPreservation::columnAdded(SchemaSnapshot::of((array)$view->jsonSerialize(), 'view'), $profile);
 		}
 		$column = $this->columns->of($changes, $create ? null : $before, $uid, $profile);
 		$p['rewrittenFields'] = $column['rewrittenFields'];

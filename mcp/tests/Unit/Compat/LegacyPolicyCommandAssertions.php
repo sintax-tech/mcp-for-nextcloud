@@ -41,6 +41,23 @@ final class LegacyPolicyCommandAssertions {
 		Assert::assertSame(1, $status);
 		Assert::assertSame('', $stdout);
 		Assert::assertStringContainsString('RuntimeException: Seed reached installed baseline', $stderr);
+		$destination = tempnam(sys_get_temp_dir(), 'mcp-it-snapshot-write-');
+		if ($destination === false) {
+			throw new RuntimeException('Cannot allocate the snapshot write proof');
+		}
+		try {
+			$snapshot = ['source' => 'historical-baseline', 'raw' => []];
+			LegacyPolicyCommand::write($destination, $snapshot);
+			Assert::assertSame($snapshot, json_decode((string)file_get_contents($destination), true, 512, JSON_THROW_ON_ERROR));
+			// A regular file cannot be a parent directory: this deterministically forces file_put_contents to fail.
+			[$status, , $stderr] = self::process($boot
+				. '\\OCA\\Mcp\\Tests\\Integration\\Compat\\LegacyPolicyCommand::write('
+				. var_export($destination . '/snapshot.json', true) . ', []);');
+			Assert::assertSame(1, $status, 'A failed checkpoint write must fail the CLI process');
+			Assert::assertStringContainsString('RuntimeException: Cannot write the legacy policy snapshot', $stderr);
+		} finally {
+			unlink($destination);
+		}
 	}
 
 	/**

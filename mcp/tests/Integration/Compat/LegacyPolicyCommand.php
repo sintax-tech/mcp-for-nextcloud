@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Compat;
 
 use InvalidArgumentException;
+use RuntimeException;
 use Throwable;
 
 /** Keeps the historical read process separate from installed-release seeding and fails closed after core bootstrap. */
@@ -32,5 +33,17 @@ final class LegacyPolicyCommand {
 		}
 		require_once __DIR__ . '/ReleaseUpgradeProbe.php';
 		ReleaseUpgradeProbe::checkpoint('policy', $output);
+	}
+
+	/**
+	 * @param string $output Private checkpoint destination.
+	 * @param array<string,mixed> $snapshot Exact historical policy observations.
+	 * @return void Serialize strictly and require a successful write before reporting completion.
+	 * @throws RuntimeException when the checkpoint cannot be written
+	 */
+	public static function write(string $output, array $snapshot): void {
+		if (file_put_contents($output, json_encode($snapshot, JSON_THROW_ON_ERROR)) === false) {
+			throw new RuntimeException('Cannot write the legacy policy snapshot');
+		}
 	}
 }

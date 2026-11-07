@@ -131,5 +131,5 @@ if ($mode === 'read') {
 	sort($loaded);
 	$result += ['boot' => $boot, 'loaded' => $loaded];
 }
-file_put_contents($output, json_encode($result, JSON_THROW_ON_ERROR));
+\OCA\Mcp\Tests\Integration\Compat\LegacyPolicyCommand::write($output, $result);
 echo "Legacy policy snapshot ($mode) of ", count($uids), ' users from ', $source, PHP_EOL;

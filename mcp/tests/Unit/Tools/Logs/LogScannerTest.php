@@ -136,6 +136,15 @@ final class LogScannerTest extends TestCase {
 		$this->assertNull($window['nextOffset']);
 	}
 
+	/** @return void An unset loglevel uses the official warning threshold, rather than admitting debug entries. */
+	public function testTheDefaultLogLevelIsWarning(): void {
+		$config = $this->createMock(\OCP\IConfig::class);
+		$config->expects(self::once())->method('getSystemValueInt')->with('loglevel', 2)
+			->willReturnCallback(static fn (string $key, int $default): int => $default);
+		$reader = new LogReader($this->createMock(ILogFactory::class), $config);
+		self::assertSame(2, $reader->minimumLevel());
+	}
+
 	/** syslog, errorlog and systemd writers keep no file to read back. */
 	public function testAWriterWithoutAFileIsARefusal(): void {
 		$this->expectException(ToolFailure::class);

@@ -10,15 +10,11 @@ namespace OCA\Mcp\Tests\Unit\Tools\Logs;
 use OCP\Log\IFileBased;
 use OCP\Log\IWriter;
 
-/**
- * The file writer of the core as getEntries() behaves in stable33 (lib/private/Log/File.php): lines read from the
- * end, each decoded with json_decode, kept when its level is at or above the `loglevel` setting, `offset` of those
- * skipped and at most `limit` returned. A malformed line decodes to null, and null passes a loglevel of 0.
- */
+/** Disposable current-file fixture with snapshot growth, observed opens and an explicit eligibility level. */
 final class FakeFileLog implements IWriter, IFileBased {
-	/** @var list<mixed> File opens or explicit calls to the reference getEntries implementation. */
+	/** @var list<mixed> File opens through the official path accessor. */
 	public array $calls = [];
-	/** Lines appended to the fixture after each file snapshot or reference getEntries call, as a busy server keeps writing. */
+	/** Lines appended to the fixture after each file snapshot, as a busy server keeps writing. */
 	public int $growth = 0;
 
 	/** @param list<string> $lines the file, oldest line first */
@@ -53,30 +49,15 @@ final class FakeFileLog implements IWriter, IFileBased {
 		}
 	}
 
+
+	/**
+	 * @param int $limit Unused interface parameter.
+	 * @param int $offset Unused interface parameter.
+	 * @return array Never returned: parity tests use OfficialFileLog instead.
+	 * @throws \LogicException If a test accidentally uses the obsolete native-read path.
+	 */
 	public function getEntries(int $limit = 50, int $offset = 0): array {
-		$this->calls[] = [$limit, $offset];
-		$entries = [];
-		$kept = 0;
-		foreach (array_reverse($this->lines) as $line) {
-			if (count($entries) >= $limit) {
-				break;
-			}
-			if ($line === '') {
-				continue;
-			}
-			$entry = json_decode($line);
-			$level = is_object($entry) ? ($entry->level ?? null) : null;
-			if ($level >= $this->minLevel) {
-				$kept++;
-				if ($kept > $offset) {
-					$entries[] = $entry;
-				}
-			}
-		}
-		if ($this->growth > 0) {
-			$this->lines = [...$this->lines, ...self::lines($this->growth, static fn (int $i): array => ['reqId' => 'new' . bin2hex(random_bytes(4))])];
-		}
-		return $entries;
+		throw new \LogicException('Use OfficialFileLog for native getEntries comparisons');
 	}
 
 	/**

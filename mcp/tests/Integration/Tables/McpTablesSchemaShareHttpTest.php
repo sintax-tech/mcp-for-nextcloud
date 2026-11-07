@@ -10,14 +10,22 @@ namespace OCA\Mcp\Tests\Integration\Tables;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Modules\Tables\Integration\TablesWriteCapabilities;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
-use OCA\Mcp\Tests\Integration\Support\{LoginFactory, McpClient};
+use OCA\Mcp\Tests\Integration\Support\{LoginFactory, McpClient, ServiceSwitchFixture};
 use OCA\Mcp\Tests\Integration\Tables\Write\WriteCellScene;
+use OCP\IConfig;
 use OCP\Server;
 use PHPUnit\Framework\Attributes\Group;
+use Throwable;
 
 /** Minimal real Bearer proof of Tables schema and sharing, using only disposable harness actors. */
 #[Group('tables')]
 final class McpTablesSchemaShareHttpTest extends IntegrationTestCase {
+	/** @var ServiceSwitchFixture|null Per-test service switch, absent when the cell is skipped. */
+	private ?ServiceSwitchFixture $serviceSwitch = null;
+
+	/** @var TablesSchemaHttpActors|null Actor preferences captured before any setup mutation. */
+	private ?TablesSchemaHttpActors $actors = null;
+
 	/** Selects the explicit Tables cell.
 	 * @return void
 	 */
@@ -25,6 +33,32 @@ final class McpTablesSchemaShareHttpTest extends IntegrationTestCase {
 		parent::setUp();
 		if (getenv('MCP_IT_WITH_TABLES') !== '1') {
 			self::markTestSkipped('Tables cell only (MCP_IT_WITH_TABLES=1)');
+		}
+		$this->serviceSwitch = ServiceSwitchFixture::open();
+		try {
+			$this->actors = new TablesSchemaHttpActors(Server::get(GrantPolicy::class), Server::get(IConfig::class));
+			$this->actors->enable();
+		} catch (Throwable $error) {
+			$this->restoreAccess();
+			throw $error;
+		}
+	}
+
+	/** @return void Restore both actors and the switch even if setup, consent or an assertion fails. */
+	protected function tearDown(): void {
+		try {
+			$this->restoreAccess();
+		} finally {
+			parent::tearDown();
+		}
+	}
+
+	/** @return void Actor restoration always precedes restoration of the global service switch. */
+	private function restoreAccess(): void {
+		try {
+			$this->actors?->restore();
+		} finally {
+			$this->serviceSwitch?->restore();
 		}
 	}
 
@@ -34,15 +68,6 @@ final class McpTablesSchemaShareHttpTest extends IntegrationTestCase {
 	public function testBearerSchemaAndShareRoundtripAndGrantRefusals(): void {
 		$uid = WriteCellScene::OWNER;
 		$policy = Server::get(GrantPolicy::class);
-		$previous = [];
-		foreach (['read', 'schema', 'share'] as $operation) {
-			$previous[$operation] = $policy->granted($uid, 'tables', $operation);
-		}
-		$eligible = $policy->eligible($uid);
-		$connected = $policy->connected($uid);
-		$policy->setEligible($uid, true);
-		$policy->setConnected($uid, true);
-		$policy->setGrant($uid, 'tables', 'read', true);
 		$client = new McpClient(LoginFactory::bearer($uid));
 		$native = new TablesSchemaScene();
 		$id = null;
@@ -118,16 +143,8 @@ final class McpTablesSchemaShareHttpTest extends IntegrationTestCase {
 			self::assertFalse($reader->tool('tables_list_columns', ['table_id' => $id])->ok());
 			self::assertSame($before, TablesSchemaScene::snapshot());
 		} finally {
-			try {
-				if ($id !== null) {
-					$native->api('DELETE', "tables/$id");
-				}
-			} finally {
-				foreach ($previous as $operation => $enabled) {
-					$policy->setGrant($uid, 'tables', $operation, $enabled);
-				}
-				$policy->setConnected($uid, $connected);
-				$policy->setEligible($uid, $eligible);
+			if ($id !== null) {
+				$native->api('DELETE', "tables/$id");
 			}
 		}
 	}

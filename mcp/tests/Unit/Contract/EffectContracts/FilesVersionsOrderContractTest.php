@@ -63,11 +63,11 @@ final class FilesVersionsOrderContractTest extends TestCase {
 
 	/** @return void revision ties are deterministic without losing precision on numeric identifiers */
 	public function testRevisionTieBreakDoesNotDependOnBackendOrderOrIntegerRange(): void {
-		$ids = ['9223372036854775808', '02', '9223372036854775809', '2'];
+		$ids = ['9223372036854775808', '02', '9223372036854775809', '2', '10000000000000000000'];
 		$versions = array_map(static fn (string $id): FakeVersion => new FakeVersion($id, 200, 1, 'text/plain', 'ata.md'), $ids);
 		foreach ([$versions, array_reverse($versions)] as $order) {
 			$this->manager->versions = $order;
-			$this->assertSame(['9223372036854775809', '9223372036854775808', '2', '02'], array_column($this->listing(50)['versions'], 'revision'));
+			$this->assertSame(['10000000000000000000', '9223372036854775809', '9223372036854775808', '2', '02'], array_column($this->listing(50)['versions'], 'revision'));
 		}
 	}
 

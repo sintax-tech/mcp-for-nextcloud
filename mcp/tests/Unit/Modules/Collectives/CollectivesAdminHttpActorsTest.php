@@ -98,10 +98,28 @@ final class CollectivesAdminHttpActorsTest extends TestCase {
 		} catch (RestoreFailures $failures) {
 			$this->assertSame(['owner eligible'], array_column($failures->failures, 'step'));
 		}
-		foreach (['connected owner', 'grant owner collective.create', 'grant owner members', 'eligible outsider', 'connected outsider',
-			'raw owner eligible', 'raw owner connected', 'raw owner grant_collectives_collective.create', 'raw owner grant_collectives_members',
-			'raw outsider eligible', 'raw outsider connected'] as $step) {
+		foreach (['connected owner', 'grant owner create', 'grant owner edit', 'grant owner move', 'grant owner collective.create',
+			'grant owner members', 'eligible outsider', 'connected outsider', 'raw owner eligible', 'raw owner connected',
+			'raw owner grant_collectives_create', 'raw owner grant_collectives_edit', 'raw owner grant_collectives_move',
+			'raw owner grant_collectives_collective.create', 'raw owner grant_collectives_members', 'raw outsider eligible',
+			'raw outsider connected'] as $step) {
 			$this->assertContains($step, $this->done, "$step is restored after the failed flag");
 		}
+	}
+
+	/**
+	 * @return void the owner gets every Collectives write, the page tools included, so the catalog test sees the whole
+	 *     catalog whatever ran before in the cell (H4: only the two C04 grants were given, and create, edit and move
+	 *     were missing from tools/list)
+	 */
+	public function testTheOwnerGetsEveryCollectivesWrite(): void {
+		$policy = $this->recordingPolicy();
+		$config = $this->createMock(IConfig::class);
+		$config->method('getUserKeys')->willReturn([]);
+		$groups = $this->createMock(IGroupManager::class);
+		$groups->method('get')->willReturn($this->createMock(IGroup::class));
+		(new CollectivesAdminHttpActors($policy, $config, $groups, $this->createMock(IUserManager::class), 'owner', 'outsider'))->enable();
+		$this->assertSame(['grant owner create', 'grant owner edit', 'grant owner move', 'grant owner collective.create', 'grant owner members'],
+			array_values(array_filter($this->done, static fn (string $d): bool => str_starts_with($d, 'grant'))));
 	}
 }

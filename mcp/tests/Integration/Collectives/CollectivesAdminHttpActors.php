@@ -15,7 +15,8 @@ use Throwable;
 
 /**
  * Owns what the C04 HTTP tests change in the cell and puts it back exactly, like TablesSchemaHttpActors: the owner's
- * and the outsider's MCP access and the owner's two C04 grants (resolved value through the official writer, then the
+ * and the outsider's MCP access and the owner's Collectives write grants, those of the page tools (C01–C03) and the
+ * two of C04, so the whole catalog is published whatever ran before (resolved value through the official writer, then the
  * raw preference, an absent key included), the test group and the outsider's place in it, and the memberships of the
  * collective's team the tests add. Everything is captured before the first change. The member tests work on a
  * collective they create themselves, so its team has no membership of the test accounts before; {@see self::watch()}
@@ -26,8 +27,8 @@ use Throwable;
 final class CollectivesAdminHttpActors {
 	/** Group the member tests add and remove. */
 	public const GROUP = 'mcp-it-c04';
-	/** C04 grants of the owner. */
-	private const GRANTS = ['collective.create', 'members'];
+	/** Collectives write grants of the owner: the page tools (C01–C03), then C04. */
+	private const GRANTS = ['create', 'edit', 'move', 'collective.create', 'members'];
 
 	/** @var array<string, array<string, array{raw:?string, allowed:bool}>> captured cells by account, absent keys included */
 	private array $before = [];
@@ -65,7 +66,7 @@ final class CollectivesAdminHttpActors {
 	}
 
 	/**
-	 * Captures the access and the group, then grants the owner the C04 operations and both accounts MCP access, and puts
+	 * Captures the access and the group, then grants the owner every Collectives write and both accounts MCP access, and puts
 	 * the outsider in the test group.
 	 * @return void
 	 */

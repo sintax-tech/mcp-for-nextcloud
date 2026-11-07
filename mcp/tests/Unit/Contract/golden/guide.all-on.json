@@ -7,7 +7,7 @@
             "content": [
                 {
                     "type": "text",
-                    "text": "This guide is in English: relay it to the user in their own language.\n\nWrite confirmation plans arrive as readable text in the user’s language, with the complete plan in structuredContent. Show that text to the user exactly as received.\n\n# Tool guide\n\nGrants and disabled apps are already applied: what is missing from this list you cannot call. The modules available to you are files, notes, calendar, contacts, tasks, deck, talk, people, logs, mail, tables, forms, polls.\n\n- **Files** (`files`): 24 tools — List files, Search files, View folder tree, Create folder, Copy file, Move file, Move files in bulk, Undo bulk operation, Read file, Edit file, Replace part of a file, Download file for local editing, List file versions, Read file version, Restore file version, View image, View several images, Search images, List shares, Share file or folder, Stop sharing file or folder, Upload new file, Create text file, Delete file or folder.\n- **Notes** (`notes`): 7 tools — List notes, Search notes, Read note, Create note, Edit note, Move note, Delete note.\n- **Calendar** (`calendar`): 7 tools — List calendars, List events, Create event, Edit event, Move event to another calendar, Delete event, Transfer event to another person's calendar.\n- **Contacts** (`contacts`): 6 tools — List address books, Search contacts, Read contact, Create contact, Edit contact, Delete contact.\n- **Tasks** (`tasks`): 7 tools — List task calendars, List tasks, Read task, Create task, Edit task, Complete task, Delete task.\n- **Deck** (`deck`): 23 tools — List Deck boards, List Deck labels, List Deck card files, Unlink Deck card file, Link file to Deck card, Change Deck card labels, List Deck lists, List Deck cards, Read Deck card, Create card in Deck, Edit Deck card, Move card in Deck, Delete Deck card, Follow up on Deck tasks, Create Deck board, Create list in Deck, Delete Deck list, Delete Deck board, Read Deck card dependencies, Add Deck card dependency, Remove Deck card dependency, Change Deck card completion, Change Deck card archive state.\n- **Talk** (`talk`): 8 tools — List Talk conversations, Read Talk messages, Reply in Talk, Attach file in Talk, Quote file in Talk, Direct message in Talk, Send batch in Talk, Create group in Talk.\n- **People** (`people`): 1 tools — Search people.\n- **Server log** (`logs`): 2 tools — Read server log, Analyze server log.\n- **Mail** (`mail`): 10 tools — List mail accounts, List mail folders, List mail messages, Search mail messages, Read a mail message, Read a mail conversation, Mark a mail message read or flagged, Move a mail message to another folder, Create a mail draft, Send a mail message.\n- **Tables** (`tables`): 6 tools — List tables, List table views, List table columns, List table rows, Create table row, Update table row.\n- **Forms** (`forms`): 14 tools — List forms, Read form, List form submissions, Read form submission, Create a form, Edit a form question, Edit a form option, Add a form question, Reorder form questions, Add form options, Reorder form options, Delete a form question, Delete a form option, Change a form question type.\n- **Polls** (`polls`): 16 tools — List polls, Read poll, Read poll votes, Read poll results, Read existing poll links, Create a private poll, Configure a poll, Change poll state, Add a poll option, Edit a poll option, Reorder poll options, Remove a poll option, Restore a poll option, Share a poll, Change poll sharing, Invite a poll recipient.\n\nCall this tool again with `module` set to one of those names to get every parameter and every behaviour note of that module, or with `tool` to detail a single tool."
+                    "text": "This guide is in English: relay it to the user in their own language.\n\nWrite confirmation plans arrive as readable text in the user’s language, with the complete plan in structuredContent. Show that text to the user exactly as received.\n\n# Tool guide\n\nGrants and disabled apps are already applied: what is missing from this list you cannot call. The modules available to you are files, notes, calendar, contacts, tasks, deck, talk, people, logs, mail, tables, forms, polls.\n\n- **Files** (`files`): 24 tools — List files, Search files, View folder tree, Create folder, Copy file, Move file, Move files in bulk, Undo bulk operation, Read file, Edit file, Replace part of a file, Download file for local editing, List file versions, Read file version, Restore file version, View image, View several images, Search images, List shares, Share file or folder, Stop sharing file or folder, Upload new file, Create text file, Delete file or folder.\n- **Notes** (`notes`): 7 tools — List notes, Search notes, Read note, Create note, Edit note, Move note, Delete note.\n- **Calendar** (`calendar`): 7 tools — List calendars, List events, Create event, Edit event, Move event to another calendar, Delete event, Transfer event to another person's calendar.\n- **Contacts** (`contacts`): 6 tools — List address books, Search contacts, Read contact, Create contact, Edit contact, Delete contact.\n- **Tasks** (`tasks`): 7 tools — List task calendars, List tasks, Read task, Create task, Edit task, Complete task, Delete task.\n- **Deck** (`deck`): 23 tools — List Deck boards, List Deck labels, List Deck card files, Unlink Deck card file, Link file to Deck card, Change Deck card labels, List Deck lists, List Deck cards, Read Deck card, Create card in Deck, Edit Deck card, Move card in Deck, Delete Deck card, Follow up on Deck tasks, Create Deck board, Create list in Deck, Delete Deck list, Delete Deck board, Read Deck card dependencies, Add Deck card dependency, Remove Deck card dependency, Change Deck card completion, Change Deck card archive state.\n- **Talk** (`talk`): 8 tools — List Talk conversations, Read Talk messages, Reply in Talk, Attach file in Talk, Quote file in Talk, Direct message in Talk, Send batch in Talk, Create group in Talk.\n- **People** (`people`): 1 tools — Search people.\n- **Server log** (`logs`): 2 tools — Read server log, Analyze server log.\n- **Mail** (`mail`): 10 tools — List mail accounts, List mail folders, List mail messages, Search mail messages, Read a mail message, Read a mail conversation, Mark a mail message read or flagged, Move a mail message to another folder, Create a mail draft, Send a mail message.\n- **Tables** (`tables`): 14 tools — List tables, List table views, List table columns, List table rows, Create table row, Update table row, Create table, Update table, Create table column, Update table column, Create table view, Update table view, Share table or view, Revoke table or view share.\n- **Forms** (`forms`): 14 tools — List forms, Read form, List form submissions, Read form submission, Create a form, Edit a form question, Edit a form option, Add a form question, Reorder form questions, Add form options, Reorder form options, Delete a form question, Delete a form option, Change a form question type.\n- **Polls** (`polls`): 16 tools — List polls, Read poll, Read poll votes, Read poll results, Read existing poll links, Create a private poll, Configure a poll, Change poll state, Add a poll option, Edit a poll option, Reorder poll options, Remove a poll option, Restore a poll option, Share a poll, Change poll sharing, Invite a poll recipient.\n\nCall this tool again with `module` set to one of those names to get every parameter and every behaviour note of that module, or with `tool` to detail a single tool."
                 }
             ],
             "structuredContent": {
@@ -1092,7 +1092,7 @@
                     {
                         "module": "tables",
                         "title": "Tables",
-                        "count": 6,
+                        "count": 14,
                         "notes": [
                             "Nextcloud Tables: list the tables and views the user can open, then the columns of one of them, then its rows. A view shows only some rows and columns of its table; for a user who can open only the view, the table and its other columns stay out of reach.",
                             "tables_list_rows reads rows of a table or a view; take column ids and selection option ids from tables_list_columns. Filter and sort only on columns the view shows. The placeholders accepted are @me on user and group columns, @checked and @unchecked on yes/no columns, and on date columns @datetime-date-today, @datetime-date-start-of-year, @datetime-date-start-of-month, @datetime-date-start-of-week, @datetime-time-now and @datetime-now, plus @datetime-exact-date:YYYY-MM-DD, @datetime-days-ahead:N and @datetime-days-ago:N from Tables 1.0.10 on: any other value starting with @ is refused. Pages are offsets: rows edited in between can move between pages.",
@@ -1146,6 +1146,94 @@
                                 "name": "tables_update_row",
                                 "title": "Update table row",
                                 "description": "Changes cells of one row (row_id) the authenticated user may read and update, through one table (table_id) or one view (view_id) that shows the row, via the Tables app itself. cells lists 1 to 100 {column_id, value} pairs, each column once, on the columns that table or view shows, never read-only ones; other cells stay as they are. Without confirm the answer is the plan with the values before and after; show it, ask, and repeat with confirm: true and its plan_state. A table owned by somebody else also needs confirm_shared: true.",
+                                "read_only": false,
+                                "destructive": true,
+                                "confirmation": [
+                                    "confirm",
+                                    "confirm_shared"
+                                ]
+                            },
+                            {
+                                "name": "tables_create_table",
+                                "title": "Create table",
+                                "description": "Create one empty Tables table using only the custom template. Plan first; no columns or views are created.",
+                                "read_only": false,
+                                "destructive": false,
+                                "confirmation": [
+                                    "confirm",
+                                    "confirm_shared"
+                                ]
+                            },
+                            {
+                                "name": "tables_update_table",
+                                "title": "Update table",
+                                "description": "Update table title, description, emoji or archived state with native manage permission. Plan first; rows are preserved.",
+                                "read_only": false,
+                                "destructive": true,
+                                "confirmation": [
+                                    "confirm",
+                                    "confirm_shared"
+                                ]
+                            },
+                            {
+                                "name": "tables_create_column",
+                                "title": "Create table column",
+                                "description": "Create a typed column in a managed local table. No relation type. A duplicate title may receive a native suffix. Plan first.",
+                                "read_only": false,
+                                "destructive": false,
+                                "confirmation": [
+                                    "confirm",
+                                    "confirm_shared"
+                                ]
+                            },
+                            {
+                                "name": "tables_update_column",
+                                "title": "Update table column",
+                                "description": "Update column metadata and typed options without changing type or subtype. Preserved fields are written again from a snapshot. No relation edits. Plan first.",
+                                "read_only": false,
+                                "destructive": true,
+                                "confirmation": [
+                                    "confirm",
+                                    "confirm_shared"
+                                ]
+                            },
+                            {
+                                "name": "tables_create_view",
+                                "title": "Create table view",
+                                "description": "Create one empty view in a managed local table. Plan first; rules are edited in a separate call.",
+                                "read_only": false,
+                                "destructive": false,
+                                "confirmation": [
+                                    "confirm",
+                                    "confirm_shared"
+                                ]
+                            },
+                            {
+                                "name": "tables_update_view",
+                                "title": "Update table view",
+                                "description": "Update a managed view and its complete columns, filter groups or sort. Rules can hide rows without deleting them. Relation references are preserved only. Plan first.",
+                                "read_only": false,
+                                "destructive": true,
+                                "confirmation": [
+                                    "confirm",
+                                    "confirm_shared"
+                                ]
+                            },
+                            {
+                                "name": "tables_share_node",
+                                "title": "Share table or view",
+                                "description": "Share a managed local table or view with an existing user or group and five explicit native permissions. No public links. An identical share is a no-op; different permissions require separate revocation. Plan first.",
+                                "read_only": false,
+                                "destructive": false,
+                                "confirmation": [
+                                    "confirm",
+                                    "confirm_shared"
+                                ]
+                            },
+                            {
+                                "name": "tables_unshare_node",
+                                "title": "Revoke table or view share",
+                                "description": "Revoke one user/group share of a managed local table or view. Other shares may continue granting access. Plan first.",
                                 "read_only": false,
                                 "destructive": true,
                                 "confirmation": [

@@ -148,6 +148,7 @@ final class NextcloudApiContractTest extends TestCase {
 
 	#[DataProvider('namedClasses')]
 	public function testEveryNextcloudClassTheAppNamesExists(string $class, string $major): void {
+		if (\OCA\Mcp\Tests\Unit\Modules\Tables\SchemaSurfaceContract::handles($this, $class, $major)) return;
 		$fixture = self::fixture($major)['classes'];
 		$this->assertArrayHasKey($class, $fixture, "$class is new in lib/: regenerate the fixtures with tests/fixtures/nextcloud-api/generate.php");
 		if (self::gated($class, $major)) {

@@ -25,12 +25,14 @@ final class TablesSchema {
 	 * @param array<string, mixed> $properties ordered argument properties
 	 * @param string $operation grant operation
 	 * @param list<string> $required required argument names
+	 * @param bool $destructive whether this new operation replaces or revokes state
+	 * @param list<string> $requires lazy installation capabilities
 	 * @return ToolDefinition the closed Tables definition
 	 */
-	public static function definition(string $name, string $description, array $properties, string $operation = 'read', array $required = []): ToolDefinition {
+	public static function definition(string $name, string $description, array $properties, string $operation = 'read', array $required = [], bool $destructive = false, array $requires = []): ToolDefinition {
 		$schema = ['type' => 'object', 'properties' => $properties === [] ? new \stdClass() : $properties, 'additionalProperties' => false];
 		return new ToolDefinition(name: $name, module: TablesModule::MODULE, operation: $operation, description: $description,
-			inputSchema: $schema + ($required === [] ? [] : ['required' => $required]), app: TablesServices::APP_ID);
+			inputSchema: $schema + ($required === [] ? [] : ['required' => $required]), app: TablesServices::APP_ID, destructiveHint: $destructive, requires: $requires);
 	}
 
 	/**

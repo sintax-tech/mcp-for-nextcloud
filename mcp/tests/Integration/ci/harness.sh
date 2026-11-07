@@ -36,9 +36,14 @@ TOOLS_DIR="$WORK/tools"
 PG_LOG_DIR="$WORK/pglog"
 ARTIFACTS="$WORK/artifacts"
 # Names of this run's network and containers; run-local.sh gives each run its own so that two runs on one engine never touch each other.
-NET=${MCP_IT_NET:-mcp-it}
-NC=${MCP_IT_NC_NAME:-mcp-it-nextcloud}
-DB=${MCP_IT_DB_NAME:-mcp-it-db}
+# Exported so that every cell script this harness calls addresses the same containers, on the runner as well as locally.
+MCP_IT_NET=${MCP_IT_NET:-mcp-it}
+MCP_IT_NC_NAME=${MCP_IT_NC_NAME:-mcp-it-nextcloud}
+MCP_IT_DB_NAME=${MCP_IT_DB_NAME:-mcp-it-db}
+export MCP_IT_NET MCP_IT_NC_NAME MCP_IT_DB_NAME
+NET=$MCP_IT_NET
+NC=$MCP_IT_NC_NAME
+DB=$MCP_IT_DB_NAME
 # Throwaway credentials of a throwaway instance; nothing here is a secret.
 DB_PASSWORD=mcp-it-db-password
 DB_ROOT_PASSWORD=mcp-it-db-root-password

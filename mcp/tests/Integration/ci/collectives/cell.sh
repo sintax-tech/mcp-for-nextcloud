@@ -4,7 +4,7 @@
 # Collectives part of the official harness: the SHA-pinned official release, one collective created by the app's own
 # command and its owner's Collectives folder set as the browser would set it. No engine lifecycle.
 set -eu
-NC=${MCP_IT_NC_NAME:?}
+NC=${MCP_IT_NC_NAME:-mcp-it-nextcloud}
 WORK="${RUNNER_TEMP:?}/mcp-it"
 HERE=$(cd "$(dirname "$0")" && pwd)
 # 4.7.1 declares Nextcloud 32 to 35 (appinfo/info.xml), so one release serves every cell.

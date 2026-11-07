@@ -147,11 +147,12 @@ cmd_test_env() {
 }
 
 # cmd_collect: the IMAP server log, which lists every login and every flag change (mail_log), into the artifacts, and
-# alice's home with the rawlogs of her sessions (mail/mcp-it.conf).
+# alice's home with the rawlogs of her sessions (mail/mcp-it.conf). The home goes in as one tar: Maildir file names carry
+# ':', which the artifact upload refuses.
 cmd_collect() {
 	mkdir -p "$ARTIFACTS"
 	docker logs "$IMAP" > "$ARTIFACTS/imap-container.log" 2>&1 || true
-	docker cp "$IMAP:/srv/vmail/alice" "$ARTIFACTS/imap-home-alice" 2>/dev/null || true
+	docker cp "$IMAP:/srv/vmail/alice" - > "$ARTIFACTS/imap-home-alice.tar" 2>/dev/null || rm -f "$ARTIFACTS/imap-home-alice.tar"
 	NC="$NC" sh "$HERE/mail/smtp-sink.sh" collect "$ARTIFACTS"
 }
 

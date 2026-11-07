@@ -4,7 +4,7 @@
 # Opt-in Forms stage of the official harness. Installs a SHA-checked pinned release, creates only synthetic actors,
 # and seeds through the official OCS API. It never owns the engine lifecycle.
 set -eu
-NC=${MCP_IT_NC_NAME:?}
+NC=${MCP_IT_NC_NAME:-mcp-it-nextcloud}
 WORK="${RUNNER_TEMP:?}/mcp-it"
 case "$MCP_IT_NC" in
  32) VERSION=5.3.7; SHA=7da964e5c60353b21e0d438d60ceb123f39e5fcf3c16386c1fc93994021ffcbc ;;

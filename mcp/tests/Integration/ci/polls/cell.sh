@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Polls part of the official harness: SHA-pinned release, isolated users and native service seed. No engine lifecycle.
 set -eu
-NC=${MCP_IT_NC_NAME:?}
+NC=${MCP_IT_NC_NAME:-mcp-it-nextcloud}
 WORK="${RUNNER_TEMP:?}/mcp-it"
 HERE=$(cd "$(dirname "$0")" && pwd)
 case "${MCP_IT_NC:?}" in

@@ -43,7 +43,7 @@ final class PollsMutationApiUsage {
 		'OCA\\Polls\\Service\\ShareService::createShare' => [
 			'missing' => ['31', '32'], 'fallback' => 'OCA\\Polls\\Service\\ShareService::add', 'by' => PollsShareCreator::class,
 			'elsewhere' => [
-				'Modules/Files/Sharing/ShareWriter.php' => 'OCP file shares, not Polls.',
+				'Modules/Files/Sharing/ShareCoreWrite.php' => 'OCP file shares, not Polls.',
 				'Modules/Deck/Integration/NativeCardFileLink.php' => 'OCP file shares, not Polls.',
 				'Modules/Talk/Attachments/FileSharer.php' => 'OCP file shares, not Polls.',
 			],

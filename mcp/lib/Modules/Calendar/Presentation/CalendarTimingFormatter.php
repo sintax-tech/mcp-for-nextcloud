@@ -99,7 +99,6 @@ final class CalendarTimingFormatter {
 		return $formatDate($start) . ', ' . $formatTime($start) . ' – ' . $formatDate($end) . ', ' . $formatTime($end) . $tzSuffix;
 	}
 
-
 	/**
 	 * @param string $locale request locale
 	 * @param DateTimeZone $zone event or civil-date timezone

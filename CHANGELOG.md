@@ -15,7 +15,7 @@ Fix release on top of 1.3.1. No database change and no permission change; updati
 
 ### Validation and limits
 
-Each fix is covered by unit tests that fail on 1.3.1 and pass now, and the restore of the current version is also covered by two integration tests that now restore it on every run; before, CI hit the defect only now and then on Nextcloud 34 and 35, when the last write crossed a second boundary. The full unit suite passes on PHP 8.2, 8.3, 8.4 and 8.5, and an upgrade from 1.3.1 on Nextcloud 35 with PostgreSQL and the optional Deck, Mail, Tables, Forms, Polls and Collectives apps passes the integration suite. The hidden-file and lost-read paths are exercised with test doubles, since a file cannot be hidden or have its read permission taken away at a chosen moment of a write on a live server.
+Each fix is covered by unit tests that fail on 1.3.1 and pass now, and the restore of the current version is also covered by two integration tests that now restore it on every run, on Nextcloud 32 to 35; before, CI hit the defect only now and then on Nextcloud 34 and 35, when the last write crossed a second boundary, and the deterministic tests then showed it on 32 and 33 as well. The full unit suite passes on PHP 8.2, 8.3, 8.4 and 8.5; an upgrade from 1.3.1 on Nextcloud 35 with PostgreSQL and the optional Deck, Mail, Tables, Forms, Polls and Collectives apps passes the integration suite, which also passes in CI on Nextcloud 32, 33, 34 and 35 with MariaDB, PostgreSQL and SQLite, fresh and upgraded. The hidden-file and lost-read paths are exercised with test doubles, since a file cannot be hidden or have its read permission taken away at a chosen moment of a write on a live server.
 
 ## 1.3.1 — 2026-11-07
 

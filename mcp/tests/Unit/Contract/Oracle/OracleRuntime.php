@@ -34,12 +34,11 @@ final class OracleRuntime {
 		$name = basename($path);
 		$reasons = [];
 		if (in_array($name, self::WITHOUT_INTL, true) && class_exists(\IntlDateFormatter::class)) {
-			$reasons[] = 'ext-intl presente; este transcript foi congelado sem IntlDateFormatter';
+			$reasons[] = 'ext-intl is present; this transcript was frozen without IntlDateFormatter';
 		}
 		if (in_array($name, self::POST_LIMIT, true) && ini_parse_quantity((string)ini_get('post_max_size')) !== 8 * 1024 * 1024) {
-			$reasons[] = 'post_max_size=' . ini_get('post_max_size') . '; este transcript requer 8M';
+			$reasons[] = 'post_max_size=' . ini_get('post_max_size') . '; this transcript requires 8M';
 		}
-		if ($reasons !== []) { $test->fail('runtime não canônico: ' . implode('; ', $reasons)); }
+		if ($reasons !== []) { $test->fail('non-canonical runtime: ' . implode('; ', $reasons)); }
 	}
 }
-

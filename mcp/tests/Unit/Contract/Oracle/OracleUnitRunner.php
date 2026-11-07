@@ -25,7 +25,7 @@ final class OracleUnitRunner {
 	 */
 	public static function run(array $arguments): int {
 		if (class_exists(\IntlDateFormatter::class)) {
-			fwrite(STDERR, "runtime não canônico: ext-intl presente; execute no runtime do oracle sem IntlDateFormatter\n");
+			fwrite(STDERR, "non-canonical runtime: ext-intl is present; use the oracle runtime without IntlDateFormatter\n");
 			return 2;
 		}
 		$app = dirname(__DIR__, 4);
@@ -40,4 +40,3 @@ final class OracleUnitRunner {
 if (PHP_SAPI === 'cli' && realpath((string)($_SERVER['SCRIPT_FILENAME'] ?? '')) === __FILE__) {
 	exit(OracleUnitRunner::run(array_slice($argv, 1)));
 }
-

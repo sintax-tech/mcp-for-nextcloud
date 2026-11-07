@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Modules\Collectives;
 
 use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Guests\GuestIdentity;
 use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
@@ -16,13 +17,19 @@ use OCA\Mcp\Modules\Collectives\Integration\CollectivesAdmission;
 use OCA\Mcp\Modules\Collectives\Integration\CollectivesGateway;
 use OCA\Mcp\Modules\Collectives\Integration\CollectivesSurface;
 use OCA\Mcp\Modules\Collectives\Integration\PageFiles;
+use OCA\Mcp\Modules\Collectives\Integration\TeamsSession;
 use OCP\App\IAppManager;
+use OCP\Files\IRootFolder;
 use OCP\Files\Node;
 use OCP\IAppConfig;
 use OCP\IConfig;
+use OCP\IDBConnection;
+use OCP\IGroup;
+use OCP\IGroupManager;
 use OCP\IUser;
 use OCP\IUserManager;
 use OCP\IUserSession;
+use OCP\L10N\IFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
@@ -34,7 +41,7 @@ use ReflectionNamedType;
  */
 final class CollectivesRig {
 	/** @var list<string> granted operations of the collectives module */
-	public array $grants = ['read', 'create', 'edit', 'move'];
+	public array $grants = ['read', 'create', 'edit', 'move', 'collective.create', 'members'];
 	public bool $appEnabled = true;
 	/** Installed Collectives version the app manager answers. */
 	public string $version = '4.7.1';
@@ -47,17 +54,40 @@ final class CollectivesRig {
 	public ?CollectivesSurface $surface = null;
 	/** The real policy of an effects gate; null uses $this->grants */
 	public ?GrantPolicy $realPolicy = null;
+	/** Installed Teams (Circles) version the app manager answers. */
+	public string $teamsVersion = '35.0.0';
+	/** The actor's recorded Teams identity (`circles/userSingleId`), '' when Teams never resolved them. */
+	public string $teamsIdentity = 'single-alice';
+	/** Whether the actor is a guest account; null makes the identification fail. */
+	public ?bool $guestAccount = false;
+	/** Whether the database keeps four-byte characters. */
+	public bool $fourBytes = true;
+	/** Classes autowiring takes from this rig instead of a blank mock. */
+	private const WIRED = [IAppManager::class, IConfig::class, IUserManager::class, IDBConnection::class, IFactory::class,
+		IRootFolder::class, GuestIdentity::class, ContainerInterface::class, IGroupManager::class];
+	/** Accounts of this server. */
+	private const ACCOUNTS = ['alice', 'bob', 'carol', 'dave', 'erin', 'frank', 'gina', 'hank', 'ivy', 'jack', 'kim'];
 	/** @var array<class-string, object> instances already built */
 	private array $built = [];
 
 	/** @param TestCase $test owner of the mocks */
 	public function __construct(private TestCase $test) {
 		CollectivesScene::reset($test);
+		TeamsScene::reset();
 	}
 
 	/** @return CollectivesModule the module, its tools resolved from the same wiring */
 	public function module(): CollectivesModule {
 		return new CollectivesModule($this->container());
+	}
+
+	/**
+	 * @template T of object
+	 * @param class-string<T> $class a module or native class
+	 * @return T the instance this rig wires
+	 */
+	public function get(string $class): object {
+		return $this->build($class);
 	}
 
 	/** @return PlanState the plan states of the module */
@@ -82,15 +112,22 @@ final class CollectivesRig {
 		}
 		$instance = match ($class) {
 			'OCA\\Collectives\\Service\\CollectiveService', 'OCA\\Collectives\\Service\\PageService',
-			'OCA\\Collectives\\Service\\SearchService' => new $class(),
+			'OCA\\Collectives\\Service\\SearchService', 'OCA\\Circles\\CirclesManager', 'OCA\\Collectives\\Mount\\CollectiveFolderManager' => new $class(),
 			ContainerInterface::class => $this->container(),
 			PlanState::class => new PlanState($this->config()),
 			IAppManager::class => $this->apps(),
 			CollectivesAdmission::class => new CollectivesAdmission($this->policy(), $this->apps(), $this->users(), $this->session(),
 				$this->config(), $this->appConfig(), $this->surface ?? new CollectivesSurface()),
-			CollectivesGateway::class => new CollectivesGateway($this->container(), $this->build(CollectivesAdmission::class)),
+			CollectivesGateway::class => new CollectivesGateway($this->container(), $this->build(CollectivesAdmission::class), $this->build(TeamsSession::class)),
 			CollectivesSurface::class => $this->surface ?? new CollectivesSurface(),
 			PageFiles::class => new PageFiles($this->visibility(), $this->scope()),
+			IConfig::class => $this->config(),
+			IUserManager::class => $this->users(),
+			GuestIdentity::class => $this->guests(),
+			IDBConnection::class => $this->database(),
+			IFactory::class => $this->languages(),
+			IRootFolder::class => $this->storage(),
+			IGroupManager::class => $this->groups(),
 			default => $this->autowire($class),
 		};
 		return $this->built[$class] = $instance;
@@ -102,7 +139,7 @@ final class CollectivesRig {
 		foreach ((new ReflectionClass($class))->getConstructor()?->getParameters() ?? [] as $parameter) {
 			$type = $parameter->getType();
 			$name = $type instanceof ReflectionNamedType ? $type->getName() : '';
-			$args[] = $name === IAppManager::class || (str_starts_with($name, 'OCA\\Mcp\\') && (new ReflectionClass($name))->isInstantiable()) ? $this->build($name)
+			$args[] = in_array($name, self::WIRED, true) || (str_starts_with($name, 'OCA\\Mcp\\') && (new ReflectionClass($name))->isInstantiable()) ? $this->build($name)
 				: ($parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : $this->mock($name));
 		}
 		return new $class(...$args);
@@ -123,14 +160,14 @@ final class CollectivesRig {
 	private function apps(): IAppManager {
 		$apps = $this->mock(IAppManager::class);
 		$apps->method('isEnabledForUser')->willReturnCallback(fn (): bool => $this->appEnabled);
-		$apps->method('getAppVersion')->willReturnCallback(fn (): string => $this->version);
+		$apps->method('getAppVersion')->willReturnCallback(fn (string $app): string => $app === 'circles' ? $this->teamsVersion : $this->version);
 		return $apps;
 	}
 
 	/** @return IUserManager knows alice */
 	private function users(): IUserManager {
 		$users = $this->mock(IUserManager::class);
-		$users->method('get')->willReturnCallback(fn (string $uid): ?IUser => $uid === 'alice' ? $this->user('alice') : null);
+		$users->method('get')->willReturnCallback(fn (string $uid): ?IUser => in_array($uid, self::ACCOUNTS, true) ? $this->user($uid) : null);
 		return $users;
 	}
 
@@ -145,6 +182,7 @@ final class CollectivesRig {
 	private function user(string $uid): IUser {
 		$user = $this->mock(IUser::class);
 		$user->method('getUID')->willReturn($uid);
+		$user->method('getDisplayName')->willReturn(ucfirst($uid));
 		return $user;
 	}
 
@@ -152,10 +190,57 @@ final class CollectivesRig {
 	private function config(): IConfig {
 		$config = $this->mock(IConfig::class);
 		$config->method('getSystemValueString')->willReturn('secret');
-		$config->method('getUserValue')->willReturnCallback(fn (string $uid, string $app, string $key, mixed $default): string
-			=> $app === 'collectives' && $key === 'user_folder' ? ($this->folderSetting === '' ? (string)$default : $this->folderSetting) : (string)$default);
+		$config->method('getUserValue')->willReturnCallback(fn (string $uid, string $app, string $key, mixed $default): string => match (true) {
+			$app === 'collectives' && $key === 'user_folder' => $this->folderSetting === '' ? (string)$default : $this->folderSetting,
+			$app === 'circles' && $key === 'userSingleId' && $uid === 'alice' => $this->teamsIdentity,
+			$app === 'circles' && $key === 'userSingleId' => isset(TeamsScene::$identities[$uid]) ? 'single-' . $uid : '',
+			default => (string)$default,
+		});
 		$config->expects(TestCase::never())->method('setUserValue');
 		return $config;
+	}
+
+	/** @return GuestIdentity answers $this->guestAccount; null throws, as a failed identification is refused */
+	private function guests(): GuestIdentity {
+		$guests = $this->mock(GuestIdentity::class);
+		$guests->method('isGuestAccount')->willReturnCallback(fn (): bool => $this->guestAccount ?? true);
+		return $guests;
+	}
+
+	/** @return IGroupManager the groups staff (3 accounts) and design (2 accounts) */
+	private function groups(): IGroupManager {
+		$groups = $this->mock(IGroupManager::class);
+		$groups->method('get')->willReturnCallback(function (string $gid): ?IGroup {
+			if (!in_array($gid, ['staff', 'design'], true)) {
+				return null;
+			}
+			$group = $this->mock(IGroup::class);
+			$group->method('count')->willReturn($gid === 'staff' ? 3 : 2);
+			$group->method('getDisplayName')->willReturn(ucfirst($gid));
+			return $group;
+		});
+		return $groups;
+	}
+
+	/** @return IDBConnection whose four-byte support is $this->fourBytes */
+	private function database(): IDBConnection {
+		$db = $this->mock(IDBConnection::class);
+		$db->method('supports4ByteText')->willReturnCallback(fn (): bool => $this->fourBytes);
+		return $db;
+	}
+
+	/** @return IFactory alice writes Portuguese */
+	private function languages(): IFactory {
+		$languages = $this->mock(IFactory::class);
+		$languages->method('getUserLanguage')->willReturn('pt_BR');
+		return $languages;
+	}
+
+	/** @return IRootFolder only asked whether paths of the collectives' storage exist */
+	private function storage(): IRootFolder {
+		$root = $this->mock(IRootFolder::class);
+		$root->method('nodeExists')->willReturnCallback(static fn (string $path): bool => TeamsScene::exists($path));
+		return $root;
 	}
 
 	/** @return IAppConfig no administrator default folder */

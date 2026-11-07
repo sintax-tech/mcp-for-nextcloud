@@ -213,6 +213,11 @@ final class ToolPresentation {
 			'collectives_create' => Translator::t('Create collective page'),
 			'collectives_edit' => Translator::t('Edit collective page'),
 			'collectives_move' => Translator::t('Move collective page'),
+			'collectives_create_collective' => Translator::t('Create collective'),
+			'collectives_list_members' => Translator::t('List collective members'),
+			'collectives_add_member' => Translator::t('Add collective member'),
+			'collectives_set_member_level' => Translator::t('Change collective member level'),
+			'collectives_remove_member' => Translator::t('Remove collective member'),
 			// Tables
 			'tables_list_tables' => Translator::t('List tables'),
 			'tables_list_views' => Translator::t('List table views'),

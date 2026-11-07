@@ -7,7 +7,7 @@
             "content": [
                 {
                     "type": "text",
-                    "text": "This guide is in English: relay it to the user in their own language.\n\nWrite confirmation plans arrive as readable text in the user’s language, with the complete plan in structuredContent. Show that text to the user exactly as received.\n\n# Tool guide\n\nGrants and disabled apps are already applied: what is missing from this list you cannot call. The modules available to you are files, notes, calendar, contacts, tasks, deck, talk, people, logs, mail, tables, forms, polls, collectives.\n\n- **Files** (`files`): 24 tools — List files, Search files, View folder tree, Create folder, Copy file, Move file, Move files in bulk, Undo bulk operation, Read file, Edit file, Replace part of a file, Download file for local editing, List file versions, Read file version, Restore file version, View image, View several images, Search images, List shares, Share file or folder, Stop sharing file or folder, Upload new file, Create text file, Delete file or folder.\n- **Notes** (`notes`): 7 tools — List notes, Search notes, Read note, Create note, Edit note, Move note, Delete note.\n- **Calendar** (`calendar`): 7 tools — List calendars, List events, Create event, Edit event, Move event to another calendar, Delete event, Transfer event to another person's calendar.\n- **Contacts** (`contacts`): 6 tools — List address books, Search contacts, Read contact, Create contact, Edit contact, Delete contact.\n- **Tasks** (`tasks`): 7 tools — List task calendars, List tasks, Read task, Create task, Edit task, Complete task, Delete task.\n- **Deck** (`deck`): 23 tools — List Deck boards, List Deck labels, List Deck card files, Unlink Deck card file, Link file to Deck card, Change Deck card labels, List Deck lists, List Deck cards, Read Deck card, Create card in Deck, Edit Deck card, Move card in Deck, Delete Deck card, Follow up on Deck tasks, Create Deck board, Create list in Deck, Delete Deck list, Delete Deck board, Read Deck card dependencies, Add Deck card dependency, Remove Deck card dependency, Change Deck card completion, Change Deck card archive state.\n- **Talk** (`talk`): 8 tools — List Talk conversations, Read Talk messages, Reply in Talk, Attach file in Talk, Quote file in Talk, Direct message in Talk, Send batch in Talk, Create group in Talk.\n- **People** (`people`): 1 tools — Search people.\n- **Server log** (`logs`): 2 tools — Read server log, Analyze server log.\n- **Mail** (`mail`): 10 tools — List mail accounts, List mail folders, List mail messages, Search mail messages, Read a mail message, Read a mail conversation, Mark a mail message read or flagged, Move a mail message to another folder, Create a mail draft, Send a mail message.\n- **Tables** (`tables`): 14 tools — List tables, List table views, List table columns, List table rows, Create table row, Update table row, Create table, Update table, Create table column, Update table column, Create table view, Update table view, Share table or view, Revoke table or view share.\n- **Forms** (`forms`): 14 tools — List forms, Read form, List form submissions, Read form submission, Create a form, Edit a form question, Edit a form option, Add a form question, Reorder form questions, Add form options, Reorder form options, Delete a form question, Delete a form option, Change a form question type.\n- **Polls** (`polls`): 16 tools — List polls, Read poll, Read poll votes, Read poll results, Read existing poll links, Create a private poll, Configure a poll, Change poll state, Add a poll option, Edit a poll option, Reorder poll options, Remove a poll option, Restore a poll option, Share a poll, Change poll sharing, Invite a poll recipient.\n- **Collectives** (`collectives`): 7 tools — List collectives, List collective pages, Read collective page, Search collective pages, Create collective page, Edit collective page, Move collective page.\n\nCall this tool again with `module` set to one of those names to get every parameter and every behaviour note of that module, or with `tool` to detail a single tool."
+                    "text": "This guide is in English: relay it to the user in their own language.\n\nWrite confirmation plans arrive as readable text in the user’s language, with the complete plan in structuredContent. Show that text to the user exactly as received.\n\n# Tool guide\n\nGrants and disabled apps are already applied: what is missing from this list you cannot call. The modules available to you are files, notes, calendar, contacts, tasks, deck, talk, people, logs, mail, tables, forms, polls, collectives.\n\n- **Files** (`files`): 24 tools — List files, Search files, View folder tree, Create folder, Copy file, Move file, Move files in bulk, Undo bulk operation, Read file, Edit file, Replace part of a file, Download file for local editing, List file versions, Read file version, Restore file version, View image, View several images, Search images, List shares, Share file or folder, Stop sharing file or folder, Upload new file, Create text file, Delete file or folder.\n- **Notes** (`notes`): 7 tools — List notes, Search notes, Read note, Create note, Edit note, Move note, Delete note.\n- **Calendar** (`calendar`): 7 tools — List calendars, List events, Create event, Edit event, Move event to another calendar, Delete event, Transfer event to another person's calendar.\n- **Contacts** (`contacts`): 6 tools — List address books, Search contacts, Read contact, Create contact, Edit contact, Delete contact.\n- **Tasks** (`tasks`): 7 tools — List task calendars, List tasks, Read task, Create task, Edit task, Complete task, Delete task.\n- **Deck** (`deck`): 23 tools — List Deck boards, List Deck labels, List Deck card files, Unlink Deck card file, Link file to Deck card, Change Deck card labels, List Deck lists, List Deck cards, Read Deck card, Create card in Deck, Edit Deck card, Move card in Deck, Delete Deck card, Follow up on Deck tasks, Create Deck board, Create list in Deck, Delete Deck list, Delete Deck board, Read Deck card dependencies, Add Deck card dependency, Remove Deck card dependency, Change Deck card completion, Change Deck card archive state.\n- **Talk** (`talk`): 8 tools — List Talk conversations, Read Talk messages, Reply in Talk, Attach file in Talk, Quote file in Talk, Direct message in Talk, Send batch in Talk, Create group in Talk.\n- **People** (`people`): 1 tools — Search people.\n- **Server log** (`logs`): 2 tools — Read server log, Analyze server log.\n- **Mail** (`mail`): 10 tools — List mail accounts, List mail folders, List mail messages, Search mail messages, Read a mail message, Read a mail conversation, Mark a mail message read or flagged, Move a mail message to another folder, Create a mail draft, Send a mail message.\n- **Tables** (`tables`): 14 tools — List tables, List table views, List table columns, List table rows, Create table row, Update table row, Create table, Update table, Create table column, Update table column, Create table view, Update table view, Share table or view, Revoke table or view share.\n- **Forms** (`forms`): 14 tools — List forms, Read form, List form submissions, Read form submission, Create a form, Edit a form question, Edit a form option, Add a form question, Reorder form questions, Add form options, Reorder form options, Delete a form question, Delete a form option, Change a form question type.\n- **Polls** (`polls`): 16 tools — List polls, Read poll, Read poll votes, Read poll results, Read existing poll links, Create a private poll, Configure a poll, Change poll state, Add a poll option, Edit a poll option, Reorder poll options, Remove a poll option, Restore a poll option, Share a poll, Change poll sharing, Invite a poll recipient.\n- **Collectives** (`collectives`): 12 tools — List collectives, List collective pages, Read collective page, Search collective pages, Create collective page, Edit collective page, Move collective page, Create collective, List collective members, Add collective member, Change collective member level, Remove collective member.\n\nCall this tool again with `module` set to one of those names to get every parameter and every behaviour note of that module, or with `tool` to detail a single tool."
                 }
             ],
             "structuredContent": {
@@ -1570,7 +1570,7 @@
                     {
                         "module": "collectives",
                         "title": "Collectives",
-                        "count": 7,
+                        "count": 12,
                         "notes": [
                             "A page is addressed by the collective_id of collectives_list and the page_id of collectives_pages or collectives_search, never by its title or path. The landing page of a collective is the page whose parent_id is 0.",
                             "Pages are Markdown files of at most 262144 bytes; templates, attachments and pages hidden by administrator policy appear as if they did not exist.",
@@ -1578,7 +1578,9 @@
                             "Listings return next_cursor while more items remain; pass it back unchanged with the same arguments.",
                             "collectives_create makes an empty page; when the parent has no subpages yet, Collectives turns it into a folder with a Readme.md (its id stays). Add the content with collectives_edit.",
                             "For a small change use collectives_edit with append or old/new; content rewrites the whole page. Confirm with the etag and plan_state of the plan. Someone editing the page in the browser at the same time may write over the change.",
-                            "collectives_move keeps the current parent when parent_id is omitted; to move a page to the top level, give the id of the landing page. index only places the page under a new parent: reordering under the same parent is not supported. The landing page cannot move, nor can a page move under itself or into another collective."
+                            "collectives_move keeps the current parent when parent_id is omitted; to move a page to the top level, give the id of the landing page. index only places the page under a new parent: reordering under the same parent is not supported. The landing page cannot move, nor can a page move under itself or into another collective.",
+                            "collectives_create_collective creates a collective with its own new team, owned by the user and with no other member. It refuses a name already used by a collective or team the user sees, and it needs Nextcloud 33 or later.",
+                            "Members are managed by admins of the collective: collectives_list_members gives the member_id, then collectives_add_member (an account found with Search people, or a group), collectives_set_member_level (member, moderator or admin) and collectives_remove_member. The owner cannot be changed or removed, and your own membership is not changed here."
                         ],
                         "tools": [
                             {
@@ -1637,6 +1639,54 @@
                                 "name": "collectives_move",
                                 "title": "Move collective page",
                                 "description": "Moves a page under another parent page of the same collective, renames it, or both.",
+                                "read_only": false,
+                                "destructive": true,
+                                "confirmation": [
+                                    "confirm"
+                                ]
+                            },
+                            {
+                                "name": "collectives_create_collective",
+                                "title": "Create collective",
+                                "description": "Creates a new collective (Collectives app) with its own new team, owned by the user, and its landing page. Returns a plan first; confirm it with confirm: true and the plan_state.",
+                                "read_only": false,
+                                "destructive": false,
+                                "confirmation": [
+                                    "confirm"
+                                ]
+                            },
+                            {
+                                "name": "collectives_list_members",
+                                "title": "List collective members",
+                                "description": "Lists the members of one collective (accounts and groups of its team) with their level and status, and whether the user may manage them.",
+                                "read_only": true,
+                                "destructive": false,
+                                "confirmation": []
+                            },
+                            {
+                                "name": "collectives_add_member",
+                                "title": "Add collective member",
+                                "description": "Adds an account or a group of this server to a collective as member; returns a plan first.",
+                                "read_only": false,
+                                "destructive": false,
+                                "confirmation": [
+                                    "confirm"
+                                ]
+                            },
+                            {
+                                "name": "collectives_set_member_level",
+                                "title": "Change collective member level",
+                                "description": "Changes the level of a member of a collective to member, moderator or admin; returns a plan first.",
+                                "read_only": false,
+                                "destructive": true,
+                                "confirmation": [
+                                    "confirm"
+                                ]
+                            },
+                            {
+                                "name": "collectives_remove_member",
+                                "title": "Remove collective member",
+                                "description": "Removes a member from a collective, or cancels a pending invitation or request; returns a plan first.",
                                 "read_only": false,
                                 "destructive": true,
                                 "confirmation": [

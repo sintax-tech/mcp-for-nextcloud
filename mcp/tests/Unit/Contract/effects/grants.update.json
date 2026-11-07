@@ -173,7 +173,9 @@
                             "read": true,
                             "create": false,
                             "edit": false,
-                            "move": false
+                            "move": false,
+                            "collective.create": false,
+                            "members": false
                         }
                     },
                     "origins": {
@@ -480,6 +482,14 @@
                                 "move": {
                                     "source": "default",
                                     "groupIds": []
+                                },
+                                "collective.create": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "members": {
+                                    "source": "default",
+                                    "groupIds": []
                                 }
                             }
                         }
@@ -709,7 +719,9 @@
                             "read": true,
                             "create": false,
                             "edit": false,
-                            "move": false
+                            "move": false,
+                            "collective.create": false,
+                            "members": false
                         }
                     },
                     "origins": {
@@ -1014,6 +1026,14 @@
                                     "groupIds": []
                                 },
                                 "move": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "collective.create": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "members": {
                                     "source": "default",
                                     "groupIds": []
                                 }
@@ -1948,7 +1968,9 @@
                                         "read": true,
                                         "create": false,
                                         "edit": false,
-                                        "move": false
+                                        "move": false,
+                                        "collective.create": false,
+                                        "members": false
                                     }
                                 },
                                 "origins": {
@@ -2253,6 +2275,14 @@
                                                 "groupIds": []
                                             },
                                             "move": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "collective.create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "members": {
                                                 "source": "default",
                                                 "groupIds": []
                                             }
@@ -2786,7 +2816,9 @@
                             "read": true,
                             "create": false,
                             "edit": false,
-                            "move": false
+                            "move": false,
+                            "collective.create": false,
+                            "members": false
                         }
                     },
                     "origins": {
@@ -3091,6 +3123,14 @@
                                     "groupIds": []
                                 },
                                 "move": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "collective.create": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "members": {
                                     "source": "default",
                                     "groupIds": []
                                 }

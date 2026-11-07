@@ -23,8 +23,8 @@ final class LegacyCatalogContractTest extends TestCase {
 			'tables' => ['read', 'create', 'edit', 'schema', 'share'],
 			'forms' => ['read', 'results', 'create', 'edit'],
 			'polls' => ['read', 'results', 'links', 'create', 'configure', 'options', 'options.remove', 'share', 'invite'],
-			// C01–C03 only; C04 must append its reviewed operations explicitly, with matching defaults.
-			'collectives' => ['read', 'create', 'edit', 'move'],
+			// C01–C04: each reviewed operation is explicit and every write starts denied.
+			'collectives' => ['read', 'create', 'edit', 'move', 'collective.create', 'members'],
 		];
 	}
 
@@ -54,8 +54,8 @@ final class LegacyCatalogContractTest extends TestCase {
 			$cases[] = $changed;
 		}
 		$cases[] = $current + ['unreviewed' => ['read']];
-		// C04 needs an explicit catalog/default update when integrated; these operations are not admitted yet.
-		foreach (['collective.create', 'members'] as $operation) {
+		// Operations beyond the reviewed C04 grants still fail closed.
+		foreach (['collective.delete', 'members.remove'] as $operation) {
 			$future = $current;
 			$future['collectives'][] = $operation;
 			$cases[] = $future;

@@ -59,6 +59,10 @@ Las escrituras requieren permisos explícitos y confirmación. Los planes descri
 
 Versiones anteriores: consulta el [Historial](HISTORY.es.md).
 
+## Colectivos (1.3.0)
+
+Con la app Colectivos, las herramientas listan colectivos y páginas, leen y buscan páginas, crean páginas vacías, editan su Markdown y las mueven o renombran dentro de su colectivo; borrar páginas no se ofrece. `collectives_create_collective` crea un colectivo nuevo con su propio equipo nuevo, del que la persona es propietaria y única integrante. Requiere el permiso `collectives.collective.create`, denegado por defecto y fuera de los niveles predefinidos, y Nextcloud 33 a 35. Se rechaza un nombre que ya usa un colectivo o equipo que la persona ve, y las cuentas de invitado no pueden crear colectivos. Si mientras tanto aparece un equipo con ese nombre que la persona administra, Colectivos usa ese equipo; el plan lo advierte y el recibo lo informa. En Nextcloud 35, Equipos también puede crear una carpeta de equipo, según la configuración del administrador. Nada se reintenta, se deshace ni se repara automáticamente. Solicitado en [#22](https://github.com/sintax-tech/mcp-for-nextcloud/issues/22). Los administradores de un colectivo también pueden listar, añadir y quitar sus miembros y cambiar su nivel (miembro, moderador o administrador) con `collectives_list_members`, `collectives_add_member`, `collectives_set_member_level` y `collectives_remove_member`, con el permiso `collectives.members`, denegado por defecto; el propietario y tu propia membresía nunca cambian, los grupos no pueden ser invitados y nadie recibe correo de Equipos.
+
 ## HTML mail drafts (1.3.0)
 
 `mail_create_draft` accepts optional `html: true`; the default remains `false` (plain text). The existing `mail.draft` permission and confirmation apply. Mail's HTML sanitizer runs with a restricted configuration before planning and again before saving through `saveDraft`. Scripts, events, CSS, embedded content and all images (remote and `data:`) are forbidden. Links require an explicit `http`, `https` or `mailto` scheme.

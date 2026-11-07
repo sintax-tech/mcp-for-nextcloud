@@ -19,7 +19,7 @@ class PollsTierCoverage {
 				continue
 			}
 			const listed = levels.TIERS[module].flat()
-			assert.deepEqual([...listed, ...(module === 'tables' ? ['schema', 'share'] : [])].sort(), [...operations].sort(), module)
+			assert.deepEqual([...listed, ...({ tables: ['schema', 'share'], collectives: ['collective.create', 'members'] }[module] || [])].sort(), [...operations].sort(), module)
 			assert.equal(new Set(listed).size, listed.length, module + ' has no operation twice')
 			assert.deepEqual(JSON.parse(JSON.stringify(levels.TIERS[module][0])), ['read'], module + ' starts with Read')
 		}

@@ -11,6 +11,7 @@ const plain = value => JSON.parse(JSON.stringify(value))
 for (const [module, old, added] of [
 	['tables', ['read', 'create', 'edit'], ['schema', 'share']],
 	['polls', ['read', 'results', 'links', 'create'], ['configure', 'options', 'options.remove', 'share', 'invite']],
+	['collectives', ['read', 'create', 'edit', 'move'], ['collective.create', 'members']],
 ]) {
 	test(module + ' preserves every previous level and preset', () => {
 		const operations = [...old, ...added]

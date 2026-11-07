@@ -27,7 +27,7 @@ final class CollectivesScene {
 	public const ROOT = '/alice/files/.Collectives/Wiki';
 
 	public static FakeTree $tree;
-	/** @var array<int, array{name:string, members:list<string>, canEdit:bool}> collectives by id */
+	/** @var array<int, array{name:string, members:list<string>, canEdit:bool, circleId?:string}> collectives by id */
 	public static array $collectives = [];
 	/** @var array<int, list<int>> subpage order by page id */
 	public static array $orders = [];
@@ -91,8 +91,8 @@ final class CollectivesScene {
 		if ($data === null || !in_array($uid, $data['members'], true)) {
 			throw new NotFoundException('Collective not found: ' . $id);
 		}
-		return new Collective(['id' => $id, 'name' => $data['name'], 'emoji' => '📘', 'circleId' => 'circle-secret',
-			'canEdit' => $data['canEdit'], 'canShare' => false, 'shareToken' => 'share-token-secret', 'level' => 9]);
+		return new Collective(['id' => $id, 'name' => $data['name'], 'emoji' => '📘', 'circleId' => $data['circleId'] ?? 'circle-secret',
+			'canEdit' => $data['canEdit'], 'canShare' => false, 'shareToken' => 'share-token-secret', 'level' => $data['level'] ?? 9]);
 	}
 
 	/** @return Folder the folder of the collective; membership is the caller's (the page service checks it once per request) */

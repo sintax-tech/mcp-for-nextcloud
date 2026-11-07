@@ -22,15 +22,22 @@ use Throwable;
  * read one by one with `find`; the tree builders (`findAll`, `getPagesFromFolder`) are never called, because they may
  * write a missing index page. Trash, copy, ordering, emoji, tags, attachments, templates, members and shares are not
  * reachable from here.
+ *
+ * Every native call runs in {@see TeamsSession::closingAfter()}: reading a collective opens a Teams session inside
+ * Collectives (`CollectiveMapper::circleIdToName` and `CollectiveHelper` reach `CircleHelper::getCircle`/`getCircles`,
+ * `:103-150`), which it closes only after a `try/catch`; a failure there would leave the current user set on the shared
+ * Teams service for the rest of the request.
  */
 class CollectivesGateway {
 	/**
 	 * @param ContainerInterface $container server container the native services are shared in
 	 * @param CollectivesAdmission $admission what every call proves first
+	 * @param TeamsSession $teams closes the Teams session the native calls may leave open
 	 */
 	public function __construct(
 		private ContainerInterface $container,
 		private CollectivesAdmission $admission,
+		private TeamsSession $teams,
 	) {
 	}
 
@@ -91,7 +98,7 @@ class CollectivesGateway {
 	 * @throws Throwable whatever the native call throws
 	 */
 	public function find(int $cid, int $id, string $uid): array {
-		return PageProjection::page($this->service(CollectivesSurface::PAGES)->find($cid, $id, $uid));
+		return PageProjection::page($this->teams->closingAfter(fn (): object => $this->service(CollectivesSurface::PAGES)->find($cid, $id, $uid)));
 	}
 
 	/**
@@ -150,7 +157,7 @@ class CollectivesGateway {
 	 */
 	public function create(int $cid, int $parentId, string $title, string $uid): int {
 		$this->admission->admit($uid, 'create');
-		return PageProjection::page($this->service(CollectivesSurface::PAGES)->create($cid, $parentId, $title, null, $uid))['id'];
+		return PageProjection::page($this->teams->closingAfter(fn (): object => $this->service(CollectivesSurface::PAGES)->create($cid, $parentId, $title, null, $uid)))['id'];
 	}
 
 	/**
@@ -166,7 +173,7 @@ class CollectivesGateway {
 	 */
 	public function move(int $cid, int $pageId, ?int $parentId, ?string $title, int $index, string $uid): array {
 		$this->admission->admit($uid, 'move');
-		return PageProjection::page($this->service(CollectivesSurface::PAGES)->move($cid, $pageId, $parentId, $title, $index, $uid));
+		return PageProjection::page($this->teams->closingAfter(fn (): object => $this->service(CollectivesSurface::PAGES)->move($cid, $pageId, $parentId, $title, $index, $uid)));
 	}
 
 	/**
@@ -191,7 +198,7 @@ class CollectivesGateway {
 	 */
 	private function call(Closure $read): mixed {
 		try {
-			return $read();
+			return $this->teams->closingAfter($read);
 		} catch (ToolFailure $e) {
 			throw $e;
 		} catch (Throwable $e) {

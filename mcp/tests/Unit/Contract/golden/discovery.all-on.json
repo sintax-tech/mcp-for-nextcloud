@@ -7792,6 +7792,236 @@
                             "idempotentHint": false,
                             "openWorldHint": false
                         }
+                    },
+                    {
+                        "name": "collectives_create_collective",
+                        "title": "Create collective",
+                        "description": "Creates a new collective (Collectives app) with its own new team, owned by the user, and its landing page. Returns a plan first; confirm it with confirm: true and the plan_state.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 200,
+                                    "description": "Name of the new collective (3-127 bytes after the spaces and characters Collectives removes); it must not be the name of a collective or team the user already sees."
+                                },
+                                "emoji": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 32,
+                                    "description": "One emoji shown with the collective; omit for none."
+                                },
+                                "plan_state": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                                },
+                                "confirm": {
+                                    "type": "boolean",
+                                    "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "name"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Create collective",
+                            "readOnlyHint": false,
+                            "destructiveHint": false,
+                            "idempotentHint": false,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
+                        "name": "collectives_list_members",
+                        "title": "List collective members",
+                        "description": "Lists the members of one collective (accounts and groups of its team) with their level and status, and whether the user may manage them.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "collective_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the collective, as collectives_list returns it."
+                                },
+                                "cursor": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 256,
+                                    "description": "next_cursor of the previous answer, to read the next slice."
+                                },
+                                "limit": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 100,
+                                    "default": 50,
+                                    "description": "Maximum number of items to return (1-100, default 50)."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "collective_id"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "List collective members",
+                            "readOnlyHint": true,
+                            "destructiveHint": false,
+                            "idempotentHint": true,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
+                        "name": "collectives_add_member",
+                        "title": "Add collective member",
+                        "description": "Adds an account or a group of this server to a collective as member; returns a plan first.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "collective_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the collective, as collectives_list returns it."
+                                },
+                                "type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "user",
+                                        "group"
+                                    ],
+                                    "description": "user for an account, group for a group of this server."
+                                },
+                                "id": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 255,
+                                    "description": "Account id (as Search people returns it) or group id."
+                                },
+                                "plan_state": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                                },
+                                "confirm": {
+                                    "type": "boolean",
+                                    "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "collective_id",
+                                "type",
+                                "id"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Add collective member",
+                            "readOnlyHint": false,
+                            "destructiveHint": false,
+                            "idempotentHint": false,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
+                        "name": "collectives_set_member_level",
+                        "title": "Change collective member level",
+                        "description": "Changes the level of a member of a collective to member, moderator or admin; returns a plan first.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "collective_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the collective, as collectives_list returns it."
+                                },
+                                "member_id": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 64,
+                                    "description": "member_id of the member, as collectives_list_members returns it."
+                                },
+                                "level": {
+                                    "type": "string",
+                                    "enum": [
+                                        "member",
+                                        "moderator",
+                                        "admin"
+                                    ],
+                                    "description": "New level: member, moderator or admin. The owner cannot be changed here."
+                                },
+                                "plan_state": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                                },
+                                "confirm": {
+                                    "type": "boolean",
+                                    "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "collective_id",
+                                "member_id",
+                                "level"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Change collective member level",
+                            "readOnlyHint": false,
+                            "destructiveHint": true,
+                            "idempotentHint": false,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
+                        "name": "collectives_remove_member",
+                        "title": "Remove collective member",
+                        "description": "Removes a member from a collective, or cancels a pending invitation or request; returns a plan first.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "collective_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the collective, as collectives_list returns it."
+                                },
+                                "member_id": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 64,
+                                    "description": "member_id of the member, as collectives_list_members returns it."
+                                },
+                                "plan_state": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                                },
+                                "confirm": {
+                                    "type": "boolean",
+                                    "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "collective_id",
+                                "member_id"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Remove collective member",
+                            "readOnlyHint": false,
+                            "destructiveHint": true,
+                            "idempotentHint": false,
+                            "openWorldHint": false
+                        }
                     }
                 ]
             }

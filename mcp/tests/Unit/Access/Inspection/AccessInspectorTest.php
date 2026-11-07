@@ -97,7 +97,8 @@ final class AccessInspectorTest extends TestCase {
 				}
 			}
 			foreach ($this->effective() as $key => $row) {
-				[$module, $operation] = explode('.', $key);
+				// The operation may itself hold a dot ('collective.create'): only the first one splits the module off.
+				[$module, $operation] = explode('.', $key, 2);
 				$tool = $policy->canConnect('alice') && $policy->granted('alice', $module, $operation);
 				$this->assertSame($tool, $row['allowed'], $key . ' ' . json_encode($values));
 			}

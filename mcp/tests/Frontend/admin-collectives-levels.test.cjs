@@ -29,20 +29,23 @@ function collectivesOperations() {
 	const policy = fs.readFileSync(path.join(root, 'lib/Access/Grants/GrantCatalog.php'), 'utf8')
 	const line = policy.match(/'collectives' => \[([^\]]*)\]/)
 	assert.ok(line, 'the Collectives entry of GrantPolicy::CATALOG')
-	return [...line[1].matchAll(/'(\w+)'/g)].map((match) => match[1])
+	return [...line[1].matchAll(/'([\w.]+)'/g)].map((match) => match[1])
 }
 
 test('Collectives levels follow the catalog and grant nothing implicitly', () => {
 	const Levels = levels()
 	const operations = collectivesOperations()
-	assert.deepEqual(operations, ['read', 'create', 'edit', 'move'])
+	// 'collective.create' and 'members' (C04) are in no level: no preset grants them, and they never change a level.
+	assert.deepEqual(operations, ['read', 'create', 'edit', 'move', 'collective.create', 'members'])
+	const off = { 'collective.create': false, members: false }
 	assert.deepEqual(plain(Levels.levels('collectives', operations)), ['none', 'read', 'full'])
 	assert.deepEqual(plain(Levels.operationsFor('collectives', operations, 'read')), ['read'])
 	assert.deepEqual(plain(Levels.operationsFor('collectives', operations, 'full')), ['read', 'create', 'edit', 'move'])
-	assert.equal(Levels.levelOf('collectives', operations, { read: true, create: false, edit: false, move: false }), 'read')
-	assert.equal(Levels.levelOf('collectives', operations, { read: true, create: true, edit: true, move: true }), 'full')
-	assert.equal(Levels.levelOf('collectives', operations, { read: false, create: false, edit: false, move: false }), 'none')
-	assert.equal(Levels.levelOf('collectives', operations, { read: false, create: true, edit: false, move: false }), 'custom', 'writing without reading is shown operation by operation')
+	assert.equal(Levels.levelOf('collectives', operations, { read: true, create: false, edit: false, move: false, ...off }), 'read')
+	assert.equal(Levels.levelOf('collectives', operations, { read: true, create: true, edit: true, move: true, ...off }), 'full')
+	assert.equal(Levels.levelOf('collectives', operations, { read: false, create: false, edit: false, move: false, ...off }), 'none')
+	assert.equal(Levels.levelOf('collectives', operations, { read: false, create: true, edit: false, move: false, ...off }), 'custom', 'writing without reading is shown operation by operation')
+	assert.equal(Levels.levelOf('collectives', operations, { read: true, create: true, edit: true, move: true, ...off, members: true }), 'custom', 'a granted untiered operation is shown operation by operation')
 })
 
 test('every module label map names Collectives', () => {

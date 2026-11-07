@@ -33,12 +33,19 @@ namespace OCA\Collectives\Service {
 	class CollectiveService {
 		/** @param string $userId actor @return list<Collective> the actor's collectives */
 		public function getCollectives(string $userId): array {
+			\OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene::nativeRead($userId, 'collectives');
 			return CollectivesScene::collectivesOf($userId);
 		}
 
 		/** @param int $id collective @param string $userId actor @return Collective a fresh entity */
 		public function getCollective(int $id, string $userId): Collective {
+			\OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene::nativeRead($userId, 'collective');
 			return CollectivesScene::collective($id, $userId);
+		}
+
+		/** @return array{0: Collective, 1: string} the collective and the adoption notice ({@see \OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene}) */
+		public function createCollective(string $userId, string $userLang, string $name, ?string $emoji = null): array {
+			return \OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene::createCollective($userId, $userLang, $name, $emoji);
 		}
 	}
 
@@ -56,6 +63,7 @@ namespace OCA\Collectives\Service {
 
 		/** @param int $collectiveId collective @param string $userId actor */
 		public function verifyEditPermissions(int $collectiveId, string $userId): void {
+			\OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene::nativeRead($userId, 'verify');
 			if (!$this->cached($collectiveId, $userId)->canEdit()) {
 				throw new NotPermittedException('Not allowed to edit collective');
 			}
@@ -63,18 +71,26 @@ namespace OCA\Collectives\Service {
 
 		/** @param int $collectiveId collective @param int $fileId page @param string $userId actor @return File the file */
 		public function getPageFile(int $collectiveId, int $fileId, string $userId): File {
+			\OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene::nativeRead($userId, 'pageFile');
 			$this->cached($collectiveId, $userId);
 			return CollectivesScene::fileById($collectiveId, $fileId);
 		}
 
 		/** @param int $collectiveId collective @param int $fileId 0 for the collective folder @param string $userId actor @return Folder the folder */
 		public function getFolder(int $collectiveId, int $fileId, string $userId): Folder {
+			\OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene::nativeRead($userId, 'folder');
 			$this->cached($collectiveId, $userId);
 			return CollectivesScene::folder();
 		}
 
 		/** @return PageInfo one page, read without writing; its parent's Readme.md must exist (getParentPageId) */
 		public function find(int $collectiveId, int $id, string $userId): PageInfo {
+			$landing = \OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene::landing($id);
+			if ($landing !== null) {
+				\OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene::nativeRead($userId, 'find');
+				return $landing;
+			}
+			\OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene::nativeRead($userId, 'find');
 			$this->cached($collectiveId, $userId);
 			CollectivesScene::$beforeFind === null || (CollectivesScene::$beforeFind)($id);
 			return CollectivesScene::find($id);
@@ -116,6 +132,7 @@ namespace OCA\Collectives\Service {
 		public function searchCollective(Collective $collective, string $query): array {
 			// 4.0.0 receives the most results as a third argument; the double records how many it was given.
 			CollectivesScene::$calls[] = 'searchCollective:' . implode(',', array_slice(func_get_args(), 2));
+			\OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene::nativeRead('alice', 'search');
 			return CollectivesScene::$searchHits;
 		}
 	}
@@ -136,6 +153,11 @@ namespace OCA\Collectives\Db {
 		/** @return string name of the circle */
 		public function getName(): string {
 			return $this->data['name'];
+		}
+
+		/** @return string single id of the team */
+		public function getCircleId(): string {
+			return $this->data['circleId'];
 		}
 
 		/** @return array<string, mixed> native serialized form */

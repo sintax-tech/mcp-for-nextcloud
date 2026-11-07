@@ -4,7 +4,7 @@
  */
 /**
  * Tests of the Collectives column of the admin page (#22): GrantPolicy::CATALOG offers the Collectives operations,
- * src/admin/access/levels/collectives.js turns them into levels with no implicit grant, every place that names a module
+ * src/admin/access/levels/collectives.js turns them into levels whose Full is every operation, every place that names a module
  * names Collectives, and the bulk change of 331bdede works on the new column unchanged: an explicit confirmation, who is
  * left out (Collectives unavailable for them) and the receipt offered as the undo.
  */
@@ -32,20 +32,21 @@ function collectivesOperations() {
 	return [...line[1].matchAll(/'([\w.]+)'/g)].map((match) => match[1])
 }
 
-test('Collectives levels follow the catalog and grant nothing implicitly', () => {
+test('Collectives levels follow the catalog and Full is every operation', () => {
 	const Levels = levels()
 	const operations = collectivesOperations()
-	// 'collective.create' and 'members' (C04) are in no level: no preset grants them, and they never change a level.
+	// 'collective.create' and 'members' (C04) are part of Full, so a page-only grant is no longer Full.
 	assert.deepEqual(operations, ['read', 'create', 'edit', 'move', 'collective.create', 'members'])
 	const off = { 'collective.create': false, members: false }
 	assert.deepEqual(plain(Levels.levels('collectives', operations)), ['none', 'read', 'full'])
 	assert.deepEqual(plain(Levels.operationsFor('collectives', operations, 'read')), ['read'])
-	assert.deepEqual(plain(Levels.operationsFor('collectives', operations, 'full')), ['read', 'create', 'edit', 'move'])
+	assert.deepEqual(plain(Levels.operationsFor('collectives', operations, 'full')), operations)
 	assert.equal(Levels.levelOf('collectives', operations, { read: true, create: false, edit: false, move: false, ...off }), 'read')
-	assert.equal(Levels.levelOf('collectives', operations, { read: true, create: true, edit: true, move: true, ...off }), 'full')
+	assert.equal(Levels.levelOf('collectives', operations, { read: true, create: true, edit: true, move: true, 'collective.create': true, members: true }), 'full')
+	assert.equal(Levels.levelOf('collectives', operations, { read: true, create: true, edit: true, move: true, ...off }), 'custom', 'pages without collectives and members is no longer Full')
 	assert.equal(Levels.levelOf('collectives', operations, { read: false, create: false, edit: false, move: false, ...off }), 'none')
 	assert.equal(Levels.levelOf('collectives', operations, { read: false, create: true, edit: false, move: false, ...off }), 'custom', 'writing without reading is shown operation by operation')
-	assert.equal(Levels.levelOf('collectives', operations, { read: true, create: true, edit: true, move: true, ...off, members: true }), 'custom', 'a granted untiered operation is shown operation by operation')
+	assert.equal(Levels.levelOf('collectives', operations, { read: true, create: true, edit: true, move: true, ...off, members: true }), 'custom', 'part of Full is shown operation by operation')
 })
 
 test('every module label map names Collectives', () => {

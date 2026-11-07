@@ -4,8 +4,8 @@
  */
 /**
  * Tests of the Tables column of the admin page: GrantCatalog::CATALOG offers Tables reading, creating and editing rows,
- * src/admin/admin-levels.js gives it the three levels None, Read and Full (creating and editing together), and every place that
- * names a module names Tables.
+ * changing the structure and sharing, src/admin/admin-levels.js gives it the three levels None, Read and Full (every
+ * operation after reading together), and every place that names a module names Tables.
  */
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
@@ -43,9 +43,10 @@ test('Tables levels are None, Read and Full', () => {
 	assert.deepEqual(operations, ['read', 'create', 'edit', 'schema', 'share'])
 	assert.deepEqual(plain(Levels.levels('tables', operations)), ['none', 'read', 'full'])
 	assert.deepEqual(plain(Levels.operationsFor('tables', operations, 'read')), ['read'])
-	assert.deepEqual(plain(Levels.operationsFor('tables', operations, 'full')), ['read', 'create', 'edit'])
+	assert.deepEqual(plain(Levels.operationsFor('tables', operations, 'full')), ['read', 'create', 'edit', 'schema', 'share'])
 	assert.equal(Levels.levelOf('tables', operations, { read: true, create: false, edit: false, schema: false, share: false }), 'read')
-	assert.equal(Levels.levelOf('tables', operations, { read: true, create: true, edit: true, schema: false, share: false }), 'full')
+	assert.equal(Levels.levelOf('tables', operations, { read: true, create: true, edit: true, schema: true, share: true }), 'full')
+	assert.equal(Levels.levelOf('tables', operations, { read: true, create: true, edit: true, schema: false, share: false }), 'custom', 'rows without structure and sharing is no longer Full')
 	assert.equal(Levels.levelOf('tables', operations, { read: false, create: false, edit: false, schema: false, share: false }), 'none')
 	assert.equal(Levels.levelOf('tables', operations, { read: false, create: true, edit: false, schema: false, share: false }), 'custom', 'creating without reading is shown operation by operation')
 })

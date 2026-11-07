@@ -858,16 +858,14 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Access levels of Tables: Read, then Full adds creating and editing together.
+ * Access levels of Tables: Read, then Full adds creating and editing rows, changing the structure and sharing together.
  * Registered in window.OCA.Mcp.Admin.levelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
  */
 (function (root) {
 	'use strict'
 
 	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
-	catalog.tiers.tables = [['read'], ['create', 'edit']]
-	// Structure and sharing remain operation-only until the presets are explicitly widened.
-	catalog.untiered = Object.assign(catalog.untiered || {}, { tables: ['schema', 'share'] })
+	catalog.tiers.tables = [['read'], ['create', 'edit', 'schema', 'share']]
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
 /* admin/access/levels/forms.js */
@@ -894,16 +892,14 @@
  */
 /**
  * Access levels of Collectives: Read lists collectives and pages, reads and searches them, then Full adds creating,
- * editing and moving pages together. Creating a collective ('collective.create') and managing members ('members') are in
- * no level: they are chosen operation by operation, so no preset grants them and the presets stay what they were.
+ * editing and moving pages, creating collectives ('collective.create') and managing members ('members') together.
  * Registered in window.OCA.Mcp.Admin.levelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
  */
 (function (root) {
 	'use strict'
 
 	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
-	catalog.tiers.collectives = [['read'], ['create', 'edit', 'move']]
-	catalog.untiered = Object.assign(catalog.untiered || {}, { collectives: ['collective.create', 'members'] })
+	catalog.tiers.collectives = [['read'], ['create', 'edit', 'move', 'collective.create', 'members']]
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
 /* admin/admin-levels.js */
@@ -917,13 +913,13 @@
  * A level is only a way to show and choose a set of operations; the server never sees it. Each module's operations are
  * split into cumulative tiers (Read, then Edit adds its tier, then Full adds the last one), so a level is the union of
  * the tiers up to it. A set of allowed operations that is no such union is "custom" and is shown and edited operation
- * by operation. The tiers follow GrantCatalog::CATALOG; an operation the tiers do not name (unless explicitly untiered) falls into
+ * by operation. The tiers follow GrantCatalog::CATALOG; an operation the tiers do not name falls into
  * the last tier, so it is never hidden and never granted by a lower level.
  *
  * The level functions are pure, with no DOM and no strings: src/admin/matrix/level-cells.js draws the cells and src/admin/matrix/labels.js names the levels.
  * The tiers of each module live in its own file, src/admin/access/levels/<app>.js, which registers them in
  * window.OCA.Mcp.Admin.levelCatalog before this file runs (src/admin.manifest lists them first). Polls has named presets
- * instead of tiers, unchanged from 1.2.5; targets preserve untiered grants (src/admin/access/levels/polls.js,
+ * instead of tiers, unchanged from 1.2.5; its targets preserve the grants outside its presets (src/admin/access/levels/polls.js,
  * window.OCA.Mcp.Admin.pollsGrants). Mail adds its write warnings
  * (src/admin/access/levels/mail.js, window.OCA.Mcp.Admin.mailGrants); the other admin scripts read both.
  */
@@ -956,7 +952,7 @@
 
 	/**
 	 * The tiers of a module, restricted to the operations the catalog has, with any operation they do not name added to
-	 * the last tier, except operations explicitly kept outside presets by the module.
+	 * the last tier.
 	 *
 	 * @param {string} module module id
 	 * @param {string[]} operations the module's operations in the catalog
@@ -966,8 +962,7 @@
 		if (module === 'polls') return root.OCA.Mcp.Admin.pollsGrants?.tiers(operations) || []
 		const known = TIERS[module] || [operations.filter((operation) => operation === 'read'), operations.filter((operation) => operation !== 'read')]
 		const listed = known.map((tier) => tier.filter((operation) => operations.includes(operation)))
-		const untiered = catalog.untiered?.[module] || []
-		const rest = operations.filter((operation) => !listed.some((tier) => tier.includes(operation)) && !untiered.includes(operation))
+		const rest = operations.filter((operation) => !listed.some((tier) => tier.includes(operation)))
 		if (rest.length > 0) {
 			if (listed.length === 0) listed.push([])
 			listed[listed.length - 1] = listed[listed.length - 1].concat(rest)

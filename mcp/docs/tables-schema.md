@@ -1,6 +1,6 @@
 # Tables structure and sharing
 
-Tables structure writes use the independent `tables.schema` grant. Sharing and revocation use `tables.share`. Both are denied by default. Row Read/Full presets do not grant them, and existing explicit grants remain independent. No administration layout or Forms warning is changed by this feature.
+Tables structure writes use the independent `tables.schema` grant. Sharing and revocation use `tables.share`. Both are denied by default. The Full level includes them and Read does not; a person saved with the earlier rows-only Full is shown as Custom and gains nothing. No administration layout or Forms warning is changed by this feature.
 
 The six existing Tables tools keep their behavior and order. Eight tools are added: `tables_create_table`, `tables_update_table`, `tables_create_column`, `tables_update_column`, `tables_create_view`, `tables_update_view`, `tables_share_node`, and `tables_unshare_node`.
 

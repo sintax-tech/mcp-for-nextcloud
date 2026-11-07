@@ -7,11 +7,9 @@ const assert = require('node:assert/strict')
 const Levels = require('./PollsCreateContext.cjs').load().McpAdminLevels
 const plain = value => JSON.parse(JSON.stringify(value))
 
-/** Catalog additions stay outside the existing presets until their dedicated UI tickets. */
+/** Polls keeps its 1.2.5 presets: the operations added since stay outside them. Tables and Collectives put theirs in Full. */
 for (const [module, old, added] of [
-	['tables', ['read', 'create', 'edit'], ['schema', 'share']],
 	['polls', ['read', 'results', 'links', 'create'], ['configure', 'options', 'options.remove', 'share', 'invite']],
-	['collectives', ['read', 'create', 'edit', 'move'], ['collective.create', 'members']],
 ]) {
 	test(module + ' preserves every previous level and preset', () => {
 		const operations = [...old, ...added]
@@ -44,8 +42,8 @@ test('presets preserve granted operation-only permissions; None clears them in e
 		vm.runInNewContext(manifest.fragment('admin/' + file + '.js'), root)
 	}
 	const admin = root.OCA.Mcp.Admin
-	for (const [module, extra, level] of [['polls', 'configure', 'polls_read'], ['tables', 'schema', 'full']]) {
-		const operations = module === 'polls' ? ['read', 'results', 'links', 'create', 'configure'] : ['read', 'create', 'edit', 'schema']
+	for (const [module, extra, level] of [['polls', 'configure', 'polls_read']]) {
+		const operations = ['read', 'results', 'links', 'create', 'configure']
 		const user = { uid: 'alice', grants: { [module]: Object.fromEntries(operations.map(op => [op, op === extra])) } }
 		const popover = { levels: admin.levels, operationsOf: () => operations, valueOf: (u, m, op) => u.grants[m][op] }
 		admin.modules.levelPopover.planning(popover)

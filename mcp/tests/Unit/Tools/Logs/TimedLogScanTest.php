@@ -122,6 +122,10 @@ final class TimedLogScanTest extends TestCase {
 				memory_get_peak_usage() - $memory, 'Oversized buffering must not allocate a second line-sized string');
 			$resumed = $scanner->scan($this->filter([]), 2, 1);
 			self::assertSame(['older'], array_column($resumed['entries'], 'message'));
+			$ended = $scanner->scan($this->filter([]), 3, 1);
+			self::assertSame([], $ended['entries']);
+			self::assertSame(0, $ended['scanned']);
+			self::assertNull($ended['nextOffset']);
 		} finally { unlink($path); }
 	}
 }

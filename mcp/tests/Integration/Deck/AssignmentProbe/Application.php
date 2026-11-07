@@ -16,7 +16,9 @@ final class Application extends \OCP\AppFramework\App implements IBootstrap {
 	/** Bind the disposable app namespace. */
 	public function __construct() { parent::__construct('mcp_deck_probe'); }
 	/** @param IRegistrationContext $context Native bootstrap context; no replacement services. */
-	public function register(IRegistrationContext $context): void {}
+	public function register(IRegistrationContext $context): void {
+		$context->registerNotifierService(\OCA\McpDeckProbe\PrepareFault::class);
+	}
 	/** @param IBootContext $context Native boot with the real IManager. */
 	public function boot(IBootContext $context): void {
 		$context->injectFn(static function (\OCP\Notification\IManager $manager): void {

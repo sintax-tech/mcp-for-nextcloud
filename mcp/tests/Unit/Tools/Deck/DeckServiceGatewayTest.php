@@ -70,6 +70,7 @@ final class DeckServiceGatewayTest extends TestCase {
 			StackMapper::class => $this->createMock(StackMapper::class),
 			AssignmentMapper::class => $this->createMock(AssignmentMapper::class),
 			IUserManager::class => $this->createMock(IUserManager::class),
+			\OCP\Notification\IManager::class => $this->createMock(\OCP\Notification\IManager::class),
 		];
 
 		$this->time = $this->createMock(ITimeFactory::class);

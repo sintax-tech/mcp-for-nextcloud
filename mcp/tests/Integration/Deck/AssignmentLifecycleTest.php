@@ -71,8 +71,8 @@ final class AssignmentLifecycleTest extends IntegrationTestCase {
 		} finally { $scene->close(); }
 	}
 
-	/** Compare native IManager deferral under an induced delivery failure; never label it host reproduction. */
-	public function testInducedLifecycleControlRequiresInlineFailureOnBothRoutes(): void {
+	/** Under an induced delivery failure the MCP assignment is stored and deferred; the Deck web route still fails inline. */
+	public function testInducedDeliveryFailureNoLongerAbortsTheMcpAssignment(): void {
 		$scene = new FunctionalDeckScene(); $probe = null; $browser = null;
 		try {
 			$a = $scene->uid(0); $b = $scene->uid(1); $f = $scene->seed($a, $b);
@@ -87,21 +87,24 @@ final class AssignmentLifecycleTest extends IntegrationTestCase {
 			$native = $browser->assign($f['nativeFaultCard'], $a, $headers);
 			$events = $probe->events();
 			$notify = array_values(array_filter($events, static fn ($e): bool => $e['phase'] === 'notify'));
-			self::assertCount(2, $notify, json_encode($events));
-			self::assertSame(['mcp', 'deck'], array_column($notify, 'route'));
 			$mcpSaved = FunctionalDeckScene::run($b, 'read', ['card' => $f['faultCard']])['assignees'];
 			$nativeSaved = FunctionalDeckScene::run($b, 'read', ['card' => $f['nativeFaultCard']])['assignees'];
-			self::assertSame([false, false], array_column($notify, 'deferred'));
-			self::assertSame([], $mcpSaved);
+			// Issue #26 fix: the MCP route first tries the direct 1.2.5 call, which fails inline like Deck's own route; the
+			// retry defers delivery, stores the assignment, and the delivery error comes after it.
+			self::assertSame([['mcp', false], ['mcp', true], ['deck', false]],
+				array_map(static fn ($e): array => [$e['route'], $e['deferred']], $notify), json_encode($events));
+			$mcpPhases = array_column(array_values(array_filter($events, static fn ($e): bool => $e['route'] === 'mcp')), 'phase');
+			$retryAt = array_keys($mcpPhases, 'notify', true)[1];
+			self::assertContains('defer', array_slice($mcpPhases, 1, $retryAt - 1), json_encode($events));
+			self::assertContains('flush', array_slice($mcpPhases, $retryAt + 1), json_encode($events));
+			self::assertSame([$a], $mcpSaved);
 			self::assertSame([], $nativeSaved);
 			self::assertSame(200, $response['status']);
+			self::assertStringContainsString($a, $response['body']);
 			self::assertSame(500, $native['status']);
-			$deferCandidate = !$notify[0]['deferred'] && $notify[1]['deferred'];
-			self::assertFalse($deferCandidate);
-			file_put_contents('/tmp/mcp-it-observations.txt', json_encode(['issue26' => 'induced lifecycle control, NOT host reproduction',
+			file_put_contents('/tmp/mcp-it-observations.txt', json_encode(['issue26' => 'induced delivery failure: MCP retried with deferral and stored',
 				'events' => $events, 'mcpSaved' => $mcpSaved !== [], 'nativeSaved' => $nativeSaved !== [],
-				'mcpHTTP' => $response['status'], 'nativeHTTP' => $native['status'],
-				'deferCandidate' => $deferCandidate], JSON_THROW_ON_ERROR) . "\n", FILE_APPEND);
+				'mcpHTTP' => $response['status'], 'nativeHTTP' => $native['status']], JSON_THROW_ON_ERROR) . "\n", FILE_APPEND);
 		} finally {
 			$browser?->close(); $probe?->close(); $scene->close();
 		}

@@ -60,10 +60,16 @@ final class CreateCardHandlerTest extends TestCase {
 		$gateway = $this->gatewayOwnedBy('alice');
 		$gateway->expects(self::once())->method('validateAssignees')->with('alice', 10, ['pedro'])->willReturn([['uid' => 'pedro', 'displayName' => 'Pedro']]);
 		$gateway->expects(self::once())->method('createCard')->willReturn($this->card(['id' => 9]));
-		$gateway->expects(self::once())->method('assignCardUser')->with('alice', 9, 'pedro')->willThrowException(new RuntimeException('secret'));
+		$calls = [];
+		// Issue #26: an unexplained failure is retried once with the push deferred, then reported as before.
+		$gateway->expects(self::exactly(2))->method('assignCardUser')->willReturnCallback(static function (mixed ...$arguments) use (&$calls): never {
+			$calls[] = $arguments;
+			throw new RuntimeException('secret');
+		});
 		$gateway->expects(self::never())->method('deleteCard');
 		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 		$result = $handler->handle(['stackId' => 10, 'title' => 'New', 'assignees' => ['pedro']], 'alice');
+		self::assertSame([['alice', 9, 'pedro', false], ['alice', 9, 'pedro', true]], $calls);
 		$payload = $this->payload($result);
 		self::assertSame(9, $payload['id']);
 		self::assertSame(

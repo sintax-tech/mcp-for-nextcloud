@@ -168,17 +168,23 @@ final class EditCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 				$failed[] = $this->failure($uid, $e);
 			}
 		}
+		$writes = [];
 		foreach ($resolved['add'] as $uid) {
-			try {
-				$assignments[] = $this->afterWrite(
-					fn () => $this->gateway->assignCardUser($userId, $cardId, $uid),
+			$writes[$uid] = function (bool $deferDelivery) use ($userId, $cardId, $uid, &$warnings): mixed {
+				return $this->afterWrite(
+					fn () => $this->gateway->assignCardUser($userId, $cardId, $uid, $deferDelivery),
 					fn () => \OCA\Mcp\Modules\Deck\Integration\CardFormatter::assignmentOf($this->gateway->cardAssignments($userId, $cardId), $uid),
 					$warnings,
 				);
-				$assigned[] = $uid;
-			} catch (\Throwable $e) {
-				$failed[] = $this->failure($uid, $e);
+			};
+		}
+		foreach (\OCA\Mcp\Modules\Deck\AssigneePasses::run($writes) as $uid => $outcome) {
+			if ($outcome instanceof \Throwable) {
+				$failed[] = $this->failure((string)$uid, $outcome);
+				continue;
 			}
+			$assignments[] = $outcome;
+			$assigned[] = (string)$uid;
 		}
 		$card->setAssignedUsers($assignments);
 

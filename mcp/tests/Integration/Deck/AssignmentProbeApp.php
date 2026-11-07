@@ -28,6 +28,7 @@ final class AssignmentProbeApp {
 		copy(__DIR__ . '/AssignmentProbe/info.xml', $this->directory . '/appinfo/info.xml');
 		copy(__DIR__ . '/AssignmentProbe/Application.php', $this->directory . '/lib/AppInfo/Application.php');
 		copy(__DIR__ . '/AssignmentProbe/Delivery.php', $this->directory . '/lib/Delivery.php');
+		copy(__DIR__ . '/AssignmentProbe/PrepareFault.php', $this->directory . '/lib/PrepareFault.php');
 		Server::get(\OCP\IConfig::class)->setAppValue(self::ID, 'nonce', $this->nonce);
 		$this->occ('enable');
 	}
@@ -43,6 +44,15 @@ final class AssignmentProbeApp {
 		if (proc_close($p) !== 0) {
 			throw new RuntimeException('Probe app lifecycle failed: ' . $out . $error);
 		}
+	}
+
+	/**
+	 * @param bool $on Whether the probe's notifier fails while Deck notifications are prepared.
+	 * @param string|null $uid Only for this recipient; null for every recipient.
+	 * @return void
+	 */
+	public function prepareFault(bool $on, ?string $uid = null): void {
+		Server::get(\OCP\IConfig::class)->setAppValue(self::ID, 'prepare_fault', !$on ? '0' : ($uid === null ? '1' : 'user:' . $uid));
 	}
 
 	/** @return list<array<string,mixed>> Test-only phase metadata; never credentials or notification content. */

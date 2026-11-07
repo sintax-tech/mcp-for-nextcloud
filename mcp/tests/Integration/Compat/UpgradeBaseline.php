@@ -46,7 +46,7 @@ final class UpgradeBaseline {
 	 * @return bool Whether it uses the modern sidecar, native-client preservation and receipt probe.
 	 */
 	public static function isModern(string $version): bool {
-		return $version === '1.2.5' || preg_match('/^1\.3\.0-rc\.[0-9]+$/D', $version) === 1;
+		return $version === '1.2.5' || preg_match('/^1\.3\.0(-rc\.[0-9]+)?$/D', $version) === 1;
 	}
 
 	/** @return string Recognized installed baseline from the harness checkpoint. */

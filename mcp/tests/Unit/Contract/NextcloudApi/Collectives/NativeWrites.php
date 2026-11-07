@@ -9,8 +9,9 @@ namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi\Collectives;
 
 /**
  * Finds the writes in native Collectives source: file and folder creation, content and rename on nodes, the page and
- * index builders, database inserts, updates and deletes, raw statements and stored settings. Used on every method a
- * read chain reaches (collectives-read-chains.json) and on the calls that leave the app.
+ * index builders, database inserts, updates and deletes, raw statements and stored settings. Used on the Collectives
+ * bodies a read chain reaches (collectives-read-chains.json); what leaves Collectives is checked against the explicit
+ * allowlist collectives-external-leaves.json instead.
  */
 final class NativeWrites {
 	/** Every native call that writes, as it appears in source. */
@@ -36,13 +37,4 @@ final class NativeWrites {
 		return $found;
 	}
 
-	/**
-	 * @param list<string> $leaves calls leaving the app, `Type::method`
-	 * @return list<string> those whose method name writes
-	 */
-	public static function leaving(array $leaves): array {
-		return array_values(array_filter($leaves, static fn (string $leaf): bool
-			=> preg_match(self::PATTERN, '->' . substr((string)strrchr($leaf, ':'), 1) . '(') === 1
-				|| preg_match(self::PATTERN, substr((string)strrchr($leaf, ':'), 1) . '(') === 1));
-	}
 }

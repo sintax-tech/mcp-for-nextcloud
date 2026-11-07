@@ -11,11 +11,14 @@ require __DIR__ . '/../../../../vendor/autoload.php';
 require __DIR__ . '/CollectivesCallGraph.php';
 
 /**
- * Regenerates the Collectives surfaces of tests/fixtures/nextcloud-api/<major>.php and collectives-behavior.json from
- * the SHA-verified official archives of collectives-sources.json. Nothing is executed: classes are parsed, and the
- * native methods whose behaviour the module relies on are copied verbatim as evidence.
+ * Regenerates the Collectives surfaces of tests/fixtures/nextcloud-api/<major>.php, collectives-behavior.json and
+ * collectives-read-chains.json from the SHA-verified archives of collectives-sources.json. Nothing is executed:
+ * classes are parsed, the native methods whose behaviour the module relies on are copied verbatim as evidence, and
+ * the chains are followed with the pinned OCP and Circles types of each major. Every proof of
+ * collectives-external-leaves.json is checked against the pinned file it quotes.
  *
- * Usage: php generate-collectives.php <directory with v<version>.tar.gz and server-<version>-Entity.php>
+ * Usage: php generate-collectives.php <directory with v<version>.tar.gz, ocp-<server>.tar.gz, server-<server>-<file>
+ *   and circles-<server>-<file>>
  */
 final class CollectivesFixtureGenerator {
 	/** Native methods recorded per release, by file under lib/. */
@@ -49,6 +52,8 @@ final class CollectivesFixtureGenerator {
 	 * @return void writes the five fixtures and the behaviour record
 	 */
 	public static function run(string $archives): void {
+		// Every pinned tree is parsed in full.
+		ini_set('memory_limit', '2G');
 		$pins = json_decode(file_get_contents(__DIR__ . '/collectives-sources.json'), true, 512, JSON_THROW_ON_ERROR);
 		$behavior = [];
 		$chains = [];
@@ -63,6 +68,21 @@ final class CollectivesFixtureGenerator {
 					self::verify($file, $sha);
 					@mkdir($tree . '/' . dirname($path), recursive: true);
 					copy($file, $tree . '/' . $path);
+				}
+				// The types the chains are read with: the pinned OCP and the Circles classes Collectives calls.
+				$ocp = $archives . '/ocp-' . $pin['ocp']['version'] . '.tar.gz';
+				self::verify($ocp, $pin['ocp']['sha256']);
+				mkdir($tree . '/ocp');
+				(new PharData($ocp))->extractTo($tree . '/ocp');
+				mkdir($tree . '/types/OCA', recursive: true);
+				rename(glob($tree . '/ocp/*', GLOB_ONLYDIR)[0] . '/OCP', $tree . '/types/OCP');
+				foreach ($pin['circles']['files'] as $path => $sha) {
+					$file = $archives . '/circles-' . $pin['circles']['version'] . '-' . basename($path);
+					self::verify($file, $sha);
+					foreach (['/circles/' . $path, '/types/OCA/Circles/' . substr($path, strlen('lib/'))] as $target) {
+						@mkdir(dirname($tree . $target), recursive: true);
+						copy($file, $tree . $target);
+					}
 				}
 				(new PharData($archives . '/v' . $version . '.tar.gz'))->extractTo($tree . '/unpack');
 				$roots = glob($tree . '/unpack/*', GLOB_ONLYDIR);
@@ -95,11 +115,14 @@ final class CollectivesFixtureGenerator {
 						$methods[$file . '::' . $name] = self::method($source, $name);
 					}
 				}
-				$graph = new CollectivesCallGraph($app . '/lib');
+				$graph = new CollectivesCallGraph($app . '/lib', $tree . '/types');
+				$chains[$major] = ['collectives' => $version];
 				foreach (self::CHAINS as $kind => $entries) {
 					$reached = $graph->reach($entries);
-					$chains[$version][$kind] = ['entries' => $entries, 'leaves' => $reached['leaves'], 'methods' => $reached['methods']];
+					$chains[$major][$kind] = ['entries' => $entries, 'unknown' => $reached['unknown'], 'leaves' => $reached['leaves'], 'methods' => $reached['methods']];
 				}
+				$chains[$major]['proved'] = self::prove((string)$major, ['server' => $tree, 'circles' => $tree . '/circles', 'ocp' => $tree . '/types',
+					'collectives' => $app]);
 				$behavior[$version] = ['sha256' => $pin['collectives']['sha256'],
 					'nextcloud' => ['min' => (int)$xml->dependencies->nextcloud['min-version'], 'max' => (int)$xml->dependencies->nextcloud['max-version']],
 					'methods' => $methods];
@@ -116,6 +139,28 @@ final class CollectivesFixtureGenerator {
 		ksort($chains);
 		file_put_contents(__DIR__ . '/collectives-behavior.json', json_encode($behavior, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . PHP_EOL);
 		file_put_contents(__DIR__ . '/collectives-read-chains.json', json_encode($chains, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . PHP_EOL);
+	}
+
+	/**
+	 * Checks every proof of collectives-external-leaves.json that applies to a major against the pinned file it quotes.
+	 * @param string $major Nextcloud major
+	 * @param array<string, string> $roots directory of each proof source
+	 * @return list<string> the leaves whose proofs were found, in order
+	 */
+	private static function prove(string $major, array $roots): array {
+		$proved = [];
+		foreach (json_decode((string)file_get_contents(__DIR__ . '/collectives-external-leaves.json'), true, 512, JSON_THROW_ON_ERROR) as $leaf => $entry) {
+			if (!in_array($major, $entry['majors'], true)) {
+				continue;
+			}
+			foreach ($entry['proof'] as $proof) {
+				if ($proof['source'] !== 'php' && !str_contains((string)@file_get_contents($roots[$proof['source']] . '/' . $proof['file']), $proof['excerpt'])) {
+					throw new RuntimeException("NC$major: the proof of $leaf is not in {$proof['source']}:{$proof['file']}");
+				}
+			}
+			$proved[] = $leaf;
+		}
+		return $proved;
 	}
 
 	/**

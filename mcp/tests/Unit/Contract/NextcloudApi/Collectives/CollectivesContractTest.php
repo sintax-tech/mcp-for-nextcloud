@@ -95,41 +95,119 @@ final class CollectivesContractTest extends TestCase {
 		}
 	}
 
+	/** @return array<string, array{majors:list<string>, effect:string, why:string, proof:list<array{source:string, file:string, excerpt:string}>}> */
+	private static function allowlist(): array {
+		return json_decode((string)file_get_contents(self::DIR . 'collectives-external-leaves.json'), true, 512, JSON_THROW_ON_ERROR);
+	}
+
 	/**
-	 * Every method a read, a plan, a read-back or a content search can reach in each pinned release (followed through
-	 * the source by CollectivesCallGraph, over-approximating untyped receivers), checked for writes. The only write on
-	 * the read chain stores the user's Collectives folder when it is unset, which CollectivesAdmission refuses before.
-	 * The 4.0.0 content search creates the indices folder, so the module refuses that shape; 4.4.0 and later only read.
+	 * Every method a read, a plan, a read-back or a content search can reach in each pinned major, followed through the
+	 * source by CollectivesCallGraph with that major's pinned OCP and Circles types. No form is left unresolved, and every
+	 * call that leaves Collectives is in collectives-external-leaves.json for that major, with a proof the generator
+	 * found in the pinned file it quotes. A read reaches no write of its own: the one stored setting is the Collectives
+	 * folder, written only when unset, which CollectivesAdmission refuses before; the only platform effects are the
+	 * account's files folder and Circles' single circle, created by Nextcloud when the account has none yet. The 4.0.0
+	 * content search creates the indices folder, so the module refuses that shape; 4.4.0 and later only read.
 	 * @return void
 	 */
 	public function testEveryChainAReadReachesOnlyReads(): void {
 		$chains = json_decode((string)file_get_contents(self::DIR . 'collectives-read-chains.json'), true, 512, JSON_THROW_ON_ERROR);
-		$this->assertSame(['4.0.0', '4.4.0', '4.5.0', '4.7.1'], array_keys($chains));
+		$pins = json_decode((string)file_get_contents(self::DIR . 'collectives-sources.json'), true, 512, JSON_THROW_ON_ERROR);
+		$allowed = self::allowlist();
+		$this->assertSame(array_keys($pins), array_keys($chains));
 		$folder = 'OCA\\Collectives\\Fs\\UserFolderHelper::getUserFolderSetting';
-		foreach ($chains as $version => $chain) {
+		foreach ($chains as $major => $chain) {
+			$this->assertSame($pins[$major]['collectives']['version'], $chain['collectives']);
 			$read = $chain['read'];
-			$this->assertGreaterThan(50, count($read['methods']), "$version: the read chain was followed");
+			$this->assertSame([], $read['unknown'], "NC$major: every form of the read chain is resolved");
+			$this->assertGreaterThan(50, count($read['methods']), "NC$major: the read chain was followed");
 			foreach (['OCA\\Collectives\\Service\\PageService::find', 'OCA\\Collectives\\Service\\PageService::getParentPageId',
 				'OCA\\Collectives\\Service\\CollectiveServiceBase::getCollective', $folder] as $reached) {
-				$this->assertArrayHasKey($reached, $read['methods'], "$version reaches $reached");
+				$this->assertArrayHasKey($reached, $read['methods'], "NC$major reaches $reached");
 			}
-			$this->assertSame([$folder => ['setUserValue']], NativeWrites::in($read['methods']), "$version: the read chain writes nothing else");
+			$this->assertSame([$folder => ['setUserValue']], NativeWrites::in($read['methods']), "NC$major: no Collectives body of the read chain writes otherwise");
 			$this->assertMatchesRegularExpression("/if \\(\\\$userCollectivesPath === ''\\) \\{[^}]*->setUserValue\\(/s", $read['methods'][$folder],
-				"$version: the folder setting is only written when it is unset");
-			$this->assertSame(['OCP\\IConfig::setUserValue'], NativeWrites::leaving($read['leaves']), "$version: no other write leaves the app");
+				"NC$major: the folder setting is only written when it is unset");
+			$effects = $this->leavesAllowed((string)$major, $read['leaves'], $chain['proved'], 'read');
+			$this->assertSame(['OCP\\IConfig::setUserValue'], array_keys($effects, 'write', true), "NC$major: the one write is the guarded folder setting");
+			$this->assertSame(['OCA\\Circles\\CirclesManager::getFederatedUser', 'OCP\\Files\\IRootFolder::getUserFolder'], array_keys($effects, 'platform', true),
+				"NC$major: no other platform effect");
 			$search = $chain['search'];
-			if ($version === '4.0.0') {
+			if ($chain['collectives'] === '4.0.0') {
 				$this->assertContains('newFolder', NativeWrites::in($search['methods'])['OCA\\Collectives\\Service\\SearchService::getIndicesFolder'] ?? [],
 					'4.0.0 creates the indices folder on a search: the module refuses that shape');
 				continue;
 			}
-			$this->assertSame([], NativeWrites::in($search['methods']), "$version: the content search only reads");
-			$this->assertSame([], NativeWrites::leaving($search['leaves']), "$version: no write leaves the app from the search");
-			$this->assertArrayHasKey('OCA\\Collectives\\Search\\FileSearch\\FileSearcher::search', $search['methods'], "$version: the search chain was followed");
+			$this->assertSame([], $search['unknown'], "NC$major: every form of the content search is resolved");
+			$this->assertArrayHasKey('OCA\\Collectives\\Search\\FileSearch\\FileSearcher::search', $search['methods'], "NC$major: the search chain was followed");
+			$this->assertSame([], NativeWrites::in($search['methods']), "NC$major: the content search only reads");
+			$effects = $this->leavesAllowed((string)$major, $search['leaves'], $chain['proved'], 'search');
+			$this->assertSame([], array_diff($effects, ['read', 'memory']), "NC$major: the content search leaves Collectives only to read");
 		}
 	}
 
-	/** @return void the write finder catches every kind of write the chains are checked for, and nothing in a read */
+	/**
+	 * @param string $major Nextcloud major
+	 * @param list<string> $leaves calls a chain makes outside Collectives
+	 * @param list<string> $proved the leaves whose proofs the generator found for the major
+	 * @param string $kind the chain, for the messages
+	 * @return array<string, string> the effect of each leaf
+	 */
+	private function leavesAllowed(string $major, array $leaves, array $proved, string $kind): array {
+		$allowed = self::allowlist();
+		$effects = [];
+		foreach ($leaves as $leaf) {
+			$this->assertContains($major, $allowed[$leaf]['majors'] ?? [], "NC$major $kind: $leaf is not in the allowlist for this major");
+			$this->assertContains($leaf, $proved, "NC$major $kind: the proof of $leaf was not found in its pinned file");
+			$effects[$leaf] = $allowed[$leaf]['effect'];
+		}
+		return $effects;
+	}
+
+	/** @return void R12: a call leaving Collectives that the allowlist does not list for the major fails, whatever its name */
+	public function testALeafOutsideTheAllowlistFails(): void {
+		foreach ([['35', 'OCA\\Collectives\\Hidden::persist'], ['35', 'OCP\\Files\\Node::touchAll'], ['31', 'OCP\\DB\\QueryBuilder\\IFunctionBuilder::sum']] as [$major, $leaf]) {
+			try {
+				$this->leavesAllowed($major, [$leaf], [$leaf], 'synthetic');
+			} catch (\PHPUnit\Framework\AssertionFailedError $e) {
+				$this->assertStringContainsString("$leaf is not in the allowlist for this major", $e->getMessage());
+				continue;
+			}
+			$this->fail("$leaf in NC$major was accepted");
+		}
+		$this->expectException(\PHPUnit\Framework\AssertionFailedError::class);
+		$this->leavesAllowed('35', ['OCP\\IL10N::t'], [], 'synthetic');
+	}
+
+	/** @return void each allowed leaf states its effect, why, and a proof in a pinned source, and is reached by some chain */
+	public function testTheAllowlistIsExplicit(): void {
+		$chains = json_decode((string)file_get_contents(self::DIR . 'collectives-read-chains.json'), true, 512, JSON_THROW_ON_ERROR);
+		$reached = [];
+		foreach ($chains as $major => $chain) {
+			foreach ($chain['collectives'] === '4.0.0' ? ['read'] : ['read', 'search'] as $kind) {
+				foreach ($chain[$kind]['leaves'] as $leaf) {
+					$reached[$leaf][] = (string)$major;
+				}
+			}
+		}
+		foreach (self::allowlist() as $leaf => $entry) {
+			$this->assertSame(array_values(array_unique($reached[$leaf] ?? [])), $entry['majors'], "$leaf is allowed exactly where it is reached");
+			$this->assertContains($entry['effect'], ['read', 'memory', 'cache', 'platform', 'write'], $leaf);
+			$this->assertNotSame('', $entry['why'], $leaf);
+			$this->assertNotSame([], $entry['proof'], $leaf);
+			foreach ($entry['proof'] as $proof) {
+				$this->assertContains($proof['source'], ['php', 'ocp', 'server', 'circles', 'collectives'], $leaf);
+				$this->assertSame($proof['source'] === 'php', $proof['excerpt'] === '', "$leaf: a pinned source is quoted, PHP itself is not");
+			}
+			// PHP itself: built-in functions, its exceptions, and getMessage, which is final in Exception.
+			if (str_starts_with($leaf, 'function ') || str_ends_with($leaf, '::getMessage') || in_array(explode('::', $leaf)[0], ['Exception', 'RuntimeException'], true)) {
+				continue;
+			}
+			$this->assertNotSame('php', $entry['proof'][0]['source'], "$leaf: only PHP itself is proved by PHP");
+		}
+	}
+
+	/** @return void the write finder catches every kind of write a Collectives body is checked for, and nothing in a read */
 	public function testTheWriteFinderCatchesEveryWrite(): void {
 		foreach (['$folder->newFolder(\'indices\')', '$folder->newFile($name)', '$file->putContent($x)', '$this->newPage($c, $f)',
 			'$this->createIndexPage($f, 0)', '$this->initSubFolder($file)', '$qb->insert(\'t\')', '$qb->update(\'t\')',
@@ -138,6 +216,5 @@ final class CollectivesContractTest extends TestCase {
 			$this->assertNotSame([], NativeWrites::in(['X::m' => "function m() { $write; }"]), $write);
 		}
 		$this->assertSame([], NativeWrites::in(['X::m' => 'function m() { return $this->mapper->findByFileId($id) ?? $qb->select(\'*\')->executeQuery(); }']));
-		$this->assertSame(['(outside value)::newFolder'], NativeWrites::leaving(['(outside value)::newFolder', 'OCP\\Files\\Folder::get']));
 	}
 }

@@ -1,0 +1,2123 @@
+{
+  "Exception::__construct": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "memory",
+    "why": "A PHP exception object.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "Exception::getMessage": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "memory",
+    "why": "A PHP exception object.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "OCA\\Circles\\CirclesManager::getCircle": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Selects a circle for the current user.",
+    "proof": [
+      {
+        "source": "circles",
+        "file": "lib/CirclesManager.php",
+        "excerpt": "return $this->circleService->getCircle($singleId, $probe);"
+      },
+      {
+        "source": "circles",
+        "file": "lib/Service/CircleService.php",
+        "excerpt": "return $this->circleRequest->getCircle("
+      }
+    ]
+  },
+  "OCA\\Circles\\CirclesManager::getCircles": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "cache",
+    "why": "Selects the circles of the current user; Circles may keep the answer in its memory cache.",
+    "proof": [
+      {
+        "source": "circles",
+        "file": "lib/CirclesManager.php",
+        "excerpt": "return $this->circleService->getCircles($probe, !$refreshCache);"
+      }
+    ]
+  },
+  "OCA\\Circles\\CirclesManager::getFederatedUser": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "platform",
+    "why": "Resolves the account in Circles. When Circles has no record of the account's single circle yet, it creates it (and on 33 and later stores its id as a Circles user setting); every Teams-aware request of the account does the same.",
+    "proof": [
+      {
+        "source": "circles",
+        "file": "lib/CirclesManager.php",
+        "excerpt": "return $this->federatedUserService->getFederatedUser($federatedId, $type);"
+      },
+      {
+        "source": "circles",
+        "file": "lib/Service/FederatedUserService.php",
+        "excerpt": "$this->circleRequest->save($circle);"
+      }
+    ]
+  },
+  "OCA\\Circles\\CirclesManager::probeCircles": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Selects the circles of the current user.",
+    "proof": [
+      {
+        "source": "circles",
+        "file": "lib/CirclesManager.php",
+        "excerpt": "return $this->circleService->probeCircles($circleProbe, $dataProbe);"
+      },
+      {
+        "source": "circles",
+        "file": "lib/Service/CircleService.php",
+        "excerpt": "return $this->circleRequest->probeCircles("
+      }
+    ]
+  },
+  "OCA\\Circles\\CirclesManager::startSession": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "memory",
+    "why": "Sets the current Circles user for the request, in memory.",
+    "proof": [
+      {
+        "source": "circles",
+        "file": "lib/CirclesManager.php",
+        "excerpt": "$this->federatedUserService->setCurrentUser($federatedUser);"
+      }
+    ]
+  },
+  "OCA\\Circles\\CirclesManager::startSuperSession": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "memory",
+    "why": "Lifts the current-user condition for the request, in memory.",
+    "proof": [
+      {
+        "source": "circles",
+        "file": "lib/CirclesManager.php",
+        "excerpt": "$this->federatedUserService->bypassCurrentUserCondition(true);"
+      }
+    ]
+  },
+  "OCA\\Circles\\CirclesManager::stopSession": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "memory",
+    "why": "Clears the Circles session of the request, in memory.",
+    "proof": [
+      {
+        "source": "circles",
+        "file": "lib/CirclesManager.php",
+        "excerpt": "$this->federatedUserService->bypassCurrentUserCondition(false);"
+      }
+    ]
+  },
+  "OCA\\Circles\\Exceptions\\CircleNotFoundException::getMessage": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "memory",
+    "why": "Reads an exception's message: Exception::getMessage is final in PHP, so no class overrides it.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "OCA\\Circles\\Exceptions\\FederatedItemException::getMessage": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "memory",
+    "why": "Reads an exception's message: Exception::getMessage is final in PHP, so no class overrides it.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "OCA\\Circles\\Exceptions\\RequestBuilderException::getMessage": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "memory",
+    "why": "Reads an exception's message: Exception::getMessage is final in PHP, so no class overrides it.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "OCA\\Circles\\Model\\Circle::getInitiator": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A getter of a circle already loaded.",
+    "proof": [
+      {
+        "source": "circles",
+        "file": "lib/Model/Circle.php",
+        "excerpt": "public function getInitiator("
+      }
+    ]
+  },
+  "OCA\\Circles\\Model\\Circle::getSanitizedName": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A getter of a circle already loaded.",
+    "proof": [
+      {
+        "source": "circles",
+        "file": "lib/Model/Circle.php",
+        "excerpt": "public function getSanitizedName("
+      }
+    ]
+  },
+  "OCA\\Circles\\Model\\Circle::getSingleId": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A getter of a circle already loaded.",
+    "proof": [
+      {
+        "source": "circles",
+        "file": "lib/Model/Circle.php",
+        "excerpt": "public function getSingleId("
+      }
+    ]
+  },
+  "OCA\\Circles\\Model\\Member::getLevel": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A getter of a member already loaded.",
+    "proof": [
+      {
+        "source": "circles",
+        "file": "lib/Model/Member.php",
+        "excerpt": "public function getLevel("
+      }
+    ]
+  },
+  "OCA\\Circles\\Model\\Probes\\CircleProbe::__construct": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "memory",
+    "why": "Fills a query filter object in memory.",
+    "proof": [
+      {
+        "source": "circles",
+        "file": "lib/CirclesManager.php",
+        "excerpt": "use OCA\\Circles\\Model\\Probes\\CircleProbe;"
+      }
+    ]
+  },
+  "OCA\\Circles\\Model\\Probes\\CircleProbe::mustBeMember": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "memory",
+    "why": "Fills a query filter object in memory.",
+    "proof": [
+      {
+        "source": "circles",
+        "file": "lib/CirclesManager.php",
+        "excerpt": "use OCA\\Circles\\Model\\Probes\\CircleProbe;"
+      }
+    ]
+  },
+  "OCA\\Circles\\Model\\Probes\\DataProbe::__construct": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "memory",
+    "why": "Fills a query filter object in memory.",
+    "proof": [
+      {
+        "source": "circles",
+        "file": "lib/CirclesManager.php",
+        "excerpt": "use OCA\\Circles\\Model\\Probes\\DataProbe;"
+      }
+    ]
+  },
+  "OCA\\Circles\\Model\\Probes\\DataProbe::add": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "memory",
+    "why": "Fills a query filter object in memory.",
+    "proof": [
+      {
+        "source": "circles",
+        "file": "lib/CirclesManager.php",
+        "excerpt": "use OCA\\Circles\\Model\\Probes\\DataProbe;"
+      }
+    ]
+  },
+  "OCP\\AppFramework\\Db\\Entity::getCircleId": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A getter the entity answers through __call: it returns the loaded property and changes nothing.",
+    "proof": [
+      {
+        "source": "server",
+        "file": "lib/public/AppFramework/Db/Entity.php",
+        "excerpt": "} elseif (str_starts_with($methodName, 'get')) {\n\t\t\treturn $this->getter(lcfirst(substr($methodName, 3)));"
+      }
+    ]
+  },
+  "OCP\\AppFramework\\Db\\Entity::getCircleUniqueId": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A getter the entity answers through __call: it returns the loaded property and changes nothing.",
+    "proof": [
+      {
+        "source": "server",
+        "file": "lib/public/AppFramework/Db/Entity.php",
+        "excerpt": "} elseif (str_starts_with($methodName, 'get')) {\n\t\t\treturn $this->getter(lcfirst(substr($methodName, 3)));"
+      }
+    ]
+  },
+  "OCP\\AppFramework\\Db\\Entity::getEmoji": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A getter the entity answers through __call: it returns the loaded property and changes nothing.",
+    "proof": [
+      {
+        "source": "server",
+        "file": "lib/public/AppFramework/Db/Entity.php",
+        "excerpt": "} elseif (str_starts_with($methodName, 'get')) {\n\t\t\treturn $this->getter(lcfirst(substr($methodName, 3)));"
+      }
+    ]
+  },
+  "OCP\\AppFramework\\Db\\Entity::getFileId": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A getter the entity answers through __call: it returns the loaded property and changes nothing.",
+    "proof": [
+      {
+        "source": "server",
+        "file": "lib/public/AppFramework/Db/Entity.php",
+        "excerpt": "} elseif (str_starts_with($methodName, 'get')) {\n\t\t\treturn $this->getter(lcfirst(substr($methodName, 3)));"
+      }
+    ]
+  },
+  "OCP\\AppFramework\\Db\\Entity::getFullWidth": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A getter the entity answers through __call: it returns the loaded property and changes nothing.",
+    "proof": [
+      {
+        "source": "server",
+        "file": "lib/public/AppFramework/Db/Entity.php",
+        "excerpt": "} elseif (str_starts_with($methodName, 'get')) {\n\t\t\treturn $this->getter(lcfirst(substr($methodName, 3)));"
+      }
+    ]
+  },
+  "OCP\\AppFramework\\Db\\Entity::getId": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A getter the entity answers through __call: it returns the loaded property and changes nothing.",
+    "proof": [
+      {
+        "source": "server",
+        "file": "lib/public/AppFramework/Db/Entity.php",
+        "excerpt": "} elseif (str_starts_with($methodName, 'get')) {\n\t\t\treturn $this->getter(lcfirst(substr($methodName, 3)));"
+      }
+    ]
+  },
+  "OCP\\AppFramework\\Db\\Entity::getLastUserId": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A getter the entity answers through __call: it returns the loaded property and changes nothing.",
+    "proof": [
+      {
+        "source": "server",
+        "file": "lib/public/AppFramework/Db/Entity.php",
+        "excerpt": "} elseif (str_starts_with($methodName, 'get')) {\n\t\t\treturn $this->getter(lcfirst(substr($methodName, 3)));"
+      }
+    ]
+  },
+  "OCP\\AppFramework\\Db\\Entity::getSlug": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A getter the entity answers through __call: it returns the loaded property and changes nothing.",
+    "proof": [
+      {
+        "source": "server",
+        "file": "lib/public/AppFramework/Db/Entity.php",
+        "excerpt": "} elseif (str_starts_with($methodName, 'get')) {\n\t\t\treturn $this->getter(lcfirst(substr($methodName, 3)));"
+      }
+    ]
+  },
+  "OCP\\AppFramework\\Db\\Entity::getSubpageOrder": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A getter the entity answers through __call: it returns the loaded property and changes nothing.",
+    "proof": [
+      {
+        "source": "server",
+        "file": "lib/public/AppFramework/Db/Entity.php",
+        "excerpt": "} elseif (str_starts_with($methodName, 'get')) {\n\t\t\treturn $this->getter(lcfirst(substr($methodName, 3)));"
+      }
+    ]
+  },
+  "OCP\\AppFramework\\Db\\Entity::getTags": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A getter the entity answers through __call: it returns the loaded property and changes nothing.",
+    "proof": [
+      {
+        "source": "server",
+        "file": "lib/public/AppFramework/Db/Entity.php",
+        "excerpt": "} elseif (str_starts_with($methodName, 'get')) {\n\t\t\treturn $this->getter(lcfirst(substr($methodName, 3)));"
+      }
+    ]
+  },
+  "OCP\\AppFramework\\Db\\Entity::getTerm": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A getter the entity answers through __call: it returns the loaded property and changes nothing.",
+    "proof": [
+      {
+        "source": "server",
+        "file": "lib/public/AppFramework/Db/Entity.php",
+        "excerpt": "} elseif (str_starts_with($methodName, 'get')) {\n\t\t\treturn $this->getter(lcfirst(substr($methodName, 3)));"
+      }
+    ]
+  },
+  "OCP\\AppFramework\\Db\\QBMapper::findEntities": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Executes the given query with executeQuery (SELECT only) and maps the rows to entities.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/AppFramework/Db/QBMapper.php",
+        "excerpt": "protected function findEntities(IQueryBuilder $query)"
+      },
+      {
+        "source": "ocp",
+        "file": "OCP/AppFramework/Db/QBMapper.php",
+        "excerpt": "$query->executeQuery()"
+      }
+    ]
+  },
+  "OCP\\AppFramework\\Db\\QBMapper::findEntity": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Executes the given query with executeQuery (SELECT only) and maps the rows to entities.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/AppFramework/Db/QBMapper.php",
+        "excerpt": "protected function findEntity(IQueryBuilder $query)"
+      },
+      {
+        "source": "ocp",
+        "file": "OCP/AppFramework/Db/QBMapper.php",
+        "excerpt": "$query->executeQuery()"
+      }
+    ]
+  },
+  "OCP\\DB\\IResult::closeCursor": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Reads rows of a result already selected, or frees it.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/IResult.php",
+        "excerpt": "public function closeCursor("
+      }
+    ]
+  },
+  "OCP\\DB\\IResult::fetchAll": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Reads rows of a result already selected, or frees it.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/IResult.php",
+        "excerpt": "public function fetchAll("
+      }
+    ]
+  },
+  "OCP\\DB\\QueryBuilder\\IExpressionBuilder::andX": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Builds a SQL expression string in memory.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/QueryBuilder/IExpressionBuilder.php",
+        "excerpt": "public function andX("
+      }
+    ]
+  },
+  "OCP\\DB\\QueryBuilder\\IExpressionBuilder::eq": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Builds a SQL expression string in memory.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/QueryBuilder/IExpressionBuilder.php",
+        "excerpt": "public function eq("
+      }
+    ]
+  },
+  "OCP\\DB\\QueryBuilder\\IExpressionBuilder::in": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Builds a SQL expression string in memory.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/QueryBuilder/IExpressionBuilder.php",
+        "excerpt": "public function in("
+      }
+    ]
+  },
+  "OCP\\DB\\QueryBuilder\\IExpressionBuilder::isNotNull": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Builds a SQL expression string in memory.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/QueryBuilder/IExpressionBuilder.php",
+        "excerpt": "public function isNotNull("
+      }
+    ]
+  },
+  "OCP\\DB\\QueryBuilder\\IExpressionBuilder::isNull": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Builds a SQL expression string in memory.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/QueryBuilder/IExpressionBuilder.php",
+        "excerpt": "public function isNull("
+      }
+    ]
+  },
+  "OCP\\DB\\QueryBuilder\\IExpressionBuilder::like": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Builds a SQL expression string in memory.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/QueryBuilder/IExpressionBuilder.php",
+        "excerpt": "public function like("
+      }
+    ]
+  },
+  "OCP\\DB\\QueryBuilder\\IFunctionBuilder::sum": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Builds a SQL function string in memory.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/QueryBuilder/IFunctionBuilder.php",
+        "excerpt": "public function sum("
+      }
+    ]
+  },
+  "OCP\\DB\\QueryBuilder\\IQueryBuilder::andWhere": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Builds the SQL of the query in memory; nothing runs before executeQuery.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/QueryBuilder/IQueryBuilder.php",
+        "excerpt": "public function andWhere("
+      }
+    ]
+  },
+  "OCP\\DB\\QueryBuilder\\IQueryBuilder::createFunction": {
+    "majors": [
+      "34"
+    ],
+    "effect": "read",
+    "why": "Builds the SQL of the query in memory; nothing runs before executeQuery.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/QueryBuilder/IQueryBuilder.php",
+        "excerpt": "public function createFunction("
+      }
+    ]
+  },
+  "OCP\\DB\\QueryBuilder\\IQueryBuilder::createNamedParameter": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Builds the SQL of the query in memory; nothing runs before executeQuery.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/QueryBuilder/IQueryBuilder.php",
+        "excerpt": "public function createNamedParameter("
+      }
+    ]
+  },
+  "OCP\\DB\\QueryBuilder\\IQueryBuilder::executeQuery": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Runs only a SELECT: the server refuses any other query type before executing.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/QueryBuilder/IQueryBuilder.php",
+        "excerpt": "public function executeQuery("
+      },
+      {
+        "source": "server",
+        "file": "lib/private/DB/QueryBuilder/QueryBuilder.php",
+        "excerpt": "Invalid query type, expected SELECT query"
+      }
+    ]
+  },
+  "OCP\\DB\\QueryBuilder\\IQueryBuilder::expr": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Builds the SQL of the query in memory; nothing runs before executeQuery.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/QueryBuilder/IQueryBuilder.php",
+        "excerpt": "public function expr("
+      }
+    ]
+  },
+  "OCP\\DB\\QueryBuilder\\IQueryBuilder::from": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Builds the SQL of the query in memory; nothing runs before executeQuery.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/QueryBuilder/IQueryBuilder.php",
+        "excerpt": "public function from("
+      }
+    ]
+  },
+  "OCP\\DB\\QueryBuilder\\IQueryBuilder::func": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Builds the SQL of the query in memory; nothing runs before executeQuery.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/QueryBuilder/IQueryBuilder.php",
+        "excerpt": "public function func("
+      }
+    ]
+  },
+  "OCP\\DB\\QueryBuilder\\IQueryBuilder::groupBy": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Builds the SQL of the query in memory; nothing runs before executeQuery.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/QueryBuilder/IQueryBuilder.php",
+        "excerpt": "public function groupBy("
+      }
+    ]
+  },
+  "OCP\\DB\\QueryBuilder\\IQueryBuilder::innerJoin": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Builds the SQL of the query in memory; nothing runs before executeQuery.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/QueryBuilder/IQueryBuilder.php",
+        "excerpt": "public function innerJoin("
+      }
+    ]
+  },
+  "OCP\\DB\\QueryBuilder\\IQueryBuilder::orderBy": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Builds the SQL of the query in memory; nothing runs before executeQuery.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/QueryBuilder/IQueryBuilder.php",
+        "excerpt": "public function orderBy("
+      }
+    ]
+  },
+  "OCP\\DB\\QueryBuilder\\IQueryBuilder::select": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Builds the SQL of the query in memory; nothing runs before executeQuery.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/QueryBuilder/IQueryBuilder.php",
+        "excerpt": "public function select("
+      }
+    ]
+  },
+  "OCP\\DB\\QueryBuilder\\IQueryBuilder::selectAlias": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Builds the SQL of the query in memory; nothing runs before executeQuery.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/QueryBuilder/IQueryBuilder.php",
+        "excerpt": "public function selectAlias("
+      }
+    ]
+  },
+  "OCP\\DB\\QueryBuilder\\IQueryBuilder::selectDistinct": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Builds the SQL of the query in memory; nothing runs before executeQuery.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/QueryBuilder/IQueryBuilder.php",
+        "excerpt": "public function selectDistinct("
+      }
+    ]
+  },
+  "OCP\\DB\\QueryBuilder\\IQueryBuilder::setMaxResults": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Builds the SQL of the query in memory; nothing runs before executeQuery.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/QueryBuilder/IQueryBuilder.php",
+        "excerpt": "public function setMaxResults("
+      }
+    ]
+  },
+  "OCP\\DB\\QueryBuilder\\IQueryBuilder::where": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Builds the SQL of the query in memory; nothing runs before executeQuery.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/DB/QueryBuilder/IQueryBuilder.php",
+        "excerpt": "public function where("
+      }
+    ]
+  },
+  "OCP\\Files\\FileInfo::getMountPoint": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Reads the mount point of a node already resolved.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/Files/FileInfo.php",
+        "excerpt": "public function getMountPoint("
+      }
+    ]
+  },
+  "OCP\\Files\\Folder::get": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "cache",
+    "why": "Looks a node up in the folder; like any read by the account, Nextcloud may refresh its file cache on the way.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/Files/Folder.php",
+        "excerpt": "public function get("
+      }
+    ]
+  },
+  "OCP\\Files\\Folder::getFirstNodeById": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "cache",
+    "why": "Looks a node up in the folder; like any read by the account, Nextcloud may refresh its file cache on the way.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/Files/Folder.php",
+        "excerpt": "public function getFirstNodeById("
+      }
+    ]
+  },
+  "OCP\\Files\\IRootFolder::getUserFolder": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "platform",
+    "why": "Returns the account's files folder; the server creates it only when the account has none yet, which an account that uses Collectives already has.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/Files/IRootFolder.php",
+        "excerpt": "public function getUserFolder("
+      },
+      {
+        "source": "server",
+        "file": "lib/private/Files/Node/Root.php",
+        "excerpt": "$folder = $this->newFolder('/' . $userId . '/files');"
+      }
+    ]
+  },
+  "OCP\\Files\\InvalidPathException::getMessage": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "memory",
+    "why": "Reads an exception's message: Exception::getMessage is final in PHP, so no class overrides it.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "OCP\\Files\\Mount\\IMountPoint::getMountPoint": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Reads the path of a mount point.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/Files/Mount/IMountPoint.php",
+        "excerpt": "public function getMountPoint("
+      }
+    ]
+  },
+  "OCP\\Files\\Node::getId": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Reads a property of a node already resolved.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/Files/Node.php",
+        "excerpt": "public function getId("
+      }
+    ]
+  },
+  "OCP\\Files\\Node::getInternalPath": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Reads a property of a node already resolved.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/Files/Node.php",
+        "excerpt": "public function getInternalPath("
+      }
+    ]
+  },
+  "OCP\\Files\\Node::getMTime": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Reads a property of a node already resolved.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/Files/Node.php",
+        "excerpt": "public function getMTime("
+      }
+    ]
+  },
+  "OCP\\Files\\Node::getName": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Reads a property of a node already resolved.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/Files/Node.php",
+        "excerpt": "public function getName("
+      }
+    ]
+  },
+  "OCP\\Files\\Node::getParent": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Reads a property of a node already resolved.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/Files/Node.php",
+        "excerpt": "public function getParent("
+      }
+    ]
+  },
+  "OCP\\Files\\Node::getSize": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Reads a property of a node already resolved.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/Files/Node.php",
+        "excerpt": "public function getSize("
+      }
+    ]
+  },
+  "OCP\\Files\\NotFoundException::__construct": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "memory",
+    "why": "An exception object: the class declares no constructor, so PHP's runs.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/Files/NotFoundException.php",
+        "excerpt": "class NotFoundException extends \\Exception {"
+      }
+    ]
+  },
+  "OCP\\Files\\NotFoundException::getMessage": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "memory",
+    "why": "Reads an exception's message: Exception::getMessage is final in PHP, so no class overrides it.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "OCP\\IAppConfig::getValueString": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Reads an app setting.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/IAppConfig.php",
+        "excerpt": "public function getValueString("
+      }
+    ]
+  },
+  "OCP\\IConfig::getSystemValue": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Reads a setting.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/IConfig.php",
+        "excerpt": "public function getSystemValue("
+      }
+    ]
+  },
+  "OCP\\IConfig::getUserValue": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Reads a setting.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/IConfig.php",
+        "excerpt": "public function getUserValue("
+      }
+    ]
+  },
+  "OCP\\IConfig::setUserValue": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "write",
+    "why": "Stores the account's Collectives folder. Collectives only does it when the setting is unset, and the module refuses such an account before any native call (CollectivesAdmission).",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/IConfig.php",
+        "excerpt": "public function setUserValue("
+      }
+    ]
+  },
+  "OCP\\IDBConnection::getQueryBuilder": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Returns a new, empty query builder.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/IDBConnection.php",
+        "excerpt": "public function getQueryBuilder("
+      }
+    ]
+  },
+  "OCP\\IL10N::t": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Translates a text.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/IL10N.php",
+        "excerpt": "public function t("
+      }
+    ]
+  },
+  "OCP\\IUserManager::get": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Looks an account up.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/IUserManager.php",
+        "excerpt": "public function get("
+      }
+    ]
+  },
+  "OCP\\IUserManager::getDisplayName": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Reads an account's display name.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/IUserManager.php",
+        "excerpt": "public function getDisplayName("
+      }
+    ]
+  },
+  "OCP\\L10N\\IFactory::get": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Returns the translations of an app.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/L10N/IFactory.php",
+        "excerpt": "public function get("
+      }
+    ]
+  },
+  "OCP\\L10N\\IFactory::getUserLanguage": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Reads the account's language.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/L10N/IFactory.php",
+        "excerpt": "public function getUserLanguage("
+      }
+    ]
+  },
+  "OCP\\Server::get": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Returns the service registered for a class written in place (the reader types the value as that class).",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/Server.php",
+        "excerpt": "public static function get(string $serviceName)"
+      }
+    ]
+  },
+  "OCP\\Util::getVersion": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Reads the server version.",
+    "proof": [
+      {
+        "source": "ocp",
+        "file": "OCP/Util.php",
+        "excerpt": "public static function getVersion()"
+      }
+    ]
+  },
+  "OC_Util::setupFS": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "cache",
+    "why": "Mounts the account's storages for the request; Nextcloud records the mounts in its mount cache, as on any request of the account.",
+    "proof": [
+      {
+        "source": "server",
+        "file": "lib/private/legacy/OC_Util.php",
+        "excerpt": "$setupManager->setupForUser($userObject);"
+      }
+    ]
+  },
+  "RuntimeException::__construct": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "memory",
+    "why": "A PHP exception object.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "Wamania\\Snowball\\StemmerFactory::create": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Returns a word stemmer of the library Collectives bundles; pure computation.",
+    "proof": [
+      {
+        "source": "collectives",
+        "file": "composer.json",
+        "excerpt": "\"wamania/php-stemmer\": \"^4.0\""
+      }
+    ]
+  },
+  "Wamania\\Snowball\\Stemmer\\Stemmer::stem": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "Stems a word; pure computation.",
+    "proof": [
+      {
+        "source": "collectives",
+        "file": "composer.json",
+        "excerpt": "\"wamania/php-stemmer\": \"^4.0\""
+      }
+    ]
+  },
+  "function array_column": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function array_combine": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function array_diff": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function array_filter": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function array_intersect": {
+    "majors": [
+      "33",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function array_key_exists": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function array_key_last": {
+    "majors": [
+      "33",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function array_map": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function array_slice": {
+    "majors": [
+      "33",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function array_unique": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function array_values": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function basename": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function count": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function dirname": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function explode": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function file_exists": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory (file_exists only checks a path).",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function in_array": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function intdiv": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function is_null": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function json_decode": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function levenshtein": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function log1p": {
+    "majors": [
+      "33",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function mb_strlen": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function mb_strtolower": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function mb_substr": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function preg_match": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function preg_replace": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function preg_split": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function rtrim": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function str_replace": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function strcmp": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function usort": {
+    "majors": [
+      "33",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function version_compare": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  }
+}

@@ -74,7 +74,7 @@ final class ContactsEffectsContractTest extends TestCase {
 	 */
 	public function testEditOfAContact(): void {
 		$flow = (new CriticalFlow('edit-contact', 'contacts_edit_contact', 'contacts', 'edit',
-			['addressbook' => self::BOOK, 'uri' => self::CARD, 'name' => 'Maria Souza Lima', 'organization' => 'Dalcomad'],
+			['addressbook' => self::BOOK, 'uri' => self::CARD, 'name' => 'Maria Souza Lima', 'organization' => 'Example Ltd'],
 			fn (): array => $this->contacts->state()))
 			->confirmingWith(fn (mixed $plan, array $arguments): array => $arguments
 				+ ['confirm' => true, 'etag' => $plan->result->structuredContent->etag])

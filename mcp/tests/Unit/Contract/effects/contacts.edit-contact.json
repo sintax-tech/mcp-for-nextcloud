@@ -8,7 +8,7 @@
                 "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
                 "uri": "c1.vcf",
                 "name": "Maria Souza Lima",
-                "organization": "Dalcomad"
+                "organization": "Example Ltd"
             },
             "response": {
                 "status": 200,
@@ -19,7 +19,7 @@
                         "content": [
                             {
                                 "type": "text",
-                                "text": "**Edit contact**\n\nEditing the contact **Maria Souza** in the address book *Contatos*.\n- Name: Maria Souza → Maria Souza Lima\n- Organization: empty → Dalcomad\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                                "text": "**Edit contact**\n\nEditing the contact **Maria Souza** in the address book *Contatos*.\n- Name: Maria Souza → Maria Souza Lima\n- Organization: empty → Example Ltd\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
                             }
                         ],
                         "structuredContent": {
@@ -92,7 +92,7 @@
                             "after": {
                                 "uid": "c1",
                                 "name": "Maria Souza Lima",
-                                "organization": "Dalcomad",
+                                "organization": "Example Ltd",
                                 "title": "",
                                 "note": "",
                                 "url": "",
@@ -140,11 +140,11 @@
                                     {
                                         "name": "ORG",
                                         "group": null,
-                                        "value": "Dalcomad",
-                                        "serialized": "ORG:Dalcomad\r\n"
+                                        "value": "Example Ltd",
+                                        "serialized": "ORG:Example Ltd\r\n"
                                     }
                                 ],
-                                "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nORG:Dalcomad\r\nEND:VCARD\r\n"
+                                "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nORG:Example Ltd\r\nEND:VCARD\r\n"
                             },
                             "shared": [],
                             "recoverable": false,
@@ -168,7 +168,7 @@
                 "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
                 "uri": "c1.vcf",
                 "name": "Maria Souza Lima",
-                "organization": "Dalcomad",
+                "organization": "Example Ltd",
                 "confirm": "true"
             },
             "response": {
@@ -201,7 +201,7 @@
                 "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
                 "uri": "c1.vcf",
                 "name": "Maria Souza Lima",
-                "organization": "Dalcomad",
+                "organization": "Example Ltd",
                 "confirm": false
             },
             "response": {
@@ -213,7 +213,7 @@
                         "content": [
                             {
                                 "type": "text",
-                                "text": "**Edit contact**\n\nEditing the contact **Maria Souza** in the address book *Contatos*.\n- Name: Maria Souza → Maria Souza Lima\n- Organization: empty → Dalcomad\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                                "text": "**Edit contact**\n\nEditing the contact **Maria Souza** in the address book *Contatos*.\n- Name: Maria Souza → Maria Souza Lima\n- Organization: empty → Example Ltd\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
                             }
                         ],
                         "structuredContent": {
@@ -286,7 +286,7 @@
                             "after": {
                                 "uid": "c1",
                                 "name": "Maria Souza Lima",
-                                "organization": "Dalcomad",
+                                "organization": "Example Ltd",
                                 "title": "",
                                 "note": "",
                                 "url": "",
@@ -334,11 +334,11 @@
                                     {
                                         "name": "ORG",
                                         "group": null,
-                                        "value": "Dalcomad",
-                                        "serialized": "ORG:Dalcomad\r\n"
+                                        "value": "Example Ltd",
+                                        "serialized": "ORG:Example Ltd\r\n"
                                     }
                                 ],
-                                "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nORG:Dalcomad\r\nEND:VCARD\r\n"
+                                "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nORG:Example Ltd\r\nEND:VCARD\r\n"
                             },
                             "shared": [],
                             "recoverable": false,
@@ -366,7 +366,7 @@
                 "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
                 "uri": "c1.vcf",
                 "name": "Maria Souza Lima",
-                "organization": "Dalcomad"
+                "organization": "Example Ltd"
             },
             "response": {
                 "status": 200,
@@ -377,7 +377,7 @@
                         "content": [
                             {
                                 "type": "text",
-                                "text": "**Edit contact**\n\nEditing the contact **Maria Souza** in the address book *Contatos*.\n- Name: Maria Souza → Maria Souza Lima\n- Organization: empty → Dalcomad\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                                "text": "**Edit contact**\n\nEditing the contact **Maria Souza** in the address book *Contatos*.\n- Name: Maria Souza → Maria Souza Lima\n- Organization: empty → Example Ltd\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
                             }
                         ],
                         "structuredContent": {
@@ -450,7 +450,7 @@
                             "after": {
                                 "uid": "c1",
                                 "name": "Maria Souza Lima",
-                                "organization": "Dalcomad",
+                                "organization": "Example Ltd",
                                 "title": "",
                                 "note": "",
                                 "url": "",
@@ -498,11 +498,11 @@
                                     {
                                         "name": "ORG",
                                         "group": null,
-                                        "value": "Dalcomad",
-                                        "serialized": "ORG:Dalcomad\r\n"
+                                        "value": "Example Ltd",
+                                        "serialized": "ORG:Example Ltd\r\n"
                                     }
                                 ],
-                                "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nORG:Dalcomad\r\nEND:VCARD\r\n"
+                                "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nORG:Example Ltd\r\nEND:VCARD\r\n"
                             },
                             "shared": [],
                             "recoverable": false,
@@ -526,7 +526,7 @@
                 "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
                 "uri": "c1.vcf",
                 "name": "Maria Souza Lima",
-                "organization": "Dalcomad",
+                "organization": "Example Ltd",
                 "confirm": true,
                 "etag": "<etag#1>"
             },
@@ -539,7 +539,7 @@
                         "content": [
                             {
                                 "type": "text",
-                                "text": "{\n    \"uid\": \"c1\",\n    \"name\": \"Maria Souza Lima\",\n    \"organization\": \"Dalcomad\",\n    \"title\": \"\",\n    \"note\": \"\",\n    \"url\": \"\",\n    \"emails\": [\n        \"maria@example.invalid\"\n    ],\n    \"phones\": [],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"c1\",\n            \"serialized\": \"UID:c1\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Maria Souza Lima\",\n            \"serialized\": \"FN:Maria Souza Lima\\r\\n\"\n        },\n        {\n            \"name\": \"N\",\n            \"group\": null,\n            \"value\": \"Souza;Maria;;;\",\n            \"serialized\": \"N:Souza;Maria;;;\\r\\n\"\n        },\n        {\n            \"name\": \"EMAIL\",\n            \"group\": null,\n            \"value\": \"maria@example.invalid\",\n            \"serialized\": \"EMAIL;TYPE=WORK:maria@example.invalid\\r\\n\"\n        },\n        {\n            \"name\": \"X-CUSTOM\",\n            \"group\": null,\n            \"value\": \"intocado\",\n            \"serialized\": \"X-CUSTOM;X-PARAM=keep:intocado\\r\\n\"\n        },\n        {\n            \"name\": \"ORG\",\n            \"group\": null,\n            \"value\": \"Dalcomad\",\n            \"serialized\": \"ORG:Dalcomad\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nUID:c1\\r\\nFN:Maria Souza Lima\\r\\nN:Souza;Maria;;;\\r\\nEMAIL;TYPE=WORK:maria@example.invalid\\r\\nX-CUSTOM;X-PARAM=keep:intocado\\r\\nORG:Dalcomad\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"c1.vcf\",\n    \"etag\": \"\\\"328f982c9d46a0b32a7c1bb4c9d02ad0\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\",\n    \"status\": 204\n}"
+                                "text": "{\n    \"uid\": \"c1\",\n    \"name\": \"Maria Souza Lima\",\n    \"organization\": \"Example Ltd\",\n    \"title\": \"\",\n    \"note\": \"\",\n    \"url\": \"\",\n    \"emails\": [\n        \"maria@example.invalid\"\n    ],\n    \"phones\": [],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"c1\",\n            \"serialized\": \"UID:c1\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Maria Souza Lima\",\n            \"serialized\": \"FN:Maria Souza Lima\\r\\n\"\n        },\n        {\n            \"name\": \"N\",\n            \"group\": null,\n            \"value\": \"Souza;Maria;;;\",\n            \"serialized\": \"N:Souza;Maria;;;\\r\\n\"\n        },\n        {\n            \"name\": \"EMAIL\",\n            \"group\": null,\n            \"value\": \"maria@example.invalid\",\n            \"serialized\": \"EMAIL;TYPE=WORK:maria@example.invalid\\r\\n\"\n        },\n        {\n            \"name\": \"X-CUSTOM\",\n            \"group\": null,\n            \"value\": \"intocado\",\n            \"serialized\": \"X-CUSTOM;X-PARAM=keep:intocado\\r\\n\"\n        },\n        {\n            \"name\": \"ORG\",\n            \"group\": null,\n            \"value\": \"Example Ltd\",\n            \"serialized\": \"ORG:Example Ltd\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nUID:c1\\r\\nFN:Maria Souza Lima\\r\\nN:Souza;Maria;;;\\r\\nEMAIL;TYPE=WORK:maria@example.invalid\\r\\nX-CUSTOM;X-PARAM=keep:intocado\\r\\nORG:Example Ltd\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"c1.vcf\",\n    \"etag\": \"\\\"807ac2a9d47a96ee76efeb78cf22a1a3\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\",\n    \"status\": 204\n}"
                             }
                         ]
                     }
@@ -548,7 +548,7 @@
             "state": {
                 "cards": {
                     "1": {
-                        "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nORG:Dalcomad\r\nEND:VCARD\r\n"
+                        "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nORG:Example Ltd\r\nEND:VCARD\r\n"
                     }
                 },
                 "dav": [
@@ -562,7 +562,7 @@
                 "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
                 "uri": "c1.vcf",
                 "name": "Maria Souza Lima",
-                "organization": "Dalcomad",
+                "organization": "Example Ltd",
                 "confirm": true,
                 "etag": "<etag#2>"
             },
@@ -584,7 +584,7 @@
             "state": {
                 "cards": {
                     "1": {
-                        "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nORG:Dalcomad\r\nEND:VCARD\r\n"
+                        "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nORG:Example Ltd\r\nEND:VCARD\r\n"
                     }
                 },
                 "dav": [
@@ -598,7 +598,7 @@
                 "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
                 "uri": "c1.vcf",
                 "name": "Maria Souza Lima",
-                "organization": "Dalcomad"
+                "organization": "Example Ltd"
             },
             "response": {
                 "status": 200,
@@ -618,7 +618,7 @@
             "state": {
                 "cards": {
                     "1": {
-                        "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nORG:Dalcomad\r\nEND:VCARD\r\n"
+                        "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nORG:Example Ltd\r\nEND:VCARD\r\n"
                     }
                 },
                 "dav": [
@@ -632,7 +632,7 @@
                 "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
                 "uri": "c1.vcf",
                 "name": "Maria Souza Lima",
-                "organization": "Dalcomad",
+                "organization": "Example Ltd",
                 "confirm": true,
                 "etag": "<etag#2>"
             },
@@ -654,7 +654,7 @@
             "state": {
                 "cards": {
                     "1": {
-                        "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nORG:Dalcomad\r\nEND:VCARD\r\n"
+                        "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nORG:Example Ltd\r\nEND:VCARD\r\n"
                     }
                 },
                 "dav": [

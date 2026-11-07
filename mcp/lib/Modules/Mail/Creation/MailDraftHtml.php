@@ -36,7 +36,7 @@ final class MailDraftHtml {
 		if (mb_strlen($body) > MailDraftRequest::MAX_BODY) {
 			throw new ToolFailure(MailDraftMessages::htmlTooLong());
 		}
-		if ($input !== '' && preg_match('/[\p{L}\p{N}\p{P}\p{S}]/u', $this->parse($body)->textContent) !== 1) {
+		if ($input !== '' && preg_match('/[\p{L}\p{N}\p{P}\p{S}]/u', MailDraftHtmlDocument::parse($body)->textContent) !== 1) {
 			throw new ToolFailure(MailDraftMessages::htmlEmpty());
 		}
 		if ($this->pass($body)['body'] !== $body) {
@@ -50,15 +50,15 @@ final class MailDraftHtml {
 	 *
 	 * @param string $input UTF-8 fragment
 	 * @return array{body:string, removed:array<string,int>, removedUrls:list<string>, unwrappedElements:list<string>}
-	 * @throws ToolFailure for unsafe parsing or an engine change outside the report
+	 * @throws ToolFailure for an ambiguous source, unsafe parsing or an engine change outside the report
 	 */
 	private function pass(string $input): array {
 		$removed = MailDraftHtmlAllow::REMOVED;
 		$urls = [];
 		$unwrapped = [];
 		$marker = 'mcp-conditional-' . bin2hex(random_bytes(16));
-		$source = $this->conditionalMarkers($input, $marker);
-		$document = $this->parse($source['html']);
+		$source = $this->conditionalMarkers(MailDraftHtmlSourceCheck::prepare($input), $marker);
+		$document = MailDraftHtmlDocument::parse($source['html']);
 		$explicitHead = $source['head'];
 		$removed['wrapper'] = $source['wrappers'];
 		foreach (iterator_to_array($document->getElementsByTagName('head')) as $head) {
@@ -73,11 +73,11 @@ final class MailDraftHtml {
 		$this->filter($document, $removed, $urls, $unwrapped, $marker);
 		// Unwrapping may leave adjacent text nodes; compare their serialized semantics, without changing characters.
 		$document->normalizeDocument();
-		// Both inventories use the same fragment parse, including paragraphs inserted around bare text.
-		$document = $this->parse($this->fragment($document));
+		// Both inventories use the same fragment parse, including paragraphs legacy libxml inserts around bare text.
+		$document = MailDraftHtmlDocument::parse($this->fragment($document));
 		$before = $this->fragment($document);
 		$purified = $this->engine->purify($before);
-		$after = $this->parse($purified);
+		$after = MailDraftHtmlDocument::parse($purified);
 		$engineRemoved = MailDraftHtmlAllow::REMOVED;
 		$engineUnwrapped = [];
 		$this->filter($after, $engineRemoved, $urls, $engineUnwrapped);
@@ -86,7 +86,7 @@ final class MailDraftHtml {
 			throw new ToolFailure(MailDraftMessages::htmlInvalid());
 		}
 		$body = $this->fragment($after);
-		$check = $this->parse($body);
+		$check = MailDraftHtmlDocument::parse($body);
 		$checkRemoved = MailDraftHtmlAllow::REMOVED;
 		$checkUrls = [];
 		$checkUnwrapped = [];
@@ -111,9 +111,7 @@ final class MailDraftHtml {
 	private function conditionalMarkers(string $input, string $marker): array {
 		$head = false;
 		$wrappers = 0;
-		$blocked = implode('|', MailDraftHtmlAllow::SUBTREES);
-		$pattern = '~<!--[\s\S]*?-->|<(' . $blocked . ')\b[^>]*>[\s\S]*?</\1\s*>|<!\[(?:if\b[^\]]*|endif)\]>|<[a-zA-Z/][^>"\']*(?:(?:"[^"]*"|\'[^\']*\')[^>"\']*)*>~i';
-		$html = preg_replace_callback($pattern, static function (array $match) use ($marker, &$head, &$wrappers): string {
+		$html = preg_replace_callback(MailDraftHtmlSourceCheck::tokens(), static function (array $match) use ($marker, &$head, &$wrappers): string {
 			if (preg_match('~^<!\[(?:if\b|endif\])~i', $match[0]) === 1) {
 				return '<!--' . $marker . '-->';
 			}
@@ -125,32 +123,6 @@ final class MailDraftHtml {
 			throw new ToolFailure(MailDraftMessages::htmlInvalid());
 		}
 		return ['html' => $html, 'head' => $head, 'wrappers' => $wrappers];
-	}
-
-	/**
-	 * Parses with explicit UTF-8 and no network; only unknown-element diagnostics are recoverable.
-	 *
-	 * Other recovery may lose duplicate attributes or move descendants out of head/form before the filter sees them.
-	 *
-	 * @param string $html UTF-8 fragment
-	 * @return DOMDocument parsed document
-	 * @throws ToolFailure for a parse failure or information-losing recovery
-	 */
-	private function parse(string $html): DOMDocument {
-		$previous = libxml_use_internal_errors(true);
-		libxml_clear_errors();
-		try {
-			$document = new DOMDocument('1.0', 'UTF-8');
-			$loaded = $document->loadHTML('<?xml encoding="UTF-8">' . ($html === '' ? '<body></body>' : $html), LIBXML_NONET);
-			$errors = libxml_get_errors();
-			if (!$loaded || array_filter($errors, static fn ($error): bool => $error->code !== 801)) {
-				throw new ToolFailure(MailDraftMessages::htmlInvalid());
-			}
-			return $document;
-		} finally {
-			libxml_clear_errors();
-			libxml_use_internal_errors($previous);
-		}
 	}
 
 	/**
@@ -176,13 +148,13 @@ final class MailDraftHtml {
 				continue;
 			}
 			if (!$node instanceof DOMElement) {
-				// Only the parser's encoding instruction and document type exist here, outside the emitted fragment.
+				// Only the document type exists here, outside the emitted fragment; the encoding hint is already detached.
 				continue;
 			}
 			$tag = strtolower($node->tagName);
 			if (in_array($tag, MailDraftHtmlAllow::SUBTREES, true)) {
-				// An implicit empty head is parser scaffolding, not removed source content.
-				if ($tag !== 'head' || $node->hasChildNodes()) {
+				// An implicit head left with only whitespace is parser scaffolding, not removed source content.
+				if ($tag !== 'head' || trim($node->textContent, " \t\n\r\f") !== '' || $node->getElementsByTagName('*')->length > 0) {
 					$removed['subtree']++;
 				}
 				$parent->removeChild($node);

@@ -9,7 +9,9 @@ Versão para **Nextcloud 32 a 35** (o `info.xml` declara 32–35; o contrato de 
 
 A URL exata da instância aparece nas páginas de administração e pessoal.
 
-## Novidades da 1.3.0
+## Novidades da 1.3.1 e da 1.3.0
+
+- **1.3.1: correção dos rascunhos de e-mail HTML ([#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30)).** Em servidores com libxml2 2.14 ou mais nova (Ubuntu 25.10 e 26.04, Debian testing), toda chamada de `mail_create_draft` com `html: true` era recusada; agora funciona. Um `&` solto ("A & B", "AT&T", um link com `?a=1&b=2`) é mantido como texto em vez de recusar o rascunho, e HTML que as versões da libxml leem de forma diferente é recusado com a mesma mensagem em todos os servidores. Sem mudança no banco de dados.
 
 O app está organizado em módulos de capacidade, seguindo a arquitetura proposta por @marcjoancr na [#14](https://github.com/sintax-tech/mcp-for-nextcloud/pull/14).
 

@@ -19,7 +19,9 @@ Claude und andere MCP-Clients arbeiten mit deinen Dateien, Notizen, Kalendern, K
 
 ---
 
-## Neu in 1.3.0
+## Neu in 1.3.1 und 1.3.0
+
+- **1.3.1: Korrektur für HTML-Mailentwürfe ([#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30)).** Auf Servern mit libxml2 2.14 oder neuer (Ubuntu 25.10 und 26.04, Debian testing) wurde jeder Aufruf von `mail_create_draft` mit `html: true` abgelehnt; dort funktioniert er jetzt. Ein alleinstehendes `&` ("A & B", "AT&T", ein Link mit `?a=1&b=2`) bleibt als Text erhalten, statt den Entwurf abzulehnen, und HTML, das libxml-Versionen unterschiedlich lesen, wird auf allen Servern mit derselben Meldung abgelehnt. Keine Datenbankänderung.
 
 Die App ist in Fähigkeitsmodule gegliedert, nach dem Architekturvorschlag von @marcjoancr in [#14](https://github.com/sintax-tech/mcp-for-nextcloud/pull/14).
 

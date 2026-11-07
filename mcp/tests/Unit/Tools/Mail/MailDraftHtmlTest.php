@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 
-use OCA\Mcp\Modules\Mail\Creation\{MailDraftHtml, MailDraftHtmlPurifier, MailDraftRequest};
+use OCA\Mcp\Modules\Mail\Creation\{MailDraftHtml, MailDraftHtmlDocument, MailDraftHtmlPurifier, MailDraftRequest};
 use OCA\Mcp\Modules\Mail\Integration\MailDraftHtmlEngine;
 use OCA\Mcp\Modules\Mail\Presentation\{MailDraftHtmlView, MailDraftMessages};
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
@@ -46,7 +46,7 @@ final class MailDraftHtmlTest extends TestCase {
 		}
 		$this->assertFalse($row['refused'] ?? false, $row['name'] . ' must be refused');
 		if (isset($row['body'])) {
-			$this->assertSame($row['body'], $result['body']);
+			$this->assertSame(MailDraftHtmlCorpus::body($row), $result['body']);
 		}
 		$document = new \DOMDocument();
 		$document->loadHTML('<?xml encoding="UTF-8"><body>' . $result['body'] . '</body>');
@@ -88,6 +88,23 @@ final class MailDraftHtmlTest extends TestCase {
 		$this->assertStringContainsString(MailDraftMessages::htmlRemoved(), $render);
 		$this->assertStringNotContainsString(MailDraftMessages::htmlUnchanged(), $render);
 		$this->assertStringNotContainsString('<p>', $render);
+	}
+
+	/** @return void */
+	public function testTheEncodingHintIsNeverReportedOrSaved(): void {
+		$engine = new class implements MailDraftHtmlPurifier {
+			public function purify(string $html): string { return $html; }
+		};
+		foreach (['<p>ok</p>', '<p>Olá ação €</p>'] as $source) {
+			$result = (new MailDraftHtml($engine))->sanitize($source);
+			$this->assertSame($source, $result['body']);
+			$this->assertSame(0, array_sum($result['removed']), $source);
+		}
+		$document = MailDraftHtmlDocument::parse('<p>Olá</p>');
+		foreach ($document->childNodes as $node) {
+			$this->assertNotContains($node->nodeType, [XML_COMMENT_NODE, XML_PI_NODE]);
+		}
+		$this->assertSame('Olá', $document->getElementsByTagName('p')->item(0)->textContent);
 	}
 
 	/** @return void */

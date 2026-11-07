@@ -1070,8 +1070,17 @@ body[data-themes*="dark"] #mcp-admin {
 	background-color: var(--color-background-hover);
 }
 
+/* The core gives every input a 36px height and the clickable-area min-height, which stretch a radio and its focus ring into
+   an ellipse: natural size, centred where the tall box centred it. */
+#mcp-admin .mcp-popover-choice input,
+.mcp-scope-choice input[type="radio"] {
+	height: auto;
+	min-height: 0;
+}
+
 #mcp-admin .mcp-popover-choice input {
-	margin: 3px 0 0;
+	align-self: center;
+	margin: 0;
 }
 
 #mcp-admin .mcp-popover-choice > span {

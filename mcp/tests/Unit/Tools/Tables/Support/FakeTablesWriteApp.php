@@ -474,7 +474,7 @@ final class FakeTablesWriteApp extends TablesServices {
 		if ($column['type'] === 'number' && !is_numeric($value)) {
 			return version_compare($this->tablesVersion, '2.3.2', '>=') ? null : 0.0;
 		}
-		return $value;
+		return $column['type'] === 'number' && ($column['subtype'] ?? '') === '' ? (float)$value : $value;
 	}
 
 	/**
@@ -488,7 +488,7 @@ final class FakeTablesWriteApp extends TablesServices {
 		return match ([$column['type'], $column['subtype'] ?? '']) {
 			['selection', 'check'] => in_array($value, ['yes', '1', true, 1, 'true', 'TRUE'], true) ? 'true' : 'false',
 			['number', 'stars'], ['number', 'progress'] => (int)$value,
-			['number', ''] => $value === null ? null : (float)$value,
+			['number', ''] => $value === null ? null : json_decode((string)json_encode((float)$value), true),
 			['selection', ''] => $value === null ? null : (in_array($this->tablesVersion, ['1.0.10', '2.2.2', '2.3.2'], true) ? (string)$value : (int)$value),
 			['selection', 'multi'] => $value === null ? [] : (static function (array $ids): array {
 				sort($ids, SORT_NUMERIC);

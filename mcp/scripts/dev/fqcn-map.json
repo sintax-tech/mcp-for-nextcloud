@@ -1365,6 +1365,7 @@
 		{"path":"lib/Modules/Tables/Integration/ShareNodeAction.php","fqcn":"OCA\\Mcp\\Modules\\Tables\\Integration\\ShareNodeAction","target":"stays","owner":"Modules\\Tables","ticket":null},
 		{"path":"lib/Modules/Tables/Integration/UpdateTableAction.php","fqcn":"OCA\\Mcp\\Modules\\Tables\\Integration\\UpdateTableAction","target":"stays","owner":"Modules\\Tables","ticket":null},
 		{"path":"lib/Modules/Tables/Writing/SchemaReceiptComparison.php","fqcn":"OCA\\Mcp\\Modules\\Tables\\Writing\\SchemaReceiptComparison","target":"stays","owner":"Modules\\Tables","ticket":null},
+		{"path":"lib/Modules/Tables/Writing/RowReceiptComparison.php","fqcn":"OCA\\Mcp\\Modules\\Tables\\Writing\\RowReceiptComparison","target":"stays","owner":"Modules\\Tables","ticket":null},
 		{"path":"lib/Modules/Tables/Creation/CreateColumnHandler.php","fqcn":"OCA\\Mcp\\Modules\\Tables\\Creation\\CreateColumnHandler","target":"stays","owner":"Modules\\Tables","ticket":null},
 		{"path":"lib/Modules/Tables/Creation/CreateColumnPreview.php","fqcn":"OCA\\Mcp\\Modules\\Tables\\Creation\\CreateColumnPreview","target":"stays","owner":"Modules\\Tables","ticket":null},
 		{"path":"lib/Modules/Tables/Creation/CreateTableHandler.php","fqcn":"OCA\\Mcp\\Modules\\Tables\\Creation\\CreateTableHandler","target":"stays","owner":"Modules\\Tables","ticket":null},

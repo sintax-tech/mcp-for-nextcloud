@@ -2,7 +2,7 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
-## 1.3.0 — YYYY-MM-DD
+## 1.3.0 — 2026-11-07
 
 **Database migration on update:** this version includes `Version001205Date20261106000000` for CIMD host trust and credential generations ([#28](https://github.com/sintax-tech/mcp-for-nextcloud/issues/28)), the first database migration since 1.1.0. Nextcloud runs the migration and the `CimdHostsSeedStep` post-migration repair step. The effective CIMD host allowlist is preserved. Credentials issued to hosts that remain allowed survive with `client_gen = 1`. Credentials from a host that was never allowed no longer authenticate or refresh; an administrator must allow the intended host and the client must sign in again.
 

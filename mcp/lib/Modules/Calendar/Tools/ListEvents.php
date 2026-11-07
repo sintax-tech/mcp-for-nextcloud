@@ -13,6 +13,7 @@ use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Modules\Calendar\Failures\CalendarArgumentException;
 use OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages;
 use OCA\Mcp\Modules\Calendar\Presentation\CalendarSchema;
+use OCA\Mcp\Modules\Calendar\Presentation\EventAlarmListing;
 use OCA\Mcp\Modules\Calendar\Reading\ListEventsHandler;
 use RuntimeException;
 
@@ -30,7 +31,7 @@ final class ListEvents implements Tool {
 	 * @return ToolDefinition the published definition of calendar_list_events
 	 */
 	public static function definition(): ToolDefinition {
-		return CalendarSchema::definition('calendar_list_events', 'read', CalendarMessages::TOOL_LIST_EVENTS, [
+		return CalendarSchema::definition('calendar_list_events', 'read', CalendarMessages::TOOL_LIST_EVENTS . ' ' . EventAlarmListing::NOTE, [
 			'calendar' => CalendarSchema::calendar(CalendarMessages::propertyDescription('calendar-optional')),
 			'from' => CalendarSchema::date(CalendarMessages::propertyDescription('from')),
 			'to' => CalendarSchema::date(CalendarMessages::propertyDescription('to')),

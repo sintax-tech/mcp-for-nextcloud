@@ -13,6 +13,7 @@ use OCA\Mcp\Modules\Calendar\Locating\Classification;
 use OCA\Mcp\Modules\Calendar\Composing\DateInput;
 use OCA\Mcp\Modules\Calendar\Locating\EventExpander;
 use OCA\Mcp\Modules\Calendar\Presentation\EventMapper;
+use OCA\Mcp\Modules\Calendar\Presentation\EventAlarmListing;
 use OCA\Mcp\Modules\Calendar\Locating\EventRepository;
 use OCP\AppFramework\Utility\ITimeFactory;
 use Psr\Log\LoggerInterface;
@@ -81,7 +82,8 @@ final class ListEventsHandler {
 					if (count($items) >= self::MAX_ITEMS) {
 						return SchemaBuilder::result($items, ['truncated' => true, 'limit' => self::MAX_ITEMS]);
 					}
-					$items[] = $this->mapper->toItem($occurrence['event'], $occurrence['start'], $occurrence['end'], $calendar, $visibility);
+					$items[] = $this->mapper->toItem($occurrence['event'], $occurrence['start'], $occurrence['end'], $calendar, $visibility)
+						+ EventAlarmListing::fields($occurrence['event'], $visibility);
 				}
 			}
 		}

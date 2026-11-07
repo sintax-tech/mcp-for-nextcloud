@@ -1,0 +1,692 @@
+{
+    "tool": "collectives_edit",
+    "grant": "collectives.edit",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "collective_id": 7,
+                "page_id": 104,
+                "append": "More"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Edit collective page**\n\nChange page **Guide** (append): 11 bytes now, 16 after; the diff is in the plan.\n\n- If someone has this page open in the editor, their session may write over this change; there is no compare-and-swap with the collaborative editor.\n- Collectives may notify the members of the collective and update open browsers.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with etag `e104`. To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "collectives_edit",
+                            "title": "Edit collective page",
+                            "action": "collectives_edit",
+                            "collective_id": 7,
+                            "page": {
+                                "id": 104,
+                                "title": "Guide",
+                                "slug": "guide",
+                                "parent_id": 103,
+                                "emoji": null,
+                                "last_user": "Alice",
+                                "timestamp": "<timestamp#1>",
+                                "size": 11,
+                                "subpage_order": []
+                            },
+                            "mode": "append",
+                            "etag": "<etag#1>",
+                            "changed": true,
+                            "bytes_before": 11,
+                            "bytes_after": 16,
+                            "diff": "--- antes\n+++ depois\n@@ -1,1 +1,2 @@\n Guide text\n+More\n",
+                            "diff_omitted": false,
+                            "recoverable": true,
+                            "notices": [
+                                "If someone has this page open in the editor, their session may write over this change; there is no compare-and-swap with the collaborative editor.",
+                                "Collectives may notify the members of the collective and update open browsers."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ]
+                },
+                "calls": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "collective_id": 7,
+                "page_id": 104,
+                "append": "More",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ]
+                },
+                "calls": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "collective_id": 7,
+                "page_id": 104,
+                "append": "More",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Edit collective page**\n\nChange page **Guide** (append): 11 bytes now, 16 after; the diff is in the plan.\n\n- If someone has this page open in the editor, their session may write over this change; there is no compare-and-swap with the collaborative editor.\n- Collectives may notify the members of the collective and update open browsers.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with etag `e104`. To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "collectives_edit",
+                            "title": "Edit collective page",
+                            "action": "collectives_edit",
+                            "collective_id": 7,
+                            "page": {
+                                "id": 104,
+                                "title": "Guide",
+                                "slug": "guide",
+                                "parent_id": 103,
+                                "emoji": null,
+                                "last_user": "Alice",
+                                "timestamp": "<timestamp#1>",
+                                "size": 11,
+                                "subpage_order": []
+                            },
+                            "mode": "append",
+                            "etag": "<etag#1>",
+                            "changed": true,
+                            "bytes_before": 11,
+                            "bytes_after": 16,
+                            "diff": "--- antes\n+++ depois\n@@ -1,1 +1,2 @@\n Guide text\n+More\n",
+                            "diff_omitted": false,
+                            "recoverable": true,
+                            "notices": [
+                                "If someone has this page open in the editor, their session may write over this change; there is no compare-and-swap with the collaborative editor.",
+                                "Collectives may notify the members of the collective and update open browsers."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ]
+                },
+                "calls": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "arguments": {
+                "collective_id": 7,
+                "page_id": 104,
+                "append": "More",
+                "confirm": true,
+                "etag": "<etag#1>",
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Edit collective page**\n\nChange page **Guide** (append): 29 bytes now, 34 after; the diff is in the plan.\n\n- If someone has this page open in the editor, their session may write over this change; there is no compare-and-swap with the collaborative editor.\n- Collectives may notify the members of the collective and update open browsers.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with etag `e104`. To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "collectives_edit",
+                            "title": "Edit collective page",
+                            "action": "collectives_edit",
+                            "collective_id": 7,
+                            "page": {
+                                "id": 104,
+                                "title": "Guide",
+                                "slug": "guide",
+                                "parent_id": 103,
+                                "emoji": null,
+                                "last_user": "Alice",
+                                "timestamp": "<timestamp#1>",
+                                "size": 29,
+                                "subpage_order": []
+                            },
+                            "mode": "append",
+                            "etag": "<etag#1>",
+                            "changed": true,
+                            "bytes_before": 29,
+                            "bytes_after": 34,
+                            "diff": "--- antes\n+++ depois\n@@ -1,1 +1,2 @@\n Guide text, edited elsewhere\n+More\n",
+                            "diff_omitted": false,
+                            "recoverable": true,
+                            "notices": [
+                                "If someone has this page open in the editor, their session may write over this change; there is no compare-and-swap with the collaborative editor.",
+                                "Collectives may notify the members of the collective and update open browsers."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide.md": {
+                        "id": 104,
+                        "content": "Guide text, edited elsewhere\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ]
+                },
+                "calls": []
+            }
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "collective_id": 7,
+                "page_id": 104,
+                "append": "More"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Edit collective page**\n\nChange page **Guide** (append): 29 bytes now, 34 after; the diff is in the plan.\n\n- If someone has this page open in the editor, their session may write over this change; there is no compare-and-swap with the collaborative editor.\n- Collectives may notify the members of the collective and update open browsers.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with etag `e104`. To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "collectives_edit",
+                            "title": "Edit collective page",
+                            "action": "collectives_edit",
+                            "collective_id": 7,
+                            "page": {
+                                "id": 104,
+                                "title": "Guide",
+                                "slug": "guide",
+                                "parent_id": 103,
+                                "emoji": null,
+                                "last_user": "Alice",
+                                "timestamp": "<timestamp#1>",
+                                "size": 29,
+                                "subpage_order": []
+                            },
+                            "mode": "append",
+                            "etag": "<etag#1>",
+                            "changed": true,
+                            "bytes_before": 29,
+                            "bytes_after": 34,
+                            "diff": "--- antes\n+++ depois\n@@ -1,1 +1,2 @@\n Guide text, edited elsewhere\n+More\n",
+                            "diff_omitted": false,
+                            "recoverable": true,
+                            "notices": [
+                                "If someone has this page open in the editor, their session may write over this change; there is no compare-and-swap with the collaborative editor.",
+                                "Collectives may notify the members of the collective and update open browsers."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide.md": {
+                        "id": 104,
+                        "content": "Guide text, edited elsewhere\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ]
+                },
+                "calls": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "collective_id": 7,
+                "page_id": 104,
+                "append": "More",
+                "confirm": true,
+                "etag": "<etag#1>",
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"status\": \"applied\",\n    \"nativeCallAttempted\": true,\n    \"requested\": {\n        \"content_sha256\": \"1f94594ccebf22dae78c11441271334c6edaf6a022b0d7a8de82926e8b4ca203\"\n    },\n    \"observed\": {\n        \"content_sha256\": \"1f94594ccebf22dae78c11441271334c6edaf6a022b0d7a8de82926e8b4ca203\",\n        \"etag\": \"e104+\"\n    },\n    \"message\": \"Change observed by reading the collective again.\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide.md": {
+                        "id": 104,
+                        "content": "Guide text, edited elsewhere\nMore\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ]
+                },
+                "calls": []
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "collective_id": 7,
+                "page_id": 104,
+                "append": "More",
+                "confirm": true,
+                "etag": "<etag#2>",
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide.md": {
+                        "id": 104,
+                        "content": "Guide text, edited elsewhere\nMore\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ]
+                },
+                "calls": []
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "collective_id": 7,
+                "page_id": 104,
+                "append": "More"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide.md": {
+                        "id": 104,
+                        "content": "Guide text, edited elsewhere\nMore\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ]
+                },
+                "calls": []
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "collective_id": 7,
+                "page_id": 104,
+                "append": "More",
+                "confirm": true,
+                "etag": "<etag#2>",
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide.md": {
+                        "id": 104,
+                        "content": "Guide text, edited elsewhere\nMore\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ]
+                },
+                "calls": []
+            }
+        },
+        {
+            "step": "hidden",
+            "arguments": {
+                "collective_id": 7,
+                "page_id": 104,
+                "append": "More",
+                "confirm": true,
+                "etag": "<etag#2>",
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide.md": {
+                        "id": 104,
+                        "content": "Guide text, edited elsewhere\nMore\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ]
+                },
+                "calls": []
+            }
+        }
+    ]
+}

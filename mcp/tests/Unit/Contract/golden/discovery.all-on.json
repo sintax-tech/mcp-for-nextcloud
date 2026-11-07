@@ -7452,6 +7452,346 @@
                             "idempotentHint": false,
                             "openWorldHint": false
                         }
+                    },
+                    {
+                        "name": "collectives_list",
+                        "title": "List collectives",
+                        "description": "Lists the collectives (Collectives app) the user is a member of, with what the user may do in each.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "cursor": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 256,
+                                    "description": "next_cursor of the previous answer, to read the next slice."
+                                },
+                                "limit": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 100,
+                                    "default": 50,
+                                    "description": "Maximum number of items to return (1-100, default 50)."
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "annotations": {
+                            "title": "List collectives",
+                            "readOnlyHint": true,
+                            "destructiveHint": false,
+                            "idempotentHint": true,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
+                        "name": "collectives_pages",
+                        "title": "List collective pages",
+                        "description": "Lists the pages of one collective, optionally only the subpages of one page.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "collective_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the collective, as collectives_list returns it."
+                                },
+                                "parent_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Only the subpages (at any depth) of this page; omit for every page."
+                                },
+                                "cursor": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 256,
+                                    "description": "next_cursor of the previous answer, to read the next slice."
+                                },
+                                "limit": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 100,
+                                    "default": 50,
+                                    "description": "Maximum number of items to return (1-100, default 50)."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "collective_id"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "List collective pages",
+                            "readOnlyHint": true,
+                            "destructiveHint": false,
+                            "idempotentHint": true,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
+                        "name": "collectives_read",
+                        "title": "Read collective page",
+                        "description": "Reads the Markdown, etag and metadata of one page of a collective.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "collective_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the collective, as collectives_list returns it."
+                                },
+                                "page_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the page, as collectives_pages returns it."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "collective_id",
+                                "page_id"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Read collective page",
+                            "readOnlyHint": true,
+                            "destructiveHint": false,
+                            "idempotentHint": true,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
+                        "name": "collectives_search",
+                        "title": "Search collective pages",
+                        "description": "Searches the pages of one collective by title, or by content through the Collectives index.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "collective_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the collective, as collectives_list returns it."
+                                },
+                                "query": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 200,
+                                    "description": "Text to find (1-200 characters)."
+                                },
+                                "scope": {
+                                    "type": "string",
+                                    "enum": [
+                                        "title",
+                                        "content"
+                                    ],
+                                    "default": "title",
+                                    "description": "title (default) matches page titles; content uses the Collectives search index."
+                                },
+                                "cursor": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 256,
+                                    "description": "next_cursor of the previous answer, to read the next slice."
+                                },
+                                "limit": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 100,
+                                    "default": 50,
+                                    "description": "Maximum number of items to return (1-100, default 50)."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "collective_id",
+                                "query"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Search collective pages",
+                            "readOnlyHint": true,
+                            "destructiveHint": false,
+                            "idempotentHint": true,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
+                        "name": "collectives_create",
+                        "title": "Create collective page",
+                        "description": "Creates an empty page under a parent page of a collective; edit it afterwards to add content.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "collective_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the collective, as collectives_list returns it."
+                                },
+                                "parent_id": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "description": "Id of the parent page; 0 for the landing page of the collective."
+                                },
+                                "title": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 200,
+                                    "description": "Title of the page (1-200 characters)."
+                                },
+                                "plan_state": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                                },
+                                "confirm": {
+                                    "type": "boolean",
+                                    "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "collective_id",
+                                "parent_id",
+                                "title"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Create collective page",
+                            "readOnlyHint": false,
+                            "destructiveHint": false,
+                            "idempotentHint": false,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
+                        "name": "collectives_edit",
+                        "title": "Edit collective page",
+                        "description": "Changes the Markdown of one page with one of: append (add at the end), old/new (replace one unique passage) or content (rewrite it whole), confirmed with the etag and plan_state of the plan.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "collective_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the collective, as collectives_list returns it."
+                                },
+                                "page_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the page, as collectives_pages returns it."
+                                },
+                                "content": {
+                                    "type": "string",
+                                    "maxLength": 262144,
+                                    "description": "New complete Markdown; only to rewrite the whole page."
+                                },
+                                "append": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 65536,
+                                    "description": "Markdown added at the end, on a new line."
+                                },
+                                "old": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 65536,
+                                    "description": "Passage to replace; must appear exactly once."
+                                },
+                                "new": {
+                                    "type": "string",
+                                    "maxLength": 65536,
+                                    "description": "Text that replaces old."
+                                },
+                                "etag": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "ETag read before; when it differs, nothing is changed."
+                                },
+                                "plan_state": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                                },
+                                "confirm": {
+                                    "type": "boolean",
+                                    "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "collective_id",
+                                "page_id"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Edit collective page",
+                            "readOnlyHint": false,
+                            "destructiveHint": true,
+                            "idempotentHint": false,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
+                        "name": "collectives_move",
+                        "title": "Move collective page",
+                        "description": "Moves a page under another parent page of the same collective, renames it, or both.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "collective_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the collective, as collectives_list returns it."
+                                },
+                                "page_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the page, as collectives_pages returns it."
+                                },
+                                "parent_id": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "description": "Id of the new parent page of the same collective; omit to keep the current parent. To move to the top level, give the id of the landing page."
+                                },
+                                "title": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 200,
+                                    "description": "New title; omit to keep the current one."
+                                },
+                                "index": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10000,
+                                    "description": "Position among the subpages of the new parent (0 = first, the default); only with a new parent."
+                                },
+                                "plan_state": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                                },
+                                "confirm": {
+                                    "type": "boolean",
+                                    "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "collective_id",
+                                "page_id"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Move collective page",
+                            "readOnlyHint": false,
+                            "destructiveHint": true,
+                            "idempotentHint": false,
+                            "openWorldHint": false
+                        }
                     }
                 ]
             }

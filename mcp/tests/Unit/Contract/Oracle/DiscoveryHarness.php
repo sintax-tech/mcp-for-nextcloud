@@ -76,9 +76,10 @@ final class DiscoveryHarness {
 			$guests->method('allowsApp')->willReturnCallback(static fn (string $uid, string $app): bool => $app === '' || in_array($app, $allowed, true));
 		}
 		$logger = $this->mock(LoggerInterface::class);
-		$modules = (new ModuleBuilder($test, $scenario->deckDependencies))->modules(Application::MODULES);
-		$registry = new ToolRegistry($modules, $policy, $apps, $users, $logger, $guests, capabilities: new \OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry([(new ModuleBuilder($test, $scenario->deckDependencies))->build(\OCA\Mcp\Modules\Deck\Integration\DeckCapabilities::class),
-			(new ModuleBuilder($test))->build(\OCA\Mcp\Modules\Tables\Integration\TablesWriteCapabilities::class), (new ModuleBuilder($test))->build(\OCA\Mcp\Modules\Forms\Integration\StructureCapabilities::class), \OCA\Mcp\Tests\Unit\Modules\Polls\PollsDiscoveryProbe::build($test)], $logger));
+		$builder = new ModuleBuilder($test, $scenario->deckDependencies, $scenario->collectivesNative);
+		$modules = $builder->modules(Application::MODULES);
+		$registry = new ToolRegistry($modules, $policy, $apps, $users, $logger, $guests, capabilities: new \OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry([$builder->build(\OCA\Mcp\Modules\Deck\Integration\DeckCapabilities::class),
+			(new ModuleBuilder($test))->build(\OCA\Mcp\Modules\Tables\Integration\TablesWriteCapabilities::class), (new ModuleBuilder($test))->build(\OCA\Mcp\Modules\Forms\Integration\StructureCapabilities::class), \OCA\Mcp\Tests\Unit\Modules\Polls\PollsDiscoveryProbe::build($test), $builder->build(\OCA\Mcp\Modules\Collectives\Integration\CollectivesCapabilities::class)], $logger));
 		$resources = new ResourceRegistry($registry, $policy, $apps, $users, $this->mock(IRootFolder::class), $this->mock(VisibilityGuard::class),
 			new \OCA\Mcp\Modules\Files\Extraction\ExtractedFileText($this->mock(TextExtractor::class)), $this->mock(NoteResource::class), $registry->guide(), $this->mock(FilesAccessGuard::class), $guests);
 		$installed = $this->mock(IAppManager::class);

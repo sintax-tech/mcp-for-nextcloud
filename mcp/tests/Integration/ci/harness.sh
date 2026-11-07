@@ -54,6 +54,7 @@ MAIL_CELL="$REPO_ROOT/mcp/tests/Integration/ci/mail-cell.sh"
 TABLES_CELL="$REPO_ROOT/mcp/tests/Integration/ci/tables/cell.sh"
 FORMS_CELL="$REPO_ROOT/mcp/tests/Integration/ci/forms/cell.sh"
 POLLS_CELL="$REPO_ROOT/mcp/tests/Integration/ci/polls/cell.sh"
+COLLECTIVES_CELL="$REPO_ROOT/mcp/tests/Integration/ci/collectives/cell.sh"
 PHPUNIT_VERSION=10.5.65
 PHPUNIT_SHA256=ce85745a2ec7d8e536621ebed69dfa36a8d504daf73be6750e93bb8c5b088835
 
@@ -415,6 +416,7 @@ cmd_provision() {
     [ "${MCP_IT_WITH_TABLES:-0}" != 1 ] || parts="$parts tables"
     [ "${MCP_IT_WITH_FORMS:-0}" != 1 ] || parts="$parts forms"
     [ "${MCP_IT_WITH_POLLS:-0}" != 1 ] || parts="$parts polls"
+    [ "${MCP_IT_WITH_COLLECTIVES:-0}" != 1 ] || parts="$parts collectives"
     for part in $parts; do
         echo "=== provisioning $part" | tee -a "$log"
         case "$part" in
@@ -429,6 +431,7 @@ cmd_provision() {
             tables) step="sh $TABLES_CELL provision" ;;
             forms) step="sh $FORMS_CELL provision" ;;
             polls) step="sh $POLLS_CELL provision" ;;
+            collectives) step="sh $COLLECTIVES_CELL provision" ;;
             # Unpacked only: Guests/GuestRestrictionsTest enables it for its own scenarios, since it adds a user and a
             # group backend every other test would see.
             guests) step="unpack_release_app guests guests $GUESTS_TAG $GUESTS_SHA" ;;
@@ -526,6 +529,7 @@ cmd_test() {
     [ "${MCP_IT_WITH_TABLES:-0}" != 1 ] || set -- "$@" $(sh "$TABLES_CELL" test-env)
     [ "${MCP_IT_WITH_FORMS:-0}" != 1 ] || set -- "$@" $(sh "$FORMS_CELL" test-env)
     [ "${MCP_IT_WITH_POLLS:-0}" != 1 ] || set -- "$@" $(sh "$POLLS_CELL" test-env)
+    [ "${MCP_IT_WITH_COLLECTIVES:-0}" != 1 ] || set -- "$@" $(sh "$COLLECTIVES_CELL" test-env)
     # MCP_IT_PHPUNIT_ARGS (local diagnostics only), e.g. "--filter SomeTest", is passed to PHPUnit as is.
     # shellcheck disable=SC2086
     docker exec -u www-data "$@" "$NC" php -d memory_limit=1G /mcp-it-tools/phpunit.phar \

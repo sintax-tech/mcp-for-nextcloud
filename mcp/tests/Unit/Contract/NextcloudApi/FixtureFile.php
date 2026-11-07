@@ -36,6 +36,7 @@ final class FixtureFile {
 		}
 		$pins .= Forms\FormsSourcePins::line($fixture);
 		$pins .= Polls\PollsFixturePins::header($fixture);
+		$pins .= Collectives\CollectivesFixturePins::header($fixture);
 		file_put_contents($path, $header . "return [\n" . $pins . "\t'classes' => [\n" . implode("\n", $lines) . "\n\t],\n];\n");
 	}
 

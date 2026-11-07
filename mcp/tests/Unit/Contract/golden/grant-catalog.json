@@ -89,6 +89,12 @@
             "options.remove",
             "share",
             "invite"
+        ],
+        "collectives": [
+            "read",
+            "create",
+            "edit",
+            "move"
         ]
     },
     "DENIED_READS": [

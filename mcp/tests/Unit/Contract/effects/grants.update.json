@@ -73,7 +73,8 @@
                         "mail": false,
                         "tables": false,
                         "forms": false,
-                        "polls": false
+                        "polls": false,
+                        "collectives": false
                     },
                     "eligible": true,
                     "connected": true,
@@ -167,6 +168,12 @@
                             "options.remove": false,
                             "share": false,
                             "invite": false
+                        },
+                        "collectives": {
+                            "read": true,
+                            "create": false,
+                            "edit": false,
+                            "move": false
                         }
                     },
                     "origins": {
@@ -456,6 +463,24 @@
                                     "source": "default",
                                     "groupIds": []
                                 }
+                            },
+                            "collectives": {
+                                "read": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "create": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "edit": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "move": {
+                                    "source": "default",
+                                    "groupIds": []
+                                }
                             }
                         }
                     },
@@ -584,7 +609,8 @@
                         "mail": false,
                         "tables": false,
                         "forms": false,
-                        "polls": false
+                        "polls": false,
+                        "collectives": false
                     },
                     "eligible": true,
                     "connected": true,
@@ -678,6 +704,12 @@
                             "options.remove": false,
                             "share": false,
                             "invite": false
+                        },
+                        "collectives": {
+                            "read": true,
+                            "create": false,
+                            "edit": false,
+                            "move": false
                         }
                     },
                     "origins": {
@@ -964,6 +996,24 @@
                                     "groupIds": []
                                 },
                                 "invite": {
+                                    "source": "default",
+                                    "groupIds": []
+                                }
+                            },
+                            "collectives": {
+                                "read": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "create": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "edit": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "move": {
                                     "source": "default",
                                     "groupIds": []
                                 }
@@ -1798,7 +1848,8 @@
                                     "mail": false,
                                     "tables": false,
                                     "forms": false,
-                                    "polls": false
+                                    "polls": false,
+                                    "collectives": false
                                 },
                                 "eligible": true,
                                 "connected": true,
@@ -1892,6 +1943,12 @@
                                         "options.remove": false,
                                         "share": false,
                                         "invite": false
+                                    },
+                                    "collectives": {
+                                        "read": true,
+                                        "create": false,
+                                        "edit": false,
+                                        "move": false
                                     }
                                 },
                                 "origins": {
@@ -2178,6 +2235,24 @@
                                                 "groupIds": []
                                             },
                                             "invite": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "collectives": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "create": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "move": {
                                                 "source": "default",
                                                 "groupIds": []
                                             }
@@ -2611,7 +2686,8 @@
                         "mail": false,
                         "tables": false,
                         "forms": false,
-                        "polls": false
+                        "polls": false,
+                        "collectives": false
                     },
                     "eligible": false,
                     "connected": true,
@@ -2705,6 +2781,12 @@
                             "options.remove": false,
                             "share": false,
                             "invite": false
+                        },
+                        "collectives": {
+                            "read": true,
+                            "create": false,
+                            "edit": false,
+                            "move": false
                         }
                     },
                     "origins": {
@@ -2991,6 +3073,24 @@
                                     "groupIds": []
                                 },
                                 "invite": {
+                                    "source": "default",
+                                    "groupIds": []
+                                }
+                            },
+                            "collectives": {
+                                "read": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "create": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "edit": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "move": {
                                     "source": "default",
                                     "groupIds": []
                                 }

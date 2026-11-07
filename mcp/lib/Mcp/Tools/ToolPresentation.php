@@ -205,6 +205,14 @@ final class ToolPresentation {
 			'polls_add_share' => Translator::t('Share a poll'),
 			'polls_update_share' => Translator::t('Change poll sharing'),
 			'polls_invite_share' => Translator::t('Invite a poll recipient'),
+			// Collectives
+			'collectives_list' => Translator::t('List collectives'),
+			'collectives_pages' => Translator::t('List collective pages'),
+			'collectives_read' => Translator::t('Read collective page'),
+			'collectives_search' => Translator::t('Search collective pages'),
+			'collectives_create' => Translator::t('Create collective page'),
+			'collectives_edit' => Translator::t('Edit collective page'),
+			'collectives_move' => Translator::t('Move collective page'),
 			// Tables
 			'tables_list_tables' => Translator::t('List tables'),
 			'tables_list_views' => Translator::t('List table views'),
@@ -266,6 +274,7 @@ final class ToolPresentation {
 			'tables' => Translator::t('Tables'),
 			'forms' => Translator::t('Forms'),
 			'polls' => Translator::t('Polls'),
+			'collectives' => Translator::t('Collectives'),
 			default => ucfirst($module),
 		};
 	}

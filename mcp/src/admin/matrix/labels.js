@@ -30,6 +30,7 @@
 				logs: t('mcp', 'Server log'),
 				mail: t('mcp', 'Mail'),
 				tables: t('mcp', 'Tables'), forms: t('mcp', 'Forms'), polls: t('mcp', 'Polls'),
+				collectives: t('mcp', 'Collectives'),
 			}
 		}
 

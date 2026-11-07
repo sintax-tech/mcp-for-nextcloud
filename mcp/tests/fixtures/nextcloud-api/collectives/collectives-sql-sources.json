@@ -1,0 +1,127 @@
+{
+  "31": {
+    "url": "https://download.nextcloud.com/server/releases/nextcloud-31.0.0.tar.bz2",
+    "sha256": "6fbeb07b37bb9cfa7c91bf1b2dfbcf0319058b6e60487c1eaa1b777eb9762d91",
+    "files": {
+      "lib/private/DB/ResultAdapter.php": "787219760c66de5192b2db0549856e983eb1b8cfb033735af45869a7760b3f5b",
+      "3rdparty/doctrine/dbal/src/Result.php": "c78e2306477d14ce33ca58e83a4c8e28c71e6212aadead0da42d736e1bfb4acc",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/Result.php": "521dd5025db44e8799cb2940c1d2eba909aecbf85955f4eb7ea61fc73df5db1a",
+      "3rdparty/doctrine/dbal/src/Driver/OCI8/Result.php": "dd8d29c4ca9cadbeb6daf5cb751b1521a73da96bec869f88fcb39e726f7288ec",
+      "3rdparty/doctrine/dbal/src/DriverManager.php": "3b6f394c4c55b7b79a74cd844c3ba48156b0c19e390aae35d27392019699a51c",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/MySQL/Driver.php": "3d19b570b43393870c1ab8cc42b762c9385fc42606bfc5a3e4643b96d392f733",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/PgSQL/Driver.php": "b0179f9b769f91796a18898e6638ddfc8dd34acf9d2ed9e23d5e79d20f34f437",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/SQLite/Driver.php": "c7019cbd803e0c5322fe75fa016bf574abddac042a6929bcdd1ca57b46c2cd26",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/Connection.php": "2f245f97c0ef788a0c4fc0bb56ce10a74afe07d20e18fd88e5dd3de7b3ce840a",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/Statement.php": "679cf959ddff27563327a982c088c2294eeb151a96dff86421e4deed7448b773",
+      "3rdparty/doctrine/dbal/src/Driver/OCI8/Driver.php": "3a18ea352e65a4eb88e213f30faf7189f79ce8f05f2c85ec752d6d1d97948593",
+      "3rdparty/doctrine/dbal/src/Driver/OCI8/Connection.php": "f43af9fa14f1fc32bb03b38e93172b3bf2194869b9f0418025b38fe5bf7abeee",
+      "3rdparty/doctrine/dbal/src/Driver/OCI8/Statement.php": "8dc9ff2f67324ffb86312548b1f6e56de1412bf35ca820454a25b2fb1e1976f1"
+    },
+    "drivers": {
+      "pdo_mysql": "Doctrine\\DBAL\\Driver\\PDO\\Result",
+      "pdo_pgsql": "Doctrine\\DBAL\\Driver\\PDO\\Result",
+      "pdo_sqlite": "Doctrine\\DBAL\\Driver\\PDO\\Result",
+      "oci8": "Doctrine\\DBAL\\Driver\\OCI8\\Result"
+    }
+  },
+  "32": {
+    "url": "https://download.nextcloud.com/server/releases/nextcloud-32.0.0.tar.bz2",
+    "sha256": "57448d55d9b87102f17c36347320346a1b258f6017c63b958c789efd42e345a3",
+    "files": {
+      "lib/private/DB/ResultAdapter.php": "787219760c66de5192b2db0549856e983eb1b8cfb033735af45869a7760b3f5b",
+      "3rdparty/doctrine/dbal/src/Result.php": "c78e2306477d14ce33ca58e83a4c8e28c71e6212aadead0da42d736e1bfb4acc",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/Result.php": "521dd5025db44e8799cb2940c1d2eba909aecbf85955f4eb7ea61fc73df5db1a",
+      "3rdparty/doctrine/dbal/src/Driver/OCI8/Result.php": "dd8d29c4ca9cadbeb6daf5cb751b1521a73da96bec869f88fcb39e726f7288ec",
+      "3rdparty/doctrine/dbal/src/DriverManager.php": "3b6f394c4c55b7b79a74cd844c3ba48156b0c19e390aae35d27392019699a51c",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/MySQL/Driver.php": "8be6a04a3a9b6d91dc9190765cbc06a0aa223c223b7920c4abd45b307107dfce",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/PgSQL/Driver.php": "06b9138b0be6bdfe0c486aa9a5692c7942ae1273808ebbf4ff2ca38b90bc4cac",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/SQLite/Driver.php": "310008181db783b544f8e910124a57d281f0ee00dbbd6e2eed20fd3d77346395",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/Connection.php": "2f245f97c0ef788a0c4fc0bb56ce10a74afe07d20e18fd88e5dd3de7b3ce840a",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/Statement.php": "679cf959ddff27563327a982c088c2294eeb151a96dff86421e4deed7448b773",
+      "3rdparty/doctrine/dbal/src/Driver/OCI8/Driver.php": "3a18ea352e65a4eb88e213f30faf7189f79ce8f05f2c85ec752d6d1d97948593",
+      "3rdparty/doctrine/dbal/src/Driver/OCI8/Connection.php": "f43af9fa14f1fc32bb03b38e93172b3bf2194869b9f0418025b38fe5bf7abeee",
+      "3rdparty/doctrine/dbal/src/Driver/OCI8/Statement.php": "8dc9ff2f67324ffb86312548b1f6e56de1412bf35ca820454a25b2fb1e1976f1"
+    },
+    "drivers": {
+      "pdo_mysql": "Doctrine\\DBAL\\Driver\\PDO\\Result",
+      "pdo_pgsql": "Doctrine\\DBAL\\Driver\\PDO\\Result",
+      "pdo_sqlite": "Doctrine\\DBAL\\Driver\\PDO\\Result",
+      "oci8": "Doctrine\\DBAL\\Driver\\OCI8\\Result"
+    }
+  },
+  "33": {
+    "url": "https://download.nextcloud.com/server/releases/nextcloud-33.0.0.tar.bz2",
+    "sha256": "6f7730902269c879f9f2ad4aa0a227cb16b5408ee46f093f68bd32633f741abf",
+    "files": {
+      "lib/private/DB/ResultAdapter.php": "68af1caa41451506b79093bfe9fad6e7381b7623cee8ef0490908ac8f5621e10",
+      "3rdparty/doctrine/dbal/src/Result.php": "c78e2306477d14ce33ca58e83a4c8e28c71e6212aadead0da42d736e1bfb4acc",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/Result.php": "521dd5025db44e8799cb2940c1d2eba909aecbf85955f4eb7ea61fc73df5db1a",
+      "3rdparty/doctrine/dbal/src/Driver/OCI8/Result.php": "dd8d29c4ca9cadbeb6daf5cb751b1521a73da96bec869f88fcb39e726f7288ec",
+      "3rdparty/doctrine/dbal/src/DriverManager.php": "3b6f394c4c55b7b79a74cd844c3ba48156b0c19e390aae35d27392019699a51c",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/MySQL/Driver.php": "8be6a04a3a9b6d91dc9190765cbc06a0aa223c223b7920c4abd45b307107dfce",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/PgSQL/Driver.php": "06b9138b0be6bdfe0c486aa9a5692c7942ae1273808ebbf4ff2ca38b90bc4cac",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/SQLite/Driver.php": "310008181db783b544f8e910124a57d281f0ee00dbbd6e2eed20fd3d77346395",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/Connection.php": "2f245f97c0ef788a0c4fc0bb56ce10a74afe07d20e18fd88e5dd3de7b3ce840a",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/Statement.php": "679cf959ddff27563327a982c088c2294eeb151a96dff86421e4deed7448b773",
+      "3rdparty/doctrine/dbal/src/Driver/OCI8/Driver.php": "3a18ea352e65a4eb88e213f30faf7189f79ce8f05f2c85ec752d6d1d97948593",
+      "3rdparty/doctrine/dbal/src/Driver/OCI8/Connection.php": "f43af9fa14f1fc32bb03b38e93172b3bf2194869b9f0418025b38fe5bf7abeee",
+      "3rdparty/doctrine/dbal/src/Driver/OCI8/Statement.php": "8dc9ff2f67324ffb86312548b1f6e56de1412bf35ca820454a25b2fb1e1976f1"
+    },
+    "drivers": {
+      "pdo_mysql": "Doctrine\\DBAL\\Driver\\PDO\\Result",
+      "pdo_pgsql": "Doctrine\\DBAL\\Driver\\PDO\\Result",
+      "pdo_sqlite": "Doctrine\\DBAL\\Driver\\PDO\\Result",
+      "oci8": "Doctrine\\DBAL\\Driver\\OCI8\\Result"
+    }
+  },
+  "34": {
+    "url": "https://download.nextcloud.com/server/releases/nextcloud-34.0.0.tar.bz2",
+    "sha256": "36c557cedc2a1a12cd68cffe535f21350a02cbd4ff60dd7a9dae3959c7873be4",
+    "files": {
+      "lib/private/DB/ResultAdapter.php": "a27aa1df8b0613eb3017d3618cc70645ce59023515d4ff9b043b3e7a350917e8",
+      "3rdparty/doctrine/dbal/src/Result.php": "c78e2306477d14ce33ca58e83a4c8e28c71e6212aadead0da42d736e1bfb4acc",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/Result.php": "521dd5025db44e8799cb2940c1d2eba909aecbf85955f4eb7ea61fc73df5db1a",
+      "3rdparty/doctrine/dbal/src/Driver/OCI8/Result.php": "dd8d29c4ca9cadbeb6daf5cb751b1521a73da96bec869f88fcb39e726f7288ec",
+      "3rdparty/doctrine/dbal/src/DriverManager.php": "3b6f394c4c55b7b79a74cd844c3ba48156b0c19e390aae35d27392019699a51c",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/MySQL/Driver.php": "8be6a04a3a9b6d91dc9190765cbc06a0aa223c223b7920c4abd45b307107dfce",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/PgSQL/Driver.php": "06b9138b0be6bdfe0c486aa9a5692c7942ae1273808ebbf4ff2ca38b90bc4cac",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/SQLite/Driver.php": "310008181db783b544f8e910124a57d281f0ee00dbbd6e2eed20fd3d77346395",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/Connection.php": "2f245f97c0ef788a0c4fc0bb56ce10a74afe07d20e18fd88e5dd3de7b3ce840a",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/Statement.php": "679cf959ddff27563327a982c088c2294eeb151a96dff86421e4deed7448b773",
+      "3rdparty/doctrine/dbal/src/Driver/OCI8/Driver.php": "3a18ea352e65a4eb88e213f30faf7189f79ce8f05f2c85ec752d6d1d97948593",
+      "3rdparty/doctrine/dbal/src/Driver/OCI8/Connection.php": "f43af9fa14f1fc32bb03b38e93172b3bf2194869b9f0418025b38fe5bf7abeee",
+      "3rdparty/doctrine/dbal/src/Driver/OCI8/Statement.php": "8dc9ff2f67324ffb86312548b1f6e56de1412bf35ca820454a25b2fb1e1976f1"
+    },
+    "drivers": {
+      "pdo_mysql": "Doctrine\\DBAL\\Driver\\PDO\\Result",
+      "pdo_pgsql": "Doctrine\\DBAL\\Driver\\PDO\\Result",
+      "pdo_sqlite": "Doctrine\\DBAL\\Driver\\PDO\\Result",
+      "oci8": "Doctrine\\DBAL\\Driver\\OCI8\\Result"
+    }
+  },
+  "35": {
+    "url": "https://download.nextcloud.com/server/releases/nextcloud-35.0.0.tar.bz2",
+    "sha256": "d8c165e764a7a4de82eb3dec510d66e19f2d82218572604af9c15d99a98a29a0",
+    "files": {
+      "lib/private/DB/ResultAdapter.php": "899d126a54e8d172239eeef6a43af1877c0b450b984a7214701f62dc2437ffc8",
+      "3rdparty/doctrine/dbal/src/Result.php": "c78e2306477d14ce33ca58e83a4c8e28c71e6212aadead0da42d736e1bfb4acc",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/Result.php": "521dd5025db44e8799cb2940c1d2eba909aecbf85955f4eb7ea61fc73df5db1a",
+      "3rdparty/doctrine/dbal/src/Driver/OCI8/Result.php": "dd8d29c4ca9cadbeb6daf5cb751b1521a73da96bec869f88fcb39e726f7288ec",
+      "3rdparty/doctrine/dbal/src/DriverManager.php": "3b6f394c4c55b7b79a74cd844c3ba48156b0c19e390aae35d27392019699a51c",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/MySQL/Driver.php": "8be6a04a3a9b6d91dc9190765cbc06a0aa223c223b7920c4abd45b307107dfce",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/PgSQL/Driver.php": "06b9138b0be6bdfe0c486aa9a5692c7942ae1273808ebbf4ff2ca38b90bc4cac",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/SQLite/Driver.php": "310008181db783b544f8e910124a57d281f0ee00dbbd6e2eed20fd3d77346395",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/Connection.php": "2f245f97c0ef788a0c4fc0bb56ce10a74afe07d20e18fd88e5dd3de7b3ce840a",
+      "3rdparty/doctrine/dbal/src/Driver/PDO/Statement.php": "679cf959ddff27563327a982c088c2294eeb151a96dff86421e4deed7448b773",
+      "3rdparty/doctrine/dbal/src/Driver/OCI8/Driver.php": "3a18ea352e65a4eb88e213f30faf7189f79ce8f05f2c85ec752d6d1d97948593",
+      "3rdparty/doctrine/dbal/src/Driver/OCI8/Connection.php": "f43af9fa14f1fc32bb03b38e93172b3bf2194869b9f0418025b38fe5bf7abeee",
+      "3rdparty/doctrine/dbal/src/Driver/OCI8/Statement.php": "8dc9ff2f67324ffb86312548b1f6e56de1412bf35ca820454a25b2fb1e1976f1"
+    },
+    "drivers": {
+      "pdo_mysql": "Doctrine\\DBAL\\Driver\\PDO\\Result",
+      "pdo_pgsql": "Doctrine\\DBAL\\Driver\\PDO\\Result",
+      "pdo_sqlite": "Doctrine\\DBAL\\Driver\\PDO\\Result",
+      "oci8": "Doctrine\\DBAL\\Driver\\OCI8\\Result"
+    }
+  }
+}

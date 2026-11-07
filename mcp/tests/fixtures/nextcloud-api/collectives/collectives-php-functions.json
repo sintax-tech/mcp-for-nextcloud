@@ -1,0 +1,572 @@
+{
+  "array_column": {
+    "return": "column",
+    "effect": "column",
+    "arguments": [
+      1,
+      2
+    ],
+    "audit": "Converts column/index keys to strings and reads object row properties through __get/__isset."
+  },
+  "array_combine": {
+    "return": "preserve:1",
+    "effect": "stringify",
+    "arguments": [
+      0
+    ],
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "array_diff": {
+    "return": "preserve:0",
+    "effect": "stringify",
+    "arguments": "all",
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "array_filter": {
+    "return": "preserve:0",
+    "effect": "callback",
+    "arguments": [
+      1
+    ],
+    "audit": "Invokes the explicitly followed callback; unresolved callables are unknown."
+  },
+  "array_intersect": {
+    "return": "preserve:0",
+    "effect": "stringify",
+    "arguments": "all",
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "array_key_exists": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": [],
+    "audit": "Tests a key; object keys throw TypeError without conversion or object protocols."
+  },
+  "array_key_last": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": [],
+    "audit": "Reads an array key; no element comparisons or conversions."
+  },
+  "array_keys": {
+    "return": "scalar-array",
+    "effect": "compare",
+    "arguments": [
+      0,
+      1
+    ],
+    "strictArgument": 2,
+    "requiredArgument": 1,
+    "audit": "Loose comparison/order can invoke __toString on object values; only a literal strict=true disables the edge where supported."
+  },
+  "array_map": {
+    "return": "map",
+    "effect": "callback",
+    "arguments": [
+      0
+    ],
+    "audit": "Invokes the explicitly followed callback; unresolved callables are unknown."
+  },
+  "array_merge": {
+    "return": "preserve:all",
+    "effect": "none",
+    "arguments": [],
+    "audit": "Copies array entries; does not compare or convert their values."
+  },
+  "array_pop": {
+    "return": "element:0",
+    "effect": "none",
+    "arguments": [],
+    "audit": "Removes and returns an array entry without converting its value."
+  },
+  "array_reverse": {
+    "return": "preserve:0",
+    "effect": "none",
+    "arguments": [],
+    "audit": "Reorders by position without comparing or converting values."
+  },
+  "array_search": {
+    "return": "scalar",
+    "effect": "compare",
+    "arguments": [
+      0,
+      1
+    ],
+    "strictArgument": 2,
+    "audit": "Loose comparison/order can invoke __toString on object values; only a literal strict=true disables the edge where supported."
+  },
+  "array_slice": {
+    "return": "preserve:0",
+    "effect": "none",
+    "arguments": [],
+    "audit": "Selects array positions without comparing or converting values."
+  },
+  "array_unique": {
+    "return": "preserve:0",
+    "effect": "compare",
+    "arguments": [
+      0
+    ],
+    "audit": "Loose comparison/order can invoke __toString on object values; only a literal strict=true disables the edge where supported."
+  },
+  "array_values": {
+    "return": "preserve:0",
+    "effect": "none",
+    "arguments": [],
+    "audit": "Copies values under numeric keys without converting them."
+  },
+  "basename": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all",
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "call_user_func": {
+    "return": "unknown",
+    "effect": "callback",
+    "arguments": [
+      0
+    ],
+    "audit": "Invokes the explicitly followed callback; unresolved callables are unknown."
+  },
+  "call_user_func_array": {
+    "return": "unknown",
+    "effect": "callback",
+    "arguments": [
+      0
+    ],
+    "audit": "Invokes the explicitly followed callback; unresolved callables are unknown."
+  },
+  "chr": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": [],
+    "audit": "An integer parameter; an object throws TypeError without calling __toString."
+  },
+  "count": {
+    "return": "scalar",
+    "effect": "count",
+    "arguments": [
+      0
+    ],
+    "audit": "Array count has no hooks; object count dispatches Countable::count.",
+    "scalarType": "int"
+  },
+  "dirname": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all",
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "explode": {
+    "return": "scalar-array",
+    "effect": "stringify",
+    "arguments": [
+      0,
+      1
+    ],
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "file_exists": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all",
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "implode": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all",
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "in_array": {
+    "return": "scalar",
+    "effect": "compare",
+    "arguments": [
+      0,
+      1
+    ],
+    "strictArgument": 2,
+    "audit": "Loose comparison/order can invoke __toString on object values; only a literal strict=true disables the edge where supported."
+  },
+  "intdiv": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": [],
+    "audit": "Integer arithmetic; object arguments throw TypeError, with no object conversion hook.",
+    "scalarType": "int"
+  },
+  "is_array": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": [],
+    "audit": "A type predicate; inspects the value without comparisons, conversions or object hooks."
+  },
+  "is_int": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": [],
+    "audit": "A type predicate; inspects the value without comparisons, conversions or object hooks."
+  },
+  "is_null": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": [],
+    "audit": "A type predicate; inspects the value without comparisons, conversions or object hooks."
+  },
+  "is_object": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": [],
+    "audit": "A type predicate; inspects the value without comparisons, conversions or object hooks."
+  },
+  "is_resource": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": [],
+    "audit": "A type predicate; inspects the value without comparisons, conversions or object hooks."
+  },
+  "join": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all",
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "json_decode": {
+    "return": "json",
+    "effect": "stringify",
+    "arguments": [
+      0
+    ],
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "lcfirst": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all",
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "levenshtein": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all",
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString.",
+    "scalarType": "int"
+  },
+  "log1p": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": [],
+    "audit": "Numeric arithmetic; object arguments throw TypeError, with no string conversion hook.",
+    "scalarType": "float"
+  },
+  "max": {
+    "return": "arguments",
+    "effect": "compare",
+    "arguments": "all",
+    "audit": "Loose comparison/order can invoke __toString on object values; only a literal strict=true disables the edge where supported."
+  },
+  "mb_str_split": {
+    "return": "scalar-array",
+    "effect": "stringify",
+    "arguments": [
+      0
+    ],
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "mb_strlen": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      0
+    ],
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString.",
+    "scalarType": "int"
+  },
+  "mb_strpos": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      0,
+      1
+    ],
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString.",
+    "scalarType": "int"
+  },
+  "mb_strrpos": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      0,
+      1
+    ],
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString.",
+    "scalarType": "int"
+  },
+  "mb_strtolower": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all",
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "mb_substr": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all",
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "min": {
+    "return": "arguments",
+    "effect": "compare",
+    "arguments": "all",
+    "audit": "Loose comparison/order can invoke __toString on object values; only a literal strict=true disables the edge where supported."
+  },
+  "ob_end_clean": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": [],
+    "audit": "Ends the output buffer; the registered callback is followed at ob_start."
+  },
+  "ob_get_contents": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": [],
+    "audit": "Reads the output buffer; no argument conversion or callback invocation."
+  },
+  "ob_start": {
+    "return": "scalar",
+    "effect": "callback",
+    "arguments": [
+      0
+    ],
+    "audit": "Invokes the explicitly followed callback; unresolved callables are unknown."
+  },
+  "ord": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      0
+    ],
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString.",
+    "scalarType": "int"
+  },
+  "preg_match": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      0,
+      1
+    ],
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString.",
+    "outArguments": {
+      "2": "matches"
+    }
+  },
+  "preg_match_all": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      0,
+      1
+    ],
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString.",
+    "outArguments": {
+      "2": "matches"
+    }
+  },
+  "preg_replace": {
+    "return": "scalar-array",
+    "effect": "stringify",
+    "arguments": "all",
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "preg_split": {
+    "return": "scalar-array",
+    "effect": "stringify",
+    "arguments": [
+      0,
+      1
+    ],
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "property_exists": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      1
+    ],
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "range": {
+    "return": "scalar-array",
+    "effect": "stringify",
+    "arguments": [
+      0,
+      1
+    ],
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "rtrim": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all",
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "serialize": {
+    "return": "scalar",
+    "effect": "serialize",
+    "arguments": [
+      0
+    ],
+    "audit": "Serialization protocol methods are followed; unresolved runtime classes remain unknown."
+  },
+  "settype": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      0
+    ],
+    "condition": {
+      "argument": 1,
+      "values": [
+        "string"
+      ]
+    },
+    "alwaysArguments": [
+      1
+    ],
+    "audit": "The type-name argument is a string; conversion to string of the value is conditional on that destination."
+  },
+  "sort": {
+    "return": "scalar",
+    "effect": "compare",
+    "arguments": [
+      0
+    ],
+    "audit": "Loose comparison/order can invoke __toString on object values; only a literal strict=true disables the edge where supported."
+  },
+  "sprintf": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all",
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "str_replace": {
+    "return": "scalar-array",
+    "effect": "stringify",
+    "arguments": "all",
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "str_split": {
+    "return": "scalar-array",
+    "effect": "stringify",
+    "arguments": [
+      0
+    ],
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "str_starts_with": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all",
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "strcmp": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      0,
+      1
+    ],
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString.",
+    "scalarType": "int"
+  },
+  "stream_get_contents": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": [],
+    "audit": "Reads a stream resource; no object parameter conversion or comparison."
+  },
+  "strlen": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      0
+    ],
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString.",
+    "scalarType": "int"
+  },
+  "strval": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all",
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "substr": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all",
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "trigger_error": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      0
+    ],
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "uasort": {
+    "return": "scalar",
+    "effect": "callback",
+    "arguments": [
+      1
+    ],
+    "audit": "Invokes the explicitly followed callback; unresolved callables are unknown."
+  },
+  "uksort": {
+    "return": "scalar",
+    "effect": "callback",
+    "arguments": [
+      1
+    ],
+    "audit": "Invokes the explicitly followed callback; unresolved callables are unknown."
+  },
+  "unserialize": {
+    "return": "unknown",
+    "effect": "unserialize",
+    "arguments": [
+      0
+    ],
+    "audit": "Serialization protocol methods are followed; unresolved runtime classes remain unknown."
+  },
+  "usort": {
+    "return": "scalar",
+    "effect": "callback",
+    "arguments": [
+      1
+    ],
+    "audit": "Invokes the explicitly followed callback; unresolved callables are unknown."
+  },
+  "utf8_decode": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all",
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "version_compare": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      0,
+      1
+    ],
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  },
+  "vsprintf": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all",
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+  }
+}

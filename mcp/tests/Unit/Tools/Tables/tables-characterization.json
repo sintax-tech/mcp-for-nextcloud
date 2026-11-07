@@ -6471,6 +6471,712 @@
                     }
                 }
             ]
+        },
+        "collectives-unsupported": {
+            "definitions": [
+                {
+                    "name": "tables_list_tables",
+                    "title": "List tables",
+                    "description": "Lists the tables of the Nextcloud Tables app the authenticated user can open: their own, the ones shared with them and the ones of the applications (contexts) they belong to. Each table has an id, its title, whether the user owns it and a link; viewsListed says whether tables_list_views lists its views (only for tables the user owns or manages, as in the Tables app). Read only; it creates nothing. Use limit and offset for more.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200,
+                                "default": 50,
+                                "description": "Maximum number of tables returned (default 50, at most 200)."
+                            },
+                            "offset": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "default": 0,
+                                "description": "Number of tables to skip, from nextOffset of the previous page (default 0)."
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "annotations": {
+                        "title": "List tables",
+                        "readOnlyHint": true,
+                        "destructiveHint": false,
+                        "idempotentHint": true,
+                        "openWorldHint": false
+                    },
+                    "module": "tables",
+                    "operation": "read",
+                    "app": "tables"
+                },
+                {
+                    "name": "tables_list_views",
+                    "title": "List table views",
+                    "description": "Lists the views of the Tables app the authenticated user can open: the views of the tables they own or manage, the views shared with them and the views of their applications (contexts). A view shows only some rows and columns of its table. Views of a table shared without manage permission are not listed, as in the Tables app; the table itself is. Read only. Use limit and offset for more.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200,
+                                "default": 50,
+                                "description": "Maximum number of views returned (default 50, at most 200)."
+                            },
+                            "offset": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "default": 0,
+                                "description": "Number of views to skip, from nextOffset of the previous page (default 0)."
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "annotations": {
+                        "title": "List table views",
+                        "readOnlyHint": true,
+                        "destructiveHint": false,
+                        "idempotentHint": true,
+                        "openWorldHint": false
+                    },
+                    "module": "tables",
+                    "operation": "read",
+                    "app": "tables"
+                },
+                {
+                    "name": "tables_list_columns",
+                    "title": "List table columns",
+                    "description": "Lists the columns of one table (table_id) or of one view (view_id) the authenticated user can open: id, title, type, subtype, whether a value is mandatory and the options of the type (selection options, number range, text limits, user and group settings). For a view, only the columns the view shows, with whether the view makes each one read-only or mandatory. Give exactly one of table_id and view_id. Read only.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "table_id": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Id of the table, as tables_list_tables returns it. Give this or view_id, not both."
+                            },
+                            "view_id": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Id of the view, as tables_list_views returns it. Give this or table_id, not both."
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "annotations": {
+                        "title": "List table columns",
+                        "readOnlyHint": true,
+                        "destructiveHint": false,
+                        "idempotentHint": true,
+                        "openWorldHint": false
+                    },
+                    "module": "tables",
+                    "operation": "read",
+                    "app": "tables"
+                },
+                {
+                    "name": "tables_list_rows",
+                    "title": "List table rows",
+                    "description": "Lists the rows of one table (table_id) or one view (view_id) the authenticated user can read, as the Tables app reads them: only the columns the view shows (or all columns of the table), and through a view only the rows its saved filter keeps, which you can never widen. Optional filter (groups OR-ed, conditions inside a group AND-ed, on column ids from tables_list_columns or the meta columns -1 id, -2 created by, -3 edited by, -4 created at, -5 edited at), search (text columns and selection labels the user can see), sort and limit; pass nextCursor back as cursor for the next page; offsetLimitReached means more rows exist past the deepest page a cursor reaches (narrow the filter). Cells come as {columnId, value} with the native value: a selection gives its option id(s), a relation the id of the related row. Text is cleaned of control characters other than tab and line breaks and of direction marks, and is returned whole up to 20000 characters per cell and 100000 per page; a cut cell carries truncated and totalChars, and truncatedCells counts them. Read only.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "table_id": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Id of the table, as tables_list_tables returns it. Give this or view_id, not both."
+                            },
+                            "view_id": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Id of the view, as tables_list_views returns it. Give this or table_id, not both."
+                            },
+                            "filter": {
+                                "type": "array",
+                                "minItems": 1,
+                                "maxItems": 8,
+                                "description": "Groups OR-ed together; the conditions inside a group are AND-ed. Always combined with the view's own filter.",
+                                "items": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "maxItems": 8,
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "column_id": {
+                                                "type": "integer",
+                                                "minimum": -5,
+                                                "description": "Column id from tables_list_columns, or a meta column (-1 id, -2 created by, -3 edited by, -4 created at, -5 edited at)."
+                                            },
+                                            "operator": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "begins-with",
+                                                    "ends-with",
+                                                    "contains",
+                                                    "does-not-contain",
+                                                    "is-equal",
+                                                    "is-not-equal",
+                                                    "is-greater-than",
+                                                    "is-greater-than-or-equal",
+                                                    "is-lower-than",
+                                                    "is-lower-than-or-equal",
+                                                    "is-empty",
+                                                    "is-not-empty"
+                                                ]
+                                            },
+                                            "value": {
+                                                "type": [
+                                                    "string",
+                                                    "number",
+                                                    "integer"
+                                                ],
+                                                "description": "The value; a selection option id for a selection column; omit it for is-empty and is-not-empty."
+                                            }
+                                        },
+                                        "required": [
+                                            "column_id",
+                                            "operator"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                }
+                            },
+                            "search": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 100,
+                                "description": "Text searched in the text columns and the selection labels the user can see."
+                            },
+                            "sort": {
+                                "type": "array",
+                                "minItems": 1,
+                                "maxItems": 3,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "column_id": {
+                                            "type": "integer",
+                                            "minimum": -5
+                                        },
+                                        "mode": {
+                                            "type": "string",
+                                            "enum": [
+                                                "ASC",
+                                                "DESC",
+                                                "asc",
+                                                "desc"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "column_id",
+                                        "mode"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "Sort rules in order; without them the view's or table's own sort applies. The row id always breaks ties."
+                            },
+                            "limit": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100,
+                                "default": 25,
+                                "description": "Rows per page (default 25, at most 100)."
+                            },
+                            "cursor": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 512,
+                                "description": "nextCursor of the previous page, with the same other arguments."
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "annotations": {
+                        "title": "List table rows",
+                        "readOnlyHint": true,
+                        "destructiveHint": false,
+                        "idempotentHint": true,
+                        "openWorldHint": false
+                    },
+                    "module": "tables",
+                    "operation": "read",
+                    "app": "tables"
+                },
+                {
+                    "name": "tables_create_row",
+                    "title": "Create table row",
+                    "description": "Creates one row in one table (table_id) or one view (view_id) the authenticated user may add rows to, through the Tables app itself, which also fires its events, activity and notifications. cells lists 1 to 100 {column_id, value} pairs, each column once, on the columns tables_list_columns shows for that table or view, never read-only ones; the value follows the column type (see the guide). Without confirm the answer is the plan only; show it, ask, and repeat with confirm: true and its plan_state. A table owned by somebody else also needs confirm_shared: true. Through a view, Tables may fill columns the view does not show so the row matches it.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "table_id": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Id of the table, as tables_list_tables returns it. Give this or view_id, not both."
+                            },
+                            "view_id": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Id of the view, as tables_list_views returns it. Give this or table_id, not both."
+                            },
+                            "cells": {
+                                "type": "array",
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "description": "The cells to write: a list of 1 to 100 objects {column_id, value}, with nothing else in them and each column_id at most once. value by column type: text a string; link {url, title?} with an http or https url; number a number; stars 0-5 and progress 0-100 as integers; selection an option id; multiple selection a list of option ids; yes/no true or false; date and time \"YYYY-MM-DD HH:MM\", \"YYYY-MM-DD\" or \"HH:MM\"; users and groups a list of {id, type} with type 0 user, 1 group, 2 team; relation the id of the related row. Numbers, stars and progress also respect the column's minimum and maximum. null empties a cell, except yes/no, stars and progress, which take false or 0, and numbers before Tables 2.3.2, which would store 0.",
+                                "examples": [
+                                    [
+                                        {
+                                            "column_id": 1,
+                                            "value": "text"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "confirm_shared": {
+                                "type": "boolean",
+                                "description": "Set to true, after the user agreed, to write in a table owned by somebody else; the change is seen by everybody the table is shared with."
+                            },
+                            "plan_state": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 128,
+                                "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                            },
+                            "confirm": {
+                                "type": "boolean",
+                                "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "cells"
+                        ]
+                    },
+                    "annotations": {
+                        "title": "Create table row",
+                        "readOnlyHint": false,
+                        "destructiveHint": false,
+                        "idempotentHint": false,
+                        "openWorldHint": false
+                    },
+                    "module": "tables",
+                    "operation": "create",
+                    "app": "tables"
+                },
+                {
+                    "name": "tables_update_row",
+                    "title": "Update table row",
+                    "description": "Changes cells of one row (row_id) the authenticated user may read and update, through one table (table_id) or one view (view_id) that shows the row, via the Tables app itself. cells lists 1 to 100 {column_id, value} pairs, each column once, on the columns that table or view shows, never read-only ones; other cells stay as they are. Without confirm the answer is the plan with the values before and after; show it, ask, and repeat with confirm: true and its plan_state. A table owned by somebody else also needs confirm_shared: true.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "table_id": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Id of the table, as tables_list_tables returns it. Give this or view_id, not both."
+                            },
+                            "view_id": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Id of the view, as tables_list_views returns it. Give this or table_id, not both."
+                            },
+                            "row_id": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Id of the row, as tables_list_rows returns it."
+                            },
+                            "cells": {
+                                "type": "array",
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "description": "The cells to write: a list of 1 to 100 objects {column_id, value}, with nothing else in them and each column_id at most once. value by column type: text a string; link {url, title?} with an http or https url; number a number; stars 0-5 and progress 0-100 as integers; selection an option id; multiple selection a list of option ids; yes/no true or false; date and time \"YYYY-MM-DD HH:MM\", \"YYYY-MM-DD\" or \"HH:MM\"; users and groups a list of {id, type} with type 0 user, 1 group, 2 team; relation the id of the related row. Numbers, stars and progress also respect the column's minimum and maximum. null empties a cell, except yes/no, stars and progress, which take false or 0, and numbers before Tables 2.3.2, which would store 0.",
+                                "examples": [
+                                    [
+                                        {
+                                            "column_id": 1,
+                                            "value": "text"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "confirm_shared": {
+                                "type": "boolean",
+                                "description": "Set to true, after the user agreed, to write in a table owned by somebody else; the change is seen by everybody the table is shared with."
+                            },
+                            "plan_state": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 128,
+                                "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                            },
+                            "confirm": {
+                                "type": "boolean",
+                                "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "row_id",
+                            "cells"
+                        ]
+                    },
+                    "annotations": {
+                        "title": "Update table row",
+                        "readOnlyHint": false,
+                        "destructiveHint": true,
+                        "idempotentHint": false,
+                        "openWorldHint": false
+                    },
+                    "module": "tables",
+                    "operation": "edit",
+                    "app": "tables"
+                }
+            ],
+            "list": [
+                {
+                    "name": "tables_list_tables",
+                    "title": "List tables",
+                    "description": "Lists the tables of the Nextcloud Tables app the authenticated user can open: their own, the ones shared with them and the ones of the applications (contexts) they belong to. Each table has an id, its title, whether the user owns it and a link; viewsListed says whether tables_list_views lists its views (only for tables the user owns or manages, as in the Tables app). Read only; it creates nothing. Use limit and offset for more.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200,
+                                "default": 50,
+                                "description": "Maximum number of tables returned (default 50, at most 200)."
+                            },
+                            "offset": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "default": 0,
+                                "description": "Number of tables to skip, from nextOffset of the previous page (default 0)."
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "annotations": {
+                        "title": "List tables",
+                        "readOnlyHint": true,
+                        "destructiveHint": false,
+                        "idempotentHint": true,
+                        "openWorldHint": false
+                    }
+                },
+                {
+                    "name": "tables_list_views",
+                    "title": "List table views",
+                    "description": "Lists the views of the Tables app the authenticated user can open: the views of the tables they own or manage, the views shared with them and the views of their applications (contexts). A view shows only some rows and columns of its table. Views of a table shared without manage permission are not listed, as in the Tables app; the table itself is. Read only. Use limit and offset for more.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200,
+                                "default": 50,
+                                "description": "Maximum number of views returned (default 50, at most 200)."
+                            },
+                            "offset": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "default": 0,
+                                "description": "Number of views to skip, from nextOffset of the previous page (default 0)."
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "annotations": {
+                        "title": "List table views",
+                        "readOnlyHint": true,
+                        "destructiveHint": false,
+                        "idempotentHint": true,
+                        "openWorldHint": false
+                    }
+                },
+                {
+                    "name": "tables_list_columns",
+                    "title": "List table columns",
+                    "description": "Lists the columns of one table (table_id) or of one view (view_id) the authenticated user can open: id, title, type, subtype, whether a value is mandatory and the options of the type (selection options, number range, text limits, user and group settings). For a view, only the columns the view shows, with whether the view makes each one read-only or mandatory. Give exactly one of table_id and view_id. Read only.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "table_id": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Id of the table, as tables_list_tables returns it. Give this or view_id, not both."
+                            },
+                            "view_id": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Id of the view, as tables_list_views returns it. Give this or table_id, not both."
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "annotations": {
+                        "title": "List table columns",
+                        "readOnlyHint": true,
+                        "destructiveHint": false,
+                        "idempotentHint": true,
+                        "openWorldHint": false
+                    }
+                },
+                {
+                    "name": "tables_list_rows",
+                    "title": "List table rows",
+                    "description": "Lists the rows of one table (table_id) or one view (view_id) the authenticated user can read, as the Tables app reads them: only the columns the view shows (or all columns of the table), and through a view only the rows its saved filter keeps, which you can never widen. Optional filter (groups OR-ed, conditions inside a group AND-ed, on column ids from tables_list_columns or the meta columns -1 id, -2 created by, -3 edited by, -4 created at, -5 edited at), search (text columns and selection labels the user can see), sort and limit; pass nextCursor back as cursor for the next page; offsetLimitReached means more rows exist past the deepest page a cursor reaches (narrow the filter). Cells come as {columnId, value} with the native value: a selection gives its option id(s), a relation the id of the related row. Text is cleaned of control characters other than tab and line breaks and of direction marks, and is returned whole up to 20000 characters per cell and 100000 per page; a cut cell carries truncated and totalChars, and truncatedCells counts them. Read only.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "table_id": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Id of the table, as tables_list_tables returns it. Give this or view_id, not both."
+                            },
+                            "view_id": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Id of the view, as tables_list_views returns it. Give this or table_id, not both."
+                            },
+                            "filter": {
+                                "type": "array",
+                                "minItems": 1,
+                                "maxItems": 8,
+                                "description": "Groups OR-ed together; the conditions inside a group are AND-ed. Always combined with the view's own filter.",
+                                "items": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "maxItems": 8,
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "column_id": {
+                                                "type": "integer",
+                                                "minimum": -5,
+                                                "description": "Column id from tables_list_columns, or a meta column (-1 id, -2 created by, -3 edited by, -4 created at, -5 edited at)."
+                                            },
+                                            "operator": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "begins-with",
+                                                    "ends-with",
+                                                    "contains",
+                                                    "does-not-contain",
+                                                    "is-equal",
+                                                    "is-not-equal",
+                                                    "is-greater-than",
+                                                    "is-greater-than-or-equal",
+                                                    "is-lower-than",
+                                                    "is-lower-than-or-equal",
+                                                    "is-empty",
+                                                    "is-not-empty"
+                                                ]
+                                            },
+                                            "value": {
+                                                "type": [
+                                                    "string",
+                                                    "number",
+                                                    "integer"
+                                                ],
+                                                "description": "The value; a selection option id for a selection column; omit it for is-empty and is-not-empty."
+                                            }
+                                        },
+                                        "required": [
+                                            "column_id",
+                                            "operator"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                }
+                            },
+                            "search": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 100,
+                                "description": "Text searched in the text columns and the selection labels the user can see."
+                            },
+                            "sort": {
+                                "type": "array",
+                                "minItems": 1,
+                                "maxItems": 3,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "column_id": {
+                                            "type": "integer",
+                                            "minimum": -5
+                                        },
+                                        "mode": {
+                                            "type": "string",
+                                            "enum": [
+                                                "ASC",
+                                                "DESC",
+                                                "asc",
+                                                "desc"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "column_id",
+                                        "mode"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "Sort rules in order; without them the view's or table's own sort applies. The row id always breaks ties."
+                            },
+                            "limit": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100,
+                                "default": 25,
+                                "description": "Rows per page (default 25, at most 100)."
+                            },
+                            "cursor": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 512,
+                                "description": "nextCursor of the previous page, with the same other arguments."
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "annotations": {
+                        "title": "List table rows",
+                        "readOnlyHint": true,
+                        "destructiveHint": false,
+                        "idempotentHint": true,
+                        "openWorldHint": false
+                    }
+                },
+                {
+                    "name": "tables_create_row",
+                    "title": "Create table row",
+                    "description": "Creates one row in one table (table_id) or one view (view_id) the authenticated user may add rows to, through the Tables app itself, which also fires its events, activity and notifications. cells lists 1 to 100 {column_id, value} pairs, each column once, on the columns tables_list_columns shows for that table or view, never read-only ones; the value follows the column type (see the guide). Without confirm the answer is the plan only; show it, ask, and repeat with confirm: true and its plan_state. A table owned by somebody else also needs confirm_shared: true. Through a view, Tables may fill columns the view does not show so the row matches it.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "table_id": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Id of the table, as tables_list_tables returns it. Give this or view_id, not both."
+                            },
+                            "view_id": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Id of the view, as tables_list_views returns it. Give this or table_id, not both."
+                            },
+                            "cells": {
+                                "type": "array",
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "description": "The cells to write: a list of 1 to 100 objects {column_id, value}, with nothing else in them and each column_id at most once. value by column type: text a string; link {url, title?} with an http or https url; number a number; stars 0-5 and progress 0-100 as integers; selection an option id; multiple selection a list of option ids; yes/no true or false; date and time \"YYYY-MM-DD HH:MM\", \"YYYY-MM-DD\" or \"HH:MM\"; users and groups a list of {id, type} with type 0 user, 1 group, 2 team; relation the id of the related row. Numbers, stars and progress also respect the column's minimum and maximum. null empties a cell, except yes/no, stars and progress, which take false or 0, and numbers before Tables 2.3.2, which would store 0.",
+                                "examples": [
+                                    [
+                                        {
+                                            "column_id": 1,
+                                            "value": "text"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "confirm_shared": {
+                                "type": "boolean",
+                                "description": "Set to true, after the user agreed, to write in a table owned by somebody else; the change is seen by everybody the table is shared with."
+                            },
+                            "plan_state": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 128,
+                                "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                            },
+                            "confirm": {
+                                "type": "boolean",
+                                "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "cells"
+                        ]
+                    },
+                    "annotations": {
+                        "title": "Create table row",
+                        "readOnlyHint": false,
+                        "destructiveHint": false,
+                        "idempotentHint": false,
+                        "openWorldHint": false
+                    }
+                },
+                {
+                    "name": "tables_update_row",
+                    "title": "Update table row",
+                    "description": "Changes cells of one row (row_id) the authenticated user may read and update, through one table (table_id) or one view (view_id) that shows the row, via the Tables app itself. cells lists 1 to 100 {column_id, value} pairs, each column once, on the columns that table or view shows, never read-only ones; other cells stay as they are. Without confirm the answer is the plan with the values before and after; show it, ask, and repeat with confirm: true and its plan_state. A table owned by somebody else also needs confirm_shared: true.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "table_id": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Id of the table, as tables_list_tables returns it. Give this or view_id, not both."
+                            },
+                            "view_id": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Id of the view, as tables_list_views returns it. Give this or table_id, not both."
+                            },
+                            "row_id": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Id of the row, as tables_list_rows returns it."
+                            },
+                            "cells": {
+                                "type": "array",
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "description": "The cells to write: a list of 1 to 100 objects {column_id, value}, with nothing else in them and each column_id at most once. value by column type: text a string; link {url, title?} with an http or https url; number a number; stars 0-5 and progress 0-100 as integers; selection an option id; multiple selection a list of option ids; yes/no true or false; date and time \"YYYY-MM-DD HH:MM\", \"YYYY-MM-DD\" or \"HH:MM\"; users and groups a list of {id, type} with type 0 user, 1 group, 2 team; relation the id of the related row. Numbers, stars and progress also respect the column's minimum and maximum. null empties a cell, except yes/no, stars and progress, which take false or 0, and numbers before Tables 2.3.2, which would store 0.",
+                                "examples": [
+                                    [
+                                        {
+                                            "column_id": 1,
+                                            "value": "text"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "confirm_shared": {
+                                "type": "boolean",
+                                "description": "Set to true, after the user agreed, to write in a table owned by somebody else; the change is seen by everybody the table is shared with."
+                            },
+                            "plan_state": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 128,
+                                "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                            },
+                            "confirm": {
+                                "type": "boolean",
+                                "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "row_id",
+                            "cells"
+                        ]
+                    },
+                    "annotations": {
+                        "title": "Update table row",
+                        "readOnlyHint": false,
+                        "destructiveHint": true,
+                        "idempotentHint": false,
+                        "openWorldHint": false
+                    }
+                }
+            ]
         }
     },
     "read": {

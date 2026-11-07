@@ -1,0 +1,773 @@
+{
+    "tool": "collectives_move",
+    "grant": "collectives.move",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "collective_id": 7,
+                "page_id": 104,
+                "index": 0,
+                "parent_id": 106
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Move collective page**\n\nMove page **Guide** under *Team* as **Guide**.\n\n- Links to this page by id keep working; links written with its old path may break.\n- Collectives may notify the members of the collective and update open browsers.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "collectives_move",
+                            "title": "Move collective page",
+                            "action": "collectives_move",
+                            "collective_id": 7,
+                            "page": {
+                                "id": 104,
+                                "title": "Guide",
+                                "slug": "guide",
+                                "parent_id": 103,
+                                "emoji": null,
+                                "last_user": "Alice",
+                                "timestamp": "<timestamp#1>",
+                                "size": 11,
+                                "subpage_order": []
+                            },
+                            "from": {
+                                "parent_id": 103,
+                                "parent_title": "Landing page",
+                                "title": "Guide",
+                                "position": 1
+                            },
+                            "to": {
+                                "parent_id": 106,
+                                "parent_title": "Team",
+                                "title": "Guide",
+                                "position": 0
+                            },
+                            "changes": true,
+                            "parent_becomes_folder": false,
+                            "recoverable": true,
+                            "notices": [
+                                "Links to this page by id keep working; links written with its old path may break.",
+                                "Collectives may notify the members of the collective and update open browsers."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ]
+                },
+                "calls": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "collective_id": 7,
+                "page_id": 104,
+                "index": 0,
+                "parent_id": 106,
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ]
+                },
+                "calls": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "collective_id": 7,
+                "page_id": 104,
+                "index": 0,
+                "parent_id": 106,
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Move collective page**\n\nMove page **Guide** under *Team* as **Guide**.\n\n- Links to this page by id keep working; links written with its old path may break.\n- Collectives may notify the members of the collective and update open browsers.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "collectives_move",
+                            "title": "Move collective page",
+                            "action": "collectives_move",
+                            "collective_id": 7,
+                            "page": {
+                                "id": 104,
+                                "title": "Guide",
+                                "slug": "guide",
+                                "parent_id": 103,
+                                "emoji": null,
+                                "last_user": "Alice",
+                                "timestamp": "<timestamp#1>",
+                                "size": 11,
+                                "subpage_order": []
+                            },
+                            "from": {
+                                "parent_id": 103,
+                                "parent_title": "Landing page",
+                                "title": "Guide",
+                                "position": 1
+                            },
+                            "to": {
+                                "parent_id": 106,
+                                "parent_title": "Team",
+                                "title": "Guide",
+                                "position": 0
+                            },
+                            "changes": true,
+                            "parent_becomes_folder": false,
+                            "recoverable": true,
+                            "notices": [
+                                "Links to this page by id keep working; links written with its old path may break.",
+                                "Collectives may notify the members of the collective and update open browsers."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ]
+                },
+                "calls": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "arguments": {
+                "collective_id": 7,
+                "page_id": 104,
+                "index": 0,
+                "parent_id": 106,
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Move collective page**\n\nMove page **Guide** under *Team* as **Guide**.\n\n- Links to this page by id keep working; links written with its old path may break.\n- Collectives may notify the members of the collective and update open browsers.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "collectives_move",
+                            "title": "Move collective page",
+                            "action": "collectives_move",
+                            "collective_id": 7,
+                            "page": {
+                                "id": 104,
+                                "title": "Guide",
+                                "slug": "guide",
+                                "parent_id": 103,
+                                "emoji": null,
+                                "last_user": "Alice",
+                                "timestamp": "<timestamp#1>",
+                                "size": 11,
+                                "subpage_order": []
+                            },
+                            "from": {
+                                "parent_id": 103,
+                                "parent_title": "Landing page",
+                                "title": "Guide",
+                                "position": 1
+                            },
+                            "to": {
+                                "parent_id": 106,
+                                "parent_title": "Team",
+                                "title": "Guide",
+                                "position": 0
+                            },
+                            "changes": true,
+                            "parent_becomes_folder": false,
+                            "recoverable": true,
+                            "notices": [
+                                "Links to this page by id keep working; links written with its old path may break.",
+                                "Collectives may notify the members of the collective and update open browsers."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Late.md": {
+                        "id": 110,
+                        "content": ""
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ]
+                },
+                "calls": []
+            }
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "collective_id": 7,
+                "page_id": 104,
+                "index": 0,
+                "parent_id": 106
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Move collective page**\n\nMove page **Guide** under *Team* as **Guide**.\n\n- Links to this page by id keep working; links written with its old path may break.\n- Collectives may notify the members of the collective and update open browsers.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "collectives_move",
+                            "title": "Move collective page",
+                            "action": "collectives_move",
+                            "collective_id": 7,
+                            "page": {
+                                "id": 104,
+                                "title": "Guide",
+                                "slug": "guide",
+                                "parent_id": 103,
+                                "emoji": null,
+                                "last_user": "Alice",
+                                "timestamp": "<timestamp#1>",
+                                "size": 11,
+                                "subpage_order": []
+                            },
+                            "from": {
+                                "parent_id": 103,
+                                "parent_title": "Landing page",
+                                "title": "Guide",
+                                "position": 1
+                            },
+                            "to": {
+                                "parent_id": 106,
+                                "parent_title": "Team",
+                                "title": "Guide",
+                                "position": 0
+                            },
+                            "changes": true,
+                            "parent_becomes_folder": false,
+                            "recoverable": true,
+                            "notices": [
+                                "Links to this page by id keep working; links written with its old path may break.",
+                                "Collectives may notify the members of the collective and update open browsers."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Guide.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Late.md": {
+                        "id": 110,
+                        "content": ""
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106,
+                        104
+                    ]
+                },
+                "calls": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "collective_id": 7,
+                "page_id": 104,
+                "index": 0,
+                "parent_id": 106,
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"status\": \"applied\",\n    \"nativeCallAttempted\": true,\n    \"requested\": {\n        \"parent_id\": 106,\n        \"title\": \"Guide\",\n        \"position\": 0,\n        \"in_old_order\": false\n    },\n    \"observed\": {\n        \"parent_id\": 106,\n        \"title\": \"Guide\",\n        \"position\": 0,\n        \"in_old_order\": false,\n        \"slug\": \"guide\"\n    },\n    \"message\": \"Change observed by reading the collective again.\",\n    \"page\": {\n        \"id\": 104,\n        \"title\": \"Guide\",\n        \"slug\": \"guide\",\n        \"parent_id\": 106,\n        \"emoji\": null,\n        \"last_user\": \"Alice\",\n        \"timestamp\": <timestamp#1>,\n        \"size\": 11,\n        \"subpage_order\": []\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Guide.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Team/Late.md": {
+                        "id": 110,
+                        "content": ""
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106
+                    ],
+                    "106": [
+                        104
+                    ]
+                },
+                "calls": [
+                    "move"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "collective_id": 7,
+                "page_id": 104,
+                "index": 0,
+                "parent_id": 103,
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Guide.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Team/Late.md": {
+                        "id": 110,
+                        "content": ""
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106
+                    ],
+                    "106": [
+                        104
+                    ]
+                },
+                "calls": [
+                    "move"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "collective_id": 7,
+                "page_id": 104,
+                "index": 0,
+                "parent_id": 103
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Guide.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Team/Late.md": {
+                        "id": 110,
+                        "content": ""
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106
+                    ],
+                    "106": [
+                        104
+                    ]
+                },
+                "calls": [
+                    "move"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "collective_id": 7,
+                "page_id": 104,
+                "index": 0,
+                "parent_id": 103,
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Guide.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Team/Late.md": {
+                        "id": 110,
+                        "content": ""
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106
+                    ],
+                    "106": [
+                        104
+                    ]
+                },
+                "calls": [
+                    "move"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "arguments": {
+                "collective_id": 7,
+                "page_id": 104,
+                "index": 0,
+                "parent_id": 103,
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    ".templates/Template.md": {
+                        "id": 109,
+                        "content": "Template\n"
+                    },
+                    "Readme.md": {
+                        "id": 103,
+                        "content": "# Wiki\n"
+                    },
+                    "Team/Guide.md": {
+                        "id": 104,
+                        "content": "Guide text\n"
+                    },
+                    "Team/Late.md": {
+                        "id": 110,
+                        "content": ""
+                    },
+                    "Team/Onboarding.md": {
+                        "id": 107,
+                        "content": "Welcome\n"
+                    },
+                    "Team/Readme.md": {
+                        "id": 106,
+                        "content": "Team\n"
+                    }
+                },
+                "orders": {
+                    "103": [
+                        106
+                    ],
+                    "106": [
+                        104
+                    ]
+                },
+                "calls": [
+                    "move"
+                ]
+            }
+        }
+    ]
+}

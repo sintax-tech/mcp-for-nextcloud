@@ -28,7 +28,7 @@ final class AppEnablement {
 	 * Tables 1.0.0 is the first release that keeps the read-only columns of a view out of a row write (0.9.x, which
 	 * also installs on Nextcloud 32, does not). tests/Unit/Contract checks the APIs used against these releases.
 	 */
-	public const MINIMUM_VERSIONS = ['deck' => '1.15.0', 'spreed' => '21.1.4', 'mail' => '5.0.0', 'tables' => '1.0.0', 'forms' => '5.3.0', 'polls' => '8.6.3'];
+	public const MINIMUM_VERSIONS = ['deck' => '1.15.0', 'spreed' => '21.1.4', 'mail' => '5.0.0', 'tables' => '1.0.0', 'forms' => '5.3.0', 'polls' => '8.6.3', 'collectives' => '4.0.0'];
 
 	/**
 	 * @param object $apps the server's IAppManager, of whichever supported Nextcloud is running

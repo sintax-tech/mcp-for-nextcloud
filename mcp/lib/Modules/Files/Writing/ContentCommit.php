@@ -7,15 +7,14 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Writing;
 
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
-use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 use OCP\Files\Folder;
-use OCP\Lock\LockedException;
 use OCA\Mcp\Platform\Text\UnifiedDiff;
 
 /**
@@ -42,7 +41,8 @@ final class ContentCommit {
 
 	/**
 	 * Copies the original, then writes `$content`. A refusal before the copy leaves no backup.
-	 * A refusal after the copy keeps the backup and reports the same partial state as a failed write.
+	 * A failure after the copy, the re-read included, keeps the backup and says where it is, unless the file is no
+	 * longer visible ({@see \OCA\Mcp\Modules\Files\Backups\AfterCopyFailure}).
 	 *
 	 * @param \OCA\Mcp\Modules\Files\Backups\FileBackup $backup Backup of the module that is executing, not one captured earlier.
 	 * @param Folder $root The user's folder.
@@ -54,27 +54,26 @@ final class ContentCommit {
 	 * @param string $before Content as read, for the diff.
 	 * @return array{path:string, size:int, etag:string, access:array<string, mixed>, backup:string, diff:string}
 	 * @throws ToolFailure When the preparation or the write fails, or the type policy refuses the name.
+	 * @throws PolicyUnavailable When the Files scope cannot be read after the copy.
 	 */
 	public function commit(\OCA\Mcp\Modules\Files\Backups\FileBackup $backup, Folder $root, string $userId, File $file, string $path, string $content, ?string $etag, string $before): array {
 		// Before the copy: a refused name must not create a backup.
 		$this->types->assertCurrentName($file);
 		$copy = $backup->prepare($root, $file, $path, $userId, $etag);
-		$this->visibilityGuard?->assertVisible($file);
 		try {
+			$this->visibilityGuard?->assertVisible($file);
 			// After the copy and immediately before the write. A refusal here keeps the backup.
 			$this->types->assertCurrentName($file);
 			$backup->assertWritablePath($path);
 			// Checked again right before the write: the backup took time, and files_lock does not refuse every lock.
 			NodeAccess::mutate(fn () => $this->locks === null ? $file->putContent($content) : $this->locks->run(fn () => $file->putContent($content), $file, $userId, $path), $this->visibilityGuard);
-		} catch (LockWriteFailure $e) {
-			throw $e->withNote(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::originalKept($copy));
-		} catch (LockedException $e) {
-			$failure = NodeAccess::lockFailure($e);
-			throw $failure instanceof LockWriteFailure ? $failure->withNote(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::originalKept($copy)) : new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::writeFailed($copy));
-		} catch (\Throwable) {
-			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::writeFailed($copy));
+			$node = NodeAccess::requireFile(NodeAccess::get($root, $path, $this->visibilityGuard));
+		} catch (PolicyUnavailable $e) {
+			throw $e;
+		} catch (\Throwable $e) {
+			// The copy exists: the answer says where the original is kept, unless the file is no longer visible.
+			throw \OCA\Mcp\Modules\Files\Backups\AfterCopyFailure::explain($e, $copy, $file, $this->visibilityGuard);
 		}
-		$node = NodeAccess::requireFile(NodeAccess::get($root, $path, $this->visibilityGuard));
 		return [
 			'path' => $path,
 			'size' => strlen($content),

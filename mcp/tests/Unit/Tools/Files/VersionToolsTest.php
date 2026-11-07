@@ -294,6 +294,27 @@ final class VersionToolsTest extends TestCase {
 		}
 	}
 
+	/** The file is excluded while the version is written and the write then fails: no path of the hidden file or of its copy. */
+	#[\PHPUnit\Framework\Attributes\DataProvider('restoreModes')]
+	public function testARestoreThatFailsOnceTheFileIsHiddenDoesNotNameTheCopy(bool $locked): void {
+		[$tools, , $hide] = $this->guardedTools($locked);
+		$this->manager->versions[1]->withContent('old');
+		$this->manager->onRollback = static function () use ($hide): void {
+			$hide();
+			throw new \RuntimeException('storage failed');
+		};
+		$this->tree->writeFailure = new \RuntimeException('storage failed');
+		$this->tree->beforeWrite = static function (string $path) use ($hide): void {
+			if ($path === self::FILE) { $hide(); }
+		};
+		try {
+			$tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
+			$this->fail('A failed restore reported a receipt');
+		} catch (ToolFailure $e) {
+			$this->assertSame(CommonMessages::notFound(), $e->getMessage());
+		}
+	}
+
 	public function testRestoreReportsARollbackThatFailed(): void {
 		$this->manager->rollbackResult = false;
 		$this->expectException(ToolFailure::class);

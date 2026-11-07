@@ -425,4 +425,73 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
 		}
 		$this->assertCount(10, array_unique($tokens));
 	}
+
+	/** @return iterable<string, array{string, array<string, string>}> files_edit and files_replace over the same file */
+	public static function contentWrites(): iterable {
+		yield 'edit' => ['files_edit', ['path' => '/Documentos/ata.md', 'content' => 'novo']];
+		yield 'replace' => ['files_replace', ['path' => '/Documentos/ata.md', 'old' => 'olá', 'new' => 'novo']];
+	}
+
+	/**
+	 * Nextcloud took the read permission away in a hook of the write. The content is written, the file stays visible to
+	 * the policy, and the refusal of the re-read ends with where the original is kept instead of leaving the copy unannounced.
+	 */
+	#[\PHPUnit\Framework\Attributes\DataProvider('contentWrites')]
+	public function testAReadPermissionLostAfterTheWriteStillNamesTheCopy(string $tool, array $arguments): void {
+		$this->tree->afterWrite = function (string $path): void {
+			if ($path === self::FILE) {
+				$this->tree->nodes[$path]['readable'] = false;
+			}
+		};
+		$this->assertMatchesRegularExpression('#^' . preg_quote(CommonMessages::forbidden(), '#') . ' The original is kept in /MCP backups/Documentos/ata\.md\.[0-9-]+\.bak\.$#',
+			$this->failure($tool, $arguments));
+	}
+
+	/**
+	 * An exclusion tag applied while the copy was written hides the file before the write. The answer is the plain
+	 * visibility refusal a file hidden from the start gets: the copy mirrors a hidden file, so it is not named.
+	 */
+	#[\PHPUnit\Framework\Attributes\DataProvider('contentWrites')]
+	public function testAFileExcludedDuringTheCopyGetsOnlyTheVisibilityRefusal(string $tool, array $arguments): void {
+		$hidden = false;
+		$mapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+		$mapper->method('getTagIdsForObjects')->willReturnCallback(static function (array $ids) use (&$hidden): array {
+			return array_fill_keys($ids, $hidden ? ['999'] : []);
+		});
+		$this->config->app['mcp'][\OCA\Mcp\Access\Visibility\VisibilityGuard::CONFIG_KEY] = '["999"]';
+		$this->visibilityGuard = new \OCA\Mcp\Access\ResourceScope\FilesAccessGuard($this->config->mock($this), $mapper, $this->visibilityRoot());
+		$this->setUp();
+		$this->tree->afterWrite = static function (string $path) use (&$hidden): void {
+			if (str_contains($path, '/MCP backups/')) {
+				$hidden = true;
+			}
+		};
+		$this->assertSame(CommonMessages::notFound(), $this->failure($tool, $arguments));
+		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
+	}
+
+	/**
+	 * The file is excluded while it is written and the write then fails. The failure would name the copy of a hidden file,
+	 * so the answer is the plain visibility refusal and carries no path.
+	 */
+	#[\PHPUnit\Framework\Attributes\DataProvider('contentWrites')]
+	public function testAWriteThatFailsOnceTheFileIsHiddenDoesNotNameTheCopy(string $tool, array $arguments): void {
+		$hidden = false;
+		$mapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+		$mapper->method('getTagIdsForObjects')->willReturnCallback(static function (array $ids) use (&$hidden): array {
+			return array_fill_keys($ids, $hidden ? ['999'] : []);
+		});
+		$this->config->app['mcp'][\OCA\Mcp\Access\Visibility\VisibilityGuard::CONFIG_KEY] = '["999"]';
+		$this->visibilityGuard = new \OCA\Mcp\Access\ResourceScope\FilesAccessGuard($this->config->mock($this), $mapper, $this->visibilityRoot());
+		$this->setUp();
+		$this->tree->writeFailure = new \RuntimeException('storage failed');
+		$this->tree->beforeWrite = static function (string $path) use (&$hidden): void {
+			if ($path === self::FILE) {
+				$hidden = true;
+			}
+		};
+		$out = $this->failure($tool, $arguments);
+		$this->assertSame(CommonMessages::notFound(), $out);
+		$this->assertStringNotContainsString('ata.md', $out);
+	}
 }

@@ -12,7 +12,9 @@ final class SourceStyle {
 	public static function issues(string $path, string $source): array {
 		$issues = [];
 		if (!str_ends_with($source, "\n")) { $issues['final-newline'] = 1; }
+		// REUSE-IgnoreStart
 		foreach (['SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>', 'SPDX-License-Identifier: AGPL-3.0-or-later'] as $header) {
+		// REUSE-IgnoreEnd
 			if (!str_contains(substr($source, 0, 500), $header)) { $issues['header:' . $header] = 1; }
 		}
 		$php = str_ends_with($path, '.php');

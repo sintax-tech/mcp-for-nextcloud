@@ -20,6 +20,9 @@ final class CollectivesCoreProof {
 			throw new RuntimeException('Not an internal PHP class: ' . $leaf);
 		}
 		$reflection = new ReflectionClass($class);
+		if ($method === '__toString[absent]' && $reflection->isInternal() && !$reflection->hasMethod('__toString')) {
+			return;
+		}
 		if (!$reflection->isInternal() || !$reflection->hasMethod($method)
 			|| $reflection->getMethod($method)->getDeclaringClass()->getName() !== $class) {
 			throw new RuntimeException('Not an internal PHP declaration: ' . $leaf);

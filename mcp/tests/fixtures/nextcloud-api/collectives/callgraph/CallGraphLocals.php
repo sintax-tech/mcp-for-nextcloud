@@ -76,10 +76,10 @@ final class CallGraphLocals {
 			$n->expr->setAttribute('stated', true);
 		} elseif ($n instanceof Expr\Assign && $n->var instanceof Expr\ArrayDimFetch && $n->var->var instanceof Expr\Variable && is_string($n->var->var->name)) {
 			// `$list[] = $x` makes $list an array of the type of $x.
-			$add($n->var->var->name, array_map(static fn (?string $t): ?string => $t === null ? null : (CallGraphTypes::isObject($t) ? $t . '[]' : 'scalar[]'),
+			$add($n->var->var->name, array_map(static fn (?string $t): ?string => $t === null ? null : ($t === '' ? 'scalar[]' : $t . '[]'),
 				$this->types->typeOf($class, $n->expr, $locals)));
-		} elseif ($n instanceof Expr\FuncCall && $n->name instanceof Node\Name && isset(self::ITERATING[strtolower($n->name->toString())])) {
-			[$callback, $array, $count] = self::ITERATING[strtolower($n->name->toString())];
+		} elseif ($n instanceof Expr\FuncCall && $n->name instanceof Node\Name && isset(self::ITERATING[strtolower($this->index->functionName($n->name))])) {
+			[$callback, $array, $count] = self::ITERATING[strtolower($this->index->functionName($n->name))];
 			$fn = $n->args[$callback]->value ?? null;
 			if (($fn instanceof Expr\Closure || $fn instanceof Expr\ArrowFunction) && isset($n->args[$array]) && count($n->args) === 2) {
 				$fn->setAttribute('elements', [array_map(CallGraphTypes::element(...), $this->types->typeOf($class, $n->args[$array]->value, $locals)), $count]);

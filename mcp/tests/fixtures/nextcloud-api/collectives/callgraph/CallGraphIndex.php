@@ -131,6 +131,22 @@ final class CallGraphIndex {
 	}
 
 	/**
+	 * @param Node\Name $name PHP's resolved or namespace-relative function name
+	 * @return string the indexed namespaced definition before PHP's global builtin fallback
+	 */
+	public function functionName(Node\Name $name): string {
+		$local = $name->getAttribute('namespacedName')?->toString();
+		foreach (array_filter([$local, $name->toString()]) as $candidate) {
+			foreach (array_keys($this->functions) as $declared) {
+				if (strcasecmp($candidate, $declared) === 0) {
+					return $declared;
+				}
+			}
+		}
+		return $name->toString();
+	}
+
+	/**
 	 * @param string $class FQCN
 	 * @return array<string, string> the imports of the file it was read from
 	 */
@@ -211,6 +227,9 @@ final class CallGraphIndex {
 			default => [],
 		};
 		$props = [];
+		if ($node instanceof Stmt\Enum_) {
+			$props = $node->scalarType === null ? ['name' => ''] : ['name' => '', 'value' => ''];
+		}
 		foreach ($node->getProperties() as $property) {
 			$text = $property->getDocComment()?->getText() ?? '';
 			$type = $this->signatures->declared($property->type, $fqcn) ?? (preg_match('/@var\s+(\S+(?:\s+[^>\r\n]*>)?)/', $text, $m) ? $doc($m[1]) : null);
@@ -219,6 +238,21 @@ final class CallGraphIndex {
 					$props[$prop->name->name] = $known;
 				}
 			}
+		}
+		// Magic getter contracts require declarations, never inferred property defaults.
+		$declaredProps = [];
+		foreach ($node->getProperties() as $property) {
+			$text = $property->getDocComment()?->getText() ?? '';
+			$type = $this->signatures->declared($property->type, $fqcn)
+				?? (preg_match('/@var\s+(\S+)/', $text, $m) ? $doc($m[1]) : null);
+			foreach ($property->props as $prop) {
+				$declaredProps[$prop->name->name] = $type;
+			}
+		}
+		$magicReturns = [];
+		preg_match_all('/@method\s+(?:static\s+)?(\S+)\s+(\w+)\s*\(/', $node->getDocComment()?->getText() ?? '', $matches, PREG_SET_ORDER);
+		foreach ($matches as [, $type, $method]) {
+			$magicReturns[strtolower($method)] = $doc($type);
 		}
 		$consts = [];
 		foreach ($node->getConstants() as $group) {
@@ -233,6 +267,7 @@ final class CallGraphIndex {
 				// A promoted parameter is a typed property.
 				if ($param->flags !== 0 && is_string($param->var->name) && isset($params[$param->var->name])) {
 					$props[$param->var->name] = $params[$param->var->name];
+					$declaredProps[$param->var->name] = $params[$param->var->name];
 				}
 			}
 			// An untyped property the constructor sets from a typed parameter has that parameter's type.
@@ -258,6 +293,6 @@ final class CallGraphIndex {
 			array_push($traits, ...array_map(static fn (Node\Name $n): string => $n->toString(), $use->traits));
 		}
 		$this->classes[$fqcn] = ['outside' => $typesOnly, 'file' => $file, 'path' => $path, 'extends' => $extends, 'parents' => $parents, 'traits' => $traits,
-			'props' => $props, 'consts' => $consts, 'methods' => $methods];
+			'doc' => $node->getDocComment()?->getText() ?? '', 'declaredProps' => $declaredProps, 'magicReturns' => $magicReturns, 'props' => $props, 'consts' => $consts, 'methods' => $methods];
 	}
 }

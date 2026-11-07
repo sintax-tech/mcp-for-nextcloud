@@ -12,6 +12,7 @@ require __DIR__ . '/CollectivesCallGraph.php';
 require __DIR__ . '/CollectivesSourcePins.php';
 require __DIR__ . '/CollectivesDiagnostics.php';
 require __DIR__ . '/CollectivesCoreProof.php';
+require __DIR__ . '/CollectivesSqlProof.php';
 
 /**
  * Regenerates the Collectives surfaces of tests/fixtures/nextcloud-api/<major>.php, collectives-behavior.json and
@@ -21,7 +22,8 @@ require __DIR__ . '/CollectivesCoreProof.php';
  * collectives-external-leaves.json is checked against the pinned file it quotes.
  *
  * Usage: php generate-collectives.php <directory with v<version>.tar.gz, ocp-<server>.tar.gz, server-<server>-<file>
- *   circles-<server>-<file>, and vendor-<package>-<reference>.tar.gz>
+ *   circles-<server>-<file>, vendor-<package>-<reference>.tar.gz, and sql-<major>-<path hash>.php>
+ * SQL files are cached by cache-collectives-sql.php from the whole-SHA-pinned official server tarballs.
  */
 final class CollectivesFixtureGenerator {
 	/** Native methods recorded per release, by file under lib/. */
@@ -58,6 +60,7 @@ final class CollectivesFixtureGenerator {
 		// Every pinned tree is parsed in full.
 		ini_set('memory_limit', '2G');
 		$pins = json_decode(file_get_contents(__DIR__ . '/collectives-sources.json'), true, 512, JSON_THROW_ON_ERROR);
+		$sqlPins = json_decode(file_get_contents(__DIR__ . '/collectives-sql-sources.json'), true, 512, JSON_THROW_ON_ERROR);
 		$diagnostics = json_decode((string)file_get_contents(__DIR__ . '/collectives-external-leaves.json'), true, 512, JSON_THROW_ON_ERROR)['function trigger_error']['callers'];
 		$behavior = [];
 		$chains = [];
@@ -120,8 +123,13 @@ final class CollectivesFixtureGenerator {
 					}
 				}
 				$followed = self::followed($archives, $pin, $tree, $app);
-				$graph = new CollectivesCallGraph($followed, $tree . '/types');
-				$chains[$major] = ['collectives' => $version];
+				$sqlSources = [];
+				foreach ($sqlPins[$major]['files'] as $file => $sha) {
+					$sqlSources[$file] = file_get_contents($archives . '/sql-' . $major . '-' . hash('sha256', $file) . '.php');
+				}
+				$sqlProof = CollectivesSqlProof::build($sqlPins[$major], $sqlSources);
+				$graph = new CollectivesCallGraph($followed, $tree . '/types', $sqlProof['returns']);
+				$chains[$major] = ['collectives' => $version, 'sqlProof' => $sqlProof + ['sources' => $sqlSources]];
 				foreach (self::CHAINS as $kind => $entries) {
 					$reached = $graph->reach($entries);
 					CollectivesDiagnostics::check($reached['methods'], $diagnostics);

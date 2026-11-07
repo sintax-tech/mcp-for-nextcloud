@@ -2306,5 +2306,23 @@
         "excerpt": ""
       }
     ]
+  },
+  "php-core stdClass::__toString[absent]": {
+    "majors": [
+      "31",
+      "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "json_decode creates exact internal stdClass, never a user subclass. Reflection proves __toString absent: string conversion raises Error without invoking user code or writing storage.",
+    "proof": [
+      {
+        "source": "php-core",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
   }
 }

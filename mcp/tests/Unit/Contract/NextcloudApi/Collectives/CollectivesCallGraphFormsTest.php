@@ -60,7 +60,7 @@ final class CollectivesCallGraphFormsTest extends CallGraphTreeTestCase {
 			}',
 		], 'Entry::read');
 		foreach (['untyped property $this->container->get(', 'container lookup $this->server->get(', 'Server::get( of a class not written in place',
-			'call_user_func( with a callable', 'untyped value $p->go(', 'dynamic method name'] as $form) {
+			'call_user_func( with a callable', '$p->go(', 'dynamic method name'] as $form) {
 			$this->assertUnknown($r['unknown'], 'Entry', $form);
 		}
 	}

@@ -5,14 +5,23 @@
  */
 declare(strict_types=1);
 
+require_once __DIR__ . '/callgraph/CallGraphSubset.php';
+require_once __DIR__ . '/callgraph/CallGraphFunctions.php';
 require_once __DIR__ . '/callgraph/CallGraphNames.php';
 require_once __DIR__ . '/callgraph/CallGraphLiterals.php';
 require_once __DIR__ . '/callgraph/CallGraphSignatures.php';
 require_once __DIR__ . '/callgraph/CallGraphIndex.php';
 require_once __DIR__ . '/callgraph/CallGraphDispatch.php';
 require_once __DIR__ . '/callgraph/CallGraphBindings.php';
+require_once __DIR__ . '/callgraph/CallGraphJson.php';
+require_once __DIR__ . '/callgraph/CallGraphFunctionTypes.php';
+require_once __DIR__ . '/callgraph/CallGraphMagicFields.php';
+require_once __DIR__ . '/callgraph/CallGraphMagicContracts.php';
+require_once __DIR__ . '/callgraph/CallGraphTemplates.php';
+require_once __DIR__ . '/callgraph/CallGraphFetchTypes.php';
 require_once __DIR__ . '/callgraph/CallGraphTypes.php';
 require_once __DIR__ . '/callgraph/CallGraphLocals.php';
+require_once __DIR__ . '/callgraph/CallGraphArguments.php';
 require_once __DIR__ . '/callgraph/CallGraphMagicUses.php';
 require_once __DIR__ . '/callgraph/CallGraphCalls.php';
 
@@ -35,13 +44,14 @@ final class CollectivesCallGraph {
 	/**
 	 * @param string|array<string, string> $lib the app's lib/ directory, whose bodies are followed; or several, by the
 	 *   prefix their files are reported with (the app's own with '')
+	 * @param array<string,array<string,string>> $fetchReturns reconstructed pinned SQL return proof
 	 * @param string|null $types a tree of pinned classes and interfaces (OCP, the Circles classes the app calls) read
 	 *   for types; pinned classes declaring magic hooks also have their reached bodies followed
 	 */
-	public function __construct(string|array $lib, ?string $types = null) {
+	public function __construct(string|array $lib, ?string $types = null, array $fetchReturns = []) {
 		$this->index = new CallGraphIndex(is_string($lib) ? ['' => $lib] : $lib, $types);
 		$this->dispatch = new CallGraphDispatch($this->index);
-		$this->types = new CallGraphTypes($this->index, $this->dispatch);
+		$this->types = new CallGraphTypes($this->index, $this->dispatch, $fetchReturns);
 		$this->calls = new CallGraphCalls($this->index, $this->dispatch, $this->types);
 		$this->printer = new Standard();
 	}

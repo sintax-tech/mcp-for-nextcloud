@@ -28,6 +28,7 @@ final class CallGraphCalls {
 
 	private Standard $printer;
 	private CallGraphMagicUses $magic;
+	private CallGraphArguments $arguments;
 
 	/**
 	 * @param CallGraphIndex $index the parsed trees
@@ -36,7 +37,8 @@ final class CallGraphCalls {
 	 */
 	public function __construct(private CallGraphIndex $index, private CallGraphDispatch $dispatch, private CallGraphTypes $types) {
 		$this->printer = new Standard();
-		$this->magic = new CallGraphMagicUses($index, $dispatch);
+		$this->arguments = new CallGraphArguments($index, $dispatch, $types);
+		$this->magic = new CallGraphMagicUses($index, $dispatch, $this->arguments);
 	}
 
 	/**
@@ -53,8 +55,13 @@ final class CallGraphCalls {
 			$unknown[] = $unit['file'] . ':' . $at->getStartLine() . ' ' . $form;
 		};
 		$calls = [];
+		foreach ($unit['node']->params as $param) {
+			CallGraphSubset::check($param, $miss);
+		}
 		foreach ((new NodeFinder())->find($unit['node']->stmts ?? [], static fn (Node $n): bool => true) as $n) {
-			array_push($calls, ...$this->magic->calls($n, $typeOf, $miss));
+			CallGraphSubset::check($n, $miss, $typeOf);
+			$this->arguments->record($n, $key, $class, $typeOf);
+			array_push($calls, ...$this->magic->calls($n, $typeOf, $miss, $key));
 			if ($n instanceof Expr\MethodCall || $n instanceof Expr\NullsafeMethodCall) {
 				$text = $this->printer->prettyPrintExpr($n->var) . '->' . ($n->name instanceof Node\Identifier ? $n->name->name : '{dynamic}') . '(';
 				if (!$n->name instanceof Node\Identifier) {
@@ -102,21 +109,15 @@ final class CallGraphCalls {
 					}
 					continue;
 				}
-				$function = $n->name->toString();
+				$function = $this->index->functionName($n->name);
+				if (!isset($this->index->functions[$function])) {
+					CallGraphFunctions::check($n, $miss);
+				}
 				$inPlace = array_filter($n->args, static fn ($arg): bool => $arg instanceof Node\Arg && ($arg->value instanceof Expr\Closure || $arg->value instanceof Expr\ArrowFunction));
 				if (in_array(strtolower($function), self::CALLING, true) && $inPlace === []) {
 					$miss($n, $function . '( with a callable that is not written in place');
 				}
 				$calls[] = 'function ' . $function;
-				foreach ($this->index->functions[$function] ?? [] as $target) {
-					$arguments = [];
-					foreach ($this->index->unit($target)['node']->params as $position => $param) {
-						if (($n->args[$position] ?? null) instanceof Node\Arg) {
-							$arguments[$param->var->name] = $typeOf($n->args[$position]->value);
-						}
-					}
-					$this->types->bindings->record($target, $key . ':' . $n->getStartFilePos(), $arguments);
-				}
 			} elseif ($n instanceof Expr\Include_ && $this->includesOnlyData($unit, $this->assigned($unit['node'], $n->expr))) {
 				continue;
 			} elseif ($n instanceof Expr\Include_ || $n instanceof Expr\Eval_ || $n instanceof Expr\ShellExec) {
@@ -171,13 +172,13 @@ final class CallGraphCalls {
 			return false;
 		}
 		$parser = (new ParserFactory())->createForHostVersion();
-		foreach (glob($pattern) ?: [] as $file) {
+		foreach (($files = glob($pattern) ?: []) as $file) {
 			$ast = array_values(array_filter($parser->parse((string)file_get_contents($file)) ?? [], static fn (Node $n): bool => !$n instanceof Stmt\Nop));
 			if (count($ast) !== 1 || !$ast[0] instanceof Stmt\Return_ || !$ast[0]->expr instanceof Expr\Array_
 				|| array_filter($ast[0]->expr->items, static fn ($item): bool => !$item->value instanceof Node\Scalar) !== []) {
 				return false;
 			}
 		}
-		return true;
+		return $files !== [];
 	}
 }

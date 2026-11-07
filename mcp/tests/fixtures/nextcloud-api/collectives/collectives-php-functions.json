@@ -1,0 +1,430 @@
+{
+  "array_column": {
+    "return": "column",
+    "effect": "none",
+    "arguments": []
+  },
+  "array_combine": {
+    "return": "preserve:1",
+    "effect": "none",
+    "arguments": []
+  },
+  "array_diff": {
+    "return": "preserve:0",
+    "effect": "stringify",
+    "arguments": "all"
+  },
+  "array_filter": {
+    "return": "preserve:0",
+    "effect": "callback",
+    "arguments": [
+      1
+    ]
+  },
+  "array_intersect": {
+    "return": "preserve:0",
+    "effect": "stringify",
+    "arguments": "all"
+  },
+  "array_key_exists": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": []
+  },
+  "array_key_last": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": []
+  },
+  "array_keys": {
+    "return": "scalar-array",
+    "effect": "none",
+    "arguments": []
+  },
+  "array_map": {
+    "return": "map",
+    "effect": "callback",
+    "arguments": [
+      0
+    ]
+  },
+  "array_merge": {
+    "return": "preserve:all",
+    "effect": "none",
+    "arguments": []
+  },
+  "array_pop": {
+    "return": "element:0",
+    "effect": "none",
+    "arguments": []
+  },
+  "array_reverse": {
+    "return": "preserve:0",
+    "effect": "none",
+    "arguments": []
+  },
+  "array_slice": {
+    "return": "preserve:0",
+    "effect": "none",
+    "arguments": []
+  },
+  "array_unique": {
+    "return": "preserve:0",
+    "effect": "stringify",
+    "arguments": "all"
+  },
+  "array_values": {
+    "return": "preserve:0",
+    "effect": "none",
+    "arguments": []
+  },
+  "basename": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all"
+  },
+  "call_user_func": {
+    "return": "unknown",
+    "effect": "callback",
+    "arguments": [
+      0
+    ]
+  },
+  "call_user_func_array": {
+    "return": "unknown",
+    "effect": "callback",
+    "arguments": [
+      0
+    ]
+  },
+  "chr": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": []
+  },
+  "count": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": []
+  },
+  "dirname": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all"
+  },
+  "explode": {
+    "return": "scalar-array",
+    "effect": "stringify",
+    "arguments": [
+      0,
+      1
+    ]
+  },
+  "file_exists": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all"
+  },
+  "implode": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all"
+  },
+  "in_array": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": []
+  },
+  "intdiv": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": []
+  },
+  "is_array": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": []
+  },
+  "is_int": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": []
+  },
+  "is_null": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": []
+  },
+  "is_object": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": []
+  },
+  "is_resource": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": []
+  },
+  "join": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all"
+  },
+  "json_decode": {
+    "return": "json",
+    "effect": "stringify",
+    "arguments": [
+      0
+    ]
+  },
+  "lcfirst": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all"
+  },
+  "levenshtein": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all"
+  },
+  "log1p": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": []
+  },
+  "max": {
+    "return": "arguments",
+    "effect": "none",
+    "arguments": []
+  },
+  "mb_str_split": {
+    "return": "scalar-array",
+    "effect": "stringify",
+    "arguments": [
+      0
+    ]
+  },
+  "mb_strlen": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      0
+    ]
+  },
+  "mb_strpos": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      0,
+      1
+    ]
+  },
+  "mb_strrpos": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      0,
+      1
+    ]
+  },
+  "mb_strtolower": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all"
+  },
+  "mb_substr": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all"
+  },
+  "min": {
+    "return": "arguments",
+    "effect": "none",
+    "arguments": []
+  },
+  "ob_end_clean": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": []
+  },
+  "ob_get_contents": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": []
+  },
+  "ob_start": {
+    "return": "scalar",
+    "effect": "callback",
+    "arguments": [
+      0
+    ]
+  },
+  "ord": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      0
+    ]
+  },
+  "preg_match": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      0,
+      1
+    ]
+  },
+  "preg_replace": {
+    "return": "scalar-array",
+    "effect": "stringify",
+    "arguments": "all"
+  },
+  "preg_split": {
+    "return": "scalar-array",
+    "effect": "stringify",
+    "arguments": [
+      0,
+      1
+    ]
+  },
+  "property_exists": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": []
+  },
+  "range": {
+    "return": "scalar-array",
+    "effect": "none",
+    "arguments": []
+  },
+  "rtrim": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all"
+  },
+  "serialize": {
+    "return": "scalar",
+    "effect": "serialize",
+    "arguments": [
+      0
+    ]
+  },
+  "settype": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      0
+    ],
+    "condition": {
+      "argument": 1,
+      "values": [
+        "string"
+      ]
+    }
+  },
+  "sprintf": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all"
+  },
+  "str_replace": {
+    "return": "scalar-array",
+    "effect": "stringify",
+    "arguments": "all"
+  },
+  "str_split": {
+    "return": "scalar-array",
+    "effect": "stringify",
+    "arguments": [
+      0
+    ]
+  },
+  "str_starts_with": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all"
+  },
+  "strcmp": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      0,
+      1
+    ]
+  },
+  "stream_get_contents": {
+    "return": "scalar",
+    "effect": "none",
+    "arguments": []
+  },
+  "strlen": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      0
+    ]
+  },
+  "strval": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all"
+  },
+  "substr": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all"
+  },
+  "trigger_error": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      0
+    ]
+  },
+  "uasort": {
+    "return": "scalar",
+    "effect": "callback",
+    "arguments": [
+      1
+    ]
+  },
+  "uksort": {
+    "return": "scalar",
+    "effect": "callback",
+    "arguments": [
+      1
+    ]
+  },
+  "unserialize": {
+    "return": "unknown",
+    "effect": "unserialize",
+    "arguments": [
+      0
+    ]
+  },
+  "usort": {
+    "return": "scalar",
+    "effect": "callback",
+    "arguments": [
+      1
+    ]
+  },
+  "utf8_decode": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all"
+  },
+  "version_compare": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      0,
+      1
+    ]
+  },
+  "vsprintf": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": "all"
+  }
+}

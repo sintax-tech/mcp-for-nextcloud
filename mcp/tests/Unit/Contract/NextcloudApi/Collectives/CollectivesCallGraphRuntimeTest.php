@@ -49,11 +49,56 @@ final class CollectivesCallGraphRuntimeTest extends CallGraphTreeTestCase {
 		$this->assertArrayHasKey('OCA\\Collectives\\Service\\ParentFactory::__construct', $r['methods']);
 	}
 
+	/** @return void an unlisted match never erases an object or an array containing that object */
+	public function testMatchCannotEraseTheRuntimeWrite(): void {
+		foreach (['$t = ""; $t .= match (1) { default => $m };',
+			'foreach (match (1) { default => [$m] } as $item) { $t = ""; $t .= $item; }'] as $use) {
+			$this->runtimeAndUnknown([
+				'Text' => 'public function __construct(private Folder $f) {}
+					public function __toString(): string { $this->f->newFile("match"); return ""; }',
+				'Entry' => 'public function read(Folder $f): void { $m = new Text($f); ' . $use . ' }',
+			]);
+		}
+	}
+
+	/** @return void func_get_args has no admitted model, so its elements cannot be guessed scalar */
+	public function testFuncGetArgsCannotEraseTheRuntimeWrite(): void {
+		$this->runtimeAndUnknown([
+			'Text' => 'public function __construct(private Folder $f) {}
+				public function __toString(): string { $this->f->newFile("args"); return ""; }',
+			'Passer' => 'public static function pass(): void { foreach (func_get_args() as $item) { $t = ""; $t .= $item; } }',
+			'Entry' => 'public function read(Folder $f): void { Passer::pass(new Text($f)); }',
+		]);
+	}
+
+	/** @return void empty and coalesce both expose the writing __isset even when it returns false */
+	public function testPropertyContextsCannotEraseTheRuntimeWrite(): void {
+		foreach (['empty($m->missing);', '$x = $m->missing ?? 1;'] as $use) {
+			$this->runtimeAndUnknown([
+				'Magic' => 'public function __construct(private Folder $f) {}
+					public function __isset($name): bool { $this->f->newFile("isset"); return false; }',
+				'Entry' => 'public function read(Folder $f): void { $m = new Magic($f); ' . $use . ' }',
+			]);
+		}
+	}
+
+	/** @return void every listed stringifying function follows object arguments, including array elements */
+	public function testStringifyingFunctionsCannotEraseTheRuntimeWrite(): void {
+		foreach (['strval($m);', 'sprintf("%s", $m);', 'implode("", [$m]);'] as $use) {
+			$this->runtimeAndUnknown([
+				'Text' => 'public function __construct(private Folder $f) {}
+					public function __toString(): string { $this->f->newFile("convert"); return ""; }',
+				'Entry' => 'public function read(Folder $f): void { $m = new Text($f); ' . $use . ' }',
+			]);
+		}
+	}
+
 	/**
 	 * @param array<string, string> $classes ordered declarations, with parent classes before children
 	 * @return array{methods:array<string,string>, leaves:list<string>, unknown:list<string>} the graph of the same source
 	 */
 	private function runtimeAndUnknown(array $classes): array {
+		@unlink($this->lib . '/runtime.php');
 		$r = $this->reach($classes, 'Entry::read');
 		$runner = '<?php namespace OCP\\Files { class Folder { public int $writes = 0;
 			public function newFile(string $name): void { $this->writes++; } } }
@@ -69,7 +114,9 @@ final class CollectivesCallGraphRuntimeTest extends CallGraphTreeTestCase {
 		$errors = stream_get_contents($pipes[2]);
 		fclose($pipes[1]);
 		fclose($pipes[2]);
-		$this->assertSame(0, proc_close($process), $errors);
+		$exitCode = proc_close($process);
+		unlink($this->lib . '/runtime.php');
+		$this->assertSame(0, $exitCode, $errors);
 		$this->assertSame('1', $output, 'the exact runtime reproduction calls the write double once');
 		$this->assertTrue($r['unknown'] !== [] || in_array('OCP\\Files\\Folder::newFile', $r['leaves'], true),
 			'a runtime write is followed or explicitly unknown, never accepted as a resolved read');

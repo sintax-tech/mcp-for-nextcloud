@@ -15,7 +15,7 @@ final class CallGraphMagicUses {
 	 * @param CallGraphIndex $index pinned declarations
 	 * @param CallGraphDispatch $dispatch ordinary and implicit destinations
 	 */
-	public function __construct(private CallGraphIndex $index, private CallGraphDispatch $dispatch) {
+	public function __construct(private CallGraphIndex $index, private CallGraphDispatch $dispatch, private CallGraphArguments $arguments) {
 	}
 
 	/**
@@ -24,10 +24,16 @@ final class CallGraphMagicUses {
 	 * @param callable(Node, string):void $miss reports unknown forms
 	 * @return list<string> every possible implicit destination of the node
 	 */
-	public function calls(Node $node, callable $typeOf, callable $miss): array {
+	public function calls(Node $node, callable $typeOf, callable $miss, string $caller): array {
 		$edges = [];
-		$add = function (Expr $value, array $hooks) use ($typeOf, $miss, $node, &$edges): void {
+		$add = function (Expr $value, array $hooks, array $arguments = []) use ($typeOf, $miss, $node, $caller, &$edges): void {
 			foreach ($typeOf($value) as $type) {
+				while ($type !== null && str_ends_with($type, '[]')) {
+					$type = CallGraphTypes::element($type);
+				}
+				if ($type === 'json-object-value' && in_array('__toString', $hooks, true)) {
+					$edges[] = 'php-core stdClass::__toString[absent]';
+				}
 				if ($type === null) {
 					$miss($node, 'implicit receiver of unknown type for ' . implode('/', $hooks));
 					continue;
@@ -36,7 +42,11 @@ final class CallGraphMagicUses {
 				foreach ($candidates as $class) {
 					foreach ($hooks as $hook) {
 						$unknown = [];
-						array_push($edges, ...$this->dispatch->implicit($class, $hook, $unknown));
+						$targets = $this->dispatch->implicit($class, $hook, $unknown);
+						array_push($edges, ...$targets);
+						foreach ($targets as $target) {
+							$this->arguments->bind($target, $caller . ':' . $node->getStartFilePos() . ':' . $hook, $arguments);
+						}
 						foreach ($unknown as $message) {
 							$miss($node, $message);
 						}
@@ -45,10 +55,10 @@ final class CallGraphMagicUses {
 			}
 		};
 		if ($node instanceof Expr\PropertyFetch || $node instanceof Expr\NullsafePropertyFetch) {
-			$add($node->var, ['__get']);
+			$add($node->var, ['__get', '__isset'], [['']]);
 		}
 		if (($node instanceof Expr\Assign || $node instanceof Expr\AssignOp) && $node->var instanceof Expr\PropertyFetch) {
-			$add($node->var->var, ['__set']);
+			$add($node->var->var, ['__set'], [[''], $typeOf($node->expr)]);
 		}
 		if ($node instanceof Expr\Isset_ || $node instanceof Stmt\Unset_) {
 			foreach ($node->vars as $var) {
@@ -72,10 +82,18 @@ final class CallGraphMagicUses {
 			$add($value, ['__toString']);
 		}
 		if ($node instanceof Expr\FuncCall && $node->name instanceof Expr) {
-			$add($node->name, ['__invoke']);
+			$add($node->name, ['__invoke'], array_map(static fn (Node\Arg $a): array => $typeOf($a->value), array_filter($node->args, static fn (Node $a): bool => $a instanceof Node\Arg)));
 		}
 		if ($node instanceof Expr\FuncCall && $node->name instanceof Node\Name) {
-			$name = strtolower($node->name->toString());
+			$name = strtolower($this->index->functionName($node->name));
+			$model = CallGraphFunctions::model($name);
+			if (CallGraphFunctions::stringifies($node, $this->index)) {
+				foreach ($node->args as $position => $arg) {
+					if ($arg instanceof Node\Arg && ($model['arguments'] === 'all' || in_array($position, $model['arguments'], true))) {
+						$add($arg->value, ['__toString']);
+					}
+				}
+			}
 			if ($name === 'serialize' && ($node->args[0] ?? null) instanceof Node\Arg) {
 				$add($node->args[0]->value, ['__serialize', '__sleep']);
 			} elseif ($name === 'unserialize') {

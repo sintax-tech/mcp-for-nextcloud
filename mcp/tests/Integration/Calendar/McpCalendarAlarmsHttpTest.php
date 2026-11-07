@@ -62,52 +62,64 @@ final class McpCalendarAlarmsHttpTest extends IntegrationTestCase {
 		$policy->setConnected($uid, true);
 		$policy->setGrant($uid, 'calendar', 'edit', true);
 		$client = new McpClient(LoginFactory::bearer($uid));
-		$calendar = '/remote.php/dav/calendars/' . $uid . '/personal/';
+		$calendar = '/remote.php/dav/calendars/' . $uid . '/mcp-it-reminder-proof/';
 		$dav = LoginFactory::basic($uid);
-		$this->assertEmptyCalendar($calendar, $dav);
-		$args = ['calendar' => $calendar, 'summary' => 'HTTP reminder proof',
-			'start' => '2027-06-01', 'end' => '2027-06-02', 'allDay' => true,
-			'alarms' => [['minutesBefore' => 15], ['minutesBefore' => 30]]];
-		$policy->setGrant($uid, 'calendar', 'create', false);
-		self::assertFalse($client->tool('calendar_create_event', $args)->ok());
-		$this->assertEmptyCalendar($calendar, $dav);
-		$policy->setGrant($uid, 'calendar', 'create', true);
-		$plan = $client->tool('calendar_create_event', $args);
-		self::assertTrue($plan->ok(), $plan->describe());
-		self::assertTrue($plan->structured()['requiresConfirmation']);
-		self::assertSame([-900, -1800], array_column($plan->structured()['alarmChange']['after'], 'offsetSeconds'));
-		self::assertStringContainsString('DISPLAY', $plan->text());
-		self::assertStringContainsString('15', $plan->text());
-		self::assertStringContainsString('30', $plan->text());
-		$this->assertEmptyCalendar($calendar, $dav);
-		$created = $client->tool('calendar_create_event', $args + ['confirm' => true]);
-		self::assertTrue($created->ok(), $created->describe());
-		$item = $created->json();
-		self::assertSame('applied', $item['alarmReceipt']['status']);
-		$path = $calendar . rawurlencode($item['uid']) . '.ics';
-		$written = $this->readDav($path, $dav);
-		$alarms = array_values($written->VEVENT->select('VALARM'));
-		self::assertCount(2, $alarms);
-		self::assertSame(['-PT15M', '-PT30M'], array_map(static fn ($a): string => (string)$a->TRIGGER, $alarms));
-		foreach ($alarms as $alarm) {
-			self::assertSame('DISPLAY', (string)$alarm->ACTION);
+		// firstLogin may populate personal with Nextcloud's native example event.
+		// Use a separately created collection so zero resources remains a strict no-effect proof.
+		$createdCalendar = Http::request('MKCALENDAR', Http::BASE . $calendar,
+			['Authorization: ' . $dav->authorization(), 'Content-Type: application/xml; charset=utf-8'],
+			'<?xml version="1.0" encoding="utf-8"?><c:mkcalendar xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">'
+			. '<d:set><d:prop><d:displayname>HTTP reminder proof</d:displayname></d:prop></d:set></c:mkcalendar>');
+		self::assertSame(201, $createdCalendar['status'], 'Create the isolated CalDAV collection');
+		try {
+			$this->assertEmptyCalendar($calendar, $dav);
+			$args = ['calendar' => $calendar, 'summary' => 'HTTP reminder proof',
+				'start' => '2027-06-01', 'end' => '2027-06-02', 'allDay' => true,
+				'alarms' => [['minutesBefore' => 15], ['minutesBefore' => 30]]];
+			$policy->setGrant($uid, 'calendar', 'create', false);
+			self::assertFalse($client->tool('calendar_create_event', $args)->ok());
+			$this->assertEmptyCalendar($calendar, $dav);
+			$policy->setGrant($uid, 'calendar', 'create', true);
+			$plan = $client->tool('calendar_create_event', $args);
+			self::assertTrue($plan->ok(), $plan->describe());
+			self::assertTrue($plan->structured()['requiresConfirmation']);
+			self::assertSame([-900, -1800], array_column($plan->structured()['alarmChange']['after'], 'offsetSeconds'));
+			self::assertStringContainsString('DISPLAY', $plan->text());
+			self::assertStringContainsString('15', $plan->text());
+			self::assertStringContainsString('30', $plan->text());
+			$this->assertEmptyCalendar($calendar, $dav);
+			$created = $client->tool('calendar_create_event', $args + ['confirm' => true]);
+			self::assertTrue($created->ok(), $created->describe());
+			$item = $created->json();
+			self::assertSame('applied', $item['alarmReceipt']['status']);
+			$path = $calendar . rawurlencode($item['uid']) . '.ics';
+			$written = $this->readDav($path, $dav);
+			$alarms = array_values($written->VEVENT->select('VALARM'));
+			self::assertCount(2, $alarms);
+			self::assertSame(['-PT15M', '-PT30M'], array_map(static fn ($a): string => (string)$a->TRIGGER, $alarms));
+			foreach ($alarms as $alarm) {
+				self::assertSame('DISPLAY', (string)$alarm->ACTION);
+			}
+			$update = ['calendar' => $calendar, 'uid' => $item['uid'], 'alarms' => []];
+			$plan = $client->tool('calendar_update_event', $update);
+			self::assertTrue($plan->ok(), $plan->describe());
+			self::assertCount(2, $plan->structured()['alarmChange']['before']);
+			self::assertSame([], $plan->structured()['alarmChange']['after']);
+			$stillWritten = $this->readDav($path, $dav);
+			self::assertCount(2, $stillWritten->VEVENT->select('VALARM'));
+			self::assertSame($written->serialize(), $stillWritten->serialize(), 'Update preview must preserve the stored event');
+			$cleared = $client->tool('calendar_update_event', $update + ['confirm' => true]);
+			self::assertTrue($cleared->ok(), $cleared->describe());
+			self::assertSame('applied', $cleared->json()['alarmReceipt']['status']);
+			self::assertCount(0, $this->readDav($path, $dav)->VEVENT->select('VALARM'));
+		} finally {
+			$deletedCalendar = Http::request('DELETE', Http::BASE . $calendar, ['Authorization: ' . $dav->authorization()]);
+			self::assertSame(204, $deletedCalendar['status'], 'Remove the isolated CalDAV collection');
 		}
-		$update = ['calendar' => $calendar, 'uid' => $item['uid'], 'alarms' => []];
-		$plan = $client->tool('calendar_update_event', $update);
-		self::assertTrue($plan->ok(), $plan->describe());
-		self::assertCount(2, $plan->structured()['alarmChange']['before']);
-		self::assertSame([], $plan->structured()['alarmChange']['after']);
-		$stillWritten = $this->readDav($path, $dav);
-		self::assertCount(2, $stillWritten->VEVENT->select('VALARM'));
-		self::assertSame($written->serialize(), $stillWritten->serialize(), 'Update preview must preserve the stored event');
-		$cleared = $client->tool('calendar_update_event', $update + ['confirm' => true]);
-		self::assertTrue($cleared->ok(), $cleared->describe());
-		self::assertSame('applied', $cleared->json()['alarmReceipt']['status']);
-		self::assertCount(0, $this->readDav($path, $dav)->VEVENT->select('VALARM'));
 	}
 
-	/** Checks the personal calendar has no event resources through an independent CalDAV query.
-	 * @param string $path Disposable personal calendar URI.
+	/** Checks the isolated calendar has no event resources through an independent CalDAV query.
+	 * @param string $path Exclusive test calendar URI.
 	 * @param Credential $credential Actor's native app password.
 	 * @return void
 	 */

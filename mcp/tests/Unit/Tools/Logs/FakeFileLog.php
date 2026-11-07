@@ -16,19 +16,41 @@ use OCP\Log\IWriter;
  * skipped and at most `limit` returned. A malformed line decodes to null, and null passes a loglevel of 0.
  */
 final class FakeFileLog implements IWriter, IFileBased {
-	/** @var list<array{int, int}> every getEntries call: limit, offset */
+	/** @var list<mixed> File opens or explicit calls to the reference getEntries implementation. */
 	public array $calls = [];
-	/** Lines appended to the file after each getEntries call, as a busy server keeps writing. */
+	/** Lines appended to the fixture after each file snapshot or reference getEntries call, as a busy server keeps writing. */
 	public int $growth = 0;
 
 	/** @param list<string> $lines the file, oldest line first */
-	public function __construct(public array $lines, private int $minLevel = 0) {}
+	public function __construct(public array $lines, public int $minLevel = 0) {}
 
 	public function write(string $app, $message, int $level) {
 	}
 
+	private ?string $path = null;
+
+	/** @return string Disposable file containing this call's fixed snapshot, before simulated growth. */
 	public function getLogFilePath(): string {
-		return '/var/www/data/nextcloud.log';
+		$this->calls[] = 'open';
+		if ($this->path === null) {
+			$path = tempnam(sys_get_temp_dir(), 'mcp-it-log-');
+			if ($path === false) { throw new \RuntimeException('Cannot allocate the synthetic log'); }
+			$this->path = $path;
+		}
+		if (file_put_contents($this->path, implode("\n", $this->lines) . "\n") === false) {
+			throw new \RuntimeException('Cannot write the synthetic log');
+		}
+		if ($this->growth > 0) {
+			$this->lines = [...$this->lines, ...self::lines($this->growth, static fn (int $i): array => ['reqId' => 'new' . bin2hex(random_bytes(4))])];
+		}
+		return $this->path;
+	}
+
+	/** Remove only the file this fixture created. */
+	public function __destruct() {
+		if ($this->path !== null) {
+			unlink($this->path);
+		}
 	}
 
 	public function getEntries(int $limit = 50, int $offset = 0): array {

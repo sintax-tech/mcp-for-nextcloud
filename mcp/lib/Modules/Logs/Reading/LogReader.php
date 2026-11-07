@@ -1,39 +1,22 @@
 <?php
-/*
- * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
- * SPDX-License-Identifier: AGPL-3.0-or-later
- */
+/* SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later */
 declare(strict_types=1);
-
 namespace OCA\Mcp\Modules\Logs\Reading;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCP\IConfig;
 use OCP\Log\IFileBased;
 use OCP\Log\ILogFactory;
 
-/**
- * The one way the logs module reads the server log: the core's file writer, through ILogFactory and
- * IFileBased::getEntries(), the same path the core's log reader takes. No file is opened here, no shell and no occ.
- *
- * getEntries() reads the current file from the end, keeps the entries at or above the `loglevel` setting and decodes
- * each line with json_decode(), so a malformed line comes back as null. The rotated file (nextcloud.log.1) is not read.
- */
+/** Resolves only the current file published by the official logging API; no user/config-selected path. */
 class LogReader {
-	/**
-	 * Reads through the core's file writer.
-	 *
-	 * @param ILogFactory $factory core factory the file writer is taken from
-	 */
-	public function __construct(private ILogFactory $factory) {}
+	/** @param ILogFactory $factory Official logger factory. @param IConfig $config Server's eligible log level. */
+	public function __construct(private ILogFactory $factory, private IConfig $config) {}
 
-	/**
-	 * @param int $limit entries to read at most
-	 * @param int $offset entries to skip from the end first
-	 * @return list<mixed> decoded entries, newest first; anything that is not an object is a malformed line
-	 * @throws ToolFailure when the log is not a file or the core cannot read it, with a message that names no path
-	 */
-	public function entries(int $limit, int $offset): array {
+	/** @return ReverseLogFile One read-only handle. @throws ToolFailure On a non-file writer or unreadable file. */
+	public function open(): ReverseLogFile {
 		try {
 			$writer = $this->factory->get('file');
 		} catch (\Throwable) {
@@ -43,9 +26,14 @@ class LogReader {
 			throw new ToolFailure(Translator::t('This server does not write its log to a file, so there is nothing to read.'));
 		}
 		try {
-			return array_values($writer->getEntries($limit, $offset));
+			return new ReverseLogFile($writer->getLogFilePath());
 		} catch (\Throwable) {
 			throw new ToolFailure(Translator::t('The server log could not be read.'));
 		}
+	}
+
+	/** @return int Same eligibility threshold as the core file writer. */
+	public function minimumLevel(): int {
+		return $this->config->getSystemValueInt('loglevel', 2);
 	}
 }

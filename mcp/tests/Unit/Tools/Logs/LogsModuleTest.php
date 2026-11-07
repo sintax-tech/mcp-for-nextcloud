@@ -63,8 +63,7 @@ final class LogsModuleTest extends TestCase {
 		$config = $this->config->mock($this);
 		$groups = $this->createMock(IGroupManager::class);
 		$groups->method('getBackends')->willReturn([new \OCA\Mcp\Tests\Unit\ArrayGroupBackend(static fn (): array => ['admin' => ['root']])]);
-		$factory = $this->createMock(ILogFactory::class);
-		$factory->method('get')->willReturn($writer ?? $this->log);
+		$reader = FileLogFixture::reader($this, $writer ?? $this->log);
 		$dispatcher = $this->createMock(IEventDispatcher::class);
 		$dispatcher->method('dispatchTyped')->willReturnCallback(function (Event $event): void {
 			if ($this->dispatcherDown) {
@@ -83,7 +82,7 @@ final class LogsModuleTest extends TestCase {
 		$access = \OCA\Mcp\Tests\Unit\InMemoryConfig::logsAccess($this, $config, $groups, $mapper, new \OCA\Mcp\Tests\Unit\InMemoryLocks());
 		$guard = new \OCA\Mcp\Access\Visibility\VisibilityGuard($config, $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class));
 		$fileNames = new \OCA\Mcp\Access\Logs\LogFileNames($this->appConfig->worker($this), $guard);
-		return LogsTestModule::build($access, new LogScanner(new LogReader($factory)), new LogAudit($dispatcher, $logger), $config, $fileNames);
+		return LogsTestModule::build($access, new LogScanner($reader), new LogAudit($dispatcher, $logger), $config, $fileNames);
 	}
 
 	/** @return array{0: string, 1: array<string, mixed>} the text and the structured content of a call */

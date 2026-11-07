@@ -28,8 +28,15 @@
         "lib/Model/Member.php": "41283b64a607be73ca3e6e777ee21efa407782fa8980782ccd866d6d2394d795",
         "lib/Service/CircleService.php": "1dbeb6df4fd195571b0208d205c3fd2756e93ab66fbaa8ccb3cf58278efed725",
         "lib/Service/FederatedUserService.php": "7f6e9a9c525800dbc07dc53f04801a600eac0421f927ab8270855f6621880b8e"
+      },
+      "followed": {
+        "lib/Model/Probes/BasicProbe.php": "80dc2475c686d8102180a8faacaf542e204e5164c07e5936a9c172405472ed13",
+        "lib/Model/Probes/CircleProbe.php": "1276d9bb3f302aa4f488d98273b2dc0aa261e403bac34607281d397ecf39e531",
+        "lib/Model/Probes/DataProbe.php": "ca7a1bdc4feb6bd0d584dc0013a7bb1c7575955b148b93641bea1ab78467a0f8",
+        "lib/Model/Probes/MemberProbe.php": "5e0db631f33b7051c4397547398d796650b05286890839b18d9a074036a9a527"
       }
-    }
+    },
+    "composerLockSha256": "94a889ba3b2d6798df6d2149bbacce99c6aef16570bef1a6b2707391f97f596e"
   },
   "32": {
     "collectives": {
@@ -60,8 +67,15 @@
         "lib/Model/Member.php": "6da993feac2f08a7ceb6491b83713613ecd87e1312f97f37c15c6b1f3e213b12",
         "lib/Service/CircleService.php": "f073bf7073777135d5c1f99fd007761a000cc28399f7996b99cb882cc5325b91",
         "lib/Service/FederatedUserService.php": "58a9e2175660c601d3fab395b98b7d92d4c42c0001c0dfbebe7af77b77e62f4e"
+      },
+      "followed": {
+        "lib/Model/Probes/BasicProbe.php": "80dc2475c686d8102180a8faacaf542e204e5164c07e5936a9c172405472ed13",
+        "lib/Model/Probes/CircleProbe.php": "1276d9bb3f302aa4f488d98273b2dc0aa261e403bac34607281d397ecf39e531",
+        "lib/Model/Probes/DataProbe.php": "ca7a1bdc4feb6bd0d584dc0013a7bb1c7575955b148b93641bea1ab78467a0f8",
+        "lib/Model/Probes/MemberProbe.php": "5e0db631f33b7051c4397547398d796650b05286890839b18d9a074036a9a527"
       }
-    }
+    },
+    "composerLockSha256": "94a889ba3b2d6798df6d2149bbacce99c6aef16570bef1a6b2707391f97f596e"
   },
   "33": {
     "collectives": {
@@ -92,8 +106,29 @@
         "lib/Model/Member.php": "6da993feac2f08a7ceb6491b83713613ecd87e1312f97f37c15c6b1f3e213b12",
         "lib/Service/CircleService.php": "3b79acdae335376c7eb9ce6890cdad16ed45d215bc3113bad0162559e368c6ce",
         "lib/Service/FederatedUserService.php": "0bda5f753f79e46a2f3f8858507a7470d1ef77cd9b7d0c491afddd28d432fd4d"
+      },
+      "followed": {
+        "lib/Model/Probes/BasicProbe.php": "80dc2475c686d8102180a8faacaf542e204e5164c07e5936a9c172405472ed13",
+        "lib/Model/Probes/CircleProbe.php": "1276d9bb3f302aa4f488d98273b2dc0aa261e403bac34607281d397ecf39e531",
+        "lib/Model/Probes/DataProbe.php": "ca7a1bdc4feb6bd0d584dc0013a7bb1c7575955b148b93641bea1ab78467a0f8",
+        "lib/Model/Probes/MemberProbe.php": "5e0db631f33b7051c4397547398d796650b05286890839b18d9a074036a9a527"
       }
-    }
+    },
+    "vendor": {
+      "wamania/php-stemmer": {
+        "reference": "d96509294ea843b4b86e4900df27424a6ea0ace8",
+        "url": "https://github.com/wamania/php-stemmer/archive/d96509294ea843b4b86e4900df27424a6ea0ace8.tar.gz",
+        "sha256": "61a4e3636205c2bb7c0375493c343111fa0348b77bdfc11311e12d0369b5e2d5",
+        "version": "v4.0.0"
+      },
+      "joomla/string": {
+        "reference": "0b3d33564db389e27346f7e275c694897c939434",
+        "url": "https://github.com/joomla-framework/string/archive/0b3d33564db389e27346f7e275c694897c939434.tar.gz",
+        "sha256": "08e01ab678ae28bc9f2960ff42e9d298aea033853d97b6833f806d5153142e22",
+        "version": "3.0.4"
+      }
+    },
+    "composerLockSha256": "69d3d8aa613e217710695b3cb05508b01a7e8b745917f06a901ff54ba45b55e3"
   },
   "34": {
     "collectives": {
@@ -124,8 +159,29 @@
         "lib/Model/Member.php": "6da993feac2f08a7ceb6491b83713613ecd87e1312f97f37c15c6b1f3e213b12",
         "lib/Service/CircleService.php": "0a809c81a96b8fe73f9be32065cc844d3561b288c7f95414bee451180607c5c7",
         "lib/Service/FederatedUserService.php": "0bda5f753f79e46a2f3f8858507a7470d1ef77cd9b7d0c491afddd28d432fd4d"
+      },
+      "followed": {
+        "lib/Model/Probes/BasicProbe.php": "80dc2475c686d8102180a8faacaf542e204e5164c07e5936a9c172405472ed13",
+        "lib/Model/Probes/CircleProbe.php": "1276d9bb3f302aa4f488d98273b2dc0aa261e403bac34607281d397ecf39e531",
+        "lib/Model/Probes/DataProbe.php": "ca7a1bdc4feb6bd0d584dc0013a7bb1c7575955b148b93641bea1ab78467a0f8",
+        "lib/Model/Probes/MemberProbe.php": "5e0db631f33b7051c4397547398d796650b05286890839b18d9a074036a9a527"
       }
-    }
+    },
+    "vendor": {
+      "wamania/php-stemmer": {
+        "reference": "d96509294ea843b4b86e4900df27424a6ea0ace8",
+        "url": "https://github.com/wamania/php-stemmer/archive/d96509294ea843b4b86e4900df27424a6ea0ace8.tar.gz",
+        "sha256": "61a4e3636205c2bb7c0375493c343111fa0348b77bdfc11311e12d0369b5e2d5",
+        "version": "v4.0.0"
+      },
+      "joomla/string": {
+        "reference": "0b3d33564db389e27346f7e275c694897c939434",
+        "url": "https://github.com/joomla-framework/string/archive/0b3d33564db389e27346f7e275c694897c939434.tar.gz",
+        "sha256": "08e01ab678ae28bc9f2960ff42e9d298aea033853d97b6833f806d5153142e22",
+        "version": "3.0.4"
+      }
+    },
+    "composerLockSha256": "d3e7531d74bc069a7e2a7fabfa8d32639681f845efab5f2695eaaaf793f069e1"
   },
   "35": {
     "collectives": {
@@ -156,7 +212,28 @@
         "lib/Model/Member.php": "4eda69248d7112b212d987f157641ff8ce50aaf220e4b266eb1177e0d5b015d8",
         "lib/Service/CircleService.php": "1d8d7582aa79153fcc5c73cfc0fd58a787dc23ec111595151346d61b8a5c009f",
         "lib/Service/FederatedUserService.php": "d3905a8114a4c424a4d5c59b9adbe9c808d1b0a51a748738e10732fcd91b547b"
+      },
+      "followed": {
+        "lib/Model/Probes/BasicProbe.php": "501291de6285e1389d0d155cea7632cf9a5bd490f4ab3023946db8013594ab99",
+        "lib/Model/Probes/CircleProbe.php": "ac51536cfb4e60dc620b10c84813fa1a37bb4e9f44eba4f3199a36a1d4adc617",
+        "lib/Model/Probes/DataProbe.php": "b80992592576bee42924ede4b2128fec23b730b0f9a5c842bba7eee9fd01bc4c",
+        "lib/Model/Probes/MemberProbe.php": "5e3f12dcf684cc181a43b6ba3fa0a0ae634c5437cf33e1bdf2001be6d2437a34"
       }
-    }
+    },
+    "vendor": {
+      "wamania/php-stemmer": {
+        "reference": "d96509294ea843b4b86e4900df27424a6ea0ace8",
+        "url": "https://github.com/wamania/php-stemmer/archive/d96509294ea843b4b86e4900df27424a6ea0ace8.tar.gz",
+        "sha256": "61a4e3636205c2bb7c0375493c343111fa0348b77bdfc11311e12d0369b5e2d5",
+        "version": "v4.0.0"
+      },
+      "joomla/string": {
+        "reference": "0b3d33564db389e27346f7e275c694897c939434",
+        "url": "https://github.com/joomla-framework/string/archive/0b3d33564db389e27346f7e275c694897c939434.tar.gz",
+        "sha256": "08e01ab678ae28bc9f2960ff42e9d298aea033853d97b6833f806d5153142e22",
+        "version": "3.0.4"
+      }
+    },
+    "composerLockSha256": "69e209736db792fa2ff74aaac2b2abd66a7924d614f1747507076e93f7b22ea4"
   }
 }

@@ -107,13 +107,15 @@ final class CollectivesContractTest extends TestCase {
 	 * found in the pinned file it quotes. A read reaches no write of its own: the one stored setting is the Collectives
 	 * folder, written only when unset, which CollectivesAdmission refuses before; the only platform effects are the
 	 * account's files folder and Circles' single circle, created by Nextcloud when the account has none yet. The 4.0.0
-	 * content search creates the indices folder, so the module refuses that shape; 4.4.0 and later only read.
+	 * content search creates the indices folder, so the module refuses that shape; 4.4.0 and later only read, apart
+	 * from the exact pinned phputf8 bodies emitting the explicitly accepted PHP diagnostics on invalid input.
 	 * @return void
 	 */
 	public function testEveryChainAReadReachesOnlyReads(): void {
 		$chains = json_decode((string)file_get_contents(self::DIR . 'collectives-read-chains.json'), true, 512, JSON_THROW_ON_ERROR);
 		$pins = json_decode((string)file_get_contents(self::DIR . 'collectives-sources.json'), true, 512, JSON_THROW_ON_ERROR);
 		$allowed = self::allowlist();
+		require_once self::DIR . 'CollectivesDiagnostics.php';
 		$this->assertSame(array_keys($pins), array_keys($chains));
 		$folder = 'OCA\\Collectives\\Fs\\UserFolderHelper::getUserFolderSetting';
 		foreach ($chains as $major => $chain) {
@@ -138,11 +140,12 @@ final class CollectivesContractTest extends TestCase {
 					'4.0.0 creates the indices folder on a search: the module refuses that shape');
 				continue;
 			}
+			\CollectivesDiagnostics::check($search['methods'], $allowed['function trigger_error']['callers']);
 			$this->assertSame([], $search['unknown'], "NC$major: every form of the content search is resolved");
 			$this->assertArrayHasKey('OCA\\Collectives\\Search\\FileSearch\\FileSearcher::search', $search['methods'], "NC$major: the search chain was followed");
 			$this->assertSame([], NativeWrites::in($search['methods']), "NC$major: the content search only reads");
 			$effects = $this->leavesAllowed((string)$major, $search['leaves'], $chain['proved'], 'search');
-			$this->assertSame([], array_diff($effects, ['read', 'memory']), "NC$major: the content search leaves Collectives only to read");
+			$this->assertSame([], array_diff($effects, ['read', 'memory', 'diagnostic']), "NC$major: the content search leaves Collectives only to read");
 		}
 	}
 
@@ -192,11 +195,14 @@ final class CollectivesContractTest extends TestCase {
 		}
 		foreach (self::allowlist() as $leaf => $entry) {
 			$this->assertSame(array_values(array_unique($reached[$leaf] ?? [])), $entry['majors'], "$leaf is allowed exactly where it is reached");
-			$this->assertContains($entry['effect'], ['read', 'memory', 'cache', 'platform', 'write'], $leaf);
+			$this->assertContains($entry['effect'], ['read', 'memory', 'cache', 'platform', 'write', 'diagnostic'], $leaf);
 			$this->assertNotSame('', $entry['why'], $leaf);
+			if ($entry['effect'] === 'diagnostic') {
+				$this->assertSame('function trigger_error', $leaf, 'only the pinned phputf8 diagnostic is admitted');
+			}
 			$this->assertNotSame([], $entry['proof'], $leaf);
 			foreach ($entry['proof'] as $proof) {
-				$this->assertContains($proof['source'], ['php', 'ocp', 'server', 'circles', 'collectives'], $leaf);
+				$this->assertContains($proof['source'], ['php', 'ocp', 'server', 'circles', 'collectives', 'joomla'], $leaf);
 				$this->assertSame($proof['source'] === 'php', $proof['excerpt'] === '', "$leaf: a pinned source is quoted, PHP itself is not");
 			}
 			// PHP itself: built-in functions, its exceptions, and getMessage, which is final in Exception.

@@ -9,6 +9,8 @@ use OCA\Mcp\Tests\Unit\Contract\NextcloudApi\{FixtureFile,LibScanner,SourceParse
 
 require __DIR__ . '/../../../../vendor/autoload.php';
 require __DIR__ . '/CollectivesCallGraph.php';
+require __DIR__ . '/CollectivesSourcePins.php';
+require __DIR__ . '/CollectivesDiagnostics.php';
 
 /**
  * Regenerates the Collectives surfaces of tests/fixtures/nextcloud-api/<major>.php, collectives-behavior.json and
@@ -18,7 +20,7 @@ require __DIR__ . '/CollectivesCallGraph.php';
  * collectives-external-leaves.json is checked against the pinned file it quotes.
  *
  * Usage: php generate-collectives.php <directory with v<version>.tar.gz, ocp-<server>.tar.gz, server-<server>-<file>
- *   and circles-<server>-<file>>
+ *   circles-<server>-<file>, and vendor-<package>-<reference>.tar.gz>
  */
 final class CollectivesFixtureGenerator {
 	/** Native methods recorded per release, by file under lib/. */
@@ -55,6 +57,7 @@ final class CollectivesFixtureGenerator {
 		// Every pinned tree is parsed in full.
 		ini_set('memory_limit', '2G');
 		$pins = json_decode(file_get_contents(__DIR__ . '/collectives-sources.json'), true, 512, JSON_THROW_ON_ERROR);
+		$diagnostics = json_decode((string)file_get_contents(__DIR__ . '/collectives-external-leaves.json'), true, 512, JSON_THROW_ON_ERROR)['function trigger_error']['callers'];
 		$behavior = [];
 		$chains = [];
 		foreach ($pins as $major => $pin) {
@@ -115,14 +118,16 @@ final class CollectivesFixtureGenerator {
 						$methods[$file . '::' . $name] = self::method($source, $name);
 					}
 				}
-				$graph = new CollectivesCallGraph($app . '/lib', $tree . '/types');
+				$followed = self::followed($archives, $pin, $tree, $app);
+				$graph = new CollectivesCallGraph($followed, $tree . '/types');
 				$chains[$major] = ['collectives' => $version];
 				foreach (self::CHAINS as $kind => $entries) {
 					$reached = $graph->reach($entries);
+					CollectivesDiagnostics::check($reached['methods'], $diagnostics);
 					$chains[$major][$kind] = ['entries' => $entries, 'unknown' => $reached['unknown'], 'leaves' => $reached['leaves'], 'methods' => $reached['methods']];
 				}
 				$chains[$major]['proved'] = self::prove((string)$major, ['server' => $tree, 'circles' => $tree . '/circles', 'ocp' => $tree . '/types',
-					'collectives' => $app]);
+					'collectives' => $app, 'joomla' => $followed['joomla/'] ?? '']);
 				$behavior[$version] = ['sha256' => $pin['collectives']['sha256'],
 					'nextcloud' => ['min' => (int)$xml->dependencies->nextcloud['min-version'], 'max' => (int)$xml->dependencies->nextcloud['max-version']],
 					'methods' => $methods];
@@ -139,6 +144,34 @@ final class CollectivesFixtureGenerator {
 		ksort($chains);
 		file_put_contents(__DIR__ . '/collectives-behavior.json', json_encode($behavior, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . PHP_EOL);
 		file_put_contents(__DIR__ . '/collectives-read-chains.json', json_encode($chains, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . PHP_EOL);
+	}
+
+	/**
+	 * The trees whose bodies the chains follow: Collectives, the Circles probes it fills, and the libraries its
+	 * composer.lock locks for the content search, each verified against its pin.
+	 * @param string $archives directory of the pinned archives
+	 * @param array<string, mixed> $pin the pin of a major
+	 * @param string $tree the working directory of the major
+	 * @param string $app the unpacked Collectives
+	 * @return array<string, string> followed trees by the prefix their files are reported with
+	 */
+	private static function followed(string $archives, array $pin, string $tree, string $app): array {
+		$roots = ['' => $app . '/lib', 'circles/' => $tree . '/followed/circles'];
+		foreach ($pin['circles']['followed'] as $path => $sha) {
+			$file = $archives . '/circles-' . $pin['circles']['version'] . '-' . basename($path);
+			self::verify($file, $sha);
+			@mkdir(dirname($tree . '/followed/circles/' . substr($path, strlen('lib/'))), recursive: true);
+			copy($file, $tree . '/followed/circles/' . substr($path, strlen('lib/')));
+		}
+		CollectivesSourcePins::check((string)file_get_contents($app . '/composer.lock'), $pin);
+		foreach ($pin['vendor'] ?? [] as $name => $vendor) {
+			$archive = $archives . '/vendor-' . str_replace('/', '-', $name) . '-' . $vendor['reference'] . '.tar.gz';
+			self::verify($archive, $vendor['sha256']);
+			mkdir($tree . '/vendor/' . $name, recursive: true);
+			(new PharData($archive))->extractTo($tree . '/vendor/' . $name);
+			$roots[explode('/', $name)[0] . '/'] = glob($tree . '/vendor/' . $name . '/*', GLOB_ONLYDIR)[0] . '/src';
+		}
+		return $roots;
 	}
 
 	/**

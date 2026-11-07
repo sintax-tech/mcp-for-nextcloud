@@ -300,78 +300,6 @@
       }
     ]
   },
-  "OCA\\Circles\\Model\\Probes\\CircleProbe::__construct": {
-    "majors": [
-      "31",
-      "32",
-      "33",
-      "34",
-      "35"
-    ],
-    "effect": "memory",
-    "why": "Fills a query filter object in memory.",
-    "proof": [
-      {
-        "source": "circles",
-        "file": "lib/CirclesManager.php",
-        "excerpt": "use OCA\\Circles\\Model\\Probes\\CircleProbe;"
-      }
-    ]
-  },
-  "OCA\\Circles\\Model\\Probes\\CircleProbe::mustBeMember": {
-    "majors": [
-      "31",
-      "32",
-      "33",
-      "34",
-      "35"
-    ],
-    "effect": "memory",
-    "why": "Fills a query filter object in memory.",
-    "proof": [
-      {
-        "source": "circles",
-        "file": "lib/CirclesManager.php",
-        "excerpt": "use OCA\\Circles\\Model\\Probes\\CircleProbe;"
-      }
-    ]
-  },
-  "OCA\\Circles\\Model\\Probes\\DataProbe::__construct": {
-    "majors": [
-      "31",
-      "32",
-      "33",
-      "34",
-      "35"
-    ],
-    "effect": "memory",
-    "why": "Fills a query filter object in memory.",
-    "proof": [
-      {
-        "source": "circles",
-        "file": "lib/CirclesManager.php",
-        "excerpt": "use OCA\\Circles\\Model\\Probes\\DataProbe;"
-      }
-    ]
-  },
-  "OCA\\Circles\\Model\\Probes\\DataProbe::add": {
-    "majors": [
-      "31",
-      "32",
-      "33",
-      "34",
-      "35"
-    ],
-    "effect": "memory",
-    "why": "Fills a query filter object in memory.",
-    "proof": [
-      {
-        "source": "circles",
-        "file": "lib/CirclesManager.php",
-        "excerpt": "use OCA\\Circles\\Model\\Probes\\DataProbe;"
-      }
-    ]
-  },
   "OCP\\AppFramework\\Db\\Entity::getCircleId": {
     "majors": [
       "31",
@@ -1532,38 +1460,6 @@
       }
     ]
   },
-  "Wamania\\Snowball\\StemmerFactory::create": {
-    "majors": [
-      "33",
-      "34",
-      "35"
-    ],
-    "effect": "read",
-    "why": "Returns a word stemmer of the library Collectives bundles; pure computation.",
-    "proof": [
-      {
-        "source": "collectives",
-        "file": "composer.json",
-        "excerpt": "\"wamania/php-stemmer\": \"^4.0\""
-      }
-    ]
-  },
-  "Wamania\\Snowball\\Stemmer\\Stemmer::stem": {
-    "majors": [
-      "33",
-      "34",
-      "35"
-    ],
-    "effect": "read",
-    "why": "Stems a word; pure computation.",
-    "proof": [
-      {
-        "source": "collectives",
-        "file": "composer.json",
-        "excerpt": "\"wamania/php-stemmer\": \"^4.0\""
-      }
-    ]
-  },
   "function array_column": {
     "majors": [
       "33",
@@ -1678,10 +1574,58 @@
       }
     ]
   },
+  "function array_keys": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
   "function array_map": {
     "majors": [
       "31",
       "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function array_merge": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function array_pop": {
+    "majors": [
       "33",
       "34",
       "35"
@@ -1732,6 +1676,7 @@
       "31",
       "32",
       "33",
+      "34",
       "35"
     ],
     "effect": "read",
@@ -1748,6 +1693,22 @@
     "majors": [
       "31",
       "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function chr": {
+    "majors": [
       "33",
       "34",
       "35"
@@ -1832,6 +1793,22 @@
       }
     ]
   },
+  "function implode": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
   "function in_array": {
     "majors": [
       "31",
@@ -1868,10 +1845,42 @@
       }
     ]
   },
+  "function is_int": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
   "function is_null": {
     "majors": [
       "31",
       "32",
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function join": {
+    "majors": [
       "33",
       "34",
       "35"
@@ -1951,6 +1960,38 @@
       }
     ]
   },
+  "function mb_strpos": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function mb_strrpos": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
   "function mb_strtolower": {
     "majors": [
       "33",
@@ -1968,6 +2009,86 @@
     ]
   },
   "function mb_substr": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function min": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function ob_end_clean": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "memory",
+    "why": "PHP's output buffer, used by phputf8 to capture text in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function ob_get_contents": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "memory",
+    "why": "PHP's output buffer, used by phputf8 to capture text in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function ob_start": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "memory",
+    "why": "PHP's output buffer, used by phputf8 to capture text in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function ord": {
     "majors": [
       "33",
       "34",
@@ -2051,6 +2172,22 @@
       }
     ]
   },
+  "function sprintf": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
   "function str_replace": {
     "majors": [
       "31",
@@ -2087,9 +2224,109 @@
       }
     ]
   },
+  "function strlen": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function trigger_error": {
+    "majors": [
+      "33",
+      "34",
+      "35"
+    ],
+    "effect": "diagnostic",
+    "why": "Only the SHA-pinned phputf8 bodies listed in callers may raise PHP diagnostics on malformed Unicode or invalid offsets. No file, cache or database logging is allowed.",
+    "proof": [
+      {
+        "source": "joomla",
+        "file": "phputf8/mbstring/core.php",
+        "excerpt": "trigger_error('utf8_strrpos expects parameter 3 to be long', E_USER_WARNING);"
+      },
+      {
+        "source": "joomla",
+        "file": "phputf8/native/core.php",
+        "excerpt": "trigger_error('utf8_strpos: Offset must be an integer', E_USER_ERROR);"
+      },
+      {
+        "source": "joomla",
+        "file": "phputf8/native/core.php",
+        "excerpt": "trigger_error('utf8_strrpos expects parameter 3 to be long', E_USER_WARNING);"
+      },
+      {
+        "source": "joomla",
+        "file": "phputf8/utils/unicode.php",
+        "excerpt": "trigger_error("
+      },
+      {
+        "source": "joomla",
+        "file": "phputf8/utils/unicode.php",
+        "excerpt": "trigger_error("
+      },
+      {
+        "source": "joomla",
+        "file": "phputf8/utils/unicode.php",
+        "excerpt": "trigger_error("
+      },
+      {
+        "source": "joomla",
+        "file": "phputf8/utils/unicode.php",
+        "excerpt": "trigger_error("
+      },
+      {
+        "source": "joomla",
+        "file": "phputf8/utils/unicode.php",
+        "excerpt": "trigger_error("
+      }
+    ],
+    "callers": {
+      "function utf8_from_unicode@joomla/phputf8/utils/unicode.php": [
+        "0c6ec17ca7a06b6241abc6594e6de188aae551e71a3b6d3d04a40adb40eb16f5"
+      ],
+      "function utf8_strpos@joomla/phputf8/native/core.php": [
+        "c20b05db3d019f58d588e8485e82c5ac036bf8130020556210942d7e6524e5f7"
+      ],
+      "function utf8_strrpos@joomla/phputf8/mbstring/core.php": [
+        "99a8b590451252048e6c5503ac7b1101b55831675e64cbbaeeffeb73d3353e71"
+      ],
+      "function utf8_strrpos@joomla/phputf8/native/core.php": [
+        "39042b5aa21b9776605ba548d5abb96cfaf746cae806e81f333ff42e938ddb02"
+      ],
+      "function utf8_to_unicode@joomla/phputf8/utils/unicode.php": [
+        "5fc66d2cdd84c8e687a4164a85b4097305554685ffe47671a2bd23ab622602a2"
+      ]
+    }
+  },
   "function usort": {
     "majors": [
       "33",
+      "35"
+    ],
+    "effect": "read",
+    "why": "A PHP built-in on values in memory.",
+    "proof": [
+      {
+        "source": "php",
+        "file": "",
+        "excerpt": ""
+      }
+    ]
+  },
+  "function utf8_decode": {
+    "majors": [
+      "33",
+      "34",
       "35"
     ],
     "effect": "read",

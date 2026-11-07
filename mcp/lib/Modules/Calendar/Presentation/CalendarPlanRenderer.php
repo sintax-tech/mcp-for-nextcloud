@@ -7,9 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Calendar\Presentation;
 
-use DateTimeImmutable;
 use DateTimeZone;
-use IntlDateFormatter;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Mcp\Confirmation\PlanText;
 use OCA\Mcp\Mcp\Tools\RendersPlans;
@@ -24,8 +22,9 @@ final class CalendarPlanRenderer implements RendersPlans {
 
 	/**
 	 * @param string|null $forcedLocale optional locale override for testing (e.g. 'pt_BR', 'en')
+	 * @param CalendarTimingFormatter $timing formatter with a test-injectable Intl fallback
 	 */
-	public function __construct(private ?string $forcedLocale = null) {
+	public function __construct(private ?string $forcedLocale = null, private CalendarTimingFormatter $timing = new CalendarTimingFormatter()) {
 	}
 
 	/**
@@ -348,88 +347,7 @@ final class CalendarPlanRenderer implements RendersPlans {
 	 * @return string|null the readable timing, or null when a bound is missing
 	 */
 	private function formatTiming(mixed $startVal, mixed $endVal, bool $allDay, ?string $tzStr, ?string $accountTz = null): ?string {
-		if (!is_string($startVal) || !is_string($endVal) || $startVal === '' || $endVal === '') {
-			return null;
-		}
-
-		$locale = $this->forcedLocale ?? Translator::locale();
-
-		if ($allDay) {
-			$startSub = substr($startVal, 0, 10);
-			$endSub = substr($endVal, 0, 10);
-			$start = DateTimeImmutable::createFromFormat('!Y-m-d', $startSub, new DateTimeZone('UTC'));
-			$end = DateTimeImmutable::createFromFormat('!Y-m-d', $endSub, new DateTimeZone('UTC'));
-			if ($start === false || $end === false || $end < $start) {
-				return null;
-			}
-
-			$diff = $start->diff($end);
-			$days = $diff->days;
-
-			$wf = new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::NONE, 'UTC', null, 'EEE');
-			$df = new IntlDateFormatter($locale, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE, 'UTC');
-
-			$formatDate = static function (DateTimeImmutable $d) use ($wf, $df): string {
-				$weekday = rtrim((string)$wf->format($d), '.');
-				return $weekday . ', ' . $df->format($d);
-			};
-
-			// Single-day all-day event (end is exclusive, duration <= 1 day)
-			if ($days <= 1) {
-				return $formatDate($start);
-			}
-
-			// Multi-day all-day event (exclusive end date minus 1 day)
-			$inclusiveEnd = $end->modify('-1 day');
-			return $formatDate($start) . ' – ' . $formatDate($inclusiveEnd);
-		}
-
-		$tz = null;
-		if ($tzStr !== null && $tzStr !== '') {
-			try {
-				$tz = new DateTimeZone($tzStr);
-			} catch (Throwable) {
-				return null;
-			}
-		}
-		$tzTarget = $tz ?? ($accountTz !== null ? new DateTimeZone($accountTz) : new DateTimeZone(date_default_timezone_get() ?: 'UTC'));
-
-		try {
-			$start = new DateTimeImmutable($startVal);
-			$end = new DateTimeImmutable($endVal);
-		} catch (Throwable) {
-			return null;
-		}
-
-		if ($end < $start) {
-			return null;
-		}
-
-		$start = $start->setTimezone($tzTarget);
-		$end = $end->setTimezone($tzTarget);
-
-		$wf = new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::NONE, $tzTarget, null, 'EEE');
-		$df = new IntlDateFormatter($locale, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE, $tzTarget);
-		$tf = new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::SHORT, $tzTarget);
-
-		$formatDate = static function (DateTimeImmutable $d) use ($wf, $df): string {
-			$weekday = rtrim((string)$wf->format($d), '.');
-			return $weekday . ', ' . $df->format($d);
-		};
-
-		// The account's own zone is the default the person reads in; any other zone is named.
-		$tzSuffix = $tzStr !== null && $tzStr !== '' && $tzStr !== $accountTz ? ' (' . $tzStr . ')' : '';
-
-		// Same day in the event timezone
-		if ($start->format('Y-m-d') === $end->format('Y-m-d')) {
-			$timePart = $start->getTimestamp() === $end->getTimestamp()
-				? $tf->format($start)
-				: $tf->format($start) . '–' . $tf->format($end);
-			return $formatDate($start) . ', ' . $timePart . $tzSuffix;
-		}
-
-		// Multi-day timed event
-		return $formatDate($start) . ', ' . $tf->format($start) . ' – ' . $formatDate($end) . ', ' . $tf->format($end) . $tzSuffix;
+		return $this->timing->format($startVal, $endVal, $allDay, $tzStr, $accountTz, $this->forcedLocale ?? Translator::locale());
 	}
 
 	/**

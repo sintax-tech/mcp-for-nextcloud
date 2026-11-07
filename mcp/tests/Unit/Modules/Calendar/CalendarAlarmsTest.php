@@ -104,9 +104,10 @@ final class CalendarAlarmsTest extends CalendarTestCase {
 		Translator::use(new \OCA\Mcp\Tests\Unit\L10n\JsonL10n($locale));
 		$args = $this->createArgs() + ['alarms' => [['minutesBefore' => 15, 'description' => '**literal**']]];
 		$plan = $this->module->preview('calendar_create_event', $args, 'alice');
-		$text = $this->module->renderPlan('calendar_create_event', $plan);
+		$text = \OCA\Mcp\Mcp\Confirmation\PlanRenderer::render($this->module, 'calendar_create_event', $plan);
 		self::assertStringContainsString($fragment, $text);
 		self::assertStringContainsString('\*\*literal\*\*', $text);
+		self::assertStringContainsString($plan['warnings'][0]['message'], $text);
 		$this->assertNoWrites();
 		$result = self::json($this->registry->call('calendar_create_event', $args + ['confirm' => true], 'alice'));
 		$message = $result['alarmReceipt']['message'];

@@ -31,6 +31,48 @@ final class PdfSupplementaryCharactersTest extends TestCase {
 	}
 
 	/**
+	 * An incremental bfrange adds its offset to the last code unit of a supplementary destination, which the parser alone
+	 * reads as one number on every PHP version; past the last low surrogate the parser's value stays.
+	 *
+	 * @return void
+	 */
+	public function testIncrementalRangesGiveConsecutiveSupplementaryCharacters(): void {
+		$this->assertSame("\u{1F600}\u{1F601}", ExtractedText::utf8(self::restored(' 1 beginbfrange <0001> <0002> <D83DDE00> endbfrange', '00010002')->getText()));
+		$this->assertSame("A\u{1F600}", ExtractedText::utf8(self::restored(' 1 beginbfrange <0001> <0001> <0041D83DDE00> endbfrange', '0001')->getText()));
+		$sections = ' 1 beginbfrange <0001> <0002> <D83DDFFF> endbfrange';
+		$loaded = self::font((new Parser())->parseContent(BrokenTextSamples::pdfMapping($sections, '0001')))->loadTranslateTable();
+		$restored = self::font(self::restored($sections, '0001'))->loadTranslateTable();
+		$this->assertSame("\u{1F7FF}", $restored[1]);
+		$this->assertSame($loaded[2], $restored[2]);
+	}
+
+	/**
+	 * A later definition of the same code replaces an earlier pair, in the parser's order: every bfchar section first,
+	 * then every bfrange section. A later pair replaces an earlier BMP definition.
+	 *
+	 * @return void
+	 */
+	public function testTheEffectiveDefinitionWins(): void {
+		$superseded = [
+			'later bfchar BMP' => ' 2 beginbfchar <0001> <D83DDE00> <0001> <0041> endbfchar',
+			'later bfchar lone surrogate' => ' 2 beginbfchar <0001> <D83DDE00> <0001> <D83D> endbfchar',
+			'later bfchar section' => ' 1 beginbfchar <0001> <D83DDE00> endbfchar 1 beginbfchar <0001> <0041> endbfchar',
+			'incremental bfrange' => ' 1 beginbfchar <0001> <D83DDE00> endbfchar 1 beginbfrange <0001> <0001> <0041> endbfrange',
+			'bfrange written before bfchar, applied after it' => ' 1 beginbfrange <0001> <0001> <0041> endbfrange 1 beginbfchar <0001> <D83DDE00> endbfchar',
+			'bfrange array' => ' 1 beginbfchar <0001> <D83DDE00> endbfchar 1 beginbfrange <0001> <0001> [<0041>] endbfrange',
+			'later bfrange' => ' 2 beginbfrange <0001> <0002> <D83DDE00> <0001> <0001> <0041> endbfrange',
+		];
+		foreach ($superseded as $case => $sections) {
+			$loaded = self::font((new Parser())->parseContent(BrokenTextSamples::pdfMapping($sections, '0001')))->loadTranslateTable();
+			$restored = self::font(self::restored($sections, '0001'))->loadTranslateTable();
+			$this->assertSame($loaded[1], $restored[1], $case);
+			$this->assertStringNotContainsString("\u{1F600}", ExtractedText::utf8($loaded[1]), $case);
+		}
+		$text = self::restored(' 2 beginbfchar <0001> <0041> <0001> <D83DDE00> endbfchar 1 beginbfrange <0002> <0002> <0042> endbfrange', '00010002');
+		$this->assertSame("\u{1F600}B", ExtractedText::utf8($text->getText()));
+	}
+
+	/**
 	 * Destinations without a valid pair keep the parser's value, and entries the parser did not load are not added.
 	 *
 	 * @return void

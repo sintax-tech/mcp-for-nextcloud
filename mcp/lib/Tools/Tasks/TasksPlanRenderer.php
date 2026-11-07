@@ -38,7 +38,7 @@ final class TasksPlanRenderer {
      *
      * @var list<string>
      */
-    private const FIELDS = ['summary', 'description', 'start', 'due', 'priority', 'percentComplete', 'categories', 'parent'];
+    private const FIELDS = ['summary', 'description', 'start', 'due', 'priority', 'status', 'percentComplete', 'categories', 'parent'];
 
     /** How the parents of the plan being rendered read, and whether they change. */
     private ?ParentPlanText $parents = null;
@@ -87,7 +87,8 @@ final class TasksPlanRenderer {
             [$this->strong($summary), $this->emphasis($calendar)]
         )];
         foreach (self::FIELDS as $field) {
-            if ($field === 'summary') {
+            // Every new task needs action unless told otherwise: only another status is worth reading.
+            if ($field === 'summary' || ($field === 'status' && strtoupper($this->text($after['status'] ?? '')) === 'NEEDS-ACTION')) {
                 continue;
             }
             $value = $this->value($after[$field] ?? null, $field, $zone);
@@ -272,6 +273,9 @@ final class TasksPlanRenderer {
         if ($field === 'priority') {
             return is_numeric($value) ? $this->priority((int) $value) : null;
         }
+        if ($field === 'status') {
+            return $this->status($this->text($value));
+        }
         if (in_array($field, ['start', 'due', 'completed'], true)) {
             return $this->date($value, $zone);
         }
@@ -337,6 +341,19 @@ final class TasksPlanRenderer {
         return array_values(array_filter(array_map($this->text(...), is_array($value) ? $value : []), static fn (string $name) => $name !== ''));
     }
 
+    /** @param string $status iCalendar status of the task, empty when the task names none */
+    private function status(string $status): ?string {
+        // One literal per call: the translation tool extracts the source texts from here.
+        return match (strtoupper($status)) {
+            '' => null,
+            'NEEDS-ACTION' => Translator::t('needs action'),
+            'IN-PROCESS' => Translator::t('in progress'),
+            'COMPLETED' => Translator::t('completed'),
+            'CANCELLED' => Translator::t('cancelled'),
+            default => PlanText::inline($status, self::EXCERPT),
+        };
+    }
+
     /** @param int $priority iCalendar priority, 0 undefined and 1 the highest */
     private function priority(int $priority): string {
         // One literal per call: the translation tool extracts the source texts from here.
@@ -381,6 +398,7 @@ final class TasksPlanRenderer {
             'start' => Translator::t('Starts'),
             'due' => Translator::t('Due'),
             'priority' => Translator::t('Priority'),
+            'status' => Translator::t('Status'),
             'percentComplete' => Translator::t('Progress'),
             'completed' => Translator::t('Completed at'),
             'categories' => Translator::t('Categories'),

@@ -8,15 +8,22 @@ name: Tests
 
 on:
   push:
+    branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   phpunit:
     name: PHPUnit (PHP ${{ matrix.php-version }})
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -47,15 +54,19 @@ jobs:
         run: php scripts/ci/phpunit.php prepare "$RUNNER_TEMP/phpunit"
         working-directory: mcp
       - name: Run the six frozen flows without intl through OracleUnitRunner (8M)
+        if: success() || failure()
         run: php scripts/ci/phpunit.php run "$RUNNER_TEMP/phpunit" oracle
         working-directory: mcp
       - name: Run request-limit recordings (8M)
+        if: success() || failure()
         run: php scripts/ci/phpunit.php run "$RUNNER_TEMP/phpunit" recordings
         working-directory: mcp
       - name: Run development-script tests in their own process (2G)
+        if: success() || failure()
         run: php scripts/ci/phpunit.php run "$RUNNER_TEMP/phpunit" dev
         working-directory: mcp
       - name: Run the supported runtime with intl, gd, zip and 50M uploads
+        if: success() || failure()
         run: php scripts/ci/phpunit.php run "$RUNNER_TEMP/phpunit" supported
         working-directory: mcp
       - name: Prove every inventoried test executed exactly once

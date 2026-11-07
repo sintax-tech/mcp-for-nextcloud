@@ -17,7 +17,7 @@ try {
 	$work = $argv[2] ?? throw new RuntimeException('A disposable report directory is required');
 	switch ($argv[1] ?? '') {
 		case 'prepare':
-			if (!is_dir($work)) { mkdir($work, 0777, true); }
+			if (!is_dir($work) && !mkdir($work, 0777, true)) { throw new RuntimeException('Cannot create report directory'); }
 			PhpunitProfiles::configure($app, $work);
 			$status = PhpunitProfiles::execute([PHP_BINARY, $app . '/vendor/bin/phpunit', '-c', $app . '/phpunit.xml', '--list-tests-xml', $work . '/inventory.xml']);
 			if ($status !== 0) { exit($status); }

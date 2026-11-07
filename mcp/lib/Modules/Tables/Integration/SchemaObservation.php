@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Tables\Integration;
 
 use OCA\Mcp\Modules\Tables\Writing\SchemaReceiptComparison;
+use OCA\Mcp\Modules\Tables\Presentation\SchemaViewSnapshot;
 use OCA\Mcp\Modules\Tables\Presentation\{SchemaSnapshot, SchemaMessages};
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
@@ -46,7 +47,8 @@ class SchemaObservation {
 				$orders = array_column($expected, 'order');
 				$expected[] = ['columnId' => $id, 'order' => $orders === [] ? 0 : max($orders) + 1, 'readonly' => false, 'mandatory' => false];
 				$observed['viewsVerified'] = $observed['viewsVerified'] && in_array($id, $view->getColumnIds(), true)
-					&& SchemaReceiptComparison::same($expected, $observed['views'][$viewId]['columnSettings'] ?? null);
+					&& SchemaReceiptComparison::same($expected, $observed['views'][$viewId]['columnSettings'] ?? null)
+					&& SchemaViewSnapshot::preserved($p['views'][$viewId], $observed['views'][$viewId]);
 			}
 		}
 		return $observed;

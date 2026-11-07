@@ -25,7 +25,7 @@ final class SchemaApiShape {
 			'OCA\\Tables\\Db\\Share' => ['nodeId', 'nodeType', 'receiver', 'receiverType', 'permissionRead', 'permissionCreate', 'permissionUpdate', 'permissionDelete', 'permissionManage']] as $class => $fields) {
 			foreach ($fields as $field) $members[] = [$class, '@' . $field, [], ''];
 		}
-		return $members;
+		return SchemaViewShape::members($members, $profile);
 	}
 	/**
 	 * @param array $entry Native class/method and expected arguments.

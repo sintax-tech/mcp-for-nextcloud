@@ -4188,6 +4188,1112 @@
                     "external": []
                 }
             }
+        },
+        "2.4.0": {
+            "archiveSha256": "47847b64ee65a58afd2a8ac3f943c53128a927a1b321ed94c4a322daa6b5eb99",
+            "server": {
+                "version": "35.0.0",
+                "files": {
+                    "lib/public/AppFramework/Db/Entity.php": "658aef736eef71a230672c57941f89530229bfa1f449082506ba82a56110c735",
+                    "lib/public/AppFramework/Db/QBMapper.php": "4f3e2bdf5cc1bd36a54ca8e89e78ea2648412e63b4bcfa93eeb7f97536d4058e"
+                }
+            },
+            "surfaces": {
+                "OCA\\Tables\\Db\\ContextMapper": {
+                    "kind": "class",
+                    "methods": {
+                        "__construct": [
+                            "db",
+                            "userHelper",
+                            "groupHelper"
+                        ],
+                        "delete": [
+                            "entity"
+                        ],
+                        "findAll": [
+                            "userId?"
+                        ],
+                        "findAllContainingNode": [
+                            "nodeType",
+                            "nodeId",
+                            "userId"
+                        ],
+                        "findById": [
+                            "contextId",
+                            "userId?"
+                        ],
+                        "findForNavBar": [
+                            "userId"
+                        ],
+                        "findIdToNameMap": [
+                            "ids"
+                        ],
+                        "getTableName": [],
+                        "insert": [
+                            "entity"
+                        ],
+                        "insertOrUpdate": [
+                            "entity"
+                        ],
+                        "update": [
+                            "entity"
+                        ]
+                    },
+                    "types": {
+                        "__construct": [
+                            "OCP\\IDBConnection",
+                            "OCA\\Tables\\Helper\\UserHelper",
+                            "OCA\\Tables\\Helper\\GroupHelper"
+                        ],
+                        "delete": [
+                            "OCP\\AppFramework\\Db\\Entity"
+                        ],
+                        "findAll": [
+                            "?string"
+                        ],
+                        "findAllContainingNode": [
+                            "int",
+                            "int",
+                            "string"
+                        ],
+                        "findById": [
+                            "int",
+                            "?string"
+                        ],
+                        "findForNavBar": [
+                            "string"
+                        ],
+                        "findIdToNameMap": [
+                            "array"
+                        ],
+                        "getTableName": [],
+                        "insert": [
+                            "OCP\\AppFramework\\Db\\Entity"
+                        ],
+                        "insertOrUpdate": [
+                            "OCP\\AppFramework\\Db\\Entity"
+                        ],
+                        "update": [
+                            "OCP\\AppFramework\\Db\\Entity"
+                        ]
+                    },
+                    "constants": [],
+                    "properties": [],
+                    "fields": [
+                        "db",
+                        "entityClass",
+                        "groupHelper",
+                        "table",
+                        "tableName",
+                        "userHelper"
+                    ],
+                    "external": []
+                },
+                "OCA\\Tables\\Db\\Share": {
+                    "kind": "class",
+                    "methods": {
+                        "__call": [
+                            "methodName",
+                            "args"
+                        ],
+                        "__construct": [],
+                        "columnToProperty": [
+                            "columnName"
+                        ],
+                        "fromParams": [
+                            "params"
+                        ],
+                        "fromRow": [
+                            "row"
+                        ],
+                        "getFieldTypes": [],
+                        "getUpdatedFields": [],
+                        "jsonSerialize": [],
+                        "propertyToColumn": [
+                            "property"
+                        ],
+                        "resetUpdatedFields": [],
+                        "slugify": [
+                            "attributeName"
+                        ]
+                    },
+                    "types": {
+                        "__call": [
+                            "string",
+                            "array"
+                        ],
+                        "__construct": [],
+                        "columnToProperty": [
+                            "string"
+                        ],
+                        "fromParams": [
+                            "array"
+                        ],
+                        "fromRow": [
+                            "array"
+                        ],
+                        "getFieldTypes": [],
+                        "getUpdatedFields": [],
+                        "jsonSerialize": [],
+                        "propertyToColumn": [
+                            "string"
+                        ],
+                        "resetUpdatedFields": [],
+                        "slugify": [
+                            "string"
+                        ]
+                    },
+                    "constants": [],
+                    "properties": [],
+                    "fields": [
+                        "_fieldTypes",
+                        "createdAt",
+                        "id",
+                        "lastEditAt",
+                        "nodeId",
+                        "nodeType",
+                        "password",
+                        "permissionCreate",
+                        "permissionDelete",
+                        "permissionManage",
+                        "permissionRead",
+                        "permissionUpdate",
+                        "receiver",
+                        "receiverDisplayName",
+                        "receiverType",
+                        "sender",
+                        "token"
+                    ],
+                    "external": [
+                        "JsonSerializable"
+                    ]
+                },
+                "OCA\\Tables\\Db\\ShareMapper": {
+                    "kind": "class",
+                    "methods": {
+                        "__construct": [
+                            "logger",
+                            "db"
+                        ],
+                        "changeReceiverForNode": [
+                            "nodeType",
+                            "nodeId",
+                            "newReceiver",
+                            "oldReceiver",
+                            "sender"
+                        ],
+                        "delete": [
+                            "entity"
+                        ],
+                        "deleteByNode": [
+                            "nodeId",
+                            "nodeType"
+                        ],
+                        "deleteByReceiver": [
+                            "receiver",
+                            "receiverType"
+                        ],
+                        "find": [
+                            "id"
+                        ],
+                        "findAllRaw": [],
+                        "findAllSharesFor": [
+                            "nodeType",
+                            "receivers",
+                            "userId",
+                            "receiverType?"
+                        ],
+                        "findAllSharesForNode": [
+                            "nodeType",
+                            "nodeId",
+                            "sender?",
+                            "excluded?"
+                        ],
+                        "findAllSharesForNodeFor": [
+                            "nodeType",
+                            "nodeId",
+                            "receiver",
+                            "receiverType?"
+                        ],
+                        "findAllSharesForNodeTo": [
+                            "nodeType",
+                            "nodeId",
+                            "receivingUser",
+                            "receivingGroups",
+                            "receivingCircles"
+                        ],
+                        "findAllSharesForTablesAndContexts": [
+                            "tableIds",
+                            "contextIds"
+                        ],
+                        "findByToken": [
+                            "token"
+                        ],
+                        "findRemoteSharesForNode": [
+                            "nodeId",
+                            "nodeType"
+                        ],
+                        "findShareForNode": [
+                            "nodeId",
+                            "nodeType",
+                            "receiver",
+                            "receiverType?"
+                        ],
+                        "findSharedNodeIdsByType": [],
+                        "getTableName": [],
+                        "insert": [
+                            "entity"
+                        ],
+                        "insertOrUpdate": [
+                            "entity"
+                        ],
+                        "update": [
+                            "entity"
+                        ]
+                    },
+                    "types": {
+                        "__construct": [
+                            "Psr\\Log\\LoggerInterface",
+                            "OCP\\IDBConnection"
+                        ],
+                        "changeReceiverForNode": [
+                            "string",
+                            "int",
+                            "string",
+                            "string",
+                            "string"
+                        ],
+                        "delete": [
+                            "OCP\\AppFramework\\Db\\Entity"
+                        ],
+                        "deleteByNode": [
+                            "int",
+                            "string"
+                        ],
+                        "deleteByReceiver": [
+                            "string",
+                            "string"
+                        ],
+                        "find": [
+                            "int"
+                        ],
+                        "findAllRaw": [],
+                        "findAllSharesFor": [
+                            "string",
+                            "array",
+                            "string",
+                            "?string"
+                        ],
+                        "findAllSharesForNode": [
+                            "string",
+                            "int",
+                            "string",
+                            "array"
+                        ],
+                        "findAllSharesForNodeFor": [
+                            "string",
+                            "int",
+                            "string",
+                            "?string"
+                        ],
+                        "findAllSharesForNodeTo": [
+                            "string",
+                            "int",
+                            "string",
+                            "array",
+                            "array"
+                        ],
+                        "findAllSharesForTablesAndContexts": [
+                            "array",
+                            "array"
+                        ],
+                        "findByToken": [
+                            "OCA\\Tables\\Service\\ValueObject\\ShareToken"
+                        ],
+                        "findRemoteSharesForNode": [
+                            "int",
+                            "string"
+                        ],
+                        "findShareForNode": [
+                            "int",
+                            "string",
+                            "string",
+                            "?string"
+                        ],
+                        "findSharedNodeIdsByType": [],
+                        "getTableName": [],
+                        "insert": [
+                            "OCP\\AppFramework\\Db\\Entity"
+                        ],
+                        "insertOrUpdate": [
+                            "OCP\\AppFramework\\Db\\Entity"
+                        ],
+                        "update": [
+                            "OCP\\AppFramework\\Db\\Entity"
+                        ]
+                    },
+                    "constants": [],
+                    "properties": [],
+                    "fields": [
+                        "db",
+                        "entityClass",
+                        "logger",
+                        "table",
+                        "tableName"
+                    ],
+                    "external": []
+                },
+                "OCA\\Tables\\Dto\\Column": {
+                    "kind": "class",
+                    "methods": {
+                        "__construct": [
+                            "title?",
+                            "technicalName?",
+                            "type?",
+                            "subtype?",
+                            "mandatory?",
+                            "description?",
+                            "textDefault?",
+                            "textAllowedPattern?",
+                            "textMaxLength?",
+                            "textUnique?",
+                            "numberDefault?",
+                            "numberMin?",
+                            "numberMax?",
+                            "numberDecimals?",
+                            "numberPrefix?",
+                            "numberSuffix?",
+                            "selectionOptions?",
+                            "selectionDefault?",
+                            "datetimeDefault?",
+                            "usergroupDefault?",
+                            "usergroupMultipleItems?",
+                            "usergroupSelectUsers?",
+                            "usergroupSelectGroups?",
+                            "usergroupSelectTeams?",
+                            "showUserStatus?",
+                            "customSettings?",
+                            "uuid?"
+                        ],
+                        "createFromArray": [
+                            "data"
+                        ],
+                        "getCustomSettings": [],
+                        "getDatetimeDefault": [],
+                        "getDescription": [],
+                        "getNumberDecimals": [],
+                        "getNumberDefault": [],
+                        "getNumberMax": [],
+                        "getNumberMin": [],
+                        "getNumberPrefix": [],
+                        "getNumberSuffix": [],
+                        "getSelectionDefault": [],
+                        "getSelectionOptions": [],
+                        "getShowUserStatus": [],
+                        "getSubtype": [],
+                        "getTechnicalName": [],
+                        "getTextAllowedPattern": [],
+                        "getTextDefault": [],
+                        "getTextMaxLength": [],
+                        "getTextUnique": [],
+                        "getTitle": [],
+                        "getType": [],
+                        "getUsergroupDefault": [],
+                        "getUsergroupMultipleItems": [],
+                        "getUsergroupSelectGroups": [],
+                        "getUsergroupSelectTeams": [],
+                        "getUsergroupSelectUsers": [],
+                        "getUuid": [],
+                        "isMandatory": []
+                    },
+                    "types": {
+                        "__construct": [
+                            "?string",
+                            "?string",
+                            "?string",
+                            "?string",
+                            "?bool",
+                            "?string",
+                            "?string",
+                            "?string",
+                            "?int",
+                            "?bool",
+                            "?float",
+                            "?float",
+                            "?float",
+                            "?int",
+                            "?string",
+                            "?string",
+                            "?string",
+                            "?string",
+                            "?string",
+                            "?string",
+                            "?bool",
+                            "?bool",
+                            "?bool",
+                            "?bool",
+                            "?bool",
+                            "?string",
+                            "?string"
+                        ],
+                        "createFromArray": [
+                            "array"
+                        ],
+                        "getCustomSettings": [],
+                        "getDatetimeDefault": [],
+                        "getDescription": [],
+                        "getNumberDecimals": [],
+                        "getNumberDefault": [],
+                        "getNumberMax": [],
+                        "getNumberMin": [],
+                        "getNumberPrefix": [],
+                        "getNumberSuffix": [],
+                        "getSelectionDefault": [],
+                        "getSelectionOptions": [],
+                        "getShowUserStatus": [],
+                        "getSubtype": [],
+                        "getTechnicalName": [],
+                        "getTextAllowedPattern": [],
+                        "getTextDefault": [],
+                        "getTextMaxLength": [],
+                        "getTextUnique": [],
+                        "getTitle": [],
+                        "getType": [],
+                        "getUsergroupDefault": [],
+                        "getUsergroupMultipleItems": [],
+                        "getUsergroupSelectGroups": [],
+                        "getUsergroupSelectTeams": [],
+                        "getUsergroupSelectUsers": [],
+                        "getUuid": [],
+                        "isMandatory": []
+                    },
+                    "constants": [],
+                    "properties": [],
+                    "fields": [],
+                    "external": []
+                },
+                "OCA\\Tables\\Helper\\CircleHelper": {
+                    "kind": "class",
+                    "methods": {
+                        "__construct": [
+                            "logger",
+                            "appManager",
+                            "l10n"
+                        ],
+                        "circleExists": [
+                            "circleId",
+                            "userId"
+                        ],
+                        "getCircleDisplayName": [
+                            "circleId",
+                            "userId"
+                        ],
+                        "getCircleIdsForUser": [
+                            "userId"
+                        ],
+                        "getUserCircles": [
+                            "userId"
+                        ],
+                        "getUserIdsInCircle": [
+                            "circleId"
+                        ],
+                        "isCirclesEnabled": []
+                    },
+                    "types": {
+                        "__construct": [
+                            "Psr\\Log\\LoggerInterface",
+                            "OCP\\App\\IAppManager",
+                            "OCP\\IL10N"
+                        ],
+                        "circleExists": [
+                            "string",
+                            "string"
+                        ],
+                        "getCircleDisplayName": [
+                            "string",
+                            "string"
+                        ],
+                        "getCircleIdsForUser": [
+                            "string"
+                        ],
+                        "getUserCircles": [
+                            "string"
+                        ],
+                        "getUserIdsInCircle": [
+                            "string"
+                        ],
+                        "isCirclesEnabled": []
+                    },
+                    "constants": [],
+                    "properties": [],
+                    "fields": [],
+                    "external": []
+                },
+                "OCA\\Tables\\Model\\ColumnSettings": {
+                    "kind": "class",
+                    "methods": {
+                        "__construct": [
+                            "columnSettings"
+                        ],
+                        "columnInformation": [],
+                        "createFromInputArray": [
+                            "inputColumnSettings",
+                            "columnsMap?"
+                        ],
+                        "createViewSettingsFromInputArray": [
+                            "inputColumnSettings",
+                            "columnsMap?"
+                        ],
+                        "jsonSerialize": []
+                    },
+                    "types": {
+                        "__construct": [
+                            "array"
+                        ],
+                        "columnInformation": [],
+                        "createFromInputArray": [
+                            "array",
+                            "array"
+                        ],
+                        "createViewSettingsFromInputArray": [
+                            "array",
+                            "array"
+                        ],
+                        "jsonSerialize": []
+                    },
+                    "constants": [],
+                    "properties": [],
+                    "fields": [
+                        "columnSettings"
+                    ],
+                    "external": [
+                        "JsonSerializable"
+                    ]
+                },
+                "OCA\\Tables\\Model\\FilterSet": {
+                    "kind": "class",
+                    "methods": {
+                        "__construct": [
+                            "filterGroups"
+                        ],
+                        "createFromInputArray": [
+                            "data",
+                            "columnsMap?"
+                        ],
+                        "jsonSerialize": []
+                    },
+                    "types": {
+                        "__construct": [
+                            "array"
+                        ],
+                        "createFromInputArray": [
+                            "array",
+                            "array"
+                        ],
+                        "jsonSerialize": []
+                    },
+                    "constants": [],
+                    "properties": [],
+                    "fields": [
+                        "filterGroups"
+                    ],
+                    "external": [
+                        "JsonSerializable"
+                    ]
+                },
+                "OCA\\Tables\\Model\\SortRuleSet": {
+                    "kind": "class",
+                    "methods": {
+                        "__construct": [
+                            "sortRules"
+                        ],
+                        "createFromInputArray": [
+                            "data",
+                            "columnsMap?"
+                        ],
+                        "jsonSerialize": []
+                    },
+                    "types": {
+                        "__construct": [
+                            "array"
+                        ],
+                        "createFromInputArray": [
+                            "array",
+                            "array"
+                        ],
+                        "jsonSerialize": []
+                    },
+                    "constants": [],
+                    "properties": [],
+                    "fields": [
+                        "sortRules"
+                    ],
+                    "external": [
+                        "JsonSerializable"
+                    ]
+                },
+                "OCA\\Tables\\Model\\ViewUpdateInput": {
+                    "kind": "class",
+                    "methods": {
+                        "__construct": [
+                            "title?",
+                            "technicalName?",
+                            "description?",
+                            "emoji?",
+                            "columnSettings?",
+                            "filterSet?",
+                            "sortRuleSet?",
+                            "sidebarOrder?",
+                            "layout?",
+                            "viewSettings?"
+                        ],
+                        "fromInputArray": [
+                            "data",
+                            "columnsMap?"
+                        ],
+                        "normalizeLayout": [
+                            "layout"
+                        ],
+                        "updateDetail": []
+                    },
+                    "types": {
+                        "__construct": [
+                            "?OCA\\Tables\\Service\\ValueObject\\Title",
+                            "?string",
+                            "?string",
+                            "?OCA\\Tables\\Service\\ValueObject\\Emoji",
+                            "?OCA\\Tables\\Model\\ColumnSettings",
+                            "?OCA\\Tables\\Model\\FilterSet",
+                            "?OCA\\Tables\\Model\\SortRuleSet",
+                            "?int",
+                            "?string",
+                            "?OCA\\Tables\\Model\\ViewSettings"
+                        ],
+                        "fromInputArray": [
+                            "array",
+                            "array"
+                        ],
+                        "normalizeLayout": [
+                            "mixed"
+                        ],
+                        "updateDetail": []
+                    },
+                    "constants": [],
+                    "properties": [],
+                    "fields": [
+                        "columnSettings",
+                        "description",
+                        "emoji",
+                        "filterSet",
+                        "layout",
+                        "sidebarOrder",
+                        "sort",
+                        "sortRuleSet",
+                        "technicalName",
+                        "title",
+                        "viewSettings"
+                    ],
+                    "external": []
+                },
+                "OCA\\Tables\\Service\\ShareService": {
+                    "kind": "class",
+                    "methods": {
+                        "__construct": [
+                            "permissionsService",
+                            "logger",
+                            "userId",
+                            "mapper",
+                            "tableMapper",
+                            "viewMapper",
+                            "userHelper",
+                            "groupHelper",
+                            "circleHelper",
+                            "contextNavigationMapper",
+                            "dbc",
+                            "secureRandom",
+                            "userManager",
+                            "hasher",
+                            "shareManager",
+                            "federationService",
+                            "auditLogService"
+                        ],
+                        "assertPublicShareAccessible": [
+                            "share"
+                        ],
+                        "changeReceiverForNode": [
+                            "nodeType",
+                            "nodeId",
+                            "newOwnerUserId",
+                            "userId",
+                            "sender"
+                        ],
+                        "changeSenderForNode": [
+                            "nodeType",
+                            "nodeId",
+                            "newOwnerUserId",
+                            "userId?"
+                        ],
+                        "checkPassword": [
+                            "share",
+                            "password"
+                        ],
+                        "create": [
+                            "dto"
+                        ],
+                        "createLinkShare": [
+                            "node",
+                            "password?"
+                        ],
+                        "delete": [
+                            "id"
+                        ],
+                        "deleteAllForContext": [
+                            "context"
+                        ],
+                        "deleteAllForTable": [
+                            "table"
+                        ],
+                        "deleteAllForView": [
+                            "view"
+                        ],
+                        "deleteForShareReview": [
+                            "id"
+                        ],
+                        "find": [
+                            "id"
+                        ],
+                        "findAll": [
+                            "nodeType",
+                            "nodeId",
+                            "userId?",
+                            "enhanceShares?"
+                        ],
+                        "findByToken": [
+                            "token"
+                        ],
+                        "findSharedWithUserIds": [
+                            "elementId",
+                            "elementType"
+                        ],
+                        "findTablesSharedWithMe": [
+                            "userId?"
+                        ],
+                        "findUserIdsForShareReceiver": [
+                            "receiverType",
+                            "receiverId"
+                        ],
+                        "findViewsSharedWithMe": [
+                            "userId?"
+                        ],
+                        "formatForOutput": [
+                            "share"
+                        ],
+                        "formatShares": [
+                            "items"
+                        ],
+                        "getSharedPermissionsIfSharedWithMe": [
+                            "elementId",
+                            "elementType?",
+                            "userId?"
+                        ],
+                        "hasLinkShare": [
+                            "node"
+                        ],
+                        "importShare": [
+                            "nodeId",
+                            "share",
+                            "userId"
+                        ],
+                        "isPublicShareAccessible": [
+                            "share"
+                        ],
+                        "setPublicContext": [],
+                        "transferSharesForContext": [
+                            "contextId",
+                            "newOwnerId",
+                            "oldOwnerId"
+                        ],
+                        "updateDisplayMode": [
+                            "shareId",
+                            "displayMode",
+                            "userId"
+                        ],
+                        "updatePermission": [
+                            "id",
+                            "permissions"
+                        ]
+                    },
+                    "types": {
+                        "__construct": [
+                            "OCA\\Tables\\Service\\PermissionsService",
+                            "Psr\\Log\\LoggerInterface",
+                            "?string",
+                            "OCA\\Tables\\Db\\ShareMapper",
+                            "OCA\\Tables\\Db\\TableMapper",
+                            "OCA\\Tables\\Db\\ViewMapper",
+                            "OCA\\Tables\\Helper\\UserHelper",
+                            "OCA\\Tables\\Helper\\GroupHelper",
+                            "OCA\\Tables\\Helper\\CircleHelper",
+                            "OCA\\Tables\\Db\\ContextNavigationMapper",
+                            "OCP\\IDBConnection",
+                            "OCP\\Security\\ISecureRandom",
+                            "OCP\\IUserManager",
+                            "OCP\\Security\\IHasher",
+                            "OCP\\Share\\IManager",
+                            "OCA\\Tables\\Service\\FederationService",
+                            "OCA\\Tables\\Service\\Support\\AuditLogServiceInterface"
+                        ],
+                        "assertPublicShareAccessible": [
+                            "OCA\\Tables\\Db\\Share"
+                        ],
+                        "changeReceiverForNode": [
+                            "string",
+                            "int",
+                            "string",
+                            "string",
+                            "string"
+                        ],
+                        "changeSenderForNode": [
+                            "string",
+                            "int",
+                            "string",
+                            "?string"
+                        ],
+                        "checkPassword": [
+                            "OCA\\Tables\\Db\\Share",
+                            "string"
+                        ],
+                        "create": [
+                            "OCA\\Tables\\Service\\ValueObject\\ShareCreate"
+                        ],
+                        "createLinkShare": [
+                            "OCA\\Tables\\Db\\Table|OCA\\Tables\\Db\\View",
+                            "?string"
+                        ],
+                        "delete": [
+                            "int"
+                        ],
+                        "deleteAllForContext": [
+                            "OCA\\Tables\\Db\\Context"
+                        ],
+                        "deleteAllForTable": [
+                            "OCA\\Tables\\Db\\Table"
+                        ],
+                        "deleteAllForView": [
+                            "OCA\\Tables\\Db\\View"
+                        ],
+                        "deleteForShareReview": [
+                            "int"
+                        ],
+                        "find": [
+                            "int"
+                        ],
+                        "findAll": [
+                            "string",
+                            "int",
+                            "?string",
+                            "bool"
+                        ],
+                        "findByToken": [
+                            "OCA\\Tables\\Service\\ValueObject\\ShareToken"
+                        ],
+                        "findSharedWithUserIds": [
+                            "int",
+                            "string"
+                        ],
+                        "findTablesSharedWithMe": [
+                            "?string"
+                        ],
+                        "findUserIdsForShareReceiver": [
+                            "string",
+                            "string"
+                        ],
+                        "findViewsSharedWithMe": [
+                            "?string"
+                        ],
+                        "formatForOutput": [
+                            "OCA\\Tables\\Db\\Share"
+                        ],
+                        "formatShares": [
+                            "array"
+                        ],
+                        "getSharedPermissionsIfSharedWithMe": [
+                            "int",
+                            "string",
+                            "?string"
+                        ],
+                        "hasLinkShare": [
+                            "OCA\\Tables\\Db\\Table|OCA\\Tables\\Db\\View"
+                        ],
+                        "importShare": [
+                            "int",
+                            "array",
+                            "string"
+                        ],
+                        "isPublicShareAccessible": [
+                            "OCA\\Tables\\Db\\Share"
+                        ],
+                        "setPublicContext": [],
+                        "transferSharesForContext": [
+                            "int",
+                            "string",
+                            "string"
+                        ],
+                        "updateDisplayMode": [
+                            "int",
+                            "int",
+                            "string"
+                        ],
+                        "updatePermission": [
+                            "int",
+                            "array"
+                        ]
+                    },
+                    "constants": [],
+                    "properties": [],
+                    "fields": [
+                        "isPublicContext",
+                        "logger",
+                        "permissionsService",
+                        "userId"
+                    ],
+                    "external": []
+                },
+                "OCA\\Tables\\Service\\ValueObject\\Emoji": {
+                    "kind": "class",
+                    "methods": {
+                        "__construct": [
+                            "emoji"
+                        ],
+                        "__toString": []
+                    },
+                    "types": {
+                        "__construct": [
+                            "string"
+                        ],
+                        "__toString": []
+                    },
+                    "constants": [],
+                    "properties": [],
+                    "fields": [
+                        "emoji"
+                    ],
+                    "external": [
+                        "Stringable"
+                    ]
+                },
+                "OCA\\Tables\\Service\\ValueObject\\ShareCreate": {
+                    "kind": "class",
+                    "methods": {
+                        "__construct": [
+                            "nodeId",
+                            "nodeType",
+                            "receiver",
+                            "receiverType",
+                            "permissionRead",
+                            "permissionCreate",
+                            "permissionUpdate",
+                            "permissionDelete",
+                            "permissionManage",
+                            "displayMode",
+                            "password?",
+                            "shareToken?"
+                        ],
+                        "getDisplayMode": [],
+                        "getNodeId": [],
+                        "getNodeType": [],
+                        "getPassword": [],
+                        "getPermissionCreate": [],
+                        "getPermissionDelete": [],
+                        "getPermissionManage": [],
+                        "getPermissionRead": [],
+                        "getPermissionUpdate": [],
+                        "getReceiver": [],
+                        "getReceiverType": [],
+                        "getShareToken": [],
+                        "setShareToken": [
+                            "token"
+                        ]
+                    },
+                    "types": {
+                        "__construct": [
+                            "int",
+                            "string",
+                            "string",
+                            "string",
+                            "bool",
+                            "bool",
+                            "bool",
+                            "bool",
+                            "bool",
+                            "int",
+                            "?string",
+                            "?OCA\\Tables\\Service\\ValueObject\\ShareToken"
+                        ],
+                        "getDisplayMode": [],
+                        "getNodeId": [],
+                        "getNodeType": [],
+                        "getPassword": [],
+                        "getPermissionCreate": [],
+                        "getPermissionDelete": [],
+                        "getPermissionManage": [],
+                        "getPermissionRead": [],
+                        "getPermissionUpdate": [],
+                        "getReceiver": [],
+                        "getReceiverType": [],
+                        "getShareToken": [],
+                        "setShareToken": [
+                            "OCA\\Tables\\Service\\ValueObject\\ShareToken"
+                        ]
+                    },
+                    "constants": [],
+                    "properties": [],
+                    "fields": [],
+                    "external": []
+                },
+                "OCA\\Tables\\Service\\ValueObject\\Title": {
+                    "kind": "class",
+                    "methods": {
+                        "__construct": [
+                            "title"
+                        ],
+                        "__toString": []
+                    },
+                    "types": {
+                        "__construct": [
+                            "string"
+                        ],
+                        "__toString": []
+                    },
+                    "constants": [],
+                    "properties": [],
+                    "fields": [
+                        "title"
+                    ],
+                    "external": [
+                        "Stringable"
+                    ]
+                },
+                "OCA\\Tables\\Validation\\ColumnDtoValidator": {
+                    "kind": "class",
+                    "methods": {
+                        "validate": [
+                            "columnDto",
+                            "requiresTitle?"
+                        ]
+                    },
+                    "types": {
+                        "validate": [
+                            "OCA\\Tables\\Dto\\Column",
+                            "bool"
+                        ]
+                    },
+                    "constants": [],
+                    "properties": [],
+                    "fields": [],
+                    "external": []
+                }
+            }
         }
     }
 }

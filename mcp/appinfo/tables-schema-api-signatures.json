@@ -4394,5 +4394,1051 @@
             ],
             "bool"
         ]
+    ],
+    "2.4.0": [
+        [
+            "OCA\\Tables\\Service\\TableService",
+            "create",
+            [
+                {
+                    "name": "title",
+                    "type": "string",
+                    "optional": false
+                },
+                {
+                    "name": "template",
+                    "type": "string",
+                    "optional": false
+                },
+                {
+                    "name": "emoji",
+                    "type": "?string",
+                    "optional": false
+                },
+                {
+                    "name": "description",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "userId",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "uuid",
+                    "type": "?string",
+                    "optional": true
+                }
+            ],
+            "OCA\\Tables\\Db\\Table"
+        ],
+        [
+            "OCA\\Tables\\Service\\TableService",
+            "update",
+            [
+                {
+                    "name": "id",
+                    "type": "int",
+                    "optional": false
+                },
+                {
+                    "name": "title",
+                    "type": "?string",
+                    "optional": false
+                },
+                {
+                    "name": "emoji",
+                    "type": "?string",
+                    "optional": false
+                },
+                {
+                    "name": "description",
+                    "type": "?string",
+                    "optional": false
+                },
+                {
+                    "name": "archived",
+                    "type": "?bool",
+                    "optional": true
+                },
+                {
+                    "name": "userId",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "columnSettings",
+                    "type": "?OCA\\Tables\\Model\\ColumnSettings",
+                    "optional": true
+                },
+                {
+                    "name": "sort",
+                    "type": "?OCA\\Tables\\Model\\SortRuleSet",
+                    "optional": true
+                }
+            ],
+            "OCA\\Tables\\Db\\Table"
+        ],
+        [
+            "OCA\\Tables\\Service\\ColumnService",
+            "create",
+            [
+                {
+                    "name": "userId",
+                    "type": "?string",
+                    "optional": false
+                },
+                {
+                    "name": "tableId",
+                    "type": "?int",
+                    "optional": false
+                },
+                {
+                    "name": "viewId",
+                    "type": "?int",
+                    "optional": false
+                },
+                {
+                    "name": "columnDto",
+                    "type": "OCA\\Tables\\Dto\\Column",
+                    "optional": false
+                },
+                {
+                    "name": "selectedViewIds",
+                    "type": "array",
+                    "optional": true
+                }
+            ],
+            "OCA\\Tables\\Db\\Column"
+        ],
+        [
+            "OCA\\Tables\\Service\\ColumnService",
+            "update",
+            [
+                {
+                    "name": "columnId",
+                    "type": "int",
+                    "optional": false
+                },
+                {
+                    "name": "userId",
+                    "type": "?string",
+                    "optional": false
+                },
+                {
+                    "name": "columnDto",
+                    "type": "OCA\\Tables\\Dto\\Column",
+                    "optional": false
+                }
+            ],
+            "OCA\\Tables\\Db\\Column"
+        ],
+        [
+            "OCA\\Tables\\Service\\ColumnService",
+            "findAllByManagedView",
+            [
+                {
+                    "name": "view",
+                    "type": "OCA\\Tables\\Db\\View",
+                    "optional": false
+                },
+                {
+                    "name": "userId",
+                    "type": "string",
+                    "optional": false
+                }
+            ],
+            "array"
+        ],
+        [
+            "OCA\\Tables\\Service\\ViewService",
+            "create",
+            [
+                {
+                    "name": "title",
+                    "type": "string",
+                    "optional": false
+                },
+                {
+                    "name": "emoji",
+                    "type": "?string",
+                    "optional": false
+                },
+                {
+                    "name": "table",
+                    "type": "OCA\\Tables\\Db\\Table",
+                    "optional": false
+                },
+                {
+                    "name": "userId",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "technicalName",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "uuid",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "layout",
+                    "type": "?string",
+                    "optional": true
+                }
+            ],
+            "OCA\\Tables\\Db\\View"
+        ],
+        [
+            "OCA\\Tables\\Service\\ViewService",
+            "update",
+            [
+                {
+                    "name": "id",
+                    "type": "int",
+                    "optional": false
+                },
+                {
+                    "name": "data",
+                    "type": "OCA\\Tables\\Model\\ViewUpdateInput",
+                    "optional": false
+                },
+                {
+                    "name": "userId",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "skipTableEnhancement",
+                    "type": "bool",
+                    "optional": true
+                }
+            ],
+            "OCA\\Tables\\Db\\View"
+        ],
+        [
+            "OCA\\Tables\\Service\\ShareService",
+            "create",
+            [
+                {
+                    "name": "dto",
+                    "type": "OCA\\Tables\\Service\\ValueObject\\ShareCreate",
+                    "optional": false
+                }
+            ],
+            "OCA\\Tables\\Db\\Share"
+        ],
+        [
+            "OCA\\Tables\\Service\\ShareService",
+            "delete",
+            [
+                {
+                    "name": "id",
+                    "type": "int",
+                    "optional": false
+                }
+            ],
+            "OCA\\Tables\\Db\\Share"
+        ],
+        [
+            "OCA\\Tables\\Service\\ShareService",
+            "findAll",
+            [
+                {
+                    "name": "nodeType",
+                    "type": "string",
+                    "optional": false
+                },
+                {
+                    "name": "nodeId",
+                    "type": "int",
+                    "optional": false
+                },
+                {
+                    "name": "userId",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "enhanceShares",
+                    "type": "bool",
+                    "optional": true
+                }
+            ],
+            "array"
+        ],
+        [
+            "OCA\\Tables\\Service\\PermissionsService",
+            "canAccessView",
+            [
+                {
+                    "name": "view",
+                    "type": "OCA\\Tables\\Db\\View",
+                    "optional": false
+                },
+                {
+                    "name": "userId",
+                    "type": "?string",
+                    "optional": true
+                }
+            ],
+            "bool"
+        ],
+        [
+            "OCA\\Tables\\Service\\PermissionsService",
+            "canReadColumnsByTableId",
+            [
+                {
+                    "name": "tableId",
+                    "type": "int",
+                    "optional": false
+                },
+                {
+                    "name": "userId",
+                    "type": "?string",
+                    "optional": true
+                }
+            ],
+            "bool"
+        ],
+        [
+            "OCA\\Tables\\Service\\PermissionsService",
+            "canManageTableById",
+            [
+                {
+                    "name": "tableId",
+                    "type": "int",
+                    "optional": false
+                },
+                {
+                    "name": "userId",
+                    "type": "?string",
+                    "optional": true
+                }
+            ],
+            "bool"
+        ],
+        [
+            "OCA\\Tables\\Service\\PermissionsService",
+            "canManageView",
+            [
+                {
+                    "name": "view",
+                    "type": "OCA\\Tables\\Db\\View",
+                    "optional": false
+                },
+                {
+                    "name": "userId",
+                    "type": "?string",
+                    "optional": true
+                }
+            ],
+            "bool"
+        ],
+        [
+            "OCA\\Tables\\Service\\PermissionsService",
+            "__construct",
+            [
+                {
+                    "name": "logger",
+                    "type": "Psr\\Log\\LoggerInterface",
+                    "optional": false
+                },
+                {
+                    "name": "userId",
+                    "type": "?string",
+                    "optional": false
+                },
+                {
+                    "name": "tableMapper",
+                    "type": "OCA\\Tables\\Db\\TableMapper",
+                    "optional": false
+                },
+                {
+                    "name": "viewMapper",
+                    "type": "OCA\\Tables\\Db\\ViewMapper",
+                    "optional": false
+                },
+                {
+                    "name": "shareMapper",
+                    "type": "OCA\\Tables\\Db\\ShareMapper",
+                    "optional": false
+                },
+                {
+                    "name": "contextMapper",
+                    "type": "OCA\\Tables\\Db\\ContextMapper",
+                    "optional": false
+                },
+                {
+                    "name": "userHelper",
+                    "type": "OCA\\Tables\\Helper\\UserHelper",
+                    "optional": false
+                },
+                {
+                    "name": "circleHelper",
+                    "type": "OCA\\Tables\\Helper\\CircleHelper",
+                    "optional": false
+                },
+                {
+                    "name": "isCLI",
+                    "type": "bool",
+                    "optional": false
+                }
+            ],
+            ""
+        ],
+        [
+            "OCA\\Tables\\Service\\PermissionsService",
+            "preCheckUserId",
+            [
+                {
+                    "name": "userId",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "canBeEmpty",
+                    "type": "bool",
+                    "optional": true
+                }
+            ],
+            "string"
+        ],
+        [
+            "OCA\\Tables\\Dto\\Column",
+            "__construct",
+            [
+                {
+                    "name": "title",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "technicalName",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "type",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "subtype",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "mandatory",
+                    "type": "?bool",
+                    "optional": true
+                },
+                {
+                    "name": "description",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "textDefault",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "textAllowedPattern",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "textMaxLength",
+                    "type": "?int",
+                    "optional": true
+                },
+                {
+                    "name": "textUnique",
+                    "type": "?bool",
+                    "optional": true
+                },
+                {
+                    "name": "numberDefault",
+                    "type": "?float",
+                    "optional": true
+                },
+                {
+                    "name": "numberMin",
+                    "type": "?float",
+                    "optional": true
+                },
+                {
+                    "name": "numberMax",
+                    "type": "?float",
+                    "optional": true
+                },
+                {
+                    "name": "numberDecimals",
+                    "type": "?int",
+                    "optional": true
+                },
+                {
+                    "name": "numberPrefix",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "numberSuffix",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "selectionOptions",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "selectionDefault",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "datetimeDefault",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "usergroupDefault",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "usergroupMultipleItems",
+                    "type": "?bool",
+                    "optional": true
+                },
+                {
+                    "name": "usergroupSelectUsers",
+                    "type": "?bool",
+                    "optional": true
+                },
+                {
+                    "name": "usergroupSelectGroups",
+                    "type": "?bool",
+                    "optional": true
+                },
+                {
+                    "name": "usergroupSelectTeams",
+                    "type": "?bool",
+                    "optional": true
+                },
+                {
+                    "name": "showUserStatus",
+                    "type": "?bool",
+                    "optional": true
+                },
+                {
+                    "name": "customSettings",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "uuid",
+                    "type": "?string",
+                    "optional": true
+                }
+            ],
+            ""
+        ],
+        [
+            "OCA\\Tables\\Dto\\Column",
+            "createFromArray",
+            [
+                {
+                    "name": "data",
+                    "type": "array",
+                    "optional": false
+                }
+            ],
+            "OCA\\Tables\\Dto\\Column"
+        ],
+        [
+            "OCA\\Tables\\Validation\\ColumnDtoValidator",
+            "validate",
+            [
+                {
+                    "name": "columnDto",
+                    "type": "OCA\\Tables\\Dto\\Column",
+                    "optional": false
+                },
+                {
+                    "name": "requiresTitle",
+                    "type": "bool",
+                    "optional": true
+                }
+            ],
+            "void"
+        ],
+        [
+            "OCA\\Tables\\Model\\ViewUpdateInput",
+            "__construct",
+            [
+                {
+                    "name": "title",
+                    "type": "?OCA\\Tables\\Service\\ValueObject\\Title",
+                    "optional": true
+                },
+                {
+                    "name": "technicalName",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "description",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "emoji",
+                    "type": "?OCA\\Tables\\Service\\ValueObject\\Emoji",
+                    "optional": true
+                },
+                {
+                    "name": "columnSettings",
+                    "type": "?OCA\\Tables\\Model\\ColumnSettings",
+                    "optional": true
+                },
+                {
+                    "name": "filterSet",
+                    "type": "?OCA\\Tables\\Model\\FilterSet",
+                    "optional": true
+                },
+                {
+                    "name": "sortRuleSet",
+                    "type": "?OCA\\Tables\\Model\\SortRuleSet",
+                    "optional": true
+                },
+                {
+                    "name": "sidebarOrder",
+                    "type": "?int",
+                    "optional": true
+                },
+                {
+                    "name": "layout",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "viewSettings",
+                    "type": "?OCA\\Tables\\Model\\ViewSettings",
+                    "optional": true
+                }
+            ],
+            ""
+        ],
+        [
+            "OCA\\Tables\\Model\\ViewUpdateInput",
+            "updateDetail",
+            [],
+            "Generator"
+        ],
+        [
+            "OCA\\Tables\\Model\\ColumnSettings",
+            "createFromInputArray",
+            [
+                {
+                    "name": "inputColumnSettings",
+                    "type": "array",
+                    "optional": false
+                },
+                {
+                    "name": "columnsMap",
+                    "type": "array",
+                    "optional": true
+                }
+            ],
+            "OCA\\Tables\\Model\\ColumnSettings"
+        ],
+        [
+            "OCA\\Tables\\Model\\FilterSet",
+            "createFromInputArray",
+            [
+                {
+                    "name": "data",
+                    "type": "array",
+                    "optional": false
+                },
+                {
+                    "name": "columnsMap",
+                    "type": "array",
+                    "optional": true
+                }
+            ],
+            "OCA\\Tables\\Model\\FilterSet"
+        ],
+        [
+            "OCA\\Tables\\Model\\SortRuleSet",
+            "createFromInputArray",
+            [
+                {
+                    "name": "data",
+                    "type": "array",
+                    "optional": false
+                },
+                {
+                    "name": "columnsMap",
+                    "type": "array",
+                    "optional": true
+                }
+            ],
+            "OCA\\Tables\\Model\\SortRuleSet"
+        ],
+        [
+            "OCA\\Tables\\Service\\ValueObject\\Title",
+            "__construct",
+            [
+                {
+                    "name": "title",
+                    "type": "string",
+                    "optional": false
+                }
+            ],
+            ""
+        ],
+        [
+            "OCA\\Tables\\Service\\ValueObject\\Emoji",
+            "__construct",
+            [
+                {
+                    "name": "emoji",
+                    "type": "string",
+                    "optional": false
+                }
+            ],
+            ""
+        ],
+        [
+            "OCA\\Tables\\Service\\ValueObject\\ShareCreate",
+            "__construct",
+            [
+                {
+                    "name": "nodeId",
+                    "type": "int",
+                    "optional": false
+                },
+                {
+                    "name": "nodeType",
+                    "type": "string",
+                    "optional": false
+                },
+                {
+                    "name": "receiver",
+                    "type": "string",
+                    "optional": false
+                },
+                {
+                    "name": "receiverType",
+                    "type": "string",
+                    "optional": false
+                },
+                {
+                    "name": "permissionRead",
+                    "type": "bool",
+                    "optional": false
+                },
+                {
+                    "name": "permissionCreate",
+                    "type": "bool",
+                    "optional": false
+                },
+                {
+                    "name": "permissionUpdate",
+                    "type": "bool",
+                    "optional": false
+                },
+                {
+                    "name": "permissionDelete",
+                    "type": "bool",
+                    "optional": false
+                },
+                {
+                    "name": "permissionManage",
+                    "type": "bool",
+                    "optional": false
+                },
+                {
+                    "name": "displayMode",
+                    "type": "int",
+                    "optional": false
+                },
+                {
+                    "name": "password",
+                    "type": "?string",
+                    "optional": true
+                },
+                {
+                    "name": "shareToken",
+                    "type": "?OCA\\Tables\\Service\\ValueObject\\ShareToken",
+                    "optional": true
+                }
+            ],
+            ""
+        ],
+        [
+            "OCA\\Tables\\Db\\TableMapper",
+            "__construct",
+            [
+                {
+                    "name": "db",
+                    "type": "OCP\\IDBConnection",
+                    "optional": false
+                },
+                {
+                    "name": "userHelper",
+                    "type": "OCA\\Tables\\Helper\\UserHelper",
+                    "optional": false
+                }
+            ],
+            ""
+        ],
+        [
+            "OCA\\Tables\\Db\\TableMapper",
+            "find",
+            [
+                {
+                    "name": "id",
+                    "type": "int",
+                    "optional": false
+                }
+            ],
+            "OCA\\Tables\\Db\\Table"
+        ],
+        [
+            "OCA\\Tables\\Db\\ViewMapper",
+            "__construct",
+            [
+                {
+                    "name": "db",
+                    "type": "OCP\\IDBConnection",
+                    "optional": false
+                },
+                {
+                    "name": "userHelper",
+                    "type": "OCA\\Tables\\Helper\\UserHelper",
+                    "optional": false
+                }
+            ],
+            ""
+        ],
+        [
+            "OCA\\Tables\\Db\\ViewMapper",
+            "find",
+            [
+                {
+                    "name": "id",
+                    "type": "int",
+                    "optional": false
+                }
+            ],
+            "OCA\\Tables\\Db\\View"
+        ],
+        [
+            "OCA\\Tables\\Db\\ColumnMapper",
+            "__construct",
+            [
+                {
+                    "name": "db",
+                    "type": "OCP\\IDBConnection",
+                    "optional": false
+                },
+                {
+                    "name": "logger",
+                    "type": "Psr\\Log\\LoggerInterface",
+                    "optional": false
+                }
+            ],
+            ""
+        ],
+        [
+            "OCA\\Tables\\Db\\ColumnMapper",
+            "find",
+            [
+                {
+                    "name": "id",
+                    "type": "int",
+                    "optional": false
+                }
+            ],
+            "OCA\\Tables\\Db\\Column"
+        ],
+        [
+            "OCA\\Tables\\Db\\ShareMapper",
+            "__construct",
+            [
+                {
+                    "name": "logger",
+                    "type": "Psr\\Log\\LoggerInterface",
+                    "optional": false
+                },
+                {
+                    "name": "db",
+                    "type": "OCP\\IDBConnection",
+                    "optional": false
+                }
+            ],
+            ""
+        ],
+        [
+            "OCA\\Tables\\Db\\ShareMapper",
+            "find",
+            [
+                {
+                    "name": "id",
+                    "type": "int",
+                    "optional": false
+                }
+            ],
+            "OCA\\Tables\\Db\\Share"
+        ],
+        [
+            "OCA\\Tables\\Db\\Table",
+            "isFederated",
+            [],
+            "bool"
+        ],
+        [
+            "OCA\\Tables\\Db\\Table",
+            "jsonSerialize",
+            [],
+            "array"
+        ],
+        [
+            "OCA\\Tables\\Db\\View",
+            "isFederated",
+            [],
+            "bool"
+        ],
+        [
+            "OCA\\Tables\\Db\\View",
+            "getColumnIds",
+            [],
+            "array"
+        ],
+        [
+            "OCA\\Tables\\Db\\View",
+            "jsonSerialize",
+            [],
+            "array"
+        ],
+        [
+            "OCA\\Tables\\Db\\ContextMapper",
+            "__construct",
+            [
+                {
+                    "name": "db",
+                    "type": "OCP\\IDBConnection",
+                    "optional": false
+                },
+                {
+                    "name": "userHelper",
+                    "type": "OCA\\Tables\\Helper\\UserHelper",
+                    "optional": false
+                },
+                {
+                    "name": "groupHelper",
+                    "type": "OCA\\Tables\\Helper\\GroupHelper",
+                    "optional": false
+                }
+            ],
+            ""
+        ],
+        [
+            "OCA\\Tables\\Db\\Column",
+            "jsonSerialize",
+            [],
+            "array"
+        ],
+        [
+            "OCA\\Tables\\Db\\Share",
+            "jsonSerialize",
+            [],
+            "array"
+        ],
+        [
+            "OCA\\Tables\\Helper\\CircleHelper",
+            "circleExists",
+            [
+                {
+                    "name": "circleId",
+                    "type": "string",
+                    "optional": false
+                },
+                {
+                    "name": "userId",
+                    "type": "string",
+                    "optional": false
+                }
+            ],
+            "bool"
+        ],
+        [
+            "OCA\\Tables\\Db\\View",
+            "getLayoutNormalized",
+            [],
+            "string"
+        ],
+        [
+            "OCA\\Tables\\Db\\View",
+            "getViewSettingsObject",
+            [],
+            "OCA\\Tables\\Model\\ViewSettings"
+        ],
+        [
+            "OCA\\Tables\\Model\\ViewSettings",
+            "__construct",
+            [
+                {
+                    "name": "cardBackgroundSource",
+                    "type": "?int",
+                    "optional": true
+                },
+                {
+                    "name": "cardTitleSource",
+                    "type": "?int",
+                    "optional": true
+                }
+            ],
+            ""
+        ],
+        [
+            "OCA\\Tables\\Model\\ViewSettings",
+            "createFromStoredArray",
+            [
+                {
+                    "name": "data",
+                    "type": "array",
+                    "optional": false
+                }
+            ],
+            "OCA\\Tables\\Model\\ViewSettings"
+        ],
+        [
+            "OCA\\Tables\\Model\\ViewSettings",
+            "jsonSerialize",
+            [],
+            "array"
+        ],
+        [
+            "OCA\\Tables\\Constants\\ViewLayout",
+            "normalize",
+            [
+                {
+                    "name": "layout",
+                    "type": "mixed",
+                    "optional": false
+                }
+            ],
+            "OCA\\Tables\\Constants\\ViewLayout"
+        ]
     ]
 }

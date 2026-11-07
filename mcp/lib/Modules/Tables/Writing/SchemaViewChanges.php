@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Tables\Writing;
 
+use OCA\Mcp\Modules\Tables\Integration\SchemaVersionFamily;
 use OCA\Mcp\Modules\Tables\Reading\RowsRefusal;
 use OCA\Mcp\Modules\Tables\Reading\RowFilterDomain;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
@@ -22,7 +23,7 @@ final class SchemaViewChanges {
 	 * @return array<string,mixed> Native-key patch.
 	 */
 	public static function of(array $patch, array $before, array $columns, string $profile): array {
-		if ($profile !== '1.0.0' && $profile !== '2.3.2' && isset($patch['description']) && in_array($patch['description'], ['', '0'], true)) SchemaRequest::invalid('patch.description');
+		if ($profile !== '1.0.0' && !SchemaVersionFamily::modernDto($profile) && isset($patch['description']) && in_array($patch['description'], ['', '0'], true)) SchemaRequest::invalid('patch.description');
 		if (isset($patch['emoji']) && in_array($patch['emoji'], ['', '0'], true) && $profile !== '1.0.0') SchemaRequest::invalid('patch.emoji');
 		if (array_key_exists('columns', $patch)) {
 			$settings = [];
@@ -89,7 +90,7 @@ final class SchemaViewChanges {
 				$key === 'filter' ? array_merge([], ...($before[$key] ?? [])) : ($before[$key] ?? []), $columns);
 			$patch[$key] = $next;
 		}
-		return $patch;
+		return SchemaViewPreservation::check($patch, $before, $columns, $profile);
 	}
 	/**
 	 * @param int $id Column ID.

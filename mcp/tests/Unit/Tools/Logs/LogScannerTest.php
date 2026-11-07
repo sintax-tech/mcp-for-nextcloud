@@ -163,20 +163,20 @@ final class LogScannerTest extends TestCase {
 		self::assertFalse($scan['timeBudgetReached']);
 	}
 
-	/** @return void An existing unreadable file remains refused and its path stays private. */
-	public function testAnUnreadableFileIsARefusalWithoutDetails(): void {
+	/** @return void A directory remains refused as a non-regular log, independent of the process user. */
+	public function testANonRegularFileIsARefusalWithoutDetails(): void {
 		$path = tempnam(sys_get_temp_dir(), 'mcp-it-private-log-');
+		unlink($path);
+		mkdir($path);
 		try {
-			chmod($path, 0000);
 			try {
 				$this->scanner(new OfficialFileLog($path, 2))->scan(self::filter(), 0, 10);
-				$this->fail('An existing unreadable file must remain refused');
+				$this->fail('A directory must remain refused as a non-regular log');
 			} catch (ToolFailure $error) {
 				self::assertStringNotContainsString($path, $error->getMessage());
 			}
 		} finally {
-			chmod($path, 0600);
-			unlink($path);
+			rmdir($path);
 		}
 	}
 

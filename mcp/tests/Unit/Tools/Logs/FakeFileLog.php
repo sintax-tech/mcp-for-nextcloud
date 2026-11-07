@@ -49,7 +49,6 @@ final class FakeFileLog implements IWriter, IFileBased {
 		}
 	}
 
-
 	/**
 	 * @param int $limit Unused interface parameter.
 	 * @param int $offset Unused interface parameter.

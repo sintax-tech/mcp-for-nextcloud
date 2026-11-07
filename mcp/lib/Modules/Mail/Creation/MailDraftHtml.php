@@ -50,14 +50,14 @@ final class MailDraftHtml {
 	 *
 	 * @param string $input UTF-8 fragment
 	 * @return array{body:string, removed:array<string,int>, removedUrls:list<string>, unwrappedElements:list<string>}
-	 * @throws ToolFailure for unsafe parsing or an engine change outside the report
+	 * @throws ToolFailure for an ambiguous source, unsafe parsing or an engine change outside the report
 	 */
 	private function pass(string $input): array {
 		$removed = MailDraftHtmlAllow::REMOVED;
 		$urls = [];
 		$unwrapped = [];
 		$marker = 'mcp-conditional-' . bin2hex(random_bytes(16));
-		$source = $this->conditionalMarkers($input, $marker);
+		$source = $this->conditionalMarkers(MailDraftHtmlSourceCheck::prepare($input), $marker);
 		$document = MailDraftHtmlDocument::parse($source['html']);
 		$explicitHead = $source['head'];
 		$removed['wrapper'] = $source['wrappers'];
@@ -111,9 +111,7 @@ final class MailDraftHtml {
 	private function conditionalMarkers(string $input, string $marker): array {
 		$head = false;
 		$wrappers = 0;
-		$blocked = implode('|', MailDraftHtmlAllow::SUBTREES);
-		$pattern = '~<!--[\s\S]*?-->|<(' . $blocked . ')\b[^>]*>[\s\S]*?</\1\s*>|<!\[(?:if\b[^\]]*|endif)\]>|<[a-zA-Z/][^>"\']*(?:(?:"[^"]*"|\'[^\']*\')[^>"\']*)*>~i';
-		$html = preg_replace_callback($pattern, static function (array $match) use ($marker, &$head, &$wrappers): string {
+		$html = preg_replace_callback(MailDraftHtmlSourceCheck::tokens(), static function (array $match) use ($marker, &$head, &$wrappers): string {
 			if (preg_match('~^<!\[(?:if\b|endif\])~i', $match[0]) === 1) {
 				return '<!--' . $marker . '-->';
 			}

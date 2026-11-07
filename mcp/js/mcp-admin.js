@@ -591,7 +591,7 @@
 
 	/** @return {Object<string,string>} common results key matches Forms; links is distinct from Files.link */
 	function operationLabels() {
-		return { results: t('mcp', 'results'), links: t('mcp', 'Read existing links (credentials)') }
+		return { results: t('mcp', 'results'), links: t('mcp', 'Read existing links (credentials)'), configure: t('mcp', 'configure'), options: t('mcp', 'options'), 'options.remove': t('mcp', 'remove or restore options'), invite: t('mcp', 'invite') }
 	}
 
 	/**
@@ -866,6 +866,8 @@
 
 	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 	catalog.tiers.tables = [['read'], ['create', 'edit']]
+	// Structure and sharing remain operation-only until the presets are explicitly widened.
+	catalog.untiered = Object.assign(catalog.untiered || {}, { tables: ['schema', 'share'] })
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
 /* admin/access/levels/forms.js */
@@ -913,7 +915,7 @@
  * A level is only a way to show and choose a set of operations; the server never sees it. Each module's operations are
  * split into cumulative tiers (Read, then Edit adds its tier, then Full adds the last one), so a level is the union of
  * the tiers up to it. A set of allowed operations that is no such union is "custom" and is shown and edited operation
- * by operation. The tiers follow GrantPolicy::CATALOG; an operation the tiers do not name (a newer catalog) falls into
+ * by operation. The tiers follow GrantPolicy::CATALOG; an operation the tiers do not name (unless explicitly untiered) falls into
  * the last tier, so it is never hidden and never granted by a lower level.
  *
  * The level functions are pure, with no DOM and no strings: src/admin/matrix/level-cells.js draws the cells and src/admin/matrix/labels.js names the levels.
@@ -951,7 +953,7 @@
 
 	/**
 	 * The tiers of a module, restricted to the operations the catalog has, with any operation they do not name added to
-	 * the last tier.
+	 * the last tier, except operations explicitly kept outside presets by the module.
 	 *
 	 * @param {string} module module id
 	 * @param {string[]} operations the module's operations in the catalog
@@ -961,7 +963,8 @@
 		if (module === 'polls') return root.OCA.Mcp.Admin.pollsGrants?.tiers(operations) || []
 		const known = TIERS[module] || [operations.filter((operation) => operation === 'read'), operations.filter((operation) => operation !== 'read')]
 		const listed = known.map((tier) => tier.filter((operation) => operations.includes(operation)))
-		const rest = operations.filter((operation) => !listed.some((tier) => tier.includes(operation)))
+		const untiered = catalog.untiered?.[module] || []
+		const rest = operations.filter((operation) => !listed.some((tier) => tier.includes(operation)) && !untiered.includes(operation))
 		if (rest.length > 0) {
 			if (listed.length === 0) listed.push([])
 			listed[listed.length - 1] = listed[listed.length - 1].concat(rest)
@@ -995,6 +998,20 @@
 		}
 		const allowed = new Set(all.slice(0, upTo + 1).flatMap((tier) => tier.operations))
 		return operations.filter((operation) => allowed.has(operation))
+	}
+
+	/**
+	 * A preset changes only operations represented by its tiers; None explicitly clears the whole catalog.
+	 * @param {string} module catalog module id
+	 * @param {string[]} operations catalog operations
+	 * @param {string} level existing preset id
+	 * @return {Object<string, boolean>} omitted operations keep their stored values
+	 */
+	function targetFor(module, operations, level) {
+		const allowed = operationsFor(module, operations, level)
+		const tiered = new Set(tiers(module, operations).flatMap(tier => tier.operations))
+		return Object.fromEntries(operations.filter(operation => level === 'none' || tiered.has(operation))
+			.map(operation => [operation, allowed.includes(operation)]))
 	}
 
 	/**
@@ -1038,7 +1055,7 @@
 		return { source: 'default', groupIds: [] }
 	}
 
-	root.OCA.Mcp.Admin.levels = { TIERS, MODULE_TIER_NAMES, tierNames, tiers, levels, operationsFor, levelOf, originOf }
+	root.OCA.Mcp.Admin.levels = { TIERS, MODULE_TIER_NAMES, tierNames, tiers, levels, operationsFor, targetFor, levelOf, originOf }
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
 /* admin/matrix/session.js */
@@ -1157,7 +1174,7 @@
 			return {
 				...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(),
 				read: t('mcp', 'read'),
-				results: t('mcp', 'results'),
+				schema: t('mcp', 'schema'), results: t('mcp', 'results'),
 				edit: t('mcp', 'edit'),
 				create: t('mcp', 'create'),
 				move: t('mcp', 'move'),
@@ -1209,7 +1226,7 @@
 				reply: t('mcp', 'Send messages and replies'),
 				attach: t('mcp', 'Share a file into a conversation'),
 				quote: t('mcp', 'Quote part of a file in a message'),
-				share: t('mcp', 'Share own files with people and groups'),
+				share: module === 'files' ? t('mcp', 'Share own files with people and groups') : '',
 				link: t('mcp', 'Create public links to own files'),
 			}
 			return hints[operation] || ''
@@ -2679,8 +2696,9 @@
 		 * @return {{changes: Array<{operation: string, granted: boolean, previous: Map<string, boolean>}>, users: number, unavailable: number, unchanged: number}}
 		 */
 		function bulkPlan(module, operationList, granted, uids = null) {
-			const target = (operation) => typeof granted === 'boolean' ? granted : granted[operation] === true
-			const changes = operationList.map((operation) => ({ operation, granted: target(operation), previous: new Map() }))
+			const target = (operation) => typeof granted === 'boolean' ? granted : granted[operation]
+			const changes = operationList.filter(operation => target(operation) !== undefined)
+				.map((operation) => ({ operation, granted: target(operation), previous: new Map() }))
 			let users = 0
 			let unavailable = 0
 			let unchanged = 0
@@ -2688,7 +2706,7 @@
 				if (uids !== null && !uids.includes(user.uid)) {
 					continue
 				}
-				if (context.unavailableReason(user, module) !== null || operationList.some((operation) =>
+				if (context.unavailableReason(user, module) !== null || changes.some(({ operation }) =>
 					(module === null ? user.eligible : user.grants[module][operation]) === null)) {
 					unavailable++
 					continue
@@ -2742,8 +2760,8 @@
 				return
 			}
 			const operationList = module === null ? ['eligible'] : context.state.data.catalog[module]
-			const allowed = module === null ? (level === 'read' ? ['eligible'] : []) : window.OCA.Mcp.Admin.levels.operationsFor(module, operationList, level)
-			const plan = context.bulkPlan(module, operationList, Object.fromEntries(operationList.map((operation) => [operation, allowed.includes(operation)])), uids)
+			const target = module === null ? { eligible: level === 'read' } : window.OCA.Mcp.Admin.levels.targetFor(module, operationList, level)
+			const plan = context.bulkPlan(module, operationList, target, uids)
 			const levelName = module === null ? (level === 'read' ? t('mcp', 'Yes') : t('mcp', 'No')) : context.levelLabels()[level] || level
 			const vars = { permission: module === null ? t('mcp', 'Can connect') : context.moduleLabels()[module] || module, level: levelName }
 			const lines = []
@@ -4204,8 +4222,7 @@
 		 */
 		function planLevel(user, module, level, inherited) {
 			const operations = context.operationsOf(module)
-			const allowed = context.levels.operationsFor(module, operations, level)
-			return context.planTarget(user, module, Object.fromEntries(operations.map((operation) => [operation, allowed.includes(operation)])), inherited)
+			return context.planTarget(user, module, context.levels.targetFor(module, operations, level), inherited)
 		}
 
 		/** Plan removal of the cell's individual values so its inheritance applies.
@@ -6410,7 +6427,7 @@
 		 * @return {string}
 		 */
 		function operationName(operation) {
-			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
+			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), schema: t('mcp', 'schema'), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
 		}
 
 		/** Flatten and sort granted module and operation pairs for stable draft comparison.
@@ -6809,6 +6826,17 @@
 			}
 			return lines
 		}
+		/** Apply a preset while preserving operations outside all of its tiers, except when clearing with None.
+		 * @param {string} module catalog module ID
+		 * @param {string} level requested preset
+		 * @param {string} focusKey editor control to focus after redraw
+		 * @return {void}
+		 */
+		function setLevel(module, level, focusKey) {
+			const operations = context.current.catalog[module]
+			const target = window.OCA.Mcp.Admin.levels.targetFor(module, operations, level)
+			context.setOperations(module, operations.filter(operation => target[operation] ?? operationsIn(context.draft, module).includes(operation)), focusKey)
+		}
 		/** Replace a module's draft operations, invalidate its preview and redraw the editor.
 		 * @param {string} module catalog module ID
 		 * @param {string[]} operations catalog operation IDs
@@ -6868,7 +6896,7 @@
 			modules: { configurable: true, get: () => modules },
 		})
 
-		Object.assign(context, { changes, defaultLevel, levelButton, levelIn, levelName, levelText, setOperations, viewInMatrix })
+		Object.assign(context, { changes, defaultLevel, levelButton, levelIn, levelName, levelText, setLevel, setOperations, viewInMatrix })
 	}
 })((globalThis.window || globalThis).OCA.Mcp.Admin)
 ;
@@ -6955,7 +6983,7 @@
 					}))
 				} else {
 					control = context.el('span', { className: 'mcp-group-levels' }, window.OCA.Mcp.Admin.levels.levels(module, operations).map((choice) => keyed('level:' + module + ':' + choice,
-						context.levelButton(module, choice, choice === level, () => context.setOperations(module, window.OCA.Mcp.Admin.levels.operationsFor(module, operations, choice), 'level:' + module + ':' + choice)))))
+						context.levelButton(module, choice, choice === level, () => context.setLevel(module, choice, 'level:' + module + ':' + choice)))))
 				}
 				control.setAttribute('role', 'group')
 				control.setAttribute('aria-labelledby', 'mcp-group-module-' + module)
@@ -8276,7 +8304,7 @@
 		 * @return {string}
 		 */
 		function operationName(operation) {
-			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
+			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), schema: t('mcp', 'schema'), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
 		}
 
 		/** The first check that blocks, by the code of the effective access (EffectiveResult::blockingGate).

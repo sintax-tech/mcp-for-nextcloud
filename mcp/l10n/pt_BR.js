@@ -1820,6 +1820,12 @@ OC.L10N.register(
     "Move page **%s** under *%s* as **%s**." : "Mover a página **%s** para baixo de *%s* como **%s**.",
     "Move collective page" : "Mover página de um coletivo",
     "A folder of this collective has pages but no Readme.md, and reading it would make Collectives create one; nothing was read or changed. Open the collective in Collectives once, then try again." : "Uma pasta deste coletivo tem páginas, mas não tem Readme.md, e lê-la faria o Coletivos criar um; nada foi lido nem alterado. Abra o coletivo uma vez no Coletivos e tente de novo.",
-    "This page carries subpages or files you cannot change through MCP; nothing was moved." : "Esta página leva subpáginas ou arquivos que você não pode alterar pelo MCP; nada foi movido."
+    "This page carries subpages or files you cannot change through MCP; nothing was moved." : "Esta página leva subpáginas ou arquivos que você não pode alterar pelo MCP; nada foi movido.",
+    "configure" : "configurar",
+    "options" : "opções",
+    "remove or restore options" : "remover ou restaurar opções",
+    "invite" : "convidar",
+    "options.remove" : "remover ou restaurar opções",
+    "schema" : "estrutura"
     },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

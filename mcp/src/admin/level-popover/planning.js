@@ -77,8 +77,7 @@
 		 */
 		function planLevel(user, module, level, inherited) {
 			const operations = context.operationsOf(module)
-			const allowed = context.levels.operationsFor(module, operations, level)
-			return context.planTarget(user, module, Object.fromEntries(operations.map((operation) => [operation, allowed.includes(operation)])), inherited)
+			return context.planTarget(user, module, context.levels.targetFor(module, operations, level), inherited)
 		}
 
 		/** Plan removal of the cell's individual values so its inheritance applies.

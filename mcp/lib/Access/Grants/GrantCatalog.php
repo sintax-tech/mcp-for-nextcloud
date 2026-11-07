@@ -34,10 +34,11 @@ final class GrantCatalog {
 		// sends a new message, four writes. All but 'read' start denied, as every operation but 'read' does.
 		'mail' => ['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'],
 		// Nextcloud Tables: 'read' lists the tables, views, columns and rows the user can open; 'create' adds one row and
-		// 'edit' changes cells of one row, through the Tables app, two writes that start denied like every write.
-		'tables' => ['read', 'create', 'edit'],
+		// 'edit' changes cells of one row. 'schema' manages structure and 'share' manages access; these four writes start denied.
+		'tables' => ['read', 'create', 'edit', 'schema', 'share'],
 		'forms' => ['read', 'results', 'create', 'edit'],
-		'polls' => ['read', 'results', 'links', 'create'],
+		// 'options.remove' is one literal operation, independent of 'options'; all new writes start denied.
+		'polls' => ['read', 'results', 'links', 'create', 'configure', 'options', 'options.remove', 'share', 'invite'],
 		// Collectives (#22): 'read' lists collectives and pages, reads and searches them; on by default like every read.
 		// 'create' adds an empty page, 'edit' changes the Markdown of one and 'move' moves or renames one inside its
 		// collective, through Collectives; all three start denied. Deleting pages is not offered.

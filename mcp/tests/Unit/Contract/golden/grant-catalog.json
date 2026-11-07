@@ -69,7 +69,9 @@
         "tables": [
             "read",
             "create",
-            "edit"
+            "edit",
+            "schema",
+            "share"
         ],
         "forms": [
             "read",
@@ -81,7 +83,12 @@
             "read",
             "results",
             "links",
-            "create"
+            "create",
+            "configure",
+            "options",
+            "options.remove",
+            "share",
+            "invite"
         ],
         "collectives": [
             "read",

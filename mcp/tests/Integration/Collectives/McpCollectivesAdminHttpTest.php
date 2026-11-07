@@ -157,12 +157,14 @@ final class McpCollectivesAdminHttpTest extends IntegrationTestCase {
 	/**
 	 * @param string $tool a tool the owner is not granted
 	 * @param array<string, mixed> $arguments its arguments
-	 * @return void it is not published and its call is refused
+	 * @return void it is not published, and calling it anyway is refused as any unpublished tool: with the JSON-RPC
+	 *     error `Unknown tool`, not with a tool result
 	 */
 	private function assertRefusedWithoutGrant(string $tool, array $arguments): void {
 		$this->assertNotContains($tool, $this->published($this->owner()));
 		$reply = $this->client($this->owner())->tool($tool, $arguments);
-		$this->assertTrue($reply->isError(), $reply->describe());
+		$this->assertFalse($reply->ok(), $reply->describe());
+		$this->assertSame('Unknown tool', $reply->body['error']['message'] ?? null, $reply->describe());
 	}
 
 	/** @return void the C04 tools are published at the end of the catalog on a proven release */

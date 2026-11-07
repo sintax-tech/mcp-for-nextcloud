@@ -7,8 +7,9 @@ declare(strict_types=1);
 
 /*
  * Strict doubles of the native Teams (Circles 33-35) and Collectives classes creating a collective reaches, with the
- * signatures of lib/CirclesManager.php, lib/Model/Circle.php, lib/Model/FederatedUser.php and
- * lib/Mount/CollectiveFolderManager.php (pinned in collectives-admin-sources.json). Their state lives in
+ * signatures of lib/CirclesManager.php, lib/Model/Circle.php, lib/Model/FederatedUser.php,
+ * lib/Mount/CollectiveFolderManager.php, lib/Db/PageMapper.php and lib/Db/Page.php (pinned in
+ * collectives-admin-sources.json). Their state lives in
  * {@see \OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene}. Members are plain objects of TeamMember, so this file
  * never declares OCA\Circles\Model\Member, which a Deck test stubs on its own.
  */
@@ -24,8 +25,12 @@ namespace OCA\Circles\Model {
 
 	/** Double of a Teams identity. */
 	class FederatedUser {
-		/** @param string $userId the account or group @param int $type user or group */
-		public function __construct(public string $userId, public int $type = 1) {
+		/**
+		 * @param string $userId the account, or the display name of a group's system team
+		 * @param int $type user, or team for a group
+		 * @param string|null $group the group a team identity stands for
+		 */
+		public function __construct(public string $userId, public int $type = 1, public ?string $group = null) {
 		}
 	}
 
@@ -43,6 +48,11 @@ namespace OCA\Circles\Model {
 		/** @return string name */
 		public function getName(): string {
 			return $this->data['name'];
+		}
+
+		/** @return int what the team stands for: 2 for a group's system team */
+		public function getSource(): int {
+			return $this->data['source'] ?? 16;
 		}
 
 		/** @return string sanitized name */
@@ -123,7 +133,8 @@ namespace OCA\Circles {
 					throw new \RuntimeException('group could not be resolved');
 				}
 			}
-			return new FederatedUser($federatedId, $type);
+			// A group is the group's system team, a team identity named after the group (importFromCircle).
+			return $type === 2 ? new FederatedUser(ucfirst($federatedId), 16, $federatedId) : new FederatedUser($federatedId, $type);
 		}
 
 		/** @return object the membership Teams made */
@@ -179,6 +190,31 @@ namespace OCA\Collectives\Mount {
 				TeamsScene::$root = true;
 			}
 			return TeamsScene::folder($id);
+		}
+	}
+}
+
+namespace OCA\Collectives\Db {
+	use OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsScene;
+
+	/** Double of a page record, with the serialized form of 4.0.0 to 4.7.1. */
+	class Page {
+		/** @param array{fileId:int, lastUserId:string|null} $data the record */
+		public function __construct(private array $data) {
+		}
+
+		/** @return array<string, mixed> the serialized record */
+		public function jsonSerialize(): array {
+			return $this->data;
+		}
+	}
+
+	/** Double of the page records: a plain read by file id, which never reaches the actor's mounts or Teams. */
+	class PageMapper {
+		/** @param int $fileId file of the page @param bool $trashed whether trashed records are asked for @return Page|null the record */
+		public function findByFileId(int $fileId, bool $trashed = false): ?Page {
+			$record = TeamsScene::record($fileId, $trashed);
+			return $record === null ? null : new Page($record);
 		}
 	}
 }

@@ -21,14 +21,17 @@ require __DIR__ . '/../../../../vendor/autoload.php';
  */
 final class CollectivesAdminFixtureGenerator {
 	/** Native classes added to the API fixtures. */
-	private const CLASSES = ['OCA\\Collectives\\Mount\\CollectiveFolderManager', 'OCA\\Circles\\CirclesManager',
-		'OCA\\Circles\\Model\\FederatedUser', 'OCA\\Circles\\Model\\Probes\\CircleProbe'];
+	private const CLASSES = ['OCA\\Collectives\\Mount\\CollectiveFolderManager', 'OCA\\Collectives\\Db\\PageMapper',
+		'OCA\\Collectives\\Db\\Page', 'OCA\\Circles\\CirclesManager', 'OCA\\Circles\\Model\\FederatedUser',
+		'OCA\\Circles\\Model\\Probes\\CircleProbe'];
 	/** @var array<string, list<string>> Collectives methods recorded, by file under lib/ */
 	private const COLLECTIVES = [
 		'Service/CollectiveService.php' => ['createCollective'],
 		'Service/CircleHelper.php' => ['existsCircle', 'createCircle', 'flagCircleAsAppManaged', 'startSession', 'startSuperSession'],
 		'Fs/NodeHelper.php' => ['sanitiseFilename'],
-		'Service/PageService.php' => ['getPageByFile'],
+		'Service/PageService.php' => ['getPageByFile', 'find', 'getCollectiveFolder'],
+		'Db/PageMapper.php' => ['findByFileId'],
+		'Fs/UserFolderHelper.php' => ['get'],
 		'Mount/CollectiveFolderManager.php' => ['getRootPath', 'getRootFolder', 'getFolder', 'initializeFolder'],
 		'Controller/CollectiveController.php' => ['create'],
 	];
@@ -42,10 +45,14 @@ final class CollectivesAdminFixtureGenerator {
 		'Service/NotificationService.php' => ['notificationInvited'],
 		'Service/CircleService.php' => ['create', 'cleanCircleName', 'confirmCircleNotFull'],
 		'Listeners/Files/MemberAddedSendMail.php' => ['handle'],
+		'Model/FederatedUser.php' => ['importFromCircle'],
+		'Model/Member.php' => ['hasBasedOn', 'getBasedOn'],
+		'Db/MemberRequestBuilder.php' => ['getMemberSelectSql'],
+		'Db/MemberRequest.php' => ['getMembers'],
 	];
 	/** @var array<string, list<string>> native constants recorded, by class file under lib/ */
 	private const CONSTANTS = ['Model/Member.php' => ['LEVEL_NONE', 'LEVEL_MEMBER', 'LEVEL_MODERATOR', 'LEVEL_ADMIN', 'LEVEL_OWNER', 'TYPE_USER',
-		'TYPE_GROUP', 'STATUS_INVITED', 'STATUS_REQUEST', 'STATUS_MEMBER', 'STATUS_BLOCKED'], 'Model/Circle.php' => ['CFG_SINGLE', 'CFG_PERSONAL', 'CFG_INVITE']];
+		'TYPE_GROUP', 'TYPE_CIRCLE', 'STATUS_INVITED', 'STATUS_REQUEST', 'STATUS_MEMBER', 'STATUS_BLOCKED'], 'Model/Circle.php' => ['CFG_SINGLE', 'CFG_PERSONAL', 'CFG_INVITE']];
 	/** The notice Collectives returns when it adopts an existing team. */
 	public const ADOPTION = 'Created collective "%s" for existing team.';
 

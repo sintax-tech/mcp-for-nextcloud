@@ -24,6 +24,8 @@ class TeamsGateway {
 	public const TYPE_USER = 1;
 	/** `Member::TYPE_GROUP`, checked by {@see TeamsSurface}. */
 	public const TYPE_GROUP = 2;
+	/** `Member::TYPE_CIRCLE`, a membership of a team, the way Teams stores a group; checked by {@see TeamsSurface}. */
+	public const TYPE_TEAM = 16;
 	/** `Circle::CFG_SINGLE | Circle::CFG_PERSONAL`: teams whose members cannot change. */
 	private const FIXED = 1 | 2;
 	/** `Circle::CFG_INVITE`: a new member is an invitation until accepted. */

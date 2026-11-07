@@ -16,16 +16,20 @@ use Throwable;
  * Reads back a collective creation without repairing anything. Only reads, in this order, each step only when the
  * one before exists: the collective as the actor sees it, the collectives root, the collective's folder and its
  * Readme.md checked with `nodeExists` on the path the folder manager builds without touching storage
- * (`getRootPath()`), then the folder itself, and the landing page through the page service. Asking the folder manager
+ * (`getRootPath()`), then the folder itself, and the landing page's record. Asking the folder manager
  * or the actor's mount for a missing folder would create it (`getRootFolder()` 4.7.1 `:72-91`, `getMount()` `:113-127`).
  *
- * The landing page counts as registered only when the page service answers it with a last user: that value comes
- * from the page record alone, and is null without one (`getPageByFile`, 4.7.1 `:239,:269`).
+ * The landing page counts as registered only when its page record has a last user: the record Collectives itself reads
+ * for a page (`getPageByFile` reads `PageMapper::findByFileId` and takes `lastUserId` from it, 4.7.1 `:233-239`), and the
+ * one `createCollective` writes with the creator. It is read from the record by the landing page's file id, not through
+ * `PageService::find`: that one resolves the collective in the actor's Collectives folder (`getCollectiveFolder`,
+ * `UserFolderHelper::get`), whose mounts were set up earlier in the request, before the collective existed, so it
+ * answers not found for every collective just created (H4, Nextcloud 35 with Collectives 4.7.1).
  *
- * Both native reads open Teams sessions inside Collectives and close them only after a `try/catch`: listing the
- * collectives reaches `CircleHelper::getCircles` (`CollectiveService.php:95-96`, `CircleHelper.php:103-120`), and `find`
- * reaches `CircleHelper::getCircle` through the collective's folder. Each runs in {@see TeamsSession::closingAfter()},
- * so a failure inside leaves no current user and no bypass behind, also when the receipt turns it into `uncertain`.
+ * Listing the collectives opens Teams sessions inside Collectives and closes them only after a `try/catch`
+ * (`CollectiveService.php:95-96`, `CircleHelper.php:103-120`); it runs in {@see TeamsSession::closingAfter()}, so a
+ * failure inside leaves no current user and no bypass behind, also when the receipt turns it into `uncertain`. The page
+ * record is a plain read of the Collectives table through its mapper and reaches no Teams session.
  */
 class FoundingReadback {
 	/** Landing page of a new collective (`CollectiveFolderManager::LANDING_PAGE_TITLE` and `SUFFIX`). */
@@ -62,11 +66,10 @@ class FoundingReadback {
 
 	/**
 	 * @param int $id collective id
-	 * @param string $uid authenticated actor
 	 * @return array{root:bool, folder:bool, landing:bool, registered:bool|null} what exists; registered is null when
-	 *     the landing page could not be asked for
+	 *     the landing page's record could not be asked for
 	 */
-	public function pieces(int $id, string $uid): array {
+	public function pieces(int $id): array {
 		$found = ['root' => false, 'folder' => false, 'landing' => false, 'registered' => null];
 		try {
 			$folders = $this->service(FoundingSurface::FOLDERS);
@@ -76,8 +79,8 @@ class FoundingReadback {
 			$found['landing'] = $found['folder'] && $this->root->nodeExists($root . '/' . $id . '/' . self::LANDING);
 			if ($found['landing']) {
 				$file = $folders->getFolder($id)->get(self::LANDING);
-				$page = $file instanceof File ? $this->teams->closingAfter(fn (): object => $this->service(CollectivesSurface::PAGES)->find($id, $file->getId(), $uid)) : null;
-				$data = $page === null ? [] : (array)$page->jsonSerialize();
+				$record = $file instanceof File ? $this->service(FoundingSurface::PAGE_RECORDS)->findByFileId($file->getId(), false) : null;
+				$data = is_object($record) ? (array)$record->jsonSerialize() : [];
 				$found['registered'] = is_string($data['lastUserId'] ?? null) && $data['lastUserId'] !== '';
 			}
 		} catch (Throwable) {

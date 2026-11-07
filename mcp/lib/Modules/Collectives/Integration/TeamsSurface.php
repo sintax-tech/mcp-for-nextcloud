@@ -43,6 +43,19 @@ final class TeamsSurface {
 		[self::MEMBER, 'getLevel', [], 'int'],
 		[self::MEMBER, 'getStatus', [], 'string'],
 		[self::MEMBER, 'getDisplayName', [], 'string'],
+		[self::MEMBER, 'hasBasedOn', [], 'bool'],
+		[FoundingSurface::TEAM, 'getSource', [], 'int'],
+		[FoundingSurface::TEAM, 'getName', [], 'string'],
+	];
+
+	/**
+	 * The team a membership stands for, which identifies a group: one of these shapes, `Circle` on Circles 33 and 34,
+	 * `?Circle` on 35. It is read only after `hasBasedOn()`.
+	 * @var list<array{0:string, 1:string, 2:list<string>, 3:string}>
+	 */
+	public const BASED_ON = [
+		[self::MEMBER, 'getBasedOn', [], FoundingSurface::TEAM],
+		[self::MEMBER, 'getBasedOn', [], '?' . FoundingSurface::TEAM],
 	];
 
 	/**
@@ -52,7 +65,7 @@ final class TeamsSurface {
 	public const CONSTANTS = [
 		[self::MEMBER, 'LEVEL_NONE', 0], [self::MEMBER, 'LEVEL_MEMBER', 1], [self::MEMBER, 'LEVEL_MODERATOR', 4],
 		[self::MEMBER, 'LEVEL_ADMIN', 8], [self::MEMBER, 'LEVEL_OWNER', 9],
-		[self::MEMBER, 'TYPE_USER', 1], [self::MEMBER, 'TYPE_GROUP', 2],
+		[self::MEMBER, 'TYPE_USER', 1], [self::MEMBER, 'TYPE_GROUP', 2], [self::MEMBER, 'TYPE_CIRCLE', 16],
 		[self::MEMBER, 'STATUS_INVITED', 'Invited'], [self::MEMBER, 'STATUS_REQUEST', 'Requesting'],
 		[self::MEMBER, 'STATUS_MEMBER', 'Member'], [self::MEMBER, 'STATUS_BLOCKED', 'Blocked'],
 		[FoundingSurface::TEAM, 'CFG_SINGLE', 1], [FoundingSurface::TEAM, 'CFG_PERSONAL', 2], [FoundingSurface::TEAM, 'CFG_INVITE', 32],
@@ -65,10 +78,15 @@ final class TeamsSurface {
 	/**
 	 * @param list<array{0:string, 1:string, 2:list<string>, 3:string}> $members the members to prove
 	 * @param list<array{0:string, 1:string, 2:int|string}> $constants the constants to prove
-	 * @return bool whether every member has the proven shape and every constant its proven value
+	 * @param list<array{0:string, 1:string, 2:list<string>, 3:string}> $basedOn the shapes of which one must match
+	 * @return bool whether every member has the proven shape, one of the based-on shapes matches, and every constant
+	 *     has its proven value
 	 */
-	public static function supported(array $members = self::MEMBERS, array $constants = self::CONSTANTS): bool {
+	public static function supported(array $members = self::MEMBERS, array $constants = self::CONSTANTS, array $basedOn = self::BASED_ON): bool {
 		if (!(new CollectivesSurface($members))->supported()) {
+			return false;
+		}
+		if (array_filter($basedOn, static fn (array $shape): bool => (new CollectivesSurface([$shape]))->supported()) === []) {
 			return false;
 		}
 		foreach ($constants as [$class, $name, $value]) {

@@ -63,7 +63,7 @@ class CollectiveReceipt {
 		}
 		$adopted = $answer['adopted'] === true || in_array($collective['team_id'], $before['team_ids'], true)
 			|| ($team !== null && (!$team['owner_is_actor'] || !$team['only_member_is_actor']));
-		$pieces = $this->readback->pieces($collective['id'], $uid);
+		$pieces = $this->readback->pieces($collective['id']);
 		$complete = $team !== null && $pieces['root'] && $pieces['folder'] && $pieces['landing'] && $pieces['registered'] === true;
 		$status = !$adopted && $complete ? 'applied' : 'partial';
 		return $base + ['status' => $status, 'adopted_existing_team' => $adopted,

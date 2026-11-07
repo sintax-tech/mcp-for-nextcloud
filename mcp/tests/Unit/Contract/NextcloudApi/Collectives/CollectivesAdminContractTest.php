@@ -149,6 +149,29 @@ final class CollectivesAdminContractTest extends TestCase {
 		}
 	}
 
+	/**
+	 * @return void the landing page's registration is read from the very record the page service reads, by file id and
+	 *     with a select only; the page service itself is not used, as it resolves the actor's Collectives folder, whose
+	 *     mounts predate a collective created in the same request (H4)
+	 */
+	public function testTheLandingRecordIsTheOneThePageServiceReads(): void {
+		foreach (self::behavior()['collectives'] as $version => $record) {
+			$m = $record['methods'];
+			$this->assertStringContainsString('$page = $this->pageMapper->findByFileId($file->getId());', $m['Service/PageService.php::getPageByFile'],
+				"$version: the page service reads the same record");
+			$find = $m['Db/PageMapper.php::findByFileId'];
+			$this->assertStringStartsWith('function findByFileId(int $fileId, bool $trashed = false): ?Page {', $find, $version);
+			$this->assertStringContainsString("\$qb->select('*')", $find, "$version: a plain read");
+			$this->assertMatchesRegularExpression('/\$trashed\) \{\s*\$andX\[\] = \$qb->expr\(\)->isNotNull\(\'trash_timestamp\'\);\s*\} else \{\s*\$andX\[\] = \$qb->expr\(\)->isNull\(\'trash_timestamp\'\);/',
+				$find, "$version: false asks for the live record");
+			$this->assertDoesNotMatchRegularExpression('/insert|update|delete|setupFS/i', $find, "$version: it writes nothing");
+			$this->assertStringContainsString('$folder = $this->getCollectiveFolder($collectiveId, $userId);', $m['Service/PageService.php::find'], $version);
+			$this->assertStringContainsString('$this->userFolderHelper->get($userId)->get($collectiveName);', $m['Service/PageService.php::getCollectiveFolder'],
+				"$version: find goes through the actor's Collectives folder");
+			$this->assertStringContainsString('$this->rootFolder->getUserFolder($userId);', $m['Fs/UserFolderHelper.php::get'], $version);
+		}
+	}
+
 	/** @return void the actor's Teams identity is read from a setting, and guests are refused natively only from 4.7.1 (C2, R2.4, D7) */
 	public function testIdentityGuestsAndTeamFolders(): void {
 		foreach (self::behavior()['circles'] as $version => $record) {
@@ -181,6 +204,33 @@ final class CollectivesAdminContractTest extends TestCase {
 			foreach (TeamsSurface::CONSTANTS as [$class, $name, $value]) {
 				$this->assertSame($value, $recorded[substr($class, strrpos($class, '\\') + 1) . '::' . $name], "$class::$name in NC$major");
 			}
+		}
+	}
+
+	/**
+	 * @return void Teams stores a group as a membership of the group's system team `group:<id>`, of source group, named
+	 *     after the group's display name, and lists members with that team joined: the module reads a group that way,
+	 *     through one of the two proven `getBasedOn` shapes (H4: a group added was not found by its type and id)
+	 */
+	public function testAGroupIsAMembershipOfItsSystemTeam(): void {
+		$shapes = array_map(static fn (array $shape): string => 'function getBasedOn(): ' . (str_starts_with($shape[3], '?') ? '?' : '')
+			. substr($shape[3], strrpos($shape[3], '\\') + 1) . ' {', TeamsSurface::BASED_ON);
+		foreach (FoundingCapabilities::MAJORS as $major) {
+			$record = self::behavior()['circles'][$major . '.0.0'];
+			$m = $record['methods'];
+			$this->assertSame(16, $record['constants']['Member::TYPE_CIRCLE'], "NC$major");
+			$group = $m['Service/FederatedUserService.php::getGroupCircle'];
+			$this->assertStringContainsString("setName('group:' . \$groupId)", $group, "NC$major: the system team is named after the group id");
+			$this->assertStringContainsString('->setSource(Member::TYPE_GROUP)', $group, "NC$major: of source group");
+			$this->assertMatchesRegularExpression('/\} else \{\s*\$this->set\(\s*\$circle->getDisplayName\(\),\s*\$circle->getInstance\(\),\s*Member::TYPE_CIRCLE,/',
+				$m['Model/FederatedUser.php::importFromCircle'], "NC$major: the member is the team, named after its display name");
+			$this->assertStringContainsString('bool $getBasedOn = true', $m['Db/MemberRequestBuilder.php::getMemberSelectSql'], "NC$major");
+			$this->assertStringContainsString('$qb->leftJoinBasedOn(CoreQueryBuilder::MEMBER, $initiator);', $m['Db/MemberRequestBuilder.php::getMemberSelectSql'], "NC$major");
+			$this->assertMatchesRegularExpression('/\$qb = \$this->getMemberSelectSql\(\$initiator\);/', $m['Db/MemberRequest.php::getMembers'], "NC$major: members come with the team joined");
+			$this->assertStringContainsString('return !is_null($this->basedOn);', $m['Model/Member.php::hasBasedOn'], "NC$major");
+			$this->assertContains(strtok($m['Model/Member.php::getBasedOn'], "\n"), $shapes, "NC$major: a proven shape");
+			$classes = (require __DIR__ . '/../../../../fixtures/nextcloud-api/' . $major . '.php')['classes'];
+			$this->assertSame([], $classes[TeamsSurface::MEMBER]['methods']['getBasedOn'] ?? null, "NC$major");
 		}
 	}
 

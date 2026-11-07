@@ -97,16 +97,26 @@ final class McpCollectivesHttpTest extends IntegrationTestCase {
 		return $this->json($this->client($this->owner())->tool($tool, $confirm));
 	}
 
+	/**
+	 * Only the collective the cell provisions is this test's: others the owner has, such as those the C04 tests create,
+	 * are left alone and not counted.
+	 * @return array<string, mixed> "MCP Wiki" as collectives_list shows it to the owner, listed exactly once
+	 */
+	private function wiki(): array {
+		$collectives = $this->json($this->client($this->owner())->tool('collectives_list'))['collectives'];
+		$wiki = array_values(array_filter($collectives, static fn (array $collective): bool => $collective['name'] === 'MCP Wiki'));
+		$this->assertCount(1, $wiki, 'the provisioned collective is listed once');
+		return $wiki[0];
+	}
+
 	/** @return void discovery, reads, create, edit and move through the native services, each read back */
 	public function testThePageServiceWorksFromTheMcpEndpoint(): void {
 		$names = $this->published($this->owner());
 		$this->assertSame(['collectives_list', 'collectives_pages', 'collectives_read', 'collectives_search', 'collectives_create',
 			'collectives_edit', 'collectives_move'], $names, 'the probe accepts the pinned release');
-		$collectives = $this->json($this->client($this->owner())->tool('collectives_list'))['collectives'];
-		$this->assertCount(1, $collectives);
-		$this->assertSame('MCP Wiki', $collectives[0]['name']);
-		$this->assertTrue($collectives[0]['can_edit']);
-		$cid = $collectives[0]['id'];
+		$wiki = $this->wiki();
+		$this->assertTrue($wiki['can_edit']);
+		$cid = $wiki['id'];
 		$pages = $this->json($this->client($this->owner())->tool('collectives_pages', ['collective_id' => $cid]))['pages'];
 		$landing = $pages[0]['id'];
 		$this->assertSame(0, $pages[0]['parent_id']);
@@ -136,7 +146,7 @@ final class McpCollectivesHttpTest extends IntegrationTestCase {
 	 * @return void
 	 */
 	public function testAnOutsiderIsRefusedByCollectives(): void {
-		$cid = $this->json($this->client($this->owner())->tool('collectives_list'))['collectives'][0]['id'];
+		$cid = $this->wiki()['id'];
 		$outsider = (string)getenv('MCP_IT_COLLECTIVES_OUTSIDER');
 		$this->assertSame([], $this->json($this->client($outsider)->tool('collectives_list'))['collectives'], 'admitted, and Collectives lists nothing');
 		foreach ([['collectives_pages', ['collective_id' => $cid]], ['collectives_pages', ['collective_id' => $cid + 1000]]] as [$tool, $arguments]) {

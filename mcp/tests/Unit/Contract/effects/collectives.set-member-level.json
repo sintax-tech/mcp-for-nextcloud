@@ -74,8 +74,9 @@
                     },
                     {
                         "id": "m-staff",
-                        "userId": "staff",
-                        "type": 2,
+                        "userId": "Staff",
+                        "type": 16,
+                        "group": "staff",
                         "level": 1,
                         "status": "Member"
                     },
@@ -152,8 +153,9 @@
                     },
                     {
                         "id": "m-staff",
-                        "userId": "staff",
-                        "type": 2,
+                        "userId": "Staff",
+                        "type": 16,
+                        "group": "staff",
                         "level": 1,
                         "status": "Member"
                     },
@@ -255,8 +257,9 @@
                     },
                     {
                         "id": "m-staff",
-                        "userId": "staff",
-                        "type": 2,
+                        "userId": "Staff",
+                        "type": 16,
+                        "group": "staff",
                         "level": 1,
                         "status": "Member"
                     },
@@ -359,8 +362,9 @@
                     },
                     {
                         "id": "m-staff",
-                        "userId": "staff",
-                        "type": 2,
+                        "userId": "Staff",
+                        "type": 16,
+                        "group": "staff",
                         "level": 1,
                         "status": "Member"
                     },
@@ -461,8 +465,9 @@
                     },
                     {
                         "id": "m-staff",
-                        "userId": "staff",
-                        "type": 2,
+                        "userId": "Staff",
+                        "type": 16,
+                        "group": "staff",
                         "level": 1,
                         "status": "Member"
                     },
@@ -540,8 +545,9 @@
                     },
                     {
                         "id": "m-staff",
-                        "userId": "staff",
-                        "type": 2,
+                        "userId": "Staff",
+                        "type": 16,
+                        "group": "staff",
                         "level": 1,
                         "status": "Member"
                     },
@@ -621,8 +627,9 @@
                     },
                     {
                         "id": "m-staff",
-                        "userId": "staff",
-                        "type": 2,
+                        "userId": "Staff",
+                        "type": 16,
+                        "group": "staff",
                         "level": 1,
                         "status": "Member"
                     },
@@ -700,8 +707,9 @@
                     },
                     {
                         "id": "m-staff",
-                        "userId": "staff",
-                        "type": 2,
+                        "userId": "Staff",
+                        "type": 16,
+                        "group": "staff",
                         "level": 1,
                         "status": "Member"
                     },
@@ -781,8 +789,9 @@
                     },
                     {
                         "id": "m-staff",
-                        "userId": "staff",
-                        "type": 2,
+                        "userId": "Staff",
+                        "type": 16,
+                        "group": "staff",
                         "level": 1,
                         "status": "Member"
                     },

@@ -94,6 +94,17 @@ final class CallGraphProtocols {
 				$hooks = ['offsetGet', 'offsetSet'];
 				$values[] = $typeOf($parent);
 			}
+			$destination = $node;
+			$container = $node->getAttribute('parent');
+			while ($container instanceof Node\ArrayItem || $container instanceof Expr\List_ || $container instanceof Expr\Array_) {
+				$destination = $container;
+				$container = $container->getAttribute('parent');
+			}
+			if ($container instanceof Expr\Assign && $destination !== $node && $container->var === $destination
+				|| $container instanceof Stmt\Foreach_ && ($container->valueVar === $destination || $container->keyVar === $destination)) {
+				$hooks = ['offsetSet'];
+				$values = [$key, [null]];
+			}
 			foreach ($typeOf($node->var) as $receiver) {
 				if ($receiver === null) {
 					$miss($node, 'array access receiver of unknown type');

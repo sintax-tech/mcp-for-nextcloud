@@ -34,7 +34,7 @@ final class CollectivesClosedSubsetTest extends CallGraphTreeTestCase {
 		$dir = __DIR__ . '/../../../../fixtures/nextcloud-api/collectives/';
 		$nodes = json_decode(file_get_contents($dir . 'collectives-ast-subset.json'), true, 512, JSON_THROW_ON_ERROR);
 		$functions = json_decode(file_get_contents($dir . 'collectives-php-functions.json'), true, 512, JSON_THROW_ON_ERROR);
-		$this->assertNotContains('PhpParser\\Node\\Expr\\Match_', $nodes);
+		$this->assertContains('PhpParser\\Node\\Expr\\Match_', $nodes);
 		$this->assertArrayNotHasKey('func_get_args', $functions);
 		$this->assertNull(\CallGraphFunctions::model('not_listed'));
 		foreach ($nodes as $node) {

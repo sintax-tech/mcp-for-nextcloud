@@ -78,6 +78,7 @@ final class CollectivesImplicitEdgesTest extends CallGraphTreeTestCase {
 	public function testAnExternalPinnedMagicBodyIsFollowed(): void {
 		$this->reach(['Entry extends \\Pinned\\Base' => 'public function read(): void { $this->anything(); }'], 'Entry::read');
 		mkdir($this->lib . '/types');
+		file_put_contents($this->lib . '/types/Folder.php', '<?php namespace OCP\\Files; class Folder { public function newFile(string $name): void {} }');
 		file_put_contents($this->lib . '/types/Base.php', '<?php namespace Pinned; class Base {
 			public function __CALL($name, $args) { (new \\OCP\\Files\\Folder())->newFile("external"); }
 		}');

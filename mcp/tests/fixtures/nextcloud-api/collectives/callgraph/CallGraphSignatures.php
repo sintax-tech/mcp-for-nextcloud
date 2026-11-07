@@ -21,11 +21,10 @@ final class CallGraphSignatures {
 	 */
 	public function declared(?Node $type, ?string $class): ?string {
 		if ($type instanceof Node\NullableType) {
-			$type = $type->type;
+			return $this->declared($type->type, $class);
 		}
 		if ($type instanceof Node\UnionType) {
-			$named = array_values(array_filter($type->types, static fn (Node $t): bool => !($t instanceof Node\Identifier && $t->toLowerString() === 'null')));
-			$type = count($named) === 1 ? $named[0] : null;
+			return CallGraphArrayTypes::pack(array_map(fn (Node $member): ?string => $this->declared($member, $class), $type->types));
 		}
 		return $type instanceof Node\Name ? $this->index->name($class, $type)
 			: ($type instanceof Node\Identifier && in_array($type->toLowerString(), ['string', 'int', 'float', 'bool', 'void', 'never', 'false', 'true', 'null'], true) ? CallGraphScalarTypes::declared($type->toLowerString()) : null);

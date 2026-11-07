@@ -46,6 +46,13 @@ final class CallGraphMagicUses {
 		if (($node instanceof Expr\Assign || $node instanceof Expr\AssignOp) && $node->var instanceof Expr\PropertyFetch) {
 			$add($node->var->var, ['__set'], [[''], $typeOf($node->expr)]);
 		}
+		$patterns = $node instanceof Stmt\Foreach_ ? array_filter([$node->valueVar, $node->keyVar])
+			: ($node instanceof Expr\Assign && ($node->var instanceof Expr\List_ || $node->var instanceof Expr\Array_) ? [$node->var] : []);
+		foreach ($patterns as $pattern) {
+			foreach (CallGraphWriteCoercions::destinations($pattern) as $target) {
+				if ($target instanceof Expr\PropertyFetch) { $add($target->var, ['__set'], [[''], [null]]); }
+			}
+		}
 		if (($node instanceof Expr\PreInc || $node instanceof Expr\PreDec || $node instanceof Expr\PostInc || $node instanceof Expr\PostDec) && $node->var instanceof Expr\PropertyFetch) {
 			$add($node->var->var, ['__get', '__set'], [[''], $typeOf($node)]);
 		}

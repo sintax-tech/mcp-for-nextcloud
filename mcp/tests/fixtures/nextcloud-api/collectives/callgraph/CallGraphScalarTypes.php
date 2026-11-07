@@ -35,6 +35,7 @@ final class CallGraphScalarTypes {
 		if ($node instanceof Expr\BinaryOp\Plus && $types !== [] && array_filter($types, static fn (?string $t): bool => CallGraphArrayTypes::read($t) === null) === []) {
 			return CallGraphTypes::union($types);
 		}
+		if (in_array('@bottom', $types, true) && !in_array(null, $types, true)) { return ['@bottom']; }
 		if ($types === [] || array_filter($types, static fn (?string $t): bool => $t === null || $t === '@bottom' || CallGraphTypes::isObject($t) || CallGraphArrayTypes::read($t) !== null) !== []) {
 			return [null];
 		}

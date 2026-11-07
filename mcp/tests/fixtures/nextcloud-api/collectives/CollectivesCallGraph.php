@@ -33,6 +33,7 @@ require_once __DIR__ . '/callgraph/CallGraphLocals.php';
 require_once __DIR__ . '/callgraph/CallGraphArguments.php';
 require_once __DIR__ . '/callgraph/CallGraphProtocols.php';
 require_once __DIR__ . '/callgraph/CallGraphImplicitEdges.php';
+require_once __DIR__ . '/callgraph/CallGraphWriteCoercions.php';
 require_once __DIR__ . '/callgraph/CallGraphCoercions.php';
 require_once __DIR__ . '/callgraph/CallGraphPropertyHooks.php';
 require_once __DIR__ . '/callgraph/CallGraphComparisons.php';

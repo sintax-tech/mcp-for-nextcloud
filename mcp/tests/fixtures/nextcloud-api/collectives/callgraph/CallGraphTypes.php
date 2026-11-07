@@ -56,6 +56,8 @@ final class CallGraphTypes {
 			$expr instanceof Expr\BinaryOp\Plus, $expr instanceof Expr\BinaryOp\Minus, $expr instanceof Expr\BinaryOp\Mul,
 			$expr instanceof Expr\BinaryOp\Div, $expr instanceof Expr\BinaryOp\Mod, $expr instanceof Expr\BinaryOp\Pow
 				=> CallGraphScalarTypes::arithmetic($expr, $typeOf),
+			$expr instanceof Expr\Cast\Array_ => [CallGraphArrayTypes::make([''], [null])],
+			$expr instanceof Expr\Cast\Object_ => [null],
 			$expr instanceof Expr\Cast\Int_ => ['@number:int'], $expr instanceof Expr\Cast\Double => ['@number:float'],
 			$expr instanceof Expr\Variable => $expr->name === 'this' ? [$class] : (is_string($expr->name) ? ($locals[$expr->name] ?? [null]) : [null]),
 			$expr instanceof Expr\New_ => $this->created($class, $expr, $locals),
@@ -129,7 +131,7 @@ final class CallGraphTypes {
 		if (!$expr->name instanceof Node\Identifier) {
 			return [null];
 		}
-		return array_map(fn (?string $t): ?string => in_array($t, ['json-value', 'json-object-value'], true) ? $t : (self::isObject($t) ? $this->properties->of((string)$t, $expr->name->name) : null),
+		return array_map(fn (?string $t): ?string => in_array($t, ['json-value', 'json-object-value'], true) ? $t : (self::isObject($t) ? $this->properties->of((string)$t, $expr->name->name) : ($t === null ? null : '')),
 			$this->typeOf($class, $expr->var, $locals));
 	}
 
@@ -162,6 +164,10 @@ final class CallGraphTypes {
 		$target = $this->index->name($class, $expr->class);
 		if ($target === 'OCP\\Server' && $expr->name->toLowerString() === 'get') {
 			return [self::literalClass($expr->args[0] ?? null)];
+		}
+		if (($this->index->classes[$target]['node'] ?? null) instanceof Stmt\Enum_
+			&& $this->index->classes[$target]['node']->scalarType !== null && in_array($expr->name->toLowerString(), ['from', 'tryfrom'], true)) {
+			return $expr->name->toLowerString() === 'from' ? [$target] : [$target, ''];
 		}
 		return $this->returnTypes($target, $expr->name->name, true);
 	}

@@ -39,7 +39,13 @@ final class CallGraphArrayWrites {
 		foreach ($receivers === [] ? ['[]'] : CallGraphArrayTypes::members($receivers) as $receiver) {
 			if ($receiver === '@bottom') { $result[] = '@bottom'; continue; }
 			$array = CallGraphArrayTypes::read($receiver);
-			if ($array === null) { $result[] = $receiver; $result[] = null; continue; }
+			if ($array === null) {
+				$result[] = $receiver;
+				if ($receiver === '' || str_starts_with($receiver ?? '', '@number:')) {
+					// Null/false can become arrays; string offsets coerce to string; other primitive writes throw.
+					$array = ['keys' => [], 'values' => [], 'shape' => []];
+				} else { $result[] = null; continue; }
+			}
 			$key = $step['key'];
 			$selected = $key !== null && $array['shape'] !== [] ? ($array['shape'][(string)$key] ?? []) : $array['values'];
 			$value = self::write($selected, $path, $assigned);

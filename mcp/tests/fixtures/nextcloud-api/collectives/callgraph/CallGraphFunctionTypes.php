@@ -47,17 +47,17 @@ final class CallGraphFunctionTypes {
 				return [null];
 			}
 			if ($callback->returnType instanceof Node\Identifier && in_array($callback->returnType->toLowerString(), ['string', 'int', 'float', 'bool'], true)) {
-				return ['scalar[]'];
+				return [CallGraphArrayTypes::make([''], [CallGraphScalarTypes::declared($callback->returnType->toLowerString())])];
 			}
 			$returns = $callback instanceof Expr\ArrowFunction ? [$callback->expr]
 				: array_map(static fn (Stmt\Return_ $r): ?Expr => $r->expr, CallGraphTypes::returns($callback->stmts));
 			$types = [];
 			foreach ($returns as $value) {
 				foreach ($value === null ? [''] : $this->types->typeOf($class, $value, $locals) as $type) {
-					$types[] = $type === null ? null : ($type === '' ? 'scalar[]' : $type . '[]');
+					$types[] = $type;
 				}
 			}
-			return $types === [] ? [null] : CallGraphTypes::union($types);
+			return [CallGraphArrayTypes::make([''], $returns === [] ? [''] : ($types === [] ? ['@bottom'] : CallGraphTypes::union($types)))];
 		}
 		$arguments = array_map(fn (Node\Arg $a): array => $a->unpack ? array_map(CallGraphTypes::element(...), $this->types->typeOf($class, $a->value, $locals)) : $this->types->typeOf($class, $a->value, $locals),
 			array_values(array_filter($expr->args, static fn (Node $a): bool => $a instanceof Node\Arg)));
@@ -82,7 +82,8 @@ final class CallGraphFunctionTypes {
 		}
 		return match ($result) {
 			'scalar' => [isset($model['scalarType']) ? CallGraphScalarTypes::declared($model['scalarType']) : ''], 'scalar-array' => ['scalar[]'],
-			'arguments' => CallGraphTypes::union(array_merge(...$arguments, ...array_map(static fn (array $types): array => array_map(CallGraphTypes::element(...), $types), $arguments))),
+			'arguments' => count($expr->args) === 1 && !$expr->args[0]->unpack
+				? CallGraphTypes::union(array_map(CallGraphTypes::element(...), $arguments[0] ?? [null])) : CallGraphTypes::union(array_merge(...$arguments)),
 			default => [null],
 		};
 	}

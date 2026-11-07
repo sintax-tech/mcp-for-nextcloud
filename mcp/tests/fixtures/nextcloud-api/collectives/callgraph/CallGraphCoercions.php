@@ -51,28 +51,8 @@ final class CallGraphCoercions {
 				$values[] = $node->expr;
 			}
 		}
-		if (($node instanceof Expr\Assign || $node instanceof Expr\AssignOp) && ($node->var instanceof Expr\PropertyFetch || $node->var instanceof Expr\StaticPropertyFetch)) {
-			foreach ($node->var instanceof Expr\StaticPropertyFetch ? ($node->var->class instanceof Node\Name ? [$this->index->name($unit['class'], $node->var->class)] : [null]) : $typeOf($node->var->var) as $class) {
-				foreach ($class === null || !CallGraphTypes::isObject($class) ? [] : $this->dispatch->instances($class) as $candidate) {
-					foreach ([$candidate, ...$this->index->ancestors($candidate)] as $ancestor) {
-						$declaration = $this->index->classes[$ancestor]['node'] ?? null;
-						foreach ($declaration?->getProperties() ?? [] as $property) {
-							foreach ($property->props as $prop) {
-								if ((!$node->var->name instanceof Node\Identifier || $prop->name->name === $node->var->name->name) && self::string($property->type)) {
-									$values[] = $node->expr;
-								}
-							}
-						}
-						foreach ($declaration?->getMethods() ?? [] as $method) {
-							foreach ($method->params as $param) {
-								if ($param->flags !== 0 && (!$node->var->name instanceof Node\Identifier || $param->var->name === $node->var->name->name) && self::string($param->type)) {
-									$values[] = $node->expr;
-								}
-							}
-						}
-					}
-				}
-			}
+		foreach ((new CallGraphWriteCoercions($this->index, $this->dispatch))->values($node, $unit['class'], $typeOf) as $types) {
+			array_push($edges, ...$this->edges->of($types, ['__toString'], $node, $caller, $miss, [], false));
 		}
 		$calls = [];
 		if (($node instanceof Expr\MethodCall || $node instanceof Expr\NullsafeMethodCall) && $node->name instanceof Node\Identifier) {

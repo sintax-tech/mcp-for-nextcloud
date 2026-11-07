@@ -47,4 +47,28 @@ final class CollectivesScalarEvidenceTest extends CallGraphTreeTestCase {
 			'Entry' => 'public function read(Fake $fake): void { strval($fake->value); }'], 'Entry::read');
 		$this->assertNotSame([], $r['unknown']);
 	}
+
+	/** @return void min/max select scalar operands without inventing an array-element unknown */
+	public function testMinMaxRequireProvedOperands(): void {
+		$ok = $this->reach(['Entry' => 'public function read(int $a): void { strval(min($a, 3)); strval(max([$a, 4])); }'], 'Entry::read');
+		$this->assertSame([], $ok['unknown']);
+		$bad = $this->reach(['Entry' => 'public function read($a): void { strval(min($a, 3)); }'], 'Entry::read');
+		$this->assertNotSame([], $bad['unknown']);
+	}
+
+	/** @return void a native union retains its object member instead of treating the whole declaration as scalar */
+	public function testNativeUnionKeepsObjectAlternative(): void {
+		$r = $this->reach([
+			'Text' => 'public function __toString(): string { (new Folder())->newFile("union"); return "a"; }',
+			'Entry' => 'public function read(string|Text $value): void { strval($value); }',
+		], 'Entry::read');
+		$this->assertContains('OCP\\Files\\Folder::newFile', $r['leaves']);
+	}
+
+	/** @return void a class merely naming its factory from does not receive a backed-enum return proof */
+	public function testNonEnumFactoryCannotBorrowTheNativeFromRule(): void {
+		$r = $this->reach(['Fake' => 'public static function from($value) { return mystery($value); }',
+			'Entry' => 'public function read(): void { strval(Fake::from("x")->value); }'], 'Entry::read');
+		$this->assertNotSame([], $r['unknown']);
+	}
 }

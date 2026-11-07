@@ -51,4 +51,19 @@ final class CollectivesFixedPointTest extends CallGraphTreeTestCase {
 		], 'Entry::read');
 		$this->assertContains('OCP\\Files\\Folder::newFile', $r['leaves']);
 	}
+
+	/** @return void array_map's provisional callback element does not poison a seeded append cycle */
+	public function testMappedSeedAndAppendReachTheirFixedPoint(): void {
+		$r = $this->reach([
+			'Item' => 'public function id(): int { return 1; }',
+			'Entry' => 'public function read(): void { $items = [new Item()]; $ids = array_unique(array_map(fn ($i) => $i->id(), $items)); $ids[] = 2; strval(implode(",", $ids)); }',
+		], 'Entry::read');
+		$this->assertSame([], $r['unknown']);
+	}
+
+	/** @return void a genuinely unknown callback result still survives array construction and append */
+	public function testUnprovedMapResultSurvivesAppend(): void {
+		$r = $this->reach(['Entry' => 'public function read($value): void { $items = [$value]; $ids = array_map(fn ($i) => $i, $items); $ids[] = 2; implode(",", $ids); }'], 'Entry::read');
+		$this->assertNotSame([], $r['unknown']);
+	}
 }

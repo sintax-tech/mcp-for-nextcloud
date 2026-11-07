@@ -19,13 +19,6 @@ use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
  * plan, the plan_state, the pre-call revalidation and the readback, so any concurrent change is detected.
  */
 class StructureState {
-	/**
-	 * Mutable Db/Form fields besides those projected in the header (title, owner, state, lock, lastUpdated, confirmation
-	 * selector and flag) and the ACL (access): the same accessors in Forms 5.3.0, 5.3.7, 5.4.0 and 5.4.1.
-	 */
-	private const FORM_FIELDS = ['hash', 'description', 'fileId', 'fileFormat', 'created', 'expires', 'isAnonymous', 'submitMultiple',
-		'allowEditSubmissions', 'showExpiration', 'submissionMessage', 'maxSubmissions', 'confirmationEmailSubject',
-		'confirmationEmailBody', 'allowComments'];
 	/** Most active questions, and most options per question, a structure operation reads. */
 	public const MAX_ITEMS = 200;
 
@@ -91,10 +84,15 @@ class StructureState {
 	 * @return string SHA-256 of the canonical field values
 	 */
 	private static function fingerprint(object $form): string {
-		$fields = [];
-		foreach (self::FORM_FIELDS as $field) {
-			$fields[$field] = $form->{'get' . ucfirst($field)}();
-		}
+		// Mutable Db/Form fields besides those projected in the header (title, owner, state, lock, lastUpdated, confirmation
+		// selector and flag) and the ACL (access): the same accessors in Forms 5.3.0, 5.3.7, 5.4.0 and 5.4.1.
+		$fields = ['hash' => $form->getHash(), 'description' => $form->getDescription(), 'fileId' => $form->getFileId(),
+			'fileFormat' => $form->getFileFormat(), 'created' => $form->getCreated(), 'expires' => $form->getExpires(),
+			'isAnonymous' => $form->getIsAnonymous(), 'submitMultiple' => $form->getSubmitMultiple(),
+			'allowEditSubmissions' => $form->getAllowEditSubmissions(), 'showExpiration' => $form->getShowExpiration(),
+			'submissionMessage' => $form->getSubmissionMessage(), 'maxSubmissions' => $form->getMaxSubmissions(),
+			'confirmationEmailSubject' => $form->getConfirmationEmailSubject(), 'confirmationEmailBody' => $form->getConfirmationEmailBody(),
+			'allowComments' => $form->getAllowComments()];
 		return hash('sha256', EditValues::json(EditValues::canonical($fields)));
 	}
 

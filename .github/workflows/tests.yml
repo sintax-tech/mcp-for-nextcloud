@@ -73,3 +73,31 @@ jobs:
         if: always()
         run: php scripts/ci/phpunit.php verify "$RUNNER_TEMP/phpunit"
         working-directory: mcp
+
+  # ubuntu-latest (26.04) ships libxml2 2.15, whose HTML5 tokenizer is the only parser the phpunit job sees.
+  # Ubuntu 24.04, Debian 12/13 and the official Nextcloud images still parse HTML with legacy libxml2 (< 2.14).
+  # Only the Mail HTML draft sanitizer parses HTML, so one PHP version and its focal tests cover that parser.
+  legacy-libxml:
+    name: Mail HTML on legacy libxml (PHP 8.3, Ubuntu 24.04)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: Set up PHP 8.3
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2 (2.40.0)
+        with:
+          php-version: '8.3'
+          extensions: mbstring, intl, sqlite3, pdo_sqlite
+          coverage: none
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress
+        working-directory: mcp
+      - name: Prove the runner still has the legacy HTML parser
+        run: |
+          php -r 'echo LIBXML_DOTTED_VERSION, PHP_EOL; exit(LIBXML_VERSION < 21400 ? 0 : 1);'
+      - name: Run the Mail HTML draft tests
+        run: vendor/bin/phpunit --fail-on-empty-test-suite --filter MailDraftHtml tests/Unit
+        working-directory: mcp

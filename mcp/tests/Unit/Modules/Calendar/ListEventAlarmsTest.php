@@ -52,7 +52,7 @@ final class ListEventAlarmsTest extends CalendarTestCase {
 		$expected = [];
 		for ($i = 1; $i <= $count; $i++) {
 			$alarms .= self::alarm('DISPLAY', '-PT' . $i . 'M', 'Reminder ' . $i);
-			$expected[] = ['minutes_before' => $i, 'description' => 'Reminder ' . $i];
+			$expected[] = ['minutesBefore' => $i, 'description' => 'Reminder ' . $i];
 		}
 		$this->addEvent(1, $alarms);
 		$item = $this->items(self::PERSONAL)[0];
@@ -67,7 +67,7 @@ final class ListEventAlarmsTest extends CalendarTestCase {
 			. self::alarm('DISPLAY', '-PT2M', 'Secret end', ';RELATED=END')
 			. self::alarm('DISPLAY', '20260311T090000Z', 'Secret absolute', ';VALUE=DATE-TIME'));
 		$item = $this->items(self::PERSONAL)[0];
-		self::assertSame([['minutes_before' => 5, 'description' => 'Visible']], $item['alarms']);
+		self::assertSame([['minutesBefore' => 5, 'description' => 'Visible']], $item['alarms']);
 		self::assertSame(3, $item['otherAlarms']);
 		self::assertStringNotContainsString('Secret', json_encode($item, JSON_THROW_ON_ERROR));
 	}
@@ -89,8 +89,8 @@ final class ListEventAlarmsTest extends CalendarTestCase {
 			. self::alarm('DISPLAY', '-PT1M', 'Override') . "END:VEVENT";
 		$this->store->addObject(1, 'r.ics', self::ics($master, $override));
 		self::assertSame([
-			[['minutes_before' => 5, 'description' => 'Master']],
-			[['minutes_before' => 1, 'description' => 'Override']],
+			[['minutesBefore' => 5, 'description' => 'Master']],
+			[['minutesBefore' => 1, 'description' => 'Override']],
 		], array_column($this->items(self::PERSONAL), 'alarms'));
 	}
 

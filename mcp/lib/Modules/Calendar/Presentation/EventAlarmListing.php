@@ -15,11 +15,11 @@ use Sabre\VObject\Component\VEvent;
 /** Projects occurrence reminders without exposing confidential event content. */
 final class EventAlarmListing {
 	/** Fixed English description and guide note, matching the tool catalog convention. */
-	public const NOTE = 'calendar_list_events includes alarms (minutes_before and description) for DISPLAY reminders relative to the start, and otherAlarms counts other reminders without exposing their details. Confidential events do not expose reminders.';
+	public const NOTE = 'calendar_list_events includes alarms (minutesBefore and description) for DISPLAY reminders relative to the start, and otherAlarms counts other reminders without exposing their details. Confidential events do not expose reminders.';
 
 	/** @return string reminder guidance in the authenticated user's language */
 	public static function note(): string {
-		return Translator::t('calendar_list_events includes alarms (minutes_before and description) for DISPLAY reminders relative to the start, and otherAlarms counts other reminders without exposing their details. Confidential events do not expose reminders.');
+		return Translator::t('calendar_list_events includes alarms (minutesBefore and description) for DISPLAY reminders relative to the start, and otherAlarms counts other reminders without exposing their details. Confidential events do not expose reminders.');
 	}
 
 	/** Static projection only. */
@@ -44,7 +44,7 @@ final class EventAlarmListing {
 			}
 			$seconds = -EventAlarms::offset($alarm);
 			$alarms[] = [
-				'minutes_before' => $seconds % 60 === 0 ? intdiv($seconds, 60) : $seconds / 60,
+				'minutesBefore' => $seconds % 60 === 0 ? intdiv($seconds, 60) : $seconds / 60,
 				'description' => (string)($alarm->DESCRIPTION ?? ''),
 			];
 		}

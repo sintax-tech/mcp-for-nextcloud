@@ -1155,7 +1155,7 @@
                     {
                         "name": "calendar_list_events",
                         "title": "List events",
-                        "description": "Lists events in a time range (default: next 7 days). calendar_list_events includes alarms (minutes_before and description) for DISPLAY reminders relative to the start, and otherAlarms counts other reminders without exposing their details. Confidential events do not expose reminders.",
+                        "description": "Lists events in a time range (default: next 7 days). calendar_list_events includes alarms (minutesBefore and description) for DISPLAY reminders relative to the start, and otherAlarms counts other reminders without exposing their details. Confidential events do not expose reminders.",
                         "inputSchema": {
                             "type": "object",
                             "properties": {

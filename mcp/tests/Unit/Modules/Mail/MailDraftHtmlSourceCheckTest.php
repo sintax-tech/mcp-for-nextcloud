@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Modules\Mail;
 
 use OCA\Mcp\Modules\Mail\Creation\{MailDraftHtml, MailDraftHtmlPurifier};
+use OCA\Mcp\Modules\Mail\Presentation\{MailDraftHtmlView, MailDraftMessages};
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -43,6 +44,22 @@ final class MailDraftHtmlSourceCheckTest extends TestCase {
 		$this->assertSame('<p>ok</p>', $sanitizer->sanitize('<!-- &#x80; title title --><p>ok</p>')['body']);
 		$this->assertSame('<p>ok</p>', $sanitizer->sanitize('<script>a&#x80;</script><p title="a">ok</p>')['body']);
 		$this->assertSame('<p>ok</p>', $sanitizer->sanitize('<p title="&#x41;" lang="pt">ok</p>')['body']);
+	}
+
+	/** @return void */
+	public function testLooseAmpersandsKeepTheTextAndTheDestinationShownInThePlan(): void {
+		$result = $this->sanitizer()->sanitize('<p>A & B, AT&T, R&D, &copy 2026</p><p><a href="https://example.com/?a=1&b=2&lang=pt">x</a></p>');
+		$this->assertSame('<p>A &amp; B, AT&amp;T, R&amp;D, &amp;copy 2026</p><p><a href="https://example.com/?a=1&amp;b=2&amp;lang=pt">x</a></p>', $result['body']);
+		$this->assertSame(0, array_sum($result['removed']));
+		$fields = MailDraftHtmlView::fields($result);
+		$this->assertStringContainsString('A & B, AT&T, R&D, &copy 2026', $fields['preview']);
+		$this->assertSame([['text' => 'x', 'href' => 'https://example.com/?a=1&b=2&lang=pt', 'differs' => true]], $fields['links']);
+		$render = implode("\n", MailDraftHtmlView::lines(['body' => $result['body']] + $fields));
+		$this->assertStringContainsString(MailDraftMessages::htmlUnchanged(), $render);
+		// The plan escapes Markdown; it shows the decoded destination and text, not the &amp; notation.
+		$this->assertStringContainsString('example.com/?a=1\\&b=2\\&lang=pt', $render);
+		$this->assertStringContainsString('A \\& B, AT\\&T, R\\&D, \\&copy 2026', $render);
+		$this->assertSame($result['body'], $this->sanitizer()->sanitize($result['body'])['body']);
 	}
 
 	/** @return MailDraftHtml sanitizer with an identity engine */

@@ -10,10 +10,11 @@ use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Mail\Presentation\MailDraftMessages;
 
 /**
- * Refuses source constructs that libxml parsers recover differently, without relying on their diagnostics.
+ * Refuses or escapes source constructs that libxml parsers recover differently, without relying on their diagnostics.
  *
  * Legacy libxml reports duplicate attributes and character references without a semicolon; libxml 2.14 and later
  * (HTML5 tokenizer) recover both silently, so the check reads the source itself and gives the same answer on both.
+ * Loose ampersands, which legacy libxml refused, are escaped as text.
  */
 final class MailDraftHtmlSourceCheck {
 	/** Static check only. @return void */
@@ -35,7 +36,7 @@ final class MailDraftHtmlSourceCheck {
 	 * Checks text and attribute values outside comments and discarded subtrees, whose content is never saved.
 	 *
 	 * @param string $html UTF-8 source fragment
-	 * @return string the source to parse
+	 * @return string the source to parse, with loose ampersands escaped
 	 * @throws ToolFailure for a duplicate attribute or an ambiguous character reference
 	 */
 	public static function prepare(string $html): string {
@@ -85,10 +86,10 @@ final class MailDraftHtmlSourceCheck {
 	}
 
 	/**
-	 * Checks every character reference of a text run or attribute value.
+	 * Checks every character reference of a text run or attribute value and escapes loose ampersands.
 	 *
 	 * @param string $text text or attribute value as written
-	 * @return string the text to parse
+	 * @return string the text to parse, with the same meaning on every parser
 	 * @throws ToolFailure for an ambiguous character reference
 	 */
 	private static function references(string $text): string {
@@ -98,9 +99,14 @@ final class MailDraftHtmlSourceCheck {
 	}
 
 	/**
-	 * A numeric reference needs its semicolon and a code point both parsers decode alike.
+	 * Escapes a loose ampersand as text; a numeric reference needs its semicolon and a code point both parsers decode alike.
 	 *
-	 * NUL, C1 controls (which HTML5 remaps to windows-1252), surrogates and values beyond Unicode are refused.
+	 * An ampersand that starts no reference ("A & B", "AT&T", "?a=1&b=2") becomes &amp;, so the shown text and the
+	 * decoded attribute value stay exactly as written. A named reference is kept only with its semicolon and a name
+	 * both parsers know (HTML 4.01 and &apos;); any other name, and a name without semicolon such as "&copy 2026" or
+	 * "&amp", is kept as literal text, because legacy libxml leaves unknown names literal while HTML5 decodes its own
+	 * names and legacy prefixes. NUL, C1 controls (which HTML5 remaps to windows-1252), surrogates and values beyond
+	 * Unicode are refused.
 	 *
 	 * @param string $reference text after the ampersand that may continue a reference
 	 * @return string the reference to parse
@@ -108,7 +114,9 @@ final class MailDraftHtmlSourceCheck {
 	 */
 	private static function reference(string $reference): string {
 		if (!str_starts_with($reference, '#')) {
-			return '&' . $reference;
+			$named = '&' . $reference;
+			return str_ends_with($reference, ';') && html_entity_decode($named, ENT_QUOTES | ENT_XHTML, 'UTF-8') !== $named
+				? $named : '&amp;' . $reference;
 		}
 		if (preg_match('/^#(?:[xX]0*([0-9a-fA-F]{1,6})|0*([0-9]{1,7}));$/D', $reference, $digits) !== 1) {
 			throw new ToolFailure(MailDraftMessages::htmlInvalid());

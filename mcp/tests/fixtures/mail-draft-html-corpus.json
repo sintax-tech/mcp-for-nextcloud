@@ -608,5 +608,35 @@
         ],
         "elementTotal": 1,
         "reportChanged": true
+    },
+    {
+        "name": "loose-ampersand-text",
+        "input": "<p>A & B, AT&T e R&D</p>",
+        "body": "<p>A &amp; B, AT&amp;T e R&amp;D</p>"
+    },
+    {
+        "name": "loose-ampersand-href",
+        "input": "<p><a href=\"https://example.com/?a=1&b=2&lang=pt\">x</a></p>",
+        "body": "<p><a href=\"https://example.com/?a=1&amp;b=2&amp;lang=pt\">x</a></p>"
+    },
+    {
+        "name": "named-reference-literal",
+        "input": "<p>&copy 2026 &amp &check; &AMP;</p>",
+        "body": "<p>&amp;copy 2026 &amp;amp &amp;check; &amp;AMP;</p>"
+    },
+    {
+        "name": "named-reference-kept",
+        "input": "<p>&lt;b&gt; &amp; &apos; &copy; &hellip;</p>",
+        "body": "<p>&lt;b&gt; &amp; ' © …</p>"
+    },
+    {
+        "name": "c1-reference",
+        "input": "<p>&#x80;</p>",
+        "refused": true
+    },
+    {
+        "name": "duplicate-attribute-case",
+        "input": "<p title=\"one\" TITLE=\"two\">ok</p>",
+        "refused": true
     }
 ]

@@ -45,7 +45,7 @@ final class McpTablesRowsTest extends IntegrationTestCase {
 	}
 
 	/**
-	 * Every user and target, two rows per page, against RowService, and the database unchanged.
+	 * Every user and target, two rows per page, against RowService in the same actor request, and the database unchanged.
 	 *
 	 * @return void
 	 */
@@ -63,8 +63,9 @@ final class McpTablesRowsTest extends IntegrationTestCase {
 		];
 		$kinds = ['same' => 0, 'whole' => 0, 'cut' => 0];
 		foreach ($cases as [$uid, $target]) {
-			$mcp = self::rows(RowsActor::run($uid, 'pages', ['arguments' => $target + ['limit' => 2]]));
-			$native = RowsActor::run($uid, 'native', $target);
+			$comparison = RowsActor::run($uid, 'compare', ['arguments' => $target + ['limit' => 2]]);
+			$mcp = self::rows($comparison);
+			$native = $comparison['native'];
 			$this->assertArrayHasKey('rows', $native, "$uid native");
 			$this->assertSame(array_column($native['rows'], 'id'), array_column($mcp, 'id'), "$uid " . json_encode($target) . ': rows and order');
 			foreach ($native['rows'] as $i => $row) {

@@ -88,6 +88,7 @@ path = [
   "mcp/tests/fixtures/calendar-characterization.json",
   "mcp/tests/fixtures/contacts-characterization.json",
   "mcp/tests/fixtures/mail-draft-html-corpus.json",
+  "mcp/tests/fixtures/mail-draft-html-parity.json",
   "mcp/tests/fixtures/nextcloud-api/collectives/collectives-admin-sources.json",
   "mcp/tests/fixtures/nextcloud-api/collectives/collectives-ast-subset.json",
   "mcp/tests/fixtures/nextcloud-api/collectives/collectives-external-leaves.json",

@@ -1,0 +1,2028 @@
+[
+    {
+        "input": "<!--?xml encoding=\"UTF-8\"--><p>ok</p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "comment": 1
+        }
+    },
+    {
+        "input": "<?xml encoding=\"UTF-8\"><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<?xml encoding=\"UTF-8\"?><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<!--?xml encoding=\"UTF-8\"--><!--?xml encoding=\"UTF-8\"--><p>ok</p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "comment": 2
+        }
+    },
+    {
+        "input": "<p><a href=\"jav&#x61script:\">ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a href='jav&#x61script:'>ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a href=jav&#x61script:>ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<p>jav&#x61script:</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a href=\"&#106;avascript:\">ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "javascript:"
+        ]
+    },
+    {
+        "input": "<p><a href='&#106;avascript:'>ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "javascript:"
+        ]
+    },
+    {
+        "input": "<p><a href=&#106;avascript:>ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "javascript:"
+        ]
+    },
+    {
+        "input": "<p>&#106;avascript:</p>",
+        "body": "<p>javascript:</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=\"&#0000106\">ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a href='&#0000106'>ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a href=&#0000106>ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<p>&#0000106</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a href=\"&#x6A\">ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a href='&#x6A'>ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a href=&#x6A>ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<p>&#x6A</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a href=\"javascript&colon;\">ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "javascript&colon;"
+        ]
+    },
+    {
+        "input": "<p><a href='javascript&colon;'>ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "javascript&colon;"
+        ]
+    },
+    {
+        "input": "<p><a href=javascript&colon;>ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "javascript&colon;"
+        ]
+    },
+    {
+        "input": "<p>javascript&colon;</p>",
+        "body": "<p>javascript&amp;colon;</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=\"java&Tab;script:\">ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "java&Tab;script:"
+        ]
+    },
+    {
+        "input": "<p><a href='java&Tab;script:'>ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "java&Tab;script:"
+        ]
+    },
+    {
+        "input": "<p><a href=java&Tab;script:>ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "java&Tab;script:"
+        ]
+    },
+    {
+        "input": "<p>java&Tab;script:</p>",
+        "body": "<p>java&amp;Tab;script:</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=\"java&NewLine;script:\">ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "java&NewLine;script:"
+        ]
+    },
+    {
+        "input": "<p><a href='java&NewLine;script:'>ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "java&NewLine;script:"
+        ]
+    },
+    {
+        "input": "<p><a href=java&NewLine;script:>ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "java&NewLine;script:"
+        ]
+    },
+    {
+        "input": "<p>java&NewLine;script:</p>",
+        "body": "<p>java&amp;NewLine;script:</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=\"&amp;#x61;\">ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "&#x61;"
+        ]
+    },
+    {
+        "input": "<p><a href='&amp;#x61;'>ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "&#x61;"
+        ]
+    },
+    {
+        "input": "<p><a href=&amp;#x61;>ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "&#x61;"
+        ]
+    },
+    {
+        "input": "<p>&amp;#x61;</p>",
+        "body": "<p>&amp;#x61;</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=\"https://a.test/?a=1&b=2\">ok</a></p>",
+        "body": "<p><a href=\"https://a.test/?a=1&amp;b=2\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href='https://a.test/?a=1&b=2'>ok</a></p>",
+        "body": "<p><a href=\"https://a.test/?a=1&amp;b=2\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=https://a.test/?a=1&b=2>ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<p>https://a.test/?a=1&b=2</p>",
+        "body": "<p>https://a.test/?a=1&amp;b=2</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=\"https://a.test/?q=&colon;&Tab;&NewLine;\">ok</a></p>",
+        "body": "<p><a href=\"https://a.test/?q=&amp;colon;&amp;Tab;&amp;NewLine;\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href='https://a.test/?q=&colon;&Tab;&NewLine;'>ok</a></p>",
+        "body": "<p><a href=\"https://a.test/?q=&amp;colon;&amp;Tab;&amp;NewLine;\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=https://a.test/?q=&colon;&Tab;&NewLine;>ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<p>https://a.test/?q=&colon;&Tab;&NewLine;</p>",
+        "body": "<p>https://a.test/?q=&amp;colon;&amp;Tab;&amp;NewLine;</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=\"https://a.test/?q=&amp;#x61;\">ok</a></p>",
+        "body": "<p><a href=\"https://a.test/?q=&amp;#x61;\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href='https://a.test/?q=&amp;#x61;'>ok</a></p>",
+        "body": "<p><a href=\"https://a.test/?q=&amp;#x61;\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=https://a.test/?q=&amp;#x61;>ok</a></p>",
+        "refused": true
+    },
+    {
+        "input": "<p>https://a.test/?q=&amp;#x61;</p>",
+        "body": "<p>https://a.test/?q=&amp;#x61;</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=\"&#x09;javascript:\">ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "\tjavascript:"
+        ]
+    },
+    {
+        "input": "<p><a href='&#x09;javascript:'>ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "\tjavascript:"
+        ]
+    },
+    {
+        "input": "<p><a href=&#x09;javascript:>ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "\tjavascript:"
+        ]
+    },
+    {
+        "input": "<p>&#x09;javascript:</p>",
+        "body": "<p>\tjavascript:</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=\"jav&#97;script:\">ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "javascript:"
+        ]
+    },
+    {
+        "input": "<p><a href='jav&#97;script:'>ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "javascript:"
+        ]
+    },
+    {
+        "input": "<p><a href=jav&#97;script:>ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "javascript:"
+        ]
+    },
+    {
+        "input": "<p>jav&#97;script:</p>",
+        "body": "<p>javascript:</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=\"&#x6a;avascript:\">ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "javascript:"
+        ]
+    },
+    {
+        "input": "<p><a href='&#x6a;avascript:'>ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "javascript:"
+        ]
+    },
+    {
+        "input": "<p><a href=&#x6a;avascript:>ok</a></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unsafe-url": 1,
+            "unwrapped-element": 1
+        },
+        "removedUrls": [
+            "javascript:"
+        ]
+    },
+    {
+        "input": "<p>&#x6a;avascript:</p>",
+        "body": "<p>javascript:</p>",
+        "removed": {}
+    },
+    {
+        "input": "<script>a&b &#x80; &Tab;</script><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<script><p title=\"x\" title=\"y\">ok</p></script><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<script></script x=\"y\"><p>&Tab;</p></script><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<style>a&b &#x80; &Tab;</style><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<style><p title=\"x\" title=\"y\">ok</p></style><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<style></style x=\"y\"><p>&Tab;</p></style><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<head>a&b &#x80; &Tab;</head><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><p title=\"x\" title=\"y\">ok</p></head><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<head></head x=\"y\"><p>&Tab;</p></head><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<textarea>a&b &#x80; &Tab;</textarea><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<textarea><p title=\"x\" title=\"y\">ok</p></textarea><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<textarea></textarea x=\"y\"><p>&Tab;</p></textarea><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<svg>a&b &#x80; &Tab;</svg><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<svg><p title=\"x\" title=\"y\">ok</p></svg><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<svg></svg x=\"y\"><p>&Tab;</p></svg><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<template>a&b &#x80; &Tab;</template><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><p title=\"x\" title=\"y\">ok</p></template><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<template></template x=\"y\"><p>&Tab;</p></template><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<noscript>a&b &#x80; &Tab;</noscript><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<noscript><p title=\"x\" title=\"y\">ok</p></noscript><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<noscript></noscript x=\"y\"><p>&Tab;</p></noscript><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<object>a&b &#x80; &Tab;</object><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<object><p title=\"x\" title=\"y\">ok</p></object><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<object></object x=\"y\"><p>&Tab;</p></object><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<!--[if IE]> &Tab; &#x80; <![endif]--><p>ok</p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "comment": 1
+        }
+    },
+    {
+        "input": "<![if IE]><p>A & B</p><![endif]>",
+        "body": "<p>A &amp; B</p>",
+        "removed": {
+            "conditional": 2
+        }
+    },
+    {
+        "input": "<p title=\"a>b & c\">ok</p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "attribute": 1
+        }
+    },
+    {
+        "input": "<p title=\"a>b & c\" TITLE=two>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p title=a/b title=c>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p title=a/title=c>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p/title=a/title=b>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p title=\"a\"title=\"b\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p title=one/ TITLE=two>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p title=one\fTITLE=two>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p><a href=https://a.test/>ok</a></p>",
+        "body": "<p><a href=\"https://a.test/\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A < B & C</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A <3 & B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A <p & B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p a=\"x>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p a=x\" title=y>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p a=\"x\" junk=\"y\" >ok</p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "attribute": 2
+        }
+    },
+    {
+        "input": "<p>ok</p></p>",
+        "refused": true
+    },
+    {
+        "input": "<p>ok</p><!bogus>",
+        "refused": true
+    },
+    {
+        "input": "<p>ok</p><!-->secret",
+        "refused": true
+    },
+    {
+        "input": "<p>ok</p><!--->secret",
+        "refused": true
+    },
+    {
+        "input": "<p>ok</p><!-- foo --!>secret",
+        "refused": true
+    },
+    {
+        "input": "<p>ok</p><!---->",
+        "body": "<p>ok</p>",
+        "removed": {
+            "comment": 1
+        }
+    },
+    {
+        "input": "<p>ok</p><a href=\"https://a.test/?x=&apos;\">z</a>",
+        "body": "<p>ok</p><a href=\"https://a.test/?x='\">z</a>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&#1;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#8;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#9;B</p>",
+        "body": "<p>A\tB</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&#10;B</p>",
+        "body": "<p>A\nB</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&#11;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#12;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#13;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#14;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#31;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#32;B</p>",
+        "body": "<p>A B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&#127;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#128;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#159;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#160;B</p>",
+        "body": "<p>A B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&#55295;B</p>",
+        "body": "<p>A퟿B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&#55296;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#57343;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#57344;B</p>",
+        "body": "<p>AB</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A&#65534;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#65535;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#1114111;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A&#1114112;B</p>",
+        "refused": true
+    },
+    {
+        "input": "<img><p>A &copy B &Tab; &amp</p></img><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<img><p>A&#106B</p></img><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<img><p title=one title=two>ok</p></img><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<img><a href=\"https://a.test/?q=&Tab;\">ok</a></img><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<img><a href=\"jav&#x61script:alert(1)\">ok</a></img><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<meta><p>A &copy B &Tab; &amp</p></meta><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<meta><p>A&#106B</p></meta><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<meta><p title=one title=two>ok</p></meta><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<meta><a href=\"https://a.test/?q=&Tab;\">ok</a></meta><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<meta><a href=\"jav&#x61script:alert(1)\">ok</a></meta><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<link><p>A &copy B &Tab; &amp</p></link><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<link><p>A&#106B</p></link><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<link><p title=one title=two>ok</p></link><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<link><a href=\"https://a.test/?q=&Tab;\">ok</a></link><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<link><a href=\"jav&#x61script:alert(1)\">ok</a></link><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<base><p>A &copy B &Tab; &amp</p></base><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<base><p>A&#106B</p></base><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<base><p title=one title=two>ok</p></base><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<base><a href=\"https://a.test/?q=&Tab;\">ok</a></base><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<base><a href=\"jav&#x61script:alert(1)\">ok</a></base><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<source><p>A &copy B &Tab; &amp</p></source><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<source><p>A&#106B</p></source><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<source><p title=one title=two>ok</p></source><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<source><a href=\"https://a.test/?q=&Tab;\">ok</a></source><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<source><a href=\"jav&#x61script:alert(1)\">ok</a></source><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<embed><p>A &copy B &Tab; &amp</p></embed><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<embed><p>A&#106B</p></embed><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<embed><p title=one title=two>ok</p></embed><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<embed><a href=\"https://a.test/?q=&Tab;\">ok</a></embed><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<embed><a href=\"jav&#x61script:alert(1)\">ok</a></embed><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<input><p>A &copy B &Tab; &amp</p></input><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<input><p>A&#106B</p></input><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<input><p title=one title=two>ok</p></input><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<input><a href=\"https://a.test/?q=&Tab;\">ok</a></input><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<input><a href=\"jav&#x61script:alert(1)\">ok</a></input><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<br><p>A &copy B &Tab; &amp</p></br><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<br><p>A&#106B</p></br><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<br><p title=one title=two>ok</p></br><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<br><a href=\"https://a.test/?q=&Tab;\">ok</a></br><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<br><a href=\"jav&#x61script:alert(1)\">ok</a></br><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<hr><p>A &copy B &Tab; &amp</p></hr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<hr><p>A&#106B</p></hr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<hr><p title=one title=two>ok</p></hr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<hr><a href=\"https://a.test/?q=&Tab;\">ok</a></hr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<hr><a href=\"jav&#x61script:alert(1)\">ok</a></hr><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<script><p>A &copy B &Tab; &amp</p></script><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<script><p>A&#106B</p></script><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<script><p title=one title=two>ok</p></script><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<script><a href=\"https://a.test/?q=&Tab;\">ok</a></script><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<script><a href=\"jav&#x61script:alert(1)\">ok</a></script><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<style><p>A &copy B &Tab; &amp</p></style><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<style><p>A&#106B</p></style><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<style><p title=one title=two>ok</p></style><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<style><a href=\"https://a.test/?q=&Tab;\">ok</a></style><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<style><a href=\"jav&#x61script:alert(1)\">ok</a></style><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<textarea><p>A &copy B &Tab; &amp</p></textarea><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<textarea><p>A&#106B</p></textarea><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<textarea><p title=one title=two>ok</p></textarea><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<textarea><a href=\"https://a.test/?q=&Tab;\">ok</a></textarea><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<textarea><a href=\"jav&#x61script:alert(1)\">ok</a></textarea><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<title><p>A &copy B &Tab; &amp</p></title><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<title><p>A&#106B</p></title><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<title><p title=one title=two>ok</p></title><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<title><a href=\"https://a.test/?q=&Tab;\">ok</a></title><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<title><a href=\"jav&#x61script:alert(1)\">ok</a></title><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<iframe><p>A &copy B &Tab; &amp</p></iframe><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<iframe><p>A&#106B</p></iframe><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<iframe><p title=one title=two>ok</p></iframe><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<iframe><a href=\"https://a.test/?q=&Tab;\">ok</a></iframe><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<iframe><a href=\"jav&#x61script:alert(1)\">ok</a></iframe><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<object><p>A &copy B &Tab; &amp</p></object><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<object><p>A&#106B</p></object><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<object><p title=one title=two>ok</p></object><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<object><a href=\"https://a.test/?q=&Tab;\">ok</a></object><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<object><a href=\"jav&#x61script:alert(1)\">ok</a></object><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<svg><p>A &copy B &Tab; &amp</p></svg><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<svg><p>A&#106B</p></svg><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<svg><p title=one title=two>ok</p></svg><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<svg><a href=\"https://a.test/?q=&Tab;\">ok</a></svg><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<svg><a href=\"jav&#x61script:alert(1)\">ok</a></svg><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<math><p>A &copy B &Tab; &amp</p></math><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<math><p>A&#106B</p></math><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<math><p title=one title=two>ok</p></math><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<math><a href=\"https://a.test/?q=&Tab;\">ok</a></math><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<math><a href=\"jav&#x61script:alert(1)\">ok</a></math><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form><p>A &copy B &Tab; &amp</p></form><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<form><p>A&#106B</p></form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form><p title=one title=two>ok</p></form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<form><a href=\"https://a.test/?q=&Tab;\">ok</a></form><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<form><a href=\"jav&#x61script:alert(1)\">ok</a></form><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><p>A &copy B &Tab; &amp</p></head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><p>A&#106B</p></head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><p title=one title=two>ok</p></head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><a href=\"https://a.test/?q=&Tab;\">ok</a></head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head><a href=\"jav&#x61script:alert(1)\">ok</a></head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><p>A &copy B &Tab; &amp</p></template><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<template><p>A&#106B</p></template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><p title=one title=two>ok</p></template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><a href=\"https://a.test/?q=&Tab;\">ok</a></template><p>end</p>",
+        "body": "<p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<template><a href=\"jav&#x61script:alert(1)\">ok</a></template><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<noscript><p>A &copy B &Tab; &amp</p></noscript><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<noscript><p>A&#106B</p></noscript><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<noscript><p title=one title=two>ok</p></noscript><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<noscript><a href=\"https://a.test/?q=&Tab;\">ok</a></noscript><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<noscript><a href=\"jav&#x61script:alert(1)\">ok</a></noscript><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p title=a/title=b>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p /title=a/title=b>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p href=\"https://one\"/href=\"https://two\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p title=one\u000bTITLE=two>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p title=one\rTITLE=two>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p title=one=two>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p title=x\"a&Tab;>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p href=https://a.test/?x=one\"&Tab;>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p title=\"a & b > c\">ok</p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "attribute": 1
+        }
+    },
+    {
+        "input": "<p title=\"a>b\" title=\"c\">ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<a title=a/title=b>ok</a>",
+        "refused": true
+    },
+    {
+        "input": "<a /title=a/title=b>ok</a>",
+        "refused": true
+    },
+    {
+        "input": "<a title=\"a\"title=\"b\">ok</a>",
+        "refused": true
+    },
+    {
+        "input": "<a href=\"https://one\"/href=\"https://two\">ok</a>",
+        "refused": true
+    },
+    {
+        "input": "<a title=one\u000bTITLE=two>ok</a>",
+        "refused": true
+    },
+    {
+        "input": "<a title=one\rTITLE=two>ok</a>",
+        "refused": true
+    },
+    {
+        "input": "<a title=one\fTITLE=two>ok</a>",
+        "refused": true
+    },
+    {
+        "input": "<a title=one=two>ok</a>",
+        "refused": true
+    },
+    {
+        "input": "<a title=x\"a&Tab;>ok</a>",
+        "refused": true
+    },
+    {
+        "input": "<a href=https://a.test/?x=one\"&Tab;>ok</a>",
+        "refused": true
+    },
+    {
+        "input": "<a title=\"a & b > c\">ok</a>",
+        "body": "<p>ok</p>",
+        "bodyHtml5": "ok",
+        "removed": {
+            "attribute": 1,
+            "unwrapped-element": 1
+        }
+    },
+    {
+        "input": "<a title=\"a>b\" title=\"c\">ok</a>",
+        "refused": true
+    },
+    {
+        "input": "<div title=a/title=b>ok</div>",
+        "refused": true
+    },
+    {
+        "input": "<div /title=a/title=b>ok</div>",
+        "refused": true
+    },
+    {
+        "input": "<div title=\"a\"title=\"b\">ok</div>",
+        "refused": true
+    },
+    {
+        "input": "<div href=\"https://one\"/href=\"https://two\">ok</div>",
+        "refused": true
+    },
+    {
+        "input": "<div title=one\u000bTITLE=two>ok</div>",
+        "refused": true
+    },
+    {
+        "input": "<div title=one\rTITLE=two>ok</div>",
+        "refused": true
+    },
+    {
+        "input": "<div title=one\fTITLE=two>ok</div>",
+        "refused": true
+    },
+    {
+        "input": "<div title=one=two>ok</div>",
+        "refused": true
+    },
+    {
+        "input": "<div title=x\"a&Tab;>ok</div>",
+        "refused": true
+    },
+    {
+        "input": "<div href=https://a.test/?x=one\"&Tab;>ok</div>",
+        "refused": true
+    },
+    {
+        "input": "<div title=\"a & b > c\">ok</div>",
+        "body": "<div>ok</div>",
+        "removed": {
+            "attribute": 1
+        }
+    },
+    {
+        "input": "<div title=\"a>b\" title=\"c\">ok</div>",
+        "refused": true
+    },
+    {
+        "input": "<span title=a/title=b>ok</span>",
+        "refused": true
+    },
+    {
+        "input": "<span /title=a/title=b>ok</span>",
+        "refused": true
+    },
+    {
+        "input": "<span title=\"a\"title=\"b\">ok</span>",
+        "refused": true
+    },
+    {
+        "input": "<span href=\"https://one\"/href=\"https://two\">ok</span>",
+        "refused": true
+    },
+    {
+        "input": "<span title=one\u000bTITLE=two>ok</span>",
+        "refused": true
+    },
+    {
+        "input": "<span title=one\rTITLE=two>ok</span>",
+        "refused": true
+    },
+    {
+        "input": "<span title=one\fTITLE=two>ok</span>",
+        "refused": true
+    },
+    {
+        "input": "<span title=one=two>ok</span>",
+        "refused": true
+    },
+    {
+        "input": "<span title=x\"a&Tab;>ok</span>",
+        "refused": true
+    },
+    {
+        "input": "<span href=https://a.test/?x=one\"&Tab;>ok</span>",
+        "refused": true
+    },
+    {
+        "input": "<span title=\"a & b > c\">ok</span>",
+        "body": "<span>ok</span>",
+        "removed": {
+            "attribute": 1
+        }
+    },
+    {
+        "input": "<span title=\"a>b\" title=\"c\">ok</span>",
+        "refused": true
+    },
+    {
+        "input": "<pre title=a/title=b>ok</pre>",
+        "refused": true
+    },
+    {
+        "input": "<pre /title=a/title=b>ok</pre>",
+        "refused": true
+    },
+    {
+        "input": "<pre title=\"a\"title=\"b\">ok</pre>",
+        "refused": true
+    },
+    {
+        "input": "<pre href=\"https://one\"/href=\"https://two\">ok</pre>",
+        "refused": true
+    },
+    {
+        "input": "<pre title=one\u000bTITLE=two>ok</pre>",
+        "refused": true
+    },
+    {
+        "input": "<pre title=one\rTITLE=two>ok</pre>",
+        "refused": true
+    },
+    {
+        "input": "<pre title=one\fTITLE=two>ok</pre>",
+        "refused": true
+    },
+    {
+        "input": "<pre title=one=two>ok</pre>",
+        "refused": true
+    },
+    {
+        "input": "<pre title=x\"a&Tab;>ok</pre>",
+        "refused": true
+    },
+    {
+        "input": "<pre href=https://a.test/?x=one\"&Tab;>ok</pre>",
+        "refused": true
+    },
+    {
+        "input": "<pre title=\"a & b > c\">ok</pre>",
+        "body": "<pre>ok</pre>",
+        "removed": {
+            "attribute": 1
+        }
+    },
+    {
+        "input": "<pre title=\"a>b\" title=\"c\">ok</pre>",
+        "refused": true
+    },
+    {
+        "input": "<p>ok</p><!--><p>A &copy B &Tab; &#106</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>ok</p><!---><p>A &copy B &Tab; &#106</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>ok</p><!-- --!><p>A &copy B &Tab; &#106</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>ok</p><!--a<!--><p>A &copy B &Tab; &#106</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>ok</p><!--a--!><p>A &copy B &Tab; &#106</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>ok</p><!bogus><p>A &copy B &Tab; &#106</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>ok</p><![CDATA[<p>A &copy B &Tab; &#106</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>ok</p><plaintext><p>A &copy B &Tab; &#106</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>ok</p><xmp><p>A &copy B &Tab; &#106</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>ok</p><listing><p>A &copy B &Tab; &#106</p>",
+        "refused": true
+    },
+    {
+        "input": "<img x=\"</img>\"><p>A &copy B &Tab; &amp</p><p>end</p>",
+        "body": "<p>A &amp;copy B &amp;Tab; &amp;amp</p><p>end</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<img x=\"</img>\"><p>A&#106B</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<img x=\"</img>\"><p title=one title=two>ok</p><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<!--x--!><p>A &copy B &Tab; &amp</p><!--y--><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<!--x--!><p>A&#106B</p><!--y--><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<!--x--!><p title=one title=two>ok</p><!--y--><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head title=\">\"><p>A &copy B &Tab; &amp</p></head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head title=\">\"><p>A&#106B</p></head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<head title=\">\"><p title=one title=two>ok</p></head><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<script title=\"</script>\"><p>A &copy B &Tab; &amp</p></script><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<script title=\"</script>\"><p>A&#106B</p></script><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<script title=\"</script>\"><p title=one title=two>ok</p></script><p>end</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u0001B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u0002B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u0003B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u0004B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u0005B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u0006B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u0007B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\bB</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\tB</p>",
+        "body": "<p>A\tB</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A\nB</p>",
+        "body": "<p>A\nB</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A\u000bB</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\fB</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\rB</p>",
+        "body": "<p>A\nB</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A\u000eB</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u000fB</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u0010B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u0011B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u0012B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u0013B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u0014B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u0015B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u0016B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u0017B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u0018B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u0019B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u001aB</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u001bB</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u001cB</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u001dB</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u001eB</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A\u001fB</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A B</p>",
+        "body": "<p>A B</p>",
+        "removed": {}
+    },
+    {
+        "input": "<pre>A\rB</pre>",
+        "body": "<pre>A\nB</pre>",
+        "removed": {}
+    },
+    {
+        "input": "<pre>A\r\nB</pre>",
+        "body": "<pre>A\nB</pre>",
+        "removed": {}
+    },
+    {
+        "input": "<pre>A&#13;&#10;B</pre>",
+        "refused": true
+    },
+    {
+        "input": "<pre>A&#13;B</pre>",
+        "refused": true
+    },
+    {
+        "input": "<pre>A&#xD;B</pre>",
+        "refused": true
+    },
+    {
+        "input": "</br><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>a</br>b</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>ok</p></div>",
+        "refused": true
+    },
+    {
+        "input": "<b><i>x</b>y</i>",
+        "refused": true
+    },
+    {
+        "input": "<p><div>x</div></p>",
+        "refused": true
+    },
+    {
+        "input": "<table><p>x</p><tr><td>y</td></tr></table>",
+        "body": "<table><p>x</p><tr><td>y</td></tr></table>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<table><tr><td>a</td></tr></table>",
+        "body": "<table><tr><td>a</td></tr></table>",
+        "removed": {}
+    },
+    {
+        "input": "<table>x<tr><td>y</td></tr></table>",
+        "body": "<table>x<tr><td>y</td></tr></table>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<ul><li>a<li>b</ul>",
+        "body": "<ul><li>a</li><li>b</li></ul>",
+        "removed": {}
+    },
+    {
+        "input": "<p>a<p>b",
+        "body": "<p>a</p><p>b</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>A < B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>1 <3</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>a <= b</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>x</p><",
+        "refused": true
+    },
+    {
+        "input": "<P>ok</P>",
+        "body": "<p>ok</p>",
+        "removed": {}
+    },
+    {
+        "input": "<P TITLE=a>ok</p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "attribute": 1
+        }
+    },
+    {
+        "input": "<br/><p>ok</p>",
+        "body": "<br><p>ok</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>a<br/>b</p>",
+        "body": "<p>a<br>b</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>a<br />b</p>",
+        "body": "<p>a<br>b</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><a href=https://a.test/x/ >ok</a></p>",
+        "body": "<p><a href=\"https://a.test/x/\">ok</a></p>",
+        "removed": {}
+    },
+    {
+        "input": "<a href=\"https://a.test\">a<a href=\"https://b.test\">b</a></a>",
+        "refused": true
+    },
+    {
+        "input": "<p><a href=\"https://a.test\"><p>x</p></a></p>",
+        "body": "<p><a href=\"https://a.test\"><p>x</p></a></p>",
+        "removed": {},
+        "refusedByEngine": true
+    },
+    {
+        "input": "<head><p>hidden</p></head><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<html><body><p>ok</p></body></html>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "wrapper": 2
+        }
+    },
+    {
+        "input": "<body title=x><p>ok</p></body>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "attribute": 1,
+            "wrapper": 1
+        }
+    },
+    {
+        "input": "<script>x",
+        "refused": true
+    },
+    {
+        "input": "<p>ok</p><title>t",
+        "refused": true
+    },
+    {
+        "input": "<p>ok</p><textarea>t",
+        "refused": true
+    },
+    {
+        "input": "<iframe><p>x</p></iframe><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>AB</p>",
+        "body": "<p>AB</p>",
+        "removed": {
+            "invisible": 1
+        }
+    },
+    {
+        "input": "<p>A￾B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>A﷐B</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>&#xFDD0;</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>&#x1FFFE;</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>&#9;x&#10;</p>",
+        "body": "<p>\tx\n</p>",
+        "removed": {}
+    },
+    {
+        "input": "<pre>&#9;x&#10;y</pre>",
+        "body": "<pre>\tx\ny</pre>",
+        "removed": {}
+    },
+    {
+        "input": "<p>&#xA0;&#160;</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>x&nbsp;y</p>",
+        "body": "<p>x y</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>a</p>\n<p>b</p>",
+        "body": "<p>a</p>\n<p>b</p>",
+        "removed": {}
+    },
+    {
+        "input": "<div><p>a</p></div>",
+        "body": "<div><p>a</p></div>",
+        "removed": {}
+    },
+    {
+        "input": "<blockquote><p>q</p></blockquote>",
+        "body": "<blockquote><p>q</p></blockquote>",
+        "removed": {}
+    },
+    {
+        "input": "<ol><li>a</li></ol>",
+        "body": "<ol><li>a</li></ol>",
+        "removed": {}
+    },
+    {
+        "input": "<h1>t</h1><p>x</p>",
+        "body": "<h1>t</h1><p>x</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p><strong>b</strong> <em>i</em> <u>u</u> <s>s</s> <del>d</del> <code>c</code></p>",
+        "body": "<p><strong>b</strong> <em>i</em> <u>u</u> <s>s</s> <del>d</del> <code>c</code></p>",
+        "removed": {}
+    },
+    {
+        "input": "<pre>  x\n  y</pre>",
+        "body": "<pre>  x\n  y</pre>",
+        "removed": {}
+    },
+    {
+        "input": "<p>t<span>s</span></p>",
+        "body": "<p>t<span>s</span></p>",
+        "removed": {}
+    },
+    {
+        "input": "<table><thead><tr><th colspan=2>h</th></tr></thead><tbody><tr><td rowspan=\"1\">a</td><td>b</td></tr></tbody></table>",
+        "body": "<table><thead><tr><th colspan=\"2\">h</th></tr></thead><tbody><tr><td rowspan=\"1\">a</td><td>b</td></tr></tbody></table>",
+        "removed": {}
+    },
+    {
+        "input": "<hr><p>x</p>",
+        "body": "<hr><p>x</p>",
+        "removed": {}
+    },
+    {
+        "input": "<p>x</p><hr/>",
+        "body": "<p>x</p><hr>",
+        "removed": {}
+    },
+    {
+        "input": "<!----><p>ok</p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "comment": 1
+        }
+    },
+    {
+        "input": "<!-- a - b --><p>ok</p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "comment": 1
+        }
+    },
+    {
+        "input": "<!--a-><p>ok</p>-->",
+        "refused": true
+    },
+    {
+        "input": "<!--[if mso]><p>m</p><![endif]--><p>ok</p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "comment": 1
+        }
+    },
+    {
+        "input": "<![if !mso]><p>ok</p><![endif]>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "conditional": 2
+        }
+    },
+    {
+        "input": "<p>ok</p><!--",
+        "refused": true
+    },
+    {
+        "input": "<p>ok<!-- x</p>",
+        "refused": true
+    },
+    {
+        "input": "<select><option>a</select><p>ok</p>",
+        "body": "<p>a</p><p>ok</p>",
+        "bodyHtml5": "a<p>ok</p>",
+        "removed": {
+            "unknown-tag": 2
+        }
+    },
+    {
+        "input": "<p>ok</p><frameset>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "unknown-tag": 1
+        }
+    },
+    {
+        "input": "<object data=x><p>fallback</p></object><p>ok</p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<noscript><p>n</p></noscript><p>ok</p>",
+        "refused": true
+    },
+    {
+        "input": "<template><p>t</p></template><p>ok</p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<p>ok</p><img src=x>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<p>ok<img src=x></p>",
+        "body": "<p>ok</p>",
+        "removed": {
+            "subtree": 1
+        }
+    },
+    {
+        "input": "<p>a<input>b</p>",
+        "body": "<p>ab</p>",
+        "removed": {
+            "unknown-tag": 1
+        }
+    },
+    {
+        "input": "<button>b</button><p>ok</p>",
+        "body": "<p>b</p><p>ok</p>",
+        "bodyHtml5": "b<p>ok</p>",
+        "removed": {
+            "unknown-tag": 1
+        }
+    },
+    {
+        "input": "<p>a<wbr>b</p>",
+        "refused": true
+    },
+    {
+        "input": "<p>ok</p><br>",
+        "body": "<p>ok</p><br>",
+        "removed": {}
+    },
+    {
+        "input": "<p>café — 😀</p>",
+        "body": "<p>café — 😀</p>",
+        "removed": {}
+    }
+]

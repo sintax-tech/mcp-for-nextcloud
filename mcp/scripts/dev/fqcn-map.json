@@ -1274,6 +1274,7 @@
 		{"path":"lib/Modules/Mail/Creation/MailDraftHtmlAllow.php","fqcn":"OCA\\Mcp\\Modules\\Mail\\Creation\\MailDraftHtmlAllow","target":"stays","owner":"Modules\\Mail","ticket":null},
 		{"path":"lib/Modules/Mail/Creation/MailDraftHtmlDocument.php","fqcn":"OCA\\Mcp\\Modules\\Mail\\Creation\\MailDraftHtmlDocument","target":"stays","owner":"Modules\\Mail","ticket":null},
 		{"path":"lib/Modules/Mail/Creation/MailDraftHtmlPurifier.php","fqcn":"OCA\\Mcp\\Modules\\Mail\\Creation\\MailDraftHtmlPurifier","target":"stays","owner":"Modules\\Mail","ticket":null},
+		{"path":"lib/Modules/Mail/Creation/MailDraftHtmlReferences.php","fqcn":"OCA\\Mcp\\Modules\\Mail\\Creation\\MailDraftHtmlReferences","target":"stays","owner":"Modules\\Mail","ticket":null},
 		{"path":"lib/Modules/Mail/Creation/MailDraftHtmlSourceCheck.php","fqcn":"OCA\\Mcp\\Modules\\Mail\\Creation\\MailDraftHtmlSourceCheck","target":"stays","owner":"Modules\\Mail","ticket":null},
 		{"path":"lib/Modules/Mail/Integration/MailDraftHtmlEngine.php","fqcn":"OCA\\Mcp\\Modules\\Mail\\Integration\\MailDraftHtmlEngine","target":"stays","owner":"Modules\\Mail","ticket":null},
 		{"path":"lib/Modules/Mail/Presentation/MailDraftHtmlView.php","fqcn":"OCA\\Mcp\\Modules\\Mail\\Presentation\\MailDraftHtmlView","target":"stays","owner":"Modules\\Mail","ticket":null},

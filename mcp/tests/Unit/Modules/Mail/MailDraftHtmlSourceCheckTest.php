@@ -28,6 +28,27 @@ final class MailDraftHtmlSourceCheckTest extends TestCase {
 		yield 'surrogate' => ['<p>&#xD800;</p>'];
 		yield 'beyond Unicode' => ['<p>&#x110000;</p>'];
 		yield 'beyond Unicode with many digits' => ['<p>&#99999999;</p>'];
+		yield 'comment closed by --!>' => ['<!--x--!><p>A&#106;B</p><!--y--><p>end</p>'];
+		yield 'abrupt comment' => ['<p>ok</p><!-->secret'];
+		yield 'comment with --' => ['<!-- a -- b --><p>ok</p>'];
+		yield 'unclosed comment' => ['<p>ok</p><!-- x'];
+		yield 'bogus comment' => ['<p>ok</p><!bogus>'];
+		yield 'C0 control reference' => ['<p>A&#1;B</p>'];
+		yield 'carriage return reference' => ['<pre>A&#13;B</pre>'];
+		yield 'DEL reference' => ['<p>A&#127;B</p>'];
+		yield 'noncharacter reference' => ['<p>A&#xFFFE;B &#xFDD0;</p>'];
+		yield 'raw C0 control' => ["<p>A\u{1}B</p>"];
+		yield 'raw noncharacter' => ["<p>A\u{FFFE}B</p>"];
+		yield 'slash between attributes' => ['<p/title=a/title=b>ok</p>'];
+		yield 'attributes without whitespace' => ['<p title="a"title="b">ok</p>'];
+		yield 'form feed between attributes' => ["<p title=one\fid=two>ok</p>"];
+		yield 'attribute in an end tag' => ['<p>ok</p x="y">'];
+		yield 'duplicate inside a discarded subtree' => ['<script></script><template><p title=one title=two>x</p></template><p>ok</p>'];
+		yield 'markup inside raw text' => ['<script><p>x</p></script><p>ok</p>'];
+		yield 'raw text without end tag' => ['<p>ok</p><textarea>t'];
+		yield 'element void only in HTML5' => ['<source><p>x</p></source><p>end</p>'];
+		yield 'foreign content' => ['<svg><p>x</p></svg><p>ok</p>'];
+		yield 'loose less-than sign' => ['<p>A < B</p>'];
 	}
 
 	/** @param string $source refused source @return void */
@@ -42,7 +63,7 @@ final class MailDraftHtmlSourceCheckTest extends TestCase {
 		$sanitizer = $this->sanitizer();
 		$this->assertSame('<p>A € 😀</p>', $sanitizer->sanitize('<p>&#x41; &#8364; &#x1F600;</p>')['body']);
 		$this->assertSame('<p>ok</p>', $sanitizer->sanitize('<!-- &#x80; title title --><p>ok</p>')['body']);
-		$this->assertSame('<p>ok</p>', $sanitizer->sanitize('<script>a&#x80;</script><p title="a">ok</p>')['body']);
+		$this->assertSame('<p>ok</p>', $sanitizer->sanitize('<script>a && b</script><p title="a">ok</p>')['body']);
 		$this->assertSame('<p>ok</p>', $sanitizer->sanitize('<p title="&#x41;" lang="pt">ok</p>')['body']);
 	}
 

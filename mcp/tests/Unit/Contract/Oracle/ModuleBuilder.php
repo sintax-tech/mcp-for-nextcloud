@@ -45,6 +45,9 @@ final class ModuleBuilder {
 	 * @return object the instance, with real app collaborators and mocks for the rest
 	 */
 	public function build(string $class): object {
+		if ($class === \OCA\Mcp\Modules\Polls\Integration\PollsMutationProbe::class) {
+			return \OCA\Mcp\Tests\Unit\Modules\Polls\PollsDiscoveryProbe::build($this->test);
+		}
 		if ($class === DeckCapabilities::class) {
 			$apps = $this->mock(IAppManager::class);
 			$apps->method('getAppVersion')->willReturn('1.19.0');

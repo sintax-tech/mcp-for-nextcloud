@@ -75,6 +75,7 @@ final class WriteGateContractTest extends TestCase {
 		return new ToolRegistry($modules, $policy, $apps, $users, $logger, capabilities: new \OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry([
 			$this->build(\OCA\Mcp\Modules\Deck\Integration\DeckCapabilities::class),
 			$this->build(\OCA\Mcp\Modules\Forms\Integration\StructureCapabilities::class),
+			\OCA\Mcp\Tests\Unit\Modules\Polls\PollsDiscoveryProbe::build($this),
 		], $logger));
 	}
 

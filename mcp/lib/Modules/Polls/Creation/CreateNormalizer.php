@@ -35,11 +35,7 @@ class CreateNormalizer {
 		$class = PollsSurface::OPTION;
 		foreach ($request['options'] as $row) {
 			$option = new $class();
-			if ($nine) {
-				$option->setPoll(0);
-			} else {
-				$option->setPollId(0);
-			}
+			$this->parent($option, 0, $nine);
 			$simple = $this->simple($row, $request['type']);
 			if ($nine) {
 				$option->setFromSimpleOption($simple, $request['type']);
@@ -55,6 +51,21 @@ class CreateNormalizer {
 			$rows[] = $value;
 		}
 		return $rows;
+	}
+	/**
+	 * Assigns the transient option parent through the version-gated setter.
+	 * @param object $option Disposable native option.
+	 * @param int $pollId Authorized parent identity; zero during creation prediction.
+	 * @param bool $nine Native setter layout.
+	 * @return void
+	 * @throws \Throwable If the proven native setter is unavailable.
+	 */
+	public function parent(object $option, int $pollId, bool $nine): void {
+		if ($nine) {
+			$option->setPoll($pollId);
+		} else {
+			$option->setPollId($pollId);
+		}
 	}
 	/**
 	 * Reads only safe scalar option fields; never owner/counts/votes/locked or raw serialization.

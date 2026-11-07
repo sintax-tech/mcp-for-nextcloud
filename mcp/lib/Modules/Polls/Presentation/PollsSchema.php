@@ -27,9 +27,11 @@ final class PollsSchema {
 	 * @param string $description English description for the model
 	 * @param array<string, mixed> $inputSchema the closed input schema, in published key order
 	 * @param list<string>|null $grantAnyOf grants that admit the tool instead of the operation itself
+	 * @param bool $destructiveHint strengthen the native effect warning for a mutation
+	 * @param list<string> $requires lazy installation capabilities of a new tool
 	 * @return ToolDefinition the definition of one Polls tool
 	 */
-	public static function definition(string $name, string $operation, string $description, array $inputSchema, ?array $grantAnyOf = null): ToolDefinition {
+	public static function definition(string $name, string $operation, string $description, array $inputSchema, ?array $grantAnyOf = null, bool $destructiveHint = false, array $requires = []): ToolDefinition {
 		return new ToolDefinition(
 			name: $name,
 			module: 'polls',
@@ -38,6 +40,8 @@ final class PollsSchema {
 			inputSchema: $inputSchema,
 			app: 'polls',
 			grantAnyOf: $grantAnyOf,
+			destructiveHint: $destructiveHint,
+			requires: $requires,
 		);
 	}
 

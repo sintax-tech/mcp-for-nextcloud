@@ -505,6 +505,7 @@ final class NextcloudApiUsage {
 		],
 		...Polls\PollsContentApiUsage::VERSION_GATED,
 		...Polls\PollsCreateApiUsage::VERSION_GATED,
+		...Polls\PollsMutationApiUsage::VERSION_GATED,
 		// Mail 5.5 made the folder query group by thread by default; 5.0.0 (Nextcloud 31 and 32 pins) has neither the
 		// grouping nor the switch, so its plain MessageMapper::findIdsByQuery() already lists every message.
 		'OCA\\Mail\\Service\\Search\\SearchQuery::setThreaded' => [

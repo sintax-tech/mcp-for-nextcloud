@@ -136,7 +136,7 @@ final class ToolRegistryTest extends TestCase {
 					throw new \LogicException('Unconfirmed writes must not execute');
 				}
 			};
-			$registry = new ToolRegistry([$module], $this->policy, $apps, $users, $this->logger);
+			$registry = new ToolRegistry([$module], $this->policy, $apps, $users, $this->logger, capabilities: new \OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry([\OCA\Mcp\Tests\Unit\Modules\Polls\PollsDiscoveryProbe::build($this)], $this->logger));
 			foreach ($definitions as $definition) {
 				if (!\OCA\Mcp\Mcp\Confirmation\WriteGate::isWrite($definition)) { continue; }
 				foreach ([[], ['confirm' => false]] as $arguments) {

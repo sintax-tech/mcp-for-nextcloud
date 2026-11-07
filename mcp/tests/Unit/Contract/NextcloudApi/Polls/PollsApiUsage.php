@@ -44,6 +44,7 @@ final class PollsApiUsage {
 	public const NAME_CLASHES = [
 		...PollsContentApiUsage::NAME_CLASHES,
 		...PollsCreateApiUsage::NAME_CLASHES,
+		...PollsMutationApiUsage::NAME_CLASHES,
 		'OCA\\Deck\\Db\\Board::getShareToken' => 'OCA\\Polls\\UserSession::getShareToken, only PollsSessionGuard calls the new method',
 		'OCA\\Polls\\Db\\Option::getCreated' => 'OCA\\Polls\\Db\\Poll::getCreated, only PollsShapes::key uses this getter',
 		'OCA\\Polls\\Db\\Option::getDateTime' => 'DateTime properties in Tasks/Calendar/Talk; PO-1 serializes options, no getDateTime call',

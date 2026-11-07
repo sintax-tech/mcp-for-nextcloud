@@ -10,6 +10,7 @@ namespace OCA\Mcp\Modules\Polls;
 use OCA\Mcp\Mcp\Tools\CatalogModule;
 use OCA\Mcp\Modules\Polls\Presentation\PollsGuideNotes;
 use OCA\Mcp\Modules\Polls\Presentation\PollsPlanRenderer;
+use OCA\Mcp\Modules\Polls\Presentation\PollsWritePlanRenderer;
 
 /**
  * The Polls module: the tools of {@see PollsToolCatalog}, their behaviour notes and the Markdown of the creation plan.
@@ -24,17 +25,22 @@ final class PollsModule extends CatalogModule {
 		return PollsToolCatalog::TOOLS;
 	}
 
+	/** @return class-string<\OCA\Mcp\Mcp\Tools\ModuleRegistration> Mutation port and lazy capability probe. */
+	public static function registration(): ?string {
+		return PollsRegistration::class;
+	}
+
 	/**
 	 * @return list<string> what the schemas cannot say: untrusted content, native costs, link credentials and creation effects
 	 */
 	public function guideNotes(): array {
-		return PollsGuideNotes::notes();
+		return PollsGuideNotes::withMutations();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public function renderPlan(string $tool, array $plan): ?string {
-		return (new PollsPlanRenderer())->render($tool, $plan);
+		return (new PollsWritePlanRenderer())->render($tool, $plan) ?? (new PollsPlanRenderer())->render($tool, $plan);
 	}
 }

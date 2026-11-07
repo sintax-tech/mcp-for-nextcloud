@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Access levels of Polls: four named, independent presets instead of cumulative tiers, so creating polls never rides on
+ * Access levels of Polls: the four 1.2.5 presets stay independent; newly catalogued write grants stay untouched, so creating polls never rides on
  * a protected read. src/admin/admin-levels.js asks window.OCA.Mcp.Admin.pollsGrants for the Polls tiers and levels.
  */
 /** Polls-specific protected-read names; rendering never writes or expands a stored policy. */
 (function (root) {
 	'use strict'
 
-	/** @return {Object<string,string>} explicit cumulative names, never Edit or Full */
+	/** @return {Object<string,string>} unchanged 1.2.5 independent preset names, never Edit or Full */
 	function levelLabels() {
 		return {
 			polls_read: t('mcp', 'Read polls'),

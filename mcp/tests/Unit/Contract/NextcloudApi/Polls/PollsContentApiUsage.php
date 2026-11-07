@@ -40,7 +40,6 @@ final class PollsContentApiUsage {
 	/** Untyped scanner collisions resolved to actual callers, not permission to invoke Polls effect APIs. */
 	public const NAME_CLASHES = [
 		'OCA\\Polls\\Model\\User\\Anon::getShareType' => 'OCP share type in Files/Deck/Talk; PO-2 uses only Anon::TYPE and native vote serialization',
-		'OCA\\Polls\\Service\\ShareService::createShare' => 'OCP share manager in ShareWriter/NativeCardFileLink/FileSharer; PO-2 calls only list',
 		'OCA\\Polls\\Service\\ShareService::register' => 'MCP Policy DeferredQueue registration; PO-2 never registers a Polls share',
 		'OCA\\Polls\\Service\\ShareService::request' => 'SharedWriteGuard and Files requests; PO-2 never requests/creates a Polls share',
 	];

@@ -62,6 +62,40 @@ final class DeleteCardHandlerTest extends TestCase {
 		self::assertSame(7, $payload['id']);
 	}
 
+	public function testDeletedCardKeepsTheBoardReadBeforeTheDelete(): void {
+		// `CardService::delete()` answers the card without its board: the board is read while the card is still active.
+		$gateway = $this->gatewayOwnedBy('alice');
+		$calls = [];
+		$gateway->expects(self::once())->method('cardBoardId')->with('alice', 7)
+			->willReturnCallback(function () use (&$calls): int {
+				$calls[] = 'board';
+				return 20;
+			});
+		$gateway->method('deleteCard')->willReturnCallback(function () use (&$calls) {
+			$calls[] = 'delete';
+			return $this->card(['id' => 7, 'deletedAt' => 1_700_000_900]);
+		});
+		$handler = new DeleteCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
+
+		$payload = $this->payload($handler->handle(['cardId' => 7, 'confirm' => true], 'alice'));
+
+		self::assertSame(['board', 'delete'], $calls);
+		self::assertSame(20, $payload['boardId']);
+		self::assertNotNull($payload['url']);
+	}
+
+	public function testBoardThatCannotBeReadDeletesNothing(): void {
+		$gateway = $this->gatewayOwnedBy('alice');
+		$gateway->method('cardBoardId')->willThrowException(new NoPermissionException('Permission denied'));
+		$gateway->expects(self::never())->method('deleteCard');
+		$handler = new DeleteCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
+
+		$result = $handler->handle(['cardId' => 7, 'confirm' => true], 'alice');
+
+		self::assertTrue($result['isError']);
+		self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorNotFoundOrForbidden(), $this->text($result));
+	}
+
 	public function testDeniedAccessBecomesTheGenericMessage(): void {
 		$result = $this->handler(new NoPermissionException('Permission denied'))
 			->handle(['cardId' => 7, 'confirm' => true], 'alice');

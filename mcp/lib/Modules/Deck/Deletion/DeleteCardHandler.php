@@ -39,7 +39,7 @@ final class DeleteCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 	/**
 	 * {@inheritDoc}
 	 *
-	 * The payload is the deleted card.
+	 * The payload is the deleted card, with the board it was deleted from.
 	 *
 	 * @param array<string, mixed> $arguments Requires `cardId`; accepts `confirm` and `confirm_shared`.
 	 * @param string $userId UID of the authenticated caller.
@@ -59,6 +59,9 @@ final class DeleteCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 			}
 
 			$cardId = (int)$arguments['cardId'];
+			// `CardService::delete()` answers the card without its board, and a deleted card no longer
+			// passes the read check, so the board is read while the card is still active.
+			$boardId = $this->gateway->cardBoardId($userId, $cardId);
 			$warnings = [];
 			// Deck stamps `deleted_at` before the activity and the notifications: the card read back says whether it went.
 			$card = $this->afterWrite(
@@ -71,7 +74,7 @@ final class DeleteCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 				$warnings,
 			);
 
-			return $this->formatter->card($card) + ($warnings === [] ? [] : ['warnings' => $warnings]);
+			return $this->formatter->card($card, $boardId) + ($warnings === [] ? [] : ['warnings' => $warnings]);
 		});
 	}
 

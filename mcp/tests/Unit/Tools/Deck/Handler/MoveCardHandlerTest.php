@@ -55,6 +55,33 @@ final class MoveCardHandlerTest extends TestCase {
 		self::assertSame(11, $payload['stackId']);
 	}
 
+	public function testMovedCardReportsTheBoardItLandedOn(): void {
+		// `CardService::reorder()` answers cards without their board; the destination may be another board.
+		$gateway = $this->gatewayOwnedBy('alice');
+		$gateway->method('moveCard')->willReturn($this->card(['id' => 7, 'stackId' => 42]));
+		$gateway->expects(self::once())->method('cardBoardId')->with('alice', 7)->willReturn(30);
+		$handler = new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
+
+		$payload = $this->payload($handler->handle(['cardId' => 7, 'stackId' => 42], 'alice'));
+
+		self::assertSame(30, $payload['boardId']);
+		self::assertNotNull($payload['url']);
+	}
+
+	public function testABoardThatCannotBeReadAfterTheMoveLeavesTheMoveASuccess(): void {
+		$gateway = $this->gatewayOwnedBy('alice');
+		$gateway->method('moveCard')->willReturn($this->card(['id' => 7, 'stackId' => 42]));
+		$gateway->method('cardBoardId')->willThrowException(new RuntimeException('db gone'));
+		$handler = new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
+
+		$result = $handler->handle(['cardId' => 7, 'stackId' => 42], 'alice');
+
+		self::assertArrayNotHasKey('isError', $result);
+		$payload = $this->payload($result);
+		self::assertSame(42, $payload['stackId']);
+		self::assertNull($payload['boardId']);
+	}
+
 	public function testExplicitOrderIsForwardedAsZeroToo(): void {
 		$gateway = $this->gatewayOwnedBy('alice');
 		$gateway->expects(self::once())

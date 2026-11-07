@@ -101,6 +101,8 @@ final class EditCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 				$this->gateway->validateAssignees($userId, (int)$card->getStackId(), $resolved['add']);
 			}
 
+			// An edit never changes the board, and the read-back after a failed update comes without it.
+			$boardId = $card->getRelatedBoard()?->getId();
 			$warnings = [];
 			if ($given === []) {
 				$updated = $card;
@@ -116,13 +118,13 @@ final class EditCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 				}
 			}
 			if (!$editsAssignees) {
-				return $this->formatter->card($updated) + ($warnings === [] ? [] : ['warnings' => $warnings]);
+				return $this->formatter->card($updated, $boardId) + ($warnings === [] ? [] : ['warnings' => $warnings]);
 			}
 
 			// Applied first: the card is formatted from the assignments that really stand afterwards.
 			$report = $this->applyAssignees($userId, $updated, $resolved, $warnings);
 
-			return $this->formatter->card($updated) + $report;
+			return $this->formatter->card($updated, $boardId) + $report;
 		});
 	}
 

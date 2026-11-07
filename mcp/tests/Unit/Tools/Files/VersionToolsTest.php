@@ -315,6 +315,25 @@ final class VersionToolsTest extends TestCase {
 		}
 	}
 
+	/** The version is in place, but Nextcloud cannot describe the file for the receipt: the refusal still names the copy. */
+	#[\PHPUnit\Framework\Attributes\DataProvider('restoreModes')]
+	public function testReceiptMetadataThatCannotBeReadStillNamesTheCopy(bool $locked): void {
+		$access = $this->createMock(NodeAccessInfo::class);
+		$access->method('describe')->willThrowException(new \OCP\Files\NotFoundException('gone'));
+		$container = $this->createMock(ContainerInterface::class);
+		$container->method('get')->willReturn($this->manager);
+		$locks = $locked ? (new FakeLockManager())->service($this) : null;
+		$this->manager->versions[1]->withContent('old');
+		$tools = new VersionTools($this->apps, $this->users, $this->backup, $access, $container, $locks,
+			versionRestore: $this->wiredRestore($access, $container, $locks, null));
+		try {
+			$tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
+			$this->fail('A restore without its receipt metadata reported success');
+		} catch (ToolFailure $e) {
+			$this->assertMatchesRegularExpression('#^' . preg_quote(CommonMessages::notFound(), '#') . ' The original is kept in /MCP backups/Documentos/ata\.md\.[0-9-]+\.bak\.$#', $e->getMessage());
+		}
+	}
+
 	public function testRestoreReportsARollbackThatFailed(): void {
 		$this->manager->rollbackResult = false;
 		$this->expectException(ToolFailure::class);
@@ -462,7 +481,7 @@ final class VersionToolsTest extends TestCase {
 			$this->lockedTools(new FakeLockManager())->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
 			$this->fail('a version without its stored file was restored');
 		} catch (ToolFailure $e) {
-			$this->assertMatchesRegularExpression('#^Failed to write file; original preserved in /MCP backups/Documentos/ata\.md\.[0-9-]+\.bak\.$#', $e->getMessage());
+			$this->assertMatchesRegularExpression('#^' . preg_quote(CommonMessages::notFound(), '#') . ' The original is kept in /MCP backups/Documentos/ata\.md\.[0-9-]+\.bak\.$#', $e->getMessage());
 		}
 		$this->assertNotContains('write ' . self::FILE, $this->tree->ops);
 		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);

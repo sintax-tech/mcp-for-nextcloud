@@ -494,4 +494,19 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
 		$this->assertSame(CommonMessages::notFound(), $out);
 		$this->assertStringNotContainsString('ata.md', $out);
 	}
+
+	/** The content is written, but Nextcloud cannot describe the file for the receipt: the refusal still names the copy. */
+	public function testReceiptMetadataThatCannotBeReadStillNamesTheCopy(): void {
+		$access = $this->createMock(\OCA\Mcp\Platform\FileAccess\NodeAccessInfo::class);
+		$access->method('describe')->willThrowException(new \OCP\Files\NotFoundException('gone'));
+		$commit = new \OCA\Mcp\Modules\Files\Writing\ContentCommit(AbsentFileTypePolicy::gate($this), $access);
+		$backup = new \OCA\Mcp\Modules\Files\Backups\FileBackup($this->apps, $this->users, $this->time, $this->config->mock($this));
+		try {
+			$commit->commit($backup, $this->tree->rootFolder(), 'alice', $this->tree->node(self::FILE), '/Documentos/ata.md', 'novo', null, "# Ata\nolá");
+			$this->fail('A write without its receipt metadata reported success');
+		} catch (ToolFailure $e) {
+			$this->assertMatchesRegularExpression('#^' . preg_quote(CommonMessages::notFound(), '#') . ' The original is kept in /MCP backups/Documentos/ata\.md\.[0-9-]+\.bak\.$#', $e->getMessage());
+		}
+		$this->assertSame('novo', $this->tree->nodes[self::FILE]['content'], 'the write itself went through');
+	}
 }

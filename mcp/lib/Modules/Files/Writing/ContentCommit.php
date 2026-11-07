@@ -68,19 +68,20 @@ final class ContentCommit {
 			// Checked again right before the write: the backup took time, and files_lock does not refuse every lock.
 			NodeAccess::mutate(fn () => $this->locks === null ? $file->putContent($content) : $this->locks->run(fn () => $file->putContent($content), $file, $userId, $path), $this->visibilityGuard);
 			$node = NodeAccess::requireFile(NodeAccess::get($root, $path, $this->visibilityGuard));
+			// Built inside the block: metadata that cannot be read after the write still names the copy.
+			return [
+				'path' => $path,
+				'size' => strlen($content),
+				'etag' => (string)$node->getEtag(),
+				'access' => $this->access->describe($node, $userId),
+				'backup' => $copy,
+				'diff' => UnifiedDiff::between($before, $content),
+			];
 		} catch (PolicyUnavailable $e) {
 			throw $e;
 		} catch (\Throwable $e) {
 			// The copy exists: the answer says where the original is kept, unless the file is no longer visible.
 			throw \OCA\Mcp\Modules\Files\Backups\AfterCopyFailure::explain($e, $copy, $file, $this->visibilityGuard);
 		}
-		return [
-			'path' => $path,
-			'size' => strlen($content),
-			'etag' => (string)$node->getEtag(),
-			'access' => $this->access->describe($node, $userId),
-			'backup' => $copy,
-			'diff' => UnifiedDiff::between($before, $content),
-		];
 	}
 }

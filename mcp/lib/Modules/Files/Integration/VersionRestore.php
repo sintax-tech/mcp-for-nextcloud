@@ -111,20 +111,21 @@ final class VersionRestore {
 			}
 			$node = NodeAccess::requireFile(NodeAccess::get($root, $path, $this->visibilityGuard));
 			$this->visibilityGuard?->assertVisible($node);
+			// Built inside the block: metadata that cannot be read after the write still names the copy.
+			return [
+				'path' => $path,
+				'size' => (int)$node->getSize(),
+				'etag' => (string)$node->getEtag(),
+				'access' => $this->access->describe($node, $viewerUid),
+				'backup' => $copy,
+				'version' => $revision,
+			];
 		} catch (PolicyUnavailable $e) {
 			throw $e;
 		} catch (\Throwable $e) {
 			// The copy exists: nothing is rolled back or deleted, and the answer says where the original is kept.
 			throw \OCA\Mcp\Modules\Files\Backups\AfterCopyFailure::explain($e, $copy, $file, $this->visibilityGuard);
 		}
-		return [
-			'path' => $path,
-			'size' => (int)$node->getSize(),
-			'etag' => (string)$node->getEtag(),
-			'access' => $this->access->describe($node, $viewerUid),
-			'backup' => $copy,
-			'version' => $revision,
-		];
 	}
 
 	/**

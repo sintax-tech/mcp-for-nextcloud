@@ -16,6 +16,7 @@ use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCP\Files\File;
+use OCP\Files\NotFoundException;
 use OCP\Lock\LockedException;
 
 /**
@@ -39,10 +40,14 @@ final class AfterCopyFailure {
 	 * @throws \OCA\Mcp\Access\Policy\PolicyUnavailable When the scope cannot be read to decide whether the file is visible.
 	 */
 	public static function explain(\Throwable $error, string $copy, File $file, ?FilesAccessGuard $guard): ToolFailure {
-		if (!self::visible($file, $guard)) {
+		if (!self::stillVisible($file, $guard)) {
 			return new ToolFailure(CommonMessages::notFound());
 		}
 		$note = EditingMessages::originalKept($copy);
+		if ($error instanceof NotFoundException) {
+			// Also raised after a write that went through, by metadata read for the receipt: not a write failure.
+			$error = new ToolFailure(CommonMessages::notFound());
+		}
 		if ($error instanceof LockedException) {
 			$error = NodeAccess::lockFailure($error);
 			if (!$error instanceof LockWriteFailure) {
@@ -58,12 +63,14 @@ final class AfterCopyFailure {
 	}
 
 	/**
+	 * Whether a failure after the copy may name it: the file is checked again, past any cached decision.
+	 *
 	 * @param File $file The file being written.
 	 * @param FilesAccessGuard|null $guard Scope and exclusion tags.
 	 * @return bool Whether the file may still be shown; a check that fails for another reason counts as hidden.
 	 * @throws \OCA\Mcp\Access\Policy\PolicyUnavailable When the scope cannot be read.
 	 */
-	private static function visible(File $file, ?FilesAccessGuard $guard): bool {
+	public static function stillVisible(File $file, ?FilesAccessGuard $guard): bool {
 		if ($guard === null) {
 			return true;
 		}

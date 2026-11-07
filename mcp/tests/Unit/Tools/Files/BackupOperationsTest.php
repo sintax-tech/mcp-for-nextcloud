@@ -298,4 +298,81 @@ final class BackupOperationsTest extends FilesToolsTestCase {
 		}
 	}
 
+
+	/**
+	 * @param \OCA\Mcp\Access\ResourceScope\FilesAccessGuard|null $guard scope and exclusion tags of the upload
+	 * @param \OCA\Mcp\Platform\FileAccess\NodeAccessInfo|null $access access description, the real one when null
+	 * @return array{\OCA\Mcp\Modules\Files\Checkout\CheckoutWriter, \OCA\Mcp\Modules\Files\Checkout\CheckoutToken, \OCP\Files\File, string} writer, spent upload token, file and body
+	 */
+	private function checkoutUpload(?\OCA\Mcp\Access\ResourceScope\FilesAccessGuard $guard = null, ?\OCA\Mcp\Platform\FileAccess\NodeAccessInfo $access = null): array {
+		$real = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo($this->users, $this->tree->shareManager());
+		$logger = new \Psr\Log\NullLogger();
+		$root = $this->visibilityRoot();
+		$tokens = new \OCA\Mcp\Tests\Unit\Checkout\InMemoryCheckoutTokenStore();
+		$session = $this->createMock(\OCP\IUserSession::class);
+		$refusals = new \OCA\Mcp\Modules\Files\Checkout\CheckoutRefusals($logger);
+		$language = new \OCA\Mcp\Modules\Files\Checkout\CheckoutLanguage($tokens, new \OCA\Mcp\OAuth\Storage\TokenHasher($this->config->mock($this)), $session);
+		$policy = new \OCA\Mcp\Modules\Files\Checkout\CheckoutPolicy($refusals, $tokens, $this->sharePolicy, $session, $this->time);
+		$resolver = new \OCA\Mcp\Modules\Files\Checkout\CheckoutResolver($policy, $language, $refusals, $root);
+		$backup = new FileBackup($this->apps, $this->users, $this->time, $this->config->mock($this));
+		$writer = new \OCA\Mcp\Modules\Files\Checkout\CheckoutWriter($resolver, $policy, $language, $refusals, $root, $backup,
+			new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($real), $access ?? $real, $logger, null, $guard,
+			fileTypes: \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this));
+		$file = $this->tree->node('/alice/files/Documentos/ata.md');
+		$row = new \OCA\Mcp\Modules\Files\Checkout\CheckoutToken(1, 'upload', 'alice', $file->getId(), '/Documentos/ata.md', $file->getEtag(), 'personal', true, PHP_INT_MAX, true);
+		$body = (string)tempnam(sys_get_temp_dir(), 'mcp');
+		file_put_contents($body, 'novo');
+		return [$writer, $row, $file, $body];
+	}
+
+	/** The file left the scope while it was written and the storage then failed: 404 with the plain refusal, no path of the copy. */
+	public function testCheckoutUploadThatFailsOnceTheFileIsHiddenDoesNotNameTheCopy(): void {
+		$hidden = false;
+		$mapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+		$mapper->method('getTagIdsForObjects')->willReturnCallback(static function (array $ids) use (&$hidden): array {
+			return array_fill_keys($ids, $hidden ? ['999'] : []);
+		});
+		$this->config->app['mcp'][VisibilityGuard::CONFIG_KEY] = '["999"]';
+		$guard = new \OCA\Mcp\Access\ResourceScope\FilesAccessGuard($this->config->mock($this), $mapper, $this->visibilityRoot());
+		[$writer, $row, $file, $body] = $this->checkoutUpload($guard);
+		$this->tree->writeFailure = new \RuntimeException('storage failed');
+		$this->tree->beforeWrite = static function (string $path) use (&$hidden): void {
+			if ($path === '/alice/files/Documentos/ata.md') {
+				$hidden = true;
+			}
+		};
+		$response = $writer->write($row, $file, $body);
+		self::assertSame(404, $response->getStatus());
+		self::assertSame(\OCA\Mcp\Platform\FileAccess\CommonMessages::notFound(), $response->getData());
+	}
+
+	/** Nextcloud took the read permission away in a hook of the upload: the refusal of the re-read names the copy. */
+	public function testCheckoutUploadThatLosesReadAfterTheWriteNamesTheCopy(): void {
+		[$writer, $row, $file, $body] = $this->checkoutUpload();
+		$this->tree->afterWrite = function (string $path): void {
+			if ($path === '/alice/files/Documentos/ata.md') {
+				$this->tree->nodes[$path]['readable'] = false;
+			}
+		};
+		$response = $writer->write($row, $file, $body);
+		self::assertSame(400, $response->getStatus());
+		self::assertMatchesRegularExpression('#^' . preg_quote(\OCA\Mcp\Platform\FileAccess\CommonMessages::forbidden(), '#') . ' The original is kept in /MCP backups/Documentos/ata\.md\.[0-9-]+\.bak\.$#', $response->getData());
+		self::assertSame('novo', $this->tree->nodes['/alice/files/Documentos/ata.md']['content']);
+	}
+
+	/** The upload went through, but Nextcloud cannot describe the file for the receipt: 404 with the refusal and the copy. */
+	public function testCheckoutReceiptMetadataThatCannotBeReadStillNamesTheCopy(): void {
+		$access = $this->createMock(\OCA\Mcp\Platform\FileAccess\NodeAccessInfo::class);
+		$calls = 0;
+		$access->method('describe')->willReturnCallback(static function () use (&$calls): array {
+			if (++$calls > 1) {
+				throw new \OCP\Files\NotFoundException('gone');
+			}
+			return ['scope' => 'personal', 'owner' => 'alice', 'ownerDisplayName' => 'Alice', 'permissions' => ['update' => true]];
+		});
+		[$writer, $row, $file, $body] = $this->checkoutUpload(null, $access);
+		$response = $writer->write($row, $file, $body);
+		self::assertSame(404, $response->getStatus());
+		self::assertMatchesRegularExpression('#^' . preg_quote(\OCA\Mcp\Platform\FileAccess\CommonMessages::notFound(), '#') . ' The original is kept in /MCP backups/Documentos/ata\.md\.[0-9-]+\.bak\.$#', $response->getData());
+	}
 }

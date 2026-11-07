@@ -22,8 +22,9 @@ use Smalot\PdfParser\PDFObject;
  * After parsing and before the text is read, the map is read again with the parser's grammar and in the parser's order:
  * every bfchar section, then every bfrange section, a later definition of a code replacing the earlier one (Adobe
  * TN 5014, overlapping ranges). A code whose effective definition holds a valid surrogate pair gets its whole text,
- * through the parser's public {@see \Smalot\PdfParser\Font::setTable()}; an incremental range adds its offset to the last
- * UTF-16 code unit of the destination, as the specification increments the last byte. Codes the parser did not load are
+ * through the parser's public {@see \Smalot\PdfParser\Font::setTable()}; an incremental range increments the last byte of
+ * the destination (PDF Reference 1.6, §5.9.2), and a code whose last byte would pass FF, which the specification leaves
+ * undefined, keeps the parser's value. Codes the parser did not load are
  * never added, and every other code (no surrogate, a lone surrogate, or an earlier pair replaced by such a definition)
  * keeps the parser's value, so a map without surrogates reads exactly as before.
  */
@@ -62,6 +63,9 @@ final class PdfSupplementaryCharacters {
 				continue;
 			}
 			$table = $font->loadTranslateTable();
+			// The map is read with the parser's grammar, so its own table holds every code found here. The intersection
+			// still keeps the codes to those of the table the font decodes with, which a caller may have replaced through
+			// the public setTable() or another parser version may read differently: a code it does not decode is never added.
 			$font->setTable(array_replace($table, array_intersect_key($pairs, $table)));
 		}
 	}
@@ -129,8 +133,8 @@ final class PdfSupplementaryCharacters {
 	}
 
 	/**
-	 * Records an incremental range: every code of it replaces its earlier definition, and gets the destination with the
-	 * offset added to its last code unit when that text holds a valid pair.
+	 * Records an incremental range: every code of it replaces its earlier definition, and gets the destination with its
+	 * last byte incremented by the offset when that text holds a valid pair; codes past FF in that byte are not given one.
 	 *
 	 * @param array<int, string> $pairs the codes with a pair so far
 	 * @param int|null $first the first code of the range
@@ -151,7 +155,7 @@ final class PdfSupplementaryCharacters {
 			return;
 		}
 		$end = count($units) - 1;
-		for ($offset = 0, $steps = min($last - $first, 0xFFFF - $units[$end]); $offset <= $steps; $offset++) {
+		for ($offset = 0, $steps = min($last - $first, 0xFF - ($units[$end] & 0xFF)); $offset <= $steps; $offset++) {
 			$shifted = $units;
 			$shifted[$end] += $offset;
 			self::define($pairs, $first + $offset, self::text($shifted));

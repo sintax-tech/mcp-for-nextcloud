@@ -32,18 +32,32 @@ final class PdfSupplementaryCharactersTest extends TestCase {
 
 	/**
 	 * An incremental bfrange adds its offset to the last code unit of a supplementary destination, which the parser alone
-	 * reads as one number on every PHP version; past the last low surrogate the parser's value stays.
+	 * reads as one number on every PHP version; a code whose last byte would pass FF keeps the parser's value.
 	 *
 	 * @return void
 	 */
 	public function testIncrementalRangesGiveConsecutiveSupplementaryCharacters(): void {
 		$this->assertSame("\u{1F600}\u{1F601}", ExtractedText::utf8(self::restored(' 1 beginbfrange <0001> <0002> <D83DDE00> endbfrange', '00010002')->getText()));
 		$this->assertSame("A\u{1F600}", ExtractedText::utf8(self::restored(' 1 beginbfrange <0001> <0001> <0041D83DDE00> endbfrange', '0001')->getText()));
-		$sections = ' 1 beginbfrange <0001> <0002> <D83DDFFF> endbfrange';
+		$sections = ' 1 beginbfrange <0001> <0002> <D83DDEFF> endbfrange';
 		$loaded = self::font((new Parser())->parseContent(BrokenTextSamples::pdfMapping($sections, '0001')))->loadTranslateTable();
 		$restored = self::font(self::restored($sections, '0001'))->loadTranslateTable();
-		$this->assertSame("\u{1F7FF}", $restored[1]);
+		$this->assertSame("\u{1F6FF}", $restored[1]);
 		$this->assertSame($loaded[2], $restored[2]);
+	}
+
+	/**
+	 * Only codes of the table the font decodes with get a pair: a code missing from it, here because the caller replaced
+	 * the table through the public setTable(), is never added.
+	 *
+	 * @return void
+	 */
+	public function testCodesOutsideTheFontTableAreNotAdded(): void {
+		$document = (new Parser())->parseContent(BrokenTextSamples::pdfMapping(' 2 beginbfchar <0001> <0041> <0002> <D83DDE00> endbfchar', '0001'));
+		$font = self::font($document);
+		$font->setTable([1 => 'A']);
+		PdfSupplementaryCharacters::restore($document);
+		$this->assertSame([1 => 'A'], $font->loadTranslateTable());
 	}
 
 	/**

@@ -1,7 +1,7 @@
 OC.L10N.register(
     "mcp",
     {
-    "This change would clear the view's card title/background source; keep that column selected." : "Diese Änderung würde die Quelle für Kartentitel/-hintergrund der Ansicht löschen; lassen Sie diese Spalte ausgewählt.",
+    "This change would clear the view's card title/background source; keep that column selected, or omit view_ids for a view that shows all columns." : "Diese Änderung würde die Quelle für Kartentitel/-hintergrund der Ansicht löschen; lassen Sie diese Spalte ausgewählt oder lassen Sie view_ids bei einer Ansicht weg, die alle Spalten anzeigt.",
     "Event %s exists, but its reminders differ from the requested change. Do not repeat the change; check List events." : "Termin %s existiert, aber seine Erinnerungen weichen von der angeforderten Änderung ab. Wiederholen Sie die Änderung nicht; prüfen Sie List events.",
     "The change to event %s could not be verified. Do not repeat the change; check List events." : "Die Änderung an Termin %s konnte nicht überprüft werden. Wiederholen Sie die Änderung nicht; prüfen Sie List events.",
     "_%n individually changed occurrence keeps its own reminders and does not receive these reminders._::_%n individually changed occurrences keep their own reminders and do not receive these reminders._" : ["%n einzeln geändertes Vorkommen behält seine eigenen Erinnerungen und erhält diese Erinnerungen nicht.", "%n einzeln geänderte Vorkommen behalten ihre eigenen Erinnerungen und erhalten diese Erinnerungen nicht."],

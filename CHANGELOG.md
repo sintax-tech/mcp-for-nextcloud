@@ -10,7 +10,7 @@ This release candidate combines the capability-module restructuring with all the
 
 ### Fixed
 
-- **Tables 2.4.0:** add an exact schema/sharing profile on Nextcloud 33–35 with native API introspection. Preserve view layouts/card sources; refuse `tables_update_view` and `tables_create_column` with `view_ids` when their column changes would clear a card source. Additional official-source contracts cover read/row APIs and column parsers, while a SHA-pinned NC35 archive opt-in keeps the existing matrix pins ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)).
+- **Tables 2.4.0 ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** add an exact schema/sharing profile on Nextcloud 33–35 with native API introspection. Preserve view layouts/card sources; refuse `tables_update_view` and `tables_create_column` with `view_ids` when their column changes would clear a card source. Additional official-source contracts cover read/row APIs and column parsers, while a SHA-pinned NC35 archive opt-in keeps the existing matrix pins.
 
 - **Reading the current file version:** `files_version_read` now reads the current version listed by `files_versions_list` when the backend has no separate stored version file, instead of failing with a missing-file error. Other missing historical versions remain refused. This fixes a defect already present in 1.2.5.
 

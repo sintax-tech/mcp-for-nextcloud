@@ -20,7 +20,7 @@ final class Tables240MessagesTest extends TestCase {
 	public function testCardSourceRefusalIsLocalizedAndExposedToTheClient(): void {
 		try {
 			Translator::reset();
-			$english = "This change would clear the view's card title/background source; keep that column selected.";
+			$english = "This change would clear the view's card title/background source; keep that column selected, or omit view_ids for a view that shows all columns.";
 			self::assertSame($english, SchemaMessages::cardSourcePreservation());
 			foreach (['pt_BR', 'es', 'de'] as $locale) {
 				Translator::use(new JsonL10n($locale));

@@ -18,8 +18,9 @@ use OCP\IUserManager;
 /**
  * The plan of `collectives_add_member`, read now and only read: the actor is an admin of the collective, the account
  * or group exists on this server and is not the actor, and what Teams will make of it (`SingleMemberAdd`, 35
- * `:264-298`): a member, an invitation in a team that requires them, or an accepted request. A group in such a team,
- * an existing member or invitation and a blocked account are refused. The person or group is not resolved in Teams
+ * `:264-298`): a member, an invitation in a team that requires them, or an accepted request. A group in such a team is
+ * refused whatever membership it has (nobody can accept an invitation for a group, and Teams would turn a request of
+ * it into a membership); an existing member or invitation and a blocked account are refused. The person or group is not resolved in Teams
  * here; that may record internal identities, which the plan declares and only the confirmed call does.
  */
 class AddMemberPlan {
@@ -64,13 +65,16 @@ class AddMemberPlan {
 		if ($type === 'user' && $id === $uid) {
 			throw new ToolFailure(MembershipMessages::notYourself());
 		}
+		if ($group !== null && $context['invite']) {
+			throw new ToolFailure(MembershipMessages::groupInvite());
+		}
 		$before = MemberTarget::find($context['members'], $type, $id);
 		$outcome = match ($before['status'] ?? null) {
 			'member' => throw new ToolFailure(MembershipMessages::alreadyMember()),
 			'invited' => throw new ToolFailure(MembershipMessages::alreadyInvited()),
 			'blocked' => throw new ToolFailure(MembershipMessages::blocked()),
 			'requesting' => 'member',
-			default => $context['invite'] ? ($group !== null ? throw new ToolFailure(MembershipMessages::groupInvite()) : 'invited') : 'member',
+			default => $context['invite'] ? 'invited' : 'member',
 		};
 		$notices = array_values(array_filter([
 			$before !== null ? MembershipMessages::acceptsRequest() : ($outcome === 'invited' ? MembershipMessages::becomesInvitation() : MembershipMessages::joinsDirectly()),

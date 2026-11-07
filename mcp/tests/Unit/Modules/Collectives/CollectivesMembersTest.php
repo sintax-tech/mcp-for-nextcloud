@@ -128,6 +128,15 @@ final class CollectivesMembersTest extends TestCase {
 		$this->refused(fn () => $module->call('collectives_list_members', ['collective_id' => 7], 'alice'));
 	}
 
+	/** @return void reproduction B-R3 of the review: a team that requires invitations refuses a group in any state, a request included */
+	public function testAnInvitationTeamRefusesARequestingGroup(): void {
+		$module = (new CollectivesRig($this))->module();
+		TeamsScene::$teams['circle-secret']['config'] = 32;
+		TeamsScene::$entries['circle-secret'][] = ['id' => 'm-design', 'userId' => 'design', 'type' => 2, 'level' => 0, 'status' => 'Requesting'];
+		$this->assertStringContainsString('nobody can accept', $this->refused(fn () => $this->confirm($module, 'collectives_add_member', ['collective_id' => 7, 'type' => 'group', 'id' => 'design'])));
+		$this->assertNotContains('addMember:design', TeamsScene::$calls);
+	}
+
 	/** @return void reproduction B-R2 of the review: after a group was resolved, no page write of C01-C03 crosses the seal */
 	public function testTheSealRefusesAnExistingPageWrite(): void {
 		$module = (new CollectivesRig($this))->module();

@@ -22,7 +22,7 @@ final class CallGraphPropertyIndex {
 	public static function read(Stmt\ClassLike $node, string $class, CallGraphSignatures $signatures, callable $doc): array {
 		$props = $declared = [];
 		if ($node instanceof Stmt\Enum_) {
-			$props = $node->scalarType === null ? ['name' => ''] : ['name' => '', 'value' => ''];
+			$props = $node->scalarType === null ? ['name' => ''] : ['name' => '', 'value' => CallGraphScalarTypes::declared($node->scalarType->toLowerString())];
 		}
 		foreach ($node->getProperties() as $property) {
 			$text = $property->getDocComment()?->getText() ?? '';
@@ -35,9 +35,9 @@ final class CallGraphPropertyIndex {
 				$value = $type ?? CallGraphLiterals::type($prop->default);
 				// A mutable, untyped array cannot retain only its initializer's element evidence.
 				foreach ((new NodeFinder())->findInstanceOf($node->getMethods(), Expr\Assign::class) as $write) {
-					$target = $write->var instanceof Expr\ArrayDimFetch ? $write->var->var : $write->var;
+					[$target] = CallGraphArrayWrites::path($write->var);
 					if (($target instanceof Expr\PropertyFetch && $target->var instanceof Expr\Variable && $target->var->name === 'this'
-						|| $target instanceof Expr\StaticPropertyFetch) && $target->name instanceof Node\Identifier && $target->name->name === $name && $type === null) {
+						|| $target instanceof Expr\StaticPropertyFetch) && (!$target->name instanceof Node\Identifier || $target->name->name === $name) && $type === null) {
 						$value = $array || CallGraphArrayTypes::read($value) !== null ? CallGraphArrayTypes::make([''], [null]) : null;
 					}
 				}

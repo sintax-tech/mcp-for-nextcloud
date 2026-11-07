@@ -32,6 +32,12 @@ final class CallGraphArguments {
 		foreach ($this->index->unit($target)['node']->params as $position => $param) {
 			if (isset($values[$position])) {
 				$arguments[$param->var->name] = $values[$position];
+			} elseif ($param->default === null) {
+				$arguments[$param->var->name] = [null];
+			}
+			if ($param->default !== null) {
+				$default = CallGraphLiterals::type($param->default);
+				$arguments[$param->var->name] = CallGraphTypes::union([...($arguments[$param->var->name] ?? []), $default]);
 			}
 		}
 		$this->types->bindings->record($target, $site, $arguments);

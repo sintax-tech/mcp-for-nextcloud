@@ -28,7 +28,7 @@ final class CallGraphSignatures {
 			$type = count($named) === 1 ? $named[0] : null;
 		}
 		return $type instanceof Node\Name ? $this->index->name($class, $type)
-			: ($type instanceof Node\Identifier && in_array($type->toLowerString(), ['string', 'int', 'float', 'bool', 'void', 'never', 'false', 'true', 'null'], true) ? '' : null);
+			: ($type instanceof Node\Identifier && in_array($type->toLowerString(), ['string', 'int', 'float', 'bool', 'void', 'never', 'false', 'true', 'null'], true) ? CallGraphScalarTypes::declared($type->toLowerString()) : null);
 	}
 
 	/**

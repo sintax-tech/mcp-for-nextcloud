@@ -149,7 +149,8 @@
     "arguments": [
       0
     ],
-    "audit": "Array count has no hooks; object count dispatches Countable::count."
+    "audit": "Array count has no hooks; object count dispatches Countable::count.",
+    "scalarType": "int"
   },
   "dirname": {
     "return": "scalar",
@@ -192,7 +193,8 @@
     "return": "scalar",
     "effect": "none",
     "arguments": [],
-    "audit": "Integer arithmetic; object arguments throw TypeError, with no object conversion hook."
+    "audit": "Integer arithmetic; object arguments throw TypeError, with no object conversion hook.",
+    "scalarType": "int"
   },
   "is_array": {
     "return": "scalar",
@@ -248,13 +250,15 @@
     "return": "scalar",
     "effect": "stringify",
     "arguments": "all",
-    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString.",
+    "scalarType": "int"
   },
   "log1p": {
     "return": "scalar",
     "effect": "none",
     "arguments": [],
-    "audit": "Numeric arithmetic; object arguments throw TypeError, with no string conversion hook."
+    "audit": "Numeric arithmetic; object arguments throw TypeError, with no string conversion hook.",
+    "scalarType": "float"
   },
   "max": {
     "return": "arguments",
@@ -276,7 +280,8 @@
     "arguments": [
       0
     ],
-    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString.",
+    "scalarType": "int"
   },
   "mb_strpos": {
     "return": "scalar",
@@ -285,7 +290,8 @@
       0,
       1
     ],
-    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString.",
+    "scalarType": "int"
   },
   "mb_strrpos": {
     "return": "scalar",
@@ -294,7 +300,8 @@
       0,
       1
     ],
-    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString.",
+    "scalarType": "int"
   },
   "mb_strtolower": {
     "return": "scalar",
@@ -340,7 +347,8 @@
     "arguments": [
       0
     ],
-    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString.",
+    "scalarType": "int"
   },
   "preg_match": {
     "return": "scalar",
@@ -349,7 +357,22 @@
       0,
       1
     ],
-    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString.",
+    "outArguments": {
+      "2": "matches"
+    }
+  },
+  "preg_match_all": {
+    "return": "scalar",
+    "effect": "stringify",
+    "arguments": [
+      0,
+      1
+    ],
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString.",
+    "outArguments": {
+      "2": "matches"
+    }
   },
   "preg_replace": {
     "return": "scalar-array",
@@ -455,7 +478,8 @@
       0,
       1
     ],
-    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString.",
+    "scalarType": "int"
   },
   "stream_get_contents": {
     "return": "scalar",
@@ -469,7 +493,8 @@
     "arguments": [
       0
     ],
-    "audit": "The listed arguments/elements may be converted to strings, invoking __toString."
+    "audit": "The listed arguments/elements may be converted to strings, invoking __toString.",
+    "scalarType": "int"
   },
   "strval": {
     "return": "scalar",

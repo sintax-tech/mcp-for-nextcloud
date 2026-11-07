@@ -66,22 +66,33 @@ final class CallGraphProtocols {
 			}
 		}
 		if ($node instanceof Expr\ArrayDimFetch) {
-			$parent = $node->getAttribute('parent');
+			$context = $node;
+			$parent = $context->getAttribute('parent');
+			$nested = false;
+			while ($parent instanceof Expr\ArrayDimFetch && $parent->var === $context) {
+				$nested = true;
+				$context = $parent;
+				$parent = $context->getAttribute('parent');
+			}
 			$hooks = ['offsetGet'];
 			$key = $node->dim === null ? [''] : $typeOf($node->dim);
 			$values = [$key];
 			if ($parent instanceof Expr\Isset_) {
-				$hooks = ['offsetExists'];
+				$hooks = $nested ? ['offsetExists', 'offsetGet'] : ['offsetExists'];
 			} elseif ($parent instanceof Stmt\Unset_) {
 				$hooks = ['offsetUnset'];
-			} elseif ($parent instanceof Expr\Empty_ || $parent instanceof Expr\BinaryOp\Coalesce && $parent->left === $node) {
+			} elseif ($parent instanceof Expr\Empty_ || $parent instanceof Expr\BinaryOp\Coalesce && $parent->left === $context) {
 				$hooks = ['offsetExists', 'offsetGet'];
-			} elseif (($parent instanceof Expr\Assign || $parent instanceof Expr\AssignOp) && $parent->var === $node) {
+			} elseif (($parent instanceof Expr\Assign || $parent instanceof Expr\AssignOp) && $parent->var === $context) {
 				$hooks = $parent instanceof Expr\Assign ? ['offsetSet'] : ['offsetGet', 'offsetSet'];
 				if ($parent instanceof Expr\AssignOp\Coalesce) {
 					$hooks[] = 'offsetExists';
 				}
 				$values[] = $typeOf($parent->expr);
+			}
+			if ($parent instanceof Expr\PreInc || $parent instanceof Expr\PreDec || $parent instanceof Expr\PostInc || $parent instanceof Expr\PostDec) {
+				$hooks = ['offsetGet', 'offsetSet'];
+				$values[] = $typeOf($parent);
 			}
 			foreach ($typeOf($node->var) as $receiver) {
 				if ($receiver === null) {
@@ -95,7 +106,48 @@ final class CallGraphProtocols {
 				}
 			}
 		}
+		if ($node instanceof Expr\List_ || $node instanceof Expr\Array_) {
+			$parent = $node->getAttribute('parent');
+			$values = null;
+			if ($parent instanceof Expr\Assign && $parent->var === $node) {
+				$values = $typeOf($parent->expr);
+			} elseif ($parent instanceof Stmt\Foreach_ && $parent->valueVar === $node) {
+				$values = array_merge(...array_map(CallGraphArrayTypes::values(...), $typeOf($parent->expr)));
+			}
+			if ($values !== null) {
+				$this->destructure($node, $values, $typeOf, $follow, static fn (string $why) => $miss($node, $why));
+			}
+		}
 		return array_values(array_unique($edges));
+	}
+
+	/**
+	 * @param Expr\List_|Expr\Array_ $pattern destructuring target
+	 * @param list<?string> $values possible source values
+	 * @param callable(Expr):list<?string> $typeOf key evidence
+	 * @param callable(string,string,array):void $follow follows offsetGet
+	 * @param callable(string):void $miss reports unproved receivers
+	 * @return void destructuring reads ArrayAccess objects as well as ordinary arrays
+	 */
+	private function destructure(Expr $pattern, array $values, callable $typeOf, callable $follow, callable $miss): void {
+		foreach ($pattern->items as $position => $item) {
+			if ($item === null) { continue; }
+			$elements = [];
+			foreach (CallGraphArrayTypes::members($values) as $value) {
+				if ($value === null) { $miss('destructuring receiver of unknown type'); }
+				if (CallGraphTypes::isObject($value)) {
+					foreach ($this->dispatch->instances($value) as $class) {
+						$follow($class, 'offsetGet', [$item->key === null ? ['@number:int'] : $typeOf($item->key)]);
+						array_push($elements, ...$this->types->returnTypes($class, 'offsetGet'));
+					}
+				} else {
+					array_push($elements, ...CallGraphArrayTypes::values($value, $item->key instanceof Node\Scalar\String_ || $item->key instanceof Node\Scalar\Int_ ? $item->key->value : $position));
+				}
+			}
+			if ($item->value instanceof Expr\List_ || $item->value instanceof Expr\Array_) {
+				$this->destructure($item->value, $elements, $typeOf, $follow, $miss);
+			}
+		}
 	}
 
 	/**

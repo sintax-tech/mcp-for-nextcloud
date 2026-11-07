@@ -29,9 +29,10 @@ final class CallGraphLocals {
 
 	/**
 	 * @param string $key a unit key
+	 * @param bool $external whether uncalled writers must retain unknown incoming arguments
 	 * @return array<string, list<?string>> variable name to its possible types
 	 */
-	public function of(string $key): array {
+	public function of(string $key, bool $external = false): array {
 		$unit = $this->index->unit($key);
 		$finder = new NodeFinder();
 		$all = $finder->find($unit['node']->stmts ?? [], static fn (Node $n): bool => true);
@@ -43,26 +44,41 @@ final class CallGraphLocals {
 		}
 		$start = array_merge($start, array_map(static fn (string $type): array => [$type], $unit['params']));
 		$given = $this->types->bindings->of($key);
+		$enforced = [];
+		foreach ($unit['node']->params as $parameter) {
+			$enforced[$parameter->var->name] = (new CallGraphSignatures($this->index))->declared($parameter->type, $unit['class']) !== null;
+		}
 		foreach ($given as $name => $values) {
 			$stated = $unit['params'][$name] ?? null;
 			$array = CallGraphArrayTypes::read($stated);
-			if ($stated === null || ($array !== null && in_array(null, $array['values'], true))) {
-				$start[$name] = $values;
+			if ($array !== null) {
+				$actual = array_map(static fn (?string $v): ?string => $v === '@bottom' || CallGraphArrayTypes::read($v) !== null ? $v : CallGraphArrayTypes::make([''], [null]), $values);
+				$start[$name] = in_array(null, $array['values'], true) ? $actual : CallGraphTypes::union([$stated, ...$actual]);
+			} elseif (!($enforced[$name] ?? false)) {
+				$start[$name] = CallGraphTypes::union([...($start[$name] ?? []), ...$values]);
+			}
+		}
+		foreach ($unit['node']->params as $param) {
+			$name = $param->var->name;
+			if (!array_key_exists($name, $given) && !($enforced[$name] ?? false) && !$this->types->bindings->isRoot($key) && !$external) {
+				$start[$name] = CallGraphArrayTypes::read($unit['params'][$name] ?? null) !== null ? [CallGraphArrayTypes::make([''], ['@bottom'])] : ['@bottom'];
 			}
 		}
 		$locals = $start;
-		for ($round = 0; $round < 8; $round++) {
+		for ($round = 0; $round < 32; $round++) {
 			$next = $start;
 			foreach ($all as $n) {
 				$this->give($unit['class'], $n, $locals, $next);
 			}
 			$next = array_map(CallGraphTypes::union(...), $next);
 			if ($next === $locals) {
-				break;
+				$unproved = array_keys(array_filter($next, static fn (array $values): bool => $values === []));
+				if ($unproved === []) { break; }
+				foreach ($unproved as $name) { $start[$name] = $next[$name] = [null]; }
 			}
 			$locals = $next;
 		}
-		return array_map(static fn (array $types): array => $types === [] ? [null] : $types, $locals);
+		return $round === 32 ? array_fill_keys(array_keys($locals), [null]) : array_map(static fn (array $types): array => $types === [] ? [null] : $types, $locals);
 	}
 
 	/**
@@ -74,6 +90,11 @@ final class CallGraphLocals {
 	 * @return void
 	 */
 	private function give(?string $class, Node $n, array $locals, array &$next): void {
+		if ($n instanceof Expr\FuncCall) {
+			foreach (CallGraphReferences::outputs($n, $this->index) as $name => $values) {
+				$next[$name] = [...($next[$name] ?? []), ...$values];
+			}
+		}
 		$add = static function (string $name, array $types) use (&$next): void {
 			$next[$name] = [...($next[$name] ?? []), ...$types];
 		};
@@ -81,10 +102,12 @@ final class CallGraphLocals {
 			&& ($stated = $this->inlineVar($class, $n, $n->expr->var->name)) !== null) {
 			$add($n->expr->var->name, [$stated]);
 			$n->expr->setAttribute('stated', true);
-		} elseif ($n instanceof Expr\Assign && $n->var instanceof Expr\ArrayDimFetch && $n->var->var instanceof Expr\Variable && is_string($n->var->var->name)) {
-			// `$list[] = $x` makes $list an array of the type of $x.
-			$add($n->var->var->name, array_map(static fn (?string $t): ?string => $t === null ? null : ($t === '' ? 'scalar[]' : $t . '[]'),
-				$this->types->typeOf($class, $n->expr, $locals)));
+		} elseif (($n instanceof Expr\Assign || $n instanceof Expr\AssignOp) && $n->var instanceof Expr\ArrayDimFetch) {
+			[$root, $path] = CallGraphArrayWrites::path($n->var);
+			if ($root instanceof Expr\Variable && is_string($root->name)) {
+				$add($root->name, CallGraphArrayWrites::write($locals[$root->name] ?? [], $path,
+					$this->types->typeOf($class, $n instanceof Expr\Assign ? $n->expr : $n, $locals)));
+			}
 		} elseif ($n instanceof Expr\FuncCall && $n->name instanceof Node\Name && isset(self::ITERATING[strtolower($this->index->functionName($n->name))])) {
 			[$callback, $array, $count] = self::ITERATING[strtolower($this->index->functionName($n->name))];
 			$fn = $n->args[$callback]->value ?? null;

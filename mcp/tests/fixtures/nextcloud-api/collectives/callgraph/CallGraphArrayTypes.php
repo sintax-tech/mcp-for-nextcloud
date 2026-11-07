@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 /** Structural array evidence keeps keys, values and literal fields separate; null always means an unproved value. */
 final class CallGraphArrayTypes {
+	/** @var array<string,array> canonical immutable descriptors, shared within this PHP process */
+	private static array $arrays = [];
 	/**
 	 * @param list<?string> $keys possible key types
 	 * @param list<?string> $values possible value types
@@ -15,7 +17,10 @@ final class CallGraphArrayTypes {
 	 */
 	public static function make(array $keys, array $values, array $shape = []): string {
 		ksort($shape);
-		return '@array:' . json_encode(['keys' => self::members($keys), 'values' => self::members($values), 'shape' => $shape], JSON_THROW_ON_ERROR) . '[]';
+		$data = ['keys' => self::members($keys), 'values' => self::members($values), 'shape' => $shape];
+		$type = '@array:' . hash('sha256', serialize($data)) . '[]';
+		self::$arrays[$type] = $data;
+		return $type;
 	}
 
 	/**
@@ -26,12 +31,7 @@ final class CallGraphArrayTypes {
 		if ($type === null || !str_ends_with($type, '[]')) {
 			return null;
 		}
-		if (str_starts_with($type, '@array:')) {
-			$decoded = json_decode(substr($type, 7, -2), true);
-			if (is_array($decoded) && isset($decoded['keys'], $decoded['values'], $decoded['shape'])) {
-				return $decoded;
-			}
-		}
+		if (isset(self::$arrays[$type])) { return self::$arrays[$type]; }
 		return ['keys' => [''], 'values' => $type === '[]' ? [] : [$type === 'scalar[]' ? '' : substr($type, 0, -2)], 'shape' => []];
 	}
 
@@ -46,6 +46,7 @@ final class CallGraphArrayTypes {
 				$result[serialize($member)] = $member;
 			}
 		}
+		if (count($result) > 1) { unset($result[serialize('@bottom')]); }
 		ksort($result);
 		return array_values($result);
 	}
@@ -65,6 +66,7 @@ final class CallGraphArrayTypes {
 	 */
 	public static function merge(array $types): array {
 		$types = self::members($types);
+		if (count($types) > 1) { $types = array_values(array_filter($types, static fn (?string $t): bool => $t !== '@bottom')); }
 		$arrays = array_values(array_filter($types, static fn (?string $t): bool => self::read($t) !== null));
 		if (count($arrays) < 2) {
 			return $types;
@@ -95,7 +97,7 @@ final class CallGraphArrayTypes {
 			if ($array !== null) {
 				array_push($values, ...($key !== null && $array['shape'] !== [] ? ($array['shape'][(string)$key] ?? ['']) : ($array['values'] === [] ? [''] : $array['values'])));
 			} else {
-				$values[] = in_array($member, ['json-value', 'json-object-value', ''], true) ? $member : null;
+				$values[] = in_array($member, ['json-value', 'json-object-value', '', '@bottom'], true) ? $member : null;
 			}
 		}
 		return self::members($values);

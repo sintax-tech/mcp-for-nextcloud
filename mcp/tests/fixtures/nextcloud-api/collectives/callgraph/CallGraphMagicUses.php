@@ -26,36 +26,28 @@ final class CallGraphMagicUses {
 	 */
 	public function calls(Node $node, callable $typeOf, callable $miss, string $caller): array {
 		$edges = [];
-		$add = function (Expr $value, array $hooks, array $arguments = []) use ($typeOf, $miss, $node, $caller, &$edges): void {
-			foreach (CallGraphArrayTypes::leaves($typeOf($value)) as $type) {
-				if ($type === 'json-object-value' && in_array('__toString', $hooks, true)) {
-					$edges[] = 'php-core stdClass::__toString[absent]';
-				}
-				if ($type === null) {
-					$miss($node, 'implicit receiver of unknown type for ' . implode('/', $hooks));
-					continue;
-				}
-				$candidates = CallGraphTypes::isObject($type) ? $this->dispatch->instances($type) : [];
-				foreach ($candidates as $class) {
-					foreach ($hooks as $hook) {
-						$unknown = [];
-						$targets = $this->dispatch->implicit($class, $hook, $unknown);
-						array_push($edges, ...$targets);
-						foreach ($targets as $target) {
-							$this->arguments->bind($target, $caller . ':' . $node->getStartFilePos() . ':' . $hook, $arguments);
-						}
-						foreach ($unknown as $message) {
-							$miss($node, $message);
-						}
-					}
-				}
-			}
+		$implicit = new CallGraphImplicitEdges($this->dispatch, $this->arguments);
+		$add = function (Expr $value, array $hooks, array $arguments = []) use ($implicit, $typeOf, $miss, $node, $caller, &$edges): void {
+			array_push($edges, ...$implicit->of($typeOf($value), $hooks, $node, $caller, $miss, $arguments));
 		};
+		$compare = function (Expr $value) use ($implicit, $typeOf, $miss, $node, $caller, &$edges): void {
+			array_push($edges, ...(new CallGraphComparisons($this->index, $implicit))->of($typeOf($value), $node, $caller, $miss));
+		};
+		if ($node instanceof Expr\New_ || $node instanceof Expr\Clone_) {
+			$add($node, ['__destruct']);
+		}
+
 		if ($node instanceof Expr\PropertyFetch || $node instanceof Expr\NullsafePropertyFetch) {
 			$add($node->var, ['__get', '__isset'], [['']]);
+			if ($node->name instanceof Expr) { $add($node->name, ['__toString']); }
+			CallGraphPropertyHooks::check($typeOf($node->var), $node->name instanceof Node\Identifier ? $node->name->name : null,
+				$node, $this->index, $this->dispatch, $miss);
 		}
 		if (($node instanceof Expr\Assign || $node instanceof Expr\AssignOp) && $node->var instanceof Expr\PropertyFetch) {
 			$add($node->var->var, ['__set'], [[''], $typeOf($node->expr)]);
+		}
+		if (($node instanceof Expr\PreInc || $node instanceof Expr\PreDec || $node instanceof Expr\PostInc || $node instanceof Expr\PostDec) && $node->var instanceof Expr\PropertyFetch) {
+			$add($node->var->var, ['__get', '__set'], [[''], $typeOf($node)]);
 		}
 		if ($node instanceof Expr\Isset_ || $node instanceof Stmt\Unset_) {
 			foreach ($node->vars as $var) {
@@ -69,14 +61,14 @@ final class CallGraphMagicUses {
 		}
 		if ($node instanceof Expr\BinaryOp && in_array($node->getType(), ['Expr_BinaryOp_Equal', 'Expr_BinaryOp_NotEqual',
 			'Expr_BinaryOp_Smaller', 'Expr_BinaryOp_Greater', 'Expr_BinaryOp_SmallerOrEqual', 'Expr_BinaryOp_GreaterOrEqual', 'Expr_BinaryOp_Spaceship'], true)) {
-			$add($node->left, ['__toString']);
-			$add($node->right, ['__toString']);
+			$compare($node->left);
+			$compare($node->right);
 		}
 		if ($node instanceof Stmt\Switch_) {
-			$add($node->cond, ['__toString']);
+			$compare($node->cond);
 			foreach ($node->cases as $case) {
 				if ($case->cond !== null) {
-					$add($case->cond, ['__toString']);
+					$compare($case->cond);
 				}
 			}
 		}
@@ -99,7 +91,7 @@ final class CallGraphMagicUses {
 			$model = CallGraphFunctions::model($name);
 			foreach (CallGraphFunctions::stringArguments($node, $this->index) as $position) {
 				if (($node->args[$position] ?? null) instanceof Node\Arg) {
-					$add($node->args[$position]->value, ['__toString']);
+					if (($model['effect'] ?? null) === 'compare') { $compare($node->args[$position]->value); } else { $add($node->args[$position]->value, ['__toString']); }
 				}
 			}
 			if (($model['effect'] ?? null) === 'column' && ($node->args[0] ?? null) instanceof Node\Arg) {

@@ -81,7 +81,7 @@ final class CallGraphFunctionTypes {
 			return array_map(CallGraphTypes::element(...), $arguments[(int)substr($result, 8)] ?? [null]);
 		}
 		return match ($result) {
-			'scalar' => [''], 'scalar-array' => ['scalar[]'],
+			'scalar' => [isset($model['scalarType']) ? CallGraphScalarTypes::declared($model['scalarType']) : ''], 'scalar-array' => ['scalar[]'],
 			'arguments' => CallGraphTypes::union(array_merge(...$arguments, ...array_map(static fn (array $types): array => array_map(CallGraphTypes::element(...), $types), $arguments))),
 			default => [null],
 		};

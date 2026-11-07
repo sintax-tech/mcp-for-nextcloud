@@ -49,7 +49,7 @@ final class CallGraphDocs {
 			return CallGraphArrayTypes::make([''], [null]);
 		}
 		if (in_array(strtolower($doc), ['int', 'integer', 'float', 'double', 'string', 'bool', 'boolean', 'scalar', 'null', 'void', 'never', 'false', 'true', 'resource', 'array-key'], true)) {
-			return '';
+			return CallGraphScalarTypes::declared($doc);
 		}
 		return in_array(strtolower($doc), ['mixed', 'object'], true) ? null : $class($doc);
 	}

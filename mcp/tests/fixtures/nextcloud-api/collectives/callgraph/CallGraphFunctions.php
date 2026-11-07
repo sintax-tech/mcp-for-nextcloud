@@ -64,6 +64,12 @@ final class CallGraphFunctions {
 			$miss($call, 'function outside the closed subset: ' . $name);
 			return;
 		}
+		foreach ($model['outArguments'] ?? [] as $position => $kind) {
+			$target = $call->args[$position]->value ?? null;
+			if ($target !== null && (!$target instanceof Expr\Variable || !is_string($target->name))) {
+				$miss($call, 'by-reference output outside the closed subset');
+			}
+		}
 		foreach ($model['effect'] === 'callback' ? $model['arguments'] : [] as $position) {
 			if (!isset($call->args[$position]) && in_array(strtolower($name), ['array_filter', 'ob_start'], true)) {
 				continue;

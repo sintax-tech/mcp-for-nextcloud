@@ -9,11 +9,24 @@ declare(strict_types=1);
 final class CallGraphBindings {
 	/** @var array<string, array<string, array<string, list<?string>>>> callee, call site, parameter, types */
 	private array $sites = [];
+	/** @var array<string,true> explicit graph entry bodies */
+	private array $roots = [];
 
 	/** @return void starts an independent reachability query */
 	public function clear(): void {
-		$this->sites = [];
+		$this->sites = $this->roots = [];
 	}
+
+	/**
+	 * @param list<string> $keys explicitly invoked entry bodies
+	 * @return void marks unknown externally supplied entry parameters
+	 */
+	public function roots(array $keys): void { $this->roots = array_fill_keys($keys, true); }
+	/**
+	 * @param string $key canonical body
+	 * @return bool whether callers are external to this graph
+	 */
+	public function isRoot(string $key): bool { return isset($this->roots[$key]); }
 
 	/**
 	 * @param string $callee canonical body key

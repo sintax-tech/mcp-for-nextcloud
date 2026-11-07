@@ -19,7 +19,8 @@ final class CallGraphTypes {
 	public CallGraphLocals $locals;
 	public CallGraphBindings $bindings;
 	/** @var array<string, true> bodies whose return is being read, so a recursion gives no type */
-	private array $reading = [];
+	public CallGraphReturns $returns;
+	public CallGraphPropertyFacts $properties;
 	private CallGraphFunctionTypes $functions;
 	private CallGraphFetchTypes $fetch;
 
@@ -29,6 +30,8 @@ final class CallGraphTypes {
 	 * @param array<string,array<string,string>> $fetchReturns source-proved fetch returns
 	 */
 	public function __construct(private CallGraphIndex $index, private CallGraphDispatch $dispatch, array $fetchReturns = []) {
+		$this->properties = new CallGraphPropertyFacts($index, $this);
+		$this->returns = new CallGraphReturns($index, $this);
 		$this->fetch = new CallGraphFetchTypes($fetchReturns);
 		$this->bindings = new CallGraphBindings();
 		$this->functions = new CallGraphFunctionTypes($index, $this);
@@ -45,17 +48,26 @@ final class CallGraphTypes {
 		if (!CallGraphSubset::allows($expr)) {
 			return [null];
 		}
+		$typeOf = fn (Expr $e): array => $this->typeOf($class, $e, $locals);
 		return self::union(match (true) {
+			$expr instanceof Node\Scalar\Int_ => ['@number:int'], $expr instanceof Node\Scalar\Float_ => ['@number:float'],
+			$expr instanceof Expr\PreInc, $expr instanceof Expr\PreDec, $expr instanceof Expr\PostInc, $expr instanceof Expr\PostDec,
+			$expr instanceof Expr\UnaryMinus, $expr instanceof Expr\UnaryPlus,
+			$expr instanceof Expr\BinaryOp\Plus, $expr instanceof Expr\BinaryOp\Minus, $expr instanceof Expr\BinaryOp\Mul,
+			$expr instanceof Expr\BinaryOp\Div, $expr instanceof Expr\BinaryOp\Mod, $expr instanceof Expr\BinaryOp\Pow
+				=> CallGraphScalarTypes::arithmetic($expr, $typeOf),
+			$expr instanceof Expr\Cast\Int_ => ['@number:int'], $expr instanceof Expr\Cast\Double => ['@number:float'],
 			$expr instanceof Expr\Variable => $expr->name === 'this' ? [$class] : (is_string($expr->name) ? ($locals[$expr->name] ?? [null]) : [null]),
 			$expr instanceof Expr\New_ => $this->created($class, $expr, $locals),
 			$expr instanceof Expr\Include_ => ['scalar[]'],
 			$expr instanceof Expr\Clone_ => $this->typeOf($class, $expr->expr, $locals),
 			$expr instanceof Expr\Assign, $expr instanceof Expr\AssignOp\Coalesce => $this->typeOf($class, $expr->expr, $locals),
+			$expr instanceof Expr\Match_ => self::union(array_merge(...array_map(fn (Node\MatchArm $arm): array => $arm->body instanceof Expr\Throw_ ? [] : $typeOf($arm->body), $expr->arms))),
 			$expr instanceof Expr\Ternary => self::union([...$this->typeOf($class, $expr->if ?? $expr->cond, $locals), ...$this->typeOf($class, $expr->else, $locals)]),
 			$expr instanceof Expr\BinaryOp\Coalesce => self::union([...$this->typeOf($class, $expr->left, $locals), ...$this->typeOf($class, $expr->right, $locals)]),
 			$expr instanceof Expr\Array_ => $this->arrayType($class, $expr, $locals),
 			$expr instanceof Expr\StaticPropertyFetch && $expr->class instanceof Node\Name && $expr->name instanceof Node\VarLikeIdentifier
-				=> [$this->index->props($this->index->name($class, $expr->class))[$expr->name->name] ?? null],
+				=> [$this->properties->of($this->index->name($class, $expr->class), $expr->name->name)],
 			$expr instanceof Expr\PropertyFetch, $expr instanceof Expr\NullsafePropertyFetch => $this->propertyType($class, $expr, $locals),
 			$expr instanceof Expr\ArrayDimFetch => $this->offsetType($class, $expr, $locals),
 			$expr instanceof Expr\MethodCall, $expr instanceof Expr\NullsafeMethodCall => $this->callType($class, $expr, $locals),
@@ -63,7 +75,9 @@ final class CallGraphTypes {
 			$expr instanceof Expr\FuncCall => $this->functions->of($class, $expr, $locals),
 			$expr instanceof Expr\ClassConstFetch && $expr->class instanceof Node\Name && $expr->name instanceof Node\Identifier && $expr->name->name === 'class'
 				=> ['class-string:' . $this->index->name($class, $expr->class)],
-			$expr instanceof Node\Scalar, $expr instanceof Expr\ConstFetch, $expr instanceof Expr\ClassConstFetch,
+			$expr instanceof Expr\ClassConstFetch => CallGraphScalarTypes::constant($this->index, $class, $expr, $typeOf),
+			$expr instanceof Expr\ConstFetch => CallGraphScalarTypes::globalConstant($expr),
+			$expr instanceof Node\Scalar,
 			$expr instanceof Expr\BinaryOp, $expr instanceof Expr\BooleanNot, $expr instanceof Expr\Cast, $expr instanceof Expr\Isset_,
 			$expr instanceof Expr\Empty_, $expr instanceof Expr\Instanceof_, $expr instanceof Expr\UnaryMinus, $expr instanceof Expr\Closure,
 			$expr instanceof Expr\ArrowFunction => [''],
@@ -115,7 +129,7 @@ final class CallGraphTypes {
 		if (!$expr->name instanceof Node\Identifier) {
 			return [null];
 		}
-		return array_map(fn (?string $t): ?string => in_array($t, ['json-value', 'json-object-value'], true) ? $t : (self::isObject($t) ? ($this->index->props((string)$t)[$expr->name->name] ?? null) : null),
+		return array_map(fn (?string $t): ?string => in_array($t, ['json-value', 'json-object-value'], true) ? $t : (self::isObject($t) ? $this->properties->of((string)$t, $expr->name->name) : null),
 			$this->typeOf($class, $expr->var, $locals));
 	}
 
@@ -159,23 +173,7 @@ final class CallGraphTypes {
 	 * @return list<?string> proven array element types, preserving an unknown or an object element
 	 */
 	private function arrayType(?string $class, Expr\Array_ $expr, array $locals): array {
-		$keys = $values = $shape = [];
-		$exact = true;
-		foreach ($expr->items as $position => $item) {
-			if ($item === null || $item->unpack) {
-				return [CallGraphArrayTypes::make([''], [null])];
-			}
-			$types = $this->typeOf($class, $item->value, $locals);
-			array_push($values, ...$types);
-			array_push($keys, ...($item->key === null ? [''] : $this->typeOf($class, $item->key, $locals)));
-			$key = $item->key === null ? $position : ($item->key instanceof Node\Scalar\String_ || $item->key instanceof Node\Scalar\Int_ ? $item->key->value : null);
-			if ($key === null) {
-				$exact = false;
-				continue;
-			}
-			$shape[(string)$key] = $types;
-		}
-		return $expr->items === [] ? ['[]'] : [CallGraphArrayTypes::make($keys, $values, $exact ? $shape : [])];
+		return CallGraphArrayExpressions::literal($class, $expr, $locals, $this);
 	}
 
 	/**
@@ -214,25 +212,7 @@ final class CallGraphTypes {
 	 * @return string|null its stated return, or the one type every `return` of its body has; null otherwise or on recursion
 	 */
 	public function unitReturn(string $key): ?string {
-		$unit = $this->index->unit($key);
-		if ($unit['returns'] !== null || isset($this->reading[$key]) || $unit['node']->stmts === null) {
-			return $unit['returns'];
-		}
-		$this->reading[$key] = true;
-		try {
-			$locals = $this->locals->of($key);
-			$types = [];
-			foreach (self::returns($unit['node']->stmts) as $return) {
-				array_push($types, ...($return->expr === null ? [''] : $this->typeOf($unit['class'], $return->expr, $locals)));
-			}
-			$types = self::union($types);
-			if ($types !== [] && array_diff($types, ['', '[]', 'scalar[]', 'json-value', 'json-object-value']) === [] && !in_array(null, $types, true)) {
-				return in_array('json-object-value', $types, true) ? 'json-object-value' : (in_array('json-value', $types, true) ? 'json-value' : (in_array('scalar[]', $types, true) ? 'scalar[]' : ''));
-			}
-			return count($types) === 1 ? $types[0] : null;
-		} finally {
-			unset($this->reading[$key]);
-		}
+		return $this->returns->of($key);
 	}
 
 	/**

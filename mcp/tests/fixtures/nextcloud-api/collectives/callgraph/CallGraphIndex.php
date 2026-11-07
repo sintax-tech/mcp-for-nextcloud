@@ -222,7 +222,7 @@ final class CallGraphIndex {
 		$doc = fn (string $t): ?string => CallGraphNames::docType($this->imports[$fqcn], $namespace, $fqcn, $t);
 		$extends = $node instanceof Stmt\Class_ ? $node->extends?->toString() : null;
 		$parents = match (true) {
-			$node instanceof Stmt\Class_ => array_values(array_filter([$extends, ...array_map(static fn (Node\Name $n): string => $n->toString(), $node->implements)])),
+			$node instanceof Stmt\Class_ || $node instanceof Stmt\Enum_ => array_values(array_filter([$extends, ...array_map(static fn (Node\Name $n): string => $n->toString(), $node->implements)])),
 			$node instanceof Stmt\Interface_ => array_map(static fn (Node\Name $n): string => $n->toString(), $node->extends),
 			default => [],
 		};
@@ -275,6 +275,6 @@ final class CallGraphIndex {
 			array_push($traits, ...array_map(static fn (Node\Name $n): string => $n->toString(), $use->traits));
 		}
 		$this->classes[$fqcn] = ['outside' => $typesOnly, 'file' => $file, 'path' => $path, 'extends' => $extends, 'parents' => $parents, 'traits' => $traits,
-			'doc' => $node->getDocComment()?->getText() ?? '', 'declaredProps' => $declaredProps, 'magicReturns' => $magicReturns, 'props' => $props, 'consts' => $consts, 'methods' => $methods];
+			'node' => $node, 'doc' => $node->getDocComment()?->getText() ?? '', 'declaredProps' => $declaredProps, 'magicReturns' => $magicReturns, 'props' => $props, 'consts' => $consts, 'methods' => $methods];
 	}
 }

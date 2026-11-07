@@ -29,6 +29,7 @@ final class CallGraphCalls {
 	private Standard $printer;
 	private CallGraphMagicUses $magic;
 	private CallGraphProtocols $protocols;
+	private CallGraphCoercions $coercions;
 	private CallGraphArguments $arguments;
 
 	/**
@@ -39,6 +40,7 @@ final class CallGraphCalls {
 	public function __construct(private CallGraphIndex $index, private CallGraphDispatch $dispatch, private CallGraphTypes $types) {
 		$this->printer = new Standard();
 		$this->arguments = new CallGraphArguments($index, $dispatch, $types);
+		$this->coercions = new CallGraphCoercions($index, $dispatch, new CallGraphImplicitEdges($dispatch, $this->arguments));
 		$this->protocols = new CallGraphProtocols($index, $dispatch, $types, $this->arguments);
 		$this->magic = new CallGraphMagicUses($index, $dispatch, $this->arguments);
 	}
@@ -63,7 +65,7 @@ final class CallGraphCalls {
 		foreach ((new NodeFinder())->find($unit['node']->stmts ?? [], static fn (Node $n): bool => true) as $n) {
 			CallGraphSubset::check($n, $miss, $typeOf);
 			$this->arguments->record($n, $key, $class, $typeOf);
-			array_push($calls, ...$this->magic->calls($n, $typeOf, $miss, $key), ...$this->protocols->calls($n, $typeOf, $miss, $key));
+			array_push($calls, ...$this->magic->calls($n, $typeOf, $miss, $key), ...$this->protocols->calls($n, $typeOf, $miss, $key), ...$this->coercions->calls($n, $key, $typeOf, $miss));
 			if ($n instanceof Expr\MethodCall || $n instanceof Expr\NullsafeMethodCall) {
 				$text = $this->printer->prettyPrintExpr($n->var) . '->' . ($n->name instanceof Node\Identifier ? $n->name->name : '{dynamic}') . '(';
 				if (!$n->name instanceof Node\Identifier) {

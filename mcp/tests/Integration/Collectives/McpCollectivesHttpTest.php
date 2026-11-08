@@ -99,11 +99,18 @@ final class McpCollectivesHttpTest extends IntegrationTestCase {
 
 	/**
 	 * Only the collective the cell provisions is this test's: others the owner has, such as those the C04 tests create,
-	 * are left alone and not counted.
+	 * are left alone and not counted. Every page of the listing is read, following `next_cursor`, since the collectives
+	 * the C04 tests leave behind sort before it and may push it off the first page.
 	 * @return array<string, mixed> "MCP Wiki" as collectives_list shows it to the owner, listed exactly once
 	 */
 	private function wiki(): array {
-		$collectives = $this->json($this->client($this->owner())->tool('collectives_list'))['collectives'];
+		$collectives = [];
+		$arguments = [];
+		do {
+			$page = $this->json($this->client($this->owner())->tool('collectives_list', $arguments));
+			$collectives = [...$collectives, ...$page['collectives']];
+			$arguments = ['cursor' => $page['next_cursor']];
+		} while ($page['next_cursor'] !== null);
 		$wiki = array_values(array_filter($collectives, static fn (array $collective): bool => $collective['name'] === 'MCP Wiki'));
 		$this->assertCount(1, $wiki, 'the provisioned collective is listed once');
 		return $wiki[0];

@@ -11,6 +11,9 @@ use OCA\Mcp\Mcp\Confirmation\PlanChanged;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Collectives\CollectivesModule;
+use OCA\Mcp\Modules\Collectives\Integration\TeamsGateway;
+use OCA\Mcp\Modules\Collectives\Presentation\MembershipMessages;
+use OCA\Mcp\Modules\Collectives\Removal\RemovalReadback;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -234,6 +237,55 @@ final class CollectivesMembersTest extends TestCase {
 		TeamsScene::$entries['circle-secret'][1]['level'] = 9;
 		TeamsScene::$entries['circle-secret'][0]['level'] = 8;
 		$this->assertStringContainsString('owner', $this->refused(fn () => $module->preview('collectives_remove_member', ['collective_id' => 7, 'member_id' => 'm-bob'], 'alice')));
+	}
+
+	/**
+	 * @param CollectivesRig $rig the rig
+	 * @return PacedRemovalReadback the readback the module gets, on its own clock
+	 */
+	private function pacedReadback(CollectivesRig $rig): PacedRemovalReadback {
+		$readback = new PacedRemovalReadback($rig->get(TeamsGateway::class));
+		$rig->bind(RemovalReadback::class, $readback);
+		return $readback;
+	}
+
+	/** @return void Teams deletes the member in the background (CI run 42424755894): the receipt waits for it and is applied, removing once */
+	public function testARemovalAppliedInTheBackgroundIsApplied(): void {
+		$rig = new CollectivesRig($this);
+		$readback = $this->pacedReadback($rig);
+		TeamsScene::$removalReads = 3;
+		$receipt = $this->confirm($rig->module(), 'collectives_remove_member', ['collective_id' => 7, 'member_id' => 'm-carol']);
+		$this->assertSame('applied', $receipt['status'], json_encode($receipt));
+		$this->assertNull($receipt['observed']);
+		$this->assertSame(3, $readback->pauses, 'read again until the member is gone');
+		$this->assertSame(['removeMember:m-carol'], array_values(array_filter(TeamsScene::$calls, static fn (string $call): bool => str_starts_with($call, 'removeMember'))));
+	}
+
+	/** @return void a removal still not visible when the wait runs out is uncertain, never partial; it is not sent again */
+	public function testARemovalNotVisibleWithinTheWaitIsUncertain(): void {
+		$rig = new CollectivesRig($this);
+		$readback = $this->pacedReadback($rig);
+		TeamsScene::$removalReads = 1000;
+		$receipt = $this->confirm($rig->module(), 'collectives_remove_member', ['collective_id' => 7, 'member_id' => 'm-carol']);
+		$this->assertSame('uncertain', $receipt['status'], json_encode($receipt));
+		$this->assertFalse($receipt['membership_changed']);
+		$this->assertSame(['status' => 'member', 'level' => 'member'], $receipt['observed']);
+		$this->assertSame(MembershipMessages::notVisibleYet(), $receipt['message']);
+		$this->assertArrayNotHasKey('native_error', $receipt);
+		$this->assertSame(RemovalReadback::SECONDS * 1_000_000 / RemovalReadback::PAUSE, $readback->pauses, 'the wait is bounded');
+		$this->assertSame(['removeMember:m-carol'], array_values(array_filter(TeamsScene::$calls, static fn (string $call): bool => str_starts_with($call, 'removeMember'))));
+	}
+
+	/** @return void a removal Teams refused is read once, without waiting */
+	public function testARefusedRemovalIsNotWaitedFor(): void {
+		$rig = new CollectivesRig($this);
+		$readback = $this->pacedReadback($rig);
+		TeamsScene::$removalReads = 1000;
+		TeamsScene::$failMember = 'before';
+		$receipt = $this->confirm($rig->module(), 'collectives_remove_member', ['collective_id' => 7, 'member_id' => 'm-carol']);
+		$this->assertSame('not_applied', $receipt['status'], json_encode($receipt));
+		$this->assertArrayHasKey('native_error', $receipt);
+		$this->assertSame(0, $readback->pauses);
 	}
 
 	/** @return void a member that changed since the plan changes the plan: nothing is attempted */

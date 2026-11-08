@@ -20,7 +20,9 @@ use Throwable;
  * - `not_applied`: Teams threw and the membership is as before;
  * - `partial`: the membership changed into something else than requested, or Teams threw after storing it: what
  *   follows the store in Teams (its events, the invitation notification) is then not proven (§14 R2.5);
- * - `uncertain`: the team could not be read again.
+ * - `uncertain`: the team could not be read again, or Teams answered and the read shows the membership still as
+ *   before: Teams applies some changes in the background (a removal, see {@see \OCA\Mcp\Modules\Collectives\Removal\RemovalReadback}),
+ *   so an unchanged membership is not a different result.
  */
 final class MemberReceipt {
 	/** Static helper only; never instantiated. */
@@ -45,11 +47,13 @@ final class MemberReceipt {
 		$status = match (true) {
 			$error === null && $observed === $requested => 'applied',
 			$error !== null && !$changed => 'not_applied',
+			$error === null && !$changed => 'uncertain',
 			default => 'partial',
 		};
 		return $receipt + ['observed' => $observed, 'status' => $status, 'membership_changed' => $changed, 'message' => match (true) {
 			$status === 'applied' => MembershipMessages::applied(),
 			$status === 'not_applied' => MembershipMessages::notApplied(),
+			$status === 'uncertain' => MembershipMessages::notVisibleYet(),
 			$error !== null && $observed === $requested => MembershipMessages::storedThenFailed(),
 			default => MembershipMessages::partial(),
 		}] + $extra;

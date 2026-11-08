@@ -2,6 +2,16 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## 1.3.3 — Unreleased
+
+### Fixed
+
+- **Scans made searchable by ocrmypdf were reported as having no text layer ([#31](https://github.com/sintax-tech/mcp-for-nextcloud/issues/31)):** `files_read`, `resources/read` and the reading of a stored version returned the "no text layer" notice, and a PDF mail attachment gave no text, for PDFs whose Tesseract text was added by ocrmypdf with `--output-type pdf`, with any `--optimize` level and either PDF renderer, on ocrmypdf 13 with Tesseract 4.1 and on ocrmypdf 15 with Tesseract 5.3. ocrmypdf draws the text layer as a Form XObject named `/OCR-…`, and pikepdf stores the page that draws it in a compressed object stream. smalot/pdfparser reads objects in object streams with its own grammar, which stops a dictionary key at a hyphen (and a name value at an underscore), so the page lost its XObjects and its text; up to 2.13.1, the latest release, the library still does this. The app now writes every such name in its `#xx` escape before the library reads an object stream, which the library decodes back to the same name, and keeps the offsets of the stream; strings, objects outside object streams and streams without such names are read exactly as before. Files that went through Ghostscript (ocrmypdf's default PDF/A output) or that Tesseract wrote directly were not affected, which is why only part of a collection failed. Defect present since PDF reading arrived.
+
+### Validation and limits
+
+The fix is covered by unit tests with two small scans of synthetic text made by ocrmypdf 15.2 with Tesseract 5.3 and ocrmypdf 13.4 with Tesseract 4.1, read through `files_read`, through a mail attachment and through the parser, which fail on 1.3.2 and pass now, and by tests of the escaping itself (keys and values, strings, hexadecimal strings, comments and offsets). Thirty-two PDFs made with Tesseract directly, with ocrmypdf (PDF and PDF/A output, every `--optimize` level, both renderers, several pages, rotated pages), and rewritten by qpdf (object streams, linearization, uncompressed, without ToUnicode) and Ghostscript all return their text now; the thirteen that returned none on 1.3.2 are the ocrmypdf `--output-type pdf` ones that qpdf or Ghostscript did not rewrite. Text that Tesseract itself recognized wrongly, such as a rotated scan OCRed without page rotation, is returned as Tesseract wrote it.
+
 ## 1.3.2 — 2026-11-07
 
 Fix release on top of 1.3.1. No database change and no permission change; updating from 1.3.1 needs no step. Only the file writes that keep a pre-write copy change (`files_version_restore`, `files_edit`, `files_replace` and the `files_checkout` upload) and the receipt of `collectives_remove_member`, as listed below. Every other tool behaves as in 1.3.1.

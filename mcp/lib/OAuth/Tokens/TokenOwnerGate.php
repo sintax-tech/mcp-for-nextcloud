@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\OAuth\Tokens;
 
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use Closure;
 use OCA\Mcp\Access\Policy\CauseProcessor;
@@ -122,7 +123,7 @@ class TokenOwnerGate {
 		try {
 			$this->writer->revokeObserved($uid, $observed);
 		} catch (Throwable $e) {
-			$this->logger->warning('Cannot record the revocation of an unusable credential owner', ['app' => 'mcp', 'exception' => $e]);
+			$this->logger->warning('Cannot record the revocation of an unusable credential owner: {exception}', ['app' => 'mcp', 'exception' => ExceptionDetails::describe($e)]);
 		}
 	}
 }

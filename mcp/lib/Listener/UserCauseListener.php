@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Listener;
 
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Db\GroupGrantsMapper;
 use OCA\Mcp\Db\GroupLifeMapper;
 use OCA\Mcp\Db\IdentityKey;
@@ -100,7 +101,7 @@ class UserCauseListener implements IEventListener {
 			}
 		} catch (Throwable $e) {
 			try {
-				$this->logger->warning('Recheck cause left to the reconciler', ['app' => 'mcp', 'exception' => $e]);
+				$this->logger->warning('Recheck cause left to the reconciler: {exception}', ['app' => 'mcp', 'exception' => ExceptionDetails::describe($e)]);
 			} catch (Throwable) {
 			}
 		}
@@ -221,7 +222,7 @@ class UserCauseListener implements IEventListener {
 			$this->scopeCleanup->deleted($uid, $revision);
 		} catch (Throwable $e) {
 			try {
-				$this->logger->warning('Resource scope of a deleted account kept, its cleanup failed; only the job diagnostic counts it', ['app' => 'mcp', 'target' => $uid, 'exception' => $e]);
+				$this->logger->warning('Resource scope of a deleted account kept, its cleanup failed; only the job diagnostic counts it: {exception}', ['app' => 'mcp', 'target' => $uid, 'exception' => ExceptionDetails::describe($e)]);
 			} catch (Throwable) {
 			}
 		}

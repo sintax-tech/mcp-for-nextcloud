@@ -124,7 +124,7 @@ class GroupLifecycleListener implements IEventListener {
 			}
 		} catch (Throwable $e) {
 			try {
-				$this->logger->warning('Group lifecycle signal left to the reconciler', ['app' => 'mcp', 'exception' => $e]);
+				$this->logger->warning('Group lifecycle signal left to the reconciler: {exception}', ['app' => 'mcp', 'exception' => \OCA\Mcp\Platform\Logging\ExceptionDetails::describe($e)]);
 			} catch (Throwable) {
 			}
 		}
@@ -179,8 +179,8 @@ class GroupLifecycleListener implements IEventListener {
 					$complete = $this->record($gid, $this->holders($group, $judged), $causes);
 				} catch (Throwable $e) {
 					$complete = false;
-					$this->logger->warning('Credential holders of a deleted group not listed; the group stays suspended',
-						['app' => 'mcp', 'target' => $gid, 'exception' => $e]);
+					$this->logger->warning('Credential holders of a deleted group not listed; the group stays suspended: {exception}',
+						['app' => 'mcp', 'target' => $gid, 'exception' => \OCA\Mcp\Platform\Logging\ExceptionDetails::describe($e)]);
 				}
 			}
 			if (!$complete) {
@@ -191,7 +191,7 @@ class GroupLifecycleListener implements IEventListener {
 			try {
 				$moved = $this->life->markPendingDelete($gid, $suspended, $pending);
 			} catch (Throwable $e) {
-				$this->logger->warning('Captured group deletion left suspended', ['app' => 'mcp', 'target' => $gid, 'exception' => $e]);
+				$this->logger->warning('Captured group deletion left suspended: {exception}', ['app' => 'mcp', 'target' => $gid, 'exception' => \OCA\Mcp\Platform\Logging\ExceptionDetails::describe($e)]);
 				return;
 			}
 			if ($moved) {
@@ -215,8 +215,8 @@ class GroupLifecycleListener implements IEventListener {
 		try {
 			$this->record($gid, $this->holders($group, false), $causes);
 		} catch (Throwable $e) {
-			$this->logger->warning('Credential holders of a deleted group not listed; their causes are left to observed use',
-				['app' => 'mcp', 'target' => $gid, 'exception' => $e]);
+			$this->logger->warning('Credential holders of a deleted group not listed; their causes are left to observed use: {exception}',
+				['app' => 'mcp', 'target' => $gid, 'exception' => \OCA\Mcp\Platform\Logging\ExceptionDetails::describe($e)]);
 		}
 	}
 
@@ -245,7 +245,7 @@ class GroupLifecycleListener implements IEventListener {
 				$causes[$key] = ['uid' => $uid, 'gen' => $gen];
 			} catch (Throwable $e) {
 				$complete = false;
-				$this->logger->warning('Recheck cause of a group deletion not recorded', ['app' => 'mcp', 'target' => $uid, 'exception' => $e]);
+				$this->logger->warning('Recheck cause of a group deletion not recorded: {exception}', ['app' => 'mcp', 'target' => $uid, 'exception' => \OCA\Mcp\Platform\Logging\ExceptionDetails::describe($e)]);
 			}
 		}
 		return $complete;
@@ -280,7 +280,7 @@ class GroupLifecycleListener implements IEventListener {
 			try {
 				$this->causes->after($cause['uid'], $key, $cause['gen']);
 			} catch (Throwable $e) {
-				$this->logger->warning('Recheck cause left to the reconciler', ['app' => 'mcp', 'target' => $cause['uid'], 'exception' => $e]);
+				$this->logger->warning('Recheck cause left to the reconciler: {exception}', ['app' => 'mcp', 'target' => $cause['uid'], 'exception' => \OCA\Mcp\Platform\Logging\ExceptionDetails::describe($e)]);
 			}
 		}
 	}

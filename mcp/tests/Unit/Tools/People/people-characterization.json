@@ -817,10 +817,11 @@
             ],
             "log": [
                 [
-                    "MCP people search failed",
+                    "MCP people search failed: {exception_class} (code {exception_code})",
                     {
                         "app": "mcp",
-                        "exception_class": "RuntimeException"
+                        "exception_class": "RuntimeException",
+                        "exception_code": 0
                     }
                 ]
             ]

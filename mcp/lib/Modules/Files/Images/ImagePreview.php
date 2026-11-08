@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Images;
 
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 use OCP\IConfig;
@@ -44,7 +45,7 @@ final class ImagePreview {
 			try {
 				$simple = $this->preview->getPreview($file, $current, $current, false);
 			} catch (\Throwable $e) {
-				$this->logger->debug('MCP image preview failed', ['app' => 'mcp', 'exception_class' => $e::class]);
+				$this->logger->debug('MCP image preview failed: {exception_class} (code {exception_code})', ['app' => 'mcp', 'exception_class' => $e::class, 'exception_code' => ExceptionDetails::code($e)]);
 				break;
 			}
 			$bytes = $simple->getContent();

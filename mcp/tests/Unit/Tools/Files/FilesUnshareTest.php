@@ -302,7 +302,7 @@ final class FilesUnshareTest extends FilesToolsTestCase {
 		$failure = new GenericShareException('Cannot delete /secret/path');
 		$this->shares->failWrite = $failure;
 		$this->shareLogger->expects(self::once())->method('warning')->with(self::anything(), self::callback(
-			static fn (array $context): bool => $context === ['app' => 'mcp', 'exception_class' => $failure::class]));
+			static fn (array $context): bool => $context === ['app' => 'mcp', 'exception_class' => $failure::class, 'exception_code' => 0]));
 
 		try {
 			$this->confirm(['shareId' => $share->getFullId()]);

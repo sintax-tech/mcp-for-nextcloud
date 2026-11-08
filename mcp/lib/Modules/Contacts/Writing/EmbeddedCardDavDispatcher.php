@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Contacts\Writing;
 
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use Closure;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Platform\Dav\CapturingSapi;
@@ -154,10 +155,10 @@ class EmbeddedCardDavDispatcher implements ContactDav {
 			$server->invokeMethod($request, $response, false);
 		} catch (DavException $error) {
 			$this->logger->error(
-				'MCP CardDAV write refused',
+				'MCP CardDAV write refused: {exception_class} (code {exception_code}, HTTP {http_code})',
 				[
 					'app' => 'mcp',
-					'exception_class' => $error::class,
+					'exception_class' => $error::class, 'exception_code' => ExceptionDetails::code($error),
 					'http_code' => $error->getHTTPCode(),
 				]
 			);
@@ -171,8 +172,8 @@ class EmbeddedCardDavDispatcher implements ContactDav {
 			throw new ToolFailure($message, $error->getHTTPCode(), $error);
 		} catch (Throwable $error) {
 			$this->logger->error(
-				'MCP CardDAV dispatch failed',
-				['app' => 'mcp', 'exception_class' => $error::class]
+				'MCP CardDAV dispatch failed: {exception_class} (code {exception_code})',
+				['app' => 'mcp', 'exception_class' => $error::class, 'exception_code' => ExceptionDetails::code($error)]
 			);
 			throw new RuntimeException('CardDAV dispatch failed', 0, $error);
 		}

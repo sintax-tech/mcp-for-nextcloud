@@ -218,7 +218,7 @@ final class PolicyEventDeliveryTest extends TestCase {
 		$oauth = $this->createMock(OAuthStore::class);
 		$oauth->expects($this->once())->method('deleteUpToGeneration')->with('alice', '1');
 		$logger = $this->createMock(LoggerInterface::class);
-		$logger->expects($this->once())->method('warning')->with('Skipping an invalid stored policy event', $this->anything());
+		$logger->expects($this->once())->method('warning')->with('Skipping an invalid stored policy event: {eventId}', $this->anything());
 
 		$this->assertSame(1, (new PolicyEventProcessor($this->events, $oauth, $logger, $this->time()))->flush(10));
 		$this->assertSame(['status' => 'pending', 'attempts' => 1], $this->statuses()[str_repeat('0', 32)]);

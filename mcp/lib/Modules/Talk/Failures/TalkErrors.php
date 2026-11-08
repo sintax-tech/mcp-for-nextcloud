@@ -39,7 +39,7 @@ final class TalkErrors {
 		} catch (PolicyUnavailable $e) {
 			throw $e;
 		} catch (Throwable $e) {
-			$this->logger->error('Talk tool failed', [
+			$this->logger->error('Talk tool failed: {tool}: {exception_message}', [
 				'app' => 'mcp',
 				'tool' => $name,
 				'exception' => $e::class,
@@ -66,7 +66,7 @@ final class TalkErrors {
 		} catch (PolicyUnavailable $e) {
 			throw $e;
 		} catch (Throwable $e) {
-			$this->logger->error('Talk tool failed', [
+			$this->logger->error('Talk tool failed: {tool}: {exception_message}', [
 				'app' => 'mcp',
 				'tool' => $name,
 				'exception' => $e::class,

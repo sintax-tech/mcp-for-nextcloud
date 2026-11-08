@@ -101,7 +101,7 @@ abstract class AbstractHandler {
 
 			if ($e instanceof DeckRefusalException && $e->afterWrite()) {
 				// The delete stays (the undo failed): partial, with the message that points to the Deck trash.
-				$this->logger->warning('MCP Deck tool refused after the write: {tool}', $context);
+				$this->logger->warning('MCP Deck tool refused after the write: {tool} ({exception})', $context);
 
 				return DeckResult::ok(['partial' => true, 'message' => $e->getMessage()]);
 			}

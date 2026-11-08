@@ -87,10 +87,10 @@ final class DeckCapabilitiesProbeTest extends TestCase {
 		$apps = $this->createMock(IAppManager::class);
 		$apps->method('getAppVersion')->willThrowException(new \RuntimeException('version unavailable'));
 		$logger = $this->createMock(LoggerInterface::class);
-		$logger->expects(self::once())->method('warning')->with('MCP capability probe failed', [
+		$logger->expects(self::once())->method('warning')->with('MCP capability probe failed: {probe}: {exception_class} (code {exception_code})', [
 			'app' => 'mcp',
 			'probe' => DeckCapabilities::class,
-			'exception_class' => \RuntimeException::class,
+			'exception_class' => \RuntimeException::class, 'exception_code' => 0,
 		]);
 		$registry = new CapabilityRegistry([new DeckCapabilities($apps, 34)], $logger);
 		self::assertFalse($registry->supports('deck.dependencies'));

@@ -93,7 +93,7 @@ final class FilesImageSearchTest extends FilesToolsTestCase {
 	public function testBackendFailureLogsSafeDiagnostics(): void {
 		$root = $this->searchRoot();
 		$root->method('search')->willThrowException(new \Error('private backend details', 41));
-		$this->logger->expects(self::once())->method('error')->with('Image search failed', [
+		$this->logger->expects(self::once())->method('error')->with('Image search failed: {tool}: {exception_message}', [
 			'app' => 'mcp',
 			'tool' => 'files_image_search',
 			'exception_class' => \Error::class,

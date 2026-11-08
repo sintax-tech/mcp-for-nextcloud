@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Checkout;
 
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Access\FileTypes\FileTypeDenied;
 use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
@@ -91,7 +92,7 @@ final class CheckoutUploadFailure {
 				default => $this->refusals->refuse(Http::STATUS_BAD_REQUEST, $error->getMessage() . $note),
 			};
 		}
-		$this->logger->error('MCP checkout upload failed', ['app' => 'mcp']);
+		$this->logger->error('MCP checkout upload failed: {exception}', ['app' => 'mcp', 'exception' => ExceptionDetails::describe($error)]);
 		// The copy exists by now, so the message can point at the one thing that still holds the original.
 		return $this->refusals->refuse(Http::STATUS_INTERNAL_SERVER_ERROR, CheckoutMessages::uploadFailed($copy));
 	}

@@ -101,7 +101,7 @@ final class DeckFailureLogTest extends TestCase {
 	public function testHandlerLogLevelAndReply(Throwable $failure, bool $expected): void {
 		$logger = $this->createMock(LoggerInterface::class);
 		$logger->expects(self::once())->method($expected ? 'debug' : 'error')->with(
-			$expected ? 'MCP Deck tool refused or conflicted: {tool}' : 'MCP Deck tool failed: {tool} ({exception})',
+			$expected ? 'MCP Deck tool refused or conflicted: {tool} ({exception})' : 'MCP Deck tool failed: {tool} ({exception})',
 			['tool' => 'deck_read_card', 'exception' => $failure::class],
 		);
 		$logger->expects(self::never())->method($expected ? 'error' : 'debug');

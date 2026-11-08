@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Mcp\Tools;
 
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Access\Policy\GrantUnknown;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use InvalidArgumentException;
@@ -156,7 +157,7 @@ class ToolRegistry {
 						return true;
 					} catch (\Throwable $e) {
 						try {
-							$this->logger->error('MCP audit failed', ['app' => 'mcp', 'tool' => $name, 'outcome' => $outcome, 'exception_class' => $e::class]);
+							$this->logger->error('MCP audit failed: {tool}, {outcome}: {exception_class} (code {exception_code})', ['app' => 'mcp', 'tool' => $name, 'outcome' => $outcome, 'exception_class' => $e::class, 'exception_code' => ExceptionDetails::code($e)]);
 						} catch (\Throwable) {
 							// Even the contingency logger can fail; preserve the original outcome.
 						}
@@ -200,7 +201,7 @@ class ToolRegistry {
 					$audit(RestrictedModule::READ_ERROR);
 					throw $e;
 				} catch (\Throwable $e) {
-					$this->logger->error('MCP tool failed', ['app' => 'mcp', 'tool' => $name, 'exception_class' => $e::class, 'exception_message' => self::loggable($e)]);
+					$this->logger->error('MCP tool failed: {tool}: {exception_message}', ['app' => 'mcp', 'tool' => $name, 'exception_class' => $e::class, 'exception_message' => self::loggable($e)]);
 					$audit(RestrictedModule::READ_ERROR);
 					return ToolResult::error(Translator::t('Unexpected error while accessing Nextcloud.'));
 				}
@@ -223,8 +224,7 @@ class ToolRegistry {
 	 * @return string "Class (code N)"
 	 */
 	public static function loggable(\Throwable $e): string {
-		$code = $e->getCode();
-		return $e::class . ' (code ' . (is_int($code) ? $code : 0) . ')';
+		return ExceptionDetails::describe($e);
 	}
 
 	/**

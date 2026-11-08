@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Deck\Attachments;
 
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use Closure;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
@@ -113,7 +114,7 @@ final class LinkCardFileHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 				$visible = $services['prepare']->visibleResult($userId, $cardId, $fileId);
 				$observed = $services['native']->find($userId, $cardId, $visible['node']);
 			} catch (Throwable $failure) {
-				$this->logger->warning('Deck file link result cannot be observed.', ['exceptionClass' => $failure::class]);
+				$this->logger->warning('Deck file link result cannot be observed: {exceptionClass} (code {exception_code})', ['exceptionClass' => $failure::class, 'exception_code' => ExceptionDetails::code($failure)]);
 				return $this->uncertain();
 			}
 			if ($observed === null) {

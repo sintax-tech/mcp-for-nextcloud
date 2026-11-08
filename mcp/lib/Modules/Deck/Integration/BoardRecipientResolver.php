@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Deck\Integration;
 
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use Closure;
 use OCA\Deck\Db\Acl;
 use OCA\Mcp\Access\Grants\GrantPolicy;
@@ -129,7 +130,7 @@ final class BoardRecipientResolver {
 			if (!$failure instanceof \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException && !$failure instanceof \OCA\Mcp\Modules\Deck\Recipients\RecipientResolutionException
 				&& !is_a($failure, 'OCA\\Deck\\NoPermissionException')
 				&& !is_a($failure, 'OCP\\AppFramework\\Db\\DoesNotExistException')) {
-				$this->logger->debug('Deck recipient resolution failed.', ['exceptionClass' => $failure::class]);
+				$this->logger->debug('Deck recipient resolution failed: {exceptionClass} (code {exception_code})', ['exceptionClass' => $failure::class, 'exception_code' => ExceptionDetails::code($failure)]);
 			}
 			if ($authorized) {
 				throw new \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException($failure instanceof \OCA\Mcp\Modules\Deck\Recipients\RecipientResolutionException

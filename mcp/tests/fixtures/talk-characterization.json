@@ -294,7 +294,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_list_conversations",
@@ -328,7 +328,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_read_messages",
@@ -1053,7 +1053,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_reply",
@@ -1085,7 +1085,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_reply",
@@ -1115,7 +1115,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_message_user",
@@ -1147,7 +1147,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_message_user",
@@ -1958,7 +1958,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_list_conversations",
@@ -1992,7 +1992,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_read_messages",
@@ -2717,7 +2717,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_reply",
@@ -2749,7 +2749,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_reply",
@@ -2779,7 +2779,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_message_user",
@@ -2811,7 +2811,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_message_user",
@@ -3622,7 +3622,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_list_conversations",
@@ -3656,7 +3656,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_read_messages",
@@ -4381,7 +4381,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_reply",
@@ -4413,7 +4413,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_reply",
@@ -4443,7 +4443,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_message_user",
@@ -4475,7 +4475,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_message_user",
@@ -5286,7 +5286,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_list_conversations",
@@ -5320,7 +5320,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_read_messages",
@@ -6045,7 +6045,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_reply",
@@ -6077,7 +6077,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_reply",
@@ -6107,7 +6107,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_message_user",
@@ -6139,7 +6139,7 @@
                 "logs": [
                     {
                         "level": "error",
-                        "message": "Talk tool failed",
+                        "message": "Talk tool failed: {tool}: {exception_message}",
                         "context": {
                             "app": "mcp",
                             "tool": "talk_message_user",

@@ -126,6 +126,6 @@ final class FilesShareLinkPasswordLeakTest extends FilesToolsTestCase {
 		self::assertSame(\OCA\Mcp\Modules\Files\Presentation\SharingMessages::shareRefused(), $result['content'][0]['text']);
 		$this->assertNoPassword('erro', self::all($result));
 		$this->assertNoPassword('log', self::all($this->logged));
-		self::assertSame([['app' => 'mcp', 'exception_class' => \TypeError::class]], array_column($this->logged, 1));
+		self::assertSame([['app' => 'mcp', 'exception_class' => \TypeError::class, 'exception_code' => 0]], array_column($this->logged, 1));
 	}
 }

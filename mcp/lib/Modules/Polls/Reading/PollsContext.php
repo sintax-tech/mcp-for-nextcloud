@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Polls\Reading;
 
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Modules\Polls\Integration\PollsServices;
 use OCA\Mcp\Modules\Polls\Integration\PollsSessionGuard;
 use OCA\Mcp\Modules\Polls\PollsRefusal;
@@ -71,7 +72,7 @@ final class PollsContext {
 	 */
 	private function diagnose(\Throwable $error, ?\Throwable $prior = null): void {
 		try {
-			$this->logger->error('MCP Polls read failed', ['app' => 'mcp', 'exception_class' => $error::class,
+			$this->logger->error('MCP Polls read failed: {exception_class} (code {exception_code}); previous: {prior_exception_class}', ['app' => 'mcp', 'exception_class' => $error::class, 'exception_code' => ExceptionDetails::code($error),
 				'prior_exception_class' => $prior === null ? null : $prior::class]);
 		} catch (\Throwable) {
 			// Preserve the safe read outcome even if diagnostics are unavailable.

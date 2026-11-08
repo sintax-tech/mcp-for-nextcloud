@@ -68,7 +68,7 @@ final class DeckFailureLog {
 	public static function operation(LoggerInterface $logger, string $tool, Throwable $failure): void {
 		$context = ['tool' => $tool, 'exception' => $failure::class];
 		if (self::expected($failure)) {
-			$logger->debug('MCP Deck tool refused or conflicted: {tool}', $context);
+			$logger->debug('MCP Deck tool refused or conflicted: {tool} ({exception})', $context);
 		} else {
 			$logger->error('MCP Deck tool failed: {tool} ({exception})', $context);
 		}

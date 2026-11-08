@@ -30,8 +30,8 @@ final class ShareFailureLogTest extends TestCase {
 			foreach (['MCP share refused by Nextcloud', 'MCP unshare refused by Nextcloud'] as $message) {
 				$logger = $this->createMock(LoggerInterface::class);
 				$expected = $failure instanceof AlreadySharedException;
-				$logger->expects(self::once())->method($expected ? 'debug' : 'warning')->with($message,
-					['app' => 'mcp', 'exception_class' => $failure::class]);
+				$logger->expects(self::once())->method($expected ? 'debug' : 'warning')->with($message . ': {exception_class} (code {exception_code})',
+					['app' => 'mcp', 'exception_class' => $failure::class, 'exception_code' => 0]);
 				$logger->expects(self::never())->method($expected ? 'warning' : 'debug');
 				ShareFailureLog::record($logger, $message, $failure);
 			}

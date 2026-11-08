@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\OAuth\Revocation;
 
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Access\Policy\CauseProcessor;
 use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCP\EventDispatcher\Event;
@@ -40,7 +41,7 @@ class UserRevocationListener implements IEventListener {
 			$this->causes->flush();
 			$this->writer->revokeCredentials($event->getUser()->getUID());
 		} catch (Throwable $e) {
-			$this->logger->warning('Cannot revoke the OAuth credentials of a disabled account', ['app' => 'mcp', 'exception' => $e]);
+			$this->logger->warning('Cannot revoke the OAuth credentials of a disabled account: {exception}', ['app' => 'mcp', 'exception' => ExceptionDetails::describe($e)]);
 		}
 	}
 }

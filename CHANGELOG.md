@@ -2,6 +2,12 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## 1.3.3 — Unreleased
+
+### Fixed
+
+- **Failure diagnostics in the Nextcloud log:** unexpected tool failures now include the tool name and exception class and code in the log message itself, so they remain visible when a host does not expose structured log context. Other failure logs that kept their diagnostic only in context now interpolate it too. Logs that passed a complete exception now record only its class and integer code, never its message or trace, which may contain private file names and paths. Client responses and log levels are unchanged.
+
 ## 1.3.2 — 2026-11-07
 
 Fix release on top of 1.3.1. No database change and no permission change; updating from 1.3.1 needs no step. Only the file writes that keep a pre-write copy change (`files_version_restore`, `files_edit`, `files_replace` and the `files_checkout` upload) and the receipt of `collectives_remove_member`, as listed below. Every other tool behaves as in 1.3.1.

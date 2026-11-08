@@ -377,6 +377,6 @@ final class PlanWarnings {
 	 * @return void only the log line is written
 	 */
 	private function failed(Throwable $e): void {
-		$this->logger?->warning('MCP calendar: scheduling warning skipped', ['app' => 'mcp', 'exception_class' => $e::class]);
+		$this->logger?->warning('MCP calendar: scheduling warning skipped: {exception_class} (code {exception_code})', ['app' => 'mcp', 'exception_class' => $e::class, 'exception_code' => \OCA\Mcp\Platform\Logging\ExceptionDetails::code($e)]);
 	}
 }

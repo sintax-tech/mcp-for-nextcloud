@@ -65,7 +65,7 @@ final class PollsMutationProbeTest extends TestCase {
 		$surface = $this->createMock(PollsMutationSurface::class);
 		$surface->expects(self::once())->method('check')->willThrowException(new \RuntimeException('SECRET_NATIVE_MESSAGE'));
 		$logger->expects(self::once())->method('warning')->with(
-			'MCP capability probe failed',
+			'MCP capability probe failed: {probe}: {exception_class} (code {exception_code})',
 			self::callback(static fn(array $c): bool => !str_contains(json_encode($c), 'SECRET_NATIVE_MESSAGE'))
 		);
 		$registry = new CapabilityRegistry([new PollsMutationProbe($apps, $surface, 35)], $logger);

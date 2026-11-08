@@ -495,4 +495,18 @@ final class PlanWarningsTest extends CalendarTestCase {
 		self::assertStringNotContainsString("\n", $busy);
 		self::assertStringContainsString('Roberto # x', $busy);
 	}
+	/** @return void A failed warning source stays identifiable without logging appointment data. */
+	public function testWarningFailureLogIncludesClassAndCodeWithoutPrivateText(): void {
+		$class = new \ReflectionClass(\OCA\Mcp\Modules\Calendar\Scheduling\PlanWarnings::class);
+		$warnings = $class->newInstanceWithoutConstructor();
+		$logger = $this->createMock(\Psr\Log\LoggerInterface::class);
+		$logger->expects(self::once())->method('warning')->willReturnCallback(static function (string $message, array $context): void {
+			self::assertSame('MCP calendar: scheduling warning skipped: {exception_class} (code {exception_code})', $message);
+			self::assertSame(['app' => 'mcp', 'exception_class' => \RuntimeException::class, 'exception_code' => 23], $context);
+			self::assertStringNotContainsString('Private appointment', json_encode([$message, $context]));
+		});
+		$class->getProperty('logger')->setValue($warnings, $logger);
+		$class->getMethod('failed')->invoke($warnings, new \RuntimeException('Private appointment /private/Salary.txt', 23));
+	}
+
 }

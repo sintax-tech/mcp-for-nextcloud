@@ -90,6 +90,15 @@ final class CollectivesRig {
 		return $this->build($class);
 	}
 
+	/**
+	 * @param class-string $class a module class
+	 * @param object $instance what the module gets for it instead of the class this rig would build
+	 * @return void
+	 */
+	public function bind(string $class, object $instance): void {
+		$this->built[$class] = $instance;
+	}
+
 	/** @return PlanState the plan states of the module */
 	public function states(): PlanState {
 		return $this->build(PlanState::class);

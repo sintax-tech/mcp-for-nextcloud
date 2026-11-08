@@ -237,7 +237,8 @@ final class McpCollectivesAdminHttpTest extends IntegrationTestCase {
 		$remove = ['collective_id' => $cid, 'member_id' => $member['id']];
 		$plan = $this->plan('collectives_remove_member', $remove);
 		$this->assertArrayHasKey($outsider, NativeTeamsProbe::members($this->owner(), $team), 'the plan removed nobody');
-		$this->assertSame('applied', $this->confirm('collectives_remove_member', $remove, $plan)['status']);
+		$receipt = $this->confirm('collectives_remove_member', $remove, $plan);
+		$this->assertSame('applied', $receipt['status'], json_encode($receipt));
 		$this->assertSame($before, NativeTeamsProbe::members($this->owner(), $team), 'the team is as before');
 	}
 
@@ -254,8 +255,9 @@ final class McpCollectivesAdminHttpTest extends IntegrationTestCase {
 		$this->assertSame('unknown', $receipt['auxiliary_effects']);
 		$id = NativeTeamsProbe::members($this->owner(), $team)[$group]['id'] ?? null;
 		$this->assertNotNull($id, 'Teams has the group');
-		$this->assertSame('applied', $this->confirm('collectives_remove_member', ['collective_id' => $cid, 'member_id' => $id],
-			$this->plan('collectives_remove_member', ['collective_id' => $cid, 'member_id' => $id]))['status']);
+		$receipt = $this->confirm('collectives_remove_member', ['collective_id' => $cid, 'member_id' => $id],
+			$this->plan('collectives_remove_member', ['collective_id' => $cid, 'member_id' => $id]));
+		$this->assertSame('applied', $receipt['status'], json_encode($receipt));
 
 		$owner = NativeTeamsProbe::members($this->owner(), $team)['1:' . $this->owner()]['id'];
 		$refused = $this->client($this->owner())->tool('collectives_remove_member', ['collective_id' => $cid, 'member_id' => $owner]);

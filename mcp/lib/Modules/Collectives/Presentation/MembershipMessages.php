@@ -175,6 +175,11 @@ final class MembershipMessages {
 		return Translator::t('Teams stored the requested membership but then reported an error; what it does afterwards, such as notifying the person, is not proven. Nothing is retried.');
 	}
 
+	/** @return string receipt: Teams accepted the change, which was not visible yet when the team was read again */
+	public static function notVisibleYet(): string {
+		return Translator::t('Teams accepted the change but applies it in the background, and it was not visible yet when the team was read again; check the members in Collectives before trying again. Nothing is retried.');
+	}
+
 	/** @return string receipt: the team could not be read again */
 	public static function uncertain(): string {
 		return Translator::t('The change was sent to Teams but the team could not be read again; check the members in Collectives before trying again.');

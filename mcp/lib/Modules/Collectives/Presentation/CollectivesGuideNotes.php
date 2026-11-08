@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Collectives\Presentation;
 
 use OCA\Mcp\Modules\Collectives\Integration\CollectivesMarkdownPolicy;
+use OCA\Mcp\Modules\Collectives\Removal\RemovalReadback;
 
 /** What the Collectives schemas cannot say, for mcp_guide: how pages are addressed and what the module refuses. */
 final class CollectivesGuideNotes {
@@ -39,6 +40,10 @@ final class CollectivesGuideNotes {
 			'Members are managed by admins of the collective: collectives_list_members gives the member_id, then collectives_add_member '
 				. '(an account found with Search people, or a group), collectives_set_member_level (member, moderator or admin) and '
 				. 'collectives_remove_member. The owner cannot be changed or removed, and your own membership is not changed here.',
+			'Teams applies a removal in the background, so collectives_remove_member reads the team again for up to '
+				. RemovalReadback::SECONDS . ' seconds. A receipt with status uncertain and membership_changed false means the member '
+				. 'was still listed then; with membership_changed unknown the team could not be read again. Neither is a reason to '
+				. 'send the removal again: check collectives_list_members first.',
 		];
 	}
 }

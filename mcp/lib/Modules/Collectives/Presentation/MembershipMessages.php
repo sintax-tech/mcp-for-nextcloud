@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Collectives\Presentation;
 
 use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\Modules\Collectives\Removal\RemovalReadback;
 
 /**
  * Every string of the members of a collective. Descriptions read by the model are fixed English constants; what the
@@ -18,7 +19,9 @@ final class MembershipMessages {
 		. 'and whether the user may manage them.';
 	public const TOOL_ADD_DESCRIPTION = 'Adds an account or a group of this server to a collective as member; returns a plan first.';
 	public const TOOL_LEVEL_DESCRIPTION = 'Changes the level of a member of a collective to member, moderator or admin; returns a plan first.';
-	public const TOOL_REMOVE_DESCRIPTION = 'Removes a member from a collective, or cancels a pending invitation or request; returns a plan first.';
+	public const TOOL_REMOVE_DESCRIPTION = 'Removes a member from a collective, or cancels a pending invitation or request; returns a plan first. '
+		. 'Teams applies the removal in the background and the receipt waits up to ' . RemovalReadback::SECONDS . ' seconds to see it. '
+		. 'A receipt with status uncertain is not a reason to remove again: check collectives_list_members first.';
 	public const PARAM_TYPE = 'user for an account, group for a group of this server.';
 	public const PARAM_ID = 'Account id (as Search people returns it) or group id.';
 	public const PARAM_MEMBER_ID = 'member_id of the member, as collectives_list_members returns it.';

@@ -7829,7 +7829,7 @@
                     {
                         "name": "collectives_remove_member",
                         "title": "Remove collective member",
-                        "description": "Removes a member from a collective, or cancels a pending invitation or request; returns a plan first.",
+                        "description": "Removes a member from a collective, or cancels a pending invitation or request; returns a plan first. Teams applies the removal in the background and the receipt waits up to 5 seconds to see it. A receipt with status uncertain is not a reason to remove again: check collectives_list_members first.",
                         "inputSchema": {
                             "type": "object",
                             "properties": {

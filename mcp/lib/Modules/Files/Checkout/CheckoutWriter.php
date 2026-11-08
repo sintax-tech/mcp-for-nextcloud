@@ -12,13 +12,11 @@ use LogicException;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
-use OCA\Mcp\Platform\FileAccess\LockMessages;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Modules\Files\Backups\FileBackup;
 use OCA\Mcp\Modules\Files\Creation\FileCreation;
-use OCA\Mcp\Modules\Files\Presentation\CheckoutMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Response;
@@ -30,7 +28,6 @@ use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Modules\Files\Writing\FileWriteBoundary;
 use OCA\Mcp\Access\FileTypes\FileTypeDenied;
 use OCA\Mcp\Access\FileTypes\FileTypeGuard;
-use OCP\Lock\LockedException;
 
 /** PUT/POST write boundaries preserving checks, consumption and backup. */
 final class CheckoutWriter {
@@ -119,43 +116,30 @@ final class CheckoutWriter {
 			return $this->refusals->refuse(Http::STATUS_FORBIDDEN, CommonMessages::forbidden());
 		}
 		$copy = '';
+		$copied = false;
 		try {
 			NodeAccess::checkEtag($file, $row->etag);
 			$asUser = $this->policy->actsAsUser($row->userId);
 			$copy = $this->backup->prepare($root, $file, $row->path, $row->userId, $row->etag, $asUser);
+			$copied = true;
 			$this->visibilityGuard?->assertVisible($file);
 			FileWriteBoundary::check($this->fileTypes, $file->getName());
-			\OCA\Mcp\Modules\Files\Backups\BackupWriteBoundary::afterCopy($this->backup, $row->path, $copy);
+			$this->backup->assertWritablePath($row->path);
 			$write = static fn () => $file->putContent((string)file_get_contents($body));
 			// Checked again right before the write: the backup took time, and files_lock does not refuse every lock.
 			NodeAccess::mutate(fn () => $this->locks === null ? $write() : $this->locks->run($write, $file, $row->userId, $row->path, $asUser), $this->visibilityGuard);
 			$node = NodeAccess::requireFile(NodeAccess::get($root, $row->path, $this->visibilityGuard));
-		} catch (FileTypeDenied|FileWritePolicyUnavailable $e) {
-			return $this->refusals->refuse(Http::STATUS_FORBIDDEN, $e->getMessage());
-		} catch (LockWriteFailure $e) {
-			// The link is spent all the same; a backup taken before the refusal holds the untouched original.
-			return $this->refusals->lockRefusal($e, $copy);
-		} catch (LockedException $e) {
-			$failure = NodeAccess::lockFailure($e);
-			return $failure instanceof LockWriteFailure
-				? $this->refusals->lockRefusal($failure, $copy)
-				: $this->refusals->refuse(Http::STATUS_LOCKED, $failure->getMessage() . ' ' . LockMessages::newCheckoutNeeded());
-		} catch (ToolFailure $e) {
-			$conflict = $e->getMessage() === CommonMessages::conflict();
-			$message = $conflict ? CheckoutMessages::uploadConflict() : $e->getMessage();
-			return $this->refusals->refuse($conflict ? Http::STATUS_CONFLICT : Http::STATUS_BAD_REQUEST, $message);
-		} catch (Throwable) {
-			$this->logger->error('MCP checkout upload failed', ['app' => 'mcp']);
-			// The copy exists by now, so the message can point at the one thing that still holds the original.
-			return $this->refusals->refuse(Http::STATUS_INTERNAL_SERVER_ERROR, CheckoutMessages::uploadFailed($copy));
+			// Built inside the block: metadata that cannot be read after the write still names the copy.
+			return $this->refusals->json(Http::STATUS_OK, [
+				'path' => $row->path,
+				'size' => (int)filesize($body),
+				'etag' => (string)$node->getEtag(),
+				'access' => $this->accessInfo->describe($node, $row->userId),
+				'backup' => $copy,
+			]);
+		} catch (Throwable $e) {
+			return (new CheckoutUploadFailure($this->refusals, $this->logger, $this->visibilityGuard))->response($e, $file, $copy, $copied);
 		}
-		return $this->refusals->json(Http::STATUS_OK, [
-			'path' => $row->path,
-			'size' => (int)filesize($body),
-			'etag' => (string)$node->getEtag(),
-			'access' => $this->accessInfo->describe($node, $row->userId),
-			'backup' => $copy,
-		]);
 	}
 
 	/**

@@ -19,8 +19,9 @@ Deja que Claude y otros clientes MCP trabajen con tus archivos, notas, calendari
 
 ---
 
-## Novedades de la 1.3.1 y la 1.3.0
+## Novedades de la 1.3.2, la 1.3.1 y la 1.3.0
 
+- **1.3.2: correcciones en la escritura de archivos.** `files_version_restore` de la versión actual ya no falla (con bloqueo de archivos respondía que no lo encontraba; sin él, un error de escritura). Cuando `files_version_restore`, `files_edit`, `files_replace` o una subida de `files_checkout` falla después de la copia previa, la respuesta ahora indica dónde está la copia, y un archivo que quedó oculto entretanto recibe solo "Resource not found in Nextcloud.", sin su carpeta ni su nombre. `collectives_remove_member` ya no responde `partial` a una eliminación que Equipos aplica en segundo plano. Sin cambios en la base de datos.
 - **1.3.1: corrección de los borradores de correo HTML ([#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30)).** En servidores con libxml2 2.14 o posterior (Ubuntu 25.10 y 26.04, Debian testing), toda llamada a `mail_create_draft` con `html: true` se rechazaba; ahora funciona. Un `&` suelto ("A & B", "AT&T", un enlace con `?a=1&b=2`) se conserva como texto en lugar de rechazar el borrador, y el HTML que las versiones de libxml leen de forma distinta se rechaza con el mismo mensaje en todos los servidores. Sin cambios en la base de datos.
 
 La aplicación está organizada en módulos de capacidades, siguiendo la arquitectura propuesta por @marcjoancr en [#14](https://github.com/sintax-tech/mcp-for-nextcloud/pull/14).

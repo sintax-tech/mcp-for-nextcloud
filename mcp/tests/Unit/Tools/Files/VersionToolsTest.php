@@ -229,10 +229,115 @@ final class VersionToolsTest extends TestCase {
 		$this->assertFalse($guard->isVisible($this->file()));
 	}
 
+	/**
+	 * @param bool $locked whether the version is written through the file (files_lock) or rolled back by the core
+	 * @return array{0: VersionTools, 1: FilesAccessGuard, 2: \Closure(): void} tools behind a real guard, and the switch that tags the file as excluded
+	 */
+	private function guardedTools(bool $locked): array {
+		$hidden = false;
+		$mapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+		$mapper->method('getTagIdsForObjects')->willReturnCallback(static function (array $ids) use (&$hidden): array {
+			return array_fill_keys($ids, $hidden ? ['999'] : []);
+		});
+		$config = new \OCA\Mcp\Tests\Unit\InMemoryConfig();
+		$config->app['mcp'][\OCA\Mcp\Access\Visibility\VisibilityGuard::CONFIG_KEY] = '["999"]';
+		$guard = new FilesAccessGuard($config->mock($this), $mapper, $this->tree->filesystemRoot());
+		$container = $this->createMock(ContainerInterface::class);
+		$container->method('get')->willReturn($this->manager);
+		$locks = $locked ? (new FakeLockManager())->service($this) : null;
+		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
+		$tools = new VersionTools($this->apps, $this->users, $this->backup, $access, $container, $locks, $guard,
+			$this->wiredRestore($access, $container, $locks, $guard));
+		return [$tools, $guard, static function () use (&$hidden): void { $hidden = true; }];
+	}
+
+	/**
+	 * An exclusion tag applied while the backup was written hides the file before anything is restored. The answer is
+	 * the plain visibility refusal a file hidden from the start gets: the copy mirrors a hidden file, so it is not named.
+	 */
+	#[\PHPUnit\Framework\Attributes\DataProvider('restoreModes')]
+	public function testAFileExcludedDuringTheBackupGetsOnlyTheVisibilityRefusal(bool $locked): void {
+		[$tools, $guard, $hide] = $this->guardedTools($locked);
+		$this->manager->versions[1]->withContent('old');
+		$this->tree->afterWrite = static function (string $path) use ($hide): void {
+			if (str_contains($path, '/MCP backups/')) { $hide(); }
+		};
+		try {
+			$tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
+			$this->fail('A file excluded during the backup was restored');
+		} catch (ToolFailure $e) {
+			$this->assertSame(CommonMessages::notFound(), $e->getMessage());
+		}
+		$this->assertNotContains('rollback', $this->manager->ops);
+		$this->assertNotContains('write ' . self::FILE, $this->tree->ops);
+		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
+	}
+
+	/**
+	 * Nextcloud took the read permission away in a hook of the write. The version is in place, the file stays visible to
+	 * the policy, and the refusal of the re-read ends with where the original is kept instead of leaving the copy unannounced.
+	 */
+	#[\PHPUnit\Framework\Attributes\DataProvider('restoreModes')]
+	public function testAReadPermissionLostDuringTheRestoreStillNamesTheCopy(bool $locked): void {
+		[$tools] = $this->guardedTools($locked);
+		$this->manager->versions[1]->withContent('old');
+		$revoke = function (): void { $this->tree->nodes[self::FILE]['readable'] = false; };
+		$this->manager->onRollback = $revoke;
+		$this->tree->afterWrite = static function (string $path) use ($revoke): void {
+			if ($path === self::FILE) { $revoke(); }
+		};
+		try {
+			$tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
+			$this->fail('A restore whose file can no longer be read reported a receipt');
+		} catch (ToolFailure $e) {
+			$this->assertMatchesRegularExpression('#^' . preg_quote(CommonMessages::forbidden(), '#') . ' The original is kept in /MCP backups/Documentos/ata\.md\.[0-9-]+\.bak\.$#', $e->getMessage());
+		}
+	}
+
+	/** The file is excluded while the version is written and the write then fails: no path of the hidden file or of its copy. */
+	#[\PHPUnit\Framework\Attributes\DataProvider('restoreModes')]
+	public function testARestoreThatFailsOnceTheFileIsHiddenDoesNotNameTheCopy(bool $locked): void {
+		[$tools, , $hide] = $this->guardedTools($locked);
+		$this->manager->versions[1]->withContent('old');
+		$this->manager->onRollback = static function () use ($hide): void {
+			$hide();
+			throw new \RuntimeException('storage failed');
+		};
+		$this->tree->writeFailure = new \RuntimeException('storage failed');
+		$this->tree->beforeWrite = static function (string $path) use ($hide): void {
+			if ($path === self::FILE) { $hide(); }
+		};
+		try {
+			$tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
+			$this->fail('A failed restore reported a receipt');
+		} catch (ToolFailure $e) {
+			$this->assertSame(CommonMessages::notFound(), $e->getMessage());
+		}
+	}
+
+	/** The version is in place, but Nextcloud cannot describe the file for the receipt: the refusal still names the copy. */
+	#[\PHPUnit\Framework\Attributes\DataProvider('restoreModes')]
+	public function testReceiptMetadataThatCannotBeReadStillNamesTheCopy(bool $locked): void {
+		$access = $this->createMock(NodeAccessInfo::class);
+		$access->method('describe')->willThrowException(new \OCP\Files\NotFoundException('gone'));
+		$container = $this->createMock(ContainerInterface::class);
+		$container->method('get')->willReturn($this->manager);
+		$locks = $locked ? (new FakeLockManager())->service($this) : null;
+		$this->manager->versions[1]->withContent('old');
+		$tools = new VersionTools($this->apps, $this->users, $this->backup, $access, $container, $locks,
+			versionRestore: $this->wiredRestore($access, $container, $locks, null));
+		try {
+			$tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
+			$this->fail('A restore without its receipt metadata reported success');
+		} catch (ToolFailure $e) {
+			$this->assertMatchesRegularExpression('#^' . preg_quote(CommonMessages::notFound(), '#') . ' The original is kept in /MCP backups/Documentos/ata\.md\.[0-9-]+\.bak\.$#', $e->getMessage());
+		}
+	}
+
 	public function testRestoreReportsARollbackThatFailed(): void {
 		$this->manager->rollbackResult = false;
 		$this->expectException(ToolFailure::class);
-		$this->expectExceptionMessage(VersionMessages::versionRestoreFailed());
+		$this->expectExceptionMessageMatches('#^' . preg_quote(VersionMessages::versionRestoreFailed(), '#') . ' The original is kept in /MCP backups/Documentos/ata\.md\.[0-9-]+\.bak\.$#');
 		$this->tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
 	}
 
@@ -353,12 +458,72 @@ final class VersionToolsTest extends TestCase {
 		$this->assertSame('1759100000', $out['version']);
 	}
 
+	/**
+	 * The legacy backend lists the current content as a version whose revision is the file's mtime and keeps no
+	 * stored file for it. With files_lock there, restoring that listed version must write the current bytes back,
+	 * as the core rollback does, and not answer that the resource was not found.
+	 */
+	public function testTheListedCurrentVersionIsRestoredWithALockProvider(): void {
+		$current = (string)$this->file()->getMTime();
+		$this->manager->versions[0] = new FakeVersion($current, (int)$current, 9, 'text/markdown', 'ata.md');
+		$this->manager->versions[0]->noStoredFile = true;
+		$out = $this->lockedTools(new FakeLockManager())->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', $current, 'alice');
+		$this->assertSame($current, $out['version']);
+		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
+		$this->assertContains('write ' . self::FILE, $this->tree->ops);
+		$this->assertSame("# Ata\nolá", $this->tree->nodes['/alice/files' . $out['backup']]['content']);
+	}
+
+	/**
+	 * Without a lock provider (Nextcloud 32 and 33 images) the core rollback cannot bring that version back:
+	 * Storage::rollback() copies the file to files_versions/<path>.v<mtime> without creating the folders, and fails for
+	 * a file whose folder has no stored version yet. That version is written through the file there too.
+	 */
+	public function testTheListedCurrentVersionIsWrittenThroughTheFileWithoutALockProvider(): void {
+		$locks = new FakeLockManager();
+		$locks->available = false;
+		$current = (string)$this->file()->getMTime();
+		$this->manager->versions[0] = new FakeVersion($current, (int)$current, 9, 'text/markdown', 'ata.md');
+		$this->manager->versions[0]->noStoredFile = true;
+		$out = $this->lockedTools($locks)->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', $current, 'alice');
+		$this->assertSame($current, $out['version']);
+		$this->assertNotContains('rollback', $this->manager->ops);
+		$this->assertContains('write ' . self::FILE, $this->tree->ops);
+		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
+		$this->assertSame("# Ata\nolá", $this->tree->nodes['/alice/files' . $out['backup']]['content']);
+	}
+
+	/** The same without LockAwareWrite wired at all: the write goes through the file without a lock check. */
+	public function testTheListedCurrentVersionIsWrittenThroughTheFileWithoutLockAwareWrite(): void {
+		$current = (string)$this->file()->getMTime();
+		$this->manager->versions[0] = new FakeVersion($current, (int)$current, 9, 'text/markdown', 'ata.md');
+		$this->manager->versions[0]->noStoredFile = true;
+		$out = $this->tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', $current, 'alice');
+		$this->assertNotContains('rollback', $this->manager->ops);
+		$this->assertContains('write ' . self::FILE, $this->tree->ops);
+		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
+		$this->assertSame("# Ata\nolá", $this->tree->nodes['/alice/files' . $out['backup']]['content']);
+	}
+
+	/** An older version whose stored file disappeared after the lookup is still refused, and the refusal names the backup already taken. */
+	public function testAStoredVersionGoneAfterTheBackupIsRefusedAndNamesTheCopy(): void {
+		$this->manager->versions[1]->noStoredFile = true;
+		try {
+			$this->lockedTools(new FakeLockManager())->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
+			$this->fail('a version without its stored file was restored');
+		} catch (ToolFailure $e) {
+			$this->assertMatchesRegularExpression('#^' . preg_quote(CommonMessages::notFound(), '#') . ' The original is kept in /MCP backups/Documentos/ata\.md\.[0-9-]+\.bak\.$#', $e->getMessage());
+		}
+		$this->assertNotContains('write ' . self::FILE, $this->tree->ops);
+		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
+	}
+
 	public function testAVersionThatCannotBeReadIsNotRestored(): void {
 		try {
 			$this->lockedTools(new FakeLockManager())->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
 			$this->fail('an unreadable version was restored');
 		} catch (ToolFailure $e) {
-			$this->assertSame(VersionMessages::versionRestoreFailed(), $e->getMessage());
+			$this->assertMatchesRegularExpression('#^' . preg_quote(VersionMessages::versionRestoreFailed(), '#') . ' The original is kept in /MCP backups/Documentos/ata\.md\.[0-9-]+\.bak\.$#', $e->getMessage(), 'the backup taken before is announced');
 		}
 		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
 	}
@@ -390,7 +555,7 @@ final class VersionToolsTest extends TestCase {
 			$this->lockedTools(new FakeLockManager())->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
 			$this->fail('a version that could not be copied was restored');
 		} catch (ToolFailure $e) {
-			$this->assertSame(VersionMessages::versionRestoreFailed(), $e->getMessage());
+			$this->assertMatchesRegularExpression('#^' . preg_quote(VersionMessages::versionRestoreFailed(), '#') . ' The original is kept in /MCP backups/Documentos/ata\.md\.[0-9-]+\.bak\.$#', $e->getMessage(), 'the backup taken before is announced');
 		}
 		$this->assertNotContains('write ' . self::FILE, $this->tree->ops, 'nothing was written over the file');
 		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);

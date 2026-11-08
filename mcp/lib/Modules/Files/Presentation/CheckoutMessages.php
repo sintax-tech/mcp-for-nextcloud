@@ -48,6 +48,11 @@ final class CheckoutMessages {
 		return Translator::t('MCP access cannot be checked right now. Try the link again shortly.');
 	}
 
+	/** @return string the access policy cannot be resolved after the upload link was spent: only a new checkout works later */
+	public static function uploadUnavailableAfterSpend(): string {
+		return Translator::t('MCP access cannot be checked right now. This upload link has already been used: once access is back, run a new files_checkout.');
+	}
+
 	/** @return string the checkout token is unknown */
 	public static function tokenInvalid(): string {
 		return Translator::t('Invalid edit link.');

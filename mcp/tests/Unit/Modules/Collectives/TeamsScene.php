@@ -56,6 +56,10 @@ final class TeamsScene {
 	public static ?string $failMember = null;
 	/** @var array<string, list<array{id:string, userId:string, type:int, level:int, status:string}>> memberships by team */
 	public static array $entries = [];
+	/** Reads of the team that still show a removed member, as Teams deletes it later in its loopback; null deletes at once. */
+	public static ?int $removalReads = null;
+	/** @var array<int, array{team:string, id:string, reads:int}> removals Teams accepted and has not applied yet */
+	private static array $pendingRemovals = [];
 
 	/** @return void three teams: Wiki (alice), Design (bob, with alice) and Secret (carol only, which alice cannot see) */
 	public static function reset(): void {
@@ -78,6 +82,8 @@ final class TeamsScene {
 		self::$failResolveGroup = false;
 		self::$identities = ['bob' => true];
 		self::$failMember = null;
+		self::$removalReads = null;
+		self::$pendingRemovals = [];
 		self::$entries = ['circle-secret' => [
 			['id' => 'm-alice', 'userId' => 'alice', 'type' => 1, 'level' => 9, 'status' => 'Member'],
 			['id' => 'm-bob', 'userId' => 'bob', 'type' => 1, 'level' => 8, 'status' => 'Member'],
@@ -91,6 +97,7 @@ final class TeamsScene {
 
 	/** @param string $teamId a team @return list<object> its memberships, as Teams lists them */
 	public static function members(string $teamId): array {
+		self::applyPendingRemovals($teamId);
 		if (!isset(self::$entries[$teamId])) {
 			return array_map(static fn (string $uid): object => new TeamMember($uid, 1, $uid === self::$teams[$teamId]['owner'] ? 9 : 1),
 				self::$teams[$teamId]['members']);
@@ -179,7 +186,7 @@ final class TeamsScene {
 		throw new \RuntimeException('MemberNotFoundException');
 	}
 
-	/** `MemberRemove`: never the owner (35 `:53-66`). */
+	/** `MemberRemove`: never the owner (35 `:53-66`); with {@see self::$removalReads} the deletion waits, as in a web request. */
 	public static function remove(string $memberId): void {
 		self::$calls[] = 'removeMember:' . $memberId;
 		foreach (self::$entries as $teamId => $list) {
@@ -188,12 +195,35 @@ final class TeamsScene {
 					if ($e['level'] === 9 || self::initiatorLevel($teamId) <= $e['level'] || self::$failMember === 'before') {
 						throw new \RuntimeException('FederatedItemBadRequestException');
 					}
+					if (self::$removalReads !== null) {
+						self::$pendingRemovals[] = ['team' => $teamId, 'id' => $memberId, 'reads' => self::$removalReads];
+						return;
+					}
 					array_splice(self::$entries[$teamId], $i, 1);
 					return;
 				}
 			}
 		}
 		throw new \RuntimeException('MemberNotFoundException');
+	}
+
+	/**
+	 * The loopback of `MemberRemove::manage()`: a removal shows once its reads ran out.
+	 * @param string $teamId the team being read
+	 * @return void
+	 */
+	private static function applyPendingRemovals(string $teamId): void {
+		foreach (self::$pendingRemovals as $i => $removal) {
+			if ($removal['team'] !== $teamId) {
+				continue;
+			}
+			if ($removal['reads'] > 0) {
+				self::$pendingRemovals[$i]['reads']--;
+				continue;
+			}
+			self::$entries[$teamId] = array_values(array_filter(self::$entries[$teamId], static fn (array $e): bool => $e['id'] !== $removal['id']));
+			unset(self::$pendingRemovals[$i]);
+		}
 	}
 
 	/**

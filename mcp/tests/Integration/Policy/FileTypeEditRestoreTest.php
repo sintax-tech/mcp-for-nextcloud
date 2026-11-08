@@ -398,6 +398,29 @@ final class FileTypeEditRestoreTest extends IntegrationTestCase {
 	}
 
 	/**
+	 * A file written once lists only its current content, a version files_versions keeps no file for. Restoring it
+	 * succeeds like any other version, keeps the bytes and takes the backup first.
+	 *
+	 * @return void
+	 */
+	public function testRestoreOfTheListedCurrentVersionKeepsTheBytesAndTakesTheBackup(): void {
+		$this->allow('txt');
+		$this->dav->put($this->folder . '/a.txt', 'alpha');
+		$current = (string)$this->node(Fixtures::ALICE, 'a.txt')->getMTime();
+		$versions = $this->mcp->tool('files_versions_list', ['path' => $this->path('a.txt')]);
+		$this->assertTrue($versions->ok(), $versions->describe());
+		$this->assertSame([$current], array_column($versions->json()['versions'] ?? [], 'revision'), $versions->describe());
+
+		$restore = $this->mcp->write('files_version_restore', [
+			'path' => $this->path('a.txt'),
+			'version' => $current,
+		]);
+		$this->assertTrue($restore->ok(), $restore->describe());
+		$this->assertSame('alpha', $this->content(Fixtures::ALICE, 'a.txt'));
+		$this->assertBackupHolds(Fixtures::ALICE, $restore->json()['backup'] ?? null, 'alpha');
+	}
+
+	/**
 	 * A version whose bytes look like PHP is restored because the current name is still a.txt.
 	 *
 	 * @return void

@@ -7,9 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Integration;
 
-use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Access\FileTypes\FileTypeDenied;
+use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
@@ -71,7 +72,11 @@ final class VersionRestore {
 	 * (Nextcloud 32 to 35, handleAppLocks) catches the refusal of a Text or Office lock and repeats the write inside
 	 * that app's lock scope, over the document still open in the editor. The file then shows the restore time as its
 	 * modification time and the change as an edit, where the core rollback would show the version's time and a restore.
-	 * Without a lock provider no lock can exist, and the core rollback runs as before.
+	 * Without a lock provider no lock can exist, and the core rollback runs as before, except for the listed current
+	 * version ({@see VersionStream::isCurrent()}): Storage::rollback() (files_versions 32 to 35) first copies the file to
+	 * files_versions/<path>.v<mtime> without creating the folders that copy needs, so for a file in a folder that has
+	 * no stored version yet the copy fails and the rollback ends in an Error. That version is written through the file
+	 * on every server, as with a lock provider.
 	 *
 	 * The shared-write guard runs in the handler before this call, so the confirmation payload is a
 	 * non-error result produced there and never reaches this class.
@@ -85,20 +90,22 @@ final class VersionRestore {
 	 * @return array{path:string, size:int, etag:string, access:array<string, mixed>, backup:string, version:string}
 	 * @throws ToolFailure When versioning is off, the version does not exist or cannot be read, the backup fails, a
 	 *         lock refuses the write ({@see LockWriteFailure}), the rollback reports failure, or the type policy refuses the name.
+	 *         Every failure after the backup says where the original is kept, unless the file is no longer visible
+	 *         ({@see \OCA\Mcp\Modules\Files\Backups\AfterCopyFailure}).
 	 */
 	public function restore(Folder $root, File $file, string $path, string $revision, string $viewerUid, \OCA\Mcp\Modules\Files\Backups\FileBackup $backup): array {
 		$user = $this->requireVersioning($viewerUid);
 		$version = $this->find($user, $file, $revision);
+		$manager = $this->manager();
 		// Before the copy: a refused current name must not create a backup. The version name is not an exemption.
 		$this->types->assertCurrentName($file);
 		// The backup refuses a locked file before copying it.
 		$copy = $backup->prepare($root, $file, $path, $viewerUid, null);
-		$this->visibilityGuard?->assertVisible($file);
-		$manager = $this->manager();
 		try {
-			\OCA\Mcp\Modules\Files\Backups\BackupWriteBoundary::afterCopy($backup, $path, $copy);
-			if ($this->locks !== null && $this->locks->providerAvailable()) {
-				$this->writeVersion($manager, $version, $file, $path, $viewerUid, $copy);
+			$this->visibilityGuard?->assertVisible($file);
+			$backup->assertWritablePath($path);
+			if (VersionStream::isCurrent($version, $file) || ($this->locks !== null && $this->locks->providerAvailable())) {
+				$this->writeVersion($manager, $version, $file, $path, $viewerUid);
 			} else {
 				// Immediately before the native rollback, still after the backup.
 				$this->types->assertCurrentName($file);
@@ -106,20 +113,23 @@ final class VersionRestore {
 					throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionRestoreFailed());
 				}
 			}
-		} catch (FileTypeDenied | FileWritePolicyUnavailable) {
-			// The copy already exists. Do not roll back, do not write, and do not delete the backup.
-			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::writeFailed($copy));
+			$node = NodeAccess::requireFile(NodeAccess::get($root, $path, $this->visibilityGuard));
+			$this->visibilityGuard?->assertVisible($node);
+			// Built inside the block: metadata that cannot be read after the write still names the copy.
+			return [
+				'path' => $path,
+				'size' => (int)$node->getSize(),
+				'etag' => (string)$node->getEtag(),
+				'access' => $this->access->describe($node, $viewerUid),
+				'backup' => $copy,
+				'version' => $revision,
+			];
+		} catch (PolicyUnavailable $e) {
+			throw $e;
+		} catch (\Throwable $e) {
+			// The copy exists: nothing is rolled back or deleted, and the answer says where the original is kept.
+			throw \OCA\Mcp\Modules\Files\Backups\AfterCopyFailure::explain($e, $copy, $file, $this->visibilityGuard);
 		}
-		$node = NodeAccess::requireFile(NodeAccess::get($root, $path, $this->visibilityGuard));
-		$this->visibilityGuard?->assertVisible($node);
-		return [
-			'path' => $path,
-			'size' => (int)$node->getSize(),
-			'etag' => (string)$node->getEtag(),
-			'access' => $this->access->describe($node, $viewerUid),
-			'backup' => $copy,
-			'version' => $revision,
-		];
 	}
 
 	/**
@@ -131,22 +141,24 @@ final class VersionRestore {
 	 * operation", as the restore of a team folder file showed. The copy lives in memory up to {@see self::COPY_MEMORY}
 	 * bytes and spills to a temporary file beyond that, so a large version costs no more memory than that.
 	 *
-	 * The type policy is read again after that stream is closed and immediately before putContent.
+	 * The type policy is read again after that stream is closed and immediately before putContent. Without
+	 * {@see LockAwareWrite} wired, the write runs without the lock check, as the rollback it replaces would.
 	 *
 	 * @param object $manager The files_versions manager.
 	 * @param object $version The IVersion to bring back.
 	 * @param File $file File to restore.
 	 * @param string $path Normalized user-relative path of `$file`.
 	 * @param string $viewerUid Authenticated user.
-	 * @param string $copy User-relative path of the backup taken before.
 	 * @return void
 	 * @throws ToolFailure When the version cannot be read or copied (nothing is written then) or a lock refuses the write.
+	 *         The caller adds where the original is kept.
+	 * @throws \OCP\Files\NotFoundException When a version other than the current one has no stored file.
 	 * @throws FileTypeDenied When the current name is refused after the backup. The caller keeps the backup.
 	 * @throws FileWritePolicyUnavailable When the policy cannot be read after the backup. The caller keeps the backup.
 	 */
-	private function writeVersion(object $manager, object $version, File $file, string $path, string $viewerUid, string $copy): void {
-		$locks = $this->locks ?? throw new \LogicException('LockAwareWrite is not wired');
-		$stream = $manager->read($version);
+	private function writeVersion(object $manager, object $version, File $file, string $path, string $viewerUid): void {
+		// The listed current version has no stored file; VersionStream reads it from the file itself.
+		$stream = VersionStream::open($manager, $version, $file);
 		if (!is_resource($stream)) {
 			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\VersionMessages::versionRestoreFailed());
 		}
@@ -164,13 +176,13 @@ final class VersionRestore {
 				}
 			}
 			$this->types->assertCurrentName($file);
-			NodeAccess::mutate(fn () => $locks->run(static function () use ($file, $content): void {
+			$write = static function () use ($file, $content): void {
 				// Rewound inside, so a repeated write by the lock check starts from the first byte.
 				rewind($content);
 				$file->putContent($content);
-			}, $file, $viewerUid, $path), $this->visibilityGuard);
-		} catch (LockWriteFailure $e) {
-			throw $e->withNote(\OCA\Mcp\Modules\Files\Presentation\EditingMessages::originalKept($copy));
+			};
+			NodeAccess::mutate(fn () => $this->locks !== null ? $this->locks->run($write, $file, $viewerUid, $path) : $write(),
+				$this->visibilityGuard);
 		} finally {
 			if (is_resource($content)) {
 				fclose($content);

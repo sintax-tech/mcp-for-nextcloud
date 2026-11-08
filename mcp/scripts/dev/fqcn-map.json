@@ -2,6 +2,8 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Modules/Files/Checkout/CheckoutUploadFailure.php","fqcn":"OCA\\Mcp\\Modules\\Files\\Checkout\\CheckoutUploadFailure","target":"stays","owner":"Modules\\Files","ticket":null},
+		{"path":"lib/Modules/Files/Backups/AfterCopyFailure.php","fqcn":"OCA\\Mcp\\Modules\\Files\\Backups\\AfterCopyFailure","target":"stays","owner":"Modules\\Files","ticket":null},
 		{"path":"lib/Modules/Files/Integration/VersionOrder.php","fqcn":"OCA\\Mcp\\Modules\\Files\\Integration\\VersionOrder","target":"stays","owner":"Modules\\Files","ticket":null},
 		{"path":"lib/Modules/Calendar/Presentation/EventAlarmListing.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Presentation\\EventAlarmListing","target":"stays","owner":"Modules\\Calendar","ticket":null},
 		{"path":"lib/Modules/Logs/Reading/LogDeadline.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\Reading\\LogDeadline","target":"stays","owner":"Modules\\Logs","ticket":null},
@@ -1459,6 +1461,7 @@
 		{"path":"lib/Modules/Collectives/Removal/RemoveMemberPlan.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Removal\\RemoveMemberPlan","target":"stays","owner":"Modules\\Collectives","ticket":null},
 		{"path":"lib/Modules/Collectives/Removal/RemoveMemberPreview.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Removal\\RemoveMemberPreview","target":"stays","owner":"Modules\\Collectives","ticket":null},
 		{"path":"lib/Modules/Collectives/Removal/RemoveMemberHandler.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Removal\\RemoveMemberHandler","target":"stays","owner":"Modules\\Collectives","ticket":null},
+		{"path":"lib/Modules/Collectives/Removal/RemovalReadback.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Removal\\RemovalReadback","target":"stays","owner":"Modules\\Collectives","ticket":null},
 		{"path":"lib/Modules/Collectives/Reading/ListMembersHandler.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Reading\\ListMembersHandler","target":"stays","owner":"Modules\\Collectives","ticket":null},
 		{"path":"lib/Modules/Collectives/Presentation/MembershipMessages.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Presentation\\MembershipMessages","target":"stays","owner":"Modules\\Collectives","ticket":null},
 		{"path":"lib/Modules/Collectives/Tools/ListMembers.php","fqcn":"OCA\\Mcp\\Modules\\Collectives\\Tools\\ListMembers","target":"stays","owner":"Modules\\Collectives","ticket":null},

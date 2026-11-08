@@ -60,6 +60,10 @@ TABLES_CELL="$REPO_ROOT/mcp/tests/Integration/ci/tables/cell.sh"
 FORMS_CELL="$REPO_ROOT/mcp/tests/Integration/ci/forms/cell.sh"
 POLLS_CELL="$REPO_ROOT/mcp/tests/Integration/ci/polls/cell.sh"
 COLLECTIVES_CELL="$REPO_ROOT/mcp/tests/Integration/ci/collectives/cell.sh"
+# Cores and backtrace of a crashed Apache worker, with the OPcache/JIT state, in runtime.md.
+CRASH_EVIDENCE="$REPO_ROOT/mcp/tests/Integration/ci/crash-evidence.sh"
+# PHP settings of the Nextcloud container (OPcache memory as Nextcloud's setup check asks).
+PHP_CONFIG="$REPO_ROOT/mcp/tests/Integration/ci/php-config.sh"
 PHPUNIT_VERSION=10.5.65
 PHPUNIT_SHA256=ce85745a2ec7d8e536621ebed69dfa36a8d504daf73be6750e93bb8c5b088835
 
@@ -175,6 +179,8 @@ cmd_start_nextcloud() {
             set -- "$@" -e SQLITE_DATABASE=nextcloud
             ;;
     esac
+    # shellcheck disable=SC2046
+    set -- "$@" $(sh "$CRASH_EVIDENCE" run-args) $(sh "$PHP_CONFIG" run-args)
     docker run -d --name "$NC" --network "$NET" "$@" \
         -v "$REPO_ROOT:/mcp-it-src:ro" -v "$TOOLS_DIR:/mcp-it-tools:ro" \
         "$MCP_IT_NC_IMAGE" >/dev/null
@@ -549,6 +555,7 @@ cmd_collect() {
     docker cp "$NC:/tmp/mcp-it-unit.xml" "$ARTIFACTS/unit.xml" 2>/dev/null || true
     docker cp "$NC:/tmp/mcp-it-junit.xml" "$ARTIFACTS/junit.xml" 2>/dev/null || true
     docker cp "$NC:/tmp/mcp-it-observations.txt" "$ARTIFACTS/observations.txt" 2>/dev/null || true
+    sh "$CRASH_EVIDENCE" collect || true
     if [ -f "$PG_LOG_DIR/postgresql.log" ]; then
         cp "$PG_LOG_DIR/postgresql.log" "$ARTIFACTS/postgresql.log"
     fi

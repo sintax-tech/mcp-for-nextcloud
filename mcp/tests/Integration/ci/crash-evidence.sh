@@ -33,10 +33,11 @@ install_gdb() {
 		&& DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends gdb >/dev/null; }'
 }
 
-# gdb_output <core>: backtrace, faulting instruction, its address and the files mapped by the crashed worker.
+# gdb_output <core>: backtrace, faulting instruction, its address, the registers it read (the image's opcache.so has
+# no symbols, so the registers tell what the instruction dereferenced) and the files mapped by the crashed worker.
 gdb_output() {
 	docker exec -u root "$NC" gdb -batch -nx -ex 'bt 40' -ex 'x/i $pc' -ex 'info symbol $pc' -ex 'p/x $pc' \
-		-ex 'info proc mappings' /usr/sbin/apache2 "$1" 2>&1
+		-ex 'info registers' -ex 'info proc mappings' /usr/sbin/apache2 "$1" 2>&1
 }
 
 # crash_section: the AH00051 lines and, for each core, where the worker died and its first frames.

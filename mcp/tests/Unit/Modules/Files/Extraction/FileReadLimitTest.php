@@ -57,6 +57,18 @@ final class FileReadLimitTest extends TestCase {
 		$this->assertSame(80 * 1024 * 1024, FileReadLimit::effective($default, '128M') * 4, 'the default PDF decode allowance stays 80 MiB');
 	}
 
+	/** An unreadable directive and a zero size are not a lower ceiling. A readable size, including -1, is not rejected. */
+	public function testAnUnreadableMemoryLimitIsRejected(): void {
+		$twoHundred = 200 * 1024 * 1024;
+		foreach (['nope', '0', '-2'] as $value) {
+			$this->assertTrue(FileReadLimit::memoryRejected($value), $value);
+			$this->assertSame(FileReadLimit::DEFAULT_MAX_BYTES, FileReadLimit::effective($twoHundred, $value), $value);
+		}
+		foreach (['-1', '', '  ', '128M', '1G', '256MB', '1T', '0x8000000'] as $value) {
+			$this->assertFalse(FileReadLimit::memoryRejected($value), $value);
+		}
+	}
+
 	/** Live ini values agree with effective(): -1 applies the setting; M and G suffixes cap only what is above 20 MiB. */
 	public function testEffectiveLimitFollowsMemoryLimit(): void {
 		$previous = (string)ini_get('memory_limit');
@@ -66,6 +78,7 @@ final class FileReadLimitTest extends TestCase {
 			$this->assertNotFalse(ini_set('memory_limit', '128M'));
 			$this->assertSame(128 * 1024 * 1024, $limit->phpMaxBytes());
 			$this->assertFalse($limit->phpUnlimited());
+			$this->assertFalse($limit->phpRejected());
 			$this->assertSame(FileReadLimit::DEFAULT_MAX_BYTES, $limit->maxBytes());
 			$stored->app['mcp'][FileReadLimit::MAX_BYTES_KEY] = (string)(10 * 1024 * 1024);
 			$this->assertSame(10 * 1024 * 1024, $limit->maxBytes());
@@ -82,6 +95,7 @@ final class FileReadLimitTest extends TestCase {
 
 			$this->assertNotFalse(ini_set('memory_limit', '-1'));
 			$this->assertTrue($limit->phpUnlimited());
+			$this->assertFalse($limit->phpRejected());
 			$this->assertSame(0, $limit->phpMaxBytes());
 			$this->assertSame(200 * 1024 * 1024, $limit->maxBytes());
 		} finally {

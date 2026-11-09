@@ -18,6 +18,7 @@ use OCP\IRequest;
  * Admin JSON API of the files_read byte ceiling, so it never needs occ. Admin-only and CSRF-protected by
  * Nextcloud's defaults. The limit is edited in whole MiB and stored in bytes under FileReadLimit::MAX_BYTES_KEY.
  * The effective limit keeps the 20 MiB default. memory_limit only reduces a higher setting, and not below that default.
+ * A rejected or non-positive memory_limit is reported on its own and does not pretend to be a lower ceiling.
  */
 class FileReadLimitController extends Controller {
 	/** Bytes per MiB. */
@@ -56,7 +57,7 @@ class FileReadLimitController extends Controller {
 	}
 
 	/**
-	 * @return array{configuredBytes:int, effectiveBytes:int, phpBytes:int, ceilingBytes:int|null, phpUnlimited:bool, defaultBytes:int} sizes in bytes; ceilingBytes is null when PHP sets no memory_limit
+	 * @return array{configuredBytes:int, effectiveBytes:int, phpBytes:int, ceilingBytes:int|null, phpUnlimited:bool, phpRejected:bool, defaultBytes:int} sizes in bytes; ceilingBytes is null when PHP sets no memory_limit
 	 */
 	private function state(): array {
 		$unlimited = $this->limit->phpUnlimited();
@@ -67,6 +68,7 @@ class FileReadLimitController extends Controller {
 			'phpBytes' => $php,
 			'ceilingBytes' => $unlimited ? null : FileReadLimit::ceilingBytes($php),
 			'phpUnlimited' => $unlimited,
+			'phpRejected' => $this->limit->phpRejected(),
 			'defaultBytes' => FileReadLimit::DEFAULT_MAX_BYTES,
 		];
 	}

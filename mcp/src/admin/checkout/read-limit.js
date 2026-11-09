@@ -35,10 +35,12 @@
 				// Round up and never show 0: a stored value below 1 MiB would fail the field's own min of 1 on the next save.
 				input.value = String(Math.max(1, Math.ceil(data.configuredBytes / 1048576)))
 				const effective = t('mcp', 'Effective limit: {size} MiB.', { size: mib(data.effectiveBytes) })
-				const defaultBytes = 20 * 1048576
+				const defaultBytes = data.defaultBytes
 				let reason
 				if (data.phpUnlimited) {
 					reason = t('mcp', 'PHP sets no memory_limit, so the configured limit applies.')
+				} else if (data.phpRejected && data.effectiveBytes >= defaultBytes) {
+					reason = t('mcp', 'PHP memory_limit could not be read; the {size} MiB default applies.', { size: mib(defaultBytes) })
 				} else if (data.effectiveBytes < data.configuredBytes && data.effectiveBytes > defaultBytes) {
 					reason = t('mcp', 'PHP memory_limit caps this read at {size} MiB because a PDF parser holds several copies of the file.', { size: mib(data.effectiveBytes) })
 				} else if (data.ceilingBytes < data.effectiveBytes) {

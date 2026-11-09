@@ -78,10 +78,18 @@ final class FileReadLimit {
 		if ($parsed->unlimited()) {
 			return $configured;
 		}
-		if ($parsed->rejected() || $parsed->bytes() <= 0) {
+		if (self::unusable($parsed)) {
 			return $configured <= self::DEFAULT_MAX_BYTES ? $configured : self::DEFAULT_MAX_BYTES;
 		}
 		return self::cap($configured, self::ceilingBytes($parsed->bytes()));
+	}
+
+	/**
+	 * @param string $memoryLimit php.ini memory_limit text
+	 * @return bool true when the directive is rejected or is not a positive size, so it is not a ceiling
+	 */
+	public static function memoryRejected(string $memoryLimit): bool {
+		return self::unusable(IniQuantity::parse($memoryLimit));
 	}
 
 	/**
@@ -102,6 +110,11 @@ final class FileReadLimit {
 		return IniQuantity::parse((string)ini_get('memory_limit'))->unlimited();
 	}
 
+	/** @return bool true when memory_limit is rejected or not a positive size, and therefore not a ceiling */
+	public function phpRejected(): bool {
+		return self::memoryRejected((string)ini_get('memory_limit'));
+	}
+
 	/**
 	 * Largest file the heuristic still allows in a process whose memory_limit is $memoryLimitBytes.
 	 *
@@ -113,6 +126,11 @@ final class FileReadLimit {
 			return 0;
 		}
 		return intdiv($memoryLimitBytes - self::MEMORY_RESERVE_BYTES, self::MEMORY_FACTOR);
+	}
+
+	/** @return bool true for a rejected directive or one that is not a positive size; -1 and empty are neither */
+	private static function unusable(IniQuantity $parsed): bool {
+		return $parsed->rejected() || (!$parsed->unlimited() && $parsed->bytes() <= 0);
 	}
 
 	/** @return int $configured when it is at or below the default, otherwise $configured capped at $ceiling but not below the default */

@@ -733,6 +733,7 @@ OC.L10N.register(
     "PHP memory_limit caps this read at {size} MiB because a PDF parser holds several copies of the file." : "Das memory_limit von PHP begrenzt diese Leseoperation auf {size} MiB, weil ein PDF-Parser mehrere Kopien der Datei behält.",
     "PHP memory_limit allows up to {size} MiB for this read." : "Das memory_limit von PHP erlaubt bis zu {size} MiB für diese Leseoperation.",
     "A lower memory_limit does not reduce this read below {size} MiB." : "Ein niedrigeres memory_limit senkt diese Leseoperation nicht unter {size} MiB.",
+    "PHP memory_limit could not be read; the {size} MiB default applies." : "Das memory_limit von PHP konnte nicht gelesen werden; es gilt der Standard von {size} MiB.",
     "Could not load the file read limit." : "Das Dateileselimit konnte nicht geladen werden.",
     "Could not save the file read limit." : "Das Dateileselimit konnte nicht gespeichert werden.",
     "Eligible users who activated their connection." : "Berechtigte Benutzer, die ihre Verbindung aktiviert haben.",

@@ -41,8 +41,28 @@ final class FileReadLimitControllerTest extends TestCase {
 		$this->assertSame(FileReadLimit::DEFAULT_MAX_BYTES, $data['defaultBytes']);
 		$this->assertSame($this->limit->phpMaxBytes(), $data['phpBytes']);
 		$this->assertSame($this->limit->phpUnlimited(), $data['phpUnlimited']);
+		$this->assertSame($this->limit->phpRejected(), $data['phpRejected']);
 		$this->assertSame($this->limit->maxBytes(), $data['effectiveBytes']);
 		$this->assertSame($this->limit->phpUnlimited() ? null : FileReadLimit::ceilingBytes($this->limit->phpMaxBytes()), $data['ceilingBytes']);
+	}
+
+	/**
+	 * PHP will not start, or stay, on an unreadable memory_limit, so this process cannot flip the live directive.
+	 * The response still carries the same answer FileReadLimit gives for "nope" and "0": rejected, and a setting
+	 * above 20 MiB falls back to the default rather than to a fake lower ceiling.
+	 */
+	public function testShowNamesARejectedMemoryLimit(): void {
+		$data = $this->controller()->show()->getData();
+		$this->assertFalse($data['phpRejected']);
+		$this->assertSame(FileReadLimit::memoryRejected((string)ini_get('memory_limit')), $data['phpRejected']);
+		foreach (['nope', '0'] as $value) {
+			$this->assertTrue(FileReadLimit::memoryRejected($value), $value);
+			$this->assertSame(FileReadLimit::DEFAULT_MAX_BYTES, FileReadLimit::effective(200 * 1024 * 1024, $value), $value);
+		}
+		$this->assertFalse(FileReadLimit::memoryRejected('-1'));
+		$updated = $this->controller(['mib' => 40])->update()->getData();
+		$this->assertArrayHasKey('phpRejected', $updated);
+		$this->assertSame($this->limit->phpRejected(), $updated['phpRejected']);
 	}
 
 	public function testUpdateStoresWholeMibAsBytes(): void {

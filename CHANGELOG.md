@@ -21,7 +21,7 @@ The administrator sets the largest file loaded by `files_read`, `files_edit`, `f
 
 ### Validation and limits
 
-- **Note read coverage ([#34](https://github.com/sintax-tech/mcp-for-nextcloud/issues/34)):** the reported empty `notes_read` response was not reproduced on 1.3.3. New unit protocol and live HTTP tests cover create → list → read → edit → read, checking content, path and a changed ETag in Notes and Notizen. The live checks used Nextcloud 35.0.1 with Notes 6.0.2 and both Basic and bearer authentication. This release adds regression coverage, not a claimed fix for the report. The raw client response and client details are still needed to identify its cause.
+- **Note read coverage ([#34](https://github.com/sintax-tech/mcp-for-nextcloud/issues/34)):** the reported empty `notes_read` response was not reproduced on 1.3.3. New unit protocol and live HTTP tests cover create → list → read → edit → read, checking content, path and a changed ETag in Notes and Notizen. The live checks used Nextcloud 35.0.1 with Notes 6.0.2 and both Basic and bearer authentication. This release adds regression coverage, not a claimed fix for the report.
 
 The read-limit tests cover the default, a lower setting, a higher setting capped by PHP, unlimited and rejected memory directives, per-stream PDF decode allowances and the fixed 20 MiB inflated ZIP-entry cap. The PHP memory ceiling is a heuristic, not a guarantee that a file fits in memory. The package check verifies that the app-folder changelog matches the repository source and carries its own SPDX header.
 

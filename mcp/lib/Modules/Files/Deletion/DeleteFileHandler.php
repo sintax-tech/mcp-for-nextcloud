@@ -8,6 +8,7 @@ namespace OCA\Mcp\Modules\Files\Deletion;
 
 use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Modules\Files\Deletion\DeleteEligibility;
 use OCA\Mcp\Modules\Files\Deletion\DeleteMessages;
 use OCA\Mcp\Modules\Files\Deletion\DeleteOutcome;
@@ -92,7 +93,7 @@ final class DeleteFileHandler {
 		} catch (\Throwable $error) {
 			if (!$attempted) { throw $error; }
 			try {
-				$this->logger->warning('MCP native file deletion did not complete normally', ['app' => 'mcp', 'exception_class' => $error::class]);
+				$this->logger->warning('MCP native file deletion did not complete normally: {exception_class} (code {exception_code})', ['app' => 'mcp', 'exception_class' => $error::class, 'exception_code' => ExceptionDetails::code($error)]);
 			} catch (\Throwable) {
 				// Logging failure cannot suppress observation of an operation that may already have changed the source.
 			}
@@ -104,7 +105,7 @@ final class DeleteFileHandler {
 				// Post-attempt invalidation failure must not erase observation or grant another native attempt.
 				$failed = true;
 				try {
-					$this->logger->warning('MCP file deletion cache invalidation failed', ['app' => 'mcp', 'exception_class' => $error::class]);
+					$this->logger->warning('MCP file deletion cache invalidation failed: {exception_class} (code {exception_code})', ['app' => 'mcp', 'exception_class' => $error::class, 'exception_code' => ExceptionDetails::code($error)]);
 				} catch (\Throwable) {
 					// Observation still runs when diagnostics are also unavailable.
 				}

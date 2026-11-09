@@ -129,8 +129,8 @@ final class DeleteFileHandlerTest extends TestCase {
 		$this->eligibility->method('file')->willReturnCallback(fn () => $this->tree->node('/alice/files/a.txt'));
 		$this->eligibility->method('invalidate')->willThrowException(new \RuntimeException('private cleanup detail'));
 		$logger = $this->createMock(\Psr\Log\LoggerInterface::class);
-		$logger->expects(self::once())->method('warning')->with('MCP file deletion cache invalidation failed',
-			['app' => 'mcp', 'exception_class' => \RuntimeException::class]);
+		$logger->expects(self::once())->method('warning')->with('MCP file deletion cache invalidation failed: {exception_class} (code {exception_code})',
+			['app' => 'mcp', 'exception_class' => \RuntimeException::class, 'exception_code' => 0]);
 		$handler = new DeleteFileHandler($this->eligibility, $this->locks, $logger,
 			new \OCA\Mcp\Modules\Files\Integration\DeleteTrashVeto($this->createMock(\OCP\EventDispatcher\IEventDispatcher::class)));
 		$result = $handler->handle($this->tree->node('/alice/files'), 'alice', ['path' => '/a.txt']);

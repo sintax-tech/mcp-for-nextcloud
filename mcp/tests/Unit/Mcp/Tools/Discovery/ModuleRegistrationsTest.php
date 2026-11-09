@@ -69,8 +69,8 @@ final class ModuleRegistrationsTest extends TestCase {
 			return $id === FeatureProbe::class ? new FeatureProbe(true, ['probe.other']) : throw new \RuntimeException('autoload');
 		});
 		$logger = $this->createMock(LoggerInterface::class);
-		$logger->expects(self::once())->method('warning')->with('MCP capability probe failed',
-			['app' => 'mcp', 'probe' => ProbeRegistration::class, 'exception_class' => \RuntimeException::class]);
+		$logger->expects(self::once())->method('warning')->with('MCP capability probe failed: {probe}: {exception_class} (code {exception_code})',
+			['app' => 'mcp', 'probe' => ProbeRegistration::class, 'exception_class' => \RuntimeException::class, 'exception_code' => 0]);
 		$registry = new CapabilityRegistry($resolve->invoke(null, $container, [ProbeRegistration::class, FeatureProbe::class]), $logger);
 		self::assertSame([], $asked);
 		foreach ([1, 2] as $ignored) {

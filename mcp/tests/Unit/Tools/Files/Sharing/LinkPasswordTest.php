@@ -147,7 +147,7 @@ final class LinkPasswordTest extends TestCase {
 		}
 		self::assertCount(1, $this->validated, 'nenhuma outra senha é tentada');
 		self::assertCount(1, $this->logged);
-		self::assertSame(['app' => 'mcp', 'exception_class' => \RuntimeException::class], $this->logged[0][1]);
+		self::assertSame(['app' => 'mcp', 'exception_class' => \RuntimeException::class, 'exception_code' => 0], $this->logged[0][1]);
 		self::assertStringNotContainsString('Policy-Made#Password1', json_encode($this->logged, JSON_THROW_ON_ERROR));
 	}
 

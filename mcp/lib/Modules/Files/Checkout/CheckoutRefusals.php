@@ -10,6 +10,7 @@ namespace OCA\Mcp\Modules\Files\Checkout;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Platform\FileAccess\LockMessages;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use Throwable;
 use OCP\AppFramework\Http;
@@ -37,7 +38,7 @@ final class CheckoutRefusals {
 	 * @return Response the refusal, logged at debug level with the status only
 	 */
 	public function refuse(int $status, string $message): Response {
-		$this->logger->debug('MCP checkout request refused', ['app' => 'mcp', 'status' => $status]);
+		$this->logger->debug('MCP checkout request refused: HTTP {status}', ['app' => 'mcp', 'status' => $status]);
 		return new DataDisplayResponse($message, $status, ['Content-Type' => 'text/plain; charset=utf-8']);
 	}
 
@@ -88,7 +89,7 @@ final class CheckoutRefusals {
 			return $this->refuse(Http::STATUS_LOCKED, $e->getMessage());
 		}
 		if (!$e instanceof ToolFailure) {
-			$this->logger->error('MCP create upload failed', ['app' => 'mcp', 'exception_class' => $e::class]);
+			$this->logger->error('MCP create upload failed: {exception_class} (code {exception_code})', ['app' => 'mcp', 'exception_class' => $e::class, 'exception_code' => ExceptionDetails::code($e)]);
 			return $this->refuse(Http::STATUS_INTERNAL_SERVER_ERROR, \OCA\Mcp\Modules\Files\Presentation\CreationMessages::createFailed());
 		}
 		return match ($e->getMessage()) {

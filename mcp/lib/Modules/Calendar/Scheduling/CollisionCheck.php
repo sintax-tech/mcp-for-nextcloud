@@ -89,7 +89,7 @@ final class CollisionCheck {
 
 			$vcalendar = $this->events->parse($row['data']);
 			if ($vcalendar === null) {
-				$this->logger?->warning('MCP calendar: invalid calendar object skipped', [
+				$this->logger?->warning('MCP calendar: invalid calendar object skipped: {exception_class}', [
 					'app' => 'mcp',
 					'exception_class' => 'Sabre\\VObject\\ParseException',
 				]);

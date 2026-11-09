@@ -514,8 +514,8 @@ final class GroupLifecycleListenerTest extends TestCase {
 			$this->database->dbal->executeStatement('DELETE FROM mcp_group_grants');
 			$this->database->dbal->executeStatement('DELETE FROM mcp_group_life');
 		}
-		$this->assertContains(['Credential holders of a deleted group not listed; the group stays suspended', 'staff'], $this->warnings);
-		$this->assertContains(['Recheck cause of a group deletion not recorded', 'alice'], $this->warnings);
+		$this->assertContains(['Credential holders of a deleted group not listed; the group stays suspended: {exception}', 'staff'], $this->warnings);
+		$this->assertContains(['Recheck cause of a group deletion not recorded: {exception}', 'alice'], $this->warnings);
 	}
 
 	/**

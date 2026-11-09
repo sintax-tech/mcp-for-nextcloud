@@ -740,7 +740,7 @@ class TalkModuleTest extends TestCase {
 				$this->callback(static function (array $context): bool {
 					return $context['tool'] === TalkModule::TOOL_ATTACH
 						&& str_ends_with($context['exception'], 'RuntimeException')
-						&& $context['exception_message'] === 'RuntimeException (code 0)';
+						&& $context['exception_detail'] === 'RuntimeException (code 0)';
 				}),
 			);
 

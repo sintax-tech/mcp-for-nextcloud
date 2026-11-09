@@ -38,8 +38,8 @@ final class CapabilityRegistryTest extends TestCase {
 	/** A probe that throws counts as false, with one warning per probe and request, its class and no message. */
 	public function testAThrowingProbeIsFalseWithOneWarning(): void {
 		$logger = $this->createMock(LoggerInterface::class);
-		$logger->expects(self::once())->method('warning')->with('MCP capability probe failed',
-			['app' => 'mcp', 'probe' => FeatureProbe::class, 'exception_class' => \RuntimeException::class]);
+		$logger->expects(self::once())->method('warning')->with('MCP capability probe failed: {probe}: {exception_class} (code {exception_code})',
+			['app' => 'mcp', 'probe' => FeatureProbe::class, 'exception_class' => \RuntimeException::class, 'exception_code' => 0]);
 		$registry = new CapabilityRegistry([new FeatureProbe(new \RuntimeException('secret path'), ['probe.a', 'probe.b'])], $logger);
 		foreach (['probe.a', 'probe.b', 'probe.a'] as $key) {
 			self::assertFalse($registry->supports($key), $key);
@@ -49,8 +49,8 @@ final class CapabilityRegistryTest extends TestCase {
 	/** A probe that cannot be built answers false for its keys only, once, and leaves the other probes answering. */
 	public function testAProbeThatCannotBeBuiltIsIsolated(): void {
 		$logger = $this->createMock(LoggerInterface::class);
-		$logger->expects(self::once())->method('warning')->with('MCP capability probe failed',
-			['app' => 'mcp', 'probe' => 'Broken\\Probe', 'exception_class' => \RuntimeException::class]);
+		$logger->expects(self::once())->method('warning')->with('MCP capability probe failed: {probe}: {exception_class} (code {exception_code})',
+			['app' => 'mcp', 'probe' => 'Broken\\Probe', 'exception_class' => \RuntimeException::class, 'exception_code' => 0]);
 		$built = 0;
 		$registry = new CapabilityRegistry([
 			'Broken\\Probe' => static function () use (&$built): FeatureProbe {

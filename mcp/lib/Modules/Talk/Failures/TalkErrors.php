@@ -39,11 +39,11 @@ final class TalkErrors {
 		} catch (PolicyUnavailable $e) {
 			throw $e;
 		} catch (Throwable $e) {
-			$this->logger->error('Talk tool failed', [
+			$this->logger->error('Talk tool failed: {tool}: {exception_detail}', [
 				'app' => 'mcp',
 				'tool' => $name,
 				'exception' => $e::class,
-				'exception_message' => self::loggable($e),
+				'exception_detail' => self::loggable($e),
 			]);
 
 			return ToolResult::error($this->messageFor($e));
@@ -66,11 +66,11 @@ final class TalkErrors {
 		} catch (PolicyUnavailable $e) {
 			throw $e;
 		} catch (Throwable $e) {
-			$this->logger->error('Talk tool failed', [
+			$this->logger->error('Talk tool failed: {tool}: {exception_detail}', [
 				'app' => 'mcp',
 				'tool' => $name,
 				'exception' => $e::class,
-				'exception_message' => self::loggable($e),
+				'exception_detail' => self::loggable($e),
 			]);
 
 			throw new ToolFailure($this->messageFor($e));
@@ -94,11 +94,11 @@ final class TalkErrors {
 	}
 
 	/**
-	 * The message that explains the failure, for the server log only: a refusal wraps the real cause, so the
-	 * cause is the one worth reading. Sanitized like the registry's, with no paths and a length limit.
+	 * The failure identity for the server log: a refusal wraps the real cause, so describe that cause.
+	 * Records only its class and integer code, never its message, trace or private payload.
 	 *
 	 * @param Throwable $e the exception being logged
-	 * @return string sanitized message
+	 * @return string Exception class and integer code only.
 	 */
 	private static function loggable(Throwable $e): string {
 		return \OCA\Mcp\Mcp\Tools\ToolRegistry::loggable($e->getPrevious() ?? $e);

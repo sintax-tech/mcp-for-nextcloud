@@ -9,6 +9,7 @@ namespace OCA\Mcp\Controller;
 
 use OCA\Mcp\Access\Inspection\AccessInspector;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -78,7 +79,7 @@ class InspectorController extends Controller {
 		$context = ['app' => 'mcp', 'admin' => $admin->getUID(), 'target' => $uid,
 			'action' => $action, 'module' => $module, 'result' => $outcome, 'timestamp' => $this->time->getTime()];
 		if ($outcome === 'error') {
-			$this->logger->error('MCP access inspection failed', $context + ['exception_class' => $e::class]);
+			$this->logger->error('MCP access inspection failed: {exception_class} (code {exception_code})', $context + ['exception_class' => $e::class, 'exception_code' => ExceptionDetails::code($e)]);
 		} else {
 			$this->logger->info('MCP access inspection', $context);
 		}

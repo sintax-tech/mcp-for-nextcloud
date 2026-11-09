@@ -10,6 +10,7 @@ namespace OCA\Mcp\Modules\Polls\Creation;
 use OCA\Mcp\Mcp\{Confirmation\PlanState,Confirmation\PlanChanged,Tools\Validation\ArgumentValidationException,Tools\Results\ToolFailure};
 use OCA\Mcp\Modules\Polls\PollsRefusal;
 use OCA\Mcp\Modules\Polls\Presentation\CreateMessages;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use Psr\Log\LoggerInterface;
 
 /** Covers preflight, sinks, readbacks and final cleanup with honest effect classification. */
@@ -68,7 +69,7 @@ class CreateFlow {
 				if (!$cleanupFailed && ($failure instanceof PlanChanged || $failure instanceof ArgumentValidationException)) { throw $failure; }
 				throw new ToolFailure(CreateMessages::failure(false));
 			}
-			try { $this->logger->error('MCP Polls create interrupted', ['app'=>'mcp','stage'=>$attempt->stage,'exception_class'=>$failure::class]); }
+			try { $this->logger->error('MCP Polls create interrupted at {stage}: {exception_class} (code {exception_code})', ['app'=>'mcp','stage'=>$attempt->stage,'exception_class'=>$failure::class, 'exception_code' => ExceptionDetails::code($failure)]); }
 			catch (\Throwable) { /* Diagnostics never replace the effect classification. */ }
 			$disclose = false;
 			if ($session !== null) {

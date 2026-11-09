@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Access\Guests;
 
 use OCA\Mcp\Platform\Compat\AppEnablement;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCP\App\IAppManager;
 use OCP\IUser;
 use Psr\Log\LoggerInterface;
@@ -42,9 +43,9 @@ class GuestIdentity {
 		try {
 			return AppEnablement::forAnyone($this->appManager, GuestRestrictions::APP) && $this->nativeGuests->isGuest($user);
 		} catch (Throwable $e) {
-			$this->logger->error('The Guests app could not tell whether an account is a guest; the action is refused', [
+			$this->logger->error('The Guests app could not tell whether an account is a guest; the action is refused: {exception}', [
 				'app' => 'mcp',
-				'exception' => $e,
+				'exception' => ExceptionDetails::describe($e),
 			]);
 			return true;
 		}

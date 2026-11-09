@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Access\Guests;
 
 use OCA\Mcp\Platform\Compat\AppEnablement;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCP\App\IAppManager;
 use OCP\IRequest;
 use OCP\IUser;
@@ -99,9 +100,9 @@ class GuestRestrictions {
 			}
 			return $this->nativeGuests->setUp($user, $session);
 		} catch (Throwable $e) {
-			$this->logger->error('The restrictions of the Guests app could not be applied to an MCP request; it is refused', [
+			$this->logger->error('The restrictions of the Guests app could not be applied to an MCP request; it is refused: {exception}', [
 				'app' => 'mcp',
-				'exception' => $e,
+				'exception' => ExceptionDetails::describe($e),
 			]);
 			return false;
 		}
@@ -128,9 +129,9 @@ class GuestRestrictions {
 				|| !$this->nativeGuests->isGuest($userId)
 				|| $this->nativeGuests->allowsAppOnList($app);
 		} catch (Throwable $e) {
-			$this->logger->error('The apps the Guests app allows could not be read; the module is refused', [
+			$this->logger->error('The apps the Guests app allows could not be read; the module is refused: {exception}', [
 				'app' => 'mcp',
-				'exception' => $e,
+				'exception' => ExceptionDetails::describe($e),
 			]);
 			$allowed = false;
 		}
@@ -156,9 +157,9 @@ class GuestRestrictions {
 				&& $this->nativeGuests->isGuest($userId)
 				&& !$this->nativeGuests->allowExternalStorage();
 		} catch (Throwable $e) {
-			$this->logger->error('Whether the Guests app hides external storage could not be read; it is hidden', [
+			$this->logger->error('Whether the Guests app hides external storage could not be read; it is hidden: {exception}', [
 				'app' => 'mcp',
-				'exception' => $e,
+				'exception' => ExceptionDetails::describe($e),
 			]);
 			$hides = true;
 		}

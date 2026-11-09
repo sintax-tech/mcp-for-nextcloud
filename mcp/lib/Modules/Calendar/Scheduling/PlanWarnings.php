@@ -9,13 +9,14 @@ namespace OCA\Mcp\Modules\Calendar\Scheduling;
 
 use DateTimeImmutable;
 use DateTimeZone;
-use IntlDateFormatter;
+use OCA\Mcp\Modules\Calendar\Presentation\CalendarTimingFormatter;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Modules\Calendar\Composing\AttendeeResolver;
 use OCA\Mcp\Platform\Dav\Calendar;
 use OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages;
 use OCA\Mcp\Modules\Calendar\Composing\EventBuilder;
 use OCA\Mcp\Modules\Calendar\Approval\PreparedCalendarWrite;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Platform\Time\UserTimezone;
 use OCP\IUserManager;
 use Psr\Log\LoggerInterface;
@@ -345,7 +346,7 @@ final class PlanWarnings {
 
 	/**
 	 * Formats the time of an overlap for the person: weekday, date and the time range in the event's zone;
-	 * an all-day event shows its civil days.
+	 * an all-day event shows its civil days. A rejected interval retains its formatted start.
 	 *
 	 * @param string $start ISO 8601 UTC start of the overlap
 	 * @param string $end ISO 8601 UTC end of the overlap
@@ -354,22 +355,12 @@ final class PlanWarnings {
 	 * @return string localized time, in the account language
 	 */
 	private function when(string $start, string $end, bool $allDay, DateTimeZone $zone): string {
+		$formatter = new CalendarTimingFormatter();
+		$timezone = $zone->getName();
 		$locale = Translator::locale();
-		$tz = $allDay ? new DateTimeZone('UTC') : $zone;
-		$from = (new DateTimeImmutable($start))->setTimezone($tz);
-		$to = (new DateTimeImmutable($end))->setTimezone($tz);
-		$weekday = new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::NONE, $tz, null, 'EEE');
-		$date = new IntlDateFormatter($locale, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE, $tz);
-		$time = new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::SHORT, $tz);
-		$day = static fn (DateTimeImmutable $d): string => rtrim((string)$weekday->format($d), '.') . ', ' . $date->format($d);
-		if ($allDay) {
-			$last = $to > $from ? $to->modify('-1 day') : $from;
-			return $last->format('Y-m-d') <= $from->format('Y-m-d') ? $day($from) : $day($from) . ' – ' . $day($last);
-		}
-		if ($from->format('Y-m-d') === $to->format('Y-m-d')) {
-			return $day($from) . ', ' . $time->format($from) . '–' . $time->format($to);
-		}
-		return $day($from) . ', ' . $time->format($from) . ' – ' . $day($to) . ', ' . $time->format($to);
+		return $formatter->format($start, $end, $allDay, $timezone, $timezone, $locale)
+			?? $formatter->format($start, $start, $allDay, $timezone, $timezone, $locale)
+			?? $start;
 	}
 
 	/**
@@ -377,6 +368,6 @@ final class PlanWarnings {
 	 * @return void only the log line is written
 	 */
 	private function failed(Throwable $e): void {
-		$this->logger?->warning('MCP calendar: scheduling warning skipped', ['app' => 'mcp', 'exception_class' => $e::class]);
+		$this->logger?->warning('MCP calendar: scheduling warning skipped: {exception_class} (code {exception_code})', ['app' => 'mcp', 'exception_class' => $e::class, 'exception_code' => ExceptionDetails::code($e)]);
 	}
 }

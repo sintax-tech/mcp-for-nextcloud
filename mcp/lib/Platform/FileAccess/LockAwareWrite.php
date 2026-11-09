@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Platform\FileAccess;
 use OCA\Mcp\Platform\FileAccess\{CommonMessages, LockMessages, LockWriteFailure};
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
@@ -72,7 +73,7 @@ class LockAwareWrite {
 		try {
 			return $this->lockManager->isLockProviderAvailable();
 		} catch (\Throwable $e) {
-			$this->logger->debug('MCP could not ask for the lock provider', ['app' => 'mcp', 'exception_class' => $e::class]);
+			$this->logger->debug('MCP could not ask for the lock provider: {exception_class} (code {exception_code})', ['app' => 'mcp', 'exception_class' => $e::class, 'exception_code' => ExceptionDetails::code($e)]);
 			return true;
 		}
 	}
@@ -255,7 +256,7 @@ class LockAwareWrite {
 				}
 			}
 		} catch (\Throwable $e) {
-			$this->logger->debug('MCP could not read the file lock', ['app' => 'mcp', 'exception_class' => $e::class]);
+			$this->logger->debug('MCP could not read the file lock: {exception_class} (code {exception_code})', ['app' => 'mcp', 'exception_class' => $e::class, 'exception_code' => ExceptionDetails::code($e)]);
 			return ['state' => 'unverified', 'root' => $node];
 		}
 		return $own === null ? ['state' => 'free'] : ['state' => 'own', 'described' => $own];
@@ -430,6 +431,6 @@ class LockAwareWrite {
 	}
 
 	private function logRefusal(string $type, string $phase): void {
-		$this->logger->debug('MCP write refused: the file is locked', ['app' => 'mcp', 'lock_type' => $type, 'phase' => $phase]);
+		$this->logger->debug('MCP write refused: the file is locked ({lock_type}, {phase})', ['app' => 'mcp', 'lock_type' => $type, 'phase' => $phase]);
 	}
 }

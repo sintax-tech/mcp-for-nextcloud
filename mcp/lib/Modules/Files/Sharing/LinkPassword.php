@@ -9,6 +9,7 @@ namespace OCA\Mcp\Modules\Files\Sharing;
 
 use OCA\Mcp\Modules\Files\Presentation\SharingMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\HintException;
 use OCP\Security\Events\GenerateSecurePasswordEvent;
@@ -89,7 +90,7 @@ final class LinkPassword {
 		} catch (HintException) {
 			return false;
 		} catch (\Throwable $e) {
-			$this->logger->warning('MCP link password validation failed', ['app' => 'mcp', 'exception_class' => $e::class]);
+			$this->logger->warning('MCP link password validation failed: {exception_class} (code {exception_code})', ['app' => 'mcp', 'exception_class' => $e::class, 'exception_code' => ExceptionDetails::code($e)]);
 			throw new ToolFailure(SharingMessages::linkPasswordRefused());
 		}
 	}

@@ -9,6 +9,7 @@ namespace OCA\Mcp\Modules\Files\Sharing;
 
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Modules\Files\Presentation\SharingMessages;
 use OCA\Mcp\Mcp\Confirmation\PlanChanged;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
@@ -194,8 +195,8 @@ final class ShareWriter {
 		try {
 			$item = $this->formatter->item($share, $change['path'], $this->access->isRemovable($share, $uid));
 		} catch (\Throwable $e) {
-			// A password may exist by now: nothing unexpected reaches the registry, whose log keeps the message.
-			$this->logger->warning('MCP share result failed', ['app' => 'mcp', 'exception_class' => $e::class]);
+			// A password may exist by now: keep the native failure text out of both the response and the log.
+			$this->logger->warning('MCP share result failed: {exception_class} (code {exception_code})', ['app' => 'mcp', 'exception_class' => $e::class, 'exception_code' => ExceptionDetails::code($e)]);
 			throw new ToolFailure(SharingMessages::shareRefused());
 		}
 		$result = ['action' => $change['action'], 'changed' => $change['action'] !== self::NONE] + $item;

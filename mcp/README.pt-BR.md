@@ -9,38 +9,9 @@ Versão para **Nextcloud 32 a 35** (o `info.xml` declara 32–35; o contrato de 
 
 A URL exata da instância aparece nas páginas de administração e pessoal.
 
-## Novidades da 1.3.4, da 1.3.3, da 1.3.2, da 1.3.1 e da 1.3.0
+## Novidades da 1.3.4
 
-- **1.3.4: leitura de arquivos configurável e notas da versão no pacote.** Administradores podem definir o limite de leitura em MiB inteiros na página de gestão ([PR #33](https://github.com/sintax-tech/mcp-for-nextcloud/pull/33), com contribuição de @johkoenig). O padrão continua em 20 MiB; um valor maior é limitado por uma heurística baseada no `memory_limit` do PHP, e um valor de até 20 MiB é mantido. A tela mostra os limites configurado e efetivo e explica o teto do PHP. Cada entrada descompactada de DOCX/ODT continua limitada a 20 MiB. O pacote agora inclui o changelog para o gerenciador de apps ([#32](https://github.com/sintax-tech/mcp-for-nextcloud/issues/32)). A resposta vazia relatada em `notes_read` não foi reproduzida; testes criar → listar → ler → editar → ler cobrem Notes e Notizen, incluindo conteúdo, caminho e ETag ([#34](https://github.com/sintax-tech/mcp-for-nextcloud/issues/34)). Não se afirma uma correção da #34. Sem mudança no banco de dados ou nas permissões.
-- **1.3.3: correções para PDFs digitalizados, logs de falha e planos do calendário.** PDFs que receberam texto pesquisável pelo ocrmypdf com Tesseract agora retornam a camada de texto existente ([#31](https://github.com/sintax-tech/mcp-for-nextcloud/issues/31)). Falhas inesperadas de ferramentas identificam a ferramenta e a classe e o código da exceção no log do Nextcloud, sem mensagens privadas nem rastros da exceção. Avisos de conflito do calendário funcionam sem Intl e preservam o início de um intervalo inválido; conflitos de duração zero mostram o horário uma vez. Os planos do calendário e o DAV usam a mesma leitura da configuração de convites para valores string, booleanos e lazy. Sem mudança no banco de dados.
-- **1.3.2: correções na escrita de arquivos.** O `files_version_restore` da versão atual não falha mais (com bloqueio de arquivos respondia que não encontrou o arquivo; sem ele, falha de escrita). Quando `files_version_restore`, `files_edit`, `files_replace` ou um upload do `files_checkout` falha depois da cópia de segurança, a resposta agora diz onde está a cópia, e um arquivo que ficou oculto nesse meio-tempo recebe só "Resource not found in Nextcloud.", sem a pasta nem o nome. O `collectives_remove_member` não responde mais `partial` para uma remoção que o Times aplica em segundo plano. Sem mudança no banco de dados.
-- **1.3.1: correção dos rascunhos de e-mail HTML ([#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30)).** Em servidores com libxml2 2.14 ou mais nova (Ubuntu 25.10 e 26.04, Debian testing), toda chamada de `mail_create_draft` com `html: true` era recusada; agora funciona. Um `&` solto ("A & B", "AT&T", um link com `?a=1&b=2`) é mantido como texto em vez de recusar o rascunho, e HTML que as versões da libxml leem de forma diferente é recusado com a mesma mensagem em todos os servidores. Sem mudança no banco de dados.
-
-O app está organizado em módulos de capacidade, seguindo a arquitetura proposta por @marcjoancr na [#14](https://github.com/sintax-tech/mcp-for-nextcloud/pull/14).
-
-- **Schema e compartilhamento no Tables ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** criar/editar tabelas, colunas e views com `tables.schema` e compartilhar/revogar acesso de usuários/grupos com `tables.share`. As APIs suportadas incluem Tables 2.4.0, preservando layouts de views e fontes de cartão.
-- **Estrutura do Forms ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** adicionar, ordenar ou excluir perguntas/opções e trocar tipos de pergunta suportados. Essas ações usam o grant `forms.edit` existente; revise as concessões existentes.
-- **Escrita no Polls ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** gerenciar configurações, estado, opções, compartilhamentos e convites individuais com grants separados e edição nativa. Não há ferramenta de voto.
-- **Collectives ([#22](https://github.com/sintax-tech/mcp-for-nextcloud/issues/22)):** ler/buscar páginas, criar páginas vazias, editar Markdown e mover/renomear páginas. No NC33–35, grants separados também permitem criar coletivos e gerenciar membros.
-- **Lembretes do Calendário ([#24](https://github.com/sintax-tech/mcp-for-nextcloud/issues/24)):** criar/editar lembretes DISPLAY e lê-los na listagem de eventos com as mesmas chaves de `alarms`. Outros tipos são preservados; eventos confidenciais e compartilhamentos só leitura não expõem nenhum.
-- **Rascunhos de e-mail HTML ([#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30)):** `mail_create_draft` aceita `html: true` com `mail.draft`. O plano mostra HTML sanitizado; a confirmação salva um rascunho sem assinatura nem envio de e-mail.
-- **Conclusão e arquivamento no Deck ([#27](https://github.com/sintax-tech/mcp-for-nextcloud/issues/27)):** concluir/reabrir e arquivar/desarquivar cartões por operações confirmadas separadas com `deck.edit`.
-- **Status de tarefa ([PR #29](https://github.com/sintax-tech/mcp-for-nextcloud/pull/29)):** criar/editar aceita `NEEDS-ACTION`, `IN-PROCESS`, `COMPLETED` e `CANCELLED`, com verificações de consistência do progresso.
-- **Total no Tables e Collectives:** Total inclui estrutura/compartilhamento e criação de coletivo/membros. Grants existentes não mudam; um Total anterior sem essas operações aparece como Personalizado até o administrador escolher Total de novo.
-
-### Correções
-
-- **Campo de hosts OAuth:** um campo mais largo facilita ler listas de hosts.
-- **Radios no admin:** contornos de foco e hover ficam redondos sem mudar o layout da matriz.
-- **Recibos de linhas do Tables:** números simples equivalentes como `42` e `42.0` não geram mais aviso falso de valor diferente.
-- **Resultados de escrita no Deck:** excluir/mover cartão devolve `boardId` e `url`; editar os preserva após um resultado parcial observado.
-- **Log filtrado do servidor:** leituras limitadas evitam timeout; continue de `scan.nextOffset` quando `scan.timeBudgetReached` for true.
-- **Versão atual de arquivo:** `files_version_read` lê a versão atual listada quando não há arquivo histórico separado.
-- **Ordem das versões de arquivo:** `files_versions_list` devolve a mais nova primeiro e aplica `limit` depois.
-- **OAuth/CIMD ([#28](https://github.com/sintax-tech/mcp-for-nextcloud/issues/28)):** retirar um host revoga suas credenciais, e os metadados anunciam `iss` enquanto o consentimento preserva o issuer. Recolocar exige login; a interoperabilidade com Zapia aguarda o teste do relator.
-- **Atribuição no Deck ([#26](https://github.com/sintax-tech/mcp-for-nextcloud/issues/26)):** falha no push do responsável não impede mais salvar quando uma repetição diferida é segura. Falhas de entrega continuam como avisos; a repetição é recusada sem confirmar a retirada da notificação anterior.
-
-**A atualização executa uma migração de banco e o repair step de inicialização CIMD.** A lista de hosts e credenciais de hosts ainda permitidos são preservadas; credenciais de hosts nunca permitidos exigem liberação do host pelo administrador e novo login.
+- Administradores podem configurar o limite de leitura de arquivos (20 MiB por padrão, com teto de memória do PHP acima desse limite; [PR #33](https://github.com/sintax-tech/mcp-for-nextcloud/pull/33), com contribuição de @johkoenig). O pacote inclui o changelog para o gerenciador de apps ([#32](https://github.com/sintax-tech/mcp-for-nextcloud/issues/32)). A resposta vazia de `notes_read` não foi reproduzida; a cobertura de regressão agora verifica Notes e Notizen, sem afirmar uma correção ([#34](https://github.com/sintax-tech/mcp-for-nextcloud/issues/34)).
 
 [Mudanças completas](../CHANGELOG.md).
 

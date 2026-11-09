@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Images;
 
-use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCP\Files\File;
 use OCP\IConfig;
 use OCP\IPreview;

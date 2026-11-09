@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Mcp\Tools\Discovery;
 
-use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use Closure;
 use OCA\Mcp\Mcp\Tools\CapabilityProbe;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use Psr\Log\LoggerInterface;
 
 /**

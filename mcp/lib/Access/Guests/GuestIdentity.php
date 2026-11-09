@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Access\Guests;
 
-use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Platform\Compat\AppEnablement;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCP\App\IAppManager;
 use OCP\IUser;
 use Psr\Log\LoggerInterface;

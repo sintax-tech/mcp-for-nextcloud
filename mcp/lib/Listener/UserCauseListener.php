@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Listener;
 
-use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Db\GroupGrantsMapper;
 use OCA\Mcp\Db\GroupLifeMapper;
 use OCA\Mcp\Db\IdentityKey;
@@ -18,6 +17,7 @@ use OCA\Mcp\Access\Policy\CauseProcessor;
 use OCA\Mcp\Access\Policy\GroupSourceClassifier;
 use OCA\Mcp\Access\Policy\PolicyResolver;
 use OCA\Mcp\Access\Policy\ScopeCleanup;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;

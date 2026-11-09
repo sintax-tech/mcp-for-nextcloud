@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Deck\Integration;
 
-use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use Closure;
 use OCA\Deck\Db\Acl;
 use OCA\Mcp\Access\Grants\GrantPolicy;
@@ -15,6 +14,7 @@ use OCA\Mcp\Mcp\Confirmation\PlanState;
 use Psr\Log\LoggerInterface;
 use Throwable;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 
 /**
  * Internal complete board recipients after grants and fresh active source READ/EDIT; never creates a share.

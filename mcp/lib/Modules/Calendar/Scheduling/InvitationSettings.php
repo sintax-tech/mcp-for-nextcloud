@@ -15,13 +15,14 @@ final class InvitationSettings {
 	/**
 	 * Older DAV releases use the literal "yes"; the newer lexicon declares a boolean defaulting to true.
 	 * Use the stored/declared type before reading, because a mismatched typed getter throws.
+	 * Include lazy keys: filtering them out would mistake a stored disabled value for an absent key.
 	 *
 	 * @param IAppConfig $config Native app configuration; never modified by this reader.
 	 * @return bool Whether the server enables invitation emails, true when the setting is absent.
 	 */
 	public static function enabled(IAppConfig $config): bool {
 		try {
-			$type = $config->getValueType('dav', 'sendInvitations', false);
+			$type = $config->getValueType('dav', 'sendInvitations', null);
 		} catch (AppConfigUnknownKeyException) {
 			return true;
 		}

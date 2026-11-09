@@ -20,6 +20,7 @@ final class ExceptionDetails {
 	public static function describe(Throwable $failure): string {
 		return $failure::class . ' (code ' . self::code($failure) . ')';
 	}
+
 	/**
 	 * Exception subclasses can expose non-integer codes; do not send arbitrary strings to the log.
 	 *

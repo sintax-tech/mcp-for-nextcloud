@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\People;
 
-use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use InvalidArgumentException;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCP\Collaboration\Collaborators\ISearch;
 use OCP\Share\IShare;
 use Psr\Log\LoggerInterface;

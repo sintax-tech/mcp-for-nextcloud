@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Deck\Attachments;
 
-use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use Closure;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Modules\Deck\Attachments\CardFileLinkPreparation;
 use OCA\Mcp\Modules\Deck\Attachments\CardLinkMessages;
 use OCA\Mcp\Modules\Deck\Attachments\CardLinkPlan;

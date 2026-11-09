@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Sharing;
 
-use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Modules\Files\Presentation\SharingMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\HintException;
 use OCP\Security\Events\GenerateSecurePasswordEvent;

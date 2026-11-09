@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\OAuth\Revocation;
 
-use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Access\Policy\CauseProcessor;
 use OCA\Mcp\Access\Policy\PolicyWriter;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
 use OCP\IDBConnection;

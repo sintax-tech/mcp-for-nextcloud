@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Controller;
 
-use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Access\Inspection\AccessInspector;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Utility\ITimeFactory;

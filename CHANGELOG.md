@@ -8,7 +8,7 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 
 - **Failure diagnostics in the Nextcloud log:** unexpected tool failures now include the tool name and exception class and code in the log message itself, so they remain visible when a host does not expose structured log context. Other failure logs that kept their diagnostic only in context now interpolate it too. Logs that passed a complete exception now record only its class and integer code, never its message or trace, which may contain private file names and paths. Client responses and log levels are unchanged.
 - **Calendar plans on servers without Intl:** a conflicting event could turn `calendar_create_event` or a timing change in `calendar_update_event` into an unexpected error while formatting the overlap warning. Warnings now reuse the calendar formatter, preserving localized dates with Intl and readable local ISO dates and times without it. Planning still writes nothing.
-- **Native DAV invitation setting compatibility:** calendar plans and invitation checks now read `sendInvitations` using its native configuration type, supporting both legacy `yes`/`no` strings and the boolean setting declared by newer upstream DAV code. A boolean setting no longer raises a typed configuration conflict.
+- **Native DAV invitation setting compatibility:** calendar plans and invitation checks now read `sendInvitations` using its native configuration type, supporting both legacy `yes`/`no` strings and the boolean setting declared by newer upstream DAV code. A boolean setting no longer raises a typed configuration conflict, and a disabled setting stored lazily is no longer mistaken for an absent key.
 
 ## 1.3.2 — 2026-11-07
 

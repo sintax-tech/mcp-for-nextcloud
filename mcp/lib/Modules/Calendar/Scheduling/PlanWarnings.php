@@ -16,6 +16,7 @@ use OCA\Mcp\Platform\Dav\Calendar;
 use OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages;
 use OCA\Mcp\Modules\Calendar\Composing\EventBuilder;
 use OCA\Mcp\Modules\Calendar\Approval\PreparedCalendarWrite;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Platform\Time\UserTimezone;
 use OCP\IUserManager;
 use Psr\Log\LoggerInterface;
@@ -364,6 +365,6 @@ final class PlanWarnings {
 	 * @return void only the log line is written
 	 */
 	private function failed(Throwable $e): void {
-		$this->logger?->warning('MCP calendar: scheduling warning skipped: {exception_class} (code {exception_code})', ['app' => 'mcp', 'exception_class' => $e::class, 'exception_code' => \OCA\Mcp\Platform\Logging\ExceptionDetails::code($e)]);
+		$this->logger?->warning('MCP calendar: scheduling warning skipped: {exception_class} (code {exception_code})', ['app' => 'mcp', 'exception_class' => $e::class, 'exception_code' => ExceptionDetails::code($e)]);
 	}
 }

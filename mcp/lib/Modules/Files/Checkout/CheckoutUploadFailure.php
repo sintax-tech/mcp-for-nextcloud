@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Checkout;
 
-use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Access\FileTypes\FileTypeDenied;
 use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
@@ -20,6 +19,7 @@ use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Platform\FileAccess\LockMessages;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Response;
 use OCP\Files\File;

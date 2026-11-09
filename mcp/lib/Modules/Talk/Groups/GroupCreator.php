@@ -6,8 +6,8 @@
 declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Talk\Groups;
-use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Modules\Talk\{Failures\ConversationAccessException, Presentation\Messages, Integration\TalkServices, Failures\TalkUnavailableException, Locating\UserConversationResolver};
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use InvalidArgumentException;
 use OCP\IUserManager;
 use Psr\Log\LoggerInterface;

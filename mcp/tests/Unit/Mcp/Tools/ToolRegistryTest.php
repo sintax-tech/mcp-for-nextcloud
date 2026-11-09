@@ -543,7 +543,7 @@ final class ToolRegistryTest extends TestCase {
 		$this->assertSame(['content' => [['type' => 'text', 'text' => ToolFailure::NOT_FOUND]], 'isError' => true], $this->registry()->call('a_read', [], 'alice'));
 
 		$this->throw = new \RuntimeException('/var/www/data/alice/secret.txt');
-		$this->logger->expects($this->once())->method('error')->with('MCP tool failed: {tool}: {exception_message}', $this->callback(
+		$this->logger->expects($this->once())->method('error')->with('MCP tool failed: {tool}: {exception_detail}', $this->callback(
 			fn (array $context) => $context['exception_class'] === \RuntimeException::class && !str_contains(json_encode($context), 'secret')));
 		$result = $this->registry()->call('a_read', [], 'alice');
 		$this->assertTrue($result['isError']);
@@ -558,7 +558,7 @@ final class ToolRegistryTest extends TestCase {
 			self::assertSame('MCP tool failed: a_read: Error (code 0)', strtr($message, array_combine(array_map(static fn (string $key): string => '{' . $key . '}', array_keys($context)), $context)));
 		});
 		$result = $this->registry()->call('a_read', [], 'alice');
-		$this->assertSame('Error (code 0)', $logged['exception_message']);
+		$this->assertSame('Error (code 0)', $logged['exception_detail']);
 		$this->assertSame(\Error::class, $logged['exception_class']);
 		$this->assertStringNotContainsString('missing', $result['content'][0]['text']);
 	}
@@ -569,11 +569,11 @@ final class ToolRegistryTest extends TestCase {
 		$logged = [];
 		$this->logger->expects($this->once())->method('error')->willReturnCallback(function (string $message, array $context) use (&$logged): void {
 			$logged = [$message, $context];
-			self::assertSame('MCP tool failed: {tool}: {exception_message}', $message);
+			self::assertSame('MCP tool failed: {tool}: {exception_detail}', $message);
 			self::assertSame('a_read', $context['tool']);
 		});
 		$this->registry()->call('a_read', [], 'alice');
-		$this->assertSame('RuntimeException (code 5)', $logged[1]['exception_message']);
+		$this->assertSame('RuntimeException (code 5)', $logged[1]['exception_detail']);
 		foreach (['Salary', 'Confidential', 'README', 'Docs'] as $part) {
 			$this->assertStringNotContainsString($part, json_encode($logged));
 		}

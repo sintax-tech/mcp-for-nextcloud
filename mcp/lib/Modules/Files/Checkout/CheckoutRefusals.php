@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Checkout;
 
-use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Platform\FileAccess\LockMessages;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use Throwable;
 use OCP\AppFramework\Http;

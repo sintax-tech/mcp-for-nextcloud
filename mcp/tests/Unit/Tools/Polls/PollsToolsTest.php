@@ -369,6 +369,10 @@ final class PollsToolsTest extends TestCase {
 			$this->assertSame('DomainException',$this->rig->logs[0]['exception_class']);
 			$this->assertSame('RuntimeException',$this->rig->logs[1]['exception_class']);
 			$this->assertSame('DomainException',$this->rig->logs[1]['prior_exception_class']);
+			$this->assertSame([
+				'MCP Polls read failed: DomainException (code 0)',
+				'MCP Polls read failed: RuntimeException (code 0); previous: DomainException',
+			], $this->rig->logMessages);
 			$this->assertStringNotContainsString('PRIVATE',json_encode($this->rig->logs));
 		}
 	}

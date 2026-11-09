@@ -16,11 +16,13 @@ use PHPUnit\Framework\Attributes\DataProvider;
 
 /** A native boolean invitation setting must not turn either plan into an unexpected tool error. */
 final class CalendarInvitationConfigTest extends CalendarTestCase {
-	/** @return iterable<string, array{string,string|bool|null,bool}> Native typed and legacy settings. */
+	/** @return iterable<string, array{string,string|bool|null,bool,bool}> Native typed and legacy settings. */
 	public static function settings(): iterable {
 		foreach (['calendar_create_event', 'calendar_update_event'] as $tool) {
 			foreach (['legacy-on' => ['yes', true], 'legacy-off' => ['no', false], 'boolean-on' => [true, true], 'boolean-off' => [false, false], 'absent' => [null, true]] as $case => [$value, $enabled]) {
-				yield "$tool-$case" => [$tool, $value, $enabled];
+				foreach ([false, true] as $lazy) {
+					yield "$tool-$case-" . (int)$lazy => [$tool, $value, $enabled, $lazy];
+				}
 			}
 		}
 	}
@@ -29,20 +31,23 @@ final class CalendarInvitationConfigTest extends CalendarTestCase {
 	 * @param string $tool Published create or update tool.
 	 * @param string|bool|null $value Native setting; null means the key has never been stored.
 	 * @param bool $enabled Expected invitation switch in the plan.
+	 * @param bool $lazy Whether the native setting is stored as a lazy value.
 	 * @return void The public registry returns the plan, without sending any DAV request.
 	 */
 	#[DataProvider('settings')]
-	public function testPlansReadTheNativeSettingType(string $tool, string|bool|null $value, bool $enabled): void {
+	public function testPlansReadTheNativeSettingType(string $tool, string|bool|null $value, bool $enabled, bool $lazy): void {
 		$config = $this->createMock(IAppConfig::class);
-		$config->method('getValueType')->with('dav', 'sendInvitations', false)->willReturnCallback(static function () use ($value): int {
-			if ($value === null) { throw new AppConfigUnknownKeyException(); }
+		$loaded = false;
+		$config->method('getValueType')->with('dav', 'sendInvitations')->willReturnCallback(static function (string $app, string $key, ?bool $filter = null) use ($value, $lazy, &$loaded): int {
+			if ($value === null || ($lazy && $filter === false)) { throw new AppConfigUnknownKeyException(); }
+			$loaded = true;
 			return is_bool($value) ? IAppConfig::VALUE_BOOL : IAppConfig::VALUE_STRING;
 		});
-		$config->method('getValueString')->willReturnCallback(static function () use ($value): string {
+		$config->method('getValueString')->willReturnCallback(static function () use ($value, &$loaded): string {
 			if (is_bool($value)) { throw new AppConfigTypeConflictException('Neutral typed configuration conflict'); }
-			return $value ?? 'yes';
+			return $loaded ? ($value ?? 'yes') : 'yes';
 		});
-		$config->method('getValueBool')->with('dav', 'sendInvitations', true)->willReturn(is_bool($value) ? $value : false);
+		$config->method('getValueBool')->with('dav', 'sendInvitations', true)->willReturnCallback(static function () use ($value, &$loaded): bool { return $loaded && is_bool($value) ? $value : true; });
 		// Both drafts and CalendarDraftApproval share this Scheduling instance in the fixture.
 		$scheduling = (new \ReflectionProperty(CreateEventDraft::class, 'scheduling'))->getValue($this->writeHandlers['calendar_create_event']);
 		(new \ReflectionProperty(Scheduling::class, 'config'))->setValue($scheduling, $config);

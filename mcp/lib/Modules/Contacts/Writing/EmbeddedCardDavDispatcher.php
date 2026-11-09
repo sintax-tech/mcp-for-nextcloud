@@ -7,13 +7,13 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Contacts\Writing;
 
-use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use Closure;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Platform\Dav\CapturingSapi;
 use OCA\Mcp\Platform\Dav\DavResult;
 use OCA\Mcp\Platform\Dav\Session;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\IAppConfig;
 use Psr\Log\LoggerInterface;

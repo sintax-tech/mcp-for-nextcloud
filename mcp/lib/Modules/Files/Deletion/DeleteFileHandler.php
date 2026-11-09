@@ -6,9 +6,9 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Modules\Files\Deletion;
 
-use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Modules\Files\Deletion\DeleteEligibility;
 use OCA\Mcp\Modules\Files\Deletion\DeleteMessages;
 use OCA\Mcp\Modules\Files\Deletion\DeleteOutcome;

@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Access\Policy;
 
-use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use Closure;
 use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\RecheckMapper;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCP\IAppConfig;
 use OCP\IDBConnection;
 use Psr\Log\LoggerInterface;

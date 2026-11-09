@@ -7,12 +7,12 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\OAuth\Tokens;
 
-use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use Closure;
 use OCA\Mcp\Access\Policy\CauseProcessor;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Access\Policy\PolicyWriter;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCP\Config\IUserConfig;
 use OCP\IAppConfig;
 use OCP\IUser;

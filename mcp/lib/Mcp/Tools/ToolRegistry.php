@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Mcp\Tools;
 
-use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Access\Policy\GrantUnknown;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use InvalidArgumentException;
@@ -15,6 +14,7 @@ use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCP\App\IAppManager;
 use OCP\IUserManager;
 use OCP\Lock\LockedException;
@@ -201,7 +201,7 @@ class ToolRegistry {
 					$audit(RestrictedModule::READ_ERROR);
 					throw $e;
 				} catch (\Throwable $e) {
-					$this->logger->error('MCP tool failed: {tool}: {exception_message}', ['app' => 'mcp', 'tool' => $name, 'exception_class' => $e::class, 'exception_message' => self::loggable($e)]);
+					$this->logger->error('MCP tool failed: {tool}: {exception_detail}', ['app' => 'mcp', 'tool' => $name, 'exception_class' => $e::class, 'exception_detail' => self::loggable($e)]);
 					$audit(RestrictedModule::READ_ERROR);
 					return ToolResult::error(Translator::t('Unexpected error while accessing Nextcloud.'));
 				}

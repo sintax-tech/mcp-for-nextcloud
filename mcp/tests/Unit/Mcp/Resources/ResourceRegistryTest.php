@@ -20,6 +20,7 @@ use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Platform\FileAccess\BinaryResourceMessages;
 use OCA\Mcp\Modules\Files\FilesModule;
+use OCA\Mcp\Modules\Files\Extraction\FileReadLimit;
 use OCA\Mcp\Modules\Files\Extraction\TextExtractor;
 use OCA\Mcp\Modules\Notes\Presentation\NotesMessages;
 use OCA\Mcp\Modules\Notes\NotesModule;
@@ -81,7 +82,7 @@ final class ResourceRegistryTest extends TestCase {
 
 		$temp = $this->createMock(ITempManager::class);
 		$temp->method('getTemporaryFile')->willReturnCallback(fn () => tempnam(sys_get_temp_dir(), 'mcp'));
-		$this->extractor = new TextExtractor($temp);
+		$this->extractor = new TextExtractor($temp, new FileReadLimit($this->policyConfig));
 		$this->notesRepo = new NotesRepository($this->rootFolder, $this->config->mock($this));
 
 		$this->toolRegistry = new ToolRegistry([], $this->policy, $this->appManager, $this->userManager, $this->createMock(LoggerInterface::class));

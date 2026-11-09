@@ -33,15 +33,15 @@ class TextExtractor {
 
 	public function __construct(
 		private ITempManager $tempManager,
-		private ?FileReadLimit $readLimit = null,
+		private FileReadLimit $readLimit,
 	) {
 	}
 
 	/**
-	 * @return int effective file-read ceiling in bytes; {@see self::MAX_BYTES} when no {@see FileReadLimit} is wired
+	 * @return int effective file-read ceiling in bytes
 	 */
 	public function maxFileBytes(): int {
-		return $this->readLimit === null ? self::MAX_BYTES : $this->readLimit->maxBytes();
+		return $this->readLimit->maxBytes();
 	}
 
 	/**
@@ -107,7 +107,7 @@ class TextExtractor {
 		if ($file->getSize() > $limit) {
 			throw new ToolFailure(self::tooLarge($limit));
 		}
-		$text = $this->extract($file);
+		$text = $this->extractLimited($file, $limit);
 		return mb_strlen($text) > $maxChars
 			? mb_substr($text, 0, $maxChars) . "\n\n" . \OCA\Mcp\Modules\Files\Presentation\ReadingMessages::textTruncated()
 			: $text;
@@ -119,7 +119,14 @@ class TextExtractor {
 	 * @throws ToolFailure over the byte limit, unreadable or unsupported format
 	 */
 	public function extract(File $file): string {
-		return $this->extractBytes($this->read($file), $file->getName(), (string)$file->getMimetype());
+		return $this->extractLimited($file, $this->maxFileBytes());
+	}
+
+	/**
+	 * One ceiling for the size check, the buffered read and the PDF decode allowance of this call.
+	 */
+	private function extractLimited(File $file, int $limit): string {
+		return $this->extractBytes($this->readLimited($file, $limit), $file->getName(), (string)$file->getMimetype(), $limit);
 	}
 
 	/**
@@ -131,11 +138,12 @@ class TextExtractor {
 	 * @return string extracted text; a localized extraction-failure notice (see \OCA\Mcp\Modules\Files\Presentation\ReadingMessages::notExtracted) for a corrupt PDF/DOCX/ODT
 	 * @throws ToolFailure for an unsupported format
 	 */
-	public function extractBytes(string $bytes, string $name, string $mime): string {
+	public function extractBytes(string $bytes, string $name, string $mime, ?int $limit = null): string {
+		$limit ??= $this->maxFileBytes();
 		$mime = strtolower($mime);
 		$extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
 		if ($mime === 'application/pdf' || $extension === 'pdf') {
-			return $this->guarded($name, fn () => $this->pdf($bytes));
+			return $this->guarded($name, fn () => $this->pdf($bytes, $limit));
 		}
 		if ($mime === self::DOCX || $extension === 'docx') {
 			return $this->guarded($name, fn () => $this->zipXml($bytes, 'word/document.xml', ['#</w:p>#' => "\n", '#<w:tab\s*/>#' => "\t", '#<w:(br|cr)\b[^>]*/>#' => "\n"]));
@@ -158,7 +166,13 @@ class TextExtractor {
 	 * @throws ToolFailure over the byte limit or when the stream cannot be read
 	 */
 	public function read(File $file): string {
-		$limit = $this->maxFileBytes();
+		return $this->readLimited($file, $this->maxFileBytes());
+	}
+
+	/**
+	 * @param int $limit ceiling already chosen for this read, in bytes
+	 */
+	private function readLimited(File $file, int $limit): string {
 		if ($file->getSize() > $limit) {
 			throw new ToolFailure(self::tooLarge($limit));
 		}
@@ -203,17 +217,18 @@ class TextExtractor {
 
 	/**
 	 * Extracts the text of a PDF with smalot/pdfparser. Embedded images are not retained and the decode
-	 * memory is capped, so a hostile or huge file cannot exhaust PHP memory. {@see PdfTextParser} reads the names of objects
+	 * memory is capped per stream, so a hostile or huge file cannot exhaust PHP memory. {@see PdfTextParser} reads the names of objects
 	 * stored in object streams, where ocrmypdf keeps the page that draws the Tesseract text layer.
 	 *
-	 * @param string $bytes raw PDF content, already within MAX_BYTES
+	 * @param string $bytes raw PDF content, already within $limit
+	 * @param int $limit file ceiling of this read; the decode allowance is four times that, once, per stream
 	 * @return string plain text of all pages
 	 * @throws \Exception when the PDF cannot be parsed
 	 */
-	private function pdf(string $bytes): string {
+	private function pdf(string $bytes, int $limit): string {
 		$config = new Config();
 		$config->setRetainImageContent(false);
-		$config->setDecodeMemoryLimit($this->maxFileBytes() * 4);
+		$config->setDecodeMemoryLimit($limit * 4);
 		$document = (new PdfTextParser([], $config))->parseContent($bytes);
 		PdfSupplementaryCharacters::restore($document);
 		return $document->getText();

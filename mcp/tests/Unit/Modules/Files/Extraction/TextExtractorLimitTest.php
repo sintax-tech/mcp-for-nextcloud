@@ -32,23 +32,22 @@ final class TextExtractorLimitTest extends TestCase {
 	private function extractor(?int $mib): TextExtractor {
 		$temp = $this->createMock(ITempManager::class);
 		$temp->method('getTemporaryFile')->willReturnCallback(fn () => tempnam(sys_get_temp_dir(), 'mcp'));
-		if ($mib === null) {
-			return new TextExtractor($temp);
-		}
 		$stored = new InMemoryConfig();
-		$stored->app['mcp'][FileReadLimit::MAX_BYTES_KEY] = (string)($mib * 1024 * 1024);
+		if ($mib !== null) {
+			$stored->app['mcp'][FileReadLimit::MAX_BYTES_KEY] = (string)($mib * 1024 * 1024);
+		}
 		return new TextExtractor($temp, new FileReadLimit($stored->mock($this)));
 	}
 
 	/** @param int $size size the node reports, in bytes */
-	private function file(int $size, string $name = 'note.txt', string $body = "hello\n"): File {
+	private function file(int $size, string $name = 'note.txt', string $body = "hello\n", string $mime = 'text/plain'): File {
 		$stream = fopen('php://temp', 'w+');
 		fwrite($stream, $body);
 		rewind($stream);
 		$file = $this->createMock(File::class);
 		$file->method('getSize')->willReturn($size);
 		$file->method('getName')->willReturn($name);
-		$file->method('getMimeType')->willReturn('text/plain');
+		$file->method('getMimeType')->willReturn($mime);
 		$file->method('fopen')->willReturn($stream);
 		return $file;
 	}
@@ -82,6 +81,28 @@ final class TextExtractorLimitTest extends TestCase {
 		$bomb = self::zip('word/document.xml', str_repeat('A', FileReadLimit::ZIP_ENTRY_MAX_BYTES + 1));
 		$this->assertSame(ReadingMessages::notExtracted('bomb.docx'), $extractor->extractBytes($bomb, 'bomb.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'));
 		$this->assertSame(20 * 1024 * 1024, FileReadLimit::ZIP_ENTRY_MAX_BYTES);
+	}
+
+	/** 128M used to shrink the default to 16 MiB. The default, and a file between 16 and 20 MiB, stay readable. */
+	public function testASmallHostStillReadsTheTwentyMibDefault(): void {
+		$this->assertNotFalse(ini_set('memory_limit', '128M'));
+		$extractor = $this->extractor(null);
+		$this->assertSame(20 * 1024 * 1024, $extractor->maxFileBytes());
+		$this->assertSame(80 * 1024 * 1024, $extractor->maxFileBytes() * 4);
+		$this->assertSame("hello\n", $extractor->readText($this->file(17 * 1024 * 1024)));
+	}
+
+	/** readText of a PDF asks for the stored ceiling once and passes that same value into the decode allowance. */
+	public function testOnePdfReadResolvesTheCeilingOnce(): void {
+		$config = $this->createMock(\OCP\IConfig::class);
+		$config->expects($this->once())->method('getAppValue')
+			->with('mcp', FileReadLimit::MAX_BYTES_KEY, (string)FileReadLimit::DEFAULT_MAX_BYTES)
+			->willReturn((string)FileReadLimit::DEFAULT_MAX_BYTES);
+		$temp = $this->createMock(ITempManager::class);
+		$extractor = new TextExtractor($temp, new FileReadLimit($config));
+		$pdf = \OCA\Mcp\Tests\Unit\Tools\BrokenTextSamples::pdf();
+		$text = $extractor->readText($this->file(strlen($pdf), 'a.pdf', $pdf, 'application/pdf'));
+		$this->assertNotSame('', $text);
 	}
 
 	private static function zip(string $entry, string $content): string {

@@ -61,7 +61,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Modules/Files/Images/ImageMetadata.php#originalDimensions:fopen:1' => 'read: original image bytes',
 			'Modules/Files/Backups/FileBackupCopy.php#copy:fopen:1' => 'read: original bytes for internal recovery',
 			'Modules/Files/Integration/VersionRestore.php#writeVersion:fopen:1' => 'temporary: php temp stream buffer, not a Files node',
-			'Modules/Files/Extraction/TextExtractor.php#read:fopen:1' => 'read: bounded file content, read-only mode',
+			'Modules/Files/Extraction/TextExtractor.php#readLimited:fopen:1' => 'read: bounded file content, read-only mode',
 			'Modules/Files/Integration/VersionStream.php#open:fopen:1' => 'read: current file bytes of the listed current version, read-only mode',
 			'Modules/Logs/Reading/ReverseLogFile.php#__construct:fopen:1' => 'read: current server log published by IFileBased::getLogFilePath, read-only mode',
 			'Modules/Files/Extraction/TextExtractor.php#zipXml:file_put_contents:1' => 'temporary: ITempManager local zip, not a Files node',

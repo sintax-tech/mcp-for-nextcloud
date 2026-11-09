@@ -82,7 +82,7 @@ final class ReadVersionHandler {
 		$mime = $version->getMimeType();
 		$name = $version->getSourceFileName() ?: $path;
 		$scannable = OcrSupport::canLackText($name, $mime);
-		$text = $scannable && str_starts_with(strtolower($mime), 'image/') ? '' : $this->extractor->extractBytes($bytes, $name, $mime);
+		$text = $scannable && str_starts_with(strtolower($mime), 'image/') ? '' : $this->extractor->extractBytes($bytes, $name, $mime, $limit);
 		if ($scannable && trim($text) === '') {
 			$notice = $this->ocr->noTextNotice();
 			return ['path' => $path, 'version' => $revision, 'size' => strlen($bytes), 'mime' => $mime, 'text' => $notice,

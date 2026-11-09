@@ -864,6 +864,7 @@
     "PHP sets no memory_limit, so the configured limit applies." : "PHP no define memory_limit, así que se aplica el límite configurado.",
     "PHP memory_limit caps this read at {size} MiB because a PDF parser holds several copies of the file." : "El memory_limit de PHP limita esta lectura a {size} MiB, porque el lector de PDF guarda varias copias del archivo.",
     "PHP memory_limit allows up to {size} MiB for this read." : "El memory_limit de PHP permite hasta {size} MiB en esta lectura.",
+    "A lower memory_limit does not reduce this read below {size} MiB." : "Un memory_limit más bajo no reduce esta lectura por debajo de {size} MiB.",
     "Could not load the file read limit." : "No se pudo cargar el límite de lectura de archivos.",
     "Could not save the file read limit." : "No se pudo guardar el límite de lectura de archivos.",
     "Eligible users who activated their connection." : "Usuarios elegibles que activaron su propia conexión.",

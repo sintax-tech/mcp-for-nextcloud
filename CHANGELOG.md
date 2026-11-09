@@ -4,11 +4,11 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 
 ## 1.3.4 — Unreleased
 
-The administrator sets the largest file `files_read` will load, on the MCP management page, in whole MiB. The default stays 20 MiB. The effective limit is that value, or lower when PHP's `memory_limit` cannot hold the copies a PDF parser keeps, so a small host does not raise the ceiling by itself. A `memory_limit` of `-1` applies the configured value. Each inflated DOCX or ODT entry stays capped at 20 MiB. The same file ceiling applies when `files_replace` reads the current text and when a stored version is read. No database change and no permission change; the page saves the value, so `occ` is not required.
+The administrator sets the largest file loaded by `files_read`, `files_edit`, `files_replace`, a stored version and `resources/read`, on the MCP management page, in whole MiB. The default stays 20 MiB. A configured value at or below that default is used as stored, so a small `memory_limit` cannot make this release read less than 1.3.3 did. A higher setting is capped by a heuristic from `memory_limit` (six copies of the file, with 32 MiB left aside; neither figure is measured) and never below the default. A `memory_limit` of `-1` applies the configured value. A directive PHP cannot read falls back to the default and never to zero bytes. At the default, the PDF decode allowance stays 80 MiB and the parser applies it per stream. Each inflated DOCX or ODT entry stays capped at 20 MiB. `files_search` returns excerpts from the full-text index and does not load the file through this ceiling. No database change and no permission change; the page saves the value, so `occ` is not required.
 
 ### Changed
 
-- **Configurable file read limit:** the management page shows the configured limit, the effective limit and why `memory_limit` does or does not cap the read. Thanks to @johkoenig ([#33](https://github.com/sintax-tech/mcp-for-nextcloud/pull/33)), Johannes Koenig, for proposing a higher ceiling. A fixed 50 MiB ceiling is not what shipped.
+- **Configurable file read limit:** the management page shows the configured limit, the effective limit and why `memory_limit` does or does not cap the read. Thanks to @johkoenig (#33) for raising the read limit; it is now configurable instead of fixed.
 
 ## 1.3.3 — 2026-11-08
 

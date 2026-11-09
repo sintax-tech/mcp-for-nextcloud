@@ -27,7 +27,7 @@ final class ReplaceSourceTest extends FilesToolsTestCase {
 		$file = $this->sized(TextExtractor::MAX_BYTES + 1);
 		$file->expects($this->never())->method('getContent');
 		$file->expects($this->never())->method('fopen');
-		$this->assertTooLarge(fn () => ReplaceSource::read($file));
+		$this->assertTooLarge(fn () => ReplaceSource::read($file, TextExtractor::MAX_BYTES));
 	}
 
 	/** The same refusal for a non-finite size: there is no length to trust, and nothing is read. */
@@ -36,7 +36,7 @@ final class ReplaceSourceTest extends FilesToolsTestCase {
 			$file = $this->sized($size);
 			$file->expects($this->never())->method('getContent');
 			$file->expects($this->never())->method('fopen');
-			$this->assertTooLarge(fn () => ReplaceSource::read($file));
+			$this->assertTooLarge(fn () => ReplaceSource::read($file, TextExtractor::MAX_BYTES));
 		}
 	}
 
@@ -46,7 +46,7 @@ final class ReplaceSourceTest extends FilesToolsTestCase {
 		$file->method('getSize')->willReturn(null);
 		$file->expects($this->never())->method('getContent');
 		$file->expects($this->never())->method('fopen');
-		$this->assertTooLarge(fn () => ReplaceSource::read($file));
+		$this->assertTooLarge(fn () => ReplaceSource::read($file, TextExtractor::MAX_BYTES));
 	}
 
 	/** The ceiling itself is still readable, through getContent(), and every byte comes back. */
@@ -55,14 +55,14 @@ final class ReplaceSourceTest extends FilesToolsTestCase {
 		$file = $this->sized(TextExtractor::MAX_BYTES);
 		$file->expects($this->once())->method('getContent')->willReturn($bytes);
 		$file->expects($this->never())->method('fopen');
-		$this->assertSame($bytes, ReplaceSource::read($file));
+		$this->assertSame($bytes, ReplaceSource::read($file, TextExtractor::MAX_BYTES));
 	}
 
 	/** A normal file is read with getContent() and returned as stored. */
 	public function testANormalFileIsReadWithGetContent(): void {
 		$file = $this->sized(11);
 		$file->expects($this->once())->method('getContent')->willReturn("hello UNIQ\n");
-		$this->assertSame("hello UNIQ\n", ReplaceSource::read($file));
+		$this->assertSame("hello UNIQ\n", ReplaceSource::read($file, TextExtractor::MAX_BYTES));
 	}
 
 	/**
@@ -73,7 +73,7 @@ final class ReplaceSourceTest extends FilesToolsTestCase {
 		$file = $this->sized(4);
 		$file->expects($this->once())->method('getContent')->willReturn(str_repeat('x', TextExtractor::MAX_BYTES + 1));
 		$file->expects($this->never())->method('fopen');
-		$this->assertTooLarge(fn () => ReplaceSource::read($file));
+		$this->assertTooLarge(fn () => ReplaceSource::read($file, TextExtractor::MAX_BYTES));
 	}
 
 	/**
@@ -85,7 +85,7 @@ final class ReplaceSourceTest extends FilesToolsTestCase {
 			$file = $this->sized($size);
 			$file->expects($this->never())->method('getContent');
 			$file->expects($this->never())->method('fopen');
-			$this->assertTooLarge(fn () => ReplaceSource::read($file));
+			$this->assertTooLarge(fn () => ReplaceSource::read($file, TextExtractor::MAX_BYTES));
 		}
 	}
 

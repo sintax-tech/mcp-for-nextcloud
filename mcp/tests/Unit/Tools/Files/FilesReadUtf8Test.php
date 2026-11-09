@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Tests\Unit\Tools\BrokenTextSamples;
+use OCA\Mcp\Modules\Files\Extraction\FileReadLimit;
 use OCA\Mcp\Modules\Files\Extraction\TextExtractor;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 
@@ -35,7 +36,7 @@ final class FilesReadUtf8Test extends FilesToolsTestCase {
 	 * @return void
 	 */
 	public function testPdfBytesComeBackAsValidUtf8(): void {
-		$extractor = new TextExtractor($this->temp);
+		$extractor = new TextExtractor($this->temp, new FileReadLimit($this->config->mock($this)));
 		$this->assertSame(BrokenTextSamples::PDF_TEXT, $extractor->extractBytes(BrokenTextSamples::pdf(), 'v.pdf', 'application/pdf'));
 	}
 
@@ -46,7 +47,7 @@ final class FilesReadUtf8Test extends FilesToolsTestCase {
 	 */
 	#[RequiresPhpExtension('zip')]
 	public function testSingleByteDocumentsComeBackAsValidUtf8(): void {
-		$extractor = new TextExtractor($this->temp);
+		$extractor = new TextExtractor($this->temp, new FileReadLimit($this->config->mock($this)));
 		$latin = BrokenTextSamples::LATIN_TEXT;
 		$this->assertSame($latin . "\n" . $latin, $extractor->extractBytes(BrokenTextSamples::docx(), 'v.docx', ''));
 		$this->assertSame($latin, $extractor->extractBytes(BrokenTextSamples::odt(), 'v.odt', ''));

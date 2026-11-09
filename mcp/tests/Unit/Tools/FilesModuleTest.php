@@ -31,6 +31,7 @@ use OCA\Mcp\Modules\Files\Reorganization\Reorganization;
 use OCA\Mcp\Modules\Files\Presentation\FilesMessages;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\Images\OcrSupport;
+use OCA\Mcp\Modules\Files\Extraction\FileReadLimit;
 use OCA\Mcp\Modules\Files\Extraction\TextExtractor;
 use OCA\Mcp\Modules\Files\Integration\VersionRestore;
 use OCA\Mcp\Modules\Files\Integration\VersionTools;
@@ -80,7 +81,7 @@ final class FilesModuleTest extends TestCase {
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
 		$urls = $this->createMock(IURLGenerator::class);
 		$urls->method('linkToRouteAbsolute')->willReturnCallback(fn (string $route, array $args = []) => 'https://cloud.test/apps/mcp/' . ($args['token'] ?? ''));
-		$extractor = new TextExtractor($temp);
+		$extractor = new TextExtractor($temp, new FileReadLimit($appConfig));
 		$gate = AbsentFileTypePolicy::gate($this);
 		$shared = new SharedWriteGuard($access);
 		$commit = new ContentCommit($gate, $access);

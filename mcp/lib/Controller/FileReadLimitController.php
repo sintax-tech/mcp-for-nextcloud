@@ -17,7 +17,7 @@ use OCP\IRequest;
 /**
  * Admin JSON API of the files_read byte ceiling, so it never needs occ. Admin-only and CSRF-protected by
  * Nextcloud's defaults. The limit is edited in whole MiB and stored in bytes under FileReadLimit::MAX_BYTES_KEY.
- * The effective limit never exceeds the share of memory_limit a PDF read is budgeted to use.
+ * The effective limit keeps the 20 MiB default. memory_limit only reduces a higher setting, and not below that default.
  */
 class FileReadLimitController extends Controller {
 	/** Bytes per MiB. */

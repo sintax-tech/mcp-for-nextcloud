@@ -2,7 +2,9 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
-## 1.3.3 — Unreleased
+## 1.3.3 — 2026-11-08
+
+Fix release on top of 1.3.2. No database change and no permission change; updating from 1.3.2 needs no step. This release fixes extraction of an existing ocrmypdf text layer, makes failure diagnostics visible in the Nextcloud log, and fixes calendar warning formatting and invitation-setting compatibility.
 
 ### Fixed
 
@@ -14,6 +16,8 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 ### Validation and limits
 
 The fix is covered by unit tests with two small scans of synthetic text made by ocrmypdf 15.2 with Tesseract 5.3 and ocrmypdf 13.4 with Tesseract 4.1, read through `files_read`, through a mail attachment and through the parser, which fail on 1.3.2 and pass now, and by tests of the escaping itself (keys and values, strings, hexadecimal strings, comments and offsets). Thirty-two PDFs made with Tesseract directly, with ocrmypdf (PDF and PDF/A output, every `--optimize` level, both renderers, several pages, rotated pages), and rewritten by qpdf (object streams, linearization, uncompressed, without ToUnicode) and Ghostscript all return their text now; the thirteen that returned none on 1.3.2 are the ocrmypdf `--output-type pdf` ones that qpdf or Ghostscript did not rewrite. Text that Tesseract itself recognized wrongly, such as a rotated scan OCRed without page rotation, is returned as Tesseract wrote it.
+
+Calendar collision warnings are covered with and without Intl, including zero-duration events and rejected intervals. Legacy string, boolean and lazy invitation settings are covered in both create and update plans; the embedded DAV factory uses the same reader. A real Nextcloud 34.0.5 test with a mixed-case account, German language, a second calendar, a subscription and a writable share returned all 24 create and description-only update plans through Basic and bearer authentication without confirming a write. The original support report of every calendar plan failing was not reproduced, and its cause remains open; the improved failure log provides the exception class and code needed to investigate it without exposing private exception content.
 
 ## 1.3.2 — 2026-11-07
 

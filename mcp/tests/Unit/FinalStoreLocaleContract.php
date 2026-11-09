@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 /** Keeps store descriptions on the prepared release series without prerelease sales wording. */
 final class FinalStoreLocaleContract {
 	/** Release identity shared by manifest and store contract tests; change only this value for the final release. */
-	public const VERSION = '1.3.2';
+	public const VERSION = '1.3.3';
 
 	/** @return string Public version series, without the technical prerelease suffix. */
 	public static function displayVersion(): string {

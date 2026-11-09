@@ -19,8 +19,9 @@ English · [Português (Brasil)](README.pt-BR.md) · [Deutsch](README.de.md) · 
 
 ---
 
-## What's new in 1.3.2, 1.3.1 and 1.3.0
+## What's new in 1.3.3, 1.3.2, 1.3.1 and 1.3.0
 
+- **1.3.3: fixes for scanned PDFs, failure logs and calendar plans.** PDFs made searchable by ocrmypdf with Tesseract now return their existing text layer ([#31](https://github.com/sintax-tech/mcp-for-nextcloud/issues/31)). Unexpected tool failures identify the tool and exception class and code in the Nextcloud log, without private exception messages or traces. Calendar collision warnings work without Intl and keep the start visible for an invalid interval; zero-duration overlaps show the time once. Calendar plans and DAV use the same invitation setting reader for string, boolean and lazy values. No database change.
 - **1.3.2: fixes for file writes.** `files_version_restore` of the current version no longer fails (with file locking it answered not found, without it a write failure). When `files_version_restore`, `files_edit`, `files_replace` or a `files_checkout` upload fails after the pre-write copy, the answer now says where the copy is, and a file that became hidden in the meantime gets only "Resource not found in Nextcloud.", without its folder or name. `collectives_remove_member` no longer answers `partial` for a removal that Teams applies in the background. No database change.
 - **1.3.1: fix for HTML mail drafts ([#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30)).** On servers with libxml2 2.14 or later (Ubuntu 25.10 and 26.04, Debian testing), every `mail_create_draft` call with `html: true` was refused; it now works there. A loose `&` ("A & B", "AT&T", a link with `?a=1&b=2`) is kept as text instead of refusing the draft, and HTML that libxml versions read differently is refused with the same message on every server. No database change.
 

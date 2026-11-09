@@ -19,8 +19,9 @@ Claude und andere MCP-Clients arbeiten mit deinen Dateien, Notizen, Kalendern, K
 
 ---
 
-## Neu in 1.3.2, 1.3.1 und 1.3.0
+## Neu in 1.3.3, 1.3.2, 1.3.1 und 1.3.0
 
+- **1.3.3: Korrekturen für gescannte PDFs, Fehlerprotokolle und Kalenderpläne.** PDFs mit einer von ocrmypdf und Tesseract hinzugefügten Textebene liefern nun ihren vorhandenen Text ([#31](https://github.com/sintax-tech/mcp-for-nextcloud/issues/31)). Unerwartete Werkzeugfehler nennen Werkzeug, Ausnahmeklasse und Fehlercode im Nextcloud-Protokoll, ohne private Ausnahmemeldungen oder Stacktraces. Kalender-Konfliktwarnungen funktionieren ohne Intl und zeigen bei einem ungültigen Intervall weiterhin den Beginn; bei Dauer null erscheint die Uhrzeit nur einmal. Kalenderpläne und DAV lesen die Einladungseinstellung einheitlich als String, Boolean oder Lazy-Wert. Keine Datenbankänderung.
 - **1.3.2: Korrekturen beim Schreiben von Dateien.** `files_version_restore` der aktuellen Version schlägt nicht mehr fehl (mit Dateisperren kam „nicht gefunden“, ohne sie ein Schreibfehler). Wenn `files_version_restore`, `files_edit`, `files_replace` oder ein Upload über `files_checkout` nach der Sicherungskopie fehlschlägt, nennt die Antwort jetzt den Ort der Kopie, und eine Datei, die inzwischen ausgeblendet wurde, erhält nur "Resource not found in Nextcloud.", ohne Ordner und Namen. `collectives_remove_member` meldet bei einer Entfernung, die Teams im Hintergrund ausführt, nicht mehr `partial`. Keine Datenbankänderung.
 - **1.3.1: Korrektur für HTML-Mailentwürfe ([#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30)).** Auf Servern mit libxml2 2.14 oder neuer (Ubuntu 25.10 und 26.04, Debian testing) wurde jeder Aufruf von `mail_create_draft` mit `html: true` abgelehnt; dort funktioniert er jetzt. Ein alleinstehendes `&` ("A & B", "AT&T", ein Link mit `?a=1&b=2`) bleibt als Text erhalten, statt den Entwurf abzulehnen, und HTML, das libxml-Versionen unterschiedlich lesen, wird auf allen Servern mit derselben Meldung abgelehnt. Keine Datenbankänderung.
 

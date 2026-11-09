@@ -19,8 +19,9 @@ Deja que Claude y otros clientes MCP trabajen con tus archivos, notas, calendari
 
 ---
 
-## Novedades de la 1.3.2, la 1.3.1 y la 1.3.0
+## Novedades de la 1.3.3, la 1.3.2, la 1.3.1 y la 1.3.0
 
+- **1.3.3: correcciones para PDF escaneados, registros de errores y planes del calendario.** Los PDF con texto de búsqueda añadido por ocrmypdf con Tesseract ahora devuelven su capa de texto existente ([#31](https://github.com/sintax-tech/mcp-for-nextcloud/issues/31)). Los fallos inesperados de herramientas identifican la herramienta y la clase y el código de la excepción en el registro de Nextcloud, sin mensajes privados ni trazas de la excepción. Los avisos de conflicto del calendario funcionan sin Intl y conservan el inicio de un intervalo inválido; los conflictos de duración cero muestran la hora una vez. Los planes del calendario y DAV usan la misma lectura de la configuración de invitaciones para valores string, booleanos y lazy. Sin cambios en la base de datos.
 - **1.3.2: correcciones en la escritura de archivos.** `files_version_restore` de la versión actual ya no falla (con bloqueo de archivos respondía que no lo encontraba; sin él, un error de escritura). Cuando `files_version_restore`, `files_edit`, `files_replace` o una subida de `files_checkout` falla después de la copia previa, la respuesta ahora indica dónde está la copia, y un archivo que quedó oculto entretanto recibe solo "Resource not found in Nextcloud.", sin su carpeta ni su nombre. `collectives_remove_member` ya no responde `partial` a una eliminación que Equipos aplica en segundo plano. Sin cambios en la base de datos.
 - **1.3.1: corrección de los borradores de correo HTML ([#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30)).** En servidores con libxml2 2.14 o posterior (Ubuntu 25.10 y 26.04, Debian testing), toda llamada a `mail_create_draft` con `html: true` se rechazaba; ahora funciona. Un `&` suelto ("A & B", "AT&T", un enlace con `?a=1&b=2`) se conserva como texto en lugar de rechazar el borrador, y el HTML que las versiones de libxml leen de forma distinta se rechaza con el mismo mensaje en todos los servidores. Sin cambios en la base de datos.
 

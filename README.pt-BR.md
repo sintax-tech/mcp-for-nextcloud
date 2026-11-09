@@ -19,8 +19,9 @@ Deixe o Claude e outros clientes MCP trabalharem com seus arquivos, notas, calen
 
 ---
 
-## Novidades da 1.3.2, da 1.3.1 e da 1.3.0
+## Novidades da 1.3.3, da 1.3.2, da 1.3.1 e da 1.3.0
 
+- **1.3.3: correções para PDFs digitalizados, logs de falha e planos do calendário.** PDFs que receberam texto pesquisável pelo ocrmypdf com Tesseract agora retornam a camada de texto existente ([#31](https://github.com/sintax-tech/mcp-for-nextcloud/issues/31)). Falhas inesperadas de ferramentas identificam a ferramenta e a classe e o código da exceção no log do Nextcloud, sem mensagens privadas nem rastros da exceção. Avisos de conflito do calendário funcionam sem Intl e preservam o início de um intervalo inválido; conflitos de duração zero mostram o horário uma vez. Os planos do calendário e o DAV usam a mesma leitura da configuração de convites para valores string, booleanos e lazy. Sem mudança no banco de dados.
 - **1.3.2: correções na escrita de arquivos.** O `files_version_restore` da versão atual não falha mais (com bloqueio de arquivos respondia que não encontrou o arquivo; sem ele, falha de escrita). Quando `files_version_restore`, `files_edit`, `files_replace` ou um upload do `files_checkout` falha depois da cópia de segurança, a resposta agora diz onde está a cópia, e um arquivo que ficou oculto nesse meio-tempo recebe só "Resource not found in Nextcloud.", sem a pasta nem o nome. O `collectives_remove_member` não responde mais `partial` para uma remoção que o Times aplica em segundo plano. Sem mudança no banco de dados.
 - **1.3.1: correção dos rascunhos de e-mail HTML ([#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30)).** Em servidores com libxml2 2.14 ou mais nova (Ubuntu 25.10 e 26.04, Debian testing), toda chamada de `mail_create_draft` com `html: true` era recusada; agora funciona. Um `&` solto ("A & B", "AT&T", um link com `?a=1&b=2`) é mantido como texto em vez de recusar o rascunho, e HTML que as versões da libxml leem de forma diferente é recusado com a mesma mensagem em todos os servidores. Sem mudança no banco de dados.
 

@@ -46,6 +46,8 @@ final class PollsTestRig {
 	public string $version = '8.6.3';
 	/** @var list<array<string,mixed>> sanitized diagnostic contexts */
 	public array $logs = [];
+	/** @var list<string> Final interpolated diagnostic messages. */
+	public array $logMessages = [];
 
 	/**
 	 * Builds the module without permissive magic calls to native services.
@@ -84,7 +86,12 @@ final class PollsTestRig {
 		$this->services = new PollsServices($apps, $manager, $container, $this->policy, new PollsSurface());
 		$guard = new PollsSessionGuard($this->session);
 		$logger = $test->getMockBuilder(\Psr\Log\LoggerInterface::class)->getMock();
-		$logger->method('error')->willReturnCallback(function ($message, array $context): void {$this->logs[] = $context;});
+		$logger->method('error')->willReturnCallback(function ($message, array $context): void {
+			$this->logs[] = $context;
+			$replace = [];
+			foreach ($context as $key => $value) { $replace['{' . $key . '}'] = (string)$value; }
+			$this->logMessages[] = strtr($message, $replace);
+		});
 		$context = new PollsContext($this->services, $guard, $logger);
 		$shapes = new PollsShapes();
 		$cursor = new PollsCursor(new PlanState($config));

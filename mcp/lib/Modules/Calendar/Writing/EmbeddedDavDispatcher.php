@@ -14,13 +14,13 @@ use Sabre\DAV\Exception as DavException;
 use Sabre\DAV\Server;
 use Sabre\HTTP\{Request, Response};
 use OCA\Mcp\Modules\Calendar\{Failures\CalendarException, Integration\EmbeddedCalDavServerFactory, Presentation\CalendarMessages};
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 
 /**
  * Runs calendar writes through the embedded Nextcloud CalDAV server.
  *
- * Every operation gets a fresh `EmbeddedCalDavServer(false)`, or its Nextcloud 31 predecessor
- * ({@see EmbeddedCalDavServerFactory}), and is dispatched with
- * `Server::invokeMethod($request, $response, false)`, so the effect is the same as the user's acting
+ * Every operation gets a fresh `EmbeddedCalDavServer(false)` or its Nextcloud 31 predecessor ({@see EmbeddedCalDavServerFactory}),
+ * dispatched with `Server::invokeMethod($request, $response, false)`, so the effect is the same as the user's acting
  * in the Calendar app or through any CalDAV client: the same ACL, the same iCalendar validation, the
  * same scheduling rules, the same trash and the same sync notifications.
  *
@@ -208,7 +208,7 @@ class EmbeddedDavDispatcher implements CalendarDav {
 		} catch (DavException $exception) {
 			throw $this->translate($exception, $request);
 		} catch (\Throwable $exception) {
-			$this->logger->error('MCP calendar: DAV dispatch failed', ['app' => 'mcp', 'exception_class' => $exception::class]);
+			$this->logger->error('MCP calendar: DAV dispatch failed: {exception_class} (code {exception_code})', ['app' => 'mcp', 'exception_class' => $exception::class, 'exception_code' => ExceptionDetails::code($exception)]);
 			throw new \RuntimeException(CalendarMessages::DAV_FAILURE, 0, $exception);
 		}
 		return $this->result($response, $acceptedStatuses, $method);
@@ -262,12 +262,12 @@ class EmbeddedDavDispatcher implements CalendarDav {
 	private function pinPrincipal(Server $server, string $userId): void {
 		$auth = $server->getPlugin('auth');
 		if (!$auth instanceof AuthPlugin || !method_exists($auth, 'setCurrentPrincipal')) {
-			$this->logger->error('MCP calendar: DAV server cannot take a pinned principal', ['app' => 'mcp', 'exception_class' => self::class]);
+			$this->logger->error('MCP calendar: DAV server cannot take a pinned principal: {exception_class}', ['app' => 'mcp', 'exception_class' => self::class]);
 			throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
 		}
 		$auth->setCurrentPrincipal(self::PRINCIPAL_PREFIX . $userId);
 		if ($auth->getCurrentPrincipal() !== self::PRINCIPAL_PREFIX . $userId) {
-			$this->logger->error('MCP calendar: DAV server refused the pinned principal', ['app' => 'mcp', 'exception_class' => self::class]);
+			$this->logger->error('MCP calendar: DAV server refused the pinned principal: {exception_class}', ['app' => 'mcp', 'exception_class' => self::class]);
 			throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
 		}
 	}
@@ -285,7 +285,7 @@ class EmbeddedDavDispatcher implements CalendarDav {
 			$status = \OCA\Mcp\Platform\Dav\CapturingSapi::$lastStatus;
 		}
 		if ($status === null || !in_array($status, $acceptedStatuses, true)) {
-			$this->logger->error('MCP calendar: unexpected DAV status', ['app' => 'mcp', 'method' => $method, 'status' => $status]);
+			$this->logger->error('MCP calendar: unexpected DAV status: {method} {status}', ['app' => 'mcp', 'method' => $method, 'status' => $status]);
 			throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
 		}
 		return new \OCA\Mcp\Platform\Dav\DavResult($status, $response->getHeader('ETag'));
@@ -298,7 +298,7 @@ class EmbeddedDavDispatcher implements CalendarDav {
 	 * @return CalendarException the failure to raise
 	 */
 	private function translate(DavException $exception, Request $request): CalendarException {
-		$this->logger->error('MCP calendar: DAV write refused', ['app' => 'mcp', 'exception_class' => $exception::class, 'http_code' => $exception->getHTTPCode()]);
+		$this->logger->error('MCP calendar: DAV write refused: {exception_class} (code {exception_code}, HTTP {http_code})', ['app' => 'mcp', 'exception_class' => $exception::class, 'exception_code' => ExceptionDetails::code($exception), 'http_code' => $exception->getHTTPCode()]);
 		$mapped = match ($exception->getHTTPCode()) {
 			// 403 Forbidden and 403 NeedPrivileges: the ACL plugin refused bind, unbind or write.
 			403 => CalendarException::forbidden(),

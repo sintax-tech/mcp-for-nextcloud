@@ -93,11 +93,11 @@ final class FilesImageSearchTest extends FilesToolsTestCase {
 	public function testBackendFailureLogsSafeDiagnostics(): void {
 		$root = $this->searchRoot();
 		$root->method('search')->willThrowException(new \Error('private backend details', 41));
-		$this->logger->expects(self::once())->method('error')->with('Image search failed', [
+		$this->logger->expects(self::once())->method('error')->with('Image search failed: {tool}: {exception_detail}', [
 			'app' => 'mcp',
 			'tool' => 'files_image_search',
 			'exception_class' => \Error::class,
-			'exception_message' => 'Error (code 41)',
+			'exception_detail' => 'Error (code 41)',
 		]);
 		$this->expectException(ToolFailure::class);
 		$this->expectExceptionMessage('Failed to search images in Nextcloud.');

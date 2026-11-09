@@ -11,6 +11,7 @@ use OCP\IAppConfig;
 use Psr\Container\ContainerInterface;
 use Sabre\DAV\Server;
 use OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages;
+use OCA\Mcp\Modules\Calendar\Scheduling\InvitationSettings;
 use OCA\Mcp\Modules\Calendar\Writing\EmbeddedDavDispatcher;
 
 /**
@@ -35,10 +36,6 @@ final class EmbeddedCalDavServerFactory {
 	public const IMIP_PLUGIN = 'OCA\\DAV\\CalDAV\\Schedule\\IMipPlugin';
 	/** Sabre name of that plugin, the one `Server::getPlugin()` answers to. */
 	private const IMIP_NAME = 'imip';
-	/** App and key of the switch both Nextcloud servers read before loading the IMipPlugin. */
-	private const DAV_APP = 'dav';
-	private const SEND_INVITATIONS_KEY = 'sendInvitations';
-	private const SEND_INVITATIONS_ON = 'yes';
 
 	/**
 	 * @param ContainerInterface $container resolves the app config and the IMipPlugin, only on Nextcloud 31
@@ -71,7 +68,6 @@ final class EmbeddedCalDavServerFactory {
 
 	/** @return bool whether the admin left dav/sendInvitations on, as Nextcloud reads it */
 	private function invitationsOn(): bool {
-		return $this->container->get(IAppConfig::class)
-			->getValueString(self::DAV_APP, self::SEND_INVITATIONS_KEY, self::SEND_INVITATIONS_ON) === self::SEND_INVITATIONS_ON;
+		return InvitationSettings::enabled($this->container->get(IAppConfig::class));
 	}
 }

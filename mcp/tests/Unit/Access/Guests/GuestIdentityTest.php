@@ -51,4 +51,19 @@ final class GuestIdentityTest extends TestCase {
 		$this->assertTrue($this->identify(true, new \RuntimeException('Guests failed')));
 		$this->assertTrue($this->identify(new \RuntimeException('app manager failed'), false));
 	}
+	/** @return void The logger receives a safe scalar, never a Throwable that Nextcloud serializes. */
+	public function testFailureIsIdentifiableWithoutLeakingTheException(): void {
+		$apps = $this->createMock(IAppManager::class);
+		$apps->method('isEnabledForAnyone')->willThrowException(new \RuntimeException('/private/Salary.txt', 17));
+		$logger = $this->createMock(LoggerInterface::class);
+		$logger->expects(self::once())->method('error')->willReturnCallback(static function (string $message, array $context): void {
+			self::assertSame('RuntimeException (code 17)', $context['exception']);
+			self::assertSame('The Guests app could not tell whether an account is a guest; the action is refused: RuntimeException (code 17)',
+				strtr($message, ['{exception}' => $context['exception']]));
+			self::assertStringNotContainsString('Salary', json_encode([$message, $context]));
+		});
+		$identity = new GuestIdentity($apps, $this->createMock(NativeGuests::class), $logger);
+		self::assertTrue($identity->isGuestAccount($this->createMock(IUser::class)));
+	}
+
 }

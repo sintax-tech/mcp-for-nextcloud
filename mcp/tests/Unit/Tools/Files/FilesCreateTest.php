@@ -373,8 +373,8 @@ final class FilesCreateTest extends FilesToolsTestCase {
 			$this->assertSame($message, $this->failure('files_create', ['path' => "/falha$i.md", 'content' => 'x']), $failure::class);
 		}
 		$this->tree->writeFailure = new \RuntimeException('disk /alice/files/segredo.md broke');
-		$this->creationLogger->expects($this->once())->method('error')->with('MCP new file write failed',
-			['app' => 'mcp', 'exception_class' => \RuntimeException::class]);
+		$this->creationLogger->expects($this->once())->method('error')->with('MCP new file write failed: {exception_class} (code {exception_code})',
+			['app' => 'mcp', 'exception_class' => \RuntimeException::class, 'exception_code' => 0]);
 		$this->assertSame(CreationMessages::createFailed(), $this->failure('files_create', ['path' => '/falha.md', 'content' => 'x']));
 	}
 	public function testCreateDoesNotPublishNewlyHiddenReceipt(): void {

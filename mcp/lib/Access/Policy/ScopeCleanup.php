@@ -6,6 +6,7 @@
 declare(strict_types=1);
 
 namespace OCA\Mcp\Access\Policy;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Platform\Numbers\DecimalCounter;
 use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\ResourceScopeMapper;
@@ -103,7 +104,7 @@ class ScopeCleanup {
 			$this->appConfig->setValueString('mcp', self::CURSOR_KEY,
 				count($page) < $limit ? '' : $page[count($page) - 1]['userKey'], true);
 		} catch (Throwable $e) {
-			$this->logger->warning('Cannot list the users with a resource scope', ['app' => 'mcp', 'exception' => $e]);
+			$this->logger->warning('Cannot list the users with a resource scope: {exception}', ['app' => 'mcp', 'exception' => ExceptionDetails::describe($e)]);
 			return 0;
 		}
 		$kept = 0;
@@ -123,7 +124,7 @@ class ScopeCleanup {
 				}
 			} catch (Throwable $e) {
 				++$blocked;
-				$this->logger->warning('The account of a resource scope could not be read', ['app' => 'mcp', 'target' => $uid, 'exception' => $e]);
+				$this->logger->warning('The account of a resource scope could not be read: {exception}', ['app' => 'mcp', 'target' => $uid, 'exception' => ExceptionDetails::describe($e)]);
 			}
 		}
 		if ($page !== []) {

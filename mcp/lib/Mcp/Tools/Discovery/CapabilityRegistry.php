@@ -9,6 +9,7 @@ namespace OCA\Mcp\Mcp\Tools\Discovery;
 
 use Closure;
 use OCA\Mcp\Mcp\Tools\CapabilityProbe;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -128,7 +129,7 @@ final class CapabilityRegistry {
 		$probe = $this->probes[$entry];
 		$name = is_string($entry) ? $entry : ($probe instanceof CapabilityProbe ? $probe::class : 'probe #' . $entry);
 		try {
-			$this->logger->warning('MCP capability probe failed', ['app' => 'mcp', 'probe' => $name, 'exception_class' => $e::class]);
+			$this->logger->warning('MCP capability probe failed: {probe}: {exception_class} (code {exception_code})', ['app' => 'mcp', 'probe' => $name, 'exception_class' => $e::class, 'exception_code' => ExceptionDetails::code($e)]);
 		} catch (\Throwable) {
 			// The answer is already false; a failing logger changes nothing.
 		}

@@ -303,7 +303,7 @@ final class FilesShareTest extends FilesToolsTestCase {
 	public function testACoreRefusalIsTranslatedAndOnlyItsClassIsLogged(\Throwable $failure, string $message): void {
 		$this->shares->failWrite = $failure;
 		$this->shareLogger->expects(self::once())->method('warning')->with(self::anything(), self::callback(
-			static fn (array $context): bool => $context === ['app' => 'mcp', 'exception_class' => $failure::class]));
+			static fn (array $context): bool => $context === ['app' => 'mcp', 'exception_class' => $failure::class, 'exception_code' => 0]));
 		try {
 			$this->confirm(['path' => '/Documentos/ata.md', 'with' => 'user:bruno']);
 			self::fail('no failure');
@@ -317,8 +317,8 @@ final class FilesShareTest extends FilesToolsTestCase {
 		$existing = $this->shares->add(['node' => $this->id('/Documentos/ata.md'), 'with' => 'bruno', 'permissions' => 3,
 			'nodeObject' => $this->tree->node('/alice/files/Documentos/ata.md')]);
 		$this->shares->failWrite = new AlreadySharedException('Sharing ata.md failed, because this item is already shared with the account Bruno', $existing);
-		$this->shareLogger->expects(self::once())->method('debug')->with('MCP share refused by Nextcloud',
-			['app' => 'mcp', 'exception_class' => AlreadySharedException::class]);
+		$this->shareLogger->expects(self::once())->method('debug')->with('MCP share refused by Nextcloud: {exception_class} (code {exception_code})',
+			['app' => 'mcp', 'exception_class' => AlreadySharedException::class, 'exception_code' => 0]);
 		$this->shareLogger->expects(self::never())->method('warning');
 		try {
 			$this->confirm(['path' => '/Documentos/ata.md', 'with' => 'user:bruno']);

@@ -69,11 +69,11 @@ final class ImageSearchHandler {
 		} catch (ToolFailure|PolicyUnavailable|LockedException $e) {
 			throw $e;
 		} catch (\Throwable $e) {
-			$this->logger->error('Image search failed', [
+			$this->logger->error('Image search failed: {tool}: {exception_detail}', [
 				'app' => 'mcp',
 				'tool' => 'files_image_search',
 				'exception_class' => $e::class,
-				'exception_message' => ToolRegistry::loggable($e),
+				'exception_detail' => ToolRegistry::loggable($e),
 			]);
 			throw new ToolFailure(ImageSearchMessages::failed(), 0, $e);
 		}

@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Talk\Groups;
 use OCA\Mcp\Modules\Talk\{Failures\ConversationAccessException, Presentation\Messages, Integration\TalkServices, Failures\TalkUnavailableException, Locating\UserConversationResolver};
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use InvalidArgumentException;
 use OCP\IUserManager;
 use Psr\Log\LoggerInterface;
@@ -104,12 +105,12 @@ class GroupCreator {
 			} catch (Throwable $e) {
 				// The room exists from here on and this tool cannot undo it, so the guest is reported by name
 				// instead of turning the whole call into a refusal that hides a conversation the user will find
-				// in their own list. The product's own message stays in the log: it may name internals.
+				// in their own list. Log only the failure's class and code, never the native message.
 				$failed[] = $contact->describe() + ['error' => Messages::invitationFailed()];
-				$this->logger->warning('Talk created the group {token} but could not invite {guest}', [
+				$this->logger->warning('Talk created the group {token} but could not invite {guest}: {exception}', [
 					'token' => $result['conversation_token'],
 					'guest' => $contact->id,
-					'exception' => $e,
+					'exception' => ExceptionDetails::describe($e),
 				]);
 			}
 		}

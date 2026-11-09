@@ -19,6 +19,7 @@ use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Platform\FileAccess\LockMessages;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Response;
 use OCP\Files\File;
@@ -91,7 +92,7 @@ final class CheckoutUploadFailure {
 				default => $this->refusals->refuse(Http::STATUS_BAD_REQUEST, $error->getMessage() . $note),
 			};
 		}
-		$this->logger->error('MCP checkout upload failed', ['app' => 'mcp']);
+		$this->logger->error('MCP checkout upload failed: {exception}', ['app' => 'mcp', 'exception' => ExceptionDetails::describe($error)]);
 		// The copy exists by now, so the message can point at the one thing that still holds the original.
 		return $this->refusals->refuse(Http::STATUS_INTERNAL_SERVER_ERROR, CheckoutMessages::uploadFailed($copy));
 	}

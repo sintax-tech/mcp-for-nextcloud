@@ -247,7 +247,7 @@ final class PeopleModuleTest extends TestCase {
 		} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
 			self::assertSame('The search for people failed; try again.', $e->getMessage());
 		}
-		self::assertSame([['app' => 'mcp', 'exception_class' => \RuntimeException::class]], array_column($logged, 1));
+		self::assertSame([['app' => 'mcp', 'exception_class' => \RuntimeException::class, 'exception_code' => 0]], array_column($logged, 1));
 
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
 		$policy->setGrant('alice', 'people', 'read', true);

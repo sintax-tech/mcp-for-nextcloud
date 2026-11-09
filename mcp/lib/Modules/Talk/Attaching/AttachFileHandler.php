@@ -50,7 +50,7 @@ final class AttachFileHandler {
 			if (($attached['captionSent'] ?? null) === false) {
 				// The card is already in the room, so this is a real failure of the call even though it is not an
 				// error result: an operator has to be able to see that the caption was lost.
-				$this->logger->error('Talk caption was not sent after the attachment was published', [
+				$this->logger->error('Talk caption was not sent after the attachment was published: {tool}: {exception}', [
 					'app' => 'mcp',
 					'tool' => 'talk_attach_file',
 					'attachmentId' => $attached['attachmentId'],

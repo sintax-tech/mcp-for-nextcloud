@@ -10,6 +10,7 @@ namespace OCA\Mcp\Access\Policy;
 use Closure;
 use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\RecheckMapper;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCP\IAppConfig;
 use OCP\IDBConnection;
 use Psr\Log\LoggerInterface;
@@ -119,7 +120,7 @@ class CauseProcessor {
 			$this->appConfig->setValueString('mcp', self::CURSOR_KEY,
 				count($users) < $limit ? '' : IdentityKey::user($users[count($users) - 1]), true);
 		} catch (Throwable $e) {
-			$this->logger->warning('Cannot list the pending recheck causes', ['app' => 'mcp', 'exception' => $e]);
+			$this->logger->warning('Cannot list the pending recheck causes: {exception}', ['app' => 'mcp', 'exception' => ExceptionDetails::describe($e)]);
 			return 0;
 		}
 		$consumed = 0;
@@ -127,7 +128,7 @@ class CauseProcessor {
 			try {
 				$consumed += $this->writer->processCauses($uid, $this->classifier());
 			} catch (Throwable $e) {
-				$this->logger->warning('Recheck causes of a user stay pending', ['app' => 'mcp', 'target' => $uid, 'exception' => $e]);
+				$this->logger->warning('Recheck causes of a user stay pending: {exception}', ['app' => 'mcp', 'target' => $uid, 'exception' => ExceptionDetails::describe($e)]);
 			}
 		}
 		return $consumed;
@@ -151,13 +152,13 @@ class CauseProcessor {
 					$this->process($item);
 				} catch (PolicyUnavailable $e) {
 					$this->deferred->keep($item);
-					$this->logger->info('Deferred recheck kept for the next safe point', ['app' => 'mcp', 'target' => self::target($item), 'exception' => $e]);
+					$this->logger->info('Deferred recheck kept for the next safe point: {exception}', ['app' => 'mcp', 'target' => self::target($item), 'exception' => ExceptionDetails::describe($e)]);
 				} catch (Throwable $e) {
-					$this->logger->error('Deferred recheck dropped', ['app' => 'mcp', 'target' => self::target($item), 'exception' => $e]);
+					$this->logger->error('Deferred recheck dropped: {exception}', ['app' => 'mcp', 'target' => self::target($item), 'exception' => ExceptionDetails::describe($e)]);
 				}
 			}
 		} catch (Throwable $e) {
-			$this->logger->error('Deferred recheck processing failed', ['app' => 'mcp', 'exception' => $e]);
+			$this->logger->error('Deferred recheck processing failed: {exception}', ['app' => 'mcp', 'exception' => ExceptionDetails::describe($e)]);
 		} finally {
 			$this->flushing = false;
 		}
@@ -183,7 +184,7 @@ class CauseProcessor {
 			}
 		} catch (Throwable $e) {
 			try {
-				$this->logger->error('Deferred recheck shutdown failed', ['app' => 'mcp', 'exception' => $e]);
+				$this->logger->error('Deferred recheck shutdown failed: {exception}', ['app' => 'mcp', 'exception' => ExceptionDetails::describe($e)]);
 			} catch (Throwable) {
 			}
 		}

@@ -69,7 +69,7 @@ final class ListEventsHandler {
 			foreach ($this->store->objects($calendar->id, $this->store->eventUrisInRange($calendar->id, $from, $to)) as $row) {
 				$vcalendar = $this->events->parse($row['data']);
 				if ($vcalendar === null) {
-					$this->logger->warning('MCP calendar: invalid calendar object skipped', ['app' => 'mcp', 'exception_class' => 'Sabre\VObject\ParseException']);
+					$this->logger->warning('MCP calendar: invalid calendar object skipped: {exception_class}', ['app' => 'mcp', 'exception_class' => 'Sabre\VObject\ParseException']);
 					continue;
 				}
 				foreach ($this->expander->occurrences($vcalendar, $from, $to) as $occurrence) {

@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Sharing;
 
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCP\Share\Exceptions\AlreadySharedException;
 use Psr\Log\LoggerInterface;
 use Throwable;
@@ -27,11 +28,11 @@ final class ShareFailureLog {
 	 * @return void
 	 */
 	public static function record(LoggerInterface $logger, string $message, Throwable $failure): void {
-		$context = ['app' => 'mcp', 'exception_class' => $failure::class];
+		$context = ['app' => 'mcp', 'exception_class' => $failure::class, 'exception_code' => ExceptionDetails::code($failure)];
 		if ($failure instanceof AlreadySharedException) {
-			$logger->debug($message, $context);
+			$logger->debug($message . ': {exception_class} (code {exception_code})', $context);
 		} else {
-			$logger->warning($message, $context);
+			$logger->warning($message . ': {exception_class} (code {exception_code})', $context);
 		}
 	}
 }

@@ -69,6 +69,16 @@ final class FilesOcrTest extends FilesToolsTestCase {
 		$this->assertArrayNotHasKey('notice', $meta);
 	}
 
+	/** A scan made searchable by ocrmypdf keeps its Tesseract text layer in an object stream (#31): it is text, not a notice. */
+	public function testOcrmypdfScanReturnsItsTextLayer(): void {
+		foreach (['ocrmypdf15-tesseract5.pdf', 'ocrmypdf13-tesseract4.pdf'] as $fixture) {
+			$this->tree->addFile('/alice/files/' . $fixture, (string)file_get_contents(__DIR__ . '/../../../fixtures/pdf-ocr/' . $fixture), 'application/pdf');
+			[$text, $meta] = $this->read('/' . $fixture);
+			$this->assertSame('Scanned sample text 4711', $text);
+			$this->assertArrayNotHasKey('text_layer', $meta);
+		}
+	}
+
 	public function testDetectionAndGuideNotes(): void {
 		$this->assertTrue(OcrSupport::canLackText('a.PDF', ''));
 		$this->assertTrue(OcrSupport::canLackText('a', 'image/png'));

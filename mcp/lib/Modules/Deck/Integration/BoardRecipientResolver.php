@@ -14,6 +14,7 @@ use OCA\Mcp\Mcp\Confirmation\PlanState;
 use Psr\Log\LoggerInterface;
 use Throwable;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 
 /**
  * Internal complete board recipients after grants and fresh active source READ/EDIT; never creates a share.
@@ -129,7 +130,7 @@ final class BoardRecipientResolver {
 			if (!$failure instanceof \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException && !$failure instanceof \OCA\Mcp\Modules\Deck\Recipients\RecipientResolutionException
 				&& !is_a($failure, 'OCA\\Deck\\NoPermissionException')
 				&& !is_a($failure, 'OCP\\AppFramework\\Db\\DoesNotExistException')) {
-				$this->logger->debug('Deck recipient resolution failed.', ['exceptionClass' => $failure::class]);
+				$this->logger->debug('Deck recipient resolution failed: {exceptionClass} (code {exception_code})', ['exceptionClass' => $failure::class, 'exception_code' => ExceptionDetails::code($failure)]);
 			}
 			if ($authorized) {
 				throw new \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException($failure instanceof \OCA\Mcp\Modules\Deck\Recipients\RecipientResolutionException

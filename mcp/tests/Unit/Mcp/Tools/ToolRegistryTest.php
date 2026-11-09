@@ -419,10 +419,10 @@ final class ToolRegistryTest extends TestCase {
 
 		$this->assertSame(ToolResult::error('Unexpected error while accessing Nextcloud.'), $success, 'no data without its audit');
 		$this->assertSame(['denied', 'invalid', 'read_error', 'success'], array_column($module->audits, 2));
-		$audits = array_values(array_filter($logged, static fn (array $line): bool => $line[0] === 'MCP audit failed'));
+		$audits = array_values(array_filter($logged, static fn (array $line): bool => $line[0] === 'MCP audit failed: {tool}, {outcome}: {exception_class} (code {exception_code})'));
 		$this->assertSame(['denied', 'invalid', 'read_error', 'success'], array_column(array_column($audits, 1), 'outcome'));
 		foreach ($audits as [, $context]) {
-			$this->assertSame(['app', 'tool', 'outcome', 'exception_class'], array_keys($context));
+			$this->assertSame(['app', 'tool', 'outcome', 'exception_class', 'exception_code'], array_keys($context));
 			$this->assertSame(\RuntimeException::class, $context['exception_class']);
 		}
 	}
@@ -543,7 +543,7 @@ final class ToolRegistryTest extends TestCase {
 		$this->assertSame(['content' => [['type' => 'text', 'text' => ToolFailure::NOT_FOUND]], 'isError' => true], $this->registry()->call('a_read', [], 'alice'));
 
 		$this->throw = new \RuntimeException('/var/www/data/alice/secret.txt');
-		$this->logger->expects($this->once())->method('error')->with('MCP tool failed', $this->callback(
+		$this->logger->expects($this->once())->method('error')->with('MCP tool failed: {tool}: {exception_detail}', $this->callback(
 			fn (array $context) => $context['exception_class'] === \RuntimeException::class && !str_contains(json_encode($context), 'secret')));
 		$result = $this->registry()->call('a_read', [], 'alice');
 		$this->assertTrue($result['isError']);
@@ -555,9 +555,10 @@ final class ToolRegistryTest extends TestCase {
 		$logged = [];
 		$this->logger->expects($this->once())->method('error')->willReturnCallback(function (string $message, array $context) use (&$logged): void {
 			$logged = $context;
+			self::assertSame('MCP tool failed: a_read: Error (code 0)', strtr($message, array_combine(array_map(static fn (string $key): string => '{' . $key . '}', array_keys($context)), $context)));
 		});
 		$result = $this->registry()->call('a_read', [], 'alice');
-		$this->assertSame('Error (code 0)', $logged['exception_message']);
+		$this->assertSame('Error (code 0)', $logged['exception_detail']);
 		$this->assertSame(\Error::class, $logged['exception_class']);
 		$this->assertStringNotContainsString('missing', $result['content'][0]['text']);
 	}
@@ -567,10 +568,12 @@ final class ToolRegistryTest extends TestCase {
 		$this->throw = new \RuntimeException('File with name /Docs/Salary#Confidential could not be located; "README" ' . str_repeat('x', 400), 5);
 		$logged = [];
 		$this->logger->expects($this->once())->method('error')->willReturnCallback(function (string $message, array $context) use (&$logged): void {
-			$logged = $context;
+			$logged = [$message, $context];
+			self::assertSame('MCP tool failed: {tool}: {exception_detail}', $message);
+			self::assertSame('a_read', $context['tool']);
 		});
 		$this->registry()->call('a_read', [], 'alice');
-		$this->assertSame('RuntimeException (code 5)', $logged['exception_message']);
+		$this->assertSame('RuntimeException (code 5)', $logged[1]['exception_detail']);
 		foreach (['Salary', 'Confidential', 'README', 'Docs'] as $part) {
 			$this->assertStringNotContainsString($part, json_encode($logged));
 		}

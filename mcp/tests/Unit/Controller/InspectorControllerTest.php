@@ -118,8 +118,8 @@ final class InspectorControllerTest extends TestCase {
 		$response = $this->controller('root', true)->path('alice', '/Secret/plan.md');
 
 		$this->assertSame([500, ['error' => 'Unexpected error']], [$response->getStatus(), $response->getData()]);
-		$this->assertSame([['MCP access inspection failed', ['app' => 'mcp', 'admin' => 'root', 'target' => 'alice', 'action' => 'inspect_path',
-			'module' => 'files', 'result' => 'error', 'timestamp' => 1760000000, 'exception_class' => \RuntimeException::class]]], $errors);
+		$this->assertSame([['MCP access inspection failed: {exception_class} (code {exception_code})', ['app' => 'mcp', 'admin' => 'root', 'target' => 'alice', 'action' => 'inspect_path',
+			'module' => 'files', 'result' => 'error', 'timestamp' => 1760000000, 'exception_class' => \RuntimeException::class, 'exception_code' => 0]]], $errors);
 		$this->assertStringNotContainsString('Secret', json_encode($errors));
 	}
 }

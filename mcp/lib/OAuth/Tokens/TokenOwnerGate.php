@@ -12,6 +12,7 @@ use Closure;
 use OCA\Mcp\Access\Policy\CauseProcessor;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Access\Policy\PolicyWriter;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCP\Config\IUserConfig;
 use OCP\IAppConfig;
 use OCP\IUser;
@@ -122,7 +123,7 @@ class TokenOwnerGate {
 		try {
 			$this->writer->revokeObserved($uid, $observed);
 		} catch (Throwable $e) {
-			$this->logger->warning('Cannot record the revocation of an unusable credential owner', ['app' => 'mcp', 'exception' => $e]);
+			$this->logger->warning('Cannot record the revocation of an unusable credential owner: {exception}', ['app' => 'mcp', 'exception' => ExceptionDetails::describe($e)]);
 		}
 	}
 }

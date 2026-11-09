@@ -10,6 +10,7 @@ namespace OCA\Mcp\Modules\People;
 use InvalidArgumentException;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCP\Collaboration\Collaborators\ISearch;
 use OCP\Share\IShare;
 use Psr\Log\LoggerInterface;
@@ -69,7 +70,7 @@ final class SearchPeopleHandler {
 		try {
 			[$result] = $this->search->search($term, $types, false, $limit, 0);
 		} catch (\Throwable $e) {
-			$this->logger->warning('MCP people search failed', ['app' => 'mcp', 'exception_class' => $e::class]);
+			$this->logger->warning('MCP people search failed: {exception_class} (code {exception_code})', ['app' => 'mcp', 'exception_class' => $e::class, 'exception_code' => ExceptionDetails::code($e)]);
 			throw new ToolFailure(Translator::t('The search for people failed; try again.'));
 		}
 		$rows = [];

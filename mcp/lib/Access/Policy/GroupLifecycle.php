@@ -6,6 +6,7 @@
 declare(strict_types=1);
 
 namespace OCA\Mcp\Access\Policy;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Platform\Numbers\DecimalCounter;
 use OCA\Mcp\Db\GroupGrantsMapper;
 use OCA\Mcp\Db\GroupLifeMapper;
@@ -139,7 +140,7 @@ class GroupLifecycle {
 			$this->appConfig->setValueString('mcp', self::CURSOR_KEY,
 				count($rows) < $limit ? '' : $rows[count($rows) - 1]['groupKey'], true);
 		} catch (Throwable $e) {
-			$this->logger->warning('Cannot list the pending group deletions', ['app' => 'mcp', 'exception' => $e]);
+			$this->logger->warning('Cannot list the pending group deletions: {exception}', ['app' => 'mcp', 'exception' => ExceptionDetails::describe($e)]);
 			return 0;
 		}
 		$changed = 0;
@@ -160,7 +161,7 @@ class GroupLifecycle {
 					});
 				$changed += $result['changed'] ? 1 : 0;
 			} catch (Throwable $e) {
-				$this->logger->warning('Pending group deletion left for the next run', ['app' => 'mcp', 'target' => $gid, 'exception' => $e]);
+				$this->logger->warning('Pending group deletion left for the next run: {exception}', ['app' => 'mcp', 'target' => $gid, 'exception' => ExceptionDetails::describe($e)]);
 			}
 		}
 		return $changed;

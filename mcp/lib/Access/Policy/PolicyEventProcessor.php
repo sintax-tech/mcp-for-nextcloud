@@ -9,6 +9,7 @@ namespace OCA\Mcp\Access\Policy;
 
 use OCA\Mcp\Db\PolicyEventsMapper;
 use OCA\Mcp\OAuth\Storage\OAuthStore;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCP\AppFramework\Utility\ITimeFactory;
 use Psr\Log\LoggerInterface;
 use Throwable;
@@ -79,7 +80,7 @@ class PolicyEventProcessor {
 		try {
 			$this->oauth->purgeExpired($now);
 		} catch (Throwable $e) {
-			$this->logger->warning('Cannot purge expired OAuth credentials', ['app' => 'mcp', 'exception' => $e]);
+			$this->logger->warning('Cannot purge expired OAuth credentials: {exception}', ['app' => 'mcp', 'exception' => ExceptionDetails::describe($e)]);
 		}
 		// Stop at a short batch, or at a batch that delivered nothing: the rest is not due yet or keeps failing.
 		for ($round = 0; $round < self::JOB_ROUNDS; ++$round) {
@@ -93,7 +94,7 @@ class PolicyEventProcessor {
 			$this->events->purge(PolicyEventsMapper::KIND_PREVIEW, $now - PolicyWriter::PREVIEW_TTL);
 			$this->events->purgeDelivered($now - self::DELIVERED_KEPT);
 		} catch (Throwable $e) {
-			$this->logger->warning('Cannot purge expired policy receipts', ['app' => 'mcp', 'exception' => $e]);
+			$this->logger->warning('Cannot purge expired policy receipts: {exception}', ['app' => 'mcp', 'exception' => ExceptionDetails::describe($e)]);
 		}
 	}
 
@@ -107,11 +108,11 @@ class PolicyEventProcessor {
 		try {
 			$pending = $this->events->pendingOf(self::DELIVERED, $limit, $invalid);
 		} catch (Throwable $e) {
-			$this->logger->warning('Cannot read pending policy events', ['app' => 'mcp', 'exception' => $e]);
+			$this->logger->warning('Cannot read pending policy events: {exception}', ['app' => 'mcp', 'exception' => ExceptionDetails::describe($e)]);
 			return ['read' => 0, 'delivered' => 0];
 		}
 		foreach ($invalid as $id) {
-			$this->logger->warning('Skipping an invalid stored policy event', ['app' => 'mcp', 'eventId' => $id]);
+			$this->logger->warning('Skipping an invalid stored policy event: {eventId}', ['app' => 'mcp', 'eventId' => $id]);
 			try {
 				$this->events->recordAttempt($id);
 			} catch (Throwable) {
@@ -171,11 +172,11 @@ class PolicyEventProcessor {
 				$this->events->recordAttempt($event['id']);
 			} catch (Throwable) {
 			}
-			$context = ['app' => 'mcp', 'eventId' => $event['id'], 'kind' => $event['kind'], 'attempts' => $attempts, 'exception' => $e];
+			$context = ['app' => 'mcp', 'eventId' => $event['id'], 'kind' => $event['kind'], 'attempts' => $attempts, 'exception' => ExceptionDetails::describe($e)];
 			if ($attempts >= self::WARN_AFTER) {
-				$this->logger->warning('MCP policy event delivery keeps failing; revoked credentials stay unusable', $context);
+				$this->logger->warning('MCP policy event delivery keeps failing; revoked credentials stay unusable: event {eventId}, {kind}, attempt {attempts}: {exception}', $context);
 			} else {
-				$this->logger->info('MCP policy event delivery failed; it will be retried', $context);
+				$this->logger->info('MCP policy event delivery failed; it will be retried: event {eventId}, {kind}, attempt {attempts}: {exception}', $context);
 			}
 			return false;
 		}

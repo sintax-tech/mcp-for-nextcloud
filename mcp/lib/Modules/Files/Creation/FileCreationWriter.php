@@ -15,6 +15,7 @@ use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 use OCP\Files\Folder;
@@ -79,7 +80,7 @@ final class FileCreationWriter {
 			NodeAccess::run(static fn () => throw $e);
 		} catch (Throwable $e) {
 			// Only the class: the message of a storage exception may carry the path.
-			$this->logger->error('MCP new file write failed', ['app' => 'mcp', 'exception_class' => $e::class]);
+			$this->logger->error('MCP new file write failed: {exception_class} (code {exception_code})', ['app' => 'mcp', 'exception_class' => $e::class, 'exception_code' => ExceptionDetails::code($e)]);
 			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createFailed());
 		}
 		return $current;

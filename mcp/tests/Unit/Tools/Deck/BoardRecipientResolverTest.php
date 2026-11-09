@@ -595,8 +595,8 @@ final class BoardRecipientResolverTest extends TestCase {
 			self::assertSame(\OCA\Mcp\Modules\Deck\Presentation\DeckAttachmentMessages::fileUnavailable(), $failure->getMessage());
 		}
 		foreach ($this->logs as [$message, $context]) {
-			self::assertSame('Deck recipient resolution failed.', $message);
-			self::assertSame(['exceptionClass' => RuntimeException::class], $context);
+			self::assertSame('Deck recipient resolution failed: {exceptionClass} (code {exception_code})', $message);
+			self::assertSame(['exceptionClass' => RuntimeException::class, 'exception_code' => 0], $context);
 		}
 	}
 
@@ -628,7 +628,7 @@ final class BoardRecipientResolverTest extends TestCase {
 		} catch (DeckRefusalException $failure) {
 			self::assertSame(RecipientMessages::incomplete(), $failure->getMessage());
 		}
-		self::assertSame([['Deck recipient resolution failed.', ['exceptionClass' => RuntimeException::class]]], $this->logs);
+		self::assertSame([['Deck recipient resolution failed: {exceptionClass} (code {exception_code})', ['exceptionClass' => RuntimeException::class, 'exception_code' => 0]]], $this->logs);
 	}
 
 	/**

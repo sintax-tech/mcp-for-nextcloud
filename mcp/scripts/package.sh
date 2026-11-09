@@ -14,6 +14,8 @@ stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT
 mkdir -p "$stage/mcp" build
 cp -R appinfo lib templates README.md README.pt-BR.md LICENSE NOTICE THIRD-PARTY-NOTICES.md LICENSES composer.json composer.lock "$stage/mcp/"
+# The store reads CHANGELOG.md from the app folder of the archive; the repository root copy stays the only source.
+cp ../CHANGELOG.md "$stage/mcp/CHANGELOG.md"
 # Optional asset folders: copied when present, skipped otherwise.
 for dir in js css img l10n; do
     if [ -d "$dir" ]; then

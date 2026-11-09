@@ -10,7 +10,9 @@ namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\EffectsGate;
 use OCA\Mcp\Tests\Unit\Tools\BrokenTextSamples;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
+use OCA\Mcp\Modules\Files\Extraction\FileReadLimit;
 use OCA\Mcp\Modules\Files\Extraction\TextExtractor;
+use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCP\ITempManager;
 use PHPUnit\Framework\TestCase;
 use Smalot\PdfParser\Parser;
@@ -30,7 +32,7 @@ final class PdfTextEffectsContractTest extends TestCase {
 		// Only native storage is fake. Both the TextExtractor and smalot parser run their real implementations.
 		$temp = $this->createMock(ITempManager::class);
 		$temp->expects($this->never())->method('getTemporaryFile');
-		$wiring->services[TextExtractor::class] = new TextExtractor($temp);
+		$wiring->services[TextExtractor::class] = new TextExtractor($temp, new FileReadLimit((new InMemoryConfig())->mock($this)));
 		$gate->serve(fn (): array => [$wiring->module()]);
 		$args = ['path' => '/emoji.pdf'];
 		$out = $gate->call('files_read', $args);

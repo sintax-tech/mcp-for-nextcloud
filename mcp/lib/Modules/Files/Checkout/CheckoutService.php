@@ -11,6 +11,7 @@ use OCA\Mcp\Modules\Files\Checkout\CheckoutToken;
 use OCA\Mcp\Modules\Files\Checkout\CheckoutTokenStore;
 use OCA\Mcp\OAuth\Storage\TokenHasher;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
+use OCA\Mcp\Platform\Php\IniQuantity;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -185,7 +186,8 @@ final class CheckoutService {
 
 	/** @return int request body ceiling of php.ini (post_max_size) in bytes, 0 when unlimited or unreadable */
 	public function phpMaxBytes(): int {
-		return self::iniBytes((string)ini_get('post_max_size'));
+		$bytes = IniQuantity::parse((string)ini_get('post_max_size'))->bytes();
+		return $bytes > 0 ? $bytes : 0;
 	}
 
 	/** @return string 32 random bytes as base64url, prefixed to be recognisable in a leaked URL */
@@ -202,20 +204,4 @@ final class CheckoutService {
 		return $this->urlGenerator->linkToRouteAbsolute(self::ROUTES[$kind], ['token' => $token]);
 	}
 
-	/**
-	 * @param string $value a php.ini shorthand such as "50M", "0" meaning unlimited
-	 * @return int the size in bytes, 0 when the directive is unlimited or unparsable
-	 */
-	private static function iniBytes(string $value): int {
-		$value = trim($value);
-		if ($value === '' || !preg_match('/^(\d+)\s*([KMG]?)B?$/i', $value, $m)) {
-			return 0;
-		}
-		return (int)$m[1] * match (strtoupper($m[2])) {
-			'K' => 1024,
-			'M' => 1024 ** 2,
-			'G' => 1024 ** 3,
-			default => 1,
-		};
-	}
 }

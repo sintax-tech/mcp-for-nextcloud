@@ -434,13 +434,22 @@ final class AdminAssetsTest extends TestCase {
 		$this->assertStringContainsString('Math.max(1, Math.ceil(data.configuredBytes / 1048576))', (string)AdminSources::readPath($app . '/src/admin/admin-grants.js'));
 	}
 
+	/** The file read limit field repeats its controller ceiling, beside the checkout field. */
+	public function testFileReadLimitFieldMaxMatchesTheController(): void {
+		$app = dirname(__DIR__, 3);
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
+		$this->assertSame(1, preg_match('/<input[^>]*id="mcp-file-read-limit"[^>]*>/', $template, $input));
+		$this->assertSame(1, preg_match('/\bmax="(\d+)"/', $input[0], $max));
+		$this->assertSame(\OCA\Mcp\Controller\FileReadLimitController::MAX_MIB, (int)$max[1]);
+	}
+
 	public function testRoutesDropTheOldAdminFormsAndKeepOAuth(): void {
 		$routes = array_column((require dirname(__DIR__, 3) . '/appinfo/routes.php')['routes'], 'name');
 		foreach (['settings#global', 'settings#user', 'users#index'] as $gone) {
 			$this->assertNotContains($gone, $routes);
 		}
 		foreach (['settings#personal', 'grants#index', 'grants#update', 'grants#bulk', 'grants#service', 'grants#oauthClients', 'grants#updateOauthClients', 'o_auth#token', 'metadata#protectedResource',
-			'connections#index', 'connections#destroy', 'connections#revokeUser', 'my_connections#index', 'my_connections#destroy', 'checkout_limit#show', 'checkout_limit#update'] as $kept) {
+			'connections#index', 'connections#destroy', 'connections#revokeUser', 'my_connections#index', 'my_connections#destroy', 'checkout_limit#show', 'checkout_limit#update', 'file_read_limit#show', 'file_read_limit#update'] as $kept) {
 			$this->assertContains($kept, $routes);
 		}
 	}

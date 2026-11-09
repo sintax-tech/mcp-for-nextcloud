@@ -76,6 +76,16 @@
                 </span>
                 <span class="mcp-hint" id="mcp-checkout-limit-info"></span>
             </div>
+            <div class="mcp-card mcp-card-wide">
+                <label class="mcp-card-label" for="mcp-file-read-limit"><?php p($l->t('File read limit')); ?></label>
+                <span>
+                    <input type="number" id="mcp-file-read-limit" class="mcp-checkout-limit" min="1" max="102400" step="1" inputmode="numeric" aria-describedby="mcp-file-read-limit-info">
+                    <span><?php p($l->t('MiB')); ?></span>
+                    <button type="button" id="mcp-file-read-limit-save"><?php p($l->t('Save')); ?></button>
+                    <span class="mcp-status" id="mcp-file-read-limit-status" aria-live="polite"></span>
+                </span>
+                <span class="mcp-hint" id="mcp-file-read-limit-info"></span>
+            </div>
         </div>
         <p class="settings-hint mcp-hint"><?php p($l->t('Paste the endpoint in the MCP client. Turning the service off signs every client out at once.')); ?></p>
         <?php include dirname(__DIR__, 2) . '/templates/admin-file-write-policy-overview.php'; ?>

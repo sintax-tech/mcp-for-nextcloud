@@ -24,7 +24,7 @@ final class AdminPanelRenderingTest extends TestCase {
 		require __DIR__ . '/AdminTemplateRuntime.php';
 		$app = dirname(__DIR__, 3);
 		$oracle = (string)file_get_contents($app . '/tests/fixtures/admin-template-before.php');
-		$this->assertSame('ff28eed00beb2c156f3c9e99a30d289220083296b3a577e200d3a9e9bd377733', hash('sha256', str_replace("dirname(__DIR__, 2) . '/templates/", "__DIR__ . '/", $oracle)));
+		$this->assertSame('364899c6e7c32b86924da5ca2cf5ccaa5413b8bbec4e14e01e990e2f5f6e7fa6', hash('sha256', str_replace("dirname(__DIR__, 2) . '/templates/", "__DIR__ . '/", $oracle)));
 		$manager = $this->createMock(ITemplateManager::class);
 		$names = [];
 		$expected = [];

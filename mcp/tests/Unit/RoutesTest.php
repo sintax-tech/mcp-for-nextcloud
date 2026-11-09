@@ -159,6 +159,7 @@ final class RoutesTest extends TestCase {
 			'backup_settings#show' => [], 'backup_settings#update' => [],
 			'file_write_policy#show' => [], 'file_write_policy#update' => [],
 			'checkout_limit#show' => [], 'checkout_limit#update' => [],
+			'file_read_limit#show' => [], 'file_read_limit#update' => [],
 			'tags#index' => [], 'tags#update' => [],
 			'scope#show' => [], 'scope#candidates' => [], 'scope#update' => [],
 			'inspector#access' => [], 'inspector#path' => [], 'inspector#calendar' => [],

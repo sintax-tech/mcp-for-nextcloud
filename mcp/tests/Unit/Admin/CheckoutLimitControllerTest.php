@@ -12,6 +12,7 @@ use OCA\Mcp\Controller\CheckoutLimitController;
 use OCA\Mcp\OAuth\Storage\TokenHasher;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Modules\Files\Checkout\CheckoutService;
+use OCA\Mcp\Platform\Php\IniQuantity;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IRequest;
@@ -47,6 +48,13 @@ final class CheckoutLimitControllerTest extends TestCase {
 		foreach (['show', 'update'] as $method) {
 			$this->assertSame([], (new \ReflectionMethod(CheckoutLimitController::class, $method))->getAttributes(), $method);
 		}
+	}
+
+	/** post_max_size is a per-directory directive, so the live value is whatever PHP started with. */
+	public function testPhpMaxBytesFollowsIniQuantity(): void {
+		$parsed = IniQuantity::parse((string)ini_get('post_max_size'));
+		$expected = $parsed->bytes() > 0 ? $parsed->bytes() : 0;
+		$this->assertSame($expected, $this->checkout->phpMaxBytes());
 	}
 
 	public function testShowReportsTheDefaultAndThePhpCeiling(): void {

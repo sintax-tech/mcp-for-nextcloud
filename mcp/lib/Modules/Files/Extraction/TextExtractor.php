@@ -10,11 +10,11 @@ namespace OCA\Mcp\Modules\Files\Extraction;
 use OCA\Mcp\Platform\Text\ExtractedText;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Platform\Text\PdfSupplementaryCharacters;
+use OCA\Mcp\Platform\Text\PdfTextParser;
 use OCA\Mcp\Platform\Text\XmlCharset;
 use OCP\Files\File;
 use OCP\ITempManager;
 use Smalot\PdfParser\Config;
-use Smalot\PdfParser\Parser;
 
 /** Reads a file within a byte limit and turns text, PDF, DOCX and ODT into plain text. */
 class TextExtractor {
@@ -187,7 +187,8 @@ class TextExtractor {
 
 	/**
 	 * Extracts the text of a PDF with smalot/pdfparser. Embedded images are not retained and the decode
-	 * memory is capped, so a hostile or huge file cannot exhaust PHP memory.
+	 * memory is capped, so a hostile or huge file cannot exhaust PHP memory. {@see PdfTextParser} reads the names of objects
+	 * stored in object streams, where ocrmypdf keeps the page that draws the Tesseract text layer.
 	 *
 	 * @param string $bytes raw PDF content, already within MAX_BYTES
 	 * @return string plain text of all pages
@@ -197,7 +198,7 @@ class TextExtractor {
 		$config = new Config();
 		$config->setRetainImageContent(false);
 		$config->setDecodeMemoryLimit(self::MAX_BYTES * 4);
-		$document = (new Parser([], $config))->parseContent($bytes);
+		$document = (new PdfTextParser([], $config))->parseContent($bytes);
 		PdfSupplementaryCharacters::restore($document);
 		return $document->getText();
 	}

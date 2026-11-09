@@ -7,15 +7,15 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Mail\Extraction;
 
+use OCA\Mcp\Platform\Text\PdfTextParser;
 use Smalot\PdfParser\Config;
-use Smalot\PdfParser\Parser;
 
 /**
- * smalot/pdfparser's Parser whose raw data parser decodes streams with {@see MailPdfFilters} ({@see MailPdfRawData}):
+ * smalot/pdfparser's Parser, reading the names of object streams ({@see PdfTextParser}), whose raw data parser decodes streams with {@see MailPdfFilters} ({@see MailPdfRawData}):
  * the library builds its raw parser itself and keeps it in a protected property, so it is replaced right after the
  * parent constructor, through that extension point and without changing the library.
  */
-class MailPdfParser extends Parser {
+class MailPdfParser extends PdfTextParser {
 	/**
 	 * Builds the parser with the attachment's filters.
 	 *

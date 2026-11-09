@@ -9,6 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Modules\Files\Extraction;
 
 use OCA\Mcp\Modules\Files\Extraction\FileReadLimit;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
+use OCA\Mcp\Platform\Php\MemoryLimit;
 use PHPUnit\Framework\TestCase;
 
 /** The memory ceiling limits only a setting above 20 MiB, and never below that default. */
@@ -69,37 +70,39 @@ final class FileReadLimitTest extends TestCase {
 		}
 	}
 
-	/** Live ini values agree with effective(): -1 applies the setting; M and G suffixes cap only what is above 20 MiB. */
+	/** Injected directives exercise the real reader and presentation paths without lowering the process limit. */
 	public function testEffectiveLimitFollowsMemoryLimit(): void {
-		$previous = (string)ini_get('memory_limit');
 		$stored = new InMemoryConfig();
-		$limit = new FileReadLimit($stored->mock($this));
-		try {
-			$this->assertNotFalse(ini_set('memory_limit', '128M'));
-			$this->assertSame(128 * 1024 * 1024, $limit->phpMaxBytes());
-			$this->assertFalse($limit->phpUnlimited());
-			$this->assertFalse($limit->phpRejected());
-			$this->assertSame(FileReadLimit::DEFAULT_MAX_BYTES, $limit->maxBytes());
-			$stored->app['mcp'][FileReadLimit::MAX_BYTES_KEY] = (string)(10 * 1024 * 1024);
-			$this->assertSame(10 * 1024 * 1024, $limit->maxBytes());
-			$stored->app['mcp'][FileReadLimit::MAX_BYTES_KEY] = (string)(200 * 1024 * 1024);
-			$this->assertSame(FileReadLimit::DEFAULT_MAX_BYTES, $limit->maxBytes());
+		$value = '128M';
+		$memory = $this->createMock(MemoryLimit::class);
+		$memory->method('value')->willReturnCallback(static function () use (&$value): string {
+			return $value;
+		});
+		$limit = new FileReadLimit($stored->mock($this), $memory);
+		$this->assertSame(128 * 1024 * 1024, $limit->phpMaxBytes());
+		$this->assertFalse($limit->phpUnlimited());
+		$this->assertFalse($limit->phpRejected());
+		$this->assertSame(FileReadLimit::DEFAULT_MAX_BYTES, $limit->maxBytes());
+		$stored->app['mcp'][FileReadLimit::MAX_BYTES_KEY] = (string)(10 * 1024 * 1024);
+		$this->assertSame(10 * 1024 * 1024, $limit->maxBytes());
+		$stored->app['mcp'][FileReadLimit::MAX_BYTES_KEY] = (string)(200 * 1024 * 1024);
+		$this->assertSame(FileReadLimit::DEFAULT_MAX_BYTES, $limit->maxBytes());
 
-			$this->assertNotFalse(ini_set('memory_limit', '1G'));
-			$this->assertSame(1024 ** 3, $limit->phpMaxBytes());
-			$this->assertSame(173364565, $limit->maxBytes());
-
-			$this->assertNotFalse(ini_set('memory_limit', '256M'));
-			$this->assertSame(256 * 1024 * 1024, $limit->phpMaxBytes());
-			$this->assertSame(39146837, $limit->maxBytes());
-
-			$this->assertNotFalse(ini_set('memory_limit', '-1'));
-			$this->assertTrue($limit->phpUnlimited());
-			$this->assertFalse($limit->phpRejected());
-			$this->assertSame(0, $limit->phpMaxBytes());
-			$this->assertSame(200 * 1024 * 1024, $limit->maxBytes());
-		} finally {
-			ini_set('memory_limit', $previous);
-		}
+		$value = '1G';
+		$this->assertSame(1024 ** 3, $limit->phpMaxBytes());
+		$this->assertSame(173364565, $limit->maxBytes());
+		$value = '256M';
+		$this->assertSame(256 * 1024 * 1024, $limit->phpMaxBytes());
+		$this->assertSame(39146837, $limit->maxBytes());
+		$value = '-1';
+		$this->assertTrue($limit->phpUnlimited());
+		$this->assertFalse($limit->phpRejected());
+		$this->assertSame(0, $limit->phpMaxBytes());
+		$this->assertSame(200 * 1024 * 1024, $limit->maxBytes());
+		$value = 'nope';
+		$this->assertTrue($limit->phpRejected());
+		$this->assertFalse($limit->phpUnlimited());
+		$this->assertSame(0, $limit->phpMaxBytes());
+		$this->assertSame(FileReadLimit::DEFAULT_MAX_BYTES, $limit->maxBytes());
 	}
 }

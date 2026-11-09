@@ -12,31 +12,28 @@ use OCA\Mcp\Modules\Files\Extraction\FileReadLimit;
 use OCA\Mcp\Modules\Files\Extraction\TextExtractor;
 use OCA\Mcp\Modules\Files\Presentation\ReadingMessages;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
+use OCA\Mcp\Platform\Php\MemoryLimit;
 use OCP\Files\File;
 use OCP\ITempManager;
 use PHPUnit\Framework\TestCase;
 
 /** The file ceiling follows the administrator; a zip entry stays at 20 MiB. */
 final class TextExtractorLimitTest extends TestCase {
-	private string $previousMemory;
-
-	protected function setUp(): void {
-		$this->previousMemory = (string)ini_get('memory_limit');
-		$this->assertNotFalse(ini_set('memory_limit', '-1'));
-	}
-
-	protected function tearDown(): void {
-		ini_set('memory_limit', $this->previousMemory);
-	}
-
-	private function extractor(?int $mib): TextExtractor {
+	/**
+	 * @param int|null $mib Configured ceiling in MiB, null keeps the default.
+	 * @param string $memoryLimit Directive the reader sees, independent of this test process.
+	 * @return TextExtractor Reader using the real ceiling calculation with the supplied directive.
+	 */
+	private function extractor(?int $mib, string $memoryLimit = '-1'): TextExtractor {
 		$temp = $this->createMock(ITempManager::class);
 		$temp->method('getTemporaryFile')->willReturnCallback(fn () => tempnam(sys_get_temp_dir(), 'mcp'));
 		$stored = new InMemoryConfig();
 		if ($mib !== null) {
 			$stored->app['mcp'][FileReadLimit::MAX_BYTES_KEY] = (string)($mib * 1024 * 1024);
 		}
-		return new TextExtractor($temp, new FileReadLimit($stored->mock($this)));
+		$memory = $this->createMock(MemoryLimit::class);
+		$memory->method('value')->willReturn($memoryLimit);
+		return new TextExtractor($temp, new FileReadLimit($stored->mock($this), $memory));
 	}
 
 	/** @param int $size size the node reports, in bytes */
@@ -85,8 +82,7 @@ final class TextExtractorLimitTest extends TestCase {
 
 	/** 128M used to shrink the default to 16 MiB. The default, and a file between 16 and 20 MiB, stay readable. */
 	public function testASmallHostStillReadsTheTwentyMibDefault(): void {
-		$this->assertNotFalse(ini_set('memory_limit', '128M'));
-		$extractor = $this->extractor(null);
+		$extractor = $this->extractor(null, '128M');
 		$this->assertSame(20 * 1024 * 1024, $extractor->maxFileBytes());
 		$this->assertSame(80 * 1024 * 1024, $extractor->maxFileBytes() * 4);
 		$this->assertSame("hello\n", $extractor->readText($this->file(17 * 1024 * 1024)));

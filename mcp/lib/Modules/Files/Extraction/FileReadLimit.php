@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Files\Extraction;
 
 use OCA\Mcp\Platform\Php\IniQuantity;
+use OCA\Mcp\Platform\Php\MemoryLimit;
 use OCP\IConfig;
 
 /**
@@ -48,8 +49,13 @@ final class FileReadLimit {
 	/** Heuristic bytes left free for Nextcloud, the request and the extracted text. Not measured. */
 	public const MEMORY_RESERVE_BYTES = 32 * 1024 * 1024;
 
+	/**
+	 * @param IConfig $config Administrator's stored file-read ceiling.
+	 * @param MemoryLimit $memory Raw process directive, replaceable without changing the process ini.
+	 */
 	public function __construct(
 		private IConfig $config,
+		private MemoryLimit $memory = new MemoryLimit(),
 	) {
 	}
 
@@ -65,7 +71,7 @@ final class FileReadLimit {
 	 * @return int effective file-read ceiling in bytes
 	 */
 	public function maxBytes(): int {
-		return self::effective($this->configuredMaxBytes(), (string)ini_get('memory_limit'));
+		return self::effective($this->configuredMaxBytes(), $this->memory->value());
 	}
 
 	/**
@@ -96,7 +102,7 @@ final class FileReadLimit {
 	 * @return int memory_limit in bytes, 0 when PHP sets none, rejects the directive, or it is not a positive size
 	 */
 	public function phpMaxBytes(): int {
-		$parsed = IniQuantity::parse((string)ini_get('memory_limit'));
+		$parsed = IniQuantity::parse($this->memory->value());
 		if ($parsed->unlimited() || $parsed->rejected() || $parsed->bytes() <= 0) {
 			return 0;
 		}
@@ -107,12 +113,12 @@ final class FileReadLimit {
 	 * @return bool true when memory_limit is -1 or empty, so PHP adds no ceiling of its own
 	 */
 	public function phpUnlimited(): bool {
-		return IniQuantity::parse((string)ini_get('memory_limit'))->unlimited();
+		return IniQuantity::parse($this->memory->value())->unlimited();
 	}
 
 	/** @return bool true when memory_limit is rejected or not a positive size, and therefore not a ceiling */
 	public function phpRejected(): bool {
-		return self::memoryRejected((string)ini_get('memory_limit'));
+		return self::memoryRejected($this->memory->value());
 	}
 
 	/**

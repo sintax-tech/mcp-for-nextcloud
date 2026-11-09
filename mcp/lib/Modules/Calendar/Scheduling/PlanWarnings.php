@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Calendar\Scheduling;
 
 use DateTimeImmutable;
 use DateTimeZone;
-use IntlDateFormatter;
+use OCA\Mcp\Modules\Calendar\Presentation\CalendarTimingFormatter;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Modules\Calendar\Composing\AttendeeResolver;
 use OCA\Mcp\Platform\Dav\Calendar;
@@ -354,22 +354,9 @@ final class PlanWarnings {
 	 * @return string localized time, in the account language
 	 */
 	private function when(string $start, string $end, bool $allDay, DateTimeZone $zone): string {
-		$locale = Translator::locale();
-		$tz = $allDay ? new DateTimeZone('UTC') : $zone;
-		$from = (new DateTimeImmutable($start))->setTimezone($tz);
-		$to = (new DateTimeImmutable($end))->setTimezone($tz);
-		$weekday = new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::NONE, $tz, null, 'EEE');
-		$date = new IntlDateFormatter($locale, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE, $tz);
-		$time = new IntlDateFormatter($locale, IntlDateFormatter::NONE, IntlDateFormatter::SHORT, $tz);
-		$day = static fn (DateTimeImmutable $d): string => rtrim((string)$weekday->format($d), '.') . ', ' . $date->format($d);
-		if ($allDay) {
-			$last = $to > $from ? $to->modify('-1 day') : $from;
-			return $last->format('Y-m-d') <= $from->format('Y-m-d') ? $day($from) : $day($from) . ' – ' . $day($last);
-		}
-		if ($from->format('Y-m-d') === $to->format('Y-m-d')) {
-			return $day($from) . ', ' . $time->format($from) . '–' . $time->format($to);
-		}
-		return $day($from) . ', ' . $time->format($from) . ' – ' . $day($to) . ', ' . $time->format($to);
+		return (new CalendarTimingFormatter())->format(
+			$start, $end, $allDay, $zone->getName(), $zone->getName(), Translator::locale(),
+		) ?? '';
 	}
 
 	/**

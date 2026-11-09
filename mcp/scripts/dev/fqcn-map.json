@@ -2,6 +2,7 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Modules/Calendar/Scheduling/InvitationSettings.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Scheduling\\InvitationSettings","target":"stays","owner":"Modules\\Calendar","ticket":null},
 		{"path":"lib/Platform/Logging/ExceptionDetails.php","fqcn":"OCA\\Mcp\\Platform\\Logging\\ExceptionDetails","target":"stays","owner":"Platform","ticket":null},
 		{"path":"lib/Modules/Files/Checkout/CheckoutUploadFailure.php","fqcn":"OCA\\Mcp\\Modules\\Files\\Checkout\\CheckoutUploadFailure","target":"stays","owner":"Modules\\Files","ticket":null},
 		{"path":"lib/Modules/Files/Backups/AfterCopyFailure.php","fqcn":"OCA\\Mcp\\Modules\\Files\\Backups\\AfterCopyFailure","target":"stays","owner":"Modules\\Files","ticket":null},

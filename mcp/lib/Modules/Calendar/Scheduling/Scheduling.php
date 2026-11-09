@@ -25,13 +25,6 @@ use OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages;
  * `imipEnabled`. With it off an internal guest can still be delivered to the local CalDAV inbox.
  */
 final class Scheduling {
-	/** App that owns the switch. */
-	private const DAV_APP = 'dav';
-	/** Switch key; anything but "yes" means the IMipPlugin is not loaded. */
-	private const SEND_INVITATIONS_KEY = 'sendInvitations';
-	/** Value of the switch that loads the IMipPlugin. */
-	private const SEND_INVITATIONS_ON = 'yes';
-
 	/**
 	 * @param IAppConfig $config Nextcloud configuration
 	 */
@@ -41,7 +34,7 @@ final class Scheduling {
 	 * @return bool whether the server would try to send invitations by e-mail
 	 */
 	public function imipEnabled(): bool {
-		return $this->config->getValueString(self::DAV_APP, self::SEND_INVITATIONS_KEY, self::SEND_INVITATIONS_ON) === self::SEND_INVITATIONS_ON;
+		return InvitationSettings::enabled($this->config);
 	}
 
 	/**

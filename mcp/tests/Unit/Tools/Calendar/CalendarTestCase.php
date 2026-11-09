@@ -79,6 +79,8 @@ abstract class CalendarTestCase extends TestCase {
 	protected array $availabilityAsked = [];
 	/** Timezone of alice's account, as UserTimezone reads it. */
 	protected string $accountTimezone = 'America/Sao_Paulo';
+	/** @var array<string,string> Explicit timezone preferences for additional diagnostic actors. */
+	protected array $accountTimezones = [];
 	/** @var list<string> e-mail addresses the availability API gives no verdict for */
 	protected array $unknownEmails = [];
 	/** Whether the availability API throws. */
@@ -153,7 +155,7 @@ abstract class CalendarTestCase extends TestCase {
 			return $results;
 		});
 		$zoneConfig = $this->createMock(IConfig::class);
-		$zoneConfig->method('getUserValue')->willReturnCallback(fn (string $uid) => $uid === 'alice' ? $this->accountTimezone : '');
+		$zoneConfig->method('getUserValue')->willReturnCallback(fn (string $uid) => $this->accountTimezones[$uid] ?? ($uid === 'alice' ? $this->accountTimezone : ''));
 		$zoneConfig->method('getSystemValueString')->willReturn('');
 		$zones = new \OCA\Mcp\Platform\Time\UserTimezone($zoneConfig);
 		$groups = $this->createMock(IGroupManager::class);

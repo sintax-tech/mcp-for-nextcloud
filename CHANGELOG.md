@@ -2,6 +2,12 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## 1.3.4 — Unreleased
+
+### Fixed
+
+- **Changelog in the Nextcloud app manager ([#32](https://github.com/sintax-tech/mcp-for-nextcloud/issues/32)):** the package now carries `CHANGELOG.md` in the app folder, where the Nextcloud app store reads the notes of each release and the app manager shows them in the Changelog tab. The file is copied by `mcp/scripts/package.sh` from the repository root, which stays its only source; the version headings already follow the format the store reads.
+
 ## 1.3.3 — 2026-11-08
 
 Fix release on top of 1.3.2. No database change and no permission change; updating from 1.3.2 needs no step. This release fixes extraction of an existing ocrmypdf text layer, makes failure diagnostics visible in the Nextcloud log, and fixes calendar warning formatting and invitation-setting compatibility.

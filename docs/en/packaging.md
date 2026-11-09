@@ -8,7 +8,7 @@ The package is the installable `mcp` app, not a copy of the entire repository. B
 
 ## Package inputs and exclusions
 
-[`package.sh`](../../mcp/scripts/package.sh) stages `appinfo`, `lib`, templates, the two technical READMEs, legal documents, Composer metadata and runtime asset directories. It installs production dependencies from the lock file into the stage and removes that staged lock file before archiving. The archive has one top-level `mcp/` directory.
+[`package.sh`](../../mcp/scripts/package.sh) stages `appinfo`, `lib`, templates, the two technical READMEs, the root `CHANGELOG.md`, legal documents, Composer metadata and runtime asset directories. It installs production dependencies from the lock file into the stage and removes that staged lock file before archiving. The archive has one top-level `mcp/` directory.
 
 The root READMEs, these `docs/en` guides, tests, development scripts, authored `src/`, development dependencies, credentials, logs and user data are not package inputs. Do not copy them into the app to repair a documentation link. The packaged technical READMEs link to the development guides by explicit repository URLs; the repository's current documentation may describe a newer tree than an older installed release.
 

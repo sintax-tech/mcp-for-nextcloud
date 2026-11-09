@@ -10,6 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Calendar;
 use OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages;
 use OCA\Mcp\Modules\Calendar\Integration\EmbeddedCalDavServerFactory;
 use OCP\IAppConfig;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Sabre\DAV\Server;
@@ -75,12 +76,17 @@ final class EmbeddedCalDavServerFactoryTest extends TestCase {
 	}
 
 	/**
-	 * @param string $sendInvitations dav/sendInvitations as the admin left it
+	 * @param string|bool $sendInvitations dav/sendInvitations as the admin left it
 	 * @param ServerPlugin|null $imip what the container serves for the IMipPlugin, or null when it must not be asked
 	 */
-	private function container(string $sendInvitations, ?ServerPlugin $imip): ContainerInterface {
+	private function container(string|bool $sendInvitations, ?ServerPlugin $imip): ContainerInterface {
 		$config = $this->createMock(IAppConfig::class);
-		$config->method('getValueString')->with('dav', 'sendInvitations', 'yes')->willReturn($sendInvitations);
+		$config->method('getValueType')->with('dav', 'sendInvitations', null)->willReturn(is_bool($sendInvitations) ? IAppConfig::VALUE_BOOL : IAppConfig::VALUE_STRING);
+		$config->method('getValueString')->with('dav', 'sendInvitations', 'yes')->willReturnCallback(static function () use ($sendInvitations): string {
+			if (is_bool($sendInvitations)) { throw new \OCP\Exceptions\AppConfigTypeConflictException('Neutral typed configuration conflict'); }
+			return $sendInvitations;
+		});
+		$config->method('getValueBool')->with('dav', 'sendInvitations', true)->willReturn(is_bool($sendInvitations) ? $sendInvitations : false);
 		$container = $this->createMock(ContainerInterface::class);
 		$container->method('get')->willReturnCallback(static fn (string $id): object => match ($id) {
 			IAppConfig::class => $config,
@@ -115,6 +121,23 @@ final class EmbeddedCalDavServerFactoryTest extends TestCase {
 		$factory = new EmbeddedCalDavServerFactory($this->container('no', null), self::MISSING, FakeInvitationResponseServer::class);
 
 		$this->assertNull($factory->create()->getPlugin('imip'));
+	}
+
+	/** @return iterable<string, array{bool}> Native boolean invitation switches. */
+	public static function booleanSettings(): iterable {
+		yield 'enabled' => [true];
+		yield 'disabled' => [false];
+	}
+
+	/**
+	 * @param bool $enabled Native invitation switch, with its declared boolean type.
+	 * @return void The legacy factory follows the same typed setting reader as plans.
+	 */
+	#[DataProvider('booleanSettings')]
+	public function testLegacyServerReadsBooleanInvitationSettings(bool $enabled): void {
+		$imip = $enabled ? new FakeImipPlugin() : null;
+		$factory = new EmbeddedCalDavServerFactory($this->container($enabled, $imip), self::MISSING, FakeInvitationResponseServer::class);
+		$this->assertSame($imip, $factory->create()->getPlugin('imip'));
 	}
 
 	/** A 31.x that already loads the plugin must not get a second one, which would send every e-mail twice. */

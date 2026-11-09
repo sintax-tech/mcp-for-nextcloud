@@ -346,7 +346,7 @@ final class PlanWarnings {
 
 	/**
 	 * Formats the time of an overlap for the person: weekday, date and the time range in the event's zone;
-	 * an all-day event shows its civil days.
+	 * an all-day event shows its civil days. A rejected interval retains its formatted start.
 	 *
 	 * @param string $start ISO 8601 UTC start of the overlap
 	 * @param string $end ISO 8601 UTC end of the overlap
@@ -355,9 +355,12 @@ final class PlanWarnings {
 	 * @return string localized time, in the account language
 	 */
 	private function when(string $start, string $end, bool $allDay, DateTimeZone $zone): string {
-		return (new CalendarTimingFormatter())->format(
-			$start, $end, $allDay, $zone->getName(), $zone->getName(), Translator::locale(),
-		) ?? '';
+		$formatter = new CalendarTimingFormatter();
+		$timezone = $zone->getName();
+		$locale = Translator::locale();
+		return $formatter->format($start, $end, $allDay, $timezone, $timezone, $locale)
+			?? $formatter->format($start, $start, $allDay, $timezone, $timezone, $locale)
+			?? $start;
 	}
 
 	/**

@@ -19,7 +19,7 @@ use Smalot\PdfParser\Config;
 /** Reads a file within a byte limit and turns text, PDF, DOCX and ODT into plain text. */
 class TextExtractor {
 	/** Largest file read (and largest zip entry inflated), in bytes. */
-	public const MAX_BYTES = 20 * 1024 * 1024;
+	public const MAX_BYTES = 50 * 1024 * 1024;
 	/** Characters returned by files_read and resources/read before the text is truncated. */
 	public const MAX_CHARS = \OCA\Mcp\Mcp\Resources\FileTextResource::MAX_CHARS;
 	/** Extensions returned as UTF-8 text. */

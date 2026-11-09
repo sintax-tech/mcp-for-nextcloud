@@ -34,10 +34,9 @@ use Psr\Log\LoggerInterface;
 use Throwable;
 
 /**
- * Observes the group events of contracts §3.3.2 and §3.3.5 for the GID lifecycle, with the same rules as the user
- * events: it never throws into the core, never takes the policy mutex in a pre-event (nor flushes deferred work there)
- * and never refuses or delays a native operation; inside a caller's transaction it runs no SQL at all, and the fact is
- * reconciled later as needs_confirm, never as a confirmed deletion (§3.3.6).
+ * Observes group events (§3.3.2, §3.3.5) for the GID lifecycle without throwing into core, taking the policy mutex
+ * in a pre-event, flushing deferred work there, or refusing/delaying native operations. Inside a caller's transaction
+ * it runs no SQL; the fact is reconciled later as needs_confirm, never as a confirmed deletion (§3.3.6).
  *
  * - BeforeGroupDeletedEvent(G), when G has a lifecycle, in three steps written without the mutex (GroupLifeMapper
  *   explains why that is safe): needs_confirm with a new gen (markSuspended()), then, once, the causes (U, G) of the

@@ -18,8 +18,8 @@ use Smalot\PdfParser\Config;
 
 /** Reads a file within a byte limit and turns text, PDF, DOCX and ODT into plain text. */
 class TextExtractor {
-	/** Largest file read (and largest zip entry inflated), in bytes. */
-	public const MAX_BYTES = 50 * 1024 * 1024;
+	/** Default file-read ceiling when the administrator set none, in bytes. Not the zip-entry cap. */
+	public const MAX_BYTES = FileReadLimit::DEFAULT_MAX_BYTES;
 	/** Characters returned by files_read and resources/read before the text is truncated. */
 	public const MAX_CHARS = \OCA\Mcp\Mcp\Resources\FileTextResource::MAX_CHARS;
 	/** Extensions returned as UTF-8 text. */
@@ -31,7 +31,18 @@ class TextExtractor {
 	/** MIME type of OpenDocument text. */
 	private const ODT = 'application/vnd.oasis.opendocument.text';
 
-	public function __construct(private ITempManager $tempManager) {}
+	public function __construct(
+		private ITempManager $tempManager,
+		private ?FileReadLimit $readLimit = null,
+	) {
+	}
+
+	/**
+	 * @return int effective file-read ceiling in bytes; {@see self::MAX_BYTES} when no {@see FileReadLimit} is wired
+	 */
+	public function maxFileBytes(): int {
+		return $this->readLimit === null ? self::MAX_BYTES : $this->readLimit->maxBytes();
+	}
 
 	/**
 	 * @param File $file file whose MIME type and extension are checked
@@ -92,8 +103,9 @@ class TextExtractor {
 	 * @throws ToolFailure over the byte limit, unreadable or unsupported format
 	 */
 	public function readText(File $file, int $maxChars = self::MAX_CHARS): string {
-		if ($file->getSize() > self::MAX_BYTES) {
-			throw new ToolFailure(self::tooLarge());
+		$limit = $this->maxFileBytes();
+		if ($file->getSize() > $limit) {
+			throw new ToolFailure(self::tooLarge($limit));
 		}
 		$text = $this->extract($file);
 		return mb_strlen($text) > $maxChars
@@ -146,30 +158,34 @@ class TextExtractor {
 	 * @throws ToolFailure over the byte limit or when the stream cannot be read
 	 */
 	public function read(File $file): string {
-		if ($file->getSize() > self::MAX_BYTES) {
-			throw new ToolFailure(self::tooLarge());
+		$limit = $this->maxFileBytes();
+		if ($file->getSize() > $limit) {
+			throw new ToolFailure(self::tooLarge($limit));
 		}
 		$handle = $file->fopen('r');
 		if ($handle === false) {
 			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReadingMessages::openFailed());
 		}
 		try {
-			$bytes = stream_get_contents($handle, self::MAX_BYTES + 1);
+			$bytes = stream_get_contents($handle, $limit + 1);
 		} finally {
 			fclose($handle);
 		}
 		if ($bytes === false) {
 			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\ReadingMessages::readFailed());
 		}
-		if (strlen($bytes) > self::MAX_BYTES) {
-			throw new ToolFailure(self::tooLarge());
+		if (strlen($bytes) > $limit) {
+			throw new ToolFailure(self::tooLarge($limit));
 		}
 		return $bytes;
 	}
 
-	/** @return string client message for a file over MAX_BYTES */
-	public static function tooLarge(): string {
-		return \OCA\Mcp\Modules\Files\Presentation\ReadingMessages::readTooLarge(self::MAX_BYTES);
+	/**
+	 * @param int $limit ceiling the refusal names, in bytes; the default ceiling when omitted
+	 * @return string client message for a file over $limit
+	 */
+	public static function tooLarge(int $limit = self::MAX_BYTES): string {
+		return \OCA\Mcp\Modules\Files\Presentation\ReadingMessages::readTooLarge($limit);
 	}
 
 	/**
@@ -197,7 +213,7 @@ class TextExtractor {
 	private function pdf(string $bytes): string {
 		$config = new Config();
 		$config->setRetainImageContent(false);
-		$config->setDecodeMemoryLimit(self::MAX_BYTES * 4);
+		$config->setDecodeMemoryLimit($this->maxFileBytes() * 4);
 		$document = (new PdfTextParser([], $config))->parseContent($bytes);
 		PdfSupplementaryCharacters::restore($document);
 		return $document->getText();
@@ -222,10 +238,12 @@ class TextExtractor {
 			try {
 				$stat = $zip->statName($entry);
 				// The declared size guards against zip bombs; the read length caps a lying header.
-				if ($stat === false || $stat['size'] > self::MAX_BYTES) {
+				// This cap stays fixed when the administrator raises the file-read ceiling.
+				$zipLimit = FileReadLimit::ZIP_ENTRY_MAX_BYTES;
+				if ($stat === false || $stat['size'] > $zipLimit) {
 					throw new \RuntimeException('entry missing or too large');
 				}
-				$xml = $zip->getFromName($entry, self::MAX_BYTES);
+				$xml = $zip->getFromName($entry, $zipLimit);
 			} finally {
 				$zip->close();
 			}

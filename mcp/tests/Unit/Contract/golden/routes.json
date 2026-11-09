@@ -277,6 +277,18 @@
             "resolves": "CheckoutLimitController::update"
         },
         {
+            "name": "file_read_limit#show",
+            "url": "/api/file-read-limit",
+            "verb": "GET",
+            "resolves": "FileReadLimitController::show"
+        },
+        {
+            "name": "file_read_limit#update",
+            "url": "/api/file-read-limit",
+            "verb": "PUT",
+            "resolves": "FileReadLimitController::update"
+        },
+        {
             "name": "tags#index",
             "url": "/api/admin/tags",
             "verb": "GET",

@@ -36,21 +36,22 @@ final class ReplaceSource {
 
 	/**
 	 * @param File $file text file whose raw bytes the snippet is applied to
-	 * @return string the file as stored, at most {@see TextExtractor::MAX_BYTES} bytes
+	 * @param int $maxBytes file-read ceiling in bytes; the effective files_read ceiling when the caller has one
+	 * @return string the file as stored, at most $maxBytes bytes
 	 * @throws ToolFailure when the reported size is not a finite length within the ceiling, or getContent()
 	 *   returns more than that ceiling
 	 */
-	public static function read(File $file): string {
+	public static function read(File $file, int $maxBytes = TextExtractor::MAX_BYTES): string {
 		$size = $file->getSize();
 		if (!is_int($size) && !is_float($size)) {
-			throw new ToolFailure(TextExtractor::tooLarge());
+			throw new ToolFailure(TextExtractor::tooLarge($maxBytes));
 		}
-		if (!is_finite($size) || $size < 0 || $size > TextExtractor::MAX_BYTES) {
-			throw new ToolFailure(TextExtractor::tooLarge());
+		if (!is_finite($size) || $size < 0 || $size > $maxBytes) {
+			throw new ToolFailure(TextExtractor::tooLarge($maxBytes));
 		}
 		$raw = (string)$file->getContent();
-		if (strlen($raw) > TextExtractor::MAX_BYTES) {
-			throw new ToolFailure(TextExtractor::tooLarge());
+		if (strlen($raw) > $maxBytes) {
+			throw new ToolFailure(TextExtractor::tooLarge($maxBytes));
 		}
 		return $raw;
 	}

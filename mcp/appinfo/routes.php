@@ -60,6 +60,8 @@ return ['routes' => [
 	['name' => 'file_write_policy#update', 'url' => '/api/file-write-policy', 'verb' => 'PUT'],
 	['name' => 'checkout_limit#show', 'url' => '/api/checkout-limit', 'verb' => 'GET'],
 	['name' => 'checkout_limit#update', 'url' => '/api/checkout-limit', 'verb' => 'PUT'],
+	['name' => 'file_read_limit#show', 'url' => '/api/file-read-limit', 'verb' => 'GET'],
+	['name' => 'file_read_limit#update', 'url' => '/api/file-read-limit', 'verb' => 'PUT'],
 	['name' => 'tags#index', 'url' => '/api/admin/tags', 'verb' => 'GET'],
 	['name' => 'tags#update', 'url' => '/api/admin/tags', 'verb' => 'PUT'],
 	['name' => 'metadata#protectedResource', 'url' => '/.well-known/oauth-protected-resource', 'verb' => 'GET'],

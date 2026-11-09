@@ -2,11 +2,13 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
-## Unreleased
+## 1.3.4 — Unreleased
+
+The administrator sets the largest file `files_read` will load, on the MCP management page, in whole MiB. The default stays 20 MiB. The effective limit is that value, or lower when PHP's `memory_limit` cannot hold the copies a PDF parser keeps, so a small host does not raise the ceiling by itself. A `memory_limit` of `-1` applies the configured value. Each inflated DOCX or ODT entry stays capped at 20 MiB. The same file ceiling applies when `files_replace` reads the current text and when a stored version is read. No database change and no permission change; the page saves the value, so `occ` is not required.
 
 ### Changed
 
-- files: The largest file `files_read` reads (and the largest zip entry it inflates) is raised from 20 MiB to 50 MiB.
+- **Configurable file read limit:** the management page shows the configured limit, the effective limit and why `memory_limit` does or does not cap the read. Thanks to @johkoenig ([#33](https://github.com/sintax-tech/mcp-for-nextcloud/pull/33)), Johannes Koenig, for proposing a higher ceiling. A fixed 50 MiB ceiling is not what shipped.
 
 ## 1.3.3 — 2026-11-08
 

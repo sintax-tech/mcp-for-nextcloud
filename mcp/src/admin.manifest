@@ -36,6 +36,7 @@ admin/matrix/commands.js
 admin/matrix/interactions.js
 admin/protection/exclusion-tags.js
 admin/checkout/upload-limit.js
+admin/checkout/read-limit.js
 admin/logs/privacy.js
 admin/logs/readers.js
 admin/oauth-clients/session.js

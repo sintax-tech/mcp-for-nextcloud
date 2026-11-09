@@ -24,7 +24,7 @@ use OCP\Files\NotFoundException;
  * Backs `files_version_read`: the text of one version that files_versions listed.
  *
  * The versioning check, the lookup of the listed version and the stream come from {@see VersionTools::open()}. This
- * handler reads at most {@see TextExtractor::MAX_BYTES}, closes the stream and answers with the extracted text, or
+ * handler reads at most {@see TextExtractor::maxFileBytes()}, closes the stream and answers with the extracted text, or
  * with the OCR notice for a scan or an image without a text layer.
  */
 final class ReadVersionHandler {
@@ -70,13 +70,14 @@ final class ReadVersionHandler {
 		if (!is_resource($handle)) {
 			throw new ToolFailure(VersionMessages::versionUnreadable());
 		}
+		$limit = $this->extractor->maxFileBytes();
 		try {
-			$bytes = (string)stream_get_contents($handle, TextExtractor::MAX_BYTES + 1);
+			$bytes = (string)stream_get_contents($handle, $limit + 1);
 		} finally {
 			fclose($handle);
 		}
-		if (strlen($bytes) > TextExtractor::MAX_BYTES) {
-			throw new ToolFailure(ReadingMessages::readTooLarge(TextExtractor::MAX_BYTES));
+		if (strlen($bytes) > $limit) {
+			throw new ToolFailure(ReadingMessages::readTooLarge($limit));
 		}
 		$mime = $version->getMimeType();
 		$name = $version->getSourceFileName() ?: $path;

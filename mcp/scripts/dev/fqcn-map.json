@@ -2,6 +2,8 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Modules/Files/Extraction/FileReadLimit.php","fqcn":"OCA\\Mcp\\Modules\\Files\\Extraction\\FileReadLimit","target":"stays","owner":"Modules\\Files","ticket":null},
+		{"path":"lib/Controller/FileReadLimitController.php","fqcn":"OCA\\Mcp\\Controller\\FileReadLimitController","target":"stays","owner":"Controller","ticket":null},
 		{"path":"lib/Modules/Calendar/Scheduling/InvitationSettings.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Scheduling\\InvitationSettings","target":"stays","owner":"Modules\\Calendar","ticket":null},
 		{"path":"lib/Platform/Logging/ExceptionDetails.php","fqcn":"OCA\\Mcp\\Platform\\Logging\\ExceptionDetails","target":"stays","owner":"Platform","ticket":null},
 		{"path":"lib/Modules/Files/Checkout/CheckoutUploadFailure.php","fqcn":"OCA\\Mcp\\Modules\\Files\\Checkout\\CheckoutUploadFailure","target":"stays","owner":"Modules\\Files","ticket":null},

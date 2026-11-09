@@ -3,7 +3,6 @@ version = 1
 [[annotations]]
 path = [
   ".gitignore",
-  "CHANGELOG.md",
   "docs/en/architecture.md",
   "docs/en/adding-a-module.md",
   "docs/en/testing.md",

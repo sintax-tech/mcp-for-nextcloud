@@ -12,8 +12,8 @@ use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 
 /**
- * The bytes files_replace searches, taken only after the reported size has been checked against the same
- * ceiling files_read already uses ({@see TextExtractor::MAX_BYTES}).
+ * The bytes files_replace searches, taken only after the reported size has been checked against the
+ * effective file-read ceiling ({@see TextExtractor::maxFileBytes()}).
  *
  * The plan and the confirmed write each call {@see self::read()} on their own, so a file that grows past the
  * ceiling between the two is refused on the second call and nothing is written.
@@ -36,21 +36,22 @@ final class ReplaceSource {
 
 	/**
 	 * @param File $file text file whose raw bytes the snippet is applied to
-	 * @return string the file as stored, at most {@see TextExtractor::MAX_BYTES} bytes
+	 * @param int $maxBytes effective file-read ceiling in bytes, from {@see TextExtractor::maxFileBytes()}
+	 * @return string the file as stored, at most $maxBytes bytes
 	 * @throws ToolFailure when the reported size is not a finite length within the ceiling, or getContent()
 	 *   returns more than that ceiling
 	 */
-	public static function read(File $file): string {
+	public static function read(File $file, int $maxBytes): string {
 		$size = $file->getSize();
 		if (!is_int($size) && !is_float($size)) {
-			throw new ToolFailure(TextExtractor::tooLarge());
+			throw new ToolFailure(TextExtractor::tooLarge($maxBytes));
 		}
-		if (!is_finite($size) || $size < 0 || $size > TextExtractor::MAX_BYTES) {
-			throw new ToolFailure(TextExtractor::tooLarge());
+		if (!is_finite($size) || $size < 0 || $size > $maxBytes) {
+			throw new ToolFailure(TextExtractor::tooLarge($maxBytes));
 		}
 		$raw = (string)$file->getContent();
-		if (strlen($raw) > TextExtractor::MAX_BYTES) {
-			throw new ToolFailure(TextExtractor::tooLarge());
+		if (strlen($raw) > $maxBytes) {
+			throw new ToolFailure(TextExtractor::tooLarge($maxBytes));
 		}
 		return $raw;
 	}

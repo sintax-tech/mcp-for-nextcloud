@@ -79,6 +79,33 @@ final class SourceTreesTest extends TestCase {
 		}
 	}
 
+	/** A git that never exits fails with a deadline instead of blocking the runner. */
+	public function testAStuckGitCommandFailsInsteadOfWaiting(): void {
+		IsolatedGitEnvironment::run(function (): void {
+			$bin = $this->dir . '/bin';
+			mkdir($bin);
+			file_put_contents($bin . '/git', "#!/bin/sh\nexec sleep 30\n");
+			chmod($bin . '/git', 0755);
+			$path = getenv('PATH');
+			$limit = getenv('MCP_SOURCE_TREE_TIMEOUT');
+			putenv('PATH=' . $bin . ($path === false ? '' : ':' . $path));
+			putenv('MCP_SOURCE_TREE_TIMEOUT=1');
+			$started = microtime(true);
+			try {
+				try {
+					SourceTrees::fromGit($this->dir, 'HEAD', 'mcp');
+					$this->fail('a git that never exits must time out');
+				} catch (\RuntimeException $error) {
+					$this->assertStringContainsString('timed out after 1s', $error->getMessage());
+					$this->assertLessThan(5.0, microtime(true) - $started);
+				}
+			} finally {
+				putenv($path === false ? 'PATH' : 'PATH=' . $path);
+				putenv($limit === false ? 'MCP_SOURCE_TREE_TIMEOUT' : 'MCP_SOURCE_TREE_TIMEOUT=' . $limit);
+			}
+		});
+	}
+
 	/** Host Git routing/config is ignored for the test and restored for the caller afterwards. */
 	public function testInheritedGitSettingsAreIsolatedAndRestored(): void {
 		$previous = getenv('GIT_DIR');

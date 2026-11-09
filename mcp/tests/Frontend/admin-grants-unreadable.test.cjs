@@ -129,7 +129,7 @@ test('issue #11 matrix: HTTP error status survives unreadable JSON; other settin
 	const k = kit({ status: 412 })
 	await assert.rejects(k.context.api('PUT', '/api/grants/ana', {}), (e) => e.message === '412' && e.data === null)
 	const normal = kit()
-	for (const endpoint of ['/api/admin/tags', '/api/oauth-clients', '/api/checkout-limit', '/api/logs-privacy', '/api/logs-access']) {
+	for (const endpoint of ['/api/admin/tags', '/api/oauth-clients', '/api/checkout-limit', '/api/file-read-limit', '/api/logs-privacy', '/api/logs-access']) {
 		await assert.rejects(normal.context.api('PUT', endpoint, {}), (e) => e instanceof SyntaxError && e.data === undefined)
 	}
 	await assert.rejects(normal.context.api('POST', '/api/grants/commands/preview', {}), SyntaxError)

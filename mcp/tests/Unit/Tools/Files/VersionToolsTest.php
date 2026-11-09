@@ -19,6 +19,7 @@ use OCA\Mcp\Modules\Files\Backups\FileBackup;
 use OCA\Mcp\Modules\Files\FilesCallContext;
 use OCA\Mcp\Modules\Files\Reading\ReadableFile;
 use OCA\Mcp\Modules\Files\Integration\ReadVersionHandler;
+use OCA\Mcp\Modules\Files\Extraction\FileReadLimit;
 use OCA\Mcp\Modules\Files\Extraction\TextExtractor;
 use OCA\Mcp\Modules\Files\Presentation\VersionMessages;
 use OCA\Mcp\Modules\Files\Integration\VersionRestore;
@@ -80,7 +81,7 @@ final class VersionToolsTest extends TestCase {
 			$access, $container,
 			versionRestore: $this->wiredRestore($access, $container, null, null));
 		$this->reader = new ReadVersionHandler(new FilesCallContext($this->createMock(\OCP\Files\IRootFolder::class)), $this->tools, new ReadableFile(),
-			new TextExtractor($temp), new \OCA\Mcp\Modules\Files\Images\OcrSupport($this->apps));
+			new TextExtractor($temp, new FileReadLimit($config)), new \OCA\Mcp\Modules\Files\Images\OcrSupport($this->apps));
 	}
 
 	private function file(): \OCP\Files\File {

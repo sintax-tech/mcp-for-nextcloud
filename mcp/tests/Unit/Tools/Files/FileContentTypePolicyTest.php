@@ -43,6 +43,7 @@ use OCA\Mcp\Modules\Files\Reorganization\MovePlanner;
 use OCA\Mcp\Modules\Files\Integration\MoveReport;
 use OCA\Mcp\Modules\Files\Images\OcrSupport;
 use OCA\Mcp\Modules\Files\Reorganization\Reorganization;
+use OCA\Mcp\Modules\Files\Extraction\FileReadLimit;
 use OCA\Mcp\Modules\Files\Extraction\TextExtractor;
 use OCA\Mcp\Modules\Files\Integration\VersionRestore;
 use OCA\Mcp\Modules\Files\Integration\VersionTools;
@@ -144,7 +145,7 @@ final class FileContentTypePolicyTest extends TestCase {
 		$urls->method('linkToRouteAbsolute')->willReturn('https://cloud.test/apps/mcp/token');
 
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
-		$extractor = new TextExtractor($temp);
+		$extractor = new TextExtractor($temp, new FileReadLimit($iConfig));
 		$shared = new SharedWriteGuard($access);
 		$backup = new FileBackup($apps, $users, $time, $iConfig, null, $lockService);
 		$commit = new ContentCommit($this->gate, $access, $lockService, null);

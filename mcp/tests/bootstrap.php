@@ -24,3 +24,5 @@ spl_autoload_register(static function (string $class): void {
 	}
 });
 require __DIR__ . '/stubs/OcStubs.php';
+require_once __DIR__ . '/Unit/Scripts/Dev/DevTestTimeout.php';
+\OCA\Mcp\Tests\Unit\Scripts\Dev\DevTestTimeout::register();

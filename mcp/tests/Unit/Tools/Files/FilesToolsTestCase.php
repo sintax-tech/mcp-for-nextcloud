@@ -31,6 +31,7 @@ use OCA\Mcp\Modules\Files\Integration\MoveReport;
 use OCA\Mcp\Modules\Files\Reorganization\Reorganization;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Files\Images\OcrSupport;
+use OCA\Mcp\Modules\Files\Extraction\FileReadLimit;
 use OCA\Mcp\Modules\Files\Extraction\TextExtractor;
 use OCA\Mcp\Modules\Files\Integration\VersionRestore;
 use OCA\Mcp\Modules\Files\Integration\VersionTools;
@@ -148,7 +149,7 @@ abstract class FilesToolsTestCase extends TestCase {
 		});
 
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
-		$extractor = new TextExtractor($this->temp);
+		$extractor = new TextExtractor($this->temp, new FileReadLimit($config));
 		$this->locks = new FakeLockManager();
 		$locks = $this->locks->service($this);
 		$backup = new FileBackup($this->apps, $this->users, $this->time, $config, $this->visibilityGuard, $locks);

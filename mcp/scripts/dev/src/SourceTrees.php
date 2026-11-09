@@ -99,7 +99,7 @@ final class SourceTrees {
 	 * @param list<string> $command program and arguments
 	 * @param string $input standard input
 	 * @return string standard output
-	 * @throws RuntimeException when the command exits with a non-zero status
+	 * @throws RuntimeException when the command exits with a non-zero status or exceeds its deadline
 	 */
 	private static function run(array $command, string $input): string {
 		$process = proc_open($command, [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
@@ -107,21 +107,30 @@ final class SourceTrees {
 			throw new RuntimeException('cannot start ' . $command[0]);
 		}
 		// stdin and stdout are pumped together: git cat-file writes while it reads, so writing all the input first
-		// would block on a full stdout pipe.
-		stream_set_blocking($pipes[0], false);
-		stream_set_blocking($pipes[1], false);
-		stream_set_blocking($pipes[2], false);
+		// would block on a full stdout pipe. Pipes stay non-blocking so a full stderr buffer cannot stall the read.
+		foreach ([0, 1, 2] as $key) {
+			if (!stream_set_blocking($pipes[$key], false)) {
+				self::stop($process, $pipes);
+				throw new RuntimeException('cannot set ' . $command[0] . ' pipes to non-blocking');
+			}
+		}
+		$deadline = microtime(true) + self::commandTimeout();
 		$output = '';
 		$error = '';
 		$open = [1 => $pipes[1], 2 => $pipes[2]];
 		while ($open !== []) {
+			if (microtime(true) >= $deadline) {
+				self::stop($process, $pipes);
+				throw new RuntimeException(implode(' ', $command) . ' timed out after ' . self::commandTimeout() . 's');
+			}
 			$read = array_values($open);
 			$write = $input !== '' ? [$pipes[0]] : [];
 			$except = null;
 			if ($input === '' && is_resource($pipes[0])) {
 				fclose($pipes[0]);
 			}
-			stream_select($read, $write, $except, 5);
+			$remaining = max(1, (int)ceil($deadline - microtime(true)));
+			stream_select($read, $write, $except, min(5, $remaining));
 			if ($write !== []) {
 				$input = (string)substr($input, (int)fwrite($pipes[0], substr($input, 0, 65536)));
 			}
@@ -141,5 +150,35 @@ final class SourceTrees {
 			throw new RuntimeException(implode(' ', $command) . " failed: $error");
 		}
 		return $output;
+	}
+
+	/**
+	 * Wall-clock budget for one git invocation. `MCP_SOURCE_TREE_TIMEOUT` replaces the default.
+	 *
+	 * @return int seconds, at least one
+	 */
+	private static function commandTimeout(): int {
+		$env = getenv('MCP_SOURCE_TREE_TIMEOUT');
+		if ($env !== false && $env !== '') {
+			return max(1, (int)$env);
+		}
+		return 120;
+	}
+
+	/**
+	 * Closes the pipes and stops the child after a deadline.
+	 *
+	 * @param resource $process child from proc_open
+	 * @param array<int,resource> $pipes stdin, stdout and stderr
+	 * @return void
+	 */
+	private static function stop($process, array $pipes): void {
+		foreach ($pipes as $pipe) {
+			if (is_resource($pipe)) {
+				fclose($pipe);
+			}
+		}
+		proc_terminate($process, SIGKILL);
+		proc_close($process);
 	}
 }

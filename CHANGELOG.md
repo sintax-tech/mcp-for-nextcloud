@@ -1,6 +1,29 @@
+<!--
+SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
 # Changelog
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
+
+## 1.3.4 — 2026-11-09
+
+The administrator sets the largest file loaded by `files_read`, `files_edit`, `files_replace`, a stored version and `resources/read`, on the MCP management page, in whole MiB. The default stays 20 MiB. A configured value at or below that default is used as stored, so a small `memory_limit` cannot make this release read less than 1.3.3 did. A higher setting is capped by a heuristic from `memory_limit` (six copies of the file, with 32 MiB left aside; neither figure is measured) and never below the default. A `memory_limit` of `-1` applies the configured value. A directive PHP cannot read falls back to the default and never to zero bytes. The checkout upload limit now reads `post_max_size` the same way PHP does, so a value outside the usual form, such as `256MB` or a hexadecimal size, takes the size PHP itself would use. At the default, the PDF decode allowance stays 80 MiB and the parser applies it per stream. Each inflated DOCX or ODT entry stays capped at 20 MiB. `files_search` returns excerpts from the full-text index and does not load the file through this ceiling. No database change and no permission change; the page saves the value, so `occ` is not required.
+
+### Changed
+
+- **Configurable file read limit:** the management page shows the configured limit, the effective limit and why `memory_limit` does or does not cap the read. Thanks to @johkoenig ([#33](https://github.com/sintax-tech/mcp-for-nextcloud/pull/33)) for raising the read limit; it is now configurable instead of fixed.
+
+### Fixed
+
+- **Changelog in the Nextcloud app manager ([#32](https://github.com/sintax-tech/mcp-for-nextcloud/issues/32)):** the package now carries `CHANGELOG.md` in the app folder, where the Nextcloud app store reads the notes of each release and the app manager shows them in the Changelog tab. The file is copied by `mcp/scripts/package.sh` from the repository root, which stays its only source; the version headings already follow the format the store reads.
+
+### Validation and limits
+
+- **Note read coverage ([#34](https://github.com/sintax-tech/mcp-for-nextcloud/issues/34)):** the reported empty `notes_read` response was not reproduced on 1.3.3. New unit protocol and live HTTP tests cover create → list → read → edit → read, checking content, path and a changed ETag in Notes and Notizen. The live checks used Nextcloud 35.0.1 with Notes 6.0.2 and both Basic and bearer authentication. This release adds regression coverage, not a claimed fix for the report.
+
+The read-limit tests cover the default, a lower setting, a higher setting capped by PHP, unlimited and rejected memory directives, per-stream PDF decode allowances and the fixed 20 MiB inflated ZIP-entry cap. The PHP memory ceiling is a heuristic, not a guarantee that a file fits in memory. The package check verifies that the app-folder changelog matches the repository source and carries its own SPDX header.
 
 ## 1.3.3 — 2026-11-08
 

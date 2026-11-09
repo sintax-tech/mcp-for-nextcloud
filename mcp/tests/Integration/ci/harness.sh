@@ -103,14 +103,19 @@ cmd_packages() {
 
 # build_package <app dir> <destination>: the script's last output line is the archive path. Its output goes through
 # a file, not a pipe, so a failing package.sh fails the step. package.sh writes build/ inside the app it packages, so it
-# runs on this run's own copy of the app (without tests/, build/, vendor/, node_modules/): runs of the same checkout
-# that share the engine never write the same archive.
+# runs on this run's own copy of the app (without tests/, build/, vendor/, node_modules/). Keep its repository
+# parent too: the current package script reads ../CHANGELOG.md. Historical revisions use their own script and
+# may have no root changelog; never synthesize one or substitute the current revision's file for theirs.
 build_package() {
-    src="$WORK/package-src/$(basename "$2" .tar.gz)"
-    rm -rf "$src"
+    package_root="$WORK/package-src/$(basename "$2" .tar.gz)"
+    rm -rf "$package_root"
+    src="$package_root/mcp"
     mkdir -p "$src"
     (cd "$1" && COPYFILE_DISABLE=1 tar --exclude ./tests --exclude ./build --exclude ./vendor --exclude ./node_modules -cf - .) \
         | (cd "$src" && tar -xf -)
+    if [ -f "$1/../CHANGELOG.md" ]; then
+        cp "$1/../CHANGELOG.md" "$package_root/CHANGELOG.md"
+    fi
     (cd "$src" && sh scripts/package.sh) > "$WORK/package.out"
     cat "$WORK/package.out"
     archive=$(tail -n 1 "$WORK/package.out")

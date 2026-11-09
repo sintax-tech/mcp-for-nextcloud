@@ -81,7 +81,7 @@ final class ReplaceFileHandler {
 		UniqueSnippet::assertText($old);
 		$file = $this->file($root, $path);
 		NodeAccess::checkEtag($file, $etag);
-		$raw = ReplaceSource::read($file);
+		$raw = ReplaceSource::read($file, $this->extractor->maxFileBytes());
 		$updated = UniqueSnippet::replace($raw, $old, $new);
 		$this->types->assertCurrentName($file);
 		return $this->plans->describe($file, $userId, $path, [
@@ -127,7 +127,7 @@ final class ReplaceFileHandler {
 		if (($payload = $this->shared->guard($file, $userId, $path, $confirmed)) !== null) {
 			return ToolResult::json($payload);
 		}
-		$raw = ReplaceSource::read($file);
+		$raw = ReplaceSource::read($file, $this->extractor->maxFileBytes());
 		$updated = UniqueSnippet::replace($raw, $old, $new);
 		return ToolResult::json($this->commit->commit($backup, $root, $userId, $file, $path, $updated, $etag, $this->extractor->extract($file)));
 	}

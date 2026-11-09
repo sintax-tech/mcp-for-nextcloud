@@ -36,6 +36,9 @@ final class NotesReadTest extends ExclusionTestCase {
 		$settings = $config->getUserValue(self::ALICE, 'notes', 'settings', '');
 		$this->later(fn () => $config->setUserValue(self::ALICE, 'notes', 'settings', $settings));
 		$config->setUserValue(self::ALICE, 'notes', 'settings', json_encode(['notesPath' => $folder]));
+		if (!$this->exists(self::ALICE, $folder)) {
+			$this->later(fn () => $this->deleteQuietly(self::ALICE, $folder));
+		}
 		$this->later(fn () => $this->deleteQuietly(self::ALICE, $folder . '/' . $this->run));
 		$client = $this->mcp(self::ALICE, $kind);
 		$created = $client->write('notes_create', ['title' => 'QA', 'category' => $this->run, 'content' => "# QA\nMilch und Brot\n"]);
@@ -52,6 +55,11 @@ final class NotesReadTest extends ExclusionTestCase {
 		$this->assertSame($path, $read->json()['path']);
 		$this->assertSame($notes[$id]['etag'], $read->json()['etag']);
 		$this->assertArrayNotHasKey('structuredContent', $read->result());
+		// Nextcloud may reuse the ETag for writes within the same second; edit in the next one.
+		$now = time();
+		while (time() === $now) {
+			usleep(50000);
+		}
 		$edited = $client->write('notes_edit', ['id' => $id, 'etag' => $read->json()['etag'], 'content' => "Updated\n"]);
 		$this->assertTrue($edited->ok(), $edited->describe());
 		$again = $client->tool('notes_read', ['id' => $id]);
@@ -59,5 +67,6 @@ final class NotesReadTest extends ExclusionTestCase {
 		$this->assertSame("Updated\n", $again->json()['content'], $again->describe());
 		$this->assertSame($path, $again->json()['path']);
 		$this->assertSame($edited->json()['etag'], $again->json()['etag']);
+		$this->assertNotSame($read->json()['etag'], $again->json()['etag']);
 	}
 }

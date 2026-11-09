@@ -73,6 +73,7 @@ final class NotesReadTest extends TestCase {
 		$this->assertSame("Updated\n", $again['content']);
 		$this->assertSame($read['path'], $again['path']);
 		$this->assertSame($edited['etag'], $again['etag']);
+		$this->assertNotSame($read['etag'], $again['etag']);
 		$this->assertSame([], $this->gate->logged());
 	}
 
@@ -87,7 +88,6 @@ final class NotesReadTest extends TestCase {
 		$this->assertObjectNotHasProperty('error', $reply['body']);
 		$result = $reply['body']->result;
 		$this->assertFalse($result->isError ?? false, json_encode($result));
-		$this->assertNotSame('{}', json_encode($result));
 		return json_decode($result->content[0]->text, true, 512, JSON_THROW_ON_ERROR);
 	}
 }

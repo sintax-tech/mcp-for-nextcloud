@@ -2,6 +2,12 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## Unreleased
+
+### Changed
+
+- files: The largest file `files_read` reads (and the largest zip entry it inflates) is raised from 20 MiB to 50 MiB.
+
 ## 1.3.3 — 2026-11-08
 
 Fix release on top of 1.3.2. No database change and no permission change; updating from 1.3.2 needs no step. This release fixes extraction of an existing ocrmypdf text layer, makes failure diagnostics visible in the Nextcloud log, and fixes calendar warning formatting and invitation-setting compatibility.

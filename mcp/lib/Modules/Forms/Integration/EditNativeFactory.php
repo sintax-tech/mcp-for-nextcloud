@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Forms\Integration;
 
+use OCA\Mcp\Modules\Forms\FormsVersionProfiles;
 use OCA\Mcp\Modules\Forms\Editing\EditContext;
 use OCA\Mcp\Modules\Forms\Presentation\EditMessages;
 use OCA\Mcp\Modules\Forms\Editing\EditPolicyBoundary;
@@ -33,7 +34,7 @@ class EditNativeFactory {
 	public function open(string $uid): EditContext {
 		try {
 			$this->actor($uid); $read = $this->forms->open($uid);
-			if (!in_array($read['version'], ['5.3.0','5.3.7','5.4.0','5.4.1'], true)) { throw new ToolFailure(EditMessages::refused()); }
+			if (FormsVersionProfiles::get($read['version']) === null) { throw new ToolFailure(EditMessages::refused()); }
 			$c = $this->container(); $get = static fn (string $type): object => $c->get($type);
 			$config = new \OCA\Forms\Service\ConfigService('forms', $get(\OCP\IConfig::class), $get(\OCP\AppFramework\Services\IAppConfig::class), $get(\OCP\IGroupManager::class), $this->session);
 			$native = CreateNativeArguments::submission($read['version'], $get, $this->session, $read['service']);

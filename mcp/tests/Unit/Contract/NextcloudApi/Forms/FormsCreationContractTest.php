@@ -8,15 +8,16 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi\Forms;
 
 use OCA\Mcp\Modules\Forms\Creation\CreateFormTypes;
+use OCA\Mcp\Modules\Forms\FormsVersionProfiles;
 use PHPUnit\Framework\TestCase;
 
-/** Verifies explicit native constructor variants and sequential behavior in all four SHA-bound pins, not runtime. */
+/** Verifies explicit native constructor variants and sequential behavior in all five SHA-bound pins, not runtime. */
 final class FormsCreationContractTest extends TestCase {
 	/** Checks actor capture, app config, write signatures, 201 subsets and the version-specific Files branch.
 	 * @return void
 	 */
 	public function testPinnedCreationGraphAndNativeStageContracts(): void {
-		self::assertSame(array_keys(FormsSourcePins::all()), CreateFormTypes::VERSIONS);
+		self::assertSame(array_keys(FormsSourcePins::all()), array_keys(FormsVersionProfiles::PROFILES));
 		foreach (FormsSourcePins::all() as $pin => $sha) {
 			$f = json_decode(file_get_contents(__DIR__ . '/../../../../fixtures/nextcloud-api/forms/' . $pin . '.json'), true, 512, JSON_THROW_ON_ERROR);
 			self::assertSame($sha, $f['sha256']);
@@ -30,7 +31,7 @@ final class FormsCreationContractTest extends TestCase {
 			self::assertSame(['appName', 'config', 'appConfig', 'groupManager', 'userSession'], $f['classes']['OCA\\Forms\\Service\\ConfigService']['methods']['__construct']);
 			$submission = $f['classes']['OCA\\Forms\\Service\\SubmissionService']['methods']['__construct'];
 			self::assertContains($pin === '5.3.0' ? 'mailer' : 'emailValidator', $submission);
-			self::assertSame(in_array($pin, ['5.4.0', '5.4.1'], true), in_array('userConfig', $submission, true));
+			self::assertSame(in_array($pin, ['5.4.0', '5.4.1', '5.4.2'], true), in_array('userConfig', $submission, true));
 			self::assertSame(['fromId?'], $controller['newForm']);
 			self::assertSame(['formId', 'keyValuePairs'], $controller['updateForm']);
 			self::assertSame(['formId', 'type?', 'subtype?', 'text?', 'fromId?', 'position?'], $controller['newQuestion']);
@@ -44,7 +45,7 @@ final class FormsCreationContractTest extends TestCase {
 			$options = FormsBehavior::body($source, 'newOption');
 			self::assertStringContainsString('catch(IMapperException$e)', $options);
 			self::assertStringContainsString('newDataResponse($addedOptions,Http::STATUS_CREATED)', $options);
-			self::assertSame($pin === '5.4.1', str_contains(FormsBehavior::body($source, 'updateForm'), 'syncFormUploadFolderName'));
+			self::assertSame(in_array($pin, ['5.4.1', '5.4.2'], true), str_contains(FormsBehavior::body($source, 'updateForm'), 'syncFormUploadFolderName'));
 			self::assertStringContainsString('getUnformattedCreationAllowedGroups()', FormsBehavior::body($f['sources']['Service/ConfigService']['source'], 'canCreateForms'));
 			self::assertNotContains('datetime', CreateFormTypes::SUPPORTED);
 		}

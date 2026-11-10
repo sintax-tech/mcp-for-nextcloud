@@ -11,5 +11,4 @@ namespace OCA\Mcp\Modules\Forms\Creation;
 final class CreateFormTypes {
 	public const SUPPORTED = ['short', 'long', 'color', 'date', 'time', 'linearscale', 'multiple', 'multiple_unique', 'dropdown', 'file', 'grid', 'ranking'];
 	public const CHOICES = ['multiple', 'multiple_unique', 'dropdown', 'ranking'];
-	public const VERSIONS = ['5.3.0', '5.3.7', '5.4.0', '5.4.1'];
 }

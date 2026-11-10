@@ -34,16 +34,30 @@ final class CreateWriterTest extends TestCase {
 			self::assertStringContainsString('native-capability', $result['applied']['editorUrl']);
 		}
 	}
+	/** Keeps the folder warning in receipts only when a syncing pin reached the title stage.
+	 * @return void
+	 */
+	public function testTitleStageReceiptWarningsFollowThePin(): void {
+		foreach (['5.4.0', '5.4.1', '5.4.2'] as $version) {
+			[$writer, $context] = $this->writer(new CreateNativeState(), null, $version);
+			$result = $writer->write($context, $this->request(), 'alice');
+			self::assertSame('complete', $result['status']);
+			self::assertSame($version === '5.4.0' ? 1 : 2, count($result['notes']));
+			if ($version !== '5.4.0') {
+				self::assertContains(\OCA\Mcp\Modules\Forms\Presentation\CreateFormMessages::warning($version), $result['notes']);
+			}
+		}
+	}
 	/** Refuses known folder matches after S0 without invoking title or following stages or exposing Files data.
 	 * @return void
 	 */
 	public function testCollisionAndOlderPinControl(): void {
-		foreach (['5.4.1', '5.3.7'] as $version) {
+		foreach (['5.4.1', '5.4.2', '5.4.0', '5.3.7'] as $version) {
 			$state = new CreateNativeState(); $state->collisions = ['secret-file-name'];
 			[$writer, $context] = $this->writer($state, null, $version);
 			$result = $writer->write($context, $this->request(), 'alice');
-			self::assertSame($version === '5.4.1' ? 'partial' : 'complete', $result['status']);
-			if ($version === '5.4.1') { self::assertSame(['form'], $state->calls); self::assertSame('', $result['applied']['title']); self::assertFalse($result['nativeCallAttempted']); }
+			self::assertSame(in_array($version, ['5.4.1', '5.4.2'], true) ? 'partial' : 'complete', $result['status']);
+			if (in_array($version, ['5.4.1', '5.4.2'], true)) { self::assertSame(['form'], $state->calls); self::assertSame('', $result['applied']['title']); self::assertFalse($result['nativeCallAttempted']); }
 			self::assertStringNotContainsString('secret-file-name', json_encode($result));
 		}
 	}

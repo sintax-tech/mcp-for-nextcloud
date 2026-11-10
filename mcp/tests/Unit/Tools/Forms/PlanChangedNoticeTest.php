@@ -40,22 +40,24 @@ use PHPUnit\Framework\TestCase;
  */
 final class PlanChangedNoticeTest extends TestCase {
 	/**
-	 * The creation warning quotes 5.4.0 and 5.4.1 as different sentences, each with its own version.
+	 * The creation warning distinguishes 5.4.0 from the synchronizing 5.4.1 and 5.4.2 pins, each with its own version.
 	 *
 	 * @return void
 	 */
 	public function testTheCreationWarningNamesTheInstalledVersion(): void {
 		$old = $this->preview('5.4.0');
-		$new = $this->preview('5.4.1');
-		self::assertNotSame(CreateFormMessages::warning('5.4.0'), CreateFormMessages::warning('5.4.1'));
 		self::assertStringContainsString('5.4.0', $old['text']);
-		self::assertStringNotContainsString('5.4.1', $old['text']);
 		self::assertStringContainsString('does not rename', $old['note']);
-		self::assertStringContainsString('5.4.1', $new['text']);
-		self::assertStringContainsString('rename or merge', $new['note']);
-		self::assertStringNotContainsString('does not rename', $new['note']);
+		foreach (['5.4.1', '5.4.2'] as $version) {
+			$new = $this->preview($version);
+			self::assertNotSame(CreateFormMessages::warning('5.4.0'), CreateFormMessages::warning($version));
+			self::assertStringNotContainsString($version, $old['text']);
+			self::assertStringContainsString($version, $new['text']);
+			self::assertStringContainsString('rename or merge', $new['note']);
+			self::assertStringNotContainsString('does not rename', $new['note']);
+			self::assertStringContainsString('Forms version', $new['text']);
+		}
 		self::assertStringContainsString('Forms version', $old['text']);
-		self::assertStringContainsString('Forms version', $new['text']);
 	}
 
 	/**

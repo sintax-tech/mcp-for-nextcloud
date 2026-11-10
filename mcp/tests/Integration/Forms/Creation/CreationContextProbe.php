@@ -84,7 +84,7 @@ final class CreationContextProbe {
 					} finally { $policy->setGrant(FormsScene::READER, 'forms', 'create', true); }
 				}
 				if ($scenario === 'title-race') {
-					if ($graph->version !== '5.4.1') { return ['scenario' => $scenario, 'accepted' => true, 'notApplicableToPin' => true]; }
+					if (!(\OCA\Mcp\Modules\Forms\FormsVersionProfiles::get($graph->version)['titleFolderSync'] ?? false)) { return ['scenario' => $scenario, 'accepted' => true, 'notApplicableToPin' => true]; }
 					$guard = new CreationRacePrecheck();
 					$writer = new \OCA\Mcp\Modules\Forms\Creation\CreateFormWriter(Server::get(\OCA\Mcp\Modules\Forms\Integration\FormsCreateNativeFactory::class), Server::get(\OCA\Mcp\Modules\Forms\Integration\CreateFormReadback::class), $guard, Server::get(\OCA\Mcp\Modules\Forms\Integration\CreateNativeThrottle::class));
 					$data = $writer->write($graph, \OCA\Mcp\Modules\Forms\Creation\CreateFormRequest::of($args), FormsScene::READER);
@@ -96,7 +96,7 @@ final class CreationContextProbe {
 					return ['scenario' => $scenario, 'accepted' => true, 'nativeFolderRenameObserved' => true, 'syntheticBytesPreserved' => true, 'receiptWarningPresent' => true, 'deterministicFixtureNotFrequency' => true];
 				}
 				if ($scenario === 'collision') {
-					if ($graph->version !== '5.4.1') { return ['scenario' => $scenario, 'accepted' => true, 'notApplicableToPin' => true]; }
+					if (!(\OCA\Mcp\Modules\Forms\FormsVersionProfiles::get($graph->version)['titleFolderSync'] ?? false)) { return ['scenario' => $scenario, 'accepted' => true, 'notApplicableToPin' => true]; }
 					$guard = new CreationCollisionPrecheck();
 					$writer = new \OCA\Mcp\Modules\Forms\Creation\CreateFormWriter(Server::get(\OCA\Mcp\Modules\Forms\Integration\FormsCreateNativeFactory::class), Server::get(\OCA\Mcp\Modules\Forms\Integration\CreateFormReadback::class), $guard, Server::get(\OCA\Mcp\Modules\Forms\Integration\CreateNativeThrottle::class));
 					$data = $writer->write($graph, \OCA\Mcp\Modules\Forms\Creation\CreateFormRequest::of($args), FormsScene::READER);

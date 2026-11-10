@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Forms\Integration;
 
+use OCA\Mcp\Modules\Forms\FormsVersionProfiles;
 use OCA\Mcp\Modules\Forms\Creation\CreateFormContext;
 use OCA\Mcp\Modules\Forms\Presentation\CreateFormMessages;
-use OCA\Mcp\Modules\Forms\Creation\CreateFormTypes;
 use OCA\Mcp\Modules\Forms\Creation\CreatePolicyBoundary;
 
 use OCA\Mcp\Modules\Forms\Integration\FormsServices;
@@ -36,7 +36,7 @@ class FormsCreateNativeFactory {
 			$this->assertSession($uid); $this->policy->assertAllowed($uid);
 			if (!$this->guests->allowsApp($uid, 'forms')) { throw new ToolFailure(CreateFormMessages::refused()); }
 			$read = $this->forms->open($uid); $version = $read['version'];
-			if (!in_array($version, CreateFormTypes::VERSIONS, true)) { throw new ToolFailure(CreateFormMessages::refused()); }
+			if (FormsVersionProfiles::get($version) === null) { throw new ToolFailure(CreateFormMessages::refused()); }
 			$c = $this->container();
 			$get = static fn (string $type): object => $c->get($type);
 			$config = new \OCA\Forms\Service\ConfigService('forms', $get(\OCP\IConfig::class), $get(\OCP\AppFramework\Services\IAppConfig::class), $get(\OCP\IGroupManager::class), $this->session);

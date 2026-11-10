@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Forms\Integration;
 
 use Closure;
+use OCA\Mcp\Modules\Forms\FormsVersionProfiles;
 use OCA\Mcp\Mcp\Tools\CapabilityProbe;
 use OCA\Mcp\Platform\Compat\AppEnablement;
 use OCP\App\IAppManager;
@@ -22,9 +23,7 @@ use OCP\Util;
 final class StructureCapabilities implements CapabilityProbe {
 	/** Capability key the seven structure tools require. */
 	public const KEY = 'forms.native_structure_api';
-	/** Forms versions whose ApiController bodies are pinned by hash in the contract fixtures. */
-	public const PROVEN = ['5.3.0', '5.3.7', '5.4.0', '5.4.1'];
-	/** Nextcloud majors the four pins are supported on (Forms 5.3/5.4 declare NC 32–35). */
+	/** Nextcloud majors the exact pins are supported on (Forms 5.3/5.4 declare NC 32–35). */
 	public const MAJORS = [32, 33, 34, 35];
 	/** Native members the structure flow calls, by class. */
 	private const MEMBERS = [
@@ -55,7 +54,7 @@ final class StructureCapabilities implements CapabilityProbe {
 		}
 		$version = (string)$this->apps->getAppVersion('forms');
 		$major = $this->nextcloudMajor ?? (int)Util::getVersion()[0];
-		if (!in_array($version, self::PROVEN, true) || !in_array($major, self::MAJORS, true) || !AppEnablement::forAnyone($this->apps, 'forms')) {
+		if (FormsVersionProfiles::get($version) === null || !in_array($major, self::MAJORS, true) || !AppEnablement::forAnyone($this->apps, 'forms')) {
 			return false;
 		}
 		$probe = $this->nativeProbe ?? static fn (string $class, string $member): bool => $member === 'ANSWER_TYPES'

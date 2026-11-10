@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Forms\Integration;
 
+use OCA\Mcp\Modules\Forms\FormsVersionProfiles;
 use OCP\IUserSession;
 
 /** Builds the actual native named arguments consumed by the fresh factory, preserving resolution and value order. */
@@ -19,14 +20,15 @@ final class CreateNativeArguments {
 	 * @return array<string,object> Actual named arguments, in the factory's original resolution order.
 	 */
 	public static function submission(string $version, callable $get, IUserSession $session, object $service): array {
+		$family = FormsVersionProfiles::constructorFamily($version);
 		$native = ['questionMapper' => $get(\OCA\Forms\Db\QuestionMapper::class), 'submissionMapper' => $get(\OCA\Forms\Db\SubmissionMapper::class),
 			'answerMapper' => $get(\OCA\Forms\Db\AnswerMapper::class), 'uploadedFileMapper' => $get(\OCA\Forms\Db\UploadedFileMapper::class),
 			'rootFolder' => $get(\OCP\Files\IRootFolder::class), 'config' => $get(\OCP\IConfig::class), 'l10n' => $get(\OCP\IL10N::class),
 			'logger' => $get(\Psr\Log\LoggerInterface::class), 'userManager' => $get(\OCP\IUserManager::class), 'userSession' => $session,
 			'tempManager' => $get(\OCP\ITempManager::class), 'formsService' => $service, 'urlGenerator' => $get(\OCP\IURLGenerator::class), 'optionMapper' => $get(\OCA\Forms\Db\OptionMapper::class)];
-		if ($version === '5.3.0') { $native['mailer'] = $get(\OCP\Mail\IMailer::class); }
+		if ($family === FormsVersionProfiles::LEGACY) { $native['mailer'] = $get(\OCP\Mail\IMailer::class); }
 		else { $native['emailValidator'] = $get(\OCP\Mail\IEmailValidator::class); }
-		if (in_array($version, ['5.4.0', '5.4.1'], true)) { $native['userConfig'] = $get(\OCP\Config\IUserConfig::class); }
+		if ($family === FormsVersionProfiles::USER_CONFIG) { $native['userConfig'] = $get(\OCP\Config\IUserConfig::class); }
 		return $native;
 	}
 
@@ -41,6 +43,7 @@ final class CreateNativeArguments {
 	 * @return array<string,object|string> Actual named arguments, in the factory's original resolution order.
 	 */
 	public static function controller(string $version, callable $get, IUserSession $session, array $read, object $config, object $submission, array $native): array {
+		$family = FormsVersionProfiles::constructorFamily($version);
 		$args = ['appName' => 'forms', 'request' => $get(\OCP\IRequest::class), 'userSession' => $session,
 			'answerMapper' => $native['answerMapper'], 'formMapper' => $read['mapper'], 'optionMapper' => $native['optionMapper'],
 			'questionMapper' => $native['questionMapper'], 'submissionMapper' => $native['submissionMapper'],
@@ -48,7 +51,7 @@ final class CreateNativeArguments {
 			'formsService' => $read['service'], 'submissionService' => $submission, 'l10n' => $native['l10n'], 'logger' => $native['logger'],
 			'userManager' => $native['userManager'], 'rootFolder' => $native['rootFolder'], 'uploadedFileMapper' => $native['uploadedFileMapper'],
 			'mimeTypeDetector' => $get(\OCP\Files\IMimeTypeDetector::class), 'jobList' => $get(\OCP\BackgroundJob\IJobList::class)];
-		if ($version === '5.3.0') { $args['shareMapper'] = $get(\OCA\Forms\Db\ShareMapper::class); }
+		if ($family === FormsVersionProfiles::LEGACY) { $args['shareMapper'] = $get(\OCA\Forms\Db\ShareMapper::class); }
 		else { $args['secureRandom'] = $get(\OCP\Security\ISecureRandom::class); }
 		return $args;
 	}

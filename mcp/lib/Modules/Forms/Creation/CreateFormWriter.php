@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Forms\Creation;
 
+use OCA\Mcp\Modules\Forms\FormsVersionProfiles;
 use OCA\Mcp\Modules\Forms\Presentation\CreateFormMessages;
 use OCA\Mcp\Modules\Forms\Integration\CreateFormReadback;
 use OCA\Mcp\Modules\Forms\Integration\CreateNativeThrottle;
@@ -126,6 +127,6 @@ class CreateFormWriter {
 	 * @return list<string> Fixed receipt notes.
 	 */
 	private static function notes(CreateFormContext $context, bool $titleAttempted): array {
-		return [CreateFormMessages::sequence(), ...($context->version === '5.4.1' && $titleAttempted ? [CreateFormMessages::warning($context->version)] : [])];
+		return [CreateFormMessages::sequence(), ...((FormsVersionProfiles::get($context->version)['titleFolderSync'] ?? false) && $titleAttempted ? [CreateFormMessages::warning($context->version)] : [])];
 	}
 }

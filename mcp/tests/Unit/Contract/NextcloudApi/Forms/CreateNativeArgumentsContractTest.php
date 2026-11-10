@@ -34,6 +34,7 @@ final class CreateNativeArgumentsContractTest extends TestCase {
 				$actual = array_keys($passed); sort($declared); sort($actual);
 				self::assertSame($declared, $actual, $pin . ':' . $class . ' exact named argument set');
 			}
+			if ($pin === '5.4.2') { self::assertSame($objects[\OCP\Config\IUserConfig::class], $native['userConfig']); }
 			self::assertSame($session, $native['userSession']); self::assertSame($session, $args['userSession']);
 			self::assertSame($service, $native['formsService']); self::assertSame($service, $args['formsService']);
 			self::assertSame($mapper, $args['formMapper']); self::assertSame($config, $args['configService']);

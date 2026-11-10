@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Forms\Editing;
 
+use OCA\Mcp\Modules\Forms\FormsVersionProfiles;
 use OCA\Mcp\Modules\Forms\Integration\EditState;
 use OCA\Mcp\Modules\Forms\Integration\StructureState;
 use OCA\Mcp\Modules\Forms\Presentation\StructureMessages;
@@ -23,9 +24,10 @@ use OCP\AppFramework\Http\DataResponse;
 /**
  * forms_change_question_type: one native updateQuestion PATCH with the target type and, when given, the final settings.
  *
- * Native validates extraSettings only against the current type and never validates the type, so we validate the final
- * settings for the target and require that native accepts them for the current type too; otherwise we refuse before the
- * call. Settings are never dropped silently, answers and options are never converted or deleted, and grid is never a target.
+ * Only pins whose profile permits type updates reach the native call. Those pins validate extraSettings only against the
+ * current type and never validate the type, so we validate the final settings for the target and require that native
+ * accepts them for the current type too; otherwise we refuse before the call. Settings are never dropped silently, answers
+ * and options are never converted or deleted, and grid is never a target.
  */
 final class TypeChanges implements StructureOperation {
 	/** {@inheritDoc} */
@@ -51,6 +53,9 @@ final class TypeChanges implements StructureOperation {
 
 	/** {@inheritDoc} */
 	public function effect(EditContext $c, array $r, array $s): array {
+		if (!(FormsVersionProfiles::get($c->version)['updateQuestionAllowsType'] ?? false)) {
+			throw new ToolFailure(StructureMessages::refused());
+		}
 		$q = StructureState::question($s, $r['question_id']) ?? throw new ToolFailure(CommonMessages::notFound());
 		if (!in_array($q['type'], EditSettings::TYPES, true)) {
 			throw new ToolFailure(StructureMessages::refused());

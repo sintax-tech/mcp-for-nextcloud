@@ -11,7 +11,7 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 
 ### Fixed
 
-- **Forms 5.4.2 compatibility ([#35](https://github.com/sintax-tech/mcp-for-nextcloud/issues/35)):** creation and structure edits admit the explicitly verified 5.4.2 pin. A shared version profile selects the native constructor, including `userConfig` for 5.4.x, and applies the existing upload-folder precheck and warning to both 5.4.1 and 5.4.2. Unknown versions remain refused; 5.4.0 keeps its behavior without title-driven folder synchronization.
+- **Forms 5.4.2 compatibility ([#35](https://github.com/sintax-tech/mcp-for-nextcloud/issues/35)):** creation and structure edits admit the explicitly verified 5.4.2 pin. A shared version profile selects the native constructor, including `userConfig` for 5.4.x, and applies the existing upload-folder precheck and warning to both 5.4.1 and 5.4.2. Unknown versions remain refused; 5.4.0 keeps its behavior without title-driven folder synchronization. Question type changes on 5.4.2 are refused while preparing the preview or revalidating confirmation, before the native controller can acquire its 15-minute lock.
 
 ## 1.3.4 — 2026-11-09
 

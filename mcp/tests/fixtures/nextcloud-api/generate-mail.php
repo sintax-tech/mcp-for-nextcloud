@@ -13,7 +13,7 @@ declare(strict_types=1);
  * and the inherited methods of the Mail entities and mappers are in the surface. The sources are only tokenized,
  * never executed.
  *
- * Usage: php -d memory_limit=1G tests/fixtures/nextcloud-api/generate-mail.php <31..35> <archive directory>
+ * Usage: php -d memory_limit=1G tests/fixtures/nextcloud-api/generate-mail.php <34|35> <archive directory>
  *
  * <archive directory> holds mail-<version>.tar.gz and server-<version>-<Entity|QBMapper>.php of that major, downloaded
  * from the URL of mail-sources.json and from raw.githubusercontent.com/nextcloud/server/v<version>/<path>; every file

@@ -1,0 +1,193 @@
+{
+  "31": {
+    "lib/public/AppFramework/Http/DataResponse.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v31.0.0/lib/public/AppFramework/Http/DataResponse.php",
+      "sha256": "3b4ba744b5783d692121245d89924f61f53676c1c28f9974d35fa411ae82cf81"
+    },
+    "lib/public/AppFramework/Http/Response.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v31.0.0/lib/public/AppFramework/Http/Response.php",
+      "sha256": "ba8da958d0a3545e22f6cd9a3dcc522c66ca9990a0eb729f98886e4be89d93b7"
+    },
+    "lib/public/AppFramework/Services/IAppConfig.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v31.0.0/lib/public/AppFramework/Services/IAppConfig.php",
+      "sha256": "f25729f8b7f2d28ac8621f7a2a495398420ec43057d2af3e115d135ff50238e6"
+    },
+    "lib/public/BackgroundJob/IJobList.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v31.0.0/lib/public/BackgroundJob/IJobList.php",
+      "sha256": "7dcecc0f3a4c824bf99b59520c69cf0a853f4aa688efa70527c19c0a9e4b1066"
+    },
+    "lib/public/Files/IMimeTypeDetector.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v31.0.0/lib/public/Files/IMimeTypeDetector.php",
+      "sha256": "63cd8d3bbc102f25f31743c851c61ef8618f83c059a7211f35f6aed9492331f4"
+    },
+    "lib/public/Mail/IEmailValidator.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v31.0.0/lib/public/Mail/IEmailValidator.php",
+      "status": 404,
+      "sha256": null
+    },
+    "lib/public/Mail/IMailer.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v31.0.0/lib/public/Mail/IMailer.php",
+      "sha256": "df3325c5383995ff1c5ddeb9666379ee18cf9a23cf835673157fed0ced435c9c"
+    },
+    "lib/public/Security/Bruteforce/IThrottler.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v31.0.0/lib/public/Security/Bruteforce/IThrottler.php",
+      "sha256": "a591e1c4a5567c9583180c9340efafabae9292b88bd9d60b508de3205d4bdcd6"
+    },
+    "lib/public/Security/Bruteforce/MaxDelayReached.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v31.0.0/lib/public/Security/Bruteforce/MaxDelayReached.php",
+      "sha256": "17e75a87cddbf7180b40db52fe8ed40b82b74fcafeca8dcc797cc0415823b328"
+    }
+  },
+  "32": {
+    "lib/public/AppFramework/Http/DataResponse.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v32.0.0/lib/public/AppFramework/Http/DataResponse.php",
+      "sha256": "3b4ba744b5783d692121245d89924f61f53676c1c28f9974d35fa411ae82cf81"
+    },
+    "lib/public/AppFramework/Http/Response.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v32.0.0/lib/public/AppFramework/Http/Response.php",
+      "sha256": "fd72d1fc2404340e512f2819983648e5678222e5905f0e0dad2eef02f9d98965"
+    },
+    "lib/public/AppFramework/Services/IAppConfig.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v32.0.0/lib/public/AppFramework/Services/IAppConfig.php",
+      "sha256": "f25729f8b7f2d28ac8621f7a2a495398420ec43057d2af3e115d135ff50238e6"
+    },
+    "lib/public/BackgroundJob/IJobList.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v32.0.0/lib/public/BackgroundJob/IJobList.php",
+      "sha256": "7dcecc0f3a4c824bf99b59520c69cf0a853f4aa688efa70527c19c0a9e4b1066"
+    },
+    "lib/public/Files/IMimeTypeDetector.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v32.0.0/lib/public/Files/IMimeTypeDetector.php",
+      "sha256": "460432aa3f4731f8d0cf3f2b62802ccf467358fc8a7a902d8bcdff3a0768636a"
+    },
+    "lib/public/Mail/IEmailValidator.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v32.0.0/lib/public/Mail/IEmailValidator.php",
+      "sha256": "5e35960097156a09b459f31c56fde17119de3184ca117ecbe4a0b38bb5049c41"
+    },
+    "lib/public/Mail/IMailer.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v32.0.0/lib/public/Mail/IMailer.php",
+      "sha256": "2686121e8bf5c86b925357126a377423837d9173884d4c0db53b5d6e123f7cc5"
+    },
+    "lib/public/Security/Bruteforce/IThrottler.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v32.0.0/lib/public/Security/Bruteforce/IThrottler.php",
+      "sha256": "a591e1c4a5567c9583180c9340efafabae9292b88bd9d60b508de3205d4bdcd6"
+    },
+    "lib/public/Security/Bruteforce/MaxDelayReached.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v32.0.0/lib/public/Security/Bruteforce/MaxDelayReached.php",
+      "sha256": "17e75a87cddbf7180b40db52fe8ed40b82b74fcafeca8dcc797cc0415823b328"
+    }
+  },
+  "33": {
+    "lib/public/AppFramework/Http/DataResponse.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v33.0.0/lib/public/AppFramework/Http/DataResponse.php",
+      "sha256": "3b4ba744b5783d692121245d89924f61f53676c1c28f9974d35fa411ae82cf81"
+    },
+    "lib/public/AppFramework/Http/Response.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v33.0.0/lib/public/AppFramework/Http/Response.php",
+      "sha256": "42a581ae4a4c9f489f12dd60e16120b87b4b5a97f4051164b2c9549420cac139"
+    },
+    "lib/public/AppFramework/Services/IAppConfig.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v33.0.0/lib/public/AppFramework/Services/IAppConfig.php",
+      "sha256": "f25729f8b7f2d28ac8621f7a2a495398420ec43057d2af3e115d135ff50238e6"
+    },
+    "lib/public/BackgroundJob/IJobList.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v33.0.0/lib/public/BackgroundJob/IJobList.php",
+      "sha256": "5dbe7b3e0b54ec76ed6c2e41fbbc779cfc096a5461e201d747f7d82c860c60d2"
+    },
+    "lib/public/Files/IMimeTypeDetector.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v33.0.0/lib/public/Files/IMimeTypeDetector.php",
+      "sha256": "460432aa3f4731f8d0cf3f2b62802ccf467358fc8a7a902d8bcdff3a0768636a"
+    },
+    "lib/public/Mail/IEmailValidator.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v33.0.0/lib/public/Mail/IEmailValidator.php",
+      "sha256": "5e35960097156a09b459f31c56fde17119de3184ca117ecbe4a0b38bb5049c41"
+    },
+    "lib/public/Mail/IMailer.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v33.0.0/lib/public/Mail/IMailer.php",
+      "sha256": "2686121e8bf5c86b925357126a377423837d9173884d4c0db53b5d6e123f7cc5"
+    },
+    "lib/public/Security/Bruteforce/IThrottler.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v33.0.0/lib/public/Security/Bruteforce/IThrottler.php",
+      "sha256": "a591e1c4a5567c9583180c9340efafabae9292b88bd9d60b508de3205d4bdcd6"
+    },
+    "lib/public/Security/Bruteforce/MaxDelayReached.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v33.0.0/lib/public/Security/Bruteforce/MaxDelayReached.php",
+      "sha256": "17e75a87cddbf7180b40db52fe8ed40b82b74fcafeca8dcc797cc0415823b328"
+    }
+  },
+  "34": {
+    "lib/public/AppFramework/Http/DataResponse.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v34.0.0/lib/public/AppFramework/Http/DataResponse.php",
+      "sha256": "5f80492fd18e8a8d029fa63d8f8359e176619414c9c67747a42eca6f83d31c3a"
+    },
+    "lib/public/AppFramework/Http/Response.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v34.0.0/lib/public/AppFramework/Http/Response.php",
+      "sha256": "05a46b5b6d57bb927ae6bed26aba89dfb7452a359bc9e06c604a80b6c93b080c"
+    },
+    "lib/public/AppFramework/Services/IAppConfig.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v34.0.0/lib/public/AppFramework/Services/IAppConfig.php",
+      "sha256": "f25729f8b7f2d28ac8621f7a2a495398420ec43057d2af3e115d135ff50238e6"
+    },
+    "lib/public/BackgroundJob/IJobList.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v34.0.0/lib/public/BackgroundJob/IJobList.php",
+      "sha256": "5dbe7b3e0b54ec76ed6c2e41fbbc779cfc096a5461e201d747f7d82c860c60d2"
+    },
+    "lib/public/Files/IMimeTypeDetector.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v34.0.0/lib/public/Files/IMimeTypeDetector.php",
+      "sha256": "460432aa3f4731f8d0cf3f2b62802ccf467358fc8a7a902d8bcdff3a0768636a"
+    },
+    "lib/public/Mail/IEmailValidator.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v34.0.0/lib/public/Mail/IEmailValidator.php",
+      "sha256": "5e35960097156a09b459f31c56fde17119de3184ca117ecbe4a0b38bb5049c41"
+    },
+    "lib/public/Mail/IMailer.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v34.0.0/lib/public/Mail/IMailer.php",
+      "sha256": "11194222be98318d03bd38ecc59c1278b2575b06139a1a9c9d02afb13d1c85f5"
+    },
+    "lib/public/Security/Bruteforce/IThrottler.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v34.0.0/lib/public/Security/Bruteforce/IThrottler.php",
+      "sha256": "a591e1c4a5567c9583180c9340efafabae9292b88bd9d60b508de3205d4bdcd6"
+    },
+    "lib/public/Security/Bruteforce/MaxDelayReached.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v34.0.0/lib/public/Security/Bruteforce/MaxDelayReached.php",
+      "sha256": "17e75a87cddbf7180b40db52fe8ed40b82b74fcafeca8dcc797cc0415823b328"
+    }
+  },
+  "35": {
+    "lib/public/AppFramework/Http/DataResponse.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v35.0.0/lib/public/AppFramework/Http/DataResponse.php",
+      "sha256": "fb1298cbe5c439deeb32a8565805742a29e9af24d5fb3903b7b9cec678f95614"
+    },
+    "lib/public/AppFramework/Http/Response.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v35.0.0/lib/public/AppFramework/Http/Response.php",
+      "sha256": "6626c8597b8e7ca7a6d135e8df2fe9082deb54883f4e4dffa2cea2c4f6daef1d"
+    },
+    "lib/public/AppFramework/Services/IAppConfig.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v35.0.0/lib/public/AppFramework/Services/IAppConfig.php",
+      "sha256": "e712aaeb4d42e858f94e5ba9ec3ecc2f4ce9e77a1e4306966e78da25de0394a2"
+    },
+    "lib/public/BackgroundJob/IJobList.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v35.0.0/lib/public/BackgroundJob/IJobList.php",
+      "sha256": "be57faf54a9f70f1a67dc7d338c4b6922138e4e1cc7d09aa479da346977e906c"
+    },
+    "lib/public/Files/IMimeTypeDetector.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v35.0.0/lib/public/Files/IMimeTypeDetector.php",
+      "sha256": "460432aa3f4731f8d0cf3f2b62802ccf467358fc8a7a902d8bcdff3a0768636a"
+    },
+    "lib/public/Mail/IEmailValidator.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v35.0.0/lib/public/Mail/IEmailValidator.php",
+      "sha256": "5e35960097156a09b459f31c56fde17119de3184ca117ecbe4a0b38bb5049c41"
+    },
+    "lib/public/Mail/IMailer.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v35.0.0/lib/public/Mail/IMailer.php",
+      "sha256": "0c8bbc51cf1fc655fd568d349d67e61a55d219f682ecb907d6a9cb345739f510"
+    },
+    "lib/public/Security/Bruteforce/IThrottler.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v35.0.0/lib/public/Security/Bruteforce/IThrottler.php",
+      "sha256": "bca1d340a59767e4e2303fc856822568da341e904b1ae23f2d30f7c5207ea7e8"
+    },
+    "lib/public/Security/Bruteforce/MaxDelayReached.php": {
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v35.0.0/lib/public/Security/Bruteforce/MaxDelayReached.php",
+      "sha256": "ea3658acf003b0008c76a5f1e6670528c1f4eeed828e8ec5e9b9e0aa3dc6e6b3"
+    }
+  }
+}

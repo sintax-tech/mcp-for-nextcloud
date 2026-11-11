@@ -37,7 +37,7 @@ final class PollsContractTest extends TestCase {
 	public function testPinnedSourcesAndOldestSupportedRelease(): void {
 		$pins=json_decode(file_get_contents(self::FIXTURES.'/polls/polls-sources.json'),true,512,JSON_THROW_ON_ERROR);
 		$behavior=json_decode(file_get_contents(self::FIXTURES.'/polls/polls-behavior.json'),true,512,JSON_THROW_ON_ERROR);
-		$this->assertSame(['8.6.3','9.0.7','9.1.4','9.3.0'],array_keys($behavior));
+		$this->assertSame(['9.1.4','9.3.0'],array_keys($behavior));
 		foreach ($pins as $major=>$pin) {
 			$fixture=require self::FIXTURES.'/'.$major.'.php';
 			$this->assertSame($pin,$fixture['pollsSources']);

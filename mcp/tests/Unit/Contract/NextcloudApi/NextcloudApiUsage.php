@@ -18,13 +18,10 @@ namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi;
  */
 final class NextcloudApiUsage {
 	/**
-	 * Releases each fixture of tests/fixtures/nextcloud-api is generated from: the oldest release of every declared
+	 * Releases each fixture of tests/fixtures/nextcloud-api is generated from: the oldest release of every tested
 	 * Nextcloud major, with the oldest Deck and Talk MCP supports on it ({@see \OCA\Mcp\Platform\Compat\AppEnablement}).
 	 */
 	public const SOURCES = [
-		'31' => ['server' => '31.0.0', 'deck' => '1.15.0', 'spreed' => '21.1.4'],
-		'32' => ['server' => '32.0.0', 'deck' => '1.16.0', 'spreed' => '22.0.0'],
-		'33' => ['server' => '33.0.0', 'deck' => '1.17.0', 'spreed' => '23.0.0'],
 		'34' => ['server' => '34.0.0', 'deck' => '1.18.0', 'spreed' => '24.0.0'],
 		'35' => ['server' => '35.0.0', 'deck' => '1.19.0', 'spreed' => '25.0.0'],
 	];
@@ -345,9 +342,6 @@ final class NextcloudApiUsage {
 			'avatarColor' => 'null: no avatar colour',
 			'attributes' => 'RoomAttributes::NONE (Talk 24+): a plain room',
 			'allowInternalTypes' => 'true: Talk\'s default; the module only asks for the group type',
-		],
-		'OCA\\Talk\\Room::getLobbyState' => [
-			'validateTime' => 'true (up to Talk 23): the expired timer opens the lobby, what Talk 24 does in RoomService::validateLobbyTimer()',
 		],
 		'OCA\\Deck\\Service\\AssignmentService::assignUser' => [
 			'type' => 'TYPE_USER: the module assigns users only',

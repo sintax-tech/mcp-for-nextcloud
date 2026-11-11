@@ -24,7 +24,7 @@ final class TablesSchemaSurfaceGenerator {
 			static fn (string $class): bool => str_starts_with($class, 'OCA\\Tables\\') && !array_key_exists($class, $baseline['classes'])));
 		sort($classes);
 		$result = ['classes' => $classes, 'pins' => []];
-		foreach (['1.0.10' => '32', '2.2.2' => '35', '2.3.1' => '35', '2.3.2' => '35'] as $pin => $major) {
+		foreach (['1.0.10' => '34', '2.2.2' => '35', '2.3.1' => '35', '2.3.2' => '35'] as $pin => $major) {
 			$archive = $archives . '/v' . $pin . '.tar.gz';
 			$expected = $manifest['sources'][$pin]['archiveSha256'];
 			if (hash_file('sha256', $archive) !== $expected) throw new RuntimeException('Archive SHA mismatch');

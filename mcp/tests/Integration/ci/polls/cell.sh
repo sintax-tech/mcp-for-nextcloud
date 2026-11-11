@@ -7,8 +7,7 @@ NC=${MCP_IT_NC_NAME:-mcp-it-nextcloud}
 WORK="${RUNNER_TEMP:?}/mcp-it"
 HERE=$(cd "$(dirname "$0")" && pwd)
 case "${MCP_IT_NC:?}" in
-	32) VERSION=8.6.3; SHA=aa49bbaf9c46f4e18bbe05389c027f3a9f925c7f3071d6aceb44ca569a17f74d ;;
-	33|34|35) VERSION=9.3.0; SHA=e23d57fcb410f9d5253464cd788f8f8b4a7e223e8fea138b1e353cc3ddb53e01 ;;
+	34|35) VERSION=9.3.0; SHA=e23d57fcb410f9d5253464cd788f8f8b4a7e223e8fea138b1e353cc3ddb53e01 ;;
 	*) echo 'No Polls runtime pin for this cell' >&2; exit 2 ;;
 esac
 # Calls the native Nextcloud command as its web-server user.

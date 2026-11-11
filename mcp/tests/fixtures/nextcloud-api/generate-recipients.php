@@ -13,7 +13,7 @@ require __DIR__ . '/../../../vendor/autoload.php';
 [, $major, $archives, $output] = $argv + [null, null, null, __DIR__];
 $pins = json_decode(file_get_contents(__DIR__ . '/recipient-sources.json'), true, 512, JSON_THROW_ON_ERROR);
 if (!isset($pins[$major]) || !is_dir((string)$archives)) {
-	throw new InvalidArgumentException('usage: generate-recipients.php <31..35> <verified archive directory>');
+	throw new InvalidArgumentException('usage: generate-recipients.php <34|35> <verified archive directory>');
 }
 $tree = sys_get_temp_dir() . '/mcp-recipient-api-' . bin2hex(random_bytes(6));
 mkdir($tree, recursive: true);

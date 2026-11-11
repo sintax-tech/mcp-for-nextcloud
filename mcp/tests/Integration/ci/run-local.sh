@@ -11,7 +11,7 @@
 # .mcp-it-runs/<cell>/owned-resources; --shutdown cleans only interrupted runs of this checkout.
 # The shared Colima profile is never stopped, including when this script starts it.
 #
-# Usage: run-local.sh <nc 32|33|34|35> <db mariadb|pgsql|sqlite> <mode fresh|upgrade|baseline> [--prune-images]
+# Usage: run-local.sh <nc 34|35> <db mariadb|pgsql|sqlite> <mode fresh|upgrade|baseline> [--prune-images]
 #        run-local.sh --shutdown   (clean this checkout's interrupted runs; leave live runs and Colima alone)
 #   baseline        diagnostics: the released baseline stays installed, never upgraded (use with MCP_IT_PHPUNIT_ARGS)
 #   --prune-images  also removes the images this run pulled (default: kept, they are only files on disk)
@@ -39,12 +39,13 @@ if [ "${1:-}" = "--shutdown" ]; then
 fi
 
 usage() {
-    echo "Usage: $0 <nc 32|33|34|35> <db mariadb|pgsql|sqlite> <mode fresh|upgrade|baseline> [--prune-images] | $0 --shutdown" >&2
+    echo "Usage: $0 <nc 34|35> <db mariadb|pgsql|sqlite> <mode fresh|upgrade|baseline> [--prune-images] | $0 --shutdown" >&2
     exit 2
 }
 
 [ $# -ge 3 ] || usage
 CELL_NC=$1
+case "$CELL_NC" in 34|35) ;; *) usage ;; esac
 CELL_DB=$2
 CELL_MODE=$3
 PRUNE_IMAGES=0

@@ -12,7 +12,7 @@ declare(strict_types=1);
  * so the entities and mappers the module type-hints are declared here. Base signatures mirror Deck
  * `v1.17.5`, the tag whose `appinfo/info.xml` declares `nextcloud min-version="33" max-version="33"`.
  *
- * The conditional dependentCards field mirrors Deck v1.18+; real NC32/33 absence is tested in containers.
+ * The conditional dependentCards field mirrors Deck v1.18+; the current containers cover NC34/35; absent shapes use synthetic doubles.
  * The entities take an array of fields instead of the Deck constructor, which only makes the doubles
  * easier to build in a test; the getters return what a hydrated Deck entity would return.
  */

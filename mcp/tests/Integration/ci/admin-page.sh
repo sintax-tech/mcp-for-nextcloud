@@ -6,7 +6,7 @@
 # the page loads js/mcp-admin.js from the package, and a person or an agent goes through the checklist of the
 # RE-11 report in a browser. Nothing here runs the integration suite; tests/Integration/ci/run-local.sh does that.
 #
-# Usage: admin-page.sh up <archive.tar.gz> [nc 32|33|34|35]   start, install, print the URL, the accounts and the run id
+# Usage: admin-page.sh up <archive.tar.gz> [nc 34|35]   start, install, print the URL, the accounts and the run id
 #        admin-page.sh down <run id>                            remove exactly what that run created
 #
 # Every run has its own id (admin-page-<time>-<pid>) and records the names of what it creates, before creating it, in
@@ -25,7 +25,7 @@ RUNS="${MCP_IT_RUNS_DIR:-$REPO/.mcp-it-runs}"
 TRIES="${MCP_IT_ADMIN_TRIES:-300}"
 
 usage() {
-	echo "Usage: $0 up <archive.tar.gz> [nc 32|33|34|35] | $0 down <run id>" >&2
+	echo "Usage: $0 up <archive.tar.gz> [nc 34|35] | $0 down <run id>" >&2
 	exit 2
 }
 
@@ -62,6 +62,7 @@ remove_run() {
 
 # up <archive> [major]: a fresh SQLite instance with the package installed and a few accounts for the matrix.
 up() {
+	case "$2" in 34|35) ;; *) usage ;; esac
 	archive="$1"
 	major="${2:-35}"
 	[ -f "$archive" ] || { echo "no archive at $archive" >&2; exit 2; }

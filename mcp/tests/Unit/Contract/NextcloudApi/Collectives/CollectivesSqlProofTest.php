@@ -72,8 +72,8 @@ final class CollectivesSqlProofTest extends CallGraphTreeTestCase {
 		require_once self::DIR . 'CollectivesSqlProof.php';
 		$pins = json_decode(file_get_contents(self::DIR . 'collectives-sql-sources.json'), true, 512, JSON_THROW_ON_ERROR);
 		$chains = json_decode(file_get_contents(self::DIR . 'collectives-read-chains.json'), true, 512, JSON_THROW_ON_ERROR);
-		$pin = $pins['33'];
-		$sources = $chains['33']['sqlProof']['sources'];
+		$pin = $pins['34'];
+		$sources = $chains['34']['sqlProof']['sources'];
 		$file = '3rdparty/doctrine/dbal/src/Driver/OCI8/Result.php';
 		$sources[$file] = str_replace(' | OCI_RETURN_LOBS', '', $sources[$file]);
 		$pin['files'][$file] = hash('sha256', $sources[$file]);

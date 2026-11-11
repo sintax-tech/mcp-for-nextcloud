@@ -108,7 +108,7 @@ abstract class CalendarTestCase extends TestCase {
 		);
 		$config = $this->createMock(IConfig::class);
 		$config->method('getAppValue')->willReturnCallback(fn (string $app, string $key) => $app === 'dav' && $key === 'calendarRetentionObligation' ? $this->retention : '');
-		$config->method('getSystemValueString')->willReturn('33.0.2.2');
+		$config->method('getSystemValueString')->willReturn('34.0.4.0');
 		$logger = $this->createMock(LoggerInterface::class);
 
 		$this->scope = new ScopeStub();

@@ -12,8 +12,7 @@ pin_release() {
 		return
 	fi
 	case "$MCP_IT_NC" in
-		32) TABLES_TAG=v1.0.10; TABLES_SHA=6a8e8294b8467c9c36a724d5d6f6d62b9b97b285b8de291712812958dfa1b727 ;;
-		33|34) TABLES_TAG=v2.2.2; TABLES_SHA=c2806c1c40b58efdfd1b1f2e2d6f37a19fb0ee34bcf9ee7f26cecb170233ac4f ;;
+		34) TABLES_TAG=v2.2.2; TABLES_SHA=c2806c1c40b58efdfd1b1f2e2d6f37a19fb0ee34bcf9ee7f26cecb170233ac4f ;;
 		35) TABLES_TAG=v2.3.2; TABLES_SHA=29953270010587fc8c0a95cfaba7b167adafb93d2f1a0a5a89e42f2d2be1cf28 ;;
 		*) echo "No Tables release pinned for Nextcloud $MCP_IT_NC" >&2; return 1 ;;
 	esac

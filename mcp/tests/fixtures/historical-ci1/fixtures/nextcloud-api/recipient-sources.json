@@ -1,0 +1,88 @@
+{
+  "31": {
+    "server": {
+      "version": "31.0.0",
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v31.0.0/lib/public/AppFramework/Db/QBMapper.php",
+      "sha256": "1828e00689ddbf4625e27d97f0db0c9c27f7e60f4a84ef896ca07ca05002dc68"
+    },
+    "deck": {
+      "version": "1.15.0",
+      "url": "https://github.com/nextcloud-releases/deck/releases/download/v1.15.0/deck-v1.15.0.tar.gz",
+      "sha256": "30387783c2bac6727d7e03f3391dc19c377395519b537baf9688ab548fbdef40"
+    },
+    "circles": {
+      "version": "31.0.0",
+      "url": "https://codeload.github.com/nextcloud/circles/tar.gz/refs/tags/v31.0.0",
+      "sha256": "349d8bd45ad492e232313f51f5a3c60f078e88cc8621ea475f465c34f1d32703",
+      "manifestVersion": "31.0.0-dev.0"
+    }
+  },
+  "32": {
+    "server": {
+      "version": "32.0.0",
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v32.0.0/lib/public/AppFramework/Db/QBMapper.php",
+      "sha256": "40b58fc30a42a8442e5f44c3478195ec6f8ce36ed6af3ac387f4c1ddf2dd25e0"
+    },
+    "deck": {
+      "version": "1.16.0",
+      "url": "https://github.com/nextcloud-releases/deck/releases/download/v1.16.0/deck-v1.16.0.tar.gz",
+      "sha256": "9624302f560493e1a02323ef0dc2168936b72bd5e290412554f46ccc675e0917"
+    },
+    "circles": {
+      "version": "32.0.0",
+      "url": "https://codeload.github.com/nextcloud/circles/tar.gz/refs/tags/v32.0.0",
+      "sha256": "69118ca3b66579d2ea55d8d428c36efa18510d346ae6ca3986c61ad4c84d7d12"
+    }
+  },
+  "33": {
+    "server": {
+      "version": "33.0.0",
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v33.0.0/lib/public/AppFramework/Db/QBMapper.php",
+      "sha256": "f1b5cd4ab2bc3ae24c2dad1d1c6c75034bb366b44f3f33919bddcb90dee4610e"
+    },
+    "deck": {
+      "version": "1.17.0",
+      "url": "https://github.com/nextcloud-releases/deck/releases/download/v1.17.0/deck-v1.17.0.tar.gz",
+      "sha256": "006e047fb26197c395ec375dea1787784cdacbad835c477cea53a4f5ca3fb577"
+    },
+    "circles": {
+      "version": "33.0.0",
+      "url": "https://codeload.github.com/nextcloud/circles/tar.gz/refs/tags/v33.0.0",
+      "sha256": "dc9cc6e392f1ba2f994057ad4f053d2cb60efe191796c0d65ce5ea92cd7a1516"
+    }
+  },
+  "34": {
+    "server": {
+      "version": "34.0.0",
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v34.0.0/lib/public/AppFramework/Db/QBMapper.php",
+      "sha256": "f1b5cd4ab2bc3ae24c2dad1d1c6c75034bb366b44f3f33919bddcb90dee4610e"
+    },
+    "deck": {
+      "version": "1.18.0",
+      "url": "https://github.com/nextcloud-releases/deck/releases/download/v1.18.0/deck-v1.18.0.tar.gz",
+      "sha256": "bb47b04d6bf33e6f0f147d579553b84d4767e9af7d457b6e87ccf446b1aaa3c6"
+    },
+    "circles": {
+      "version": "34.0.0",
+      "url": "https://codeload.github.com/nextcloud/circles/tar.gz/refs/tags/v34.0.0",
+      "sha256": "bdcec19dcac57c99c9ffa929be4727b04f56d01fad6a2efc28cad2d92c5040c6"
+    }
+  },
+  "35": {
+    "server": {
+      "version": "35.0.0",
+      "url": "https://raw.githubusercontent.com/nextcloud/server/v35.0.0/lib/public/AppFramework/Db/QBMapper.php",
+      "sha256": "4f3e2bdf5cc1bd36a54ca8e89e78ea2648412e63b4bcfa93eeb7f97536d4058e"
+    },
+    "deck": {
+      "version": "1.19.0",
+      "url": "https://github.com/nextcloud-releases/deck/releases/download/v1.19.0/deck-v1.19.0.tar.gz",
+      "sha256": "4946ae3e0f7939d8cdd6c3a72f35ccc92703d2c5a694586d65ce02d724d3eaa8"
+    },
+    "circles": {
+      "version": "35.0.0",
+      "url": "https://codeload.github.com/nextcloud/circles/tar.gz/refs/tags/v35.0.0",
+      "sha256": "ceea2380b0e436881821127285cd06e3855c365cee84432f4f0829c2c7fb9586"
+    }
+  }
+}

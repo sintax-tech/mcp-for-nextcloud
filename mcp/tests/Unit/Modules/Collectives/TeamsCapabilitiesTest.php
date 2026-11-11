@@ -16,7 +16,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * The `collectives.teams` probe: Nextcloud 33 to 35 only (D7), Teams enabled in the release of that major, the page
+ * The `collectives.teams` probe: Nextcloud 34/35 in this coverage (D7), Teams enabled in the release of that major, the page
  * capability, and the proven native shape; each condition alone hides the member tools.
  */
 final class TeamsCapabilitiesTest extends TestCase {
@@ -38,9 +38,7 @@ final class TeamsCapabilitiesTest extends TestCase {
 	/** @return iterable<string, array{0:array{0:int, 1?:string, 2?:bool, 3?:bool, 4?:bool}, 1:bool}> the installation and the expected answer */
 	public static function installations(): iterable {
 		yield 'NC35 with Teams 35' => [[35, '35.0.0'], true];
-		yield 'NC33 with Teams 33' => [[33, '33.0.0'], true];
 		yield 'NC34 with Teams 34' => [[34, '34.0.0'], true];
-		yield 'NC32: no identity read without writing (D7)' => [[32, '32.0.0'], false];
 		yield 'NC36: not proven' => [[36, '36.0.0'], false];
 		yield 'Teams of another major' => [[35, '34.0.0'], false];
 		yield 'Teams missing' => [[35, ''], false];

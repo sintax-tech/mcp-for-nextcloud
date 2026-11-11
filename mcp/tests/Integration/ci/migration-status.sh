@@ -1,7 +1,7 @@
 #!/bin/sh
 # SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# Reports app migration status on disposable NC32–35 instances only.
+# Reports app migration status on disposable NC34–35 instances only.
 # All four releases register migrations:status only when debug is enabled.
 # Usage: migration-status.sh <mcp-it-* container>
 # Preserves debug's original boolean or absence, including on command failure.

@@ -29,7 +29,7 @@ final class DependencyCapabilitiesTest extends TestCase {
 	}
 
 	public static function cells(): iterable {
-		foreach ([[32, '1.16.8', false], [33, '1.17.7', false], [34, '1.18.5', true], [35, '1.19.0', true],
+		foreach ([[34, '1.18.5', true], [35, '1.19.0', true],
 			[34, '1.18.4', false], [35, '', false], [34, '1.19.0', false], [35, '1.20.0', false],
 			[36, '1.20.0', false], [35, '1.19.1', true]] as $cell) {
 			yield $cell;
@@ -56,7 +56,7 @@ final class DependencyCapabilitiesTest extends TestCase {
 	}
 
 	public function testToolsListAndDirectCallRefuseUnsupportedApiBeforeAnyDeckDi(): void {
-		foreach ([[32, '1.16.8'], [33, '1.17.7'], [34, '1.18.5']] as [$major, $version]) {
+		foreach ([[34, '1.18.5']] as [$major, $version]) {
 			$apps = $this->apps($version);
 			$cap = new DeckCapabilities($apps, $major, static fn (): bool => false);
 			$container = $this->createMock(ContainerInterface::class);

@@ -1,0 +1,354 @@
+{
+	"purpose": "CI-1 historical source snapshots, outside active fixture discovery. Mixed test snapshots use .php.txt and are never executed. Original paths are relative to the repository root; snapshots match main b94d32e5.",
+	"before": {
+		"oracle": 6,
+		"recordings": 2,
+		"dev": 309,
+		"supported": 20180
+	},
+	"after": {
+		"oracle": 6,
+		"recordings": 2,
+		"dev": 309,
+		"supported": 17211
+	},
+	"removedIdentities": 2980,
+	"addedIdentities": 11,
+	"snapshots": [
+		{
+			"original": "mcp/tests/Integration/ci/run-local.sh",
+			"snapshot": "Integration/ci/run-local.sh",
+			"sha256": "4b697203125374e35424f61cba46d1d5ee56738ab775e0be9132882de0be8a56"
+		},
+		{
+			"original": "mcp/tests/Integration/ci/admin-page.sh",
+			"snapshot": "Integration/ci/admin-page.sh",
+			"sha256": "a0cf74a54a22c9f5f2067b28ce9e1cd20aa8b3db1f76783000a0a275ed73a17e"
+		},
+		{
+			"original": "mcp/tests/Integration/ci/harness.sh",
+			"snapshot": "Integration/ci/harness.sh",
+			"sha256": "ec3f6a67d12899f5adbd165c45a11a986c925eca4937f5ac5fcf36265fdf206b"
+		},
+		{
+			"original": "mcp/tests/Integration/ci/forms/cell.sh",
+			"snapshot": "Integration/ci/forms/cell.sh",
+			"sha256": "8e5de663481b3a74f26e733f7b62dfa65a4040be76094ea98e2a0070072610b3"
+		},
+		{
+			"original": "mcp/tests/Integration/ci/polls/cell.sh",
+			"snapshot": "Integration/ci/polls/cell.sh",
+			"sha256": "99e38b4b7e22d056ec724dcfa73f39d70f307a7c1b63b23d92cd79ffdb166bd6"
+		},
+		{
+			"original": "mcp/tests/Integration/ci/tables/release.sh",
+			"snapshot": "Integration/ci/tables/release.sh",
+			"sha256": "4e9570891e7b4384b2d660694c5fd525de05186d998cc644e0c8345e414bb82f"
+		},
+		{
+			"original": "mcp/tests/Integration/ci/migration-status.sh",
+			"snapshot": "Integration/ci/migration-status.sh",
+			"sha256": "015bd2ae8e871fdca2145b49fc2835a4ea5ea79833cce5fa2437b74f7c6ce613"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/31.php",
+			"snapshot": "fixtures/nextcloud-api/31.php",
+			"sha256": "2e42b60dd0cb98089b6638545112e8000f8ffc68168a134a4a1855518e75c548"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/32.php",
+			"snapshot": "fixtures/nextcloud-api/32.php",
+			"sha256": "1c6c842b546eb674bf1fe3d66d45210d1f2a6d151da720db63f8f5753e81917d"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/33.php",
+			"snapshot": "fixtures/nextcloud-api/33.php",
+			"sha256": "5a903a28ba58d9c614b56e277ca0525fd7f3bf20fe3ef9a3a1e575ae257a085d"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-core/notification/32/Manager.php",
+			"snapshot": "fixtures/nextcloud-core/notification/32/Manager.php",
+			"sha256": "d0dbc4506af7fea1f5c20e2cfd7e2436d219539de224eaa41272d2c220bb1f40"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-core/notification/32/INotification.php",
+			"snapshot": "fixtures/nextcloud-core/notification/32/INotification.php",
+			"sha256": "5e87a143c5a2fd146461a7dda0a975bfc86757f0fb093935a8b6bf353beab877"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-core/notification/32/Notification.php",
+			"snapshot": "fixtures/nextcloud-core/notification/32/Notification.php",
+			"sha256": "6ca145c4960e81f091bd24919b0905615053b27232731f1787e19d28dd73f2ef"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-core/notification/32/IManager.php",
+			"snapshot": "fixtures/nextcloud-core/notification/32/IManager.php",
+			"sha256": "63094a585483d67198113aedf25c40773447c0cd0144ab7ce4cf0d05a56708b1"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/mail-sources.json",
+			"snapshot": "fixtures/nextcloud-api/mail-sources.json",
+			"sha256": "389834c23ac8c4a7ba5d724ed4bb4570a137cfd8043e09a749df72b6833786af"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/delete-sources.json",
+			"snapshot": "fixtures/nextcloud-api/delete-sources.json",
+			"sha256": "5c3e9ca6e14a8580c326b76ae07b360cecdced71cecedc8e8e2632a9e54f3207"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/mail-horde-surfaces.json",
+			"snapshot": "fixtures/nextcloud-api/mail-horde-surfaces.json",
+			"sha256": "ccdfe225ddc1468d445cc3375739b7a5214eee6b18db4d5b2ce1302b820f9813"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/recipient-sources.json",
+			"snapshot": "fixtures/nextcloud-api/recipient-sources.json",
+			"sha256": "f06deb57e6e63983b8145b1e4aab7b7916dfe3cfb62a088b26825991fdaa695b"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/tables/tables-sources.json",
+			"snapshot": "fixtures/nextcloud-api/tables/tables-sources.json",
+			"sha256": "2a82fd38fda3de956f0a107447c3bdd251b3f2634fcedd3d146e4167f04bcb78"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/forms/core-sources.json",
+			"snapshot": "fixtures/nextcloud-api/forms/core-sources.json",
+			"sha256": "7cc83f3feae1606ba0b0dcf77035a50e8becfa5656670ce6a2107840ee9ed6a0"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/polls/polls-sources.json",
+			"snapshot": "fixtures/nextcloud-api/polls/polls-sources.json",
+			"sha256": "60197168164d8034e9b218dcb6ae2d658f5748258c9f011dc34360a1d637e80c"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/polls/polls-create.json",
+			"snapshot": "fixtures/nextcloud-api/polls/polls-create.json",
+			"sha256": "28d02e4aa901d92f927d70a8ab98cec8af199abf6071a1f45624daea7584dcd4"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/collectives/collectives-sources.json",
+			"snapshot": "fixtures/nextcloud-api/collectives/collectives-sources.json",
+			"sha256": "2318f385315dfac2d1859a05eab9519be6c67f80d42ff34768df4ae25526b88e"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/collectives/collectives-sql-sources.json",
+			"snapshot": "fixtures/nextcloud-api/collectives/collectives-sql-sources.json",
+			"sha256": "dd547f7bf6f74320026ea2421bb24030a416c1cd2f56d13ffa419e24a2ef6460"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/collectives/collectives-admin-sources.json",
+			"snapshot": "fixtures/nextcloud-api/collectives/collectives-admin-sources.json",
+			"sha256": "e1480739c2a0da3d0ef0dcf68936ee894003b04d4bfb1896d523ccbcc67b68a1"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/collectives/collectives-read-chains.json",
+			"snapshot": "fixtures/nextcloud-api/collectives/collectives-read-chains.json",
+			"sha256": "a05e8175b0e68a23cdb3f2b7739bfa45fba1ec789b0ece9e9b0642f84b7588c6"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/collectives/collectives-admin-behavior.json",
+			"snapshot": "fixtures/nextcloud-api/collectives/collectives-admin-behavior.json",
+			"sha256": "dd1954f8ac428a0fb2e8ba9fcb649819465fef54a950a0eb1f9a924075ae03c0"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-core/notification/sources.json",
+			"snapshot": "fixtures/nextcloud-core/notification/sources.json",
+			"sha256": "45fd65541485d438d24dc227f0b8e6cab2caaef451a86c0096f91d0a6c9b066a"
+		},
+		{
+			"original": "mcp/tests/Unit/Contract/NextcloudApi/NextcloudApiUsage.php",
+			"snapshot": "Unit/Contract/NextcloudApi/NextcloudApiUsage.php",
+			"sha256": "8fed0a5a8b5dbd820d1fa48915e0544b981d72a4df84d521e885595fab4ec6a4"
+		},
+		{
+			"original": "mcp/tests/Unit/Tools/Calendar/CalDavBackendMethods.php",
+			"snapshot": "Unit/Tools/Calendar/CalDavBackendMethods.php",
+			"sha256": "6144602446abf133f1da5e2e467189703f4715fea187cfcb1b88c08fb99040aa"
+		},
+		{
+			"original": "mcp/tests/Unit/Contract/NextcloudApi/NextcloudApiContractTest.php",
+			"snapshot": "Unit/Contract/NextcloudApi/NextcloudApiContractTest.php.txt",
+			"sha256": "0cfba2bc441e5119bc395331c8ff6e6060ac402b4a4af838c7eb4a228a457ed0"
+		},
+		{
+			"original": "mcp/tests/Unit/Tools/Calendar/CalDavBackendContractTest.php",
+			"snapshot": "Unit/Tools/Calendar/CalDavBackendContractTest.php.txt",
+			"sha256": "5cfb5fac1488c21ada52223711c9de946b26c3216a038304cfbe402dec538143"
+		},
+		{
+			"original": "mcp/tests/Unit/Modules/Deck/AssignmentPushDeferralTest.php",
+			"snapshot": "Unit/Modules/Deck/AssignmentPushDeferralTest.php.txt",
+			"sha256": "be87b12a70317620364c580c303a58926f9a52e7e19961111798a570122e8575"
+		},
+		{
+			"original": "mcp/tests/Unit/Modules/Collectives/CollectivesCapabilitiesTest.php",
+			"snapshot": "Unit/Modules/Collectives/CollectivesCapabilitiesTest.php.txt",
+			"sha256": "fa5cf57bc7ac532631e8bf354dc35b9809ed883c5893f2928134f2432d586750"
+		},
+		{
+			"original": "mcp/tests/Unit/Modules/Collectives/TeamsCapabilitiesTest.php",
+			"snapshot": "Unit/Modules/Collectives/TeamsCapabilitiesTest.php.txt",
+			"sha256": "98204966b36079727ffe342ce5f86bfe6d64f1b6ec45d0eef168d1996066019d"
+		},
+		{
+			"original": "mcp/tests/Unit/Modules/Collectives/FoundingCapabilitiesTest.php",
+			"snapshot": "Unit/Modules/Collectives/FoundingCapabilitiesTest.php.txt",
+			"sha256": "b60bb8c12382dee02e47659d49a2be291554b77995dc4744550a503e20337972"
+		},
+		{
+			"original": "mcp/tests/Unit/Modules/Deck/DeckCapabilitiesProbeTest.php",
+			"snapshot": "Unit/Modules/Deck/DeckCapabilitiesProbeTest.php.txt",
+			"sha256": "27a428039322f7e7b66681e0e3c2bccf57b1e85d9ea0aa24e8a2d4ea69da2f18"
+		},
+		{
+			"original": "mcp/tests/Unit/Tools/Deck/DependencyCapabilitiesTest.php",
+			"snapshot": "Unit/Tools/Deck/DependencyCapabilitiesTest.php.txt",
+			"sha256": "d6fda92a3c822fcd3eb8fe38c3b64897b21c7c5a7c71e59ea2bf1d9ae50d1f1a"
+		},
+		{
+			"original": "mcp/tests/Unit/Modules/Tables/TablesArchivePinTest.php",
+			"snapshot": "Unit/Modules/Tables/TablesArchivePinTest.php.txt",
+			"sha256": "071be85fc4171c2b3149051f2acca9c805b4a28cd3bf36fdad907ec673c6964a"
+		},
+		{
+			"original": "mcp/tests/Unit/Tools/Calendar/CalendarTestCase.php",
+			"snapshot": "Unit/Tools/Calendar/CalendarTestCase.php",
+			"sha256": "ee9f401f1f2f1f1d61234df3eecf2abb857bb0a1540739229605848c2e1e7dff"
+		},
+		{
+			"original": "mcp/tests/Unit/Contract/NextcloudApi/MailSourcePinsTest.php",
+			"snapshot": "Unit/Contract/NextcloudApi/MailSourcePinsTest.php.txt",
+			"sha256": "d917ba6b5bac08a56904e345eba6d2f9ba355c8fc6c33c8753f1e0450f247822"
+		},
+		{
+			"original": "mcp/tests/Unit/Contract/NextcloudApi/Tables/TablesSourcesContractTest.php",
+			"snapshot": "Unit/Contract/NextcloudApi/Tables/TablesSourcesContractTest.php.txt",
+			"sha256": "94b6b63c04df4c5d5f622c7b192beddf9d5cba3c80902ebcba1bd5aa8375865a"
+		},
+		{
+			"original": "mcp/tests/Unit/Contract/NextcloudApi/FixtureFileTest.php",
+			"snapshot": "Unit/Contract/NextcloudApi/FixtureFileTest.php.txt",
+			"sha256": "6f81c81e7c4c9788e8c0f5cbe34abb5a0197328de515ee3886adc4444a71cbea"
+		},
+		{
+			"original": "mcp/tests/Unit/Contract/NextcloudApi/Collectives/CollectivesSqlProofTest.php",
+			"snapshot": "Unit/Contract/NextcloudApi/Collectives/CollectivesSqlProofTest.php.txt",
+			"sha256": "1b33774920625e93bf97c2a5c4537f9d5c6384cc40f65b3b43a9e641957f76fa"
+		},
+		{
+			"original": "mcp/tests/Unit/Contract/NextcloudApi/Collectives/CollectivesContractTest.php",
+			"snapshot": "Unit/Contract/NextcloudApi/Collectives/CollectivesContractTest.php.txt",
+			"sha256": "ee82db5f0d34bd6779531c6eeebdcc2b5c9e6ed3b18112f53145ce13d23e848b"
+		},
+		{
+			"original": "mcp/tests/Unit/Contract/NextcloudApi/Collectives/CollectivesAdminContractTest.php",
+			"snapshot": "Unit/Contract/NextcloudApi/Collectives/CollectivesAdminContractTest.php.txt",
+			"sha256": "2fc5ffa931c4c94fbdaba7ae308f50e1f30af6d27a956de9f6258d5e4a83d8ca"
+		},
+		{
+			"original": "mcp/tests/Unit/Contract/NextcloudApi/VersionedOmissionContractTest.php",
+			"snapshot": "Unit/Contract/NextcloudApi/VersionedOmissionContractTest.php.txt",
+			"sha256": "73b82e4dff9fd9b19256905f48d235dee3604010c2c3e0565608daaab506fca6"
+		},
+		{
+			"original": "mcp/tests/Unit/Contract/NextcloudApi/MailSourcesContractTest.php",
+			"snapshot": "Unit/Contract/NextcloudApi/MailSourcesContractTest.php.txt",
+			"sha256": "0bd43e1a393dfdc3feddfed18b330f707addb0e37d42e207a25677d5140b77ae"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/collectives/collectives-external-leaves.json",
+			"snapshot": "fixtures/nextcloud-api/collectives/collectives-external-leaves.json",
+			"sha256": "83f51eb95955dd193acb033980bbd7ef704af7cf231c137020af34ee592179f0"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/generate-mail.php",
+			"snapshot": "fixtures/nextcloud-api/generate-mail.php",
+			"sha256": "015c2473deedb82d5b54d2ef841de06da83f0cb1428f0b44a3349b9080a4d22a"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/generate-recipients.php",
+			"snapshot": "fixtures/nextcloud-api/generate-recipients.php",
+			"sha256": "aebecc9362c8d3d01818c79e3ac106a699adc4e8569a36f3736e2e583b6554c0"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/tables/generate-tables.php",
+			"snapshot": "fixtures/nextcloud-api/tables/generate-tables.php",
+			"sha256": "8d0a933d848689782cc469eb201c511f449e6c3d73354ed0e8b07baf9d924bfd"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/forms/generate-forms.php",
+			"snapshot": "fixtures/nextcloud-api/forms/generate-forms.php",
+			"sha256": "d4073eefaec11f5f0c4afd237c513745fa7599f8a8e84eef1e82bc027f617349"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/polls/PollsMutationFixture.php",
+			"snapshot": "fixtures/nextcloud-api/polls/PollsMutationFixture.php",
+			"sha256": "a7714f37f109c6dd540f7518b4b788e617479f95c5630cbeb034cdad1eff37f2"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/polls/PollsCreateFixture.php",
+			"snapshot": "fixtures/nextcloud-api/polls/PollsCreateFixture.php",
+			"sha256": "d21cd768e83f390597ab03b122ba01c98c3991236f755b6f0e2b2a758552e81a"
+		},
+		{
+			"original": "mcp/tests/Integration/Smoke/HarnessEnvironmentTest.php",
+			"snapshot": "Integration/Smoke/HarnessEnvironmentTest.php.txt",
+			"sha256": "5e72eef9d72835dd9187acba20e5ae4d52f60a014f971240f33611091a47b7fd"
+		},
+		{
+			"original": "mcp/tests/Unit/Modules/Forms/StructureSourceContractTest.php",
+			"snapshot": "Unit/Modules/Forms/StructureSourceContractTest.php.txt",
+			"sha256": "a136eb9fb780471423724755fe1bd64d7e00c5695ba6f427bcda69a3f7b4ccd5"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/polls/polls-behavior.json",
+			"snapshot": "fixtures/nextcloud-api/polls/polls-behavior.json",
+			"sha256": "dd57c2d1e3544b66e9b698f50fcab45e65f56ee8c7cbe228731bbb330acefc0f"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/polls/polls-mutation.json",
+			"snapshot": "fixtures/nextcloud-api/polls/polls-mutation.json",
+			"sha256": "cd2fbc9c5e92ea306d882da846696c55bc2d8e2f2d07c8fd9a2eaf553779042f"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/collectives/collectives-behavior.json",
+			"snapshot": "fixtures/nextcloud-api/collectives/collectives-behavior.json",
+			"sha256": "c142cdc66deb491b9f4eb21c2cbce5aecd3f637f79e451928fa72660b12e8a30"
+		},
+		{
+			"original": "mcp/tests/Unit/Contract/NextcloudApi/Polls/PollsContractTest.php",
+			"snapshot": "Unit/Contract/NextcloudApi/Polls/PollsContractTest.php.txt",
+			"sha256": "13a89b95b24e96d2291e129b9213be7b0987730b1362401528019056683ab57e"
+		},
+		{
+			"original": "mcp/tests/Unit/Contract/NextcloudApi/Polls/PollsCreateContractTest.php",
+			"snapshot": "Unit/Contract/NextcloudApi/Polls/PollsCreateContractTest.php.txt",
+			"sha256": "1c53fa59dff83628bbd828f9e3ffafc6d028a4d6a79299d9a8353140e9c149f3"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/tables/generate-schema-surfaces.php",
+			"snapshot": "fixtures/nextcloud-api/tables/generate-schema-surfaces.php",
+			"sha256": "f4eee7dcd9e07e2af3d346588d81ee3ebd253d8112b75bc8ef5de72899bfca75"
+		},
+		{
+			"original": "mcp/tests/fixtures/nextcloud-api/forms/generate-core.php",
+			"snapshot": "fixtures/nextcloud-api/forms/generate-core.php",
+			"sha256": "e246c2e32413626c8dd913c035b6dcf8b50ba334a76d5f098307fd8f5814c8f3"
+		},
+		{
+			"original": "mcp/tests/Unit/Tools/Logs/OfficialFileLog.php",
+			"snapshot": "Unit/Tools/Logs/OfficialFileLog.php",
+			"sha256": "3d91e1f8c0e80d4ecbd1a14f79edbe0b2773a42b403aff33e46051300957c2f3"
+		},
+		{
+			"original": "mcp/tests/Integration/Support/FixtureFilesystem.php",
+			"snapshot": "Integration/Support/FixtureFilesystem.php",
+			"sha256": "70947946b6a4214ac2670eb01a7694ea34adff8dbfa3ad7469499279d7303316"
+		},
+		{
+			"original": "mcp/tests/Unit/Tools/Deck/Stubs/deck_entities.php",
+			"snapshot": "Unit/Tools/Deck/Stubs/deck_entities.php",
+			"sha256": "e6b4ffa144a1d758d7b451c168de4fe99c11ecc476c28089f558c6c5daece6c6"
+		}
+	]
+}

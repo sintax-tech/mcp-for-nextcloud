@@ -57,7 +57,7 @@ final class PollsCreateFixture {
 			echo 'Polls '.$v.' creation/persistence/readback source evidence generated'.PHP_EOL;
 		}
 		$records['_core'] = [];
-		foreach (['32','33','34','35'] as $nc) {
+		foreach (['34','35'] as $nc) {
 			foreach (['Entity'=>['setter','getter','__call','fromRow'],'QBMapper'=>['insert','update','mapRowToEntity']] as $name=>$methods) {
 				$source = file_get_contents($archives.'/server-'.$nc.'.0.0-'.$name.'.php');
 				$record=['sha256'=>hash('sha256',$source),'methods'=>[]];

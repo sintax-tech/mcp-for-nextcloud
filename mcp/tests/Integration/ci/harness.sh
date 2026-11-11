@@ -8,7 +8,7 @@
 #
 # Usage: harness.sh <packages|tools|start-db|start-nextcloud|install-app|fixtures|provision|report|test|collect>
 # Cell, from the workflow matrix:
-#   MCP_IT_NC          Nextcloud major (32..35)
+#   MCP_IT_NC          Nextcloud major (34..35)
 #   MCP_IT_NC_IMAGE    official Nextcloud Apache image, pinned as tag@digest
 #   MCP_IT_DB          mariadb | pgsql | sqlite
 #   MCP_IT_DB_IMAGE    database image, pinned as tag@digest (empty for sqlite)
@@ -309,25 +309,9 @@ unpack_release_app() {
 
 # Release pinned per Nextcloud major: groupfolders, Talk and Notes each have one build per supported major. The Calendar
 # release below declares min-version 32 and max-version 35, so one build serves every major this matrix covers.
-# Contacts 8.3.21 supports NC32/33; Contacts 8.9.2 supports NC33–36 (release appinfo/info.xml).
+# Contacts 8.9.2 supports NC34/35 (release appinfo/info.xml).
 pin_releases() {
     case "$MCP_IT_NC" in
-        32)
-            DECK_TAG=v1.16.8; DECK_SHA=231142da72ed6a6f74d74330431f3f9370e72714e30c67b8ba5c76f3a5545279
-            GF_TAG=v20.1.19; GF_SHA=e59e6a11a50f60bf3bd23c243b7ec4b01af371c89e4ad65d4ec7e788058f50ff
-            TALK_TAG=v22.0.19; TALK_SHA=c053dbce9c2a4a76c42e937d4d095502ba48a38c2e6fa02d46c36762573d6bff
-            NOTES_TAG=v5.0.2; NOTES_SHA=1bf9e97a92bae5901a17c93666c4ac0f36ddfe68c69caa5d2368b18be6af7fdc
-            CAL_TAG=v6.6.2; CAL_SHA=7e83632d4436d3037a34d1c73cbc06d5ccb6e8fc10f096a86a43a0515588529c
-            CONTACTS_TAG=v8.3.21; CONTACTS_SHA=45d12ff526515ce5efc52d8e0d42bd3446a66b9a423ee4eb92ebd44a6b5974c3
-            ;;
-        33)
-            DECK_TAG=v1.17.7; DECK_SHA=889a9186ff74dc6d77b719ba81ba16f30a23e0cc1fd100954d7d7e153d2d495e
-            GF_TAG=v21.0.15; GF_SHA=1ecdd644a2e913de8b333560717660f0ba75836309c4463af858e886cdc3a68c
-            TALK_TAG=v23.0.12; TALK_SHA=a907070cb8c0eb69a0ef808f62ea6eea822365c97a1c0e6f4a86aa748eda6c79
-            NOTES_TAG=v6.0.2; NOTES_SHA=da362fb5a574b45cc0e10f4ea7f81547cc3dd10bf916f9d9b590358c1ed8e101
-            CAL_TAG=v6.6.2; CAL_SHA=7e83632d4436d3037a34d1c73cbc06d5ccb6e8fc10f096a86a43a0515588529c
-            CONTACTS_TAG=v8.9.2; CONTACTS_SHA=92f7c79c411273045ed6346f6988c05af673c3170a3adaba91a15066b8dce7c5
-            ;;
         34)
             DECK_TAG=v1.18.5; DECK_SHA=dafec6635ff3af50fb6f73330064ef6153910be2fa434d2edbf8043263122253
             GF_TAG=v22.0.6; GF_SHA=bfff357b12bbd24257d8d127cf30e83a72256e7659f1cc3e32bd09fe647d2f9b

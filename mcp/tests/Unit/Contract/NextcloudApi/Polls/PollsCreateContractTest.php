@@ -18,7 +18,7 @@ final class PollsCreateContractTest extends TestCase {
 	 */
 	public static function pins(): iterable {
 		$all=json_decode(file_get_contents(__DIR__.'/../../../../fixtures/nextcloud-api/polls/polls-create.json'),true,512,JSON_THROW_ON_ERROR);
-		foreach(['8.6.3','9.0.7','9.1.4','9.3.0']as$v){yield $v=>[$v,$all[$v]];}
+		foreach(['9.1.4','9.3.0']as$v){yield $v=>[$v,$all[$v]];}
 	}
 	/**
 	 * Guards source-selected migration/schema and the persistence values actually used by a new row.

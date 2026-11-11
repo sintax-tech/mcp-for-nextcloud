@@ -44,8 +44,8 @@ final class FixtureFileTest extends TestCase {
 	public function testAFixtureWithoutMailPinsHasNoMailSources(): void {
 		$copy = tempnam(sys_get_temp_dir(), 'mcp-fixture-');
 		try {
-			FixtureFile::write($copy, "<?php\n", ['sources' => ['server' => '32.0.0'], 'recipientSources' => [], 'classes' => ['OCP\\IUser' => null]]);
-			$this->assertSame("<?php\nreturn [\n\t'sources' => ['server' => '32.0.0'],\n\t'recipientSources' => [],\n\t'classes' => [\n\t\t'OCP\\\\IUser' => NULL,\n\t],\n];\n", file_get_contents($copy));
+			FixtureFile::write($copy, "<?php\n", ['sources' => ['server' => '34.0.0'], 'recipientSources' => [], 'classes' => ['OCP\\IUser' => null]]);
+			$this->assertSame("<?php\nreturn [\n\t'sources' => ['server' => '34.0.0'],\n\t'recipientSources' => [],\n\t'classes' => [\n\t\t'OCP\\\\IUser' => NULL,\n\t],\n];\n", file_get_contents($copy));
 		} finally {
 			unlink($copy);
 		}
@@ -57,10 +57,10 @@ final class FixtureFileTest extends TestCase {
 	 * @return void
 	 */
 	public function testTheOldestCoveredReleaseOfEachApp(): void {
-		$sources = ['server' => '31.0.0', 'deck' => '1.15.0', 'spreed' => '21.1.4'];
+		$sources = ['server' => '34.0.0', 'deck' => '1.18.0', 'spreed' => '24.0.0'];
 		$fixture = ['mailSources' => ['mail' => ['version' => '5.0.0']]];
 
-		$this->assertSame('1.15.0', OldestCoveredRelease::of($sources, $fixture, 'deck'));
+		$this->assertSame('1.18.0', OldestCoveredRelease::of($sources, $fixture, 'deck'));
 		$this->assertSame('5.0.0', OldestCoveredRelease::of($sources, $fixture, 'mail'));
 		$this->assertNull(OldestCoveredRelease::of($sources, [], 'mail'));
 		$this->assertNull(OldestCoveredRelease::of($sources, $fixture, 'polls'));

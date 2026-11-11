@@ -1877,7 +1877,7 @@
     "The new type does not use options. Existing options stay stored but are not shown." : "El nuevo tipo no usa opciones. Las opciones existentes siguen guardadas, pero no se muestran.",
     "Existing options are kept with their IDs and order." : "Las opciones existentes se mantienen con sus ID y su orden.",
     "Files already uploaded to this question are not touched and no cleanup job is queued." : "Los archivos ya subidos a esta pregunta no se tocan y no se pone en cola ninguna tarea de limpieza.",
-    "Change existing forms, including adding, reordering and deleting questions and options and changing a question type (except in Forms 5.4.2)" : "Cambiar formularios existentes, incluido añadir, reordenar y eliminar preguntas y opciones y cambiar el tipo de una pregunta (excepto en Forms 5.4.2)",
+    "Change existing forms, including adding, reordering and deleting questions and options and changing a question type (not available in every Forms version)" : "Cambiar formularios existentes, incluido añadir, reordenar y eliminar preguntas y opciones y cambiar el tipo de una pregunta (no disponible en todas las versiones de Forms)",
     "The question already has this type, so nothing would change and these settings would not be applied. Change settings with forms_update_question." : "La pregunta ya tiene este tipo, así que nada cambiaría y esta configuración no se aplicaría. Cambia la configuración con forms_update_question.",
     "Configure a poll" : "Configurar una encuesta",
     "Change poll state" : "Cambiar el estado de la encuesta",

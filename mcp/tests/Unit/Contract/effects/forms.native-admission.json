@@ -24,7 +24,7 @@
             "policy-renewed-without-grant": {
                 "outcome": "refused before the native construction",
                 "message": "Form creation is not permitted for this user.",
-                "cause": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure: Form creation is not permitted for this user."
+                "cause": ""
             },
             "forms-unavailable": {
                 "outcome": "refused before the native construction",

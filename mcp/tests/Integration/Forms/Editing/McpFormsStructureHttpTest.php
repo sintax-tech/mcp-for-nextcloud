@@ -10,6 +10,7 @@ namespace OCA\Mcp\Tests\Integration\Forms\Editing;
 use OCA\Mcp\Tests\Integration\Support\ServiceSwitchFixture;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Modules\Forms\Integration\StructureCapabilities;
+use OCA\Mcp\Modules\Forms\FormsVersionProfiles;
 use OCA\Mcp\Tests\Integration\Forms\{FormsApiScene, FormsScene, FormsState};
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\{LoginFactory, McpClient};
@@ -55,7 +56,7 @@ final class McpFormsStructureHttpTest extends IntegrationTestCase {
 		$policy = Server::get(GrantPolicy::class);
 		try {
 			$policy->setGrant($uid, 'forms', 'edit', true);
-			if (!in_array(Server::get(IAppManager::class)->getAppVersion('forms'), StructureCapabilities::PROVEN, true)) {
+			if (FormsVersionProfiles::get((string)Server::get(IAppManager::class)->getAppVersion('forms')) === null) {
 				self::assertFalse(Server::get(StructureCapabilities::class)->supports(StructureCapabilities::KEY));
 				$before = FormsState::database();
 				$reply = $client->tool('forms_add_question', ['form_id' => FormsScene::read()['direct'], 'type' => 'dropdown', 'text' => 'Incompatible proof']);

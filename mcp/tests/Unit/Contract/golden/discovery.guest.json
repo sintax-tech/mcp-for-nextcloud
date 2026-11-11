@@ -1243,6 +1243,35 @@
                         }
                     },
                     {
+                        "name": "talk_list_unread",
+                        "title": "List unread Talk conversations",
+                        "description": "Lists only the Talk conversations of the authenticated user that have unread messages, up to 50 per page. A conversation the lobby bars is omitted and its unread count is not returned. The result is a snapshot: new messages may arrive before the next page, and nextCursor continues after the last conversation of this page. It changes no state: it does not mark anything as read, does not change lastReadMessage, lastPing, the session or notifications.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "limit": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 50,
+                                    "default": 50
+                                },
+                                "cursor": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 200
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "annotations": {
+                            "title": "List unread Talk conversations",
+                            "readOnlyHint": true,
+                            "destructiveHint": false,
+                            "idempotentHint": true,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
                         "name": "users_search",
                         "title": "Search people",
                         "description": "Searches the accounts of this Nextcloud by name, account ID or e-mail and returns their account IDs (uid), display names and, when available, e-mail; every row carries a type, \"user\" for an account. Use it whenever you are not sure of someone's account ID. Groups are not searched by default: to also match groups, pass include_groups: true, and the group rows come back with the type \"group\" and the group ID, which is what a share takes as group:<id>.",

@@ -60,6 +60,7 @@ final class ToolPresentationTest extends TestCase {
 		'deck_delete_card' => ['Delete Deck card', 'Excluir cartão do Deck'],
 		'deck_followup_cards' => ['Follow up on Deck tasks', 'Acompanhar tarefas do Deck'],
 		'talk_list_conversations' => ['List Talk conversations', 'Listar conversas do Talk'],
+		'talk_list_unread' => ['List unread Talk conversations', 'Listar conversas não lidas do Talk'],
 		'talk_read_messages' => ['Read Talk messages', 'Ler mensagens do Talk'],
 		'talk_reply' => ['Reply in Talk', 'Responder no Talk'],
 		'talk_attach_file' => ['Attach file in Talk', 'Anexar arquivo no Talk'],

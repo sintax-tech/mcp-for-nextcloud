@@ -124,6 +124,7 @@ final class NextcloudApiUsage {
 		'OCA\\Talk\\Participant::getAttendee' => [],
 		'OCA\\Talk\\Model\\Attendee::getParticipantType' => [],
 		'OCA\\Talk\\Model\\Attendee::getUnreadMessages' => [],
+		'OCA\\Talk\\Model\\Attendee::getLastReadMessage' => [],
 		'OCA\\Talk\\Model\\Attendee::isArchived' => [],
 		// Deck, resolved by class name in the Deck area classes.
 		'OCA\\Deck\\Service\\AssignmentService::assignUser' => ['cardId', 'userId'],

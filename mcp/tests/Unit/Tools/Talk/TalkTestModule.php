@@ -48,6 +48,7 @@ final class TalkTestModule {
 			\OCA\Mcp\Modules\Talk\Tools\MessageUser::class => new \OCA\Mcp\Modules\Talk\Tools\MessageUser(new \OCA\Mcp\Modules\Talk\Messaging\MessageUserHandler($arguments, $userConversations, $writer, $errors), new \OCA\Mcp\Modules\Talk\Messaging\MessageUserPreview($arguments, $userConversations, $preview, $errors)),
 			\OCA\Mcp\Modules\Talk\Tools\SendBatch::class => new \OCA\Mcp\Modules\Talk\Tools\SendBatch(new \OCA\Mcp\Modules\Talk\Batching\SendBatchHandler($arguments, $resolver, $writer, $logger, $errors), new \OCA\Mcp\Modules\Talk\Batching\SendBatchPreview($arguments, $resolver, $preview, $errors)),
 			\OCA\Mcp\Modules\Talk\Tools\CreateGroup::class => new \OCA\Mcp\Modules\Talk\Tools\CreateGroup(new \OCA\Mcp\Modules\Talk\Groups\CreateGroupHandler($arguments, $groups, $errors), new \OCA\Mcp\Modules\Talk\Groups\CreateGroupPreview($arguments, $userConversations, $preview, $errors)),
+			\OCA\Mcp\Modules\Talk\Tools\ListUnread::class => new \OCA\Mcp\Modules\Talk\Tools\ListUnread(new \OCA\Mcp\Modules\Talk\Reading\ListUnreadHandler(new \OCA\Mcp\Modules\Talk\Reading\UnreadConversations($talkServices, $resolver), $errors)),
 		];
 		return new TalkModule(new class($tools) implements \Psr\Container\ContainerInterface {
 			/** @param array<class-string, \OCA\Mcp\Mcp\Tools\Tool> $tools prebuilt real tools with original test collaborators */

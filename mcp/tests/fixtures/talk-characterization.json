@@ -269,6 +269,30 @@
                 "module": "talk",
                 "operation": "create",
                 "app": "spreed"
+            },
+            {
+                "name": "talk_list_unread",
+                "description": "Lists only the Talk conversations of the authenticated user that have unread messages, up to 50 per page. A conversation the lobby bars is omitted and its unread count is not returned. The result is a snapshot: new messages may arrive before the next page, and nextCursor continues after the last conversation of this page. It changes no state: it does not mark anything as read, does not change lastReadMessage, lastPing, the session or notifications.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 50,
+                            "default": 50
+                        },
+                        "cursor": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "module": "talk",
+                "operation": "read",
+                "app": "spreed"
             }
         ],
         "list": {
@@ -1932,6 +1956,30 @@
                 },
                 "module": "talk",
                 "operation": "create",
+                "app": "spreed"
+            },
+            {
+                "name": "talk_list_unread",
+                "description": "Lists only the Talk conversations of the authenticated user that have unread messages, up to 50 per page. A conversation the lobby bars is omitted and its unread count is not returned. The result is a snapshot: new messages may arrive before the next page, and nextCursor continues after the last conversation of this page. It changes no state: it does not mark anything as read, does not change lastReadMessage, lastPing, the session or notifications.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 50,
+                            "default": 50
+                        },
+                        "cursor": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "module": "talk",
+                "operation": "read",
                 "app": "spreed"
             }
         ],
@@ -3597,6 +3645,30 @@
                 "module": "talk",
                 "operation": "create",
                 "app": "spreed"
+            },
+            {
+                "name": "talk_list_unread",
+                "description": "Lists only the Talk conversations of the authenticated user that have unread messages, up to 50 per page. A conversation the lobby bars is omitted and its unread count is not returned. The result is a snapshot: new messages may arrive before the next page, and nextCursor continues after the last conversation of this page. It changes no state: it does not mark anything as read, does not change lastReadMessage, lastPing, the session or notifications.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 50,
+                            "default": 50
+                        },
+                        "cursor": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "module": "talk",
+                "operation": "read",
+                "app": "spreed"
             }
         ],
         "list": {
@@ -5260,6 +5332,30 @@
                 },
                 "module": "talk",
                 "operation": "create",
+                "app": "spreed"
+            },
+            {
+                "name": "talk_list_unread",
+                "description": "Lists only the Talk conversations of the authenticated user that have unread messages, up to 50 per page. A conversation the lobby bars is omitted and its unread count is not returned. The result is a snapshot: new messages may arrive before the next page, and nextCursor continues after the last conversation of this page. It changes no state: it does not mark anything as read, does not change lastReadMessage, lastPing, the session or notifications.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 50,
+                            "default": 50
+                        },
+                        "cursor": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "module": "talk",
+                "operation": "read",
                 "app": "spreed"
             }
         ],

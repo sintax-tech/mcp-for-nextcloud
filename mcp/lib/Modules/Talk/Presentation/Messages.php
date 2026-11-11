@@ -270,6 +270,15 @@ final class Messages {
 		return Translator::t('limit must be a number between 1 and 200');
 	}
 
+	/** Page size for talk_list_unread, between 1 and 50. */
+	public static function invalidPageLimit(): string {
+		return Translator::t('limit must be a number between 1 and 50');
+	}
+	/** Opaque cursor for talk_list_unread that this tool did not issue. */
+	public static function invalidCursor(): string {
+		return Translator::t('invalid cursor');
+	}
+
 	/**
 	 * The quoted message does not exist in this conversation.
 	 * @return string The message in the language of the current user.

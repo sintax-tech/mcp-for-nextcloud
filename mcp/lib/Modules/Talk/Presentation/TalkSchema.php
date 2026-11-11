@@ -12,7 +12,7 @@ use OCA\Mcp\Modules\Talk\Locating\UserConversationResolver;
 use OCA\Mcp\Modules\Talk\Writing\ConversationWriter;
 use stdClass;
 
-/** The unchanged common definition and repeated properties of Talk's eight published tools. */
+/** The common definition and repeated properties of the published Talk tools. */
 final class TalkSchema {
 	/** Static schema construction only. */
 	private function __construct() {

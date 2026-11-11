@@ -243,6 +243,8 @@ final class ToolsListContractTest extends TestCase {
 
 		$this->assertTrue($tools['talk_list_conversations']->annotations->readOnlyHint);
 		$this->assertTrue($tools['talk_read_messages']->annotations->readOnlyHint);
+		$this->assertTrue($tools['talk_list_unread']->annotations->readOnlyHint);
+		$this->assertFalse($tools['talk_list_unread']->annotations->destructiveHint);
 	}
 
 	/**

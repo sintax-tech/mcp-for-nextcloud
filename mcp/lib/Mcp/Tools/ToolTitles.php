@@ -111,6 +111,7 @@ final class ToolTitles {
 			'deck_set_card_archived' => Translator::t('Change Deck card archive state'),
 			// Talk
 			'talk_list_conversations' => Translator::t('List Talk conversations'),
+			'talk_list_unread' => Translator::t('List unread Talk conversations'),
 			'talk_read_messages' => Translator::t('Read Talk messages'),
 			'talk_reply' => Translator::t('Reply in Talk'),
 			'talk_attach_file' => Translator::t('Attach file in Talk'),

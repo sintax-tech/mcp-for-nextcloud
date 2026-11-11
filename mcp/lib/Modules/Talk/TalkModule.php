@@ -20,6 +20,7 @@ final class TalkModule extends CatalogModule {
 	public const TOOL_MESSAGE_USER = 'talk_message_user';
 	public const TOOL_SEND_BATCH = 'talk_send_batch';
 	public const TOOL_CREATE_GROUP = 'talk_create_group';
+	public const TOOL_LIST_UNREAD = 'talk_list_unread';
 
 	/** @return list<class-string<\OCA\Mcp\Mcp\Tools\Tool>> unchanged ordered tools */
 	public static function catalog(): array {

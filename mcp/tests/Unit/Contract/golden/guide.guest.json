@@ -7,7 +7,7 @@
             "content": [
                 {
                     "type": "text",
-                    "text": "This guide is in English: relay it to the user in their own language.\n\nWrite confirmation plans arrive as readable text in the user’s language, with the complete plan in structuredContent. Show that text to the user exactly as received.\n\n# Tool guide\n\nGrants and disabled apps are already applied: what is missing from this list you cannot call. The modules available to you are files, talk, people, logs.\n\n- **Files** (`files`): 21 tools — List files, Search files, View folder tree, Create folder, Copy file, Move file, Move files in bulk, Undo bulk operation, Read file, Edit file, Replace part of a file, Download file for local editing, View image, View several images, Search images, List shares, Share file or folder, Stop sharing file or folder, Upload new file, Create text file, Delete file or folder.\n- **Talk** (`talk`): 8 tools — List Talk conversations, Read Talk messages, Reply in Talk, Attach file in Talk, Quote file in Talk, Direct message in Talk, Send batch in Talk, Create group in Talk.\n- **People** (`people`): 1 tools — Search people.\n- **Server log** (`logs`): 2 tools — Read server log, Analyze server log.\n\nCall this tool again with `module` set to one of those names to get every parameter and every behaviour note of that module, or with `tool` to detail a single tool."
+                    "text": "This guide is in English: relay it to the user in their own language.\n\nWrite confirmation plans arrive as readable text in the user’s language, with the complete plan in structuredContent. Show that text to the user exactly as received.\n\n# Tool guide\n\nGrants and disabled apps are already applied: what is missing from this list you cannot call. The modules available to you are files, talk, people, logs.\n\n- **Files** (`files`): 21 tools — List files, Search files, View folder tree, Create folder, Copy file, Move file, Move files in bulk, Undo bulk operation, Read file, Edit file, Replace part of a file, Download file for local editing, View image, View several images, Search images, List shares, Share file or folder, Stop sharing file or folder, Upload new file, Create text file, Delete file or folder.\n- **Talk** (`talk`): 9 tools — List Talk conversations, Read Talk messages, Reply in Talk, Attach file in Talk, Quote file in Talk, Direct message in Talk, Send batch in Talk, Create group in Talk, List unread Talk conversations.\n- **People** (`people`): 1 tools — Search people.\n- **Server log** (`logs`): 2 tools — Read server log, Analyze server log.\n\nCall this tool again with `module` set to one of those names to get every parameter and every behaviour note of that module, or with `tool` to detail a single tool."
                 }
             ],
             "structuredContent": {
@@ -243,7 +243,7 @@
                     {
                         "module": "talk",
                         "title": "Talk",
-                        "count": 8,
+                        "count": 9,
                         "notes": [],
                         "tools": [
                             {
@@ -321,6 +321,14 @@
                                 "confirmation": [
                                     "confirm"
                                 ]
+                            },
+                            {
+                                "name": "talk_list_unread",
+                                "title": "List unread Talk conversations",
+                                "description": "Lists only the Talk conversations of the authenticated user that have unread messages, up to 50 per page. A conversation the lobby bars is omitted and its unread count is not returned. The result is a snapshot: new messages may arrive before the next page, and nextCursor continues after the last conversation of this page. It changes no state: it does not mark anything as read, does not change lastReadMessage, lastPing, the session or notifications.",
+                                "read_only": true,
+                                "destructive": false,
+                                "confirmation": []
                             }
                         ]
                     },

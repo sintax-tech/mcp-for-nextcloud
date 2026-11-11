@@ -8,7 +8,9 @@
             "restore",
             "share",
             "link",
-            "delete"
+            "delete",
+            "tags",
+            "comments"
         ],
         "notes": [
             "read",
@@ -42,7 +44,8 @@
             "edit",
             "move",
             "delete",
-            "transfer"
+            "transfer",
+            "availability"
         ],
         "people": [
             "read"
@@ -97,9 +100,33 @@
             "move",
             "collective.create",
             "members"
+        ],
+        "activity": [
+            "read"
+        ],
+        "notifications": [
+            "read",
+            "dismiss"
+        ],
+        "availability": [
+            "read",
+            "absence"
+        ],
+        "status": [
+            "read",
+            "edit"
+        ],
+        "routines": [
+            "prepare",
+            "meeting",
+            "mailtask"
         ]
     },
     "DENIED_READS": [
-        "logs"
+        "logs",
+        "activity",
+        "notifications",
+        "availability",
+        "status"
     ]
 }

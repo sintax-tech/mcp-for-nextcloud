@@ -18,6 +18,12 @@ admin/access/levels/mail.js
 admin/access/levels/tables.js
 admin/access/levels/forms.js
 admin/access/levels/collectives.js
+admin/access/levels/activity.js
+admin/access/levels/notifications.js
+admin/access/levels/availability.js
+admin/access/levels/status.js
+admin/access/levels/routines.js
+admin/access/routine-grants.js
 admin/admin-levels.js
 admin/matrix/session.js
 admin/matrix/labels.js

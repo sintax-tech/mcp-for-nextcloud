@@ -15,18 +15,18 @@ final class GrantCatalog {
 		// like every operation but read, both start denied. 'share' shares an own file with a person or a
 		// group and 'link' creates a public link; they are separate so an admin can allow one without the
 		// other, and removing a share asks for the operation of its type. Listing shares stays a 'read'.
-		'files' => ['read', 'edit', 'create', 'move', 'restore', 'share', 'link', 'delete'],
+		'files' => ['read', 'edit', 'create', 'move', 'restore', 'share', 'link', 'delete', 'tags', 'comments'],
 		'notes' => ['read', 'create', 'edit', 'move', 'delete'],
 		'deck' => ['read', 'create', 'edit', 'move', 'delete'],
 		'contacts' => ['read', 'create', 'edit', 'delete'],
 		'tasks' => ['read', 'create', 'edit', 'delete'],
-		'calendar' => ['read', 'create', 'edit', 'move', 'delete', 'transfer'],
+		'calendar' => ['read', 'create', 'edit', 'move', 'delete', 'transfer', 'availability'],
 		// 'create' is what talk_create_group asks for: opening a conversation invites people, so it is denied by
 		// default like every other operation that is not a read.
 		// Account search; read only, so the model can find who to invite or message.
 		'people' => ['read'],
 		'talk' => ['read', 'reply', 'attach', 'quote', 'create'],
-		// Reading the server log; read only, and the one read that starts denied (see DENIED_READS).
+		// Reading the server log; read only, and a read that starts denied (see DENIED_READS).
 		'logs' => ['read'],
 		// Nextcloud Mail: 'read' lists accounts and cached folders; 'messages' lists, searches and reads the messages
 		// themselves; 'attachments' reads the text of one attachment; 'flags' marks a message read/unread and
@@ -45,6 +45,12 @@ final class GrantCatalog {
 		// one literal operation, not 'create' of pages: it creates a new collective with its own new team, and starts denied.
 		// 'members' lists the members of a collective and adds, removes or changes the level of one; it starts denied.
 		'collectives' => ['read', 'create', 'edit', 'move', 'collective.create', 'members'],
+		// Sensitive routine reads and all new writes are opt-in (1.4.0).
+		'activity' => ['read'],
+		'notifications' => ['read', 'dismiss'],
+		'availability' => ['read', 'absence'],
+		'status' => ['read', 'edit'],
+		'routines' => ['prepare', 'meeting', 'mailtask'],
 	];
 
 	/** Prevents instantiation of the immutable catalog. */

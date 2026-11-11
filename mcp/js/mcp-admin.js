@@ -643,14 +643,14 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Access levels of Files: Read, then Edit adds editing, creating, moving and restoring, then Full adds sharing, links and deleting.
+ * Access levels of Files: Read, then Edit adds editing, creating, moving and restoring, then Full adds sharing, links, deleting, tags and comments.
  * Registered in window.OCA.Mcp.Admin.levelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
  */
 (function (root) {
 	'use strict'
 
 	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
-	catalog.tiers.files = [['read'], ['edit', 'create', 'move', 'restore'], ['share', 'link', 'delete']]
+	catalog.tiers.files = [['read'], ['edit', 'create', 'move', 'restore'], ['share', 'link', 'delete', 'tags', 'comments']]
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
 /* admin/access/levels/notes.js */
@@ -691,14 +691,14 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Access levels of Calendar: Read, then Edit adds creating, editing and moving, then Full adds deleting and transferring.
+ * Access levels of Calendar: Read, then Edit adds creating, editing and moving, then Full adds deleting, transferring and availability checks.
  * Registered in window.OCA.Mcp.Admin.levelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
  */
 (function (root) {
 	'use strict'
 
 	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
-	catalog.tiers.calendar = [['read'], ['create', 'edit', 'move'], ['delete', 'transfer']]
+	catalog.tiers.calendar = [['read'], ['create', 'edit', 'move'], ['delete', 'transfer', 'availability']]
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
 /* admin/access/levels/contacts.js */
@@ -901,6 +901,131 @@
 	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 	catalog.tiers.collectives = [['read'], ['create', 'edit', 'move', 'collective.create', 'members']]
 })(typeof window !== 'undefined' ? window : globalThis)
+;
+/* admin/access/levels/activity.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** Explicit opt-in access levels; the highest level includes every operation of this module. */
+(function (root) {
+	'use strict'
+
+	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
+	catalog.tiers.activity = [['read']]
+})(typeof window !== 'undefined' ? window : globalThis)
+;
+/* admin/access/levels/notifications.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** Explicit opt-in access levels; the highest level includes every operation of this module. */
+(function (root) {
+	'use strict'
+
+	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
+	catalog.tiers.notifications = [['read'], ['dismiss']]
+})(typeof window !== 'undefined' ? window : globalThis)
+;
+/* admin/access/levels/availability.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** Explicit opt-in access levels; the highest level includes every operation of this module. */
+(function (root) {
+	'use strict'
+
+	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
+	catalog.tiers.availability = [['read'], ['absence']]
+})(typeof window !== 'undefined' ? window : globalThis)
+;
+/* admin/access/levels/status.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** Explicit opt-in access levels; the highest level includes every operation of this module. */
+(function (root) {
+	'use strict'
+
+	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
+	catalog.tiers.status = [['read'], ['edit']]
+})(typeof window !== 'undefined' ? window : globalThis)
+;
+/* admin/access/levels/routines.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** Explicit opt-in access levels; the highest level includes every operation of this module. */
+(function (root) {
+	'use strict'
+
+	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
+	catalog.tiers.routines = [['prepare'], ['meeting', 'mailtask']]
+})(typeof window !== 'undefined' ? window : globalThis)
+;
+/* admin/access/routine-grants.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** Shared grant wording for routine features; no rendering or permission effects. */
+(function (admin) {
+	'use strict'
+
+	/** @return {Object<string,string>} Translated module names. */
+	function moduleLabels() {
+		return {
+			"activity": t('mcp', 'Activity'),
+			"notifications": t('mcp', 'Notifications'),
+			"availability": t('mcp', 'Absence'),
+			"status": t('mcp', 'User status'),
+			"routines": t('mcp', 'Routines')
+		}
+	}
+
+	/** @return {Object<string,string>} Translated operation names. */
+	function operationLabels() {
+		return {
+			"availability": t('mcp', 'check availability'),
+			"dismiss": t('mcp', 'dismiss notifications'),
+			"absence": t('mcp', 'set absence'),
+			"tags": t('mcp', 'manage tags'),
+			"comments": t('mcp', 'add comments'),
+			"prepare": t('mcp', 'prepare meetings'),
+			"meeting": t('mcp', 'create meetings'),
+			"mailtask": t('mcp', 'create tasks from email')
+		}
+	}
+
+	/**
+	 * @param {string} module Grant module.
+	 * @param {string} operation Grant operation.
+	 * @return {string} Specific accessible description, or empty for an existing grant.
+	 */
+	function operationHint(module, operation) {
+		return {
+			"calendar.availability": t('mcp', 'Check local free/busy availability without reading event details; starts off'),
+			"activity.read": t('mcp', 'Read own activity events with period, app and folder filters; starts off'),
+			"notifications.read": t('mcp', 'Read own notifications; starts off'),
+			"notifications.dismiss": t('mcp', 'Dismiss own notifications; starts off'),
+			"availability.read": t('mcp', 'Read own current or planned absence; starts off'),
+			"availability.absence": t('mcp', 'Create or update own absence; starts off'),
+			"status.read": t('mcp', 'Read own configured status and message; starts off'),
+			"status.edit": t('mcp', 'Change own status and message; starts off'),
+			"files.tags": t('mcp', 'Assign or unassign existing file tags; starts off'),
+			"files.comments": t('mcp', 'Add comments to accessible files; starts off'),
+			"routines.prepare": t('mcp', 'Prepare a meeting using permitted sources; starts off'),
+			"routines.meeting": t('mcp', 'Create a private meeting with a Talk room and agenda; starts off'),
+			"routines.mailtask": t('mcp', 'Create a task from email and save its attachment privately; starts off')
+		}[module + '.' + operation] || ''
+	}
+
+	admin.routineGrants = { moduleLabels, operationLabels, operationHint }
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
 ;
 /* admin/admin-levels.js */
 /*
@@ -1151,6 +1276,7 @@
 		 * @return {Object<string, string>} module labels */
 		function moduleLabels() {
 			return {
+				...window.OCA.Mcp.Admin.routineGrants?.moduleLabels(),
 				files: t('mcp', 'Files'),
 				notes: t('mcp', 'Notes'),
 				deck: t('mcp', 'Deck'),
@@ -1171,6 +1297,7 @@
 		function operationLabels() {
 			return {
 				...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(),
+				...window.OCA.Mcp.Admin.routineGrants?.operationLabels(),
 				read: t('mcp', 'read'),
 				schema: t('mcp', 'schema'), results: t('mcp', 'results'),
 				'collective.create': t('mcp', 'create collectives'),
@@ -1201,6 +1328,8 @@
 		 * @return {string} description
 		 */
 		function operationHint(module, operation) {
+			const routineHint = window.OCA.Mcp.Admin.routineGrants?.operationHint(module, operation)
+			if (routineHint) return routineHint
 			if (module === 'talk' && operation === 'create') {
 				return t('mcp', 'Open new conversations, which invites people')
 			}
@@ -6518,7 +6647,7 @@
 		 * @return {string}
 		 */
 		function moduleName(module) {
-			return { files: t('mcp', 'Files'), notes: t('mcp', 'Notes'), deck: t('mcp', 'Deck'), calendar: t('mcp', 'Calendar'), contacts: t('mcp', 'Contacts'), tasks: t('mcp', 'Tasks'), talk: t('mcp', 'Talk'), people: t('mcp', 'People'), logs: t('mcp', 'Server log'), mail: t('mcp', 'Mail'), tables: t('mcp', 'Tables'), forms: t('mcp', 'Forms'), polls: t('mcp', 'Polls'), collectives: t('mcp', 'Collectives') }[module] || module
+			return { ...window.OCA.Mcp.Admin.routineGrants?.moduleLabels(), files: t('mcp', 'Files'), notes: t('mcp', 'Notes'), deck: t('mcp', 'Deck'), calendar: t('mcp', 'Calendar'), contacts: t('mcp', 'Contacts'), tasks: t('mcp', 'Tasks'), talk: t('mcp', 'Talk'), people: t('mcp', 'People'), logs: t('mcp', 'Server log'), mail: t('mcp', 'Mail'), tables: t('mcp', 'Tables'), forms: t('mcp', 'Forms'), polls: t('mcp', 'Polls'), collectives: t('mcp', 'Collectives') }[module] || module
 		}
 
 		/** Resolve the translated operation label, falling back to its catalog ID.
@@ -6526,7 +6655,7 @@
 		 * @return {string}
 		 */
 		function operationName(operation) {
-			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), schema: t('mcp', 'schema'), 'collective.create': t('mcp', 'create collectives'), members: t('mcp', 'manage members'), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
+			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), ...window.OCA.Mcp.Admin.routineGrants?.operationLabels(), schema: t('mcp', 'schema'), 'collective.create': t('mcp', 'create collectives'), members: t('mcp', 'manage members'), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
 		}
 
 		/** Flatten and sort granted module and operation pairs for stable draft comparison.
@@ -8395,7 +8524,7 @@
 		 * @return {string}
 		 */
 		function moduleName(module) {
-			return { files: t('mcp', 'Files'), notes: t('mcp', 'Notes'), deck: t('mcp', 'Deck'), calendar: t('mcp', 'Calendar'), contacts: t('mcp', 'Contacts'), tasks: t('mcp', 'Tasks'), talk: t('mcp', 'Talk'), people: t('mcp', 'People'), logs: t('mcp', 'Server log'), mail: t('mcp', 'Mail'), tables: t('mcp', 'Tables'), forms: t('mcp', 'Forms'), polls: t('mcp', 'Polls'), collectives: t('mcp', 'Collectives') }[module] || module
+			return { ...window.OCA.Mcp.Admin.routineGrants?.moduleLabels(), files: t('mcp', 'Files'), notes: t('mcp', 'Notes'), deck: t('mcp', 'Deck'), calendar: t('mcp', 'Calendar'), contacts: t('mcp', 'Contacts'), tasks: t('mcp', 'Tasks'), talk: t('mcp', 'Talk'), people: t('mcp', 'People'), logs: t('mcp', 'Server log'), mail: t('mcp', 'Mail'), tables: t('mcp', 'Tables'), forms: t('mcp', 'Forms'), polls: t('mcp', 'Polls'), collectives: t('mcp', 'Collectives') }[module] || module
 		}
 
 		/** Resolve the translated operation label, falling back to its catalog ID.
@@ -8403,7 +8532,7 @@
 		 * @return {string}
 		 */
 		function operationName(operation) {
-			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), schema: t('mcp', 'schema'), 'collective.create': t('mcp', 'create collectives'), members: t('mcp', 'manage members'), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
+			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), ...window.OCA.Mcp.Admin.routineGrants?.operationLabels(), schema: t('mcp', 'schema'), 'collective.create': t('mcp', 'create collectives'), members: t('mcp', 'manage members'), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
 		}
 
 		/** The first check that blocks, by the code of the effective access (EffectiveResult::blockingGate).

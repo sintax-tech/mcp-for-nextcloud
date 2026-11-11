@@ -19,6 +19,7 @@
 		 * @return {Object<string, string>} module labels */
 		function moduleLabels() {
 			return {
+				...window.OCA.Mcp.Admin.routineGrants?.moduleLabels(),
 				files: t('mcp', 'Files'),
 				notes: t('mcp', 'Notes'),
 				deck: t('mcp', 'Deck'),
@@ -39,6 +40,7 @@
 		function operationLabels() {
 			return {
 				...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(),
+				...window.OCA.Mcp.Admin.routineGrants?.operationLabels(),
 				read: t('mcp', 'read'),
 				schema: t('mcp', 'schema'), results: t('mcp', 'results'),
 				'collective.create': t('mcp', 'create collectives'),
@@ -69,6 +71,8 @@
 		 * @return {string} description
 		 */
 		function operationHint(module, operation) {
+			const routineHint = window.OCA.Mcp.Admin.routineGrants?.operationHint(module, operation)
+			if (routineHint) return routineHint
 			if (module === 'talk' && operation === 'create') {
 				return t('mcp', 'Open new conversations, which invites people')
 			}

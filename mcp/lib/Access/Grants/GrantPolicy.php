@@ -36,10 +36,10 @@ use OCP\IConfig;
  */
 class GrantPolicy implements ScopeReader {
 	/**
-	 * Modules whose read starts denied like a write. The server log shows the file names, URLs and accounts of every
-	 * user, so nobody may read it by omission: an administrator turns it on user by user.
+	 * Modules whose sensitive read starts denied like a write. Logs and the new routine features
+	 * require an explicit administrator grant instead of permitting access by omission.
 	 */
-	public const DENIED_READS = ['logs'];
+	public const DENIED_READS = ['logs', 'activity', 'notifications', 'availability', 'status'];
 
 	/** App id under which every value of this policy is stored. */
 	public const APP = 'mcp';

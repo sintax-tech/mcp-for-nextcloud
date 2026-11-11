@@ -21,7 +21,7 @@ class PollsTierCoverage {
 			const listed = levels.TIERS[module].flat()
 			assert.deepEqual([...listed].sort(), [...operations].sort(), module)
 			assert.equal(new Set(listed).size, listed.length, module + ' has no operation twice')
-			assert.deepEqual(JSON.parse(JSON.stringify(levels.TIERS[module][0])), ['read'], module + ' starts with Read')
+			assert.deepEqual(JSON.parse(JSON.stringify(levels.TIERS[module][0])), module === 'routines' ? ['prepare'] : ['read'], module + ' starts with its read tier')
 		}
 	}
 }

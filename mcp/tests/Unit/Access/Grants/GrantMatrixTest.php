@@ -28,7 +28,7 @@ final class GrantMatrixTest extends TestCase {
 	}
 
 	public function testCalendarCatalogOffersEveryOperationWithoutAnySelftest(): void {
-		self::assertSame(['read', 'create', 'edit', 'move', 'delete', 'transfer'], $this->fx->matrix()->page('', '', 1)['catalog']['calendar']);
+		self::assertSame(['read', 'create', 'edit', 'move', 'delete', 'transfer', 'availability'], $this->fx->matrix()->page('', '', 1)['catalog']['calendar']);
 	}
 
 	public function testCalendarWritesAreDeniedByDefault(): void {
@@ -106,8 +106,8 @@ final class GrantMatrixTest extends TestCase {
 
 	public function testCatalogAppsAndService(): void {
 		$page = $this->fx->matrix()->page('', '', 1);
-		$this->assertSame(['files' => GrantCatalog::CATALOG['files'], 'notes' => GrantCatalog::CATALOG['notes'], 'calendar' => GrantCatalog::CATALOG['calendar'], 'people' => GrantCatalog::CATALOG['people'], 'logs' => ['read']], $page['catalog']);
-		$this->assertSame(\OCA\Mcp\Tests\Unit\Tools\Forms\FormsCatalogExpectation::apps(['files' => true, 'notes' => true, 'deck' => false, 'calendar' => true, 'talk' => false, 'contacts' => false, 'tasks' => false, 'people' => true, 'logs' => true, 'mail' => false, 'tables' => false]) + ['polls' => false, 'collectives' => false], $page['appsEnabled']);
+		$this->assertSame(['files' => GrantCatalog::CATALOG['files'], 'notes' => GrantCatalog::CATALOG['notes'], 'calendar' => GrantCatalog::CATALOG['calendar'], 'people' => GrantCatalog::CATALOG['people'], 'logs' => ['read'], 'routines' => ['prepare', 'meeting', 'mailtask']], $page['catalog']);
+		$this->assertSame(\OCA\Mcp\Tests\Unit\Tools\Forms\FormsCatalogExpectation::apps(['files' => true, 'notes' => true, 'deck' => false, 'calendar' => true, 'talk' => false, 'contacts' => false, 'tasks' => false, 'people' => true, 'logs' => true, 'mail' => false, 'tables' => false]) + ['polls' => false, 'collectives' => false, 'activity' => false, 'notifications' => false, 'availability' => false, 'status' => false, 'routines' => true], $page['appsEnabled']);
 		$this->assertFalse($page['serviceEnabled']);
 	}
 
@@ -117,7 +117,7 @@ final class GrantMatrixTest extends TestCase {
 	 */
 	public function testTheNewFilesRestoreColumnArrivesWithTheCatalog(): void {
 		$page = $this->fx->matrix()->page('', '', 1);
-		$this->assertSame(['read', 'edit', 'create', 'move', 'restore', 'share', 'link', 'delete'], $page['catalog']['files']);
+		$this->assertSame(['read', 'edit', 'create', 'move', 'restore', 'share', 'link', 'delete', 'tags', 'comments'], $page['catalog']['files']);
 		$this->assertNotSame([], $page['users']);
 		foreach ($page['users'] as $user) {
 			foreach (['restore', 'create', 'move', 'share', 'link'] as $operation) {
@@ -154,8 +154,8 @@ final class GrantMatrixTest extends TestCase {
 		$page = $this->fx->matrix()->page('Bruno', '', 1);
 
 		// People and logs come with the core, so they stay whatever optional app is missing.
-		$this->assertSame(['files' => GrantCatalog::CATALOG['files'], 'people' => GrantCatalog::CATALOG['people'], 'logs' => GrantCatalog::CATALOG['logs']], $page['catalog']);
-		$this->assertSame(\OCA\Mcp\Tests\Unit\Tools\Forms\FormsCatalogExpectation::apps(['files' => true, 'notes' => false, 'deck' => false, 'calendar' => false, 'talk' => false, 'contacts' => false, 'tasks' => false, 'people' => true, 'logs' => true, 'mail' => false, 'tables' => false]) + ['polls' => false, 'collectives' => false], $page['appsEnabled']);
+		$this->assertSame(['files' => GrantCatalog::CATALOG['files'], 'people' => GrantCatalog::CATALOG['people'], 'logs' => GrantCatalog::CATALOG['logs'], 'routines' => ['prepare', 'meeting', 'mailtask']], $page['catalog']);
+		$this->assertSame(\OCA\Mcp\Tests\Unit\Tools\Forms\FormsCatalogExpectation::apps(['files' => true, 'notes' => false, 'deck' => false, 'calendar' => false, 'talk' => false, 'contacts' => false, 'tasks' => false, 'people' => true, 'logs' => true, 'mail' => false, 'tables' => false]) + ['polls' => false, 'collectives' => false, 'activity' => false, 'notifications' => false, 'availability' => false, 'status' => false, 'routines' => true], $page['appsEnabled']);
 		$this->assertTrue($page['users'][0]['grants']['notes']['edit']);
 	}
 

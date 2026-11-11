@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Access levels of Calendar: Read, then Edit adds creating, editing and moving, then Full adds deleting and transferring.
+ * Access levels of Calendar: Read, then Edit adds creating, editing and moving, then Full adds deleting, transferring and availability checks.
  * Registered in window.OCA.Mcp.Admin.levelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
  */
 (function (root) {
 	'use strict'
 
 	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
-	catalog.tiers.calendar = [['read'], ['create', 'edit', 'move'], ['delete', 'transfer']]
+	catalog.tiers.calendar = [['read'], ['create', 'edit', 'move'], ['delete', 'transfer', 'availability']]
 })(typeof window !== 'undefined' ? window : globalThis)

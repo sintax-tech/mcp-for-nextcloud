@@ -74,7 +74,12 @@
                         "tables": false,
                         "forms": false,
                         "polls": false,
-                        "collectives": false
+                        "collectives": false,
+                        "activity": false,
+                        "notifications": false,
+                        "availability": false,
+                        "status": false,
+                        "routines": true
                     },
                     "eligible": true,
                     "connected": true,
@@ -87,7 +92,9 @@
                             "restore": false,
                             "share": false,
                             "link": false,
-                            "delete": false
+                            "delete": false,
+                            "tags": false,
+                            "comments": false
                         },
                         "notes": {
                             "read": true,
@@ -121,7 +128,8 @@
                             "edit": false,
                             "move": false,
                             "delete": false,
-                            "transfer": false
+                            "transfer": false,
+                            "availability": false
                         },
                         "people": {
                             "read": true
@@ -176,6 +184,26 @@
                             "move": false,
                             "collective.create": false,
                             "members": false
+                        },
+                        "activity": {
+                            "read": false
+                        },
+                        "notifications": {
+                            "read": false,
+                            "dismiss": false
+                        },
+                        "availability": {
+                            "read": false,
+                            "absence": false
+                        },
+                        "status": {
+                            "read": false,
+                            "edit": false
+                        },
+                        "routines": {
+                            "prepare": false,
+                            "meeting": false,
+                            "mailtask": false
                         }
                     },
                     "origins": {
@@ -214,6 +242,14 @@
                                     "groupIds": []
                                 },
                                 "delete": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "tags": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "comments": {
                                     "source": "default",
                                     "groupIds": []
                                 }
@@ -320,6 +356,10 @@
                                     "groupIds": []
                                 },
                                 "transfer": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "availability": {
                                     "source": "default",
                                     "groupIds": []
                                 }
@@ -488,6 +528,56 @@
                                     "groupIds": []
                                 },
                                 "members": {
+                                    "source": "default",
+                                    "groupIds": []
+                                }
+                            },
+                            "activity": {
+                                "read": {
+                                    "source": "default",
+                                    "groupIds": []
+                                }
+                            },
+                            "notifications": {
+                                "read": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "dismiss": {
+                                    "source": "default",
+                                    "groupIds": []
+                                }
+                            },
+                            "availability": {
+                                "read": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "absence": {
+                                    "source": "default",
+                                    "groupIds": []
+                                }
+                            },
+                            "status": {
+                                "read": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "edit": {
+                                    "source": "default",
+                                    "groupIds": []
+                                }
+                            },
+                            "routines": {
+                                "prepare": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "meeting": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "mailtask": {
                                     "source": "default",
                                     "groupIds": []
                                 }
@@ -620,7 +710,12 @@
                         "tables": false,
                         "forms": false,
                         "polls": false,
-                        "collectives": false
+                        "collectives": false,
+                        "activity": false,
+                        "notifications": false,
+                        "availability": false,
+                        "status": false,
+                        "routines": true
                     },
                     "eligible": true,
                     "connected": true,
@@ -633,7 +728,9 @@
                             "restore": false,
                             "share": false,
                             "link": false,
-                            "delete": false
+                            "delete": false,
+                            "tags": false,
+                            "comments": false
                         },
                         "notes": {
                             "read": true,
@@ -667,7 +764,8 @@
                             "edit": false,
                             "move": false,
                             "delete": false,
-                            "transfer": false
+                            "transfer": false,
+                            "availability": false
                         },
                         "people": {
                             "read": true
@@ -722,6 +820,26 @@
                             "move": false,
                             "collective.create": false,
                             "members": false
+                        },
+                        "activity": {
+                            "read": false
+                        },
+                        "notifications": {
+                            "read": false,
+                            "dismiss": false
+                        },
+                        "availability": {
+                            "read": false,
+                            "absence": false
+                        },
+                        "status": {
+                            "read": false,
+                            "edit": false
+                        },
+                        "routines": {
+                            "prepare": false,
+                            "meeting": false,
+                            "mailtask": false
                         }
                     },
                     "origins": {
@@ -760,6 +878,14 @@
                                     "groupIds": []
                                 },
                                 "delete": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "tags": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "comments": {
                                     "source": "default",
                                     "groupIds": []
                                 }
@@ -866,6 +992,10 @@
                                     "groupIds": []
                                 },
                                 "transfer": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "availability": {
                                     "source": "default",
                                     "groupIds": []
                                 }
@@ -1034,6 +1164,56 @@
                                     "groupIds": []
                                 },
                                 "members": {
+                                    "source": "default",
+                                    "groupIds": []
+                                }
+                            },
+                            "activity": {
+                                "read": {
+                                    "source": "default",
+                                    "groupIds": []
+                                }
+                            },
+                            "notifications": {
+                                "read": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "dismiss": {
+                                    "source": "default",
+                                    "groupIds": []
+                                }
+                            },
+                            "availability": {
+                                "read": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "absence": {
+                                    "source": "default",
+                                    "groupIds": []
+                                }
+                            },
+                            "status": {
+                                "read": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "edit": {
+                                    "source": "default",
+                                    "groupIds": []
+                                }
+                            },
+                            "routines": {
+                                "prepare": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "meeting": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "mailtask": {
                                     "source": "default",
                                     "groupIds": []
                                 }
@@ -1869,7 +2049,12 @@
                                     "tables": false,
                                     "forms": false,
                                     "polls": false,
-                                    "collectives": false
+                                    "collectives": false,
+                                    "activity": false,
+                                    "notifications": false,
+                                    "availability": false,
+                                    "status": false,
+                                    "routines": true
                                 },
                                 "eligible": true,
                                 "connected": true,
@@ -1882,7 +2067,9 @@
                                         "restore": false,
                                         "share": false,
                                         "link": false,
-                                        "delete": false
+                                        "delete": false,
+                                        "tags": false,
+                                        "comments": false
                                     },
                                     "notes": {
                                         "read": true,
@@ -1916,7 +2103,8 @@
                                         "edit": false,
                                         "move": false,
                                         "delete": false,
-                                        "transfer": false
+                                        "transfer": false,
+                                        "availability": false
                                     },
                                     "people": {
                                         "read": true
@@ -1971,6 +2159,26 @@
                                         "move": false,
                                         "collective.create": false,
                                         "members": false
+                                    },
+                                    "activity": {
+                                        "read": false
+                                    },
+                                    "notifications": {
+                                        "read": false,
+                                        "dismiss": false
+                                    },
+                                    "availability": {
+                                        "read": false,
+                                        "absence": false
+                                    },
+                                    "status": {
+                                        "read": false,
+                                        "edit": false
+                                    },
+                                    "routines": {
+                                        "prepare": false,
+                                        "meeting": false,
+                                        "mailtask": false
                                     }
                                 },
                                 "origins": {
@@ -2009,6 +2217,14 @@
                                                 "groupIds": []
                                             },
                                             "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "tags": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "comments": {
                                                 "source": "default",
                                                 "groupIds": []
                                             }
@@ -2115,6 +2331,10 @@
                                                 "groupIds": []
                                             },
                                             "transfer": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "availability": {
                                                 "source": "default",
                                                 "groupIds": []
                                             }
@@ -2283,6 +2503,56 @@
                                                 "groupIds": []
                                             },
                                             "members": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "activity": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "notifications": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "dismiss": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "availability": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "absence": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "status": {
+                                            "read": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "edit": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            }
+                                        },
+                                        "routines": {
+                                            "prepare": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "meeting": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "mailtask": {
                                                 "source": "default",
                                                 "groupIds": []
                                             }
@@ -2717,7 +2987,12 @@
                         "tables": false,
                         "forms": false,
                         "polls": false,
-                        "collectives": false
+                        "collectives": false,
+                        "activity": false,
+                        "notifications": false,
+                        "availability": false,
+                        "status": false,
+                        "routines": true
                     },
                     "eligible": false,
                     "connected": true,
@@ -2730,7 +3005,9 @@
                             "restore": false,
                             "share": false,
                             "link": false,
-                            "delete": false
+                            "delete": false,
+                            "tags": false,
+                            "comments": false
                         },
                         "notes": {
                             "read": true,
@@ -2764,7 +3041,8 @@
                             "edit": false,
                             "move": false,
                             "delete": false,
-                            "transfer": false
+                            "transfer": false,
+                            "availability": false
                         },
                         "people": {
                             "read": true
@@ -2819,6 +3097,26 @@
                             "move": false,
                             "collective.create": false,
                             "members": false
+                        },
+                        "activity": {
+                            "read": false
+                        },
+                        "notifications": {
+                            "read": false,
+                            "dismiss": false
+                        },
+                        "availability": {
+                            "read": false,
+                            "absence": false
+                        },
+                        "status": {
+                            "read": false,
+                            "edit": false
+                        },
+                        "routines": {
+                            "prepare": false,
+                            "meeting": false,
+                            "mailtask": false
                         }
                     },
                     "origins": {
@@ -2857,6 +3155,14 @@
                                     "groupIds": []
                                 },
                                 "delete": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "tags": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "comments": {
                                     "source": "default",
                                     "groupIds": []
                                 }
@@ -2963,6 +3269,10 @@
                                     "groupIds": []
                                 },
                                 "transfer": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "availability": {
                                     "source": "default",
                                     "groupIds": []
                                 }
@@ -3131,6 +3441,56 @@
                                     "groupIds": []
                                 },
                                 "members": {
+                                    "source": "default",
+                                    "groupIds": []
+                                }
+                            },
+                            "activity": {
+                                "read": {
+                                    "source": "default",
+                                    "groupIds": []
+                                }
+                            },
+                            "notifications": {
+                                "read": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "dismiss": {
+                                    "source": "default",
+                                    "groupIds": []
+                                }
+                            },
+                            "availability": {
+                                "read": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "absence": {
+                                    "source": "default",
+                                    "groupIds": []
+                                }
+                            },
+                            "status": {
+                                "read": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "edit": {
+                                    "source": "default",
+                                    "groupIds": []
+                                }
+                            },
+                            "routines": {
+                                "prepare": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "meeting": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "mailtask": {
                                     "source": "default",
                                     "groupIds": []
                                 }

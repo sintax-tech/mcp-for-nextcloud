@@ -103,6 +103,7 @@ final class ToolPresentation {
 			// Calendar
 			'calendar_list_calendars' => Translator::t('List calendars'),
 			'calendar_list_events' => Translator::t('List events'),
+			'calendar_check_availability' => Translator::t('Check availability'),
 			'calendar_create_event' => Translator::t('Create event'),
 			'calendar_update_event' => Translator::t('Edit event'),
 			'calendar_move_event' => Translator::t('Move event to another calendar'),

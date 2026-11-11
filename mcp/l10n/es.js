@@ -1,6 +1,14 @@
 OC.L10N.register(
     "mcp",
     {
+    "Check availability" : "Consultar disponibilidad",
+    "Provide an explicit IANA timezone." : "Indique una zona horaria IANA explícita.",
+    "The availability window must last 15–240 minutes." : "La ventana de disponibilidad debe durar entre 15 y 240 minutos.",
+    "Provide ISO timestamps with seconds and an explicit offset." : "Indique fechas y horas ISO con segundos y un desfase explícito.",
+    "Provide valid ISO timestamps." : "Indique fechas y horas ISO válidas.",
+    "Provide between 1 and 20 distinct participant IDs." : "Indique entre 1 y 20 ID de participantes distintos.",
+    "Availability cannot be checked for this organizer." : "No se puede consultar la disponibilidad para este organizador.",
+    "Availability cannot be checked with collection-restricted Calendar access: the native free/busy API cannot preserve that restriction." : "No se puede consultar la disponibilidad con acceso al Calendario restringido por colección: la API nativa de libre/ocupado no preserva esa restricción.",
     "Prepare meetings" : "Preparar reuniones",
     "activity" : "Actividad",
     "notifications" : "Notificaciones",

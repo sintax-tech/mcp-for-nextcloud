@@ -1,4 +1,12 @@
 { "translations": {
+    "Check availability" : "Consultar disponibilidade",
+    "Provide an explicit IANA timezone." : "Informe um fuso horário IANA explícito.",
+    "The availability window must last 15–240 minutes." : "A janela de disponibilidade deve durar de 15 a 240 minutos.",
+    "Provide ISO timestamps with seconds and an explicit offset." : "Informe datas e horas ISO com segundos e deslocamento explícito.",
+    "Provide valid ISO timestamps." : "Informe datas e horas ISO válidas.",
+    "Provide between 1 and 20 distinct participant IDs." : "Informe de 1 a 20 IDs de participantes distintos.",
+    "Availability cannot be checked for this organizer." : "Não é possível consultar a disponibilidade para este organizador.",
+    "Availability cannot be checked with collection-restricted Calendar access: the native free/busy API cannot preserve that restriction." : "Não é possível consultar a disponibilidade com acesso ao Calendário restrito por coleção: a API nativa de livre/ocupado não preserva essa restrição.",
     "Prepare meetings" : "Preparar reuniões",
     "activity" : "Atividade",
     "notifications" : "Notificações",

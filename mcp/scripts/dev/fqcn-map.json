@@ -2,6 +2,13 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Modules/Calendar/Reading/CheckAvailabilityHandler.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Reading\\CheckAvailabilityHandler","target":"stays","owner":"Modules\\Calendar","ticket":null},
+		{"path":"lib/Modules/Calendar/Reading/AvailabilityParticipants.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Reading\\AvailabilityParticipants","target":"stays","owner":"Modules\\Calendar","ticket":null},
+		{"path":"lib/Modules/Calendar/Reading/AvailabilityWindow.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Reading\\AvailabilityWindow","target":"stays","owner":"Modules\\Calendar","ticket":null},
+		{"path":"lib/Modules/Calendar/Tools/CheckAvailability.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Tools\\CheckAvailability","target":"stays","owner":"Modules\\Calendar","ticket":null},
+		{"path":"lib/Modules/Calendar/Integration/CalendarAvailability.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Integration\\CalendarAvailability","target":"stays","owner":"Modules\\Calendar","ticket":null},
+		{"path":"lib/Modules/Calendar/Presentation/AvailabilityMessages.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Presentation\\AvailabilityMessages","target":"stays","owner":"Modules\\Calendar","ticket":null},
+		{"path":"lib/Modules/Calendar/Presentation/AvailabilitySchema.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Presentation\\AvailabilitySchema","target":"stays","owner":"Modules\\Calendar","ticket":null},
 		{"path":"lib/Modules/Forms/FormsVersionProfiles.php","fqcn":"OCA\\Mcp\\Modules\\Forms\\FormsVersionProfiles","target":"stays","owner":"Modules\\Forms","ticket":null},
 		{"path":"lib/Platform/Php/MemoryLimit.php","fqcn":"OCA\\Mcp\\Platform\\Php\\MemoryLimit","target":"stays","owner":"Platform","ticket":null},
 		{"path":"lib/Platform/Php/IniQuantity.php","fqcn":"OCA\\Mcp\\Platform\\Php\\IniQuantity","target":"stays","owner":"Platform","ticket":null},

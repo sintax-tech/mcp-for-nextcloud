@@ -34,6 +34,7 @@ final class CalendarRegistration implements ModuleRegistration {
 	 * {@inheritDoc}
 	 */
 	public function register(IRegistrationContext $context): void {
+		$context->registerService(\OCA\Mcp\Modules\Calendar\Integration\CalendarAvailability::class, static fn (ContainerInterface $c): \OCA\Mcp\Modules\Calendar\Integration\CalendarAvailability => new \OCA\Mcp\Modules\Calendar\Integration\CalendarAvailability($c));
 		$context->registerService(NativeCalendars::class, static fn (ContainerInterface $c): NativeCalendars => $c->get(NativeCalendarsAdapter::class));
 		$context->registerService(CalendarSelftestReader::class, static fn (ContainerInterface $c): CalendarSelftestReader => new DavCalendarSelftestReader($c));
 		$context->registerService(CalendarDav::class, static fn (ContainerInterface $c): CalendarDav => $c->get(EmbeddedDavDispatcher::class));

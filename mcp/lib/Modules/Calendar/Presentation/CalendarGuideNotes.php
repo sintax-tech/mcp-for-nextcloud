@@ -18,6 +18,7 @@ final class CalendarGuideNotes {
 	 */
 	public static function notes(): array {
 		return [
+			AvailabilitySchema::NOTE,
 			'Calendars are addressed by path: calendar_list_calendars gives the paths of this user. Events are '
 				. 'addressed by uid, and calendar_list_events gives the uids of a period.',
 			'Every write answers with a plan first: what it would change, the etag of the object as it is now, and '

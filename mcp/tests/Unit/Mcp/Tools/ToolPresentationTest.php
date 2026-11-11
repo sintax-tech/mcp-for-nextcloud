@@ -42,6 +42,7 @@ final class ToolPresentationTest extends TestCase {
 		'notes_delete' => ['Delete note', 'Excluir nota'],
 		'calendar_list_calendars' => ['List calendars', 'Listar calendários'],
 		'calendar_list_events' => ['List events', 'Listar eventos'],
+		'calendar_check_availability' => ['Check availability', 'Consultar disponibilidade'],
 		'calendar_create_event' => ['Create event', 'Criar evento'],
 		'calendar_update_event' => ['Edit event', 'Editar evento'],
 		'calendar_move_event' => ['Move event to another calendar', 'Mover evento para outro calendário'],

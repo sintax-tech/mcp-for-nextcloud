@@ -40,9 +40,10 @@ final class CalendarSchema {
 	 * @param array<string, array<string, mixed>> $properties input properties, in published order
 	 * @param list<string> $required required properties
 	 * @param bool $destructive whether the annotations mark the tool destructive beyond its operation's default
+	 * @param list<string>|null $grantAnyOf explicit alternative grants for a sensitive read
 	 * @return ToolDefinition the definition of one Calendar tool
 	 */
-	public static function definition(string $name, string $operation, string $description, array $properties, array $required = [], bool $destructive = false): ToolDefinition {
+	public static function definition(string $name, string $operation, string $description, array $properties, array $required = [], bool $destructive = false, ?array $grantAnyOf = null): ToolDefinition {
 		$schema = SchemaBuilder::definition(self::MODULE, self::APP, $name, $description, $operation, $properties, $required)['inputSchema'];
 		return new ToolDefinition(
 			name: $name,
@@ -52,6 +53,7 @@ final class CalendarSchema {
 			inputSchema: $schema,
 			app: self::APP,
 			destructiveHint: $destructive,
+			grantAnyOf: $grantAnyOf,
 		);
 	}
 

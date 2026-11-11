@@ -53,6 +53,7 @@ final class CalendarTestModule {
 	 * @param DeleteEventDraft $deleteEvent calendar_delete_event
 	 * @param TransferEventDraft $transferEvent calendar_transfer_event
 	 * @param CalendarDraftApproval $approval the confirmation every write goes through
+	 * @param \OCA\Mcp\Modules\Calendar\Reading\CheckAvailabilityHandler|null $availability optional bounded read for new feature cases
 	 * @return CalendarModule the catalog module over those services
 	 */
 	public static function build(
@@ -64,8 +65,9 @@ final class CalendarTestModule {
 		DeleteEventDraft $deleteEvent,
 		TransferEventDraft $transferEvent,
 		CalendarDraftApproval $approval,
+		?\OCA\Mcp\Modules\Calendar\Reading\CheckAvailabilityHandler $availability = null,
 	): CalendarModule {
-		return new CalendarModule(self::container([
+		return new CalendarModule(self::container(($availability === null ? [] : [\OCA\Mcp\Modules\Calendar\Tools\CheckAvailability::class => new \OCA\Mcp\Modules\Calendar\Tools\CheckAvailability($availability)]) + [
 			ListCalendars::class => new ListCalendars($listCalendars),
 			ListEvents::class => new ListEvents($listEvents),
 			CreateEvent::class => new CreateEvent(new CreateEventHandler($approval, $createEvent), new CreateEventPreview($approval, $createEvent)),

@@ -116,4 +116,15 @@ final class RoutineGrantCatalogTest extends TestCase {
 			['activity', 'notifications', 'availability', 'status', 'routines']
 		));
 	}
+
+	/** @return void The sole frontend denied-read list stays equal to the backend and Routines names its narrow tier. */
+	public function testFrontendDefaultsAndPreparationLabelCannotDrift(): void {
+		$root = dirname(__DIR__, 4);
+		$source = file_get_contents($root . '/src/admin/access/grant-defaults.js');
+		preg_match('/const deniedReads = (\[.*\])/', $source, $match);
+		self::assertSame(GrantPolicy::DENIED_READS, json_decode(str_replace("'", '"', $match[1]), true, flags: JSON_THROW_ON_ERROR));
+		self::assertStringContainsString('grantDefaults.granted(module, operation)', file_get_contents($root . '/src/admin/groups/drafts.js'));
+		self::assertStringContainsString("catalog.tierNames.routines = ['prepare', 'full']", file_get_contents($root . '/src/admin/access/levels/routines.js'));
+	}
+
 }

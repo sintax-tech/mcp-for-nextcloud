@@ -118,7 +118,7 @@
 		function levelLabels() {
 			return {
 				...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(),
-				none: t('mcp', 'None'),
+				prepare: t('mcp', 'Prepare meetings'), none: t('mcp', 'None'),
 				read: t('mcp', 'Read'),
 				edit: t('mcp', 'Edit'),
 				full: t('mcp', 'Full'),

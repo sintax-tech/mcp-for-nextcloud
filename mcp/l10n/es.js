@@ -1,6 +1,7 @@
 OC.L10N.register(
     "mcp",
     {
+    "Prepare meetings" : "Preparar reuniones",
     "activity" : "Actividad",
     "notifications" : "Notificaciones",
     "availability" : "disponibilidad",

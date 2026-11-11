@@ -94,7 +94,8 @@ final class MailMessageToolsRegistryTest extends TestCase {
 	 */
 	public function testTheMessagesGrantStartsDenied(): void {
 		$this->assertFalse(GrantPolicy::defaultGranted('mail', 'messages'));
-		$this->assertSame(['logs'], GrantPolicy::DENIED_READS);
+		$this->assertSame(['logs', 'activity', 'notifications', 'availability', 'status'], GrantPolicy::DENIED_READS);
+		$this->assertNotContains('mail', GrantPolicy::DENIED_READS);
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
 		$this->assertTrue($policy->granted('alice', 'mail', 'read'));
 		$this->assertFalse($policy->granted('alice', 'mail', 'messages'));

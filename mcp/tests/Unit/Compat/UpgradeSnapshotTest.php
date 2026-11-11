@@ -16,7 +16,8 @@ use PHPUnit\Framework\TestCase;
 /**
  * T12 over the synthetic snapshot of Compat/SnapshotProbe, without any group: every operation of the CATALOG stored
  * as '1', '0' and absent, under every (eligible, connected) pair and every state of the service switch, gets from the
- * branch the answer of 1.0.8, and reading writes nothing (no default materialized, no revision, no revocation).
+ * branch the legacy answer or the explicitly approved 1.4.0 default, and reading writes nothing
+ * (no default materialized, no revision, no revocation).
  *
  * The oracle below transcribes 1.0.8's GrantPolicy (tag v1.0.8): every read is IConfig::getUserValue/getAppValue
  * compared with '1', with '1' as the default of a read outside DENIED_READS and '0' for everything else. The real
@@ -51,7 +52,7 @@ final class UpgradeSnapshotTest extends TestCase {
 					$this->assertSame($connected, $matrix[$uid]['connected'], $uid);
 					foreach (GrantCatalog::CATALOG as $module => $operations) {
 						foreach ($operations as $operation) {
-							$default = $operation === 'read' && $module !== 'logs' ? '1' : '0';
+							$default = $operation === 'read' && !in_array($module, GrantPolicy::DENIED_READS, true) ? '1' : '0';
 							$legacy = ($values["grant_{$module}_{$operation}"] ?? $default) === '1';
 							$this->assertSame($legacy, $policy->granted($uid, $module, $operation), "$uid $module/$operation");
 							$this->assertSame($legacy, $matrix[$uid]['grants'][$module][$operation], "$uid $module/$operation (matrix)");

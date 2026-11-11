@@ -36,8 +36,9 @@ use OCP\IConfig;
  */
 class GrantPolicy implements ScopeReader {
 	/**
-	 * Modules whose sensitive read starts denied like a write. Logs and the new routine features
-	 * require an explicit administrator grant instead of permitting access by omission.
+	 * Modules whose sensitive read starts denied like a write. The server log exposes file names, URLs and accounts
+	 * of every user. Routine reads expose personal activity, notifications, absence and status. All require
+	 * an explicit administrator grant instead of permitting access by omission.
 	 */
 	public const DENIED_READS = ['logs', 'activity', 'notifications', 'availability', 'status'];
 

@@ -8,4 +8,5 @@
 
 	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 	catalog.tiers.routines = [['prepare'], ['meeting', 'mailtask']]
+	catalog.tierNames.routines = ['prepare', 'full']
 })(typeof window !== 'undefined' ? window : globalThis)

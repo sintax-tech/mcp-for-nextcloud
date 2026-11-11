@@ -28,8 +28,8 @@ class CreatePolicyBoundary {
 		try {
 			$context = $this->resolver->begin($uid, [], [], false);
 			try {
-				if ($context->resolveEffective('forms', 'create')->allowed !== true) { throw new ToolFailure(CreateFormMessages::refused()); }
+				if ($context->resolveEffective('forms', 'create')->allowed !== true) { throw new ToolFailure(CreateFormMessages::userDenied()); }
 			} finally { $context->close(); }
-		} catch (\Throwable $error) { throw new ToolFailure(CreateFormMessages::refused(), 0, $error); }
+		} catch (\Throwable $error) { throw new ToolFailure(CreateFormMessages::userDenied(), 0, $error); }
 	}
 }

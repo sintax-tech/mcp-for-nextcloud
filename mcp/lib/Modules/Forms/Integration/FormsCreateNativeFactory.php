@@ -34,9 +34,9 @@ class FormsCreateNativeFactory {
 	public function open(string $uid): CreateFormContext {
 		try {
 			$this->assertSession($uid); $this->policy->assertAllowed($uid);
-			if (!$this->guests->allowsApp($uid, 'forms')) { throw new ToolFailure(CreateFormMessages::refused()); }
+			if (!$this->guests->allowsApp($uid, 'forms')) { throw new ToolFailure(CreateFormMessages::userDenied()); }
 			$read = $this->forms->open($uid); $version = $read['version'];
-			if (FormsVersionProfiles::get($version) === null) { throw new ToolFailure(CreateFormMessages::refused()); }
+			if (FormsVersionProfiles::get($version) === null) { throw new ToolFailure(CreateFormMessages::unsupportedVersion($version)); }
 			$c = $this->container();
 			$get = static fn (string $type): object => $c->get($type);
 			$config = new \OCA\Forms\Service\ConfigService('forms', $get(\OCP\IConfig::class), $get(\OCP\AppFramework\Services\IAppConfig::class), $get(\OCP\IGroupManager::class), $this->session);
@@ -46,7 +46,11 @@ class FormsCreateNativeFactory {
 			$context = new CreateFormContext($version, new \OCA\Forms\Controller\ApiController(...$args), $config, $read['service'], $read['mapper'], $native['questionMapper'], $native['optionMapper'], $get(\OCA\Forms\Helper\FilePathHelper::class), $submission);
 			$this->assertAllowed($uid, $context);
 			return $context;
-		} catch (\Throwable $error) { throw new ToolFailure(CreateFormMessages::refused(), 0, $error); }
+		} catch (ToolFailure $error) {
+			throw $error;
+		} catch (\Throwable $error) {
+			throw new ToolFailure(CreateFormMessages::refused(), 0, $error);
+		}
 	}
 	/** Rechecks admission without replacing the native graph or widening actor access.
 	 * @param string $uid Authenticated actor.
@@ -56,9 +60,11 @@ class FormsCreateNativeFactory {
 	 */
 	public function assertAllowed(string $uid, CreateFormContext $context): void {
 		$this->assertSession($uid); $this->policy->assertAllowed($uid);
-		if (!$this->guests->allowsApp($uid, 'forms')) { throw new ToolFailure(CreateFormMessages::refused()); }
+		if (!$this->guests->allowsApp($uid, 'forms')) { throw new ToolFailure(CreateFormMessages::userDenied()); }
 		$read = $this->forms->open($uid);
-		if ($read['service'] !== $context->service || $read['version'] !== $context->version || !$context->config->canCreateForms()) { throw new ToolFailure(CreateFormMessages::refused()); }
+		if (FormsVersionProfiles::get($read['version']) === null) { throw new ToolFailure(CreateFormMessages::unsupportedVersion($read['version'])); }
+		if ($read['service'] !== $context->service || $read['version'] !== $context->version) { throw new ToolFailure(CreateFormMessages::refused()); }
+		if (!$context->config->canCreateForms()) { throw new ToolFailure(CreateFormMessages::userDenied()); }
 		$this->assertSession($uid);
 	}
 	/** Obtains Forms-scoped configuration and inert collaborators through the public app facade.
@@ -69,5 +75,5 @@ class FormsCreateNativeFactory {
 	 * @param string $uid Authenticated actor.
 	 * @return void
 	 */
-	private function assertSession(string $uid): void { if ($uid === '' || $this->session->getUser()?->getUID() !== $uid) { throw new ToolFailure(CreateFormMessages::refused()); } }
+	private function assertSession(string $uid): void { if ($uid === '' || $this->session->getUser()?->getUID() !== $uid) { throw new ToolFailure(CreateFormMessages::userDenied()); } }
 }

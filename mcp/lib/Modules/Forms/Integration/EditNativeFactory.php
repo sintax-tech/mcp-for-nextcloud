@@ -10,6 +10,7 @@ namespace OCA\Mcp\Modules\Forms\Integration;
 use OCA\Mcp\Modules\Forms\FormsVersionProfiles;
 use OCA\Mcp\Modules\Forms\Editing\EditContext;
 use OCA\Mcp\Modules\Forms\Presentation\EditMessages;
+use OCA\Mcp\Modules\Forms\Presentation\StructureMessages;
 use OCA\Mcp\Modules\Forms\Editing\EditPolicyBoundary;
 
 use OCA\Mcp\Modules\Forms\Integration\FormsServices;
@@ -34,7 +35,7 @@ class EditNativeFactory {
 	public function open(string $uid): EditContext {
 		try {
 			$this->actor($uid); $read = $this->forms->open($uid);
-			if (FormsVersionProfiles::get($read['version']) === null) { throw new ToolFailure(EditMessages::refused()); }
+			if (FormsVersionProfiles::get($read['version']) === null) { throw new ToolFailure(StructureMessages::unsupportedVersion($read['version'])); }
 			$c = $this->container(); $get = static fn (string $type): object => $c->get($type);
 			$config = new \OCA\Forms\Service\ConfigService('forms', $get(\OCP\IConfig::class), $get(\OCP\AppFramework\Services\IAppConfig::class), $get(\OCP\IGroupManager::class), $this->session);
 			$native = CreateNativeArguments::submission($read['version'], $get, $this->session, $read['service']);
@@ -42,7 +43,11 @@ class EditNativeFactory {
 			$args = CreateNativeArguments::controller($read['version'], $get, $this->session, $read, $config, $submission, $native);
 			$context = new EditContext($read['version'], new \OCA\Forms\Controller\ApiController(...$args), $config, $read['service'], $native['questionMapper'], $native['optionMapper'], $get(\OCA\Forms\Db\ShareMapper::class));
 			$this->assertAllowed($uid, $context); return $context;
-		} catch (\Throwable $error) { throw new ToolFailure(EditMessages::refused(), 0, $error); }
+		} catch (ToolFailure $error) {
+			throw $error;
+		} catch (\Throwable $error) {
+			throw new ToolFailure(EditMessages::refused(), 0, $error);
+		}
 	}
 	/** Rechecks current effective policy/session/app/service without canCreateForms or an owner-only condition.
 	 * @param string $uid Authenticated actor.
@@ -51,6 +56,7 @@ class EditNativeFactory {
 	 */
 	public function assertAllowed(string $uid, EditContext $context): void {
 		$this->actor($uid); $read = $this->forms->open($uid);
+		if (FormsVersionProfiles::get($read['version']) === null) { throw new ToolFailure(StructureMessages::unsupportedVersion($read['version'])); }
 		if ($read['service'] !== $context->service || $read['version'] !== $context->version) { throw new ToolFailure(EditMessages::refused()); }
 		$this->actor($uid);
 	}

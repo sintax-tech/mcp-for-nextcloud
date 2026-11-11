@@ -1,6 +1,10 @@
 OC.L10N.register(
     "mcp",
     {
+    "Form creation is not available for the installed Forms version (%s)." : "Die Formularerstellung ist für die installierte Forms-Version (%s) nicht verfügbar.",
+    "Form creation is not permitted for this user." : "Die Formularerstellung ist für diesen Benutzer nicht erlaubt.",
+    "Forms %s does not allow changing a question type. No change was attempted." : "Forms %s erlaubt keine Änderung des Fragetyps. Es wurde keine Änderung versucht.",
+    "Structure changes are not available for the installed Forms version (%s)." : "Strukturänderungen sind für die installierte Forms-Version (%s) nicht verfügbar.",
     "Each listed event includes alarms (minutesBefore and description) for DISPLAY reminders relative to the start, and otherAlarms counts other reminders without exposing their details. Confidential events and read-only shares do not expose reminders. A negative, non-integer or greater than 40320 minutesBefore value must be adjusted before reusing it in create/update." : "Jeder aufgelistete Termin enthält alarms (minutesBefore und description) für DISPLAY-Erinnerungen relativ zum Beginn; otherAlarms zählt andere Erinnerungen, ohne deren Details offenzulegen. Vertrauliche Termine und schreibgeschützte Freigaben geben keine Erinnerungen preis. Ein negativer, nicht ganzzahliger oder über 40320 liegender minutesBefore-Wert muss vor der Wiederverwendung in create/update angepasst werden.",
     "This change would clear the view's card title/background source; keep that column selected, or omit view_ids for a view that shows all columns." : "Diese Änderung würde die Quelle für Kartentitel/-hintergrund der Ansicht löschen; lassen Sie diese Spalte ausgewählt oder lassen Sie view_ids bei einer Ansicht weg, die alle Spalten anzeigt.",
     "Event %s exists, but its reminders differ from the requested change. Do not repeat the change; check List events." : "Termin %s existiert, aber seine Erinnerungen weichen von der angeforderten Änderung ab. Wiederholen Sie die Änderung nicht; prüfen Sie List events.",
@@ -1875,7 +1879,7 @@ OC.L10N.register(
     "The new type does not use options. Existing options stay stored but are not shown." : "Der neue Typ verwendet keine Optionen. Vorhandene Optionen bleiben gespeichert, werden aber nicht angezeigt.",
     "Existing options are kept with their IDs and order." : "Vorhandene Optionen bleiben mit ihren IDs und ihrer Reihenfolge erhalten.",
     "Files already uploaded to this question are not touched and no cleanup job is queued." : "Bereits zu dieser Frage hochgeladene Dateien bleiben unberührt, und es wird kein Bereinigungsjob eingereiht.",
-    "Change existing forms, including adding, reordering and deleting questions and options and changing a question type" : "Vorhandene Formulare ändern, einschließlich Fragen und Optionen hinzufügen, neu anordnen und löschen sowie den Typ einer Frage ändern",
+    "Change existing forms, including adding, reordering and deleting questions and options and changing a question type (except in Forms 5.4.2)" : "Vorhandene Formulare ändern, einschließlich Fragen und Optionen hinzufügen, neu anordnen und löschen sowie den Typ einer Frage ändern (außer in Forms 5.4.2)",
     "The question already has this type, so nothing would change and these settings would not be applied. Change settings with forms_update_question." : "Die Frage hat bereits diesen Typ, daher würde sich nichts ändern und diese Einstellungen würden nicht angewendet. Ändern Sie Einstellungen mit forms_update_question.",
     "Configure a poll" : "Umfrage konfigurieren",
     "Change poll state" : "Umfragestatus ändern",

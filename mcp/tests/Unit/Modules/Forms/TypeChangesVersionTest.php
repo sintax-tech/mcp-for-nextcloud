@@ -53,7 +53,7 @@ final class TypeChangesVersionTest extends TestCase {
 				}
 				self::fail('Forms 5.4.2 admitted a type-change plan');
 			} catch (ToolFailure $error) {
-				self::assertSame(StructureMessages::refused(), $error->getMessage());
+				self::assertSame(StructureMessages::typeChangeUnavailable('5.4.2'), $error->getMessage());
 			}
 			self::assertSame([], $f->calls);
 			self::assertNull($f->form->fields['lockedBy']);
@@ -84,7 +84,7 @@ final class TypeChangesVersionTest extends TestCase {
 			self::fail('Restricted pin returned an attempted-write receipt');
 		} catch (ToolFailure $error) {
 			// StructureWriter propagates this exception only while its attempted flag is false.
-			self::assertSame(StructureMessages::refused(), $error->getMessage());
+			self::assertSame(StructureMessages::typeChangeUnavailable('5.4.2'), $error->getMessage());
 		}
 		self::assertSame([], $f->calls);
 		self::assertNull($f->form->fields['lockedBy']);

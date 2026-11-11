@@ -54,7 +54,7 @@ final class TypeChanges implements StructureOperation {
 	/** {@inheritDoc} */
 	public function effect(EditContext $c, array $r, array $s): array {
 		if (!(FormsVersionProfiles::get($c->version)['updateQuestionAllowsType'] ?? false)) {
-			throw new ToolFailure(StructureMessages::refused());
+			throw new ToolFailure(StructureMessages::typeChangeUnavailable($c->version));
 		}
 		$q = StructureState::question($s, $r['question_id']) ?? throw new ToolFailure(CommonMessages::notFound());
 		if (!in_array($q['type'], EditSettings::TYPES, true)) {

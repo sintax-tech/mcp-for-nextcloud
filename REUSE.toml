@@ -216,6 +216,21 @@ SPDX-FileCopyrightText = [
 SPDX-License-Identifier = "AGPL-3.0-or-later"
 
 [[annotations]]
+path = ["mcp/tests/fixtures/nextcloud-api/forms/5.4.2.json"]
+precedence = "override"
+SPDX-FileCopyrightText = [
+  "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>",
+  "2017 Nextcloud GmbH and Nextcloud contributors",
+  "2019 Nextcloud GmbH and Nextcloud contributors",
+  "2020 Nextcloud GmbH and Nextcloud contributors",
+  "2021 Nextcloud GmbH and Nextcloud contributors",
+  "2022 Nextcloud GmbH and Nextcloud contributors",
+  "2024 Nextcloud GmbH and Nextcloud contributors",
+  "2026 Nextcloud GmbH and Nextcloud contributors",
+]
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
 path = ["mcp/tests/fixtures/nextcloud-api/polls/polls-behavior.json"]
 precedence = "override"
 SPDX-FileCopyrightText = [

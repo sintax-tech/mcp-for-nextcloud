@@ -48,12 +48,12 @@ final class StructureHarness {
 			}
 
 			/** {@inheritDoc} */
-			public function open(string $uid): \OCA\Mcp\Modules\Forms\Editing\EditContext {
+			public function open(string $uid, ?callable $unsupportedVersion = null): \OCA\Mcp\Modules\Forms\Editing\EditContext {
 				return $this->f->context();
 			}
 
 			/** {@inheritDoc} */
-			public function assertAllowed(string $uid, \OCA\Mcp\Modules\Forms\Editing\EditContext $context): void {
+			public function assertAllowed(string $uid, \OCA\Mcp\Modules\Forms\Editing\EditContext $context, ?callable $unsupportedVersion = null): void {
 				if ($this->admission !== null) {
 					($this->admission)();
 				}

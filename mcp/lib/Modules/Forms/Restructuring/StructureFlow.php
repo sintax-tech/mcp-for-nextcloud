@@ -81,7 +81,7 @@ class StructureFlow {
 	private function prepare(StructureOperation $op, array $args, string $uid): array {
 		$r = $op->request($args);
 		try {
-			$c = $this->factory->open($uid);
+			$c = $this->factory->open($uid, [StructureMessages::class, 'unsupportedVersion']);
 			$s = $this->states->read($c, $r['form_id'], $uid);
 			return [$r, $c, $s, $op->effect($c, $r, $s)];
 		} catch (ArgumentValidationException|ToolFailure $error) {

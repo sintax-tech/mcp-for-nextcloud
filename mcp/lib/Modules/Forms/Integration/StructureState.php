@@ -85,7 +85,7 @@ class StructureState {
 	 */
 	private static function fingerprint(object $form): string {
 		// Mutable Db/Form fields besides those projected in the header (title, owner, state, lock, lastUpdated, confirmation
-		// selector and flag) and the ACL (access): the same accessors in Forms 5.3.0, 5.3.7, 5.4.0 and 5.4.1.
+		// selector and flag) and the ACL (access): the same accessors in the versions admitted by FormsVersionProfiles.
 		$fields = ['hash' => $form->getHash(), 'description' => $form->getDescription(), 'fileId' => $form->getFileId(),
 			'fileFormat' => $form->getFileFormat(), 'created' => $form->getCreated(), 'expires' => $form->getExpires(),
 			'isAnonymous' => $form->getIsAnonymous(), 'submitMultiple' => $form->getSubmitMultiple(),

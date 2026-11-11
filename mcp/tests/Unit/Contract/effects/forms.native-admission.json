@@ -120,7 +120,7 @@
             },
             "unsupported-forms-version": {
                 "outcome": "refused before the native construction",
-                "message": "Structure changes are not available for the installed Forms version (5.2.0).",
+                "message": "Editing forms is not available for the installed Forms version (5.2.0).",
                 "cause": ""
             },
             "other-forms-service": {
@@ -156,7 +156,7 @@
             },
             "unsupported-forms-version": {
                 "outcome": "refused",
-                "message": "Structure changes are not available for the installed Forms version (5.2.0)."
+                "message": "Editing forms is not available for the installed Forms version (5.2.0)."
             },
             "other-forms-service": {
                 "outcome": "refused",

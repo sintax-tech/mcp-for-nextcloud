@@ -8,12 +8,13 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Forms\Presentation;
 
+use OCA\Mcp\Modules\Forms\FormsVersionProfiles;
 use OCA\Mcp\L10n\Translator;
 
 /**
  * The creation warning that follows the installed Forms version.
  *
- * Forms 5.4.1 can rename or merge upload folders when the title is set. Every other supported release does not,
+ * Forms 5.4.1 and 5.4.2 can rename or merge upload folders when the title is set. Every other supported release does not,
  * so the warning must not attribute those effects to a pin that does not have them.
  */
 final class CreateFormVersionNotice {
@@ -32,7 +33,7 @@ final class CreateFormVersionNotice {
 	 * @return string Warning in the language of the current user.
 	 */
 	public static function warning(string $version): string {
-		if ($version === '5.4.1') {
+		if (FormsVersionProfiles::get($version)['titleFolderSync'] ?? false) {
 			return Translator::t('Creation follows the installed Forms app’s native behavior. In Forms %s, setting the title can rename or merge matching upload folders and remove empty folders with the new form ID prefix. Detected matches stop the title step, leaving a partially created form. Concurrent changes can still trigger native folder changes; these checks do not guarantee that Files remain unchanged.', [$version]);
 		}
 		return Translator::t('Creation follows the installed Forms app’s native behavior (Forms %s). Setting the title does not rename or merge upload folders in this version. Creation can still leave a partial form. These checks do not guarantee that Files remain unchanged.', [$version]);

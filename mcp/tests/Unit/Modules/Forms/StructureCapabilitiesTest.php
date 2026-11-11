@@ -25,7 +25,7 @@ final class StructureCapabilitiesTest extends TestCase {
 
 	/** Valid case, every pin and only the declared key. @return void */
 	public function testSupportedPins(): void {
-		foreach (StructureCapabilities::PROVEN as $version) {
+		foreach (['5.3.0', '5.3.7', '5.4.0', '5.4.1', '5.4.2'] as $version) {
 			self::assertTrue($this->probe($version)->supports(StructureCapabilities::KEY), $version);
 		}
 		self::assertSame([StructureCapabilities::KEY], $this->probe('5.4.1')->keys());
@@ -34,7 +34,7 @@ final class StructureCapabilitiesTest extends TestCase {
 
 	/** Versions off the pins (below, between, above), unknown major and disabled app. @return void */
 	public function testVersionsMajorsAndEnablement(): void {
-		foreach (['5.2.10', '5.3.1', '5.4.2', '6.0.0', ''] as $version) {
+		foreach (['5.2.10', '5.3.1', '5.4.3', '5.5.0', '6.0.0', ''] as $version) {
 			self::assertFalse($this->probe($version)->supports(StructureCapabilities::KEY), $version);
 		}
 		foreach ([31, 36] as $major) {

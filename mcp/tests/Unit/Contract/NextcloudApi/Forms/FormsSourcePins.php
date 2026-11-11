@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi\Forms;
 
 /** Version pins and fixture metadata; NC31 metadata is a signature source only, outside MCP's supported server range. */
 final class FormsSourcePins {
-	/** Reads the four approved source pins.
+	/** Reads the approved exact source pins.
 	 * @return array<string,string> Version to official archive SHA256.
 	 */
 	public static function all(): array {

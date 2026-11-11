@@ -12,7 +12,7 @@ use OCA\Mcp\L10n\Translator;
 /** Texts of the Forms structure tools: guide note, refusals, plan effects and receipt notes. */
 final class StructureMessages {
 	/** Guide note, appended after the existing Forms notes. */
-	public const GUIDE = 'Structure tools also use forms.edit and native EDIT: add questions (at the end or at a position) and options, reorder the complete set of questions or of one option partition, delete a question (logically, answers orphaned, no restore) or an option (permanently), and change a question type (never to datetime or grid; settings are validated by us, answers and options are not converted). Each makes one native call after an inert preview and explicit confirmation with plan_state; shared forms require confirm_shared. Deleting a file question lets Forms queue a job that may delete its upload folders; files are not inspected. Read receipts; concurrent edits or failures can leave partial or uncertain effects.';
+	public const GUIDE = 'Structure tools also use forms.edit and native EDIT: add questions (at the end or at a position) and options, reorder the complete set of questions or of one option partition, delete a question (logically, answers orphaned, no restore) or an option (permanently), and change a question type (refused when the installed Forms version disallows it; never to datetime or grid; settings are validated by us, answers and options are not converted). Each makes one native call after an inert preview and explicit confirmation with plan_state; shared forms require confirm_shared. Deleting a file question lets Forms queue a job that may delete its upload folders; files are not inspected. Read receipts; concurrent edits or failures can leave partial or uncertain effects.';
 
 	/** Static texts only: prevents instantiation. */
 	private function __construct() {
@@ -21,6 +21,22 @@ final class StructureMessages {
 	/** @return string generic refusal, without detail */
 	public static function refused(): string {
 		return Translator::t('The Forms structure change is unavailable or no longer permitted. No automatic retry was made.');
+	}
+
+	/** Names an installed release whose structure contract has not been proved.
+	 * @param string $version Installed Forms version.
+	 * @return string Version-specific refusal.
+	 */
+	public static function unsupportedVersion(string $version): string {
+		return Translator::t('Structure changes are not available for the installed Forms version (%s).', [$version]);
+	}
+
+	/** Refuses a type change before entering the native controller or acquiring its lock.
+	 * @param string $version Installed Forms version.
+	 * @return string Refusal stating that no change was attempted.
+	 */
+	public static function typeChangeUnavailable(string $version): string {
+		return Translator::t('Forms %s does not allow changing a question type. No change was attempted.', [$version]);
 	}
 
 	/** @return string refusal for an archived form */

@@ -12,7 +12,7 @@ use OCA\Mcp\Tests\Unit\Contract\NextcloudApi\Forms\FormsSourcePins;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Binds the structure tools to the four hashed Forms sources (5.3.0, 5.3.7, 5.4.0, 5.4.1). Static fixtures, not runtime:
+ * Binds the structure tools to the five hashed Forms sources (5.3.0, 5.3.7, 5.4.0, 5.4.1, 5.4.2). Static fixtures, not runtime:
  * the integration cells NC32/5.3.7 and NC35/5.4.1 cover the installed app.
  */
 final class StructureSourceContractTest extends TestCase {
@@ -59,7 +59,7 @@ final class StructureSourceContractTest extends TestCase {
 			self::assertStringContainsString("'questionType'=>['string']", str_replace([' ', "\n", "\t"], '', $f['sources']['Constants']['source']));
 		}
 		$defaults = array_map(static fn (string $pin): string => self::newOptionDefault($pin), array_keys(FormsSourcePins::all()));
-		self::assertSame(['null', "'choice'", "'choice'", "'choice'"], $defaults, 'option_type is always explicit because of this');
+		self::assertSame(['null', "'choice'", "'choice'", "'choice'", "'choice'"], $defaults, 'option_type is always explicit because of this');
 	}
 
 	/**

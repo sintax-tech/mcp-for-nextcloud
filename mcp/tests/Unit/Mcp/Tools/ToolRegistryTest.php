@@ -115,7 +115,7 @@ final class ToolRegistryTest extends TestCase {
 			$instance = (new \ReflectionClass($class))->newInstanceWithoutConstructor();
 			$definitions = $instance->definitions();
 			if ($instance instanceof \OCA\Mcp\Modules\Deck\DeckModule) {
-				$probe = new \OCA\Mcp\Modules\Deck\Integration\DeckCapabilities($this->nativeDeckApps(), $dependencies ? 35 : 32, static fn (): bool => true);
+				$probe = new \OCA\Mcp\Modules\Deck\Integration\DeckCapabilities($this->nativeDeckApps(), $dependencies ? 35 : 34, static fn (): bool => true);
 				$definitions = array_values(array_filter($definitions, static fn (array $definition): bool => ($definition['requires'] ?? []) === [] || $probe->supports('deck.dependencies')));
 				// This fixture wraps each admitted definition in a legacy module; discovery owns requires.
 				$definitions = array_map(static function (array $definition): array { unset($definition['requires']); return $definition; }, $definitions);

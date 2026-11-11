@@ -64,6 +64,29 @@ final class NextcloudCoverageTest extends TestCase {
 		self::assertSame(['2.2.2', '2.3.2', '2.4.0'], array_keys(iterator_to_array(\OCA\Mcp\Tests\Unit\Modules\Tables\NativeFactoriesTest::pins())));
 	}
 
+	/** @return void Runtime-map providers cannot silently restore retired majors through production constants. */
+	public function testRuntimeVersionProvidersNeverEmitRetiredMajors(): void {
+		$providers = [
+			\OCA\Mcp\Tests\Unit\Modules\Polls\PollsMutationProbeTest::versions(),
+			\OCA\Mcp\Tests\Unit\Modules\Collectives\CollectivesCapabilitiesTest::versions(),
+			\OCA\Mcp\Tests\Unit\Modules\Collectives\TeamsCapabilitiesTest::installations(),
+			\OCA\Mcp\Tests\Unit\Modules\Collectives\FoundingCapabilitiesTest::installations(),
+			\OCA\Mcp\Tests\Unit\Modules\Deck\AssignmentPushDeferralTest::releases(),
+		];
+		foreach ($providers as $cases) {
+			foreach ($cases as $name => $case) {
+				$major = is_array($case[0]) ? $case[0][0] : $case[0];
+				self::assertGreaterThanOrEqual(34, (int)$major, (string)$name);
+			}
+		}
+		$polls = iterator_to_array(\OCA\Mcp\Tests\Unit\Modules\Polls\PollsMutationProbeTest::versions());
+		foreach (TestedNextcloud::MAJORS as $major) {
+			foreach (['minimum', 'below', 'ceiling', 'above'] as $boundary) {
+				self::assertArrayHasKey($major . ' ' . $boundary, $polls);
+			}
+		}
+	}
+
 	/** @return void Generator inputs and surfaces retain only their active source pins. */
 	public function testGeneratorInputsMatchTheActiveSourcePins(): void {
 		self::assertSame(['5.3.0', '5.4.0', '5.4.1', '5.4.2'], array_keys(\OCA\Mcp\Tests\Unit\Contract\NextcloudApi\Forms\FormsSourcePins::all()));

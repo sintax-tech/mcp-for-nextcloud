@@ -31,7 +31,7 @@ final class SchemaSurfaceContract {
 			$apps->method('getAppVersion')->willReturn($pin);
 			$apps->method('isEnabledForAnyone')->willReturn(true);
 			$probe = new TablesWriteCapabilities($apps, (int)$major, static fn (): bool => true);
-			$expected = $pin === '1.0.10' ? $major === '32' : in_array($major, ['33', '34', '35'], true);
+			$expected = in_array($major, ['34', '35'], true);
 			$test::assertSame($expected, $probe->supports('tables.native_schema_api'));
 			$test::assertSame($expected, $probe->supports('tables.native_sharing_api'));
 		}

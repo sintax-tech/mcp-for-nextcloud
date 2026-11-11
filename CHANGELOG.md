@@ -7,6 +7,20 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## 1.3.5 — 2026-11-10
+
+Patch release on top of 1.3.4. No database change and no permission change; updating from 1.3.4 needs no extra step. This release admits the verified Forms 5.4.2 API for private form creation and structure edits, refuses unsupported question type changes before a native call, and separates version refusals from creation-permission denials.
+
+### Fixed
+
+- **Forms 5.4.2 compatibility ([#35](https://github.com/sintax-tech/mcp-for-nextcloud/issues/35)):** creation and structure edits admit the explicitly verified 5.4.2 pin. A shared version profile selects the native constructor, including `userConfig` for 5.4.x, and applies the existing upload-folder precheck and warning to both 5.4.1 and 5.4.2. Unknown versions remain refused; 5.4.0 keeps its behavior without title-driven folder synchronization. Question type changes on 5.4.2 are refused while preparing the preview or revalidating confirmation, before the native controller can acquire its 15-minute lock. Preview, confirmation, native permissions and readback checks remain required.
+- **Forms refusal messages:** distinguish version refusals for creation, point editing and structure changes from denied creation permission, and name the Forms version when a question type change is unavailable. Classified refusals are preserved; technical policy failures keep the generic refusal and are not described as a user-permission denial. The messages and the existing forms.edit help text are translated into Portuguese, Spanish and German. The permissions page layout is unchanged.
+- **Isolated tests without pcntl:** the test bootstrap no longer writes an optional timeout warning to stderr when pcntl is absent, which made six isolated Talk contract tests fail. The development-test timeout and its CI requirement are unchanged; production code is unaffected.
+
+### Validation and limits
+
+The Forms contracts pin the official 5.4.2 archive and the native method bodies, including the type refusal after the native lock. Unit tests cover the exact version profiles, constructor arguments, folder prechecks and warnings, classified refusals in four languages, and rejection of a type change without entering the native controller or marking an attempt. The existing NC34 integration cell now pins Forms 5.4.2; NC32 remains on 5.3.7, and NC33/NC35 remain on 5.4.1. No extra workflow or runner is introduced. Local checks cover the focal Forms tests, translations, store/version contracts, architecture and API/effect contracts; the complete suite and live integration run in GitHub Actions. Creation remains sequential: failures can leave a partial form, and concurrent native folder effects remain possible after a precheck. No rollback, retry or deduplication is added.
+
 ## 1.3.4 — 2026-11-09
 
 The administrator sets the largest file loaded by `files_read`, `files_edit`, `files_replace`, a stored version and `resources/read`, on the MCP management page, in whole MiB. The default stays 20 MiB. A configured value at or below that default is used as stored, so a small `memory_limit` cannot make this release read less than 1.3.3 did. A higher setting is capped by a heuristic from `memory_limit` (six copies of the file, with 32 MiB left aside; neither figure is measured) and never below the default. A `memory_limit` of `-1` applies the configured value. A directive PHP cannot read falls back to the default and never to zero bytes. The checkout upload limit now reads `post_max_size` the same way PHP does, so a value outside the usual form, such as `256MB` or a hexadecimal size, takes the size PHP itself would use. At the default, the PDF decode allowance stays 80 MiB and the parser applies it per stream. Each inflated DOCX or ODT entry stays capped at 20 MiB. `files_search` returns excerpts from the full-text index and does not load the file through this ceiling. No database change and no permission change; the page saves the value, so `occ` is not required.

@@ -4,6 +4,10 @@
 
 Dieser Verlauf beginnt mit 1.2, der ersten Version mit deutschem README. Ältere Versionen (1.1 und 1.0) sind im [englischen](HISTORY.md) und im [portugiesischen Verlauf](HISTORY.pt-BR.md) beschrieben.
 
+## Neu in 1.3.4
+
+- Die Administration kann das Dateileselimit festlegen (standardmäßig 20 MiB, darüber mit einer PHP-Speicherobergrenze; [PR #33](https://github.com/sintax-tech/mcp-for-nextcloud/pull/33), danke an @johkoenig). Das Paket enthält das Changelog für die App-Verwaltung ([#32](https://github.com/sintax-tech/mcp-for-nextcloud/issues/32)). Die leere Antwort von `notes_read` wurde nicht reproduziert; Regressionstests prüfen jetzt Notes und Notizen, ohne eine Fehlerbehebung zu behaupten ([#34](https://github.com/sintax-tech/mcp-for-nextcloud/issues/34)).
+
 ## Neu in 1.3.1–1.3.3
 
 - **1.3.3: Korrekturen für gescannte PDFs, Fehlerprotokolle und Kalenderpläne.** PDFs mit einer von ocrmypdf und Tesseract hinzugefügten Textebene liefern nun ihren vorhandenen Text ([#31](https://github.com/sintax-tech/mcp-for-nextcloud/issues/31)). Unerwartete Werkzeugfehler nennen Werkzeug, Ausnahmeklasse und Fehlercode im Nextcloud-Protokoll, ohne private Ausnahmemeldungen oder Stacktraces. Kalender-Konfliktwarnungen funktionieren ohne Intl und zeigen bei einem ungültigen Intervall weiterhin den Beginn; bei Dauer null erscheint die Uhrzeit nur einmal. Kalenderpläne und DAV lesen die Einladungseinstellung einheitlich als String, Boolean oder Lazy-Wert. Keine Datenbankänderung.

@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Forms\Creation;
 
+use OCA\Mcp\Modules\Forms\FormsVersionProfiles;
 use OCA\Mcp\Modules\Forms\Presentation\CreateFormMessages;
 
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
@@ -21,7 +22,7 @@ class UploadFolderPrecheck {
 	 * @throws ToolFailure Generic partial refusal without filenames, counts or folder identifiers.
 	 */
 	public function assertClear(CreateFormContext $context, int $id, string $uid): void {
-		if ($context->version !== '5.4.1') { return; }
+		if (!(FormsVersionProfiles::get($context->version)['titleFolderSync'] ?? false)) { return; }
 		try {
 			if ($context->paths->getAllFormFoldersById($id, $uid) !== []) { throw new \RuntimeException('Title stage not admitted'); }
 		} catch (\Throwable $error) { throw new ToolFailure(CreateFormMessages::precheck(), 0, $error); }

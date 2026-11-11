@@ -9,9 +9,9 @@ Versão para **Nextcloud 32 a 35** (o `info.xml` declara 32–35; o contrato de 
 
 A URL exata da instância aparece nas páginas de administração e pessoal.
 
-## Novidades da 1.3.4
+## Novidades da 1.3.5
 
-- Administradores podem configurar o limite de leitura de arquivos (20 MiB por padrão, com teto de memória do PHP acima desse limite; [PR #33](https://github.com/sintax-tech/mcp-for-nextcloud/pull/33), com contribuição de @johkoenig). O pacote inclui o changelog para o gerenciador de apps ([#32](https://github.com/sintax-tech/mcp-for-nextcloud/issues/32)). A resposta vazia de `notes_read` não foi reproduzida; a cobertura de regressão agora verifica Notes e Notizen, sem afirmar uma correção ([#34](https://github.com/sintax-tech/mcp-for-nextcloud/issues/34)).
+- O Forms 5.4.2 passa a aceitar criação de formulários privados e alterações na estrutura de perguntas/opções ([#35](https://github.com/sintax-tech/mcp-for-nextcloud/issues/35)), com a prévia, confirmação e verificações de permissão existentes. A troca de tipo de uma pergunta no Forms 5.4.2 é recusada antes de qualquer chamada nativa ou lock de edição. As verificações e os avisos de pastas cobrem a 5.4.1 e a 5.4.2, e as mensagens de recusa distinguem a versão instalada da permissão para criar. Sem mudança no banco de dados ou nas permissões; atualizar da 1.3.4 não exige passo adicional.
 
 [Mudanças completas](../CHANGELOG.md).
 
@@ -45,7 +45,7 @@ Na edição, uma lista presente substitui só os DISPLAY válidos relativos ao i
 
 ## Escrita de estrutura no Forms
 
-Sete operações usam o `forms.edit` existente e a permissão EDIT nativa: `forms_add_question`, `forms_reorder_questions`, `forms_add_option`, `forms_reorder_options`, `forms_delete_question`, `forms_delete_option` e `forms_change_question_type`. São separadas das ferramentas pontuais existentes. As novas escritas exigem Forms 5.3.0, 5.3.7, 5.4.0 ou 5.4.1 conferido e a API nativa esperada; formas não suportadas ocultam/recusam essas operações.
+Sete operações usam o `forms.edit` existente e a permissão EDIT nativa: `forms_add_question`, `forms_reorder_questions`, `forms_add_option`, `forms_reorder_options`, `forms_delete_question`, `forms_delete_option` e `forms_change_question_type`. São separadas das ferramentas pontuais existentes. As novas escritas exigem Forms 5.3.0, 5.3.7, 5.4.0, 5.4.1 ou 5.4.2 conferido e a API nativa esperada; formas não suportadas ocultam/recusam essas operações. O Forms 5.4.2 não permite trocar o tipo de uma pergunta; `forms_change_question_type` recusa antes de qualquer chamada nativa ou lock.
 
 Planos exigem confirmação com seu `plan_state` e `confirm_shared` quando aplicável. Reordenar exige o conjunto relevante completo. Excluir pergunta a remove logicamente e pode deixar respostas/opções órfãs; excluir opção é irreversível e pode deixar referências de respostas órfãs. Não há restauração exposta. Excluir pergunta de upload pode agendar exclusão assíncrona nativa das pastas: o MCP não examina esses arquivos nem verifica o término do job. Trocar tipo não converte respostas existentes; `grid` e `datetime` são recusados como alvo. A escrita pode renovar o lock nativo e limpar o seletor de e-mail de confirmação, sem enviar e-mail. Recibos distinguem efeitos observados, parciais e incertos; sem retry ou rollback.
 
@@ -212,9 +212,11 @@ Um PATCH nativo bem-sucedido reserva ou renova o bloqueio de edição por 15 min
 
 ## Criação de Forms
 
-`forms_create_form` exige `forms.create`, independente e negado por padrão, além da permissão nativa de criação. Cria formulário privado com título/descrição e perguntas/opções iniciais pelos controllers nativos dos pins 5.3.0,5.3.7,5.4.0 e 5.4.1. Não aceita IDs existentes nem publica, compartilha, envia respostas/email ou edita formulário existente. O plano completo e inerte precede a confirmação com `plan_state`; mudança exige nova revisão. Criar não concede `forms.results` nem `forms.edit`.
+`forms_create_form` exige `forms.create`, independente e negado por padrão, além da permissão nativa de criação. Cria formulário privado com título/descrição e perguntas/opções iniciais pelos controllers nativos dos pins 5.3.0,5.3.7,5.4.0,5.4.1 e 5.4.2. Não aceita IDs existentes nem publica, compartilha, envia respostas/email ou edita formulário existente. O plano completo e inerte precede a confirmação com `plan_state`; mudança exige nova revisão. Criar não concede `forms.results` nem `forms.edit`.
 
-São escritas nativas sequenciais. Falha pode deixar formulário vazio/parcial ou resultado incerto; o recibo mostra somente mudanças Forms observadas. Sem retry, rollback ou deduplicação automáticos. Links de edição são credenciais. No Forms 5.4.1, aplicar título pode renomear/mesclar pastas de upload e apagar pastas vazias com prefixo do **ID novo**. Pré-check nativo recusa coincidência detectada/erro de leitura após criar o formulário vazio, antes do título/perguntas. Mudanças concorrentes ainda podem disparar efeitos nativos em pastas. Todo plano avisa esse limite; sucesso não garante Files intacto. O pré-check não acrescenta grant Files, pasta, lock ou backup.
+As alterações de estrutura aceitam os mesmos pins exatos. No Forms 5.4.2, `forms_change_question_type` não está disponível: prévia e confirmação recusam a troca antes de qualquer chamada nativa ou lock de edição. As demais ferramentas de estrutura continuam disponíveis com as proteções existentes.
+
+São escritas nativas sequenciais. Falha pode deixar formulário vazio/parcial ou resultado incerto; o recibo mostra somente mudanças Forms observadas. Sem retry, rollback ou deduplicação automáticos. Links de edição são credenciais. No Forms 5.4.1 e 5.4.2, aplicar título pode renomear/mesclar pastas de upload e apagar pastas vazias com prefixo do **ID novo**. Pré-check nativo recusa coincidência detectada/erro de leitura após criar o formulário vazio, antes do título/perguntas. Mudanças concorrentes ainda podem disparar efeitos nativos em pastas. Todo plano avisa esse limite; sucesso não garante Files intacto. O pré-check não acrescenta grant Files, pasta, lock ou backup.
 
 Limites antes da primeira escrita: título 256, descrição 8192,50 perguntas (texto 2048/descrição 4096),200 opções por categoria e 1000 no total,100000 caracteres e 1 MiB de pedido/plano completo. Tipos: short/long/color/date/time/linearscale/multiple/multiple_unique/dropdown/file/grid/ranking; datetime recusado. Grid usa opções row/column explícitas. Só validação curta e escala documentadas, sem patches nativos arbitrários. Não corta textos/listas silenciosamente. Alocações nativas/readback podem preceder checks; não é teto rígido de memória.
 

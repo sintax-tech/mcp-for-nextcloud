@@ -18,6 +18,13 @@ final class EditMessages {
 	 * @return string Fixed refusal.
 	 */
 	public static function refused(): string { return Translator::t('The Forms edit is unavailable or no longer permitted. No automatic retry was made.'); }
+	/** Reports an unproven installed version for point editing before native construction or mutation.
+	 * @param string $version Installed Forms version.
+	 * @return string Localized version refusal.
+	 */
+	public static function unsupportedVersion(string $version): string {
+		return Translator::t('Editing forms is not available for the installed Forms version (%s).', [$version]);
+	}
 	/** Reports a response/inspection budget distinctly from app unavailability.
 	 * @return string Fixed budget message.
 	 */

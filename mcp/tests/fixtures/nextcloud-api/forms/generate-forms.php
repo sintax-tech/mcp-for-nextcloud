@@ -6,7 +6,7 @@
 declare(strict_types=1);
 
 /**
- * Generates four signature/behavior contracts from SHA-checked official archives and merges the floor into aggregate
+ * Generates exact-pin signature/behavior contracts from SHA-checked official archives and merges the floor into aggregate
  * fixtures. Source is parsed, never executed. Run only in a pinned PHP container: php generate-forms.php <pins> <archives>.
  */
 use OCA\Mcp\Tests\Unit\Contract\NextcloudApi\SourceParser;
@@ -55,4 +55,4 @@ foreach (range(31, 35) as $major) {
 	$before = file_get_contents($file);
 	FixtureFile::write($file, substr($before, 0, strpos($before, 'return [')), $fixture);
 }
-echo "Generated four verified Forms contracts and aggregate signature surfaces\n";
+echo "Generated " . count(FormsSourcePins::all()) . " verified Forms contracts and aggregate signature surfaces\n";

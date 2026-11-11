@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi\Forms;
 use OCA\Mcp\Modules\Forms\Editing\EditSettings;
 use PHPUnit\Framework\TestCase;
 
-/** Binds the closed MCP edit domain and native PATCH effects to four hashed source fixtures, not runtime. */
+/** Binds the closed MCP edit domain and native PATCH effects to five hashed source fixtures, not runtime. */
 final class FormsEditingContractTest extends TestCase {
 	/** Checks ACL before lookup, non-atomic writes, B1 predicate, native lock duration and constructor reuse.
 	 * @return void

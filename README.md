@@ -19,9 +19,9 @@ English · [Português (Brasil)](README.pt-BR.md) · [Deutsch](README.de.md) · 
 
 ---
 
-## What's new in 1.3.4
+## What's new in 1.3.5
 
-- Administrators can configure the file read limit (20 MiB by default, with a PHP memory ceiling above that limit; [PR #33](https://github.com/sintax-tech/mcp-for-nextcloud/pull/33), thanks to @johkoenig). The package includes the changelog for the app manager ([#32](https://github.com/sintax-tech/mcp-for-nextcloud/issues/32)). The empty `notes_read` response was not reproduced; regression coverage now checks Notes and Notizen, without claiming a fix ([#34](https://github.com/sintax-tech/mcp-for-nextcloud/issues/34)).
+- Forms 5.4.2 now supports private form creation and question/option structure edits ([#35](https://github.com/sintax-tech/mcp-for-nextcloud/issues/35)), with the existing preview, confirmation and permission checks. Changing a question type on Forms 5.4.2 is refused before any native call or editing lock. Folder safety checks and warnings cover both 5.4.1 and 5.4.2, and refusal messages distinguish the installed version from creation permission. No database or permission change; updating from 1.3.4 needs no extra step.
 
 [Full changes](CHANGELOG.md).
 
@@ -117,9 +117,11 @@ A successful native PATCH reserves or renews a 15-minute editing lock and can id
 
 ## Forms creation
 
-`forms_create_form` requires the independent, default-denied `forms.create` grant and native creation permission. It creates a private form with a title/description and initial questions/options, through native Forms controllers in the exact supported pins 5.3.0, 5.3.7, 5.4.0 and 5.4.1. It accepts no existing IDs and does not publish, share, submit, send mail or edit an existing form. The full inert plan is required before confirmation with its `plan_state`; a changed plan requires review again. `forms.results` and `forms.edit` are not granted by creation.
+`forms_create_form` requires the independent, default-denied `forms.create` grant and native creation permission. It creates a private form with a title/description and initial questions/options, through native Forms controllers in the exact supported pins 5.3.0, 5.3.7, 5.4.0, 5.4.1 and 5.4.2. It accepts no existing IDs and does not publish, share, submit, send mail or edit an existing form. The full inert plan is required before confirmation with its `plan_state`; a changed plan requires review again. `forms.results` and `forms.edit` are not granted by creation.
 
-Creation uses sequential native writes. A failure can leave an empty or partially configured form, or an uncertain result; receipts list only observed Forms changes. There is no automatic retry, rollback or deduplication. Editor links are credentials. In Forms 5.4.1, setting a title can rename/merge upload folders or remove empty folders matching the **new form ID** prefix. A native precheck refuses detected matches or read errors after the empty form was created, before its title/questions are applied. Concurrent changes can still trigger native folder effects. Every plan warns about this residual behavior; success is not a guarantee that Files stayed unchanged. The precheck adds no Files grant, directory, lock or backup.
+Structure changes support the same exact pins. In Forms 5.4.2, `forms_change_question_type` is unavailable: preview and confirmation refuse it before any native call or editing lock. Other structure tools remain available with the existing safeguards.
+
+Creation uses sequential native writes. A failure can leave an empty or partially configured form, or an uncertain result; receipts list only observed Forms changes. There is no automatic retry, rollback or deduplication. Editor links are credentials. In Forms 5.4.1 and 5.4.2, setting a title can rename/merge upload folders or remove empty folders matching the **new form ID** prefix. A native precheck refuses detected matches or read errors after the empty form was created, before its title/questions are applied. Concurrent changes can still trigger native folder effects. Every plan warns about this residual behavior; success is not a guarantee that Files stayed unchanged. The precheck adds no Files grant, directory, lock or backup.
 
 Limits are checked before the first write: title 256, description 8192, up to 50 questions (text 2048/description 4096),200 options per category and 1000 overall,100000 text characters and 1 MiB canonical request/complete plan. Supported creation types are short/long/color/date/time/linearscale/multiple/multiple_unique/dropdown/file/grid/ranking; datetime is refused. Grid uses explicit row/column options. Only documented short validation and scale settings are accepted, never arbitrary native patches. Text and option lists are never silently shortened. Native arrays/readback may be allocated before checks; these limits are not a hard memory cap.
 

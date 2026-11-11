@@ -56,9 +56,7 @@ final class DevTestTimeout {
 			self::$limit = (int)$env;
 		}
 		if (self::$limit < 1 || !function_exists('pcntl_alarm')) {
-			if (!function_exists('pcntl_alarm')) {
-				fwrite(STDERR, "Dev test time limit is inactive because the pcntl extension is not loaded\n");
-			}
+			// The shared bootstrap also runs in isolated non-dev tests; optional timeout support must stay silent here.
 			return;
 		}
 		$facade = Facade::instance();

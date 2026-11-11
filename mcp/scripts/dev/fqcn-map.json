@@ -2,6 +2,7 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Modules/Forms/FormsVersionProfiles.php","fqcn":"OCA\\Mcp\\Modules\\Forms\\FormsVersionProfiles","target":"stays","owner":"Modules\\Forms","ticket":null},
 		{"path":"lib/Platform/Php/MemoryLimit.php","fqcn":"OCA\\Mcp\\Platform\\Php\\MemoryLimit","target":"stays","owner":"Platform","ticket":null},
 		{"path":"lib/Platform/Php/IniQuantity.php","fqcn":"OCA\\Mcp\\Platform\\Php\\IniQuantity","target":"stays","owner":"Platform","ticket":null},
 		{"path":"lib/Modules/Files/Extraction/FileReadLimit.php","fqcn":"OCA\\Mcp\\Modules\\Files\\Extraction\\FileReadLimit","target":"stays","owner":"Modules\\Files","ticket":null},

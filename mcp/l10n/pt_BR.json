@@ -1,4 +1,9 @@
 { "translations": {
+    "Form creation is not available for the installed Forms version (%s)." : "A criação de formulários não está disponível para a versão instalada do Forms (%s).",
+    "Form creation is not permitted for this user." : "A criação de formulários não é permitida para este usuário.",
+    "Forms %s does not allow changing a question type. No change was attempted." : "O Forms %s não permite trocar o tipo de uma pergunta. Nenhuma alteração foi tentada.",
+    "Editing forms is not available for the installed Forms version (%s)." : "A edição de formulários não está disponível para a versão instalada do Forms (%s).",
+    "Structure changes are not available for the installed Forms version (%s)." : "Alterações de estrutura não estão disponíveis para a versão instalada do Forms (%s).",
     "Each listed event includes alarms (minutesBefore and description) for DISPLAY reminders relative to the start, and otherAlarms counts other reminders without exposing their details. Confidential events and read-only shares do not expose reminders. A negative, non-integer or greater than 40320 minutesBefore value must be adjusted before reusing it in create/update." : "Cada evento listado inclui alarms (minutesBefore e description) para lembretes DISPLAY relativos ao início, e otherAlarms conta os outros lembretes sem expor seus detalhes. Eventos confidenciais e agendas compartilhadas somente para leitura não expõem lembretes. Um valor de minutesBefore negativo, não inteiro ou maior que 40320 precisa ser ajustado antes de ser reutilizado em create/update.",
     "This change would clear the view's card title/background source; keep that column selected, or omit view_ids for a view that shows all columns." : "Esta mudança apagaria a fonte de título/fundo do card da view; mantenha essa coluna selecionada ou omita view_ids para uma view que mostra todas as colunas.",
     "Event %s exists, but its reminders differ from the requested change. Do not repeat the change; check List events." : "O evento %s existe, mas seus lembretes diferem da alteração solicitada. Não repita a alteração; confira em List events.",
@@ -1873,7 +1878,7 @@
     "The new type does not use options. Existing options stay stored but are not shown." : "O tipo novo não usa opções. As opções existentes continuam guardadas, mas não aparecem.",
     "Existing options are kept with their IDs and order." : "As opções existentes são mantidas com seus IDs e sua ordem.",
     "Files already uploaded to this question are not touched and no cleanup job is queued." : "Os arquivos já enviados a esta pergunta não são tocados e nenhuma tarefa de limpeza é colocada na fila.",
-    "Change existing forms, including adding, reordering and deleting questions and options and changing a question type" : "Alterar formulários existentes, inclusive incluir, reordenar e excluir perguntas e opções e trocar o tipo de uma pergunta",
+    "Change existing forms, including adding, reordering and deleting questions and options and changing a question type (not available in every Forms version)" : "Alterar formulários existentes, inclusive incluir, reordenar e excluir perguntas e opções e trocar o tipo de uma pergunta (não disponível em todas as versões do Forms)",
     "The question already has this type, so nothing would change and these settings would not be applied. Change settings with forms_update_question." : "A pergunta já tem este tipo, então nada mudaria e estas configurações não seriam aplicadas. Altere as configurações com forms_update_question.",
     "Configure a poll" : "Configurar uma enquete",
     "Change poll state" : "Alterar estado da enquete",

@@ -2,6 +2,10 @@
 
 English · [Português (Brasil)](HISTORY.pt-BR.md) · [Deutsch](HISTORY.de.md) · [Español](HISTORY.es.md)
 
+## What's new in 1.3.4
+
+- Administrators can configure the file read limit (20 MiB by default, with a PHP memory ceiling above that limit; [PR #33](https://github.com/sintax-tech/mcp-for-nextcloud/pull/33), thanks to @johkoenig). The package includes the changelog for the app manager ([#32](https://github.com/sintax-tech/mcp-for-nextcloud/issues/32)). The empty `notes_read` response was not reproduced; regression coverage now checks Notes and Notizen, without claiming a fix ([#34](https://github.com/sintax-tech/mcp-for-nextcloud/issues/34)).
+
 ## What's new in 1.3.1–1.3.3
 
 - **1.3.3: fixes for scanned PDFs, failure logs and calendar plans.** PDFs made searchable by ocrmypdf with Tesseract now return their existing text layer ([#31](https://github.com/sintax-tech/mcp-for-nextcloud/issues/31)). Unexpected tool failures identify the tool and exception class and code in the Nextcloud log, without private exception messages or traces. Calendar collision warnings work without Intl and keep the start visible for an invalid interval; zero-duration overlaps show the time once. Calendar plans and DAV use the same invitation setting reader for string, boolean and lazy values. No database change.

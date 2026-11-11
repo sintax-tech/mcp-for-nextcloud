@@ -56,7 +56,7 @@ class StructureWriter {
 			$response = $this->throttle->invoke(
 				static fn (): mixed => $op->call($c, $r, $e),
 				function () use ($op, $c, $r, $uid, $plan, &$attempted, &$t0): void {
-					$this->factory->assertAllowed($uid, $c);
+					$this->factory->assertAllowed($uid, $c, [StructureMessages::class, 'unsupportedVersion']);
 					$fresh = $this->states->read($c, $r['form_id'], $uid);
 					$current = $this->plans->of($op, $r, $c, $fresh, $op->effect($c, $r, $fresh), $uid, true);
 					if (!hash_equals($plan[PlanState::ARGUMENT], $current[PlanState::ARGUMENT])) {
@@ -75,7 +75,7 @@ class StructureWriter {
 		}
 		$t1 = time();
 		try {
-			$this->factory->assertAllowed($uid, $c);
+			$this->factory->assertAllowed($uid, $c, [StructureMessages::class, 'unsupportedVersion']);
 			$after = $this->states->read($c, $r['form_id'], $uid, false);
 			return StructureReceipt::observed($op, $c, $r, $s, $e, $after, $response, $uid, $t0, $t1);
 		} catch (\Throwable) {

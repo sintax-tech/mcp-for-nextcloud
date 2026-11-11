@@ -19,9 +19,9 @@ Deja que Claude y otros clientes MCP trabajen con tus archivos, notas, calendari
 
 ---
 
-## Novedades de la 1.3.4
+## Novedades de la 1.3.5
 
-- Los administradores pueden configurar el límite de lectura de archivos (20 MiB por defecto, con un techo de memoria de PHP por encima de ese límite; [PR #33](https://github.com/sintax-tech/mcp-for-nextcloud/pull/33), gracias a @johkoenig). El paquete incluye el changelog para el gestor de aplicaciones ([#32](https://github.com/sintax-tech/mcp-for-nextcloud/issues/32)). No se reprodujo la respuesta vacía de `notes_read`; la cobertura de regresión ahora comprueba Notes y Notizen, sin afirmar una corrección ([#34](https://github.com/sintax-tech/mcp-for-nextcloud/issues/34)).
+- Forms 5.4.2 admite ahora la creación de formularios privados y cambios en la estructura de preguntas/opciones ([#35](https://github.com/sintax-tech/mcp-for-nextcloud/issues/35)), con la vista previa, confirmación y comprobaciones de permisos existentes. Cambiar el tipo de una pregunta en Forms 5.4.2 se rechaza antes de cualquier llamada nativa o bloqueo de edición. Las comprobaciones y avisos de carpetas cubren 5.4.1 y 5.4.2, y los mensajes de rechazo distinguen la versión instalada del permiso de creación. Sin cambios en la base de datos ni en los permisos; actualizar desde 1.3.4 no requiere pasos adicionales.
 
 [Cambios completos](CHANGELOG.md).
 
@@ -116,9 +116,11 @@ Un PATCH nativo correcto reserva o renueva el bloqueo de edición durante 15 min
 
 ## Creación de Forms
 
-`forms_create_form` requiere `forms.create`, independiente y denegado por defecto, además del permiso nativo de creación. Crea un formulario privado con título/descripción y preguntas/opciones iniciales mediante los controladores nativos en 5.3.0,5.3.7,5.4.0 y 5.4.1. No acepta IDs existentes ni publica, comparte, envía respuestas/correo o edita formularios existentes. El plan completo e inerte precede a la confirmación con `plan_state`; un cambio exige nueva revisión. Crear no concede `forms.results` ni `forms.edit`.
+`forms_create_form` requiere `forms.create`, independiente y denegado por defecto, además del permiso nativo de creación. Crea un formulario privado con título/descripción y preguntas/opciones iniciales mediante los controladores nativos en 5.3.0,5.3.7,5.4.0,5.4.1 y 5.4.2. No acepta IDs existentes ni publica, comparte, envía respuestas/correo o edita formularios existentes. El plan completo e inerte precede a la confirmación con `plan_state`; un cambio exige nueva revisión. Crear no concede `forms.results` ni `forms.edit`.
 
-Son escrituras nativas secuenciales. Un fallo puede dejar un formulario vacío/parcial o un resultado incierto; el recibo muestra solo cambios Forms observados. No hay reintento, reversión ni deduplicación automáticos. Los enlaces de edición son credenciales. En Forms 5.4.1, aplicar el título puede renombrar/fusionar carpetas de carga y eliminar carpetas vacías con el prefijo del **ID nuevo**. La comprobación nativa rechaza coincidencias detectadas/errores de lectura después de crear el formulario vacío y antes del título/preguntas. Cambios concurrentes aún pueden provocar efectos nativos en carpetas. Todo plan advierte este límite; el éxito no garantiza Files intacto. La comprobación no añade permiso Files, carpeta, bloqueo ni copia.
+Los cambios de estructura admiten las mismas versiones exactas. En Forms 5.4.2, `forms_change_question_type` no está disponible: la vista previa y la confirmación rechazan el cambio antes de cualquier llamada nativa o bloqueo de edición. Las demás herramientas de estructura conservan las protecciones existentes.
+
+Son escrituras nativas secuenciales. Un fallo puede dejar un formulario vacío/parcial o un resultado incierto; el recibo muestra solo cambios Forms observados. No hay reintento, reversión ni deduplicación automáticos. Los enlaces de edición son credenciales. En Forms 5.4.1 y 5.4.2, aplicar el título puede renombrar/fusionar carpetas de carga y eliminar carpetas vacías con el prefijo del **ID nuevo**. La comprobación nativa rechaza coincidencias detectadas/errores de lectura después de crear el formulario vacío y antes del título/preguntas. Cambios concurrentes aún pueden provocar efectos nativos en carpetas. Todo plan advierte este límite; el éxito no garantiza Files intacto. La comprobación no añade permiso Files, carpeta, bloqueo ni copia.
 
 Límites antes de escribir: título 256, descripción 8192,50 preguntas (texto 2048/descripción 4096),200 opciones por categoría y 1000 en total,100000 caracteres y 1 MiB de petición/plan completo. Tipos: short/long/color/date/time/linearscale/multiple/multiple_unique/dropdown/file/grid/ranking; datetime rechazado. Grid usa opciones row/column explícitas. Solo validación corta y escala documentadas, sin parches nativos arbitrarios. No se recortan textos/listas silenciosamente. Las asignaciones nativas/readback pueden preceder a los controles; no es un límite estricto de memoria.
 

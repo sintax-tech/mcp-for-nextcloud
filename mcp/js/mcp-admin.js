@@ -587,6 +587,38 @@
 	admin.grantDefaults = { granted, deniedReads }
 })((globalThis.window || globalThis).OCA.Mcp.Admin)
 ;
+/* admin/access/level-labels.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** Shared names for selectable and derived access levels, translated when requested. */
+(function (admin) {
+	'use strict'
+
+	/** @return {Object<string, string>} translated names used by every access level presentation */
+	admin.levelLabels = function () {
+		return {
+			...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(),
+			prepare: t('mcp', 'Prepare meetings'), none: t('mcp', 'None'),
+			read: t('mcp', 'Read'),
+			edit: t('mcp', 'Edit'),
+			full: t('mcp', 'Full'),
+			forms_write: t('mcp', 'Read and write forms'),
+			forms_write_results: t('mcp', 'Read and write forms and read responses'),
+			folders: t('mcp', 'Accounts and folders'),
+			messages: t('mcp', 'Messages'),
+			attachments: t('mcp', 'Messages and attachments'),
+			flags: t('mcp', 'Messages, attachments and flags'),
+			move: t('mcp', 'Messages, attachments, flags and moving'),
+			draft: t('mcp', 'Messages, attachments, flags, moving and drafts'),
+			send: t('mcp', 'Messages, attachments, flags, moving, drafts and sending'),
+			custom: t('mcp', 'Custom'),
+			unknown: t('mcp', 'Unknown'),
+		}
+	}
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
+;
 /* admin/access/levels/polls.js */
 /*
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
@@ -1395,23 +1427,7 @@
 		/** Names of the access levels of src/admin/admin-levels.js.
 		 * @return {Object<string, string>} names of the access levels of src/admin/admin-levels.js */
 		function levelLabels() {
-			return {
-				...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(),
-				prepare: t('mcp', 'Prepare meetings'), none: t('mcp', 'None'),
-				read: t('mcp', 'Read'),
-				edit: t('mcp', 'Edit'),
-				full: t('mcp', 'Full'),
-				forms_write: t('mcp', 'Read and write forms'),
-				forms_write_results: t('mcp', 'Read and write forms and read responses'),
-				folders: t('mcp', 'Accounts and folders'),
-				messages: t('mcp', 'Messages'),
-				attachments: t('mcp', 'Messages and attachments'),
-				flags: t('mcp', 'Messages, attachments and flags'),
-				move: t('mcp', 'Messages, attachments, flags and moving'),
-				draft: t('mcp', 'Messages, attachments, flags, moving and drafts'),
-				send: t('mcp', 'Messages, attachments, flags, moving, drafts and sending'),
-				custom: t('mcp', 'Custom'),
-			}
+			return window.OCA.Mcp.Admin.levelLabels()
 		}
 
 		Object.assign(context, { levelLabels, moduleLabels, operationHint, operationLabels })
@@ -4553,7 +4569,7 @@
 			if (module === null) {
 				return level === 'read' ? t('mcp', 'Yes') : t('mcp', 'No')
 			}
-			return { ...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), none: t('mcp', 'None'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom'), unknown: t('mcp', 'Unknown') }[level] || level
+			return window.OCA.Mcp.Admin.levelLabels()[level] || level
 		}
 
 		/** Calculate a level from the module's catalog and effective operation values.
@@ -7046,7 +7062,7 @@
 		 * @return {string}
 		 */
 		function levelName(level) {
-			return { ...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), prepare: t('mcp', 'Prepare meetings'), none: t('mcp', 'Not granted'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom') }[level] || level
+			return { ...window.OCA.Mcp.Admin.levelLabels(), none: t('mcp', 'Not granted') }[level] || level
 		}
 		/** A level in words, a custom one with its operations, since "Custom → Custom" would say nothing.
 		 * @param {Object<string, string[]>} grants granted operations indexed by module
@@ -8789,7 +8805,7 @@
 				if (!byModule.has(row.module)) byModule.set(row.module, [])
 				byModule.get(row.module).push(row)
 			}
-			const levelName = { ...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), none: t('mcp', 'None'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom'), unknown: t('mcp', 'Unknown') }
+			const levelName = window.OCA.Mcp.Admin.levelLabels()
 			const items = [...byModule.entries()].map(([module, rows]) => {
 				const operationList = rows.map((row) => row.operation)
 				const values = Object.fromEntries(rows.map((row) => [row.operation, row.grant ? row.grant.allowed : row.allowed]))

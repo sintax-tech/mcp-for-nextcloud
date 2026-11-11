@@ -65,7 +65,7 @@ class AdminManifest {
 	 */
 	static levelsSource() {
 		return AdminManifest.fragments()
-			.filter((fragment) => fragment === 'admin/registration.js' || fragment === 'admin/access/grant-defaults.js' || fragment === 'admin/access/routine-grants.js' || fragment.startsWith('admin/access/levels/') || fragment === 'admin/admin-levels.js')
+			.filter((fragment) => fragment === 'admin/registration.js' || fragment === 'admin/access/level-labels.js' || fragment === 'admin/access/grant-defaults.js' || fragment === 'admin/access/routine-grants.js' || fragment.startsWith('admin/access/levels/') || fragment === 'admin/admin-levels.js')
 			.map((fragment) => AdminManifest.fragment(fragment))
 			.join(';\n')
 	}
@@ -91,7 +91,7 @@ class AdminManifest {
 		}[name]
 		const fragments = AdminManifest.fragments()
 		if (groups && fragments.some(p => p.startsWith('admin/' + groups[0] + '/'))) {
-			return fragments.filter(p => p === 'admin/access/grant-defaults.js' || p === 'admin/access/routine-grants.js' || groups.some(group => p.startsWith('admin/' + group + '/')))
+			return fragments.filter(p => p === 'admin/access/level-labels.js' || p === 'admin/access/grant-defaults.js' || p === 'admin/access/routine-grants.js' || groups.some(group => p.startsWith('admin/' + group + '/')))
 				.map(p => AdminManifest.fragment(p)).join(';\n')
 		}
 		return AdminManifest.fragment('admin/' + name)
@@ -114,7 +114,7 @@ class AdminManifest {
 		const dependencies = entry.startsWith('admin/oauth-clients/') ? AdminManifest.fragments().filter(p => p.startsWith('admin/oauth-clients/') && p !== entry).map(p => AdminManifest.fragment(p)).join(';\n') + ';\n' : ''
 		const address = [entry.split('/')[1], path.basename(entry, '.js')].map(part => part.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())).join('.')
 		const operations = [...source.matchAll(/^\t\t(?:async )?function (\w+)\(/gm)].map(m => m[1])
-		return ';\n' + AdminManifest.fragment('admin/registration.js') + ';\n' + AdminManifest.fragment('admin/access/routine-grants.js') + ';\n' + dependencies + source + `;\n(function () {
+		return ';\n' + AdminManifest.fragment('admin/registration.js') + ';\n' + AdminManifest.fragment('admin/access/routine-grants.js') + ';\n' + AdminManifest.fragment('admin/access/level-labels.js') + ';\n' + dependencies + source + `;\n(function () {
 			const target = globalThis
 			const before = Object.getOwnPropertyDescriptors(target)
 			;(globalThis.window || globalThis).OCA.Mcp.Admin.modules.${address}(target)

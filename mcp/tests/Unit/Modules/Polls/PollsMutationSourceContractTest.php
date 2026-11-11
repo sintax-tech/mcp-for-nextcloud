@@ -38,15 +38,15 @@ final class PollsMutationSourceContractTest extends TestCase {
 	 */
 	#[DataProvider('pins')]
 	public function testAllCalledSignaturesAreExact(string $version, array $record): void {
-		foreach (PollsMutationSurface::methods($version !== '8.6.3') as $class => $methods) {
+		foreach (PollsMutationSurface::methods(true) as $class => $methods) {
 			foreach ($methods as $method => [$types]) {
 				self::assertSame($types, $record['surfaces'][$class]['types'][$method], $version . ' ' . $class . '::' . $method);
 			}
 		}
 		$m = $record['methods']['Service/ShareService.php::sendInvitation'];
-		self::assertStringContainsString($version === '8.6.3' ? '?SentResult &$sentResult = null' : 'SentResult &$sentResult = new SentResult()', $m);
-		self::assertStringContainsString($version === '8.6.3' ? '): ?SentResult' : '): SentResult', $m);
-		$name = $version === '8.6.3' ? 'getUserObject' : 'createUserObject';
+		self::assertStringContainsString('SentResult &$sentResult = new SentResult()', $m);
+		self::assertStringContainsString('): SentResult', $m);
+		$name = 'createUserObject';
 		self::assertCount(7, $record['surfaces'][PollsMutationSurface::USER_MAPPER]['types'][$name]);
 		self::assertSame(['int', 'array'], $record['surfaces'][PollsSurface::POLLS]['types']['update']);
 	}
@@ -64,7 +64,7 @@ final class PollsMutationSourceContractTest extends TestCase {
 		self::assertStringContainsString('|| $this->isMember(', $m['Model/Settings/AppSettings.php::getBooleanSetting']);
 		self::assertStringContainsString(
 			'getPublicSharesAllowed',
-			$m['Service/ShareService.php::' . ($version === '8.6.3' ? 'add' : 'createPublicShare')]
+			$m['Service/ShareService.php::' . 'createPublicShare']
 		);
 		self::assertStringContainsString('setOwner($this->userSession->getCurrentUserId())', $m['Service/OptionService.php::add']);
 		self::assertStringContainsString('setAnonymousSafe(', $m['Db/Poll.php::deserializeArray']);
@@ -75,7 +75,7 @@ final class PollsMutationSourceContractTest extends TestCase {
 		self::assertStringNotContainsString('PERMISSION_POLL_EDIT', $m['Service/ShareService.php::sendInvitation']);
 		self::assertStringContainsString(
 			'setUserId($token)',
-			$m[$version === '8.6.3' ? 'Service/ShareService.php::createNewShare' : 'Db/Share.php::setFromUserObject']
+			$m['Db/Share.php::setFromUserObject']
 		);
 	}
 }

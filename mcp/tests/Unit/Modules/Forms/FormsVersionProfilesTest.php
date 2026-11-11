@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 
 /** Pins constructor and effect differences independently of the production profile table. */
 final class FormsVersionProfilesTest extends TestCase {
-	/** Checks every admitted release, including the type restriction reserved for the next ticket.
+	/** Preserves the production profile map and exercises only active source pins.
 	 * @return void
 	 */
 	public function testExactProfiles(): void {
@@ -25,7 +25,7 @@ final class FormsVersionProfilesTest extends TestCase {
 			'5.4.2' => ['5.4', true, false],
 		];
 		self::assertSame(array_keys($expected), array_keys(FormsVersionProfiles::PROFILES));
-		foreach ($expected as $version => $fields) {
+		foreach (array_intersect_key($expected, \OCA\Mcp\Tests\Unit\Contract\NextcloudApi\Forms\FormsSourcePins::all()) as $version => $fields) {
 			self::assertSame($fields, array_values(FormsVersionProfiles::get($version)), $version);
 			self::assertSame($fields[0], FormsVersionProfiles::constructorFamily($version));
 		}

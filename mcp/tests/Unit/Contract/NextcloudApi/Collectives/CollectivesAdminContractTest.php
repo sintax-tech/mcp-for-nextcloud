@@ -177,7 +177,7 @@ final class CollectivesAdminContractTest extends TestCase {
 		foreach (self::behavior()['circles'] as $version => $record) {
 			$major = (int)$version;
 			$local = $record['methods']['Service/FederatedUserService.php::getLocalFederatedUser'];
-			if ($major >= 33) {
+			if ($major >= 34) {
 				$this->assertSame('userSingleId', $record['userSingleId'], $version);
 				$this->assertStringContainsString('getCachedLocalFederatedUser($federatedUser)', $local, "$version: a recorded identity is only read");
 				$this->assertStringContainsString('setValueString($userId, Application::APP_ID, ConfigLexicon::USER_SINGLE_ID', $local, "$version: a missing one is written");

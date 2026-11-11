@@ -53,6 +53,27 @@ final class NextcloudCoverageTest extends TestCase {
 		}
 	}
 
+	/** @return void Native source providers never reintroduce retired positive pins into supported. */
+	public function testNativeSourceProvidersUseOnlyActivePins(): void {
+		foreach (\OCA\Mcp\Tests\Unit\Modules\Polls\PollsMutationShapeTest::shapes() as $case) {
+			self::assertContains($case[0], ['9.1.4', '9.3.0']);
+		}
+		foreach (\OCA\Mcp\Tests\Unit\Modules\Polls\PollsMutationBoundaryTest::policies() as $case) {
+			self::assertContains($case[0], ['9.1.4', '9.3.0']);
+		}
+		self::assertSame(['2.2.2', '2.3.2', '2.4.0'], array_keys(iterator_to_array(\OCA\Mcp\Tests\Unit\Modules\Tables\NativeFactoriesTest::pins())));
+	}
+
+	/** @return void Generator inputs and surfaces retain only their active source pins. */
+	public function testGeneratorInputsMatchTheActiveSourcePins(): void {
+		self::assertSame(['5.3.0', '5.4.0', '5.4.1', '5.4.2'], array_keys(\OCA\Mcp\Tests\Unit\Contract\NextcloudApi\Forms\FormsSourcePins::all()));
+		$base = dirname(__DIR__, 3) . '/fixtures/nextcloud-api/';
+		$tables = json_decode(file_get_contents($base . 'tables/schema-api-surfaces.json'), true, flags: JSON_THROW_ON_ERROR);
+		self::assertSame(['2.2.2', '2.3.1', '2.3.2', '2.4.0'], array_keys($tables['pins']));
+		$runtime = json_decode(file_get_contents(dirname(__DIR__, 3) . '/Integration/ci/polls/runtime-pins.json'), true, flags: JSON_THROW_ON_ERROR);
+		self::assertSame(['9.3.0'], array_keys($runtime));
+	}
+
 	/** @return void Unknown majors fail before the local runner can start an engine. */
 	public function testLocalRunnerRejectsAnUnknownMajorBeforeCreatingResources(): void {
 		[$status, $out] = $this->shell('sh "$1" 36 mariadb fresh', 'run-local.sh', '36');

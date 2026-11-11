@@ -20,11 +20,11 @@ use PHPUnit\Framework\TestCase;
 #[PreserveGlobalState(false)]
 final class PollsMutationShapeTest extends TestCase {
 	/**
-	 * @return iterable<string,array{string,?string,?string}> Four positives and each missing required mutation member.
+	 * @return iterable<string,array{string,?string,?string}> Two active positive pins and each missing required mutation member.
 	 * @throws \Throwable If validation or a called collaborator fails.
 	 */
 	public static function shapes(): iterable {
-		foreach (['8.6.3', '9.0.7', '9.1.4', '9.3.0'] as $v) {
+		foreach (['9.1.4', '9.3.0'] as $v) {
 			yield $v => [$v, null, null];
 		}
 		foreach (PollsMutationSurface::methods(true) as $class => $methods) {
@@ -109,7 +109,7 @@ final class PollsMutationShapeTest extends TestCase {
 			$apps = $this->createMock(IAppManager::class);
 			$apps->method('getAppVersion')->willReturn($version);
 			$apps->method('isEnabledForAnyone')->willReturn(true);
-			$major = ['8.6.3' => 32, '9.0.7' => 33, '9.1.4' => 34, '9.3.0' => 35][$version];
+			$major = ['9.1.4' => 34, '9.3.0' => 35][$version];
 			$probe = new PollsMutationProbe($apps, new PollsMutationSurface(), $major);
 			$logger = $this->createMock(LoggerInterface::class);
 			$logger->expects($missingClass === null ? self::never() : self::once())->method('warning');
@@ -149,17 +149,14 @@ final class PollsMutationShapeTest extends TestCase {
 				$this->args = $args;
 			}
 		};
-		$adapter = $version === '8.6.3' ? new \OCA\Mcp\Modules\Polls\Integration\Polls86Adapter() : new \OCA\Mcp\Modules\Polls\Integration\Polls9Adapter();
+		$adapter = new \OCA\Mcp\Modules\Polls\Integration\Polls9Adapter();
 		foreach ([0, 3600, 86400, 2678400] as $duration) {
 			$adapter->updateOption($service, ['option_id' => 1, 'option' => ['timestamp' => 1800000000, 'duration' => $duration]]);
-			if ($version === '8.6.3') {
-				self::assertSame([1, 1800000000, '', $duration], $service->args);
-			} else {
-				self::assertInstanceOf(\OCA\Polls\Model\DateTimeImmutable::class, $service->args[2]);
-				self::assertInstanceOf(\OCA\Polls\Model\DateInterval::class, $service->args[3]);
-				self::assertSame(1800000000, $service->args[2]->getTimestamp());
-				self::assertSame($duration, $service->args[3]->getSeconds($service->args[2]));
-			}
+			self::assertInstanceOf(\OCA\Polls\Model\DateTimeImmutable::class, $service->args[2]);
+			self::assertInstanceOf(\OCA\Polls\Model\DateInterval::class, $service->args[3]);
+			self::assertSame(1800000000, $service->args[2]->getTimestamp());
+			self::assertSame($duration, $service->args[3]->getSeconds($service->args[2]));
+
 		}
 	}
 

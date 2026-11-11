@@ -11,13 +11,14 @@ use OCA\Mcp\Modules\Forms\Creation\CreateFormTypes;
 use OCA\Mcp\Modules\Forms\FormsVersionProfiles;
 use PHPUnit\Framework\TestCase;
 
-/** Verifies explicit native constructor variants and sequential behavior in all five SHA-bound pins, not runtime. */
+/** Verifies explicit native constructor variants and sequential behavior in the active SHA-bound pins, not runtime. */
 final class FormsCreationContractTest extends TestCase {
 	/** Checks actor capture, app config, write signatures, 201 subsets and the version-specific Files branch.
 	 * @return void
 	 */
 	public function testPinnedCreationGraphAndNativeStageContracts(): void {
-		self::assertSame(array_keys(FormsSourcePins::all()), array_keys(FormsVersionProfiles::PROFILES));
+		self::assertSame(['5.3.0', '5.4.0', '5.4.1', '5.4.2'], array_keys(FormsSourcePins::all()));
+		foreach (array_keys(FormsSourcePins::all()) as $pin) { self::assertArrayHasKey($pin, FormsVersionProfiles::PROFILES); }
 		foreach (FormsSourcePins::all() as $pin => $sha) {
 			$f = json_decode(file_get_contents(__DIR__ . '/../../../../fixtures/nextcloud-api/forms/' . $pin . '.json'), true, 512, JSON_THROW_ON_ERROR);
 			self::assertSame($sha, $f['sha256']);

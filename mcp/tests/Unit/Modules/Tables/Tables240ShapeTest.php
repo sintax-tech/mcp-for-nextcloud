@@ -20,7 +20,7 @@ final class Tables240ShapeTest extends TestCase {
 			array_filter(SchemaApiShape::members($pin), static fn (array $entry): bool => $entry[0] === 'OCA\\Tables\\Db\\View')));
 		self::assertContains('@layout', $viewFields('2.4.0'));
 		self::assertContains('@viewSettings', $viewFields('2.4.0'));
-		foreach (['1.0.0', '1.0.10', '2.0.0', '2.2.2', '2.3.2'] as $pin) {
+		foreach (['1.0.0', '2.0.0', '2.2.2', '2.3.2'] as $pin) {
 			self::assertNotContains('@layout', $viewFields($pin), $pin);
 			self::assertNotContains('@viewSettings', $viewFields($pin), $pin);
 		}

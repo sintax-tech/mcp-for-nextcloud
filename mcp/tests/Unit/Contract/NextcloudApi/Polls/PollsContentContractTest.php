@@ -47,9 +47,7 @@ final class PollsContentContractTest extends TestCase {
 		$this->assertStringContainsString('getSimpleType()', $safe);
 		$this->assertStringContainsString('getType()', $safe);
 		$this->assertStringContainsString('getUser()', $m['Db/Vote.php::jsonSerialize']);
-		if ($version !== '8.6.3') {
-			$this->assertStringContainsString('NameGenerator', $m['Model/User/Anon.php::getDisplayName']);
-		}
+		$this->assertStringContainsString('NameGenerator', $m['Model/User/Anon.php::getDisplayName']);
 		$this->assertStringContainsString('getUserIdHash', $m['Model/UserBase.php::getHashedUserId']);
 	}
 

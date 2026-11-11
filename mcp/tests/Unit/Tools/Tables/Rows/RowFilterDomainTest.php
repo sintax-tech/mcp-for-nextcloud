@@ -102,7 +102,7 @@ final class RowFilterDomainTest extends TestCase {
 		$this->assertNotContains('is-not-empty', (new RowFilterDomain('2.2.2'))->operators(11, ['type' => 'text']));
 		$this->assertSame([], (new RowFilterDomain('2.0.0'))->operators(20, ['type' => 'relation']));
 		$this->assertSame(['is-equal', 'is-not-equal', 'is-empty'], (new RowFilterDomain('2.2.2'))->operators(20, ['type' => 'relation']));
-		$this->assertSame('@datetime-exact-date:2026-10-26', (new RowFilterDomain('1.0.10'))->condition(18, ['type' => 'datetime'], 'is-equal', '@datetime-exact-date:2026-10-26')['value']);
+		$this->assertSame('@datetime-exact-date:2026-10-26', (new RowFilterDomain('2.0.0'))->condition(18, ['type' => 'datetime'], 'is-equal', '@datetime-exact-date:2026-10-26')['value']);
 		$this->expectException(RowsRefusal::class);
 		(new RowFilterDomain('1.0.0'))->condition(18, ['type' => 'datetime'], 'is-equal', '@datetime-exact-date:2026-10-26');
 	}

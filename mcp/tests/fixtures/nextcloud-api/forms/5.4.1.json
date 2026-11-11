@@ -67,6 +67,7 @@
             "constants": [],
             "properties": [],
             "fields": [
+                "_fieldTypes",
                 "accessEnum",
                 "allowComments",
                 "allowEditSubmissions",
@@ -176,6 +177,7 @@
             "constants": [],
             "properties": [],
             "fields": [
+                "_fieldTypes",
                 "description",
                 "extraSettingsJson",
                 "formId",
@@ -248,6 +250,7 @@
             ],
             "properties": [],
             "fields": [
+                "_fieldTypes",
                 "id",
                 "optionType",
                 "order",
@@ -321,6 +324,7 @@
             "constants": [],
             "properties": [],
             "fields": [
+                "_fieldTypes",
                 "formId",
                 "id",
                 "permissionsJson",
@@ -846,6 +850,7 @@
             "constants": [],
             "properties": [],
             "fields": [
+                "_fieldTypes",
                 "formId",
                 "id",
                 "timestamp",
@@ -910,6 +915,7 @@
             "constants": [],
             "properties": [],
             "fields": [
+                "_fieldTypes",
                 "fileId",
                 "id",
                 "questionId",

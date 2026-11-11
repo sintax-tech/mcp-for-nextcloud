@@ -489,7 +489,7 @@ final class FakeTablesWriteApp extends TablesServices {
 			['selection', 'check'] => in_array($value, ['yes', '1', true, 1, 'true', 'TRUE'], true) ? 'true' : 'false',
 			['number', 'stars'], ['number', 'progress'] => (int)$value,
 			['number', ''] => $value === null ? null : json_decode((string)json_encode((float)$value), true),
-			['selection', ''] => $value === null ? null : (in_array($this->tablesVersion, ['1.0.10', '2.2.2', '2.3.2'], true) ? (string)$value : (int)$value),
+			['selection', ''] => $value === null ? null : (in_array($this->tablesVersion, ['2.2.2', '2.3.2'], true) ? (string)$value : (int)$value),
 			['selection', 'multi'] => $value === null ? [] : (static function (array $ids): array {
 				sort($ids, SORT_NUMERIC);
 				return $ids;

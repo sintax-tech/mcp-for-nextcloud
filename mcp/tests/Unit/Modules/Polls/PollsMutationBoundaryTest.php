@@ -39,7 +39,7 @@ final class PollsMutationBoundaryTest extends TestCase {
 	 * @throws \Throwable If validation or a called collaborator fails.
 	 */
 	public static function policies(): iterable {
-		foreach (['8.6.3', '9.0.7', '9.1.4', '9.3.0'] as $v) {
+		foreach (['9.1.4', '9.3.0'] as $v) {
 			yield $v . ' absent' => [$v, 'absent', false, true];
 			yield $v . ' false no group' => [$v, 'none', false, false];
 			yield $v . ' false member' => [$v, 'groups', true, true];
@@ -255,7 +255,7 @@ final class PollsMutationBoundaryTest extends TestCase {
 			$apps,
 			$users,
 			$guests,
-			PollsDiscoveryProbe::build($this, $version, $version === '8.6.3' ? 32 : ['9.0.7' => 33, '9.1.4' => 34, '9.3.0' => 35][$version])
+			PollsDiscoveryProbe::build($this, $version, ['9.1.4' => 34, '9.3.0' => 35][$version])
 		);
 		return [
 			new PollsNativeAdapter(

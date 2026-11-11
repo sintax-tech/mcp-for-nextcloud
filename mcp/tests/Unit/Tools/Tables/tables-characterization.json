@@ -16334,32 +16334,6 @@
                 "message": "A value does not fit its column: use the type, options and limits tables_list_columns describes."
             }
         ],
-        "1.0.10": [
-            {
-                "result": {
-                    "argument": null,
-                    "effect": null
-                }
-            },
-            {
-                "result": {
-                    "argument": "{\"title\":\"Title\",\"value\":\"https://example.org/path\",\"providerId\":\"url\"}",
-                    "effect": "{\"title\":\"Title\",\"value\":\"https://example.org/path\",\"providerId\":\"url\"}"
-                }
-            },
-            {
-                "error": "OCA\\Mcp\\Modules\\Tables\\Writing\\RowWriteRefusal",
-                "message": "A value does not fit its column: use the type, options and limits tables_list_columns describes."
-            },
-            {
-                "error": "OCA\\Mcp\\Modules\\Tables\\Writing\\RowWriteRefusal",
-                "message": "A value does not fit its column: use the type, options and limits tables_list_columns describes."
-            },
-            {
-                "error": "OCA\\Mcp\\Modules\\Tables\\Writing\\RowWriteRefusal",
-                "message": "A value does not fit its column: use the type, options and limits tables_list_columns describes."
-            }
-        ],
         "2.0.0": [
             {
                 "result": {
@@ -16451,24 +16425,6 @@
                 "result": {
                     "argument": 2,
                     "effect": 2
-                }
-            },
-            {
-                "error": "OCA\\Mcp\\Modules\\Tables\\Writing\\RowWriteRefusal",
-                "message": "A value does not fit its column: use the type, options and limits tables_list_columns describes."
-            }
-        ],
-        "1.0.10": [
-            {
-                "result": {
-                    "argument": null,
-                    "effect": null
-                }
-            },
-            {
-                "result": {
-                    "argument": 2,
-                    "effect": "2"
                 }
             },
             {

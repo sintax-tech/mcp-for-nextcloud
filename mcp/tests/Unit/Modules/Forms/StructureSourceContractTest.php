@@ -12,7 +12,7 @@ use OCA\Mcp\Tests\Unit\Contract\NextcloudApi\Forms\FormsSourcePins;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Binds the structure tools to the five hashed Forms sources (5.3.0, 5.3.7, 5.4.0, 5.4.1, 5.4.2). Static fixtures, not runtime:
+ * Binds the structure tools to the four active hashed Forms sources (5.3.0, 5.4.0, 5.4.1, 5.4.2). Static fixtures, not runtime:
  * the integration cells NC34/5.4.2 and NC35/5.4.1 cover the installed app. Older app sources remain shared signature proofs.
  */
 final class StructureSourceContractTest extends TestCase {

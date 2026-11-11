@@ -46,7 +46,7 @@ final class CellValueDomainTest extends TestCase {
 		$this->assertSame(['argument' => '23:59', 'effect' => '23:59'], $domain->cell(['type' => 'datetime', 'subtype' => 'time'], '23:59', '2.3.2', 'alice'));
 		$this->assertSame(['argument' => 7, 'effect' => 7], $domain->cell(['type' => 'relation', 'subtype' => ''], 7, '2.3.2', 'alice'));
 		$this->assertSame(['argument' => null, 'effect' => null], $domain->cell(['type' => 'relation', 'subtype' => ''], null, '2.3.2', 'alice'));
-		foreach (['1.0.0' => 2, '1.0.10' => '2', '2.0.0' => 2, '2.2.2' => '2', '2.3.2' => '2'] as $version => $effect) {
+		foreach (['1.0.0' => 2, '2.0.0' => 2, '2.2.2' => '2', '2.3.2' => '2'] as $version => $effect) {
 			$this->assertSame(['argument' => 2, 'effect' => $effect], $domain->cell(self::SINGLE, 2, $version, 'alice'), "single selection in $version");
 		}
 		$this->assertSame(['argument' => [['id' => 'bob', 'type' => 0], ['id' => 'staff', 'type' => 1]], 'effect' => [['id' => 'bob', 'type' => 0], ['id' => 'staff', 'type' => 1]]],
@@ -128,7 +128,7 @@ final class CellValueDomainTest extends TestCase {
 				$this->addToAssertionCount(1);
 			}
 		}
-		foreach (['1.0.10', '2.2.2', '2.3.2'] as $version) {
+		foreach (['2.2.2', '2.3.2'] as $version) {
 			$this->assertSame([['id' => 'team', 'type' => 2]], $this->domain(true)->cell(self::USERGROUP, [['id' => 'team', 'type' => 2]], $version, 'alice')['effect'], $version);
 		}
 	}

@@ -72,7 +72,7 @@ final class TablesCharacterizationTest extends TestCase {
 		$flow = TablesWriteWiring::flow($this, WriteScene::app(), 'alice');
 		$preflight = (fn () => $this->preflight)->call($flow);
 		$domain = (fn () => $this->domain)->call($preflight);
-		foreach (['1.0.0', '1.0.10', '2.0.0', '2.2.2', '2.3.2'] as $version) {
+		foreach (['1.0.0', '2.0.0', '2.2.2', '2.3.2'] as $version) {
 			foreach ([null, ['url' => 'https://example.org/path', 'title' => 'Title'], ['url' => 'javascript:alert(1)'], ['url' => 'https://example.org', 'title' => 'x (http://injected)'], ['url' => 'https://example.org', 'extra' => 'x']] as $i => $value) {
 				$report['link'][$version][$i] = self::observe(fn () => $domain->cell(['type' => 'text', 'subtype' => 'link', 'textAllowedPattern' => 'url'], $value, $version, 'alice'));
 			}

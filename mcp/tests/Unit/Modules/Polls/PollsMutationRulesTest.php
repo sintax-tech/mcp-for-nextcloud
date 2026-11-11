@@ -122,7 +122,7 @@ final class PollsMutationRulesTest extends TestCase {
 				self::assertSame(0, $s->writes);
 			}
 		}
-		$s->state['version'] = '8.6.3';
+		$s->state['version'] = '9.1.4';
 		$s->state['poll']['expire'] = time() - 10;
 		$this->expectException(ArgumentValidationException::class);
 		OptionChanges::effect(['tool' => 'polls_reorder_options', 'option_ids' => [11, 10]], $s->state);

@@ -8,8 +8,7 @@ declare(strict_types=1);
 /** Static SHA-pinned creation/persistence source evidence; never executes upstream classes or migrations. */
 final class PollsCreateFixture {
 	/** Per-pin applicable schema, determined by the migration's actual import. */
-	private const SCHEMA = ['8.6.3'=>['V5','Version080307Date20250826231102.php'],
-		'9.0.7'=>['V9','Version090000Date20260302212000.php'],'9.1.4'=>['V10','Version090000Date20260302212000.php'],
+	private const SCHEMA = ['9.1.4'=>['V10','Version090000Date20260302212000.php'],
 		'9.3.0'=>['V11','Version090200Date20260822163500.php']];
 	/**
 	 * Extracts source methods with the existing token-balanced parser and exact schema/default declarations.
@@ -37,10 +36,8 @@ final class PollsCreateFixture {
 				'Listener/BaseListener.php'=>['handle'],'Service/ActivityService.php'=>['publishActivityEvent'],
 				'Event/BaseEvent.php'=>['__construct'], 'Db/'.$generation.'/TableManager.php'=>['createTable'],
 				'Migration/'.$migration=>['changeSchema']];
-			if ($v !== '8.6.3') {
 				$map['Db/Poll.php'][] = 'getTimezoneName'; $map['Db/Option.php'][] = 'setPoll'; $map['Db/Option.php'][] = 'setText';
 				$map['Model/DateTimeImmutable.php'] = ['__construct']; $map['Model/DateInterval.php'] = ['__construct'];
-			}
 			$methods=[]; $hashes=[];
 			foreach ($map as $name=>$names) {
 				$source = file_get_contents($prefix.'lib/'.$name);$hashes[$name] = hash('sha256',$source);

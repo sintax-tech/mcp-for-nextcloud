@@ -25,7 +25,7 @@ final class StructureCapabilitiesTest extends TestCase {
 
 	/** Valid case, every pin and only the declared key. @return void */
 	public function testSupportedPins(): void {
-		foreach (['5.3.0', '5.3.7', '5.4.0', '5.4.1', '5.4.2'] as $version) {
+		foreach (['5.3.0', '5.4.0', '5.4.1', '5.4.2'] as $version) {
 			self::assertTrue($this->probe($version)->supports(StructureCapabilities::KEY), $version);
 		}
 		self::assertSame([StructureCapabilities::KEY], $this->probe('5.4.1')->keys());

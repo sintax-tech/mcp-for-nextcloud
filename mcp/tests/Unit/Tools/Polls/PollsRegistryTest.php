@@ -23,7 +23,7 @@ final class PollsRegistryTest extends TestCase {
 	 * @return iterable<string,array{0:bool,1:string,2:bool,3:bool,4:bool}> enabled, version, grant, guest, visible
 	 */
 	public static function availability(): iterable {
-		yield 'supported8' => [true,'8.6.3',true,true,true];
+		yield 'supported34' => [true,'9.1.4',true,true,true];
 		yield 'supported9' => [true,'9.3.0',true,true,true];
 		yield 'unpinned shape checked on call' => [true,'9.4.0',true,true,true];
 		yield 'old' => [true,'8.6.2',true,true,false];

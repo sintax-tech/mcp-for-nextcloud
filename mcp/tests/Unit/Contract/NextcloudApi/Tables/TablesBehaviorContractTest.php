@@ -51,7 +51,7 @@ final class TablesBehaviorContractTest extends TestCase {
 	 * @return void
 	 */
 	public function testTheComparedReleases(): void {
-		$this->assertSame(['0.9.12', '1.0.0', '1.0.10', '2.0.0', '2.2.2', '2.3.2'], array_keys(TablesBehavior::versions()));
+		$this->assertSame(['0.9.12', '1.0.0', '2.0.0', '2.2.2', '2.3.2'], array_keys(TablesBehavior::versions()));
 		foreach (TablesBehavior::sources() as $version => $source) {
 			$this->assertStringEndsWith("/v$version/tables-v$version.tar.gz", $source['url']);
 			$this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $source['sha256']);

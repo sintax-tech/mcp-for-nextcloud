@@ -89,14 +89,9 @@ final class PollsContractTest extends TestCase {
 		$this->assertStringContainsString('getIsLoggedIn()',$m['UserSession.php::getCurrentUser']);
 		$this->assertStringContainsString('SESSION_KEY_CRON_JOB',$m['UserSession.php::getCurrentUser']);
 		$this->assertStringContainsString("defined('OC_CONSOLE')",$m['UserSession.php::getCurrentUserId']);
-		if ($version==='8.6.3') {
-			$this->assertStringContainsString('SESSION_KEY_SHARE_TYPE',$clean);
-			$this->assertStringContainsString('SESSION_KEY_USER_ID',$clean);
-			$this->assertStringContainsString('$this->session->get(self::SESSION_KEY_USER_ID)',$m['UserSession.php::getCurrentUserId']);
-		} else {
-			$this->assertStringContainsString('$this->userId = null',$clean);
-			$this->assertStringContainsString('$this->userId',$m['UserSession.php::getCurrentUserId']);
-		}
+		$this->assertStringContainsString('$this->userId = null',$clean);
+		$this->assertStringContainsString('$this->userId',$m['UserSession.php::getCurrentUserId']);
+
 	}
 
 	/**

@@ -2,6 +2,10 @@
 
 [English](HISTORY.md) · Português (Brasil) · [Deutsch](HISTORY.de.md) · [Español](HISTORY.es.md)
 
+## Novidades da 1.3.4
+
+- Administradores podem configurar o limite de leitura de arquivos (20 MiB por padrão, com teto de memória do PHP acima desse limite; [PR #33](https://github.com/sintax-tech/mcp-for-nextcloud/pull/33), com contribuição de @johkoenig). O pacote inclui o changelog para o gerenciador de apps ([#32](https://github.com/sintax-tech/mcp-for-nextcloud/issues/32)). A resposta vazia de `notes_read` não foi reproduzida; a cobertura de regressão agora verifica Notes e Notizen, sem afirmar uma correção ([#34](https://github.com/sintax-tech/mcp-for-nextcloud/issues/34)).
+
 ## Novidades da 1.3.1–1.3.3
 
 - **1.3.3: correções para PDFs digitalizados, logs de falha e planos do calendário.** PDFs que receberam texto pesquisável pelo ocrmypdf com Tesseract agora retornam a camada de texto existente ([#31](https://github.com/sintax-tech/mcp-for-nextcloud/issues/31)). Falhas inesperadas de ferramentas identificam a ferramenta e a classe e o código da exceção no log do Nextcloud, sem mensagens privadas nem rastros da exceção. Avisos de conflito do calendário funcionam sem Intl e preservam o início de um intervalo inválido; conflitos de duração zero mostram o horário uma vez. Os planos do calendário e o DAV usam a mesma leitura da configuração de convites para valores string, booleanos e lazy. Sem mudança no banco de dados.

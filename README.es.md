@@ -19,9 +19,9 @@ Deja que Claude y otros clientes MCP trabajen con tus archivos, notas, calendari
 
 ---
 
-## Novedades de la 1.3.4
+## Novedades de la 1.3.5
 
-- Los administradores pueden configurar el límite de lectura de archivos (20 MiB por defecto, con un techo de memoria de PHP por encima de ese límite; [PR #33](https://github.com/sintax-tech/mcp-for-nextcloud/pull/33), gracias a @johkoenig). El paquete incluye el changelog para el gestor de aplicaciones ([#32](https://github.com/sintax-tech/mcp-for-nextcloud/issues/32)). No se reprodujo la respuesta vacía de `notes_read`; la cobertura de regresión ahora comprueba Notes y Notizen, sin afirmar una corrección ([#34](https://github.com/sintax-tech/mcp-for-nextcloud/issues/34)).
+- Forms 5.4.2 admite ahora la creación de formularios privados y cambios en la estructura de preguntas/opciones ([#35](https://github.com/sintax-tech/mcp-for-nextcloud/issues/35)), con la vista previa, confirmación y comprobaciones de permisos existentes. Cambiar el tipo de una pregunta en Forms 5.4.2 se rechaza antes de cualquier llamada nativa o bloqueo de edición. Las comprobaciones y avisos de carpetas cubren 5.4.1 y 5.4.2, y los mensajes de rechazo distinguen la versión instalada del permiso de creación. Sin cambios en la base de datos ni en los permisos; actualizar desde 1.3.4 no requiere pasos adicionales.
 
 [Cambios completos](CHANGELOG.md).
 

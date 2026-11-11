@@ -9,9 +9,9 @@ Version for **Nextcloud 32 to 35** (`info.xml` declares 32–35; the API contrac
 
 The exact URL of the instance appears on the administration and personal pages.
 
-## What's new in 1.3.4
+## What's new in 1.3.5
 
-- Administrators can configure the file read limit (20 MiB by default, with a PHP memory ceiling above that limit; [PR #33](https://github.com/sintax-tech/mcp-for-nextcloud/pull/33), thanks to @johkoenig). The package includes the changelog for the app manager ([#32](https://github.com/sintax-tech/mcp-for-nextcloud/issues/32)). The empty `notes_read` response was not reproduced; regression coverage now checks Notes and Notizen, without claiming a fix ([#34](https://github.com/sintax-tech/mcp-for-nextcloud/issues/34)).
+- Forms 5.4.2 now supports private form creation and question/option structure edits ([#35](https://github.com/sintax-tech/mcp-for-nextcloud/issues/35)), with the existing preview, confirmation and permission checks. Changing a question type on Forms 5.4.2 is refused before any native call or editing lock. Folder safety checks and warnings cover both 5.4.1 and 5.4.2, and refusal messages distinguish the installed version from creation permission. No database or permission change; updating from 1.3.4 needs no extra step.
 
 [Full changes](../CHANGELOG.md).
 

@@ -34,16 +34,16 @@ final class ActivityFileReferences {
 	}
 	/**
 	 * @param ActivityReferenceView $view this call only
-	 * @param list<int> $ids primary object and every recognized parameter reference
-	 * @return list<array<string,mixed>>|null every reference is current, accessible and, when requested, a descendant
+	 * @param list<int> $ids event object first, then every other recognized parameter reference
+	 * @return list<array<string,mixed>>|null every reference is current and accessible; the event object, when requested, a descendant
 	 */
 	public function project(ActivityReferenceView $view, array $ids): ?array {
 		if (!$this->admit($view)) return null;
 		$out = [];
-		foreach ($ids as $id) {
+		foreach ($ids as $position => $id) {
 			$nodes = $this->aliases($view, $id);
 			if ($nodes === []) return null;
-			if ($view->folderId !== null) $nodes = array_values(array_filter($nodes, fn (Node $node): bool => $this->descendant($view, $node)));
+			if ($view->folderId !== null && $position === 0) $nodes = array_values(array_filter($nodes, fn (Node $node): bool => $this->descendant($view, $node)));
 			if ($nodes === []) return null;
 			usort($nodes, static fn (Node $a, Node $b): int => $a->getPath() <=> $b->getPath());
 			$node = $nodes[0];

@@ -13,7 +13,7 @@ use JsonException;
 final class ActivityObjectShapes {
 	/**
 	 * @param array<string,mixed> $row native unformatted row
-	 * @return array{action:string,ids:list<int>}|null every known file reference, not merely the first printable one
+	 * @return array{action:string,ids:list<int>}|null every known file reference, the event object first
 	 */
 	public function files(array $row): ?array {
 		if (($row['app'] ?? '') !== 'files' || ($row['object_type'] ?? '') !== 'files' || !$this->emptyMessage($row)) return null;
@@ -32,14 +32,23 @@ final class ActivityObjectShapes {
 		if (str_ends_with($subject, '_by') && !is_string($params[1])) return null;
 		$ids = [];
 		foreach ($shape[2] as $index) {
-			$reference = $params[$index];
-			if (!is_array($reference) || count($reference) !== 1 || !is_string(reset($reference))) return null;
-			$id = $this->id(array_key_first($reference));
+			$id = $this->reference($params[$index]);
 			if ($id === null) return null;
 			$ids[] = $id;
 		}
-		if ($ids[0] !== $this->id($row['object_id'] ?? null)) return null;
+		$object = $this->id($row['object_id'] ?? null);
+		// FilesHooks::generateMoveActivities stores the destination folder first when the name is unchanged.
+		if ($shape[0] === 'moved' && $ids[0] !== $object && $ids[1] === $object) $ids = [$ids[1], $ids[0]];
+		if ($ids[0] !== $object) return null;
 		return ['action' => $shape[0], 'ids' => array_values(array_unique($ids))];
+	}
+	/**
+	 * @param mixed $reference one producer map of current ID to historical path
+	 * @return int|null the ID only; the historical path is shape evidence, never output
+	 */
+	private function reference(mixed $reference): ?int {
+		if (!is_array($reference) || count($reference) !== 1 || !is_string(reset($reference))) return null;
+		return $this->id(array_key_first($reference));
 	}
 	/**
 	 * @param array<string,mixed> $row native DAV Activity row

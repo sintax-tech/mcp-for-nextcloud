@@ -79,6 +79,37 @@ final class ActivityProjectionTest extends TestCase {
 		$unknown=$r::file(10,[[10=>'/old'],['board'=>77]],'changed_self');self::assertNull($r->projection->project($r->projection->begin('alice',null),$unknown));
 		$unknown=$r::file();$unknown['messageparams']='["hidden-reference"]';self::assertNull($r->projection->project($r->projection->begin('alice',null),$unknown));
 	}
+	/** @return iterable<string,array{string,array}> FilesHooks::generateMoveActivities shapes, destination folder first when the name is kept */
+	public static function moves(): iterable {
+		yield 'moved_self kept name'=>['moved_self',[[2=>'/old-destination/'],[10=>'/old-secret/current.txt']]];
+		yield 'moved_by kept name'=>['moved_by',[[2=>'/old-destination/'],'bob',[10=>'/old-secret/current.txt']]];
+	}
+	/**
+	 * @param string $subject native move subject
+	 * @param array $params native producer parameters
+	 * @return void file and destination folder are both authorized and shown only with current metadata
+	 */
+	#[DataProvider('moves')]
+	public function testMoveWithoutRenameAuthorizesFileAndDestination(string $subject,array $params): void {
+		$r=new ActivityProjectionRig($this);$folder=$r->node(2,'/alice/files/renamed-destination',$r->root,true,true);$r->aliases[2]=[$folder];
+		$r->aliases[10]=[$r->node(10,'/alice/files/renamed-destination/current.txt',$folder)];
+		$out=$r->projection->project($r->projection->begin('alice',null),$r::file(10,$params,$subject));
+		self::assertSame('moved',$out['action']);self::assertSame([10,2],array_column($out['references'],'id'));
+		self::assertSame(['/renamed-destination/current.txt','/renamed-destination'],array_column($out['references'],'path'));
+		self::assertStringNotContainsString('old-',json_encode($out));
+		$selected=$r->projection->project($r->projection->begin('alice',2),$r::file(10,$params,$subject));
+		self::assertSame([10,2],array_column($selected['references'],'id'),'moving into the selected folder matches by the file object');
+		$r->deniedPaths[]='/alice/files/renamed-destination';
+		self::assertNull($r->projection->project($r->projection->begin('alice',null),$r::file(10,$params,$subject)),'a denied destination omits the entire event');
+	}
+	/** @return void a move with rename keeps a single file reference, while an unrelated last map is never accepted */
+	public function testMoveWithRenameAndMismatchedObject(): void {
+		$r=new ActivityProjectionRig($this);$r->aliases[10]=[$r->node(10,'/alice/files/new.txt',$r->root)];$r->aliases[2]=[$r->node(2,'/alice/files/dest',$r->root,true,true)];
+		$out=$r->projection->project($r->projection->begin('alice',null),$r::file(10,[[10=>'/new.txt'],[10=>'/old-secret.txt']],'moved_self'));
+		self::assertSame([10],array_column($out['references'],'id'));self::assertStringNotContainsString('secret',json_encode($out));
+		self::assertNull($r->projection->project($r->projection->begin('alice',null),$r::file(10,[[2=>'/dest/'],[11=>'/other.txt']],'moved_self')));
+		self::assertNull($r->projection->project($r->projection->begin('alice',null),$r::file(10,[[2=>'/dest/'],[10=>'/x.txt']],'renamed_self')),'only moves carry a destination folder');
+	}
 	/** @return void alias or ancestry ambiguity never becomes a path-based bypass */
 	public function testAliasCapAndCyclicAncestryOmit(): void {
 		$r=new ActivityProjectionRig($this);$r->aliases[10]=array_fill(0,51,$r->node(10,'/alice/files/current.txt',$r->root));

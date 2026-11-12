@@ -12,6 +12,7 @@ use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Access\ResourceScope\ScopedCalendarLookup;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Db\PolicyStateMapper;
+use OCA\Mcp\Modules\Calendar\Presentation\EventMapper;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\Credential;
 use OCA\Mcp\Tests\Integration\Support\Http;
@@ -96,11 +97,46 @@ final class ActivityReferencesTest extends IntegrationTestCase {
 		Server::get(PolicyWriter::class)->setResourceScope(Server::get(PolicyStateMapper::class)->state()['revision'],'admin',$uid,'calendar',[]);
 		$omitted=$client->tool('activity_list_events',$args);self::assertTrue($omitted->ok(),$omitted->describe());self::assertSame([],$omitted->json()['items']);
 	}
+	/** @return void FilesHooks keeps the destination folder first for a move without rename; both current references must pass */
+	public function testNativeMoveWithoutRenameShowsCurrentFileAndDestination(): void {
+		[$uid,$client]=$this->actor();
+		[$folder,$file]=NativeActorContext::run($uid,function()use($uid){
+			$folder=Server::get(IRootFolder::class)->getUserFolder($uid)->newFolder('current-destination');return [$folder,$folder->newFile('moved.txt','moved body')];
+		});
+		$this->event($uid,'files','files',(int)$file->getId(),'moved_self',[[(int)$folder->getId()=>'/historical-secret/'],[(int)$file->getId()=>'/historical-secret/moved.txt']],1800000000);
+		$reply=$client->tool('activity_list_events',['app'=>'files','from'=>'2027-01-15T08:00:00Z','to'=>'2027-01-15T08:01:00Z']);self::assertTrue($reply->ok(),$reply->describe());
+		self::assertSame([(int)$file->getId(),(int)$folder->getId()],array_column($reply->json()['items'][0]['references'],'id'));
+		self::assertSame(['/current-destination/moved.txt','/current-destination'],array_column($reply->json()['items'][0]['references'],'path'));
+		self::assertStringNotContainsString('historical-secret',$reply->fingerprint());
+	}
+	/** @return void a sharee sees CONFIDENTIAL only as busy and never a PRIVATE event, whatever the stored Activity text says */
+	public function testCalendarClassificationForNonOwner(): void {
+		[$reader,$client]=$this->actor();[$owner,,$ownerCredential]=$this->actor();
+		Server::get(GrantPolicy::class)->setGrant($reader,'calendar','read',true);
+		$headers=['Authorization: '.$ownerCredential->authorization()];$base=Http::BASE.'/remote.php/dav/calendars/'.rawurlencode($owner).'/personal/';
+		foreach(['CONFIDENTIAL'=>'mcp-activity-confidential','PRIVATE'=>'mcp-activity-private'] as $class=>$eventUid){
+			$ics="BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP//Activity classification proof//EN\r\nBEGIN:VEVENT\r\nUID:$eventUid\r\nDTSTAMP:20270101T000000Z\r\nDTSTART:20270601T120000Z\r\nDTEND:20270601T130000Z\r\nSUMMARY:Owner $class secret summary\r\nCLASS:$class\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n";
+			$put=Http::request('PUT',$base.$eventUid.'.ics',[...$headers,'Content-Type: text/calendar'],$ics);self::assertContains($put['status'],[201,204]);
+		}
+		$share='<?xml version="1.0" encoding="utf-8"?><o:share xmlns:d="DAV:" xmlns:o="http://owncloud.org/ns"><o:set><d:href>principal:principals/users/'.$reader.'</d:href><o:read-write/></o:set></o:share>';
+		self::assertContains(Http::request('POST',$base,[...$headers,'Content-Type: application/xml; charset=utf-8'],$share)['status'],[200,204]);
+		$calendars=Server::get(GrantPolicy::class)->within($reader,fn()=>Server::get(ScopedCalendarLookup::class)->visible($reader));
+		$calendar=array_values(array_filter($calendars,static fn($cal)=>$cal->uri==='personal_shared_by_'.$owner))[0];
+		foreach(['mcp-activity-confidential'=>true,'mcp-activity-private'=>false] as $eventUid=>$classified){
+			$this->event($reader,'dav','calendar',$calendar->id,'object_update_event',['actor'=>$owner,'calendar'=>['id'=>$calendar->id,'uri'=>'personal','name'=>'Historical calendar'],
+				'object'=>['id'=>$eventUid,'name'=>'Historical name','classified'=>$classified]],1800000000+($classified?1:0));
+		}
+		$reply=$client->tool('activity_list_events',['app'=>'dav','from'=>'2027-01-15T08:00:00Z','to'=>'2027-01-15T08:01:00Z']);self::assertTrue($reply->ok(),$reply->describe());
+		self::assertCount(1,$reply->json()['items'],'the PRIVATE event of another owner is omitted entirely');
+		self::assertSame(EventMapper::BUSY_SUMMARY,$reply->json()['items'][0]['references'][0]['name']);
+		self::assertSame('mcp-activity-confidential',$reply->json()['items'][0]['references'][0]['uid']);
+		self::assertStringNotContainsString('secret summary',$reply->fingerprint());self::assertStringNotContainsString('Historical',$reply->fingerprint());
+	}
 	/** @return array{string,McpClient,Credential} actor, client and prepared login */
 	private function actor(): array {
 		$uid='mcp-it-activity-ref-'.bin2hex(random_bytes(4));$actor=Server::get(IUserManager::class)->createUser($uid,bin2hex(random_bytes(24)));self::assertInstanceOf(IUser::class,$actor);$this->actors[]=$actor;
 		Server::get(IEventDispatcher::class)->dispatchTyped(new UserFirstTimeLoggedInEvent($actor));
-		$config=Server::get(IConfig::class);$this->service=$config->getAppValue('mcp',GrantPolicy::SERVICE_KEY,'');$policy=Server::get(GrantPolicy::class);
+		$config=Server::get(IConfig::class);$this->service??=$config->getAppValue('mcp',GrantPolicy::SERVICE_KEY,'');$policy=Server::get(GrantPolicy::class);
 		$policy->setGlobalEnabled(true);$policy->setEligible($uid,true);$policy->setConnected($uid,true);$policy->setGrant($uid,'activity','read',true);
 		$credential=LoginFactory::basic($uid);return [$uid,new McpClient($credential),$credential];
 	}

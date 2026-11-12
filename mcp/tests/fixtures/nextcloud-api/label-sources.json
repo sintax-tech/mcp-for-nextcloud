@@ -1,0 +1,47 @@
+{
+  "31": {
+    "deck": "1.15.0",
+    "files": {
+      "apps/deck/lib/Service/LabelService.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/deck/v1.15.0/lib/Service/LabelService.php",
+        "sha256": "07b79dfd7ae85d2965b394e7194cd436f5f419cd340dc4748303a3444c85d215"
+      }
+    }
+  },
+  "32": {
+    "deck": "1.16.0",
+    "files": {
+      "apps/deck/lib/Service/LabelService.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/deck/v1.16.0/lib/Service/LabelService.php",
+        "sha256": "07b79dfd7ae85d2965b394e7194cd436f5f419cd340dc4748303a3444c85d215"
+      }
+    }
+  },
+  "33": {
+    "deck": "1.17.0",
+    "files": {
+      "apps/deck/lib/Service/LabelService.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/deck/v1.17.0/lib/Service/LabelService.php",
+        "sha256": "49d8613ec6cdb92a16a611bc53cf904e5b99775fe4fcc0f502bd9e3069f518eb"
+      }
+    }
+  },
+  "34": {
+    "deck": "1.18.0",
+    "files": {
+      "apps/deck/lib/Service/LabelService.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/deck/v1.18.0/lib/Service/LabelService.php",
+        "sha256": "afd804a6445bc7f00855fa7fba1159f03c7cb79c520d6b1b84fc8615879ec344"
+      }
+    }
+  },
+  "35": {
+    "deck": "1.19.0",
+    "files": {
+      "apps/deck/lib/Service/LabelService.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/deck/v1.19.0/lib/Service/LabelService.php",
+        "sha256": "afd804a6445bc7f00855fa7fba1159f03c7cb79c520d6b1b84fc8615879ec344"
+      }
+    }
+  }
+}

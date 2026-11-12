@@ -19,6 +19,7 @@ final class DeckGuideNotes {
 		$notes = [
 			'deck_edit_card_labels changes only add/remove label IDs on a card, preserving all other labels. '
 				. 'Use deck_list_labels on its board first. Preview before confirm and repeat plan_state; a changed state needs a new approval.',
+			\OCA\Mcp\Modules\Deck\Presentation\DeckLabelMessages::GUIDE_NOTE,
 			'A card is addressed by three ids: deck_list_boards gives the board, deck_list_stacks the lists of a '
 				. 'board, and deck_list_cards the cards of a list. Read them in that order before writing anything.',
 			'deck_read_card returns the card with its comments; deck_followup_cards lists the cards that are due or '

@@ -7,6 +7,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## Unreleased
+
+### Added
+
+- **Deck board labels:** `deck_create_label` and `deck_update_label` (grant `deck.edit`) and `deck_delete_label` (grant `deck.delete`, irreversible in Deck) manage the label catalog of a board the caller manages, through Deck's `LabelService` (same positional API in Deck 1.15.0 to 1.19.0, pinned in `label-sources.json`). Titles match ignoring letter case. A missing colour comes from a fixed palette and depends only on the title. Update and delete bind the approved label with `plan_state`, and delete also binds the number of cards carrying it. Writes that throw after Deck saved are read back and answered as saved, with a warning.
+- **Labels on new Deck cards:** `deck_create_card` accepts `labels`, like the labels of a GitHub issue: up to 20 titles or label IDs. Existing labels are assigned. Missing titles are created on the board in the same confirmation, only with `deck.edit` and native manage permission, both checked before the card exists. The plan lists every label and marks the new ones. Label failures after the card exists keep the card and return one warning.
+
+No database change and no new permission: existing `deck.edit` and `deck.delete` grants now also cover these tools, so review those grants.
+
 ## 1.3.5 — 2026-11-10
 
 Patch release on top of 1.3.4. No database change and no permission change; updating from 1.3.4 needs no extra step. This release admits the verified Forms 5.4.2 API for private form creation and structure edits, refuses unsupported question type changes before a native call, and separates version refusals from creation-permission denials.

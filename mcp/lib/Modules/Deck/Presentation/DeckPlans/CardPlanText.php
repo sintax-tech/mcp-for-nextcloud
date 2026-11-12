@@ -49,6 +49,10 @@ final class CardPlanText extends DeckPlanValues {
 				: Translator::t('- Assignees: %s', [PlanText::inline(implode(', ', $assignees), 300)]);
 		}
 
+		foreach ((new LabelPlanText())->cardLine($card['labels'] ?? null) as $line) {
+			$lines[] = $line;
+		}
+
 		if (!empty($dest['shared'])) {
 			$owner = !empty($dest['ownerDisplayName']) && is_string($dest['ownerDisplayName'])
 				? $dest['ownerDisplayName']

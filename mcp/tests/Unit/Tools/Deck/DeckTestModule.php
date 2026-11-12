@@ -46,6 +46,9 @@ final class DeckTestModule {
 		$container->tools[\OCA\Mcp\Modules\Deck\Tools\UnlinkCardFile::class] = new \OCA\Mcp\Modules\Deck\Tools\UnlinkCardFile($context, new \OCA\Mcp\Modules\Deck\Deletion\UnlinkCardFilePreview($context));
 		$container->tools[\OCA\Mcp\Modules\Deck\Tools\LinkCardFile::class] = new \OCA\Mcp\Modules\Deck\Tools\LinkCardFile($context, new \OCA\Mcp\Modules\Deck\Attachments\LinkCardFilePreview($context));
 		$container->tools[\OCA\Mcp\Modules\Deck\Tools\EditCardLabels::class] = new \OCA\Mcp\Modules\Deck\Tools\EditCardLabels($context, new \OCA\Mcp\Modules\Deck\Editing\EditCardLabelsPreview($context));
+		$container->tools[\OCA\Mcp\Modules\Deck\Tools\CreateLabel::class] = new \OCA\Mcp\Modules\Deck\Tools\CreateLabel($context, new \OCA\Mcp\Modules\Deck\Labels\CreateLabelPreview($context));
+		$container->tools[\OCA\Mcp\Modules\Deck\Tools\UpdateLabel::class] = new \OCA\Mcp\Modules\Deck\Tools\UpdateLabel($context, new \OCA\Mcp\Modules\Deck\Labels\LabelChangePreview($context));
+		$container->tools[\OCA\Mcp\Modules\Deck\Tools\DeleteLabel::class] = new \OCA\Mcp\Modules\Deck\Tools\DeleteLabel($context, new \OCA\Mcp\Modules\Deck\Labels\LabelChangePreview($context));
 		$container->tools[\OCA\Mcp\Modules\Deck\Tools\ListStacks::class] = new \OCA\Mcp\Modules\Deck\Tools\ListStacks($context);
 		$container->tools[\OCA\Mcp\Modules\Deck\Tools\ListCards::class] = new \OCA\Mcp\Modules\Deck\Tools\ListCards($context);
 		$container->tools[\OCA\Mcp\Modules\Deck\Tools\ReadCard::class] = new \OCA\Mcp\Modules\Deck\Tools\ReadCard($context);

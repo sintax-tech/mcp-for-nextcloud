@@ -125,6 +125,49 @@ final class DeckEffectsContractTest extends TestCase {
 		return $container;
 	}
 
+	/** Why the board label tools have no visibility step. */
+	private const LABELS_WITHOUT_VISIBILITY = 'A Deck label has no exclusion of its own: the hidden system tag applies to Files nodes, and '
+		. 'the board label tools touch no file; access to the board is the Deck ACL (MANAGE), read by the gateway.';
+
+	/** @return void deck_create_label: plan, strict confirm, effect and every refusal */
+	public function testCreationOfABoardLabel(): void {
+		// The refusal steps after the write ask for a title the board does not have yet, so they could still succeed.
+		$flow = (new CriticalFlow('create-label', 'deck_create_label', 'deck', 'edit',
+			fn (): array => ['boardId' => DeckBoardDouble::BOARD, 'title' => in_array('Prioridade', array_column($this->board->catalog(), 'title'), true)
+				? 'Prioridade alta' : 'Prioridade', 'color' => '#AA00FF'],
+			fn (): array => ['catalog' => $this->board->catalog(), 'writes' => $this->board->writes]))
+			->withoutPlanChanged('A creation binds no plan_state: the catalog is read again before the write, and a title taken '
+				. 'in the meantime is refused, not duplicated.')
+			->withoutVisibility(self::LABELS_WITHOUT_VISIBILITY);
+		(new FlowRunner($this, $this->gate, 'deck'))->run($flow);
+	}
+
+	/** @return void deck_update_label: plan, strict confirm, PlanChanged, effect and every refusal */
+	public function testChangeOfABoardLabel(): void {
+		$flow = (new CriticalFlow('update-label', 'deck_update_label', 'deck', 'edit',
+			['labelId' => 1, 'title' => 'Crítico', 'color' => 'cc0000'],
+			fn (): array => ['catalog' => $this->board->catalog(), 'writes' => $this->board->writes]))
+			// Another manager recolours the label after the plan: the label the user approved is not the one now.
+			->changing(function (): void {
+				$this->board->catalog[1]['color'] = '00ff00';
+			})
+			->withoutVisibility(self::LABELS_WITHOUT_VISIBILITY);
+		(new FlowRunner($this, $this->gate, 'deck'))->run($flow);
+	}
+
+	/** @return void deck_delete_label: plan, strict confirm, PlanChanged on a new card using it, effect and every refusal */
+	public function testDeletionOfABoardLabel(): void {
+		// The refusal steps after the write name the first label still on the board, so they could still succeed.
+		$flow = (new CriticalFlow('delete-label', 'deck_delete_label', 'deck', 'delete', fn (): array => ['labelId' => min(array_keys($this->board->catalog))],
+			fn (): array => ['catalog' => $this->board->catalog(), 'labels' => $this->board->labels(), 'writes' => $this->board->writes]))
+			// Another member puts the label on a second card after the plan: the deletion would now reach more cards.
+			->changing(function (): void {
+				$this->board->cards[8]['labels'] = [1];
+			})
+			->withoutVisibility(self::LABELS_WITHOUT_VISIBILITY);
+		(new FlowRunner($this, $this->gate, 'deck'))->run($flow);
+	}
+
 	/** @return void deck_edit_card_labels on a card: plan, strict confirm, PlanChanged, effect and every refusal */
 	public function testLabelChangeOfACard(): void {
 		$flow = (new CriticalFlow('edit-card-labels', 'deck_edit_card_labels', 'deck', 'edit',

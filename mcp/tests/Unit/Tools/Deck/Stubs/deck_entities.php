@@ -388,4 +388,11 @@ class LabelMapper {
 	public function findAll(int $boardId, ?int $limit = null, int $offset = 0): array {
 		throw new \LogicException('Stub: expected a PHPUnit mock.');
 	}
+	/** One Label per card association of the board, as Deck v1.19.0 returns it. */
+	public function findAssignedLabelsForBoard(int $boardId, ?int $limit = null, int $offset = 0): array {
+		throw new \LogicException('Stub: expected a PHPUnit mock.');
+	}
+	public function findBoardId(int $id): ?int {
+		throw new \LogicException('Stub: expected a PHPUnit mock.');
+	}
 }

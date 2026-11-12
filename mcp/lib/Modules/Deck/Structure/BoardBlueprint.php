@@ -139,7 +139,7 @@ final class BoardBlueprint {
 	 * @return string The six digits in lower case, as Deck stores them.
 	 * @throws ArgumentValidationException When it is not six hexadecimal digits.
 	 */
-	private static function color(string $raw): string {
+	public static function color(string $raw): string {
 		$color = ltrim($raw, '#');
 		if (preg_match('/^[0-9a-fA-F]{6}$/', $color) !== 1 || substr_count($raw, '#') > 1) {
 			throw new ArgumentValidationException('Invalid argument: color', 'color',

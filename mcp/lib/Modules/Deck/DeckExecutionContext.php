@@ -143,6 +143,9 @@ final class DeckExecutionContext {
 			\OCA\Mcp\Modules\Deck\Reading\ListCardFilesHandler::TOOL, \OCA\Mcp\Modules\Deck\Deletion\UnlinkCardFileHandler::TOOL => $this->fileHandler($name, $userId),
 			\OCA\Mcp\Modules\Deck\Dependencies\AddCardDependencyHandler::TOOL, \OCA\Mcp\Modules\Deck\Dependencies\RemoveCardDependencyHandler::TOOL => $this->dependencyHandler($name, $userId),
 			EditCardLabelsHandler::TOOL => $this->labelHandler($userId),
+			\OCA\Mcp\Modules\Deck\Labels\CreateLabelHandler::TOOL => new \OCA\Mcp\Modules\Deck\Labels\CreateLabelHandler($this->gateway(), $this->logger),
+			\OCA\Mcp\Modules\Deck\Labels\UpdateLabelHandler::TOOL => new \OCA\Mcp\Modules\Deck\Labels\UpdateLabelHandler($this->gateway(), $this->logger, fn (): PlanState => $this->planState()),
+			\OCA\Mcp\Modules\Deck\Labels\DeleteLabelHandler::TOOL => new \OCA\Mcp\Modules\Deck\Labels\DeleteLabelHandler($this->gateway(), $this->logger, fn (): PlanState => $this->planState()),
 			ListLabelsHandler::TOOL => new ListLabelsHandler($this->gateway(), $this->logger),
 			ListBoardsHandler::TOOL => new ListBoardsHandler($this->gateway(), $this->logger, $formatter),
 			ListStacksHandler::TOOL => new ListStacksHandler($this->gateway(), $this->logger, $formatter),
@@ -150,7 +153,7 @@ final class DeckExecutionContext {
 			FollowupCardsHandler::TOOL => new FollowupCardsHandler($this->gateway(), $this->logger, $formatter),
 			ReadCardDependenciesHandler::TOOL => new ReadCardDependenciesHandler($this->gateway(), $this->logger, $formatter),
 			ReadCardHandler::TOOL => new ReadCardHandler($this->gateway(), $this->logger, $formatter),
-			CreateCardHandler::TOOL => new CreateCardHandler($this->gateway(), $this->logger, $formatter),
+			CreateCardHandler::TOOL => new CreateCardHandler($this->gateway(), $this->logger, $formatter, fn (): bool => $this->labelsGranted($userId)),
 			EditCardHandler::TOOL => new EditCardHandler($this->gateway(), $this->logger, $formatter),
 			MoveCardHandler::TOOL => new MoveCardHandler($this->gateway(), $this->logger, $formatter),
 			DeleteCardHandler::TOOL => new DeleteCardHandler($this->gateway(), $this->logger, $formatter),
@@ -266,6 +269,15 @@ final class DeckExecutionContext {
 	/** @return \OCA\Mcp\Modules\Deck\Attachments\CardFiles lazy unchanged Files boundary */
 	public function files(): \OCA\Mcp\Modules\Deck\Attachments\CardFiles {
 		return $this->cardFiles ??= new \OCA\Mcp\Modules\Deck\Attachments\CardFiles($this->gateway(), $this->container->get(GrantPolicy::class), $this->container->get(FilesAccessGuard::class), $this->container->get(IRootFolder::class));
+	}
+	/**
+	 * deck_create_card creates a missing label only for a caller who could create it with deck_create_label.
+	 *
+	 * @param string $userId caller UID
+	 * @return bool whether the caller holds the deck.edit grant
+	 */
+	public function labelsGranted(string $userId): bool {
+		return $this->container->get(GrantPolicy::class)->granted($userId, 'deck', 'edit');
 	}
 	/** @return PlanState unchanged lazy instance-secret service */
 	public function planState(): PlanState {

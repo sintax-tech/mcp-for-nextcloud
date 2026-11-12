@@ -1,0 +1,135 @@
+<?php
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+declare(strict_types=1);
+
+namespace OCA\Mcp\Tests\Unit\Tools\Deck;
+
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
+use OCA\Mcp\Modules\Deck\Creation\CreateCardHandler;
+use OCA\Mcp\Modules\Deck\Failures\DeckRefusalException;
+use OCA\Mcp\Modules\Deck\Labels\CardLabelPlan;
+use OCA\Mcp\Modules\Deck\Labels\LabelInput;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
+
+require_once __DIR__ . '/Stubs/deck_stubs.php';
+
+/** deck_create_card with labels, like a GitHub issue: titles or IDs, missing titles created on the board. */
+final class CardCreationLabelsTest extends TestCase {
+	use DeckTestHelpers;
+
+	private const CATALOG = [['id' => 1, 'boardId' => 20, 'title' => 'bug', 'color' => 'ff7a66'], ['id' => 4, 'boardId' => 20, 'title' => 'Docs', 'color' => '317ccc']];
+
+	public static function invalid(): iterable {
+		yield 'not a list' => [['a' => 'bug']];
+		yield 'zero id' => [[0]];
+		yield 'boolean' => [[true]];
+		yield 'blank title' => [['  ']];
+		yield 'too many' => [array_map(static fn (int $i): string => 'l' . $i, range(1, 21))];
+	}
+
+	#[DataProvider('invalid')]
+	public function testInvalidLabelsAreRefused(array $labels): void {
+		$this->expectException(ArgumentValidationException::class);
+		CardLabelPlan::requested($labels);
+	}
+
+	public function testTitlesMatchIgnoringCaseAndMissingOnesAreCreated(): void {
+		$plan = CardLabelPlan::resolve(CardLabelPlan::requested(['BUG', 4, 'docs', 'sev:medium', 'Sev:Medium']), self::CATALOG);
+		self::assertSame([1, 4], array_column($plan['assign'], 'id'));
+		self::assertSame([['title' => 'sev:medium', 'color' => LabelInput::defaultColor('sev:medium')]], $plan['create']);
+	}
+
+	public function testUnknownIdAndAmbiguousTitleAreRefused(): void {
+		try {
+			CardLabelPlan::resolve([9], self::CATALOG);
+			self::fail('unknown id accepted');
+		} catch (DeckRefusalException $e) {
+			self::assertStringContainsString('no label with ID 9', $e->getMessage());
+		}
+		$this->expectException(DeckRefusalException::class);
+		CardLabelPlan::resolve(['DOCS'], [...self::CATALOG, ['id' => 5, 'boardId' => 20, 'title' => 'docs', 'color' => '000000']]);
+	}
+
+	/** Label catalog behind the gateway of the last {@see self::gateway()}. */
+	private \OCA\Mcp\Modules\Deck\Integration\DeckLabelCatalog&\PHPUnit\Framework\MockObject\MockObject $labels;
+
+	/** @return \OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface&\PHPUnit\Framework\MockObject\MockObject */
+	private function gateway(bool $manage = true): object {
+		$gateway = $this->gatewayOwnedBy('alice');
+		$this->labels = $this->createMock(\OCA\Mcp\Modules\Deck\Integration\DeckLabelCatalog::class);
+		$gateway->method('boardLabels')->willReturn($this->labels);
+		$this->labels->method('stackLabels')->willReturn(['boardId' => 20, 'labels' => self::CATALOG, 'manage' => $manage]);
+		return $gateway;
+	}
+
+	public function testCreationOfMissingLabelsNeedsTheGrantAndManageBeforeTheCardExists(): void {
+		foreach ([[false, true, 'deck.edit'], [true, false, 'manage the board']] as [$granted, $manage, $reason]) {
+			$gateway = $this->gateway($manage);
+			$gateway->expects(self::never())->method('createCard');
+			$this->labels->expects(self::never())->method('createLabel');
+			$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter(), static fn (): bool => $granted);
+			$result = $handler->handle(['stackId' => 10, 'title' => 'Crash', 'labels' => ['bug', 'sev:high']], 'alice');
+			self::assertTrue($result['isError']);
+			self::assertStringContainsString($reason, $this->text($result));
+		}
+	}
+
+	public function testExistingLabelsNeedNoGrantToBeAssigned(): void {
+		$gateway = $this->gateway(false);
+		$gateway->method('createCard')->willReturn($this->card(['id' => 9]));
+		$this->labels->expects(self::never())->method('createLabel');
+		$this->labels->expects(self::once())->method('assignCardLabel')->with('alice', 9, 1);
+		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
+		$payload = $this->payload($handler->handle(['stackId' => 10, 'title' => 'Crash', 'labels' => ['Bug']], 'alice'));
+		self::assertSame([['id' => 1, 'title' => 'bug', 'color' => 'ff7a66']], $payload['labels']);
+		self::assertArrayNotHasKey('labelsCreated', $payload);
+	}
+
+	public function testMissingLabelIsCreatedThenEveryLabelIsAssigned(): void {
+		$gateway = $this->gateway();
+		$gateway->method('createCard')->willReturn($this->card(['id' => 9]));
+		$this->labels->expects(self::once())->method('createLabel')->with('alice', 20, 'sev:medium', LabelInput::defaultColor('sev:medium'))
+			->willReturn(['id' => 7, 'boardId' => 20, 'title' => 'sev:medium', 'color' => 'abcdef']);
+		$assigned = [];
+		$this->labels->method('assignCardLabel')->willReturnCallback(static function (string $uid, int $card, int $label) use (&$assigned): void { $assigned[] = $label; });
+		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter(), static fn (): bool => true);
+		$payload = $this->payload($handler->handle(['stackId' => 10, 'title' => 'Crash', 'labels' => ['bug', 'sev:medium']], 'alice'));
+		self::assertSame([1, 7], $assigned);
+		self::assertSame([1, 7], array_column($payload['labels'], 'id'));
+		self::assertSame(7, $payload['labelsCreated'][0]['id']);
+		self::assertArrayNotHasKey('warnings', $payload);
+	}
+
+	public function testALabelFailureAfterCreationKeepsTheCardAndWarns(): void {
+		$gateway = $this->gateway();
+		$gateway->method('createCard')->willReturn($this->card(['id' => 9]));
+		$this->labels->method('createLabel')->willThrowException(new \RuntimeException('secret'));
+		$this->labels->method('assignCardLabel')->willThrowException(new \RuntimeException('secret'));
+		$gateway->method('cardLabelState')->willReturn(['labels' => []]);
+		$gateway->expects(self::never())->method('deleteCard');
+		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter(), static fn (): bool => true);
+		$result = $handler->handle(['stackId' => 10, 'title' => 'Crash', 'labels' => ['bug', 'sev:medium']], 'alice');
+		self::assertArrayNotHasKey('isError', $result);
+		$payload = $this->payload($result);
+		self::assertSame(9, $payload['id']);
+		self::assertSame([], $payload['labels']);
+		self::assertStringContainsString('the labels sev:medium, bug could not be created or assigned', $payload['warnings'][0]);
+		self::assertStringNotContainsString('secret', json_encode($result));
+	}
+
+	public function testAssignmentThatThrowsButIsObservedCounts(): void {
+		$gateway = $this->gateway();
+		$gateway->method('createCard')->willReturn($this->card(['id' => 9]));
+		$this->labels->method('assignCardLabel')->willThrowException(new \RuntimeException('activity failed'));
+		$gateway->method('cardLabelState')->willReturn(['labels' => [['id' => 1]]]);
+		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
+		$payload = $this->payload($handler->handle(['stackId' => 10, 'title' => 'Crash', 'labels' => [1]], 'alice'));
+		self::assertSame([1], array_column($payload['labels'], 'id'));
+		self::assertCount(1, $payload['warnings']);
+	}
+}

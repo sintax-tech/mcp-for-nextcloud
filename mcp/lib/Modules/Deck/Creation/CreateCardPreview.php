@@ -25,7 +25,7 @@ final class CreateCardPreview {
 	}
 
 	/**
-	 * @param array{stackId: int, title: string, description?: string, duedate?: string|null, assignees?: list<string>} $arguments
+	 * @param array{stackId: int, title: string, description?: string, duedate?: string|null, assignees?: list<string>, labels?: list<string|int>} $arguments
 	 * @param string $userId UID of the authenticated caller, also the owner of the card to be created.
 	 * @return array<string, mixed>
 	 */
@@ -34,6 +34,8 @@ final class CreateCardPreview {
 		$assignees = array_key_exists('assignees', $arguments)
 			? $this->context->gateway()->validateAssignees($userId, (int)$arguments['stackId'], \OCA\Mcp\Modules\Deck\Editing\CardInput::assignees($arguments['assignees']))
 			: null;
+		$labels = \OCA\Mcp\Modules\Deck\Labels\CardLabelPlan::prepare($this->context->gateway(), $arguments, $userId,
+			fn (): bool => $this->context->labelsGranted($userId));
 
 		return [
 			'action' => CreateCardHandler::TOOL,
@@ -42,7 +44,8 @@ final class CreateCardPreview {
 				'description' => \OCA\Mcp\Modules\Deck\Editing\CardInput::requireDescription((string)($arguments['description'] ?? '')),
 				'dueDate' => \OCA\Mcp\Modules\Deck\Editing\CardInput::duedate($arguments['duedate'] ?? null, $this->context->formatter($userId)->timezone()),
 				'owner' => $userId,
-			] + ($assignees === null ? [] : ['assignees' => $assignees]),
+			] + ($assignees === null ? [] : ['assignees' => $assignees])
+				+ ($labels === null ? [] : ['labels' => \OCA\Mcp\Modules\Deck\Labels\CardLabelPlan::shown($labels)]),
 			'destination' => $place,
 			'shared' => $place['shared'] ? [$place] : [],
 			'recoverable' => true,

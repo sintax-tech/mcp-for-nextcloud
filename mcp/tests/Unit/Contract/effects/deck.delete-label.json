@@ -1,0 +1,554 @@
+{
+    "tool": "deck_delete_label",
+    "grant": "deck.delete",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "labelId": 1
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Delete Deck label**\n\nDelete label **Urgente** from *Comercial*.\n- Removed from 1 card, archived and deleted cards included.\n- Deck has no trash for labels: this cannot be undone. Creating a label with the same title later does not put it back on the cards.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the label below is deleted from the board and removed from every card that carries it.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_delete_label",
+                            "title": "Delete Deck label",
+                            "action": "deck_delete_label",
+                            "label": {
+                                "id": 1,
+                                "title": "Urgente",
+                                "color": "ff0000"
+                            },
+                            "board": {
+                                "boardId": 20,
+                                "board": "Comercial",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "shared": false
+                            },
+                            "cards": 1,
+                            "shared": [],
+                            "recoverable": false,
+                            "message": "Nothing was changed. After your approval the label below is deleted from the board and removed from every card that carries it.",
+                            "consequence": "Deck has no trash for labels: this cannot be undone. Creating a label with the same title later does not put it back on the cards.",
+                            "plan_state": "<plan_state#1>",
+                            "timezone": "UTC"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 1,
+                        "boardId": 20,
+                        "title": "Urgente",
+                        "color": "ff0000"
+                    },
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    }
+                ],
+                "labels": {
+                    "7": [
+                        1
+                    ],
+                    "8": []
+                },
+                "writes": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "labelId": 1,
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 1,
+                        "boardId": 20,
+                        "title": "Urgente",
+                        "color": "ff0000"
+                    },
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    }
+                ],
+                "labels": {
+                    "7": [
+                        1
+                    ],
+                    "8": []
+                },
+                "writes": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "labelId": 1,
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Delete Deck label**\n\nDelete label **Urgente** from *Comercial*.\n- Removed from 1 card, archived and deleted cards included.\n- Deck has no trash for labels: this cannot be undone. Creating a label with the same title later does not put it back on the cards.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the label below is deleted from the board and removed from every card that carries it.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_delete_label",
+                            "title": "Delete Deck label",
+                            "action": "deck_delete_label",
+                            "label": {
+                                "id": 1,
+                                "title": "Urgente",
+                                "color": "ff0000"
+                            },
+                            "board": {
+                                "boardId": 20,
+                                "board": "Comercial",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "shared": false
+                            },
+                            "cards": 1,
+                            "shared": [],
+                            "recoverable": false,
+                            "message": "Nothing was changed. After your approval the label below is deleted from the board and removed from every card that carries it.",
+                            "consequence": "Deck has no trash for labels: this cannot be undone. Creating a label with the same title later does not put it back on the cards.",
+                            "plan_state": "<plan_state#1>",
+                            "timezone": "UTC"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 1,
+                        "boardId": 20,
+                        "title": "Urgente",
+                        "color": "ff0000"
+                    },
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    }
+                ],
+                "labels": {
+                    "7": [
+                        1
+                    ],
+                    "8": []
+                },
+                "writes": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "arguments": {
+                "labelId": 1,
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Delete Deck label**\n\nDelete label **Urgente** from *Comercial*.\n- Removed from 2 cards, archived and deleted cards included.\n- Deck has no trash for labels: this cannot be undone. Creating a label with the same title later does not put it back on the cards.\n\n### Warnings\n\n- The label changed since the plan was shown. Review and approve the new plan before trying again.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the label below is deleted from the board and removed from every card that carries it.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_delete_label",
+                            "title": "Delete Deck label",
+                            "action": "deck_delete_label",
+                            "label": {
+                                "id": 1,
+                                "title": "Urgente",
+                                "color": "ff0000"
+                            },
+                            "board": {
+                                "boardId": 20,
+                                "board": "Comercial",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "shared": false
+                            },
+                            "cards": 2,
+                            "shared": [],
+                            "recoverable": false,
+                            "message": "Nothing was changed. After your approval the label below is deleted from the board and removed from every card that carries it.",
+                            "consequence": "Deck has no trash for labels: this cannot be undone. Creating a label with the same title later does not put it back on the cards.",
+                            "plan_state": "<plan_state#2>",
+                            "warnings": [
+                                {
+                                    "message": "The label changed since the plan was shown. Review and approve the new plan before trying again."
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 1,
+                        "boardId": 20,
+                        "title": "Urgente",
+                        "color": "ff0000"
+                    },
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    }
+                ],
+                "labels": {
+                    "7": [
+                        1
+                    ],
+                    "8": [
+                        1
+                    ]
+                },
+                "writes": []
+            }
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "labelId": 1
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Delete Deck label**\n\nDelete label **Urgente** from *Comercial*.\n- Removed from 2 cards, archived and deleted cards included.\n- Deck has no trash for labels: this cannot be undone. Creating a label with the same title later does not put it back on the cards.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the label below is deleted from the board and removed from every card that carries it.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_delete_label",
+                            "title": "Delete Deck label",
+                            "action": "deck_delete_label",
+                            "label": {
+                                "id": 1,
+                                "title": "Urgente",
+                                "color": "ff0000"
+                            },
+                            "board": {
+                                "boardId": 20,
+                                "board": "Comercial",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "shared": false
+                            },
+                            "cards": 2,
+                            "shared": [],
+                            "recoverable": false,
+                            "message": "Nothing was changed. After your approval the label below is deleted from the board and removed from every card that carries it.",
+                            "consequence": "Deck has no trash for labels: this cannot be undone. Creating a label with the same title later does not put it back on the cards.",
+                            "plan_state": "<plan_state#2>",
+                            "timezone": "UTC"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 1,
+                        "boardId": 20,
+                        "title": "Urgente",
+                        "color": "ff0000"
+                    },
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    }
+                ],
+                "labels": {
+                    "7": [
+                        1
+                    ],
+                    "8": [
+                        1
+                    ]
+                },
+                "writes": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "labelId": 1,
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"deleted\": true,\n    \"label\": {\n        \"id\": 1,\n        \"boardId\": 20,\n        \"title\": \"Urgente\",\n        \"color\": \"ff0000\"\n    },\n    \"board\": \"Comercial\",\n    \"cards\": 2\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    }
+                ],
+                "labels": {
+                    "7": [],
+                    "8": []
+                },
+                "writes": [
+                    "label -1"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "labelId": 2,
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    }
+                ],
+                "labels": {
+                    "7": [],
+                    "8": []
+                },
+                "writes": [
+                    "label -1"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "labelId": 2
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    }
+                ],
+                "labels": {
+                    "7": [],
+                    "8": []
+                },
+                "writes": [
+                    "label -1"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "labelId": 2,
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    }
+                ],
+                "labels": {
+                    "7": [],
+                    "8": []
+                },
+                "writes": [
+                    "label -1"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "A Deck label has no exclusion of its own: the hidden system tag applies to Files nodes, and the board label tools touch no file; access to the board is the Deck ACL (MANAGE), read by the gateway."
+        }
+    ]
+}

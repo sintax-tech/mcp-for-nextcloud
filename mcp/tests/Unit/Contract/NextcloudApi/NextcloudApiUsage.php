@@ -145,6 +145,12 @@ final class NextcloudApiUsage {
 		'OCA\\Deck\\Service\\CardService::delete' => ['id'],
 		'OCA\\Deck\\Service\\CardService::find' => ['cardId'],
 		'OCA\\Deck\\Service\\CardService::assignLabel' => ['cardId', 'labelId'],
+		// DeckBoardLabels: the label catalog of a board (label-sources.json pins LabelService of every covered Deck).
+		'OCA\\Deck\\Service\\LabelService::create' => ['title', 'color', 'boardId'],
+		'OCA\\Deck\\Service\\LabelService::update' => ['id', 'title', 'color'],
+		'OCA\\Deck\\Service\\LabelService::delete' => ['id'],
+		'OCA\\Deck\\Db\\LabelMapper::findAssignedLabelsForBoard' => ['boardId'],
+		'OCA\\Deck\\Db\\LabelMapper::findBoardId' => ['id'],
 		'OCA\\Deck\\Service\\CardService::removeLabel' => ['cardId', 'labelId'],
 		'OCA\\Deck\\Service\\CardService::reorder' => ['id', 'stackId', 'order'],
 		'OCA\\Deck\\Service\\CardService::update' => ['id', 'title', 'stackId', 'type', 'owner', 'description', 'order', 'duedate', 'deletedAt', 'archived', 'done'],
@@ -285,6 +291,10 @@ final class NextcloudApiUsage {
 	 */
 	public const REVIEWED_TRAILING = [
 		'OCP\\IGroup::count' => ['search' => '"": estimate the entire group; false/zero/subcounts do not replace post-load limits'],
+		'OCA\\Deck\\Db\\LabelMapper::findAssignedLabelsForBoard' => [
+			'limit' => 'null: every association of the board, so the card count a delete plan binds is complete',
+			'offset' => 'null/0: from the first row, never a partial page',
+		],
 		'OCA\\Deck\\Db\\AclMapper::findAll' => [
 			'limit' => 'null: complete authorized board ACLs, bounded after loading',
 			'offset' => 'null: every row, never a partial page',

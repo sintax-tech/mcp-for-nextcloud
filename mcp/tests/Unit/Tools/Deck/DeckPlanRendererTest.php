@@ -315,7 +315,7 @@ final class DeckPlanRendererTest extends TestCase {
 			'deck_edit_card' => $this->module->preview('deck_edit_card', ['cardId' => 7, 'title' => 'Tarefa Nova'], 'alice'),
 			'deck_move_card' => $this->module->preview('deck_move_card', ['cardId' => 7, 'stackId' => 11], 'alice'),
 			'deck_delete_card' => $this->module->preview('deck_delete_card', ['cardId' => 7], 'alice'),
-		] + $this->structurePlans() + $this->dependencyPlans() + CardStatusFixture::plans(new \OCA\Mcp\Mcp\Confirmation\PlanState($this->createMock(\OCP\IConfig::class))));
+		] + $this->structurePlans() + $this->dependencyPlans() + $this->labelPlans() + CardStatusFixture::plans(new \OCA\Mcp\Mcp\Confirmation\PlanState($this->createMock(\OCP\IConfig::class))));
 	}
 
 	/**
@@ -405,7 +405,7 @@ final class DeckPlanRendererTest extends TestCase {
 			'deck_edit_card' => $this->assigneePlan(),
 			'deck_move_card' => $this->module->preview('deck_move_card', ['cardId' => 7, 'stackId' => 11], 'alice'),
 			'deck_delete_card' => $this->module->preview('deck_delete_card', ['cardId' => 7], 'alice'),
-		] + $this->structurePlans() + $this->dependencyPlans() + CardStatusFixture::plans(new \OCA\Mcp\Mcp\Confirmation\PlanState($this->createMock(\OCP\IConfig::class))));
+		] + $this->structurePlans() + $this->dependencyPlans() + $this->labelPlans() + CardStatusFixture::plans(new \OCA\Mcp\Mcp\Confirmation\PlanState($this->createMock(\OCP\IConfig::class))));
 	}
 
 	public function testMarkdownInTitleBoardAndListStaysLiteral(): void {
@@ -418,6 +418,17 @@ final class DeckPlanRendererTest extends TestCase {
 		$this->assertStringNotContainsString("\nNothing was changed", $text);
 		$this->assertStringNotContainsString('](javascript', $text);
 	}
+	/** @return array<string, array<string, mixed>> Plans of the three board label tools, written by hand. */
+	private function labelPlans(): array {
+		$board = ['boardId' => 2, 'board' => 'Board', 'owner' => 'pedro', 'ownerDisplayName' => 'Pedro', 'shared' => true];
+		$label = ['id' => 5, 'title' => 'bug', 'color' => 'ff7a66'];
+		return [
+			'deck_create_label' => ['label' => ['title' => 'sev:medium', 'color' => '31cc7c', 'colorGiven' => false], 'board' => $board],
+			'deck_update_label' => ['label' => $label, 'after' => ['title' => 'defect', 'color' => 'ff7a66'], 'cards' => 3, 'board' => $board],
+			'deck_delete_label' => ['label' => $label, 'cards' => 1, 'board' => $board, 'consequence' => 'No trash.'],
+		];
+	}
+
 	private function dependencyPlans(): array {
 		$plans = [];
 		foreach (['deck_add_card_dependency', 'deck_remove_card_dependency'] as $tool) {

@@ -306,6 +306,12 @@ namespace OCA\Deck\Service {
 }
 
 namespace OCA\Deck\Service {
+/** Label service double; positional parameters of Deck v1.15.0 to v1.19.0 `lib/Service/LabelService.php`. */
+class LabelService {
+	public function create(string $title, string $color, int $boardId): \OCA\Deck\Db\Label { throw new \LogicException('Stub: expected a PHPUnit mock.'); }
+	public function update(int $id, string $title, string $color): \OCA\Deck\Db\Label { throw new \LogicException('Stub: expected a PHPUnit mock.'); }
+	public function delete(int $id): \OCA\Deck\Db\Label { throw new \LogicException('Stub: expected a PHPUnit mock.'); }
+}
 class AttachmentService {
 	public function delete(int $cardId, int $attachmentId, string $type = 'deck_file'): \OCA\Deck\Db\Attachment { throw new \RuntimeException('stub'); }
 }

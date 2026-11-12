@@ -1,0 +1,485 @@
+{
+    "tool": "deck_create_label",
+    "grant": "deck.edit",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "boardId": 20,
+                "title": "Prioridade",
+                "color": "#AA00FF"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create Deck label**\n\nCreate label **Prioridade** on *Comercial*.\n- Colour: \\#aa00ff\n\nNothing was changed. Confirm to execute.\n\n*After your approval the label below is added to the board, without being assigned to any card.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_create_label",
+                            "title": "Create Deck label",
+                            "action": "deck_create_label",
+                            "label": {
+                                "title": "Prioridade",
+                                "color": "aa00ff",
+                                "colorGiven": true
+                            },
+                            "board": {
+                                "boardId": 20,
+                                "board": "Comercial",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "shared": false
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Nothing was changed. After your approval the label below is added to the board, without being assigned to any card.",
+                            "timezone": "UTC"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 1,
+                        "boardId": 20,
+                        "title": "Urgente",
+                        "color": "ff0000"
+                    },
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    }
+                ],
+                "writes": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "boardId": 20,
+                "title": "Prioridade",
+                "color": "#AA00FF",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 1,
+                        "boardId": 20,
+                        "title": "Urgente",
+                        "color": "ff0000"
+                    },
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    }
+                ],
+                "writes": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "boardId": 20,
+                "title": "Prioridade",
+                "color": "#AA00FF",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create Deck label**\n\nCreate label **Prioridade** on *Comercial*.\n- Colour: \\#aa00ff\n\nNothing was changed. Confirm to execute.\n\n*After your approval the label below is added to the board, without being assigned to any card.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_create_label",
+                            "title": "Create Deck label",
+                            "action": "deck_create_label",
+                            "label": {
+                                "title": "Prioridade",
+                                "color": "aa00ff",
+                                "colorGiven": true
+                            },
+                            "board": {
+                                "boardId": 20,
+                                "board": "Comercial",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "shared": false
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Nothing was changed. After your approval the label below is added to the board, without being assigned to any card.",
+                            "timezone": "UTC"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 1,
+                        "boardId": 20,
+                        "title": "Urgente",
+                        "color": "ff0000"
+                    },
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    }
+                ],
+                "writes": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "A creation binds no plan_state: the catalog is read again before the write, and a title taken in the meantime is refused, not duplicated."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "boardId": 20,
+                "title": "Prioridade",
+                "color": "#AA00FF"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create Deck label**\n\nCreate label **Prioridade** on *Comercial*.\n- Colour: \\#aa00ff\n\nNothing was changed. Confirm to execute.\n\n*After your approval the label below is added to the board, without being assigned to any card.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_create_label",
+                            "title": "Create Deck label",
+                            "action": "deck_create_label",
+                            "label": {
+                                "title": "Prioridade",
+                                "color": "aa00ff",
+                                "colorGiven": true
+                            },
+                            "board": {
+                                "boardId": 20,
+                                "board": "Comercial",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "shared": false
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Nothing was changed. After your approval the label below is added to the board, without being assigned to any card.",
+                            "timezone": "UTC"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 1,
+                        "boardId": 20,
+                        "title": "Urgente",
+                        "color": "ff0000"
+                    },
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    }
+                ],
+                "writes": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "boardId": 20,
+                "title": "Prioridade",
+                "color": "#AA00FF",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"label\": {\n        \"id\": 4,\n        \"boardId\": 20,\n        \"title\": \"Prioridade\",\n        \"color\": \"aa00ff\"\n    },\n    \"board\": \"Comercial\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 1,
+                        "boardId": 20,
+                        "title": "Urgente",
+                        "color": "ff0000"
+                    },
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    },
+                    {
+                        "id": 4,
+                        "boardId": 20,
+                        "title": "Prioridade",
+                        "color": "aa00ff"
+                    }
+                ],
+                "writes": [
+                    "label +Prioridade"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "boardId": 20,
+                "title": "Prioridade alta",
+                "color": "#AA00FF",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 1,
+                        "boardId": 20,
+                        "title": "Urgente",
+                        "color": "ff0000"
+                    },
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    },
+                    {
+                        "id": 4,
+                        "boardId": 20,
+                        "title": "Prioridade",
+                        "color": "aa00ff"
+                    }
+                ],
+                "writes": [
+                    "label +Prioridade"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "boardId": 20,
+                "title": "Prioridade alta",
+                "color": "#AA00FF"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 1,
+                        "boardId": 20,
+                        "title": "Urgente",
+                        "color": "ff0000"
+                    },
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    },
+                    {
+                        "id": 4,
+                        "boardId": 20,
+                        "title": "Prioridade",
+                        "color": "aa00ff"
+                    }
+                ],
+                "writes": [
+                    "label +Prioridade"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "boardId": 20,
+                "title": "Prioridade alta",
+                "color": "#AA00FF",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 1,
+                        "boardId": 20,
+                        "title": "Urgente",
+                        "color": "ff0000"
+                    },
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    },
+                    {
+                        "id": 4,
+                        "boardId": 20,
+                        "title": "Prioridade",
+                        "color": "aa00ff"
+                    }
+                ],
+                "writes": [
+                    "label +Prioridade"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "A Deck label has no exclusion of its own: the hidden system tag applies to Files nodes, and the board label tools touch no file; access to the board is the Deck ACL (MANAGE), read by the gateway."
+        }
+    ]
+}

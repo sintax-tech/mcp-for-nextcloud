@@ -5,23 +5,25 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tests\Unit\Tools\Talk;
+namespace OCA\Mcp\Tests\Unit\Modules\Talk;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
 use OCA\Mcp\Access\Grants\GrantCatalog;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Mcp\Tools\UnknownToolException;
 use OCA\Mcp\Modules\Talk\Failures\TalkErrors;
 use OCA\Mcp\Modules\Talk\Failures\TalkUnavailableException;
 use OCA\Mcp\Modules\Talk\Integration\TalkServices;
-use OCA\Mcp\Modules\Talk\Locating\Conversation;
-use OCA\Mcp\Modules\Talk\Locating\ConversationResolver;
+use OCA\Mcp\Modules\Talk\Integration\UnreadRoomView;
 use OCA\Mcp\Modules\Talk\Presentation\Messages;
 use OCA\Mcp\Modules\Talk\Reading\ListUnreadHandler;
 use OCA\Mcp\Modules\Talk\Reading\UnreadConversations;
+use OCA\Mcp\Modules\Talk\Reading\UnreadCursor;
 use OCA\Mcp\Modules\Talk\TalkModule;
-use OCA\Mcp\Mcp\Tools\ToolRegistry;
-use OCA\Mcp\Mcp\Tools\UnknownToolException;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
+use OCA\Mcp\Tests\Unit\Tools\Talk\TalkTestModule;
 use OCP\App\IAppManager;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -31,20 +33,34 @@ use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Throwable;
 
-/** The unread listing: only conversations with unread messages, never a lobby counter, never a write. */
+/**
+ * The unread listing against the real lobby and name view.
+ *
+ * This process cannot load OCA\Talk, so a double stands in for each room. The view is the production class.
+ * A call that would persist a lobby or a name throws. The cell that loads Talk is the proof that nothing is written.
+ */
 final class UnreadConversationsTest extends TestCase {
 	private TalkServices&MockObject $services;
-	private ConversationResolver&MockObject $resolver;
 	private UnreadConversations $listing;
+	private UnreadCursor $cursor;
 	private UnreadParticipantServiceStub $participants;
 
 	protected function setUp(): void {
 		parent::setUp();
 		$this->services = $this->createMock(TalkServices::class);
-		$this->resolver = $this->createMock(ConversationResolver::class);
 		$this->services->expects($this->never())->method('chatManager');
 		$this->services->expects($this->never())->method('roomService');
-		$this->listing = new UnreadConversations($this->services, $this->resolver);
+		$config = new InMemoryConfig();
+		$config->system['secret'] = 'talk-unread-secret';
+		$this->cursor = new UnreadCursor(new PlanState($config->mock($this)));
+		$users = $this->createMock(IUserManager::class);
+		$users->method('getDisplayName')->willReturnCallback(static function (string $uid): ?string {
+			if ($uid === 'carol') {
+				return 'Carol';
+			}
+			return $uid === 'noname' ? null : $uid;
+		});
+		$this->listing = new UnreadConversations($this->services, new UnreadRoomView($users, 1), $this->cursor);
 	}
 
 	public function testOnlyConversationsWithUnreadMessagesAreReturned(): void {
@@ -56,7 +72,6 @@ final class UnreadConversationsTest extends TestCase {
 			[$quiet, $this->participant(0, 9)],
 			[$archived, $this->participant(2, 0, archived: true)],
 		]);
-		$this->resolver->method('keepsOutOfLobby')->willReturn(false);
 
 		$page = $this->listing->list('alice', 50, null);
 
@@ -69,38 +84,102 @@ final class UnreadConversationsTest extends TestCase {
 		$this->assertSame(300, $page['conversations'][0]['lastActivity']);
 		$this->assertTrue($page['conversations'][1]['archived']);
 		$this->assertSame(0, $page['conversations'][1]['lastReadMessage']);
-		$this->assertFalse($quiet->named);
+		$this->assertFalse($quiet->described);
 	}
 
 	public function testAnEmptyUnreadSetReturnsNoConversations(): void {
 		$quiet = $this->room('quiet', 10);
 		$this->givenRooms([[$quiet, $this->participant(0, 9)]]);
-		$this->resolver->expects($this->never())->method('keepsOutOfLobby');
 
 		$page = $this->listing->list('alice', 50, null);
 
 		$this->assertSame([], $page['conversations']);
 		$this->assertNull($page['nextCursor']);
-		$this->assertFalse($quiet->named);
+		$this->assertFalse($quiet->described);
 	}
 
 	public function testALobbyRoomIsOmittedAndItsCounterIsAbsent(): void {
 		$open = $this->room('open', 20);
 		$barred = $this->room('barred', 90);
+		$barred->lobbyState = 1;
+		$barred->lobbyTimer = time() + 3600;
 		$this->givenRooms([
 			[$open, $this->participant(1, 1)],
 			[$barred, $this->participant(91, 4)],
 		]);
-		$this->resolver->method('keepsOutOfLobby')->willReturnCallback(
-			static fn (string $userId, Conversation $conversation): bool => $conversation->token() === 'barred',
-		);
 
 		$encoded = json_encode($this->listing->list('alice', 50, null), JSON_THROW_ON_ERROR);
 
 		$this->assertStringNotContainsString('barred', $encoded);
 		$this->assertStringNotContainsString('91', $encoded);
 		$this->assertStringContainsString('open', $encoded);
-		$this->assertFalse($barred->named);
+		$this->assertFalse($barred->described);
+	}
+
+	public function testAnElapsedLobbyIsOpenInMemoryAndANullTimerStaysBarred(): void {
+		$elapsed = $this->room('elapsed', 40);
+		$elapsed->lobbyState = 1;
+		$elapsed->lobbyTimer = time() - 10;
+		$waiting = $this->room('waiting', 30);
+		$waiting->lobbyState = 1;
+		$unreadable = $this->room('unreadable', 20);
+		$unreadable->lobbyState = null;
+		$this->givenRooms([
+			[$elapsed, $this->participant(2, 1)],
+			[$waiting, $this->participant(3, 1)],
+			[$unreadable, $this->participant(4, 1)],
+		]);
+
+		$page = $this->listing->list('alice', 50, null);
+
+		$this->assertSame(['elapsed'], array_column($page['conversations'], 'token'));
+		$this->assertFalse($elapsed->described);
+	}
+
+	public function testLobbyIgnoreLetsTheParticipantThrough(): void {
+		$room = $this->room('passed', 15);
+		$room->lobbyState = 1;
+		$room->lobbyTimer = time() + 3600;
+		$participant = $this->participant(5, 1);
+		$participant->permissions = 8;
+		$this->givenRooms([[$room, $participant]]);
+
+		$page = $this->listing->list('alice', 50, null);
+
+		$this->assertSame(['passed'], array_column($page['conversations'], 'token'));
+	}
+
+	public function testAnUnnamedRoomContributesAnEmptyDisplayName(): void {
+		$room = $this->room('blank', 12, storedName: '');
+		$this->givenRooms([[$room, $this->participant(1, 0)]]);
+
+		$page = $this->listing->list('alice', 50, null);
+
+		$this->assertSame('', $page['conversations'][0]['displayName']);
+		$this->assertSame('blank', $page['conversations'][0]['token']);
+		$this->assertFalse($room->described);
+	}
+
+	public function testADirectConversationUsesTheStoredAccountIds(): void {
+		$named = $this->room('direct', 11, 1, '["alice","carol"]');
+		$fallback = $this->room('plain', 10, 1, '["alice","noname"]');
+		$legacy = $this->room('legacy', 9, 1, '');
+		$other = $this->room('other', 8, 1, '["bob","carol"]');
+		$this->givenRooms([
+			[$named, $this->participant(1, 0)],
+			[$fallback, $this->participant(1, 0)],
+			[$legacy, $this->participant(1, 0)],
+			[$other, $this->participant(1, 0)],
+		]);
+
+		$page = $this->listing->list('alice', 50, null);
+		$names = array_column($page['conversations'], 'displayName', 'token');
+
+		$this->assertSame('Carol', $names['direct']);
+		$this->assertSame('noname', $names['plain']);
+		$this->assertSame('', $names['legacy']);
+		$this->assertSame('', $names['other']);
+		$this->assertFalse($named->described);
 	}
 
 	public function testPagesStopAtFiftyAndTheCursorContinuesAfterTheLastRow(): void {
@@ -108,10 +187,8 @@ final class UnreadConversationsTest extends TestCase {
 		for ($i = 1; $i <= 3; $i++) {
 			$rows[] = [$this->room('r' . $i, 300 - $i), $this->participant($i, 10 + $i)];
 		}
-		// Same activity as r2, later token, so the tie-break puts it after r2.
 		$rows[] = [$this->room('r2b', 298), $this->participant(6, 1)];
 		$this->givenRooms($rows);
-		$this->resolver->method('keepsOutOfLobby')->willReturn(false);
 
 		$first = $this->listing->list('alice', 2, null);
 		$this->assertSame(['r1', 'r2'], array_column($first['conversations'], 'token'));
@@ -122,6 +199,27 @@ final class UnreadConversationsTest extends TestCase {
 		$this->assertNull($second['nextCursor']);
 	}
 
+	public function testANewerMessageBetweenPagesLeavesTheContinuation(): void {
+		$newest = $this->room('newest', 300);
+		$moved = $this->room('moved', 200);
+		$older = $this->room('older', 100);
+		$this->givenRooms([
+			[$newest, $this->participant(1, 0)],
+			[$moved, $this->participant(1, 0)],
+			[$older, $this->participant(1, 0)],
+		]);
+
+		$first = $this->listing->list('alice', 1, null);
+		$this->assertSame(['newest'], array_column($first['conversations'], 'token'));
+		$moved->lastActivity = 400;
+
+		$second = $this->listing->list('alice', 1, $first['nextCursor']);
+		$this->assertSame(['older'], array_column($second['conversations'], 'token'));
+
+		$again = $this->listing->list('alice', 50, null);
+		$this->assertSame(['moved', 'newest', 'older'], array_column($again['conversations'], 'token'));
+	}
+
 	public function testTheDefaultPageIsFiftyAndOutOfRangeLimitsAreRejected(): void {
 		$rows = [];
 		for ($i = 0; $i < 51; $i++) {
@@ -129,7 +227,6 @@ final class UnreadConversationsTest extends TestCase {
 			$rows[] = [$this->room($token, 1000 - $i), $this->participant(1, 0)];
 		}
 		$this->givenRooms($rows);
-		$this->resolver->method('keepsOutOfLobby')->willReturn(false);
 
 		$page = $this->listing->list('alice', UnreadConversations::DEFAULT_PAGE, null);
 		$this->assertCount(50, $page['conversations']);
@@ -148,9 +245,20 @@ final class UnreadConversationsTest extends TestCase {
 		}
 	}
 
-	public function testAMalformedCursorIsRejected(): void {
+	public function testAMalformedCursorIsRejectedBeforeTalkIsTouched(): void {
 		$this->services->expects($this->never())->method('manager');
-		$cursors = ['@@@', '', str_repeat('a', 201), rtrim(strtr(base64_encode('{"a":-1,"t":"ab"}'), '+/', '-_'), '='), rtrim(strtr(base64_encode('{"a":1}'), '+/', '-_'), '=')];
+		$swapped = rtrim(strtr(base64_encode('{"t":"ab","a":1}'), '+/', '-_'), '=');
+		$signed = $this->cursor->next(1, 'ab', TalkModule::TOOL_LIST_UNREAD, 'alice');
+		$parts = explode('.', $signed);
+		$cursors = [
+			'@@@',
+			'',
+			str_repeat('a', 513),
+			rtrim(strtr(base64_encode('{"a":-1,"t":"ab"}'), '+/', '-_'), '='),
+			$this->cursor->next(1, 'ab', TalkModule::TOOL_LIST_UNREAD, 'bob'),
+			$parts[0] . '.' . $swapped . '.' . $parts[2],
+			substr($signed, 0, -1) . ($signed[-1] === 'a' ? 'b' : 'a'),
+		];
 		foreach ($cursors as $cursor) {
 			try {
 				$this->listing->list('alice', 50, $cursor);
@@ -168,12 +276,11 @@ final class UnreadConversationsTest extends TestCase {
 			[$closed, new RuntimeException('no participant')],
 			[$open, $this->participant(3, 8)],
 		]);
-		$this->resolver->method('keepsOutOfLobby')->willReturn(false);
 
 		$page = $this->listing->list('alice', 50, null);
 
 		$this->assertSame(['open'], array_column($page['conversations'], 'token'));
-		$this->assertFalse($closed->named);
+		$this->assertFalse($closed->described);
 		foreach ($this->participants->calls as $call) {
 			$this->assertSame('alice', $call[0]);
 			$this->assertFalse($call[1]);
@@ -183,6 +290,15 @@ final class UnreadConversationsTest extends TestCase {
 	public function testTalkUnavailableStopsBeforeAnyParticipantLookup(): void {
 		$this->services->method('manager')->willThrowException(new TalkUnavailableException());
 		$this->services->expects($this->never())->method('participantService');
+
+		$this->expectException(TalkUnavailableException::class);
+		$this->listing->list('alice', 50, null);
+	}
+
+	public function testIncompleteLobbyConstantsAreNotAnEmptyInbox(): void {
+		$this->services->method('manager')->willReturn(new UnreadManagerStub([]));
+		$this->services->method('participantService')->willReturn(new \stdClass());
+		$this->services->method('conversationConstants')->willReturn([]);
 
 		$this->expectException(TalkUnavailableException::class);
 		$this->listing->list('alice', 50, null);
@@ -229,10 +345,14 @@ final class UnreadConversationsTest extends TestCase {
 		$this->participants = new UnreadParticipantServiceStub($byId);
 		$this->services->method('manager')->willReturn(new UnreadManagerStub($rooms));
 		$this->services->method('participantService')->willReturn($this->participants);
+		$this->services->method('conversationConstants')->willReturn([
+			'lobbyNone' => 0,
+			'lobbyIgnorePermission' => 8,
+		]);
 	}
 
-	private function room(string $token, ?int $activity): UnreadRoomStub {
-		return new UnreadRoomStub($token, $activity);
+	private function room(string $token, ?int $activity, int $type = 2, ?string $storedName = null): UnreadRoomStub {
+		return new UnreadRoomStub($token, $activity, $type, $storedName);
 	}
 
 	private function participant(int $unread, int $lastRead, bool $archived = false): UnreadParticipantStub {
@@ -254,7 +374,7 @@ final class UnreadConversationsTest extends TestCase {
 		$module = TalkTestModule::build(
 			$this->services,
 			$this->createMock(\OCA\Mcp\Modules\Talk\Reading\ConversationReader::class),
-			$this->resolver,
+			$this->createMock(\OCA\Mcp\Modules\Talk\Locating\ConversationResolver::class),
 			$this->createMock(\OCA\Mcp\Modules\Talk\Writing\ConversationWriter::class),
 			$this->createMock(\OCA\Mcp\Modules\Talk\Attachments\FileSharer::class),
 			$this->createMock(\OCA\Mcp\Modules\Talk\Writing\WritePreview::class),
@@ -267,15 +387,20 @@ final class UnreadConversationsTest extends TestCase {
 	}
 }
 
-/** Room double. Naming is recorded so a skipped room can prove it was not described. */
+/** Room double. Describing it through the writing name methods fails the test. */
 final class UnreadRoomStub {
-	public bool $named = false;
+	public bool $described = false;
+	public int|null $lobbyState = 0;
+	public ?int $lobbyTimer = null;
+	private string $name;
 
 	public function __construct(
 		private string $token,
-		private ?int $lastActivity,
+		public ?int $lastActivity,
 		private int $type = 2,
+		?string $storedName = null,
 	) {
+		$this->name = $storedName ?? ('Name ' . $token);
 	}
 
 	public function getToken(): string {
@@ -286,27 +411,46 @@ final class UnreadRoomStub {
 		return $this->type;
 	}
 
+	public function getLobbyState(): int|null {
+		return $this->lobbyState;
+	}
+
+	public function getLobbyTimer(): ?DateTimeImmutable {
+		return $this->lobbyTimer === null ? null : new DateTimeImmutable('@' . $this->lobbyTimer);
+	}
+
 	public function getDisplayName(string $userId, bool $forceName = true): string {
-		$this->named = true;
-		return 'Name ' . $this->token;
+		$this->described = true;
+		throw new RuntimeException('getDisplayName');
+	}
+
+	public function getName(): string {
+		$this->described = true;
+		throw new RuntimeException('getName');
 	}
 
 	public function getLastActivity(): ?DateTimeImmutable {
 		return $this->lastActivity === null ? null : new DateTimeImmutable('@' . $this->lastActivity);
 	}
 
-	public function setLastReadMessage(int $message): void {
-		throw new RuntimeException('setLastReadMessage');
+	public function setName(string $name): void {
+		throw new RuntimeException('setName');
 	}
 }
 
 /** Participant double whose writing methods fail the test if the listing reaches them. */
 final class UnreadParticipantStub {
+	public int $permissions = 0;
+
 	public function __construct(
 		private int $unread,
 		private int $lastRead,
 		private bool $archived,
 	) {
+	}
+
+	public function getPermissions(): int {
+		return $this->permissions;
 	}
 
 	public function getAttendee(): object {
@@ -359,6 +503,10 @@ final class UnreadManagerStub {
 	public function getRoomsForUser(string $userId): array {
 		return $this->rooms;
 	}
+
+	public function resolveRoomDisplayName(object $room, string $userId): string {
+		throw new RuntimeException('resolveRoomDisplayName');
+	}
 }
 
 /** Participant lookup that records the session argument and can refuse a room. */
@@ -383,5 +531,9 @@ final class UnreadParticipantServiceStub {
 			throw new RuntimeException('unexpected room');
 		}
 		return $participant;
+	}
+
+	public function getParticipantUserIds(object $room): array {
+		throw new RuntimeException('getParticipantUserIds');
 	}
 }

@@ -207,6 +207,8 @@
 		{"path":"lib/Modules/Talk/Reading/ListUnreadHandler.php","fqcn":"OCA\\Mcp\\Modules\\Talk\\Reading\\ListUnreadHandler","target":"stays","owner":"Modules\\Talk","ticket":null},
 		{"path":"lib/Modules/Talk/Reading/ReadMessagesHandler.php","fqcn":"OCA\\Mcp\\Modules\\Talk\\Reading\\ReadMessagesHandler","target":"stays","owner":"Modules\\Talk","ticket":null},
 		{"path":"lib/Modules/Talk/Reading/UnreadConversations.php","fqcn":"OCA\\Mcp\\Modules\\Talk\\Reading\\UnreadConversations","target":"stays","owner":"Modules\\Talk","ticket":null},
+		{"path":"lib/Modules/Talk/Reading/UnreadCursor.php","fqcn":"OCA\\Mcp\\Modules\\Talk\\Reading\\UnreadCursor","target":"stays","owner":"Modules\\Talk","ticket":null},
+		{"path":"lib/Modules/Talk/Integration/UnreadRoomView.php","fqcn":"OCA\\Mcp\\Modules\\Talk\\Integration\\UnreadRoomView","target":"stays","owner":"Modules\\Talk","ticket":null},
 		{"path":"lib/Modules/Talk/Attaching/AttachFileHandler.php","fqcn":"OCA\\Mcp\\Modules\\Talk\\Attaching\\AttachFileHandler","target":"stays","owner":"Modules\\Talk","ticket":null},
 		{"path":"lib/Modules/Talk/Attaching/AttachFilePreview.php","fqcn":"OCA\\Mcp\\Modules\\Talk\\Attaching\\AttachFilePreview","target":"stays","owner":"Modules\\Talk","ticket":null},
 		{"path":"lib/Modules/Talk/Quoting/QuoteFileHandler.php","fqcn":"OCA\\Mcp\\Modules\\Talk\\Quoting\\QuoteFileHandler","target":"stays","owner":"Modules\\Talk","ticket":null},

@@ -13,9 +13,9 @@ use OCP\IUserManager;
 use Psr\Container\ContainerInterface;
 
 /**
- * Single place that knows the optional Nextcloud Talk classes by name, so the module compiles and the suite
- * passes with the spreed app absent. Nothing else in this module may reference an OCA\Talk class: handlers
- * receive plain objects and are tested with doubles.
+ * Names the optional Nextcloud Talk classes, so the module compiles and the suite passes with the spreed app
+ * absent. Native Talk class names stay in this Integration directory. Handlers receive plain objects and are
+ * tested with doubles.
  */
 class TalkServices {
 	public const APP_ID = 'spreed';

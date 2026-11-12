@@ -118,6 +118,7 @@ final class NextcloudApiUsage {
 		'OCA\\Talk\\Room::getType' => [],
 		'OCA\\Talk\\Room::getReadOnly' => [],
 		'OCA\\Talk\\Room::getLobbyState' => [],
+		'OCA\\Talk\\Room::getLobbyTimer' => [],
 		'OCA\\Talk\\Room::getLastActivity' => [],
 		'OCA\\Talk\\Room::isFederatedConversation' => [],
 		'OCA\\Talk\\Participant::getPermissions' => [],

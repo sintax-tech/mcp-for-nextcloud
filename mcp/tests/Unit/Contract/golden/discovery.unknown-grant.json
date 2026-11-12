@@ -3888,7 +3888,7 @@
                     {
                         "name": "talk_list_unread",
                         "title": "List unread Talk conversations",
-                        "description": "Lists only the Talk conversations of the authenticated user that have unread messages, up to 50 per page. A conversation the lobby bars is omitted and its unread count is not returned. The result is a snapshot: new messages may arrive before the next page, and nextCursor continues after the last conversation of this page. It changes no state: it does not mark anything as read, does not change lastReadMessage, lastPing, the session or notifications.",
+                        "description": "Lists only the Talk conversations of the authenticated user that have unread messages, up to 50 per page. A conversation the lobby bars is omitted and its unread count is not returned. A lobby whose timer has already passed is treated as open for this answer only and is not written back. The list is not frozen: a conversation that receives a message between pages can change position, and nextCursor only continues after the last conversation of this page. To see everything again, call the tool once more without a cursor. It changes no state: it does not mark anything as read, does not change lastReadMessage, lastPing, the session or notifications, and it does not open a lobby or rename a conversation.",
                         "inputSchema": {
                             "type": "object",
                             "properties": {
@@ -3901,7 +3901,8 @@
                                 "cursor": {
                                     "type": "string",
                                     "minLength": 1,
-                                    "maxLength": 200
+                                    "maxLength": 512,
+                                    "description": "Continuation from the previous page of this same user. The list is not frozen: a conversation that receives a message can change position, and seeing everything again means calling without this cursor."
                                 }
                             },
                             "additionalProperties": false

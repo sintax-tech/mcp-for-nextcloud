@@ -121,7 +121,8 @@ class TalkModuleTest extends TestCase {
 		$this->assertSame(1, $schemas['talk_list_unread']['properties']['limit']['minimum']);
 		$this->assertSame(50, $schemas['talk_list_unread']['properties']['limit']['maximum']);
 		$this->assertSame(50, $schemas['talk_list_unread']['properties']['limit']['default']);
-		$this->assertSame(200, $schemas['talk_list_unread']['properties']['cursor']['maxLength']);
+		$this->assertSame(512, $schemas['talk_list_unread']['properties']['cursor']['maxLength']);
+		$this->assertStringContainsString('not frozen', $schemas['talk_list_unread']['properties']['cursor']['description']);
 		$this->assertArrayNotHasKey('confirm', $schemas['talk_list_unread']['properties']);
 		$this->assertSame(GroupCreator::MAX_PARTICIPANTS, $schemas['talk_create_group']['properties']['participants']['maxItems']);
 		// The account id goes through the same bound as a token, and the text through the same bound as a message.

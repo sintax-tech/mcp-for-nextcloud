@@ -39,6 +39,7 @@ final class ListUnread implements Tool {
 					'type' => 'string',
 					'minLength' => 1,
 					'maxLength' => UnreadConversations::MAX_CURSOR_LENGTH,
+					'description' => 'Continuation from the previous page of this same user. The list is not frozen: a conversation that receives a message can change position, and seeing everything again means calling without this cursor.',
 				],
 			],
 		);

@@ -6,7 +6,7 @@
 declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Talk\Reading;
-use OCA\Mcp\Modules\Talk\{Presentation\ActorNames, Locating\Conversation, Failures\ConversationAccessException, Locating\ConversationResolver, Presentation\Messages, Integration\TalkServices, Failures\TalkUnavailableException};
+use OCA\Mcp\Modules\Talk\{Presentation\ActorNames, Locating\Conversation, Failures\ConversationAccessException, Locating\ConversationResolver, Presentation\Messages, Integration\TalkServices, Integration\UnreadCounter, Failures\TalkUnavailableException};
 use DateTimeInterface;
 use InvalidArgumentException;
 use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
@@ -39,24 +39,28 @@ class ConversationReader {
 	 * @param ConversationResolver $resolver existing conversation access checks
 	 * @param ActorNames $actorNames caller-visible participant names
 	 * @param OutputReferenceFilter $references existing resource reference policy
+	 * @param UnreadCounter $counter unread count Talk shows in its own list, shared with the unread listing
 	 */
 	public function __construct(
 		private TalkServices $talkServices,
 		private ConversationResolver $resolver,
 		private ActorNames $actorNames,
 		private OutputReferenceFilter $references,
+		private UnreadCounter $counter,
 	) {}
 
 	/**
 	 * The conversations the user takes part in, most recently active first.
 	 *
 	 * @param string $userId Authenticated user
-	 * @return list<array{token:string, displayName:string, type:int, participantType:int, unreadMessages:int, archived:bool, lastActivity:int|null}>
+	 * @return list<array{token:string, displayName:string, type:int, participantType:int, unreadMessages:int|null, archived:bool, lastActivity:int|null}>
 	 * @throws TalkUnavailableException When spreed is unavailable
 	 */
 	public function listConversations(string $userId): array {
 		$manager = $this->talkServices->manager($userId);
 		$participantService = $this->talkServices->participantService($userId);
+		$chatManager = $this->talkServices->chatManager($userId);
+		$markers = $this->talkServices->unreadMarkers($userId);
 
 		$conversations = [];
 		foreach ($manager->getRoomsForUser($userId) as $room) {
@@ -71,8 +75,11 @@ class ConversationReader {
 			$attendee = $participant->getAttendee();
 			$lastActivity = $room->getLastActivity();
 			// Talk's RoomFormatter reports no unread messages to a participant the lobby keeps out: the count would
-			// tell what the history refuses to show.
-			$unread = $this->resolver->keepsOutOfLobby($userId, new Conversation($room, $participant)) ? 0 : $attendee->getUnreadMessages();
+			// tell what the history refuses to show. An unreadable count stays on the list as null: this tool lists
+			// every conversation, and a missing number is not the same as zero.
+			$unread = $this->resolver->keepsOutOfLobby($userId, new Conversation($room, $participant))
+				? 0
+				: $this->unreadCount($room, $attendee, $chatManager, $userId, $markers);
 			$conversations[] = [
 				'token' => $room->getToken(),
 				'displayName' => $room->getDisplayName($userId, false),
@@ -90,6 +97,24 @@ class ConversationReader {
 		);
 
 		return $conversations;
+	}
+
+	/**
+	 * The unread count Talk would show, or null when that count cannot be read.
+	 *
+	 * The conversation stays in the list either way. The counter is the one shared with the unread listing: a local
+	 * room is counted from the chat, a federated room from the attendee column, and nothing is written.
+	 *
+	 * @param object $room OCA\Talk\Room
+	 * @param object $attendee OCA\Talk\Model\Attendee of the reader
+	 * @param object $chatManager OCA\Talk\Chat\ChatManager
+	 * @param string $userId authenticated reader
+	 * @param array{unreadMigration: int, unreadFirstMessage: int} $markers Talk's special read markers
+	 * @return int|null null when the counter cannot answer
+	 */
+	private function unreadCount(object $room, object $attendee, object $chatManager, string $userId, array $markers): ?int {
+		$counted = $this->counter->count($room, $attendee, $chatManager, $userId, $markers);
+		return $counted === null ? null : $counted['unread'];
 	}
 
 	/**

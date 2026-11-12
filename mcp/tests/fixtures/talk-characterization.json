@@ -3,7 +3,7 @@
         "definitions": [
             {
                 "name": "talk_list_conversations",
-                "description": "Lists the Talk conversations the authenticated user takes part in, with the number of unread messages. It changes no state: it does not mark anything as read, does not touch notifications and does not touch activity.",
+                "description": "Lists the Talk conversations the authenticated user takes part in, with the number of unread messages Talk shows in its own list. When that count cannot be read, the conversation is still listed and unreadMessages is null. It changes no state: it does not mark anything as read, does not touch notifications and does not touch activity.",
                 "inputSchema": {
                     "type": "object",
                     "properties": {},
@@ -1692,7 +1692,7 @@
         "definitions": [
             {
                 "name": "talk_list_conversations",
-                "description": "Lists the Talk conversations the authenticated user takes part in, with the number of unread messages. It changes no state: it does not mark anything as read, does not touch notifications and does not touch activity.",
+                "description": "Lists the Talk conversations the authenticated user takes part in, with the number of unread messages Talk shows in its own list. When that count cannot be read, the conversation is still listed and unreadMessages is null. It changes no state: it does not mark anything as read, does not touch notifications and does not touch activity.",
                 "inputSchema": {
                     "type": "object",
                     "properties": {},
@@ -3381,7 +3381,7 @@
         "definitions": [
             {
                 "name": "talk_list_conversations",
-                "description": "Lists the Talk conversations the authenticated user takes part in, with the number of unread messages. It changes no state: it does not mark anything as read, does not touch notifications and does not touch activity.",
+                "description": "Lists the Talk conversations the authenticated user takes part in, with the number of unread messages Talk shows in its own list. When that count cannot be read, the conversation is still listed and unreadMessages is null. It changes no state: it does not mark anything as read, does not touch notifications and does not touch activity.",
                 "inputSchema": {
                     "type": "object",
                     "properties": {},
@@ -5070,7 +5070,7 @@
         "definitions": [
             {
                 "name": "talk_list_conversations",
-                "description": "Lists the Talk conversations the authenticated user takes part in, with the number of unread messages. It changes no state: it does not mark anything as read, does not touch notifications and does not touch activity.",
+                "description": "Lists the Talk conversations the authenticated user takes part in, with the number of unread messages Talk shows in its own list. When that count cannot be read, the conversation is still listed and unreadMessages is null. It changes no state: it does not mark anything as read, does not touch notifications and does not touch activity.",
                 "inputSchema": {
                     "type": "object",
                     "properties": {},

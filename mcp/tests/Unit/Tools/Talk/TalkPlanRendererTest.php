@@ -416,7 +416,7 @@ final class TalkPlanRendererTest extends TestCase {
 		$resolver = new \OCA\Mcp\Modules\Talk\Locating\ConversationResolver($services);
 		return \OCA\Mcp\Tests\Unit\Tools\Talk\TalkTestModule::build(
 			$services,
-			new \OCA\Mcp\Modules\Talk\Reading\ConversationReader($services, $resolver, $this->createMock(ActorNames::class), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this)),
+			new \OCA\Mcp\Modules\Talk\Reading\ConversationReader($services, $resolver, $this->createMock(ActorNames::class), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this), new \OCA\Mcp\Modules\Talk\Integration\UnreadCounter($this->createMock(IUserManager::class))),
 			$resolver,
 			$this->writer,
 			$this->sharer,

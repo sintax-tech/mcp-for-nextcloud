@@ -14,6 +14,7 @@ use OCA\Mcp\Modules\Talk\Reading\ConversationReader;
 use OCA\Mcp\Modules\Talk\Locating\ConversationResolver;
 use OCA\Mcp\Modules\Talk\Presentation\Messages;
 use OCA\Mcp\Modules\Talk\Integration\TalkServices;
+use OCA\Mcp\Modules\Talk\Integration\UnreadCounter;
 use OCP\Comments\IComment;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -33,7 +34,7 @@ class ConversationReaderTest extends TestCase {
 		$this->resolver = $this->createMock(ConversationResolver::class);
 		$this->userManager = $this->createMock(IUserManager::class);
 		// The real ActorNames over the mocked accounts: the reader still owns the reading, not the naming rule.
-		$this->reader = new ConversationReader($this->talkServices, $this->resolver, new ActorNames($this->userManager), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this));
+		$this->reader = new ConversationReader($this->talkServices, $this->resolver, new ActorNames($this->userManager), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this), new UnreadCounter($this->userManager));
 	}
 
 	public function testLimitZeroIsAnArgumentErrorBeforeAnyTalkCall(): void {
@@ -300,8 +301,7 @@ class ConversationReaderTest extends TestCase {
 				};
 			}
 		};
-		$this->talkServices->method('manager')->willReturn($manager);
-		$this->talkServices->method('participantService')->willReturn($participantService);
+		$this->givenListing($manager, $participantService);
 
 		$conversations = $this->reader->listConversations('alice');
 
@@ -339,8 +339,7 @@ class ConversationReaderTest extends TestCase {
 				return $room->getToken() === 'lobby1' ? $this->webinar : $this->open;
 			}
 		};
-		$this->talkServices->method('manager')->willReturn($manager);
-		$this->talkServices->method('participantService')->willReturn($participantService);
+		$this->givenListing($manager, $participantService);
 		$this->resolver->method('keepsOutOfLobby')->willReturnCallback(
 			static fn (string $userId, \OCA\Mcp\Modules\Talk\Locating\Conversation $conversation): bool => $conversation->room->getToken() === 'lobby1',
 		);
@@ -370,12 +369,86 @@ class ConversationReaderTest extends TestCase {
 				return $this->readable;
 			}
 		};
-		$this->talkServices->method('manager')->willReturn($manager);
-		$this->talkServices->method('participantService')->willReturn($participantService);
+		$this->givenListing($manager, $participantService);
 
 		$conversations = $this->reader->listConversations('alice');
 
 		$this->assertSame(['good1'], array_column($conversations, 'token'));
+	}
+
+	/**
+	 * Talk stores the counter only for a federated conversation. A local room keeps the column at 0 and the list
+	 * shows the count Talk computes from the chat.
+	 */
+	public function testALocalConversationCountsTheChatWhileTheAttendeeColumnStaysZero(): void {
+		[$room, $participant] = $this->givenRoom('local1', 2, 0, 3, false, 1700, false, 40, 99);
+		$chat = new ReaderListingChat(['local1' => 6]);
+		$this->givenListing($this->managerOf([$room]), $this->participantsOf(['local1' => $participant]), $chat);
+
+		$conversations = $this->reader->listConversations('alice');
+
+		$this->assertSame(6, $conversations[0]['unreadMessages']);
+		$this->assertSame([['local1', 40]], $chat->counted);
+		$this->assertSame(0, $participant->getAttendee()->getUnreadMessages());
+	}
+
+	/** A federated conversation keeps the counter the host stored on the attendee, without counting the chat. */
+	public function testAFederatedConversationKeepsTheCounterStoredOnTheAttendee(): void {
+		[$room, $participant] = $this->givenRoom('fed1', 2, 4, 3, false, 1700, true, 12, 99);
+		$chat = new ReaderListingChat(['fed1' => 99]);
+		$this->givenListing($this->managerOf([$room]), $this->participantsOf(['fed1' => $participant]), $chat);
+
+		$conversations = $this->reader->listConversations('alice');
+
+		$this->assertSame(4, $conversations[0]['unreadMessages']);
+		$this->assertSame([], $chat->counted);
+		$this->assertSame([], $chat->converted);
+	}
+
+	/** Marked unread from the first message: Talk shows one unread message when the chat count is zero. */
+	public function testTheFirstMessageMarkerWithNothingCountedShowsOneUnread(): void {
+		[$room, $participant] = $this->givenRoom('marked', 2, 0, 3, false, 1700, false, -2, 99);
+		$chat = new ReaderListingChat(['marked' => 0]);
+		$this->givenListing($this->managerOf([$room]), $this->participantsOf(['marked' => $participant]), $chat);
+
+		$conversations = $this->reader->listConversations('alice');
+
+		$this->assertSame(1, $conversations[0]['unreadMessages']);
+		$this->assertSame([['marked', -2]], $chat->counted);
+	}
+
+	/** A legacy read marker is converted in memory. The stored marker stays at the migration value. */
+	public function testALegacyMarkerIsConvertedInMemoryAndNeverSaved(): void {
+		$alice = $this->createMock(IUser::class);
+		$this->userManager->method('get')->with('alice')->willReturn($alice);
+		[$room, $participant] = $this->givenRoom('legacy', 2, 0, 3, false, 1700, false, -1, 99);
+		$chat = new ReaderListingChat(['legacy' => 2], ['legacy' => 7]);
+		$this->givenListing($this->managerOf([$room]), $this->participantsOf(['legacy' => $participant]), $chat);
+
+		$conversations = $this->reader->listConversations('alice');
+
+		$this->assertSame(2, $conversations[0]['unreadMessages']);
+		$this->assertSame(['legacy'], $chat->converted);
+		$this->assertSame([['legacy', 7]], $chat->counted);
+		$this->assertSame(-1, $participant->getAttendee()->getLastReadMessage());
+	}
+
+	/** An unreadable count keeps the conversation in the list, with unreadMessages null. */
+	public function testAnUnreadableCountKeepsTheConversationWithoutANumber(): void {
+		[$room, $participant] = $this->givenRoom('broken', 2, 0, 3, false, 1700, false, 40, 99);
+		[$other, $otherParticipant] = $this->givenRoom('open1', 2, 4, 3, false, 1500, true, 12, 99);
+		$chat = new ReaderListingChat([], [], true);
+		$this->givenListing($this->managerOf([$room, $other]), $this->participantsOf([
+			'broken' => $participant,
+			'open1' => $otherParticipant,
+		]), $chat);
+
+		$conversations = $this->reader->listConversations('alice');
+
+		$this->assertSame(['broken', 'open1'], array_column($conversations, 'token'));
+		$this->assertNull($conversations[0]['unreadMessages']);
+		$this->assertArrayHasKey('unreadMessages', $conversations[0]);
+		$this->assertSame(4, $conversations[1]['unreadMessages']);
 	}
 
 	/**
@@ -397,14 +470,63 @@ class ConversationReaderTest extends TestCase {
 	/**
 	 * @param string $token Conversation token
 	 * @param int $type Room type
-	 * @param int $unread Unread messages
+	 * @param int $unread Unread messages stored on the attendee column
+	 * @param int $participantType Participant type
 	 * @param bool $archived Whether the user archived the conversation
-	 * @param bool $withActivity Whether the room reports a last activity
 	 * @param int|null $lastActivity Unix timestamp of the last activity
+	 * @param bool $federated Whether Talk stores the counter on the attendee
+	 * @param int $lastRead Stored read marker
+	 * @param int $lastMessageId Id of the last chat message
 	 * @return array{ReaderRoomStub, ReaderParticipantStub} The room and the participant the reader must receive
 	 */
-	private function givenRoom(string $token, int $type, int $unread, int $participantType, bool $archived, ?int $lastActivity): array {
-		return [new ReaderRoomStub($token, $type, $lastActivity), new ReaderParticipantStub($unread, $participantType, $archived)];
+	private function givenRoom(string $token, int $type, int $unread, int $participantType, bool $archived, ?int $lastActivity, bool $federated = true, int $lastRead = 1, int $lastMessageId = 0): array {
+		return [new ReaderRoomStub($token, $type, $lastActivity, $federated, $lastMessageId), new ReaderParticipantStub($unread, $participantType, $archived, $lastRead)];
+	}
+
+	/**
+	 * @param list<object> $rooms Rooms the manager returns
+	 * @return object Manager double
+	 */
+	private function managerOf(array $rooms): object {
+		return new class ($rooms) {
+			/** @param list<object> $rooms */
+			public function __construct(private array $rooms) {}
+
+			/** @return list<object> */
+			public function getRoomsForUser(string $userId, array $sessionIds = [], bool $includeLastMessage = false): array {
+				return $this->rooms;
+			}
+		};
+	}
+
+	/**
+	 * @param array<string, object> $participants Participants keyed by room token
+	 * @return object Participant service double
+	 */
+	private function participantsOf(array $participants): object {
+		return new class ($participants) {
+			/** @param array<string, object> $participants */
+			public function __construct(private array $participants) {}
+
+			public function getParticipant(object $room, string $userId, bool $lazy = false): object {
+				return $this->participants[$room->getToken()];
+			}
+		};
+	}
+
+	/**
+	 * @param object $manager Room manager double
+	 * @param object $participantService Participant service double
+	 * @param ReaderListingChat|null $chat Chat double; a fresh one when the test does not count
+	 */
+	private function givenListing(object $manager, object $participantService, ?ReaderListingChat $chat = null): void {
+		$this->talkServices->method('manager')->willReturn($manager);
+		$this->talkServices->method('participantService')->willReturn($participantService);
+		$this->talkServices->method('chatManager')->willReturn($chat ?? new ReaderListingChat());
+		$this->talkServices->method('unreadMarkers')->willReturn([
+			'unreadMigration' => -1,
+			'unreadFirstMessage' => -2,
+		]);
 	}
 
 	/**
@@ -456,6 +578,8 @@ final class ReaderRoomStub {
 		private string $token,
 		private int $type = 2,
 		private ?int $lastActivity = 0,
+		private bool $federated = true,
+		private int $lastMessageId = 0,
 	) {}
 
 	public function getToken(): string {
@@ -473,6 +597,14 @@ final class ReaderRoomStub {
 	public function getLastActivity(): ?DateTimeImmutable {
 		return $this->lastActivity === null ? null : new DateTimeImmutable('@' . $this->lastActivity);
 	}
+
+	public function isFederatedConversation(): bool {
+		return $this->federated;
+	}
+
+	public function getLastMessageId(): int {
+		return $this->lastMessageId;
+	}
 }
 
 /** Participant double whose attendee carries the counters the reader reports. */
@@ -481,14 +613,19 @@ final class ReaderParticipantStub implements ReaderParticipantGateway {
 		private int $unread = 0,
 		private int $participantType = 3,
 		private bool $archived = false,
+		private int $lastRead = 1,
 	) {}
 
 	public function getAttendee(): object {
-		return new class ($this->unread, $this->participantType, $this->archived) {
-			public function __construct(private int $unread, private int $participantType, private bool $archived) {}
+		return new class ($this->unread, $this->participantType, $this->archived, $this->lastRead) {
+			public function __construct(private int $unread, private int $participantType, private bool $archived, private int $lastRead) {}
 
 			public function getUnreadMessages(): int {
 				return $this->unread;
+			}
+
+			public function getLastReadMessage(): int {
+				return $this->lastRead;
 			}
 
 			public function getParticipantType(): int {
@@ -507,5 +644,42 @@ final class ReaderParticipantStub implements ReaderParticipantGateway {
 
 	public function ensureOneToOneRoomIsFilled(object $room): void {
 		throw new RuntimeException('Reading must not fill a one to one room.');
+	}
+}
+
+/** Chat double for the listing: counts what the test stored and throws if a marker would be saved. */
+final class ReaderListingChat {
+	/** @var list<array{0: string, 1: int}> */
+	public array $counted = [];
+
+	/** @var list<string> */
+	public array $converted = [];
+
+	/**
+	 * @param array<string, int> $counts Unread counts keyed by room token
+	 * @param array<string, int> $legacy Legacy read markers keyed by room token
+	 * @param bool $failCount Whether getUnreadCount is unreadable
+	 */
+	public function __construct(
+		private array $counts = [],
+		private array $legacy = [],
+		private bool $failCount = false,
+	) {}
+
+	public function getUnreadCount(object $room, int $lastRead): int {
+		if ($this->failCount) {
+			throw new RuntimeException('unreadable count');
+		}
+		$this->counted[] = [$room->getToken(), $lastRead];
+		return $this->counts[$room->getToken()] ?? 0;
+	}
+
+	public function getLastReadMessageFromLegacy(object $room, object $user): int {
+		$this->converted[] = $room->getToken();
+		return $this->legacy[$room->getToken()] ?? 0;
+	}
+
+	public function updateLastReadMessage(object $room, int $lastRead): void {
+		throw new RuntimeException('Reading must not move the read marker.');
 	}
 }

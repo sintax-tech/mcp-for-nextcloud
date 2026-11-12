@@ -2067,6 +2067,7 @@
 ,
     "List own activity" : "Listar mi actividad",
     "Provide valid Activity filters and an activity ID from your own feed." : "Indica filtros válidos de Activity y un ID de actividad de tu propio feed.",
-    "The Activity feed is unavailable." : "El feed de Activity no está disponible."
+    "The Activity feed is unavailable." : "El feed de Activity no está disponible.",
+    "The Activity folder or file reference is unavailable." : "La carpeta o referencia de archivo de Activity no está disponible."
 },"pluralForm" : "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

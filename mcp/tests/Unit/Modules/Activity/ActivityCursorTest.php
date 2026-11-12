@@ -35,7 +35,7 @@ final class ActivityCursorTest extends TestCase {
 			try { $native->page('alice',$since,50); self::fail('Invalid cursor accepted'); }
 			catch (InvalidArgumentException $error) { $exceptions[]=[get_class($error),$error->getMessage()]; }
 			self::assertSame(in_array($case,['missing','foreign'],true)?0:1,$calls);
-			$reply=(new ListActivityHandler($native,new ActivityInput()))->handle('alice',['since'=>$since]);
+			$reply=(new ListActivityHandler($native,new ActivityInput(),ActivityProjectionFixture::denied($this)))->handle('alice',['since'=>$since]);
 			self::assertTrue($reply['isError']); $replies[]=$reply;
 		}
 		foreach ($exceptions as $exception) self::assertSame([InvalidArgumentException::class,ActivityGateway::INVALID_CURSOR],$exception);

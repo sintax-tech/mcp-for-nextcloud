@@ -2068,6 +2068,7 @@ OC.L10N.register(
     "Teams accepted the change but applies it in the background, and it was not visible yet when the team was read again; check the members in Collectives before trying again. Nothing is retried." : "Equipos aceptó el cambio, pero lo aplica en segundo plano, y aún no era visible al volver a leer el equipo; revisa los miembros en Colectivos antes de volver a intentarlo. No se reintenta nada.",
     "List own activity" : "Listar mi actividad",
     "Provide valid Activity filters and an activity ID from your own feed." : "Indica filtros válidos de Activity y un ID de actividad de tu propio feed.",
-    "The Activity feed is unavailable." : "El feed de Activity no está disponible."
+    "The Activity feed is unavailable." : "El feed de Activity no está disponible.",
+    "The Activity folder or file reference is unavailable." : "La carpeta o referencia de archivo de Activity no está disponible."
     },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

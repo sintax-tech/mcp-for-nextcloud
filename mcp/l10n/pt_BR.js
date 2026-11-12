@@ -2068,6 +2068,7 @@ OC.L10N.register(
     "Teams accepted the change but applies it in the background, and it was not visible yet when the team was read again; check the members in Collectives before trying again. Nothing is retried." : "O Times aceitou a mudança, mas a aplica em segundo plano, e ela ainda não aparecia quando o time foi lido de novo; confira os membros no Coletivos antes de tentar de novo. Nada é repetido.",
     "List own activity" : "Listar minha atividade",
     "Provide valid Activity filters and an activity ID from your own feed." : "Informe filtros válidos do Activity e um ID de atividade do seu próprio feed.",
-    "The Activity feed is unavailable." : "O feed do Activity está indisponível."
+    "The Activity feed is unavailable." : "O feed do Activity está indisponível.",
+    "The Activity folder or file reference is unavailable." : "A pasta ou referência de arquivo do Activity está indisponível."
     },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

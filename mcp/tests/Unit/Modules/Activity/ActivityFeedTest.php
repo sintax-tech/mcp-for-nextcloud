@@ -45,7 +45,7 @@ final class ActivityFeedTest extends TestCase {
 			foreach (array_slice($eligible, 0, $limit) as $row) $collector->addActivity($row);
 			return ['data' => $collector->getActivities(), 'has_more' => count($eligible) > $limit];
 		});
-		return new ListActivity(new ListActivityHandler($gateway, new ActivityInput()));
+		return new ListActivity(new ListActivityHandler($gateway, new ActivityInput(), ActivityProjectionFixture::denied($this)));
 	}
 	/**
 	 * @param ListActivity $tool real read
@@ -113,11 +113,11 @@ final class ActivityFeedTest extends TestCase {
 	/** @return void native owner rejection is controlled, while unavailable pagination propagates rather than widening access */
 	public function testNativeOwnerFailureAndStalledCursor(): void {
 		$native=ActivityNativeFixture::gateway($this,static fn()=>throw new \OutOfBoundsException('other owner details'));
-		$r=(new ListActivityHandler($native,new ActivityInput()))->handle('alice',['since'=>123]);
+		$r=(new ListActivityHandler($native,new ActivityInput(),ActivityProjectionFixture::denied($this)))->handle('alice',['since'=>123]);
 		self::assertTrue($r['isError']); self::assertStringNotContainsString('other owner details',json_encode($r));
 		$stalled=ActivityNativeFixture::gateway($this,static fn()=>['data'=>[],'has_more'=>true]);
 		$this->expectException(\OCA\Mcp\Access\Policy\PolicyUnavailable::class);
-		(new ListActivityHandler($stalled,new ActivityInput()))->handle('alice',[]);
+		(new ListActivityHandler($stalled,new ActivityInput(),ActivityProjectionFixture::denied($this)))->handle('alice',[]);
 	}
 
 	/** @return void the default-denied grant, app and capability all gate before constructing the lazy read */

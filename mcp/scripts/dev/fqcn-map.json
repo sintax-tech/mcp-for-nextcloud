@@ -2,6 +2,13 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Modules/Activity/ActivityReferenceUnavailable.php","fqcn":"OCA\\Mcp\\Modules\\Activity\\ActivityReferenceUnavailable","target":"stays","owner":"Modules\\Activity","ticket":null},
+		{"path":"lib/Modules/Activity/Reading/ActivityCalendarReferences.php","fqcn":"OCA\\Mcp\\Modules\\Activity\\Reading\\ActivityCalendarReferences","target":"stays","owner":"Modules\\Activity","ticket":null},
+		{"path":"lib/Modules/Activity/Reading/ActivityFileReferences.php","fqcn":"OCA\\Mcp\\Modules\\Activity\\Reading\\ActivityFileReferences","target":"stays","owner":"Modules\\Activity","ticket":null},
+		{"path":"lib/Modules/Activity/Reading/ActivityObjectProjection.php","fqcn":"OCA\\Mcp\\Modules\\Activity\\Reading\\ActivityObjectProjection","target":"stays","owner":"Modules\\Activity","ticket":null},
+		{"path":"lib/Modules/Activity/Reading/ActivityObjectShapes.php","fqcn":"OCA\\Mcp\\Modules\\Activity\\Reading\\ActivityObjectShapes","target":"stays","owner":"Modules\\Activity","ticket":null},
+		{"path":"lib/Modules/Activity/Reading/ActivityOriginAccess.php","fqcn":"OCA\\Mcp\\Modules\\Activity\\Reading\\ActivityOriginAccess","target":"stays","owner":"Modules\\Activity","ticket":null},
+		{"path":"lib/Modules/Activity/Reading/ActivityReferenceView.php","fqcn":"OCA\\Mcp\\Modules\\Activity\\Reading\\ActivityReferenceView","target":"stays","owner":"Modules\\Activity","ticket":null},
 		{"path":"lib/Modules/Activity/Presentation/ActivityGuideNotes.php","fqcn":"OCA\\Mcp\\Modules\\Activity\\Presentation\\ActivityGuideNotes","target":"stays","owner":"Modules\\Activity","ticket":null},
 		{"path":"lib/Modules/Activity/ActivityModule.php","fqcn":"OCA\\Mcp\\Modules\\Activity\\ActivityModule","target":"stays","owner":"Modules\\Activity","ticket":null},
 		{"path":"lib/Modules/Activity/ActivityRegistration.php","fqcn":"OCA\\Mcp\\Modules\\Activity\\ActivityRegistration","target":"stays","owner":"Modules\\Activity","ticket":null},

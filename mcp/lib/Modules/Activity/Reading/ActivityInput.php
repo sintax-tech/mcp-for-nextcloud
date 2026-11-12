@@ -14,7 +14,7 @@ use InvalidArgumentException;
 final class ActivityInput {
 	/**
 	 * @param array<string,mixed> $arguments public arguments
-	 * @return array{from:?int,to:?int,app:?string,since:int,limit:int} normalized filters
+	 * @return array{from:?int,to:?int,app:?string,since:int,limit:int,folder_id:?int} normalized filters
 	 */
 	public function parse(array $arguments): array {
 		$from = $this->instant($arguments['from'] ?? null);
@@ -22,12 +22,14 @@ final class ActivityInput {
 		$app = $arguments['app'] ?? null;
 		$since = $arguments['since'] ?? 0;
 		$limit = $arguments['limit'] ?? 50;
+		$folder = $arguments['folder_id'] ?? null;
 		if (($from !== null && $to !== null && $from >= $to)
 			|| ($app !== null && (!is_string($app) || !preg_match('/^[a-z0-9_]{1,64}$/D', $app)))
+			|| ($folder !== null && (!is_int($folder) || $folder < 1))
 			|| !is_int($since) || $since < 0 || !is_int($limit) || $limit < 1 || $limit > 50) {
 			throw new InvalidArgumentException('Invalid Activity filters.');
 		}
-		return compact('from', 'to', 'app', 'since', 'limit');
+		return compact('from', 'to', 'app', 'since', 'limit') + ['folder_id' => $folder];
 	}
 	/**
 	 * @param mixed $value explicit ISO timestamp or absent

@@ -27,7 +27,7 @@ final class ModuleRegistrationsTest extends TestCase {
 	public function testOnlyRegistrationsOfCatalogModulesRun(): void {
 		self::assertSame([\OCA\Mcp\Modules\Files\FilesRegistration::class, \OCA\Mcp\Modules\Notes\NotesRegistration::class, \OCA\Mcp\Modules\Calendar\CalendarRegistration::class, \OCA\Mcp\Modules\Contacts\ContactsRegistration::class, \OCA\Mcp\Modules\Tasks\TasksRegistration::class, \OCA\Mcp\Modules\Deck\DeckRegistration::class,
 			\OCA\Mcp\Modules\Talk\TalkRegistration::class, \OCA\Mcp\Modules\People\PeopleRegistration::class, \OCA\Mcp\Modules\Mail\MailRegistration::class,
-			\OCA\Mcp\Modules\Tables\TablesRegistration::class, \OCA\Mcp\Modules\Forms\FormsRegistration::class, \OCA\Mcp\Modules\Polls\PollsRegistration::class, \OCA\Mcp\Modules\Collectives\CollectivesRegistration::class], array_map(static fn (object $registration): string => $registration::class, ModuleRegistrations::of(Application::MODULES)));
+			\OCA\Mcp\Modules\Tables\TablesRegistration::class, \OCA\Mcp\Modules\Forms\FormsRegistration::class, \OCA\Mcp\Modules\Polls\PollsRegistration::class, \OCA\Mcp\Modules\Collectives\CollectivesRegistration::class, \OCA\Mcp\Modules\Activity\ActivityRegistration::class], array_map(static fn (object $registration): string => $registration::class, ModuleRegistrations::of(Application::MODULES)));
 		self::assertSame([], ModuleRegistrations::of([ProbeModule::class]));
 		$registrations = ModuleRegistrations::of([ProbeModule::class, RegisteredProbeModule::class]);
 		self::assertCount(1, $registrations);

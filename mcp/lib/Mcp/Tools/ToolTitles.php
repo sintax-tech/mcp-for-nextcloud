@@ -196,6 +196,8 @@ final class ToolTitles {
 			'tables_update_view' => Translator::t('Update table view'),
 			'tables_share_node' => Translator::t('Share table or view'),
 			'tables_unshare_node' => Translator::t('Revoke table or view share'),
+			// Activity
+			'activity_list_events' => Translator::t('List own activity'),
 			default => ToolPresentation::humanized($name),
 		};
 	}

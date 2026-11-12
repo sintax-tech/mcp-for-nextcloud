@@ -410,7 +410,7 @@ cmd_provision() {
     log="$ARTIFACTS/provision.log"
     : > "$log"
     : > "$WORK/provision-failures"
-    parts="groupfolders files_external talk notes calendar contacts guests"
+    parts="groupfolders files_external talk notes calendar contacts guests activity"
     [ "${MCP_IT_WITH_DECK:-1}" != 1 ] || parts="$parts deck"
     [ "${MCP_IT_WITH_MAIL:-0}" != 1 ] || parts="$parts mail"
     [ "${MCP_IT_WITH_TABLES:-0}" != 1 ] || parts="$parts tables"
@@ -426,6 +426,7 @@ cmd_provision() {
             notes) step="install_release_app notes notes $NOTES_TAG $NOTES_SHA" ;;
             calendar) step="install_release_app calendar calendar $CAL_TAG $CAL_SHA" ;;
             contacts) step="install_release_app contacts contacts $CONTACTS_TAG $CONTACTS_SHA" ;;
+            activity) step="occ app:enable activity" ;;
             deck) step=provision_deck ;;
             mail) step="sh $MAIL_CELL provision" ;;
             tables) step="sh $TABLES_CELL provision" ;;

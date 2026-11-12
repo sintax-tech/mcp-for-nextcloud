@@ -2065,6 +2065,9 @@ OC.L10N.register(
     "Teams answered, but reading the team again shows another result than the one requested; nothing is retried." : "Equipos respondió, pero al volver a leer el equipo se ve otro resultado que el solicitado; no se reintenta nada.",
     "The change was sent to Teams but the team could not be read again; check the members in Collectives before trying again." : "El cambio se envió a Equipos, pero no se pudo volver a leer el equipo; revisa los miembros en Colectivos antes de volver a intentarlo.",
     "Teams stored the requested membership but then reported an error; what it does afterwards, such as notifying the person, is not proven. Nothing is retried." : "Equipos guardó la membresía solicitada, pero después informó un error; lo que hace a continuación, como notificar a la persona, no está comprobado. No se reintenta nada.",
-    "Teams accepted the change but applies it in the background, and it was not visible yet when the team was read again; check the members in Collectives before trying again. Nothing is retried." : "Equipos aceptó el cambio, pero lo aplica en segundo plano, y aún no era visible al volver a leer el equipo; revisa los miembros en Colectivos antes de volver a intentarlo. No se reintenta nada."
+    "Teams accepted the change but applies it in the background, and it was not visible yet when the team was read again; check the members in Collectives before trying again. Nothing is retried." : "Equipos aceptó el cambio, pero lo aplica en segundo plano, y aún no era visible al volver a leer el equipo; revisa los miembros en Colectivos antes de volver a intentarlo. No se reintenta nada.",
+    "List own activity" : "Listar mi actividad",
+    "Provide valid Activity filters and an activity ID from your own feed." : "Indica filtros válidos de Activity y un ID de actividad de tu propio feed.",
+    "The Activity feed is unavailable." : "El feed de Activity no está disponible."
     },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

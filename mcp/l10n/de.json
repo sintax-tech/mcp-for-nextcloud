@@ -2064,5 +2064,9 @@
     "The change was sent to Teams but the team could not be read again; check the members in Collectives before trying again." : "Die Änderung wurde an Teams gesendet, aber das Team konnte nicht erneut gelesen werden; prüfe die Mitglieder in Kollektive, bevor du es erneut versuchst.",
     "Teams stored the requested membership but then reported an error; what it does afterwards, such as notifying the person, is not proven. Nothing is retried." : "Teams hat die angeforderte Mitgliedschaft gespeichert, danach aber einen Fehler gemeldet; was es anschließend tut, etwa die Person benachrichtigen, ist nicht belegt. Nichts wird wiederholt.",
     "Teams accepted the change but applies it in the background, and it was not visible yet when the team was read again; check the members in Collectives before trying again. Nothing is retried." : "Teams hat die Änderung angenommen, wendet sie aber im Hintergrund an, und sie war beim erneuten Lesen des Teams noch nicht sichtbar; prüfe die Mitglieder in Kollektive, bevor du es erneut versuchst. Nichts wird wiederholt."
+,
+    "List own activity" : "Eigene Aktivitäten auflisten",
+    "Provide valid Activity filters and an activity ID from your own feed." : "Gib gültige Activity-Filter und eine Aktivitäts-ID aus deinem eigenen Feed an.",
+    "The Activity feed is unavailable." : "Der Activity-Feed ist nicht verfügbar."
 },"pluralForm" : "nplurals=2; plural=(n != 1);"
 }

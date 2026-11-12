@@ -2064,5 +2064,9 @@
     "The change was sent to Teams but the team could not be read again; check the members in Collectives before trying again." : "A mudança foi enviada ao Times, mas não foi possível ler o time de novo; confira os membros no Coletivos antes de tentar de novo.",
     "Teams stored the requested membership but then reported an error; what it does afterwards, such as notifying the person, is not proven. Nothing is retried." : "O Times gravou a participação pedida, mas depois informou um erro; o que ele faz em seguida, como notificar a pessoa, não está comprovado. Nada é repetido.",
     "Teams accepted the change but applies it in the background, and it was not visible yet when the team was read again; check the members in Collectives before trying again. Nothing is retried." : "O Times aceitou a mudança, mas a aplica em segundo plano, e ela ainda não aparecia quando o time foi lido de novo; confira os membros no Coletivos antes de tentar de novo. Nada é repetido."
+,
+    "List own activity" : "Listar minha atividade",
+    "Provide valid Activity filters and an activity ID from your own feed." : "Informe filtros válidos do Activity e um ID de atividade do seu próprio feed.",
+    "The Activity feed is unavailable." : "O feed do Activity está indisponível."
 },"pluralForm" : "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

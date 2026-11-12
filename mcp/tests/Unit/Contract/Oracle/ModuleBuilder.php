@@ -49,6 +49,7 @@ final class ModuleBuilder {
 		if ($class === \OCA\Mcp\Modules\Polls\Integration\PollsMutationProbe::class) {
 			return \OCA\Mcp\Tests\Unit\Modules\Polls\PollsDiscoveryProbe::build($this->test);
 		}
+		if ($class === \OCA\Mcp\Modules\Activity\Integration\ActivityCapabilities::class) return new \OCA\Mcp\Tests\Unit\Modules\Activity\ActivityDiscoveryProbe();
 		if ($class === DeckCapabilities::class) {
 			$apps = $this->mock(IAppManager::class);
 			$apps->method('getAppVersion')->willReturn('1.19.0');

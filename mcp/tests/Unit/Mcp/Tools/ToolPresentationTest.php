@@ -10,6 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Mcp\Tools;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Mcp\Tools\ToolPresentation;
+use OCA\Mcp\Mcp\Tools\ToolTitles;
 use PHPUnit\Framework\TestCase;
 
 final class ToolPresentationTest extends TestCase {
@@ -105,6 +106,16 @@ final class ToolPresentationTest extends TestCase {
 
 	public function testUnknownToolFallsBackToTheHumanizedName(): void {
 		$this->assertSame('Frobnicate', ToolPresentation::title('x_frobnicate'));
+	}
+
+	public function testToolPresentationTitleMatchesToolTitles(): void {
+		foreach (['mcp_status', 'files_list', 'calendar_transfer_event', 'tables_unshare_node', 'x_frobnicate'] as $tool) {
+			$this->assertSame(ToolTitles::title($tool), ToolPresentation::title($tool), $tool);
+		}
+		Translator::use(new JsonL10n('pt_BR'));
+		foreach (['files_list', 'calendar_check_availability', 'x_frobnicate'] as $tool) {
+			$this->assertSame(ToolTitles::title($tool), ToolPresentation::title($tool), $tool);
+		}
 	}
 
 	public function testInstructionsAreEnglishAndAskForTheUserLanguageAndTheTitles(): void {

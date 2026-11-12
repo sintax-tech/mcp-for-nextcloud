@@ -539,6 +539,7 @@
 		{"path":"lib/Mcp/Tools/Tool.php","fqcn":"OCA\\Mcp\\Mcp\\Tools\\Tool","target":"stays","owner":"Mcp","ticket":null},
 		{"path":"lib/Mcp/Tools/ToolContext.php","fqcn":"OCA\\Mcp\\Mcp\\Tools\\ToolContext","target":"stays","owner":"Mcp","ticket":null},
 		{"path":"lib/Mcp/Tools/ToolDefinition.php","fqcn":"OCA\\Mcp\\Mcp\\Tools\\ToolDefinition","target":"stays","owner":"Mcp","ticket":null},
+		{"path":"lib/Mcp/Tools/ToolTitles.php","fqcn":"OCA\\Mcp\\Mcp\\Tools\\ToolTitles","target":"stays","owner":"Mcp","ticket":null},
 		{"path":"lib/Mcp/Tools/WriteTool.php","fqcn":"OCA\\Mcp\\Mcp\\Tools\\WriteTool","target":"stays","owner":"Mcp","ticket":null},
 		{"path":"lib/Middleware/DeferredFlushMiddleware.php","fqcn":"OCA\\Mcp\\Middleware\\DeferredFlushMiddleware","target":"stays","owner":"Middleware","ticket":null},
 		{"path":"lib/Migration/PolicyStateSeedStep.php","fqcn":"OCA\\Mcp\\Migration\\PolicyStateSeedStep","target":"stays","owner":"Migration","ticket":null},

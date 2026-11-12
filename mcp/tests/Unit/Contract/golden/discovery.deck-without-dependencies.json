@@ -1763,7 +1763,7 @@
                     {
                         "name": "calendar_check_availability",
                         "title": "Check availability",
-                        "description": "Checks one 15–240 minute window for up to 20 exact local account IDs, with an explicit IANA timezone and ISO timestamps with offsets. Returns only free, busy or unknown, never appointment details. External, ambiguous, missing or uncheckable participants are unknown, never free. Collection-restricted Calendar access is refused because the native free/busy API cannot preserve that restriction. The explicit window has no search horizon; past or distant dates use the native result. No reservation, invitation or other write is made.",
+                        "description": "Checks one 15–240 minute window for up to 20 exact local account IDs, with an explicit IANA timezone and ISO timestamps with offsets. Returns only free, busy or unknown, never appointment details. The authenticated user's own calendar is included only when their account ID is listed in participants. External, ambiguous, missing or uncheckable participants are unknown, never free. Collection-restricted Calendar access is refused because the native free/busy API cannot preserve that restriction. The explicit window has no search horizon; past or distant dates use the native result. No reservation, invitation or other write is made.",
                         "inputSchema": {
                             "type": "object",
                             "properties": {
@@ -1808,6 +1808,115 @@
                         },
                         "annotations": {
                             "title": "Check availability",
+                            "readOnlyHint": true,
+                            "destructiveHint": false,
+                            "idempotentHint": true,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
+                        "name": "calendar_suggest_times",
+                        "title": "Suggest meeting times",
+                        "description": "Suggests at most 5 meeting windows for up to 20 exact local account IDs. Checks at most 32 candidates per call over at most 7 local days, using a duration of 15–240 real minutes and a wall-clock step of 15 or 30 minutes anchored to the supplied work start. Supply working weekdays (1=Monday to 7=Sunday) and a same-day working interval, with 24:00 allowed only as the end; no work schedule is assumed. ISO from/to offsets define the horizon; timezone is explicit IANA. DST gaps are skipped and both offsets of repeated times are considered in chronological order. A window is suggested only if all listed participants are known to be free; busy, missing or unknown is never free. The authenticated user's own calendar is included only when their account ID is listed in participants. actor_included reports whether the authenticated user's own calendar is among the checked participants. Coverage describes this page only; partial/truncated and next_index report unexamined or unknown coverage. To continue deliberately, pass the returned continuation object as the next call arguments; it contains the same parameters and next index. The index is plain, not signed or an approval, and changing parameters starts a different search. Grants and scope are checked afresh on every call. Never automatically loop over the horizon, retry unknown windows or claim an empty partial page proves no free time. Nothing is reserved, written or sent.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "participants": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "maxItems": 20,
+                                    "uniqueItems": true,
+                                    "items": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 255
+                                    },
+                                    "description": "Exact local account IDs, not display names. External addresses or unknown IDs remain unknown; no account search is performed."
+                                },
+                                "from": {
+                                    "type": "string",
+                                    "minLength": 10,
+                                    "maxLength": 40,
+                                    "description": "Inclusive horizon start, ISO timestamp with seconds and Z/offset."
+                                },
+                                "to": {
+                                    "type": "string",
+                                    "minLength": 10,
+                                    "maxLength": 40,
+                                    "description": "Exclusive horizon end, at most seven local days after from."
+                                },
+                                "timezone": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 64,
+                                    "description": "Explicit IANA timezone for work hours and candidate presentation."
+                                },
+                                "duration_minutes": {
+                                    "type": "integer",
+                                    "minimum": 15,
+                                    "maximum": 240
+                                },
+                                "step_minutes": {
+                                    "type": "integer",
+                                    "enum": [
+                                        15,
+                                        30
+                                    ]
+                                },
+                                "working_hours": {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "weekdays",
+                                        "start",
+                                        "end"
+                                    ],
+                                    "properties": {
+                                        "weekdays": {
+                                            "type": "array",
+                                            "minItems": 1,
+                                            "maxItems": 7,
+                                            "uniqueItems": true,
+                                            "items": {
+                                                "type": "integer",
+                                                "minimum": 1,
+                                                "maximum": 7
+                                            }
+                                        },
+                                        "start": {
+                                            "type": "string",
+                                            "minLength": 5,
+                                            "maxLength": 5,
+                                            "description": "Local same-day work start, HH:MM."
+                                        },
+                                        "end": {
+                                            "type": "string",
+                                            "minLength": 5,
+                                            "maxLength": 5,
+                                            "description": "Local work end, HH:MM; 24:00 is permitted."
+                                        }
+                                    }
+                                },
+                                "next_index": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 1024,
+                                    "description": "Plain index into this exact parameter set; omit for the first page."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "participants",
+                                "from",
+                                "to",
+                                "timezone",
+                                "duration_minutes",
+                                "step_minutes",
+                                "working_hours"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Suggest meeting times",
                             "readOnlyHint": true,
                             "destructiveHint": false,
                             "idempotentHint": true,

@@ -13,6 +13,7 @@ use OCA\Mcp\Modules\Calendar\Tools\DeleteEvent;
 use OCA\Mcp\Modules\Calendar\Tools\ListCalendars;
 use OCA\Mcp\Modules\Calendar\Tools\ListEvents;
 use OCA\Mcp\Modules\Calendar\Tools\MoveEvent;
+use OCA\Mcp\Modules\Calendar\Tools\SuggestTimes;
 use OCA\Mcp\Modules\Calendar\Tools\TransferEvent;
 use OCA\Mcp\Modules\Calendar\Tools\UpdateEvent;
 
@@ -28,6 +29,7 @@ final class CalendarToolCatalog {
 		DeleteEvent::class,
 		TransferEvent::class,
 		CheckAvailability::class,
+		SuggestTimes::class,
 	];
 
 	/** Constant holder only; never instantiated. */

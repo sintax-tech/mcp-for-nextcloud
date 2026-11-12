@@ -73,12 +73,26 @@ final class CalendarAvailabilityTest extends IntegrationTestCase {
 		$free = $client->tool('calendar_check_availability', array_replace($args, ['start' => '2027-06-01T14:00:00Z', 'end' => '2027-06-01T15:00:00Z']));
 		self::assertTrue($free->ok(), $free->describe());
 		self::assertSame('free', $free->json()['participants'][0]['status']);
+		$search = ['participants' => [$guest->getUID()], 'from' => '2027-06-01T12:00:00Z', 'to' => '2027-06-01T15:00:00Z',
+			'timezone' => 'UTC', 'duration_minutes' => 60, 'step_minutes' => 30,
+			'working_hours' => ['weekdays' => [2], 'start' => '12:00', 'end' => '15:00']];
+		$suggest = $client->tool('calendar_suggest_times', $search);
+		self::assertTrue($suggest->ok(), $suggest->describe());
+		self::assertCount(3, $suggest->json()['suggestions']);
+		self::assertSame('2027-06-01T13:00:00+00:00', $suggest->json()['suggestions'][0]['start']);
+		self::assertSame(5, $suggest->json()['coverage']['examined']);
+		self::assertFalse($suggest->json()['truncated']);
+		$unknown = $client->tool('calendar_suggest_times', array_replace($search, ['participants' => [$guest->getUID(), 'outside@example.invalid']]));
+		self::assertTrue($unknown->ok(), $unknown->describe());
+		self::assertSame([], $unknown->json()['suggestions']);
+		self::assertSame(5, $unknown->json()['coverage']['unknown_windows']);
 		$after = Http::request('GET', Http::BASE . $path, $headers);
 		self::assertSame(200, $after['status']);
 		self::assertSame($before['body'], $after['body'], 'free/busy does not change the event');
 		Server::get(PolicyWriter::class)->setResourceScope(Server::get(PolicyStateMapper::class)->state()['revision'], 'admin', $uid, 'calendar', []);
 		$restricted = $client->tool('calendar_check_availability', $args);
 		self::assertFalse($restricted->ok(), 'collection scope must refuse even when the native API could answer');
+		self::assertFalse($client->tool('calendar_suggest_times', $search)->ok(), 'the same scope also refuses the suggestion tool');
 	}
 
 	/** @return IUser freshly provisioned local account, never a shared fixture identity */

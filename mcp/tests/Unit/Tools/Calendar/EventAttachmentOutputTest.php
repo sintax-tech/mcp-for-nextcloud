@@ -41,6 +41,7 @@ final class EventAttachmentOutputTest extends CalendarTestCase {
 	public static function tools(): array {
 		$event = ['calendar' => self::PERSONAL, 'uid' => 'event'];
 		return [
+			'suggestions' => ['calendar_suggest_times', ['participants' => ['bob'], 'from' => '2026-10-01T12:00:00Z', 'to' => '2026-10-01T13:00:00Z', 'timezone' => 'UTC', 'duration_minutes' => 60, 'step_minutes' => 30, 'working_hours' => ['weekdays' => [4], 'start' => '12:00', 'end' => '13:00']]],
 			'availability' => ['calendar_check_availability', ['participants' => ['bob'], 'start' => '2026-10-01T12:00:00Z', 'end' => '2026-10-01T13:00:00Z', 'timezone' => 'UTC']],
 			'list calendars' => ['calendar_list_calendars', []],
 			'list events' => ['calendar_list_events', ['from' => '2026-09-01', 'to' => '2026-11-01']],
@@ -68,7 +69,7 @@ final class EventAttachmentOutputTest extends CalendarTestCase {
 		if ($tool === 'calendar_list_events') {
 			self::assertStringContainsString('Before', $first['content'][0]['text'], 'the event with ATTACH was listed');
 		}
-		if ($tool === 'calendar_check_availability' || str_starts_with($tool, 'calendar_list_')) {
+		if (in_array($tool, ['calendar_check_availability', 'calendar_suggest_times'], true) || str_starts_with($tool, 'calendar_list_')) {
 			return;
 		}
 		$confirmed = $this->registry->call($tool, $arguments + ['confirm' => true], 'alice');

@@ -24,13 +24,17 @@ use OCA\Mcp\Modules\Calendar\Moving\MoveEventPreview;
 use OCA\Mcp\Modules\Calendar\Moving\TransferEventDraft;
 use OCA\Mcp\Modules\Calendar\Moving\TransferEventHandler;
 use OCA\Mcp\Modules\Calendar\Moving\TransferEventPreview;
+use OCA\Mcp\Modules\Calendar\Reading\CheckAvailabilityHandler;
 use OCA\Mcp\Modules\Calendar\Reading\ListCalendarsHandler;
 use OCA\Mcp\Modules\Calendar\Reading\ListEventsHandler;
+use OCA\Mcp\Modules\Calendar\Reading\SuggestTimesHandler;
+use OCA\Mcp\Modules\Calendar\Tools\CheckAvailability;
 use OCA\Mcp\Modules\Calendar\Tools\CreateEvent;
 use OCA\Mcp\Modules\Calendar\Tools\DeleteEvent;
 use OCA\Mcp\Modules\Calendar\Tools\ListCalendars;
 use OCA\Mcp\Modules\Calendar\Tools\ListEvents;
 use OCA\Mcp\Modules\Calendar\Tools\MoveEvent;
+use OCA\Mcp\Modules\Calendar\Tools\SuggestTimes;
 use OCA\Mcp\Modules\Calendar\Tools\TransferEvent;
 use OCA\Mcp\Modules\Calendar\Tools\UpdateEvent;
 use Psr\Container\ContainerInterface;
@@ -53,7 +57,8 @@ final class CalendarTestModule {
 	 * @param DeleteEventDraft $deleteEvent calendar_delete_event
 	 * @param TransferEventDraft $transferEvent calendar_transfer_event
 	 * @param CalendarDraftApproval $approval the confirmation every write goes through
-	 * @param \OCA\Mcp\Modules\Calendar\Reading\CheckAvailabilityHandler|null $availability optional bounded read for new feature cases
+	 * @param CheckAvailabilityHandler|null $availability optional bounded read for new feature cases
+	 * @param SuggestTimesHandler|null $suggestions optional bounded search
 	 * @return CalendarModule the catalog module over those services
 	 */
 	public static function build(
@@ -65,9 +70,10 @@ final class CalendarTestModule {
 		DeleteEventDraft $deleteEvent,
 		TransferEventDraft $transferEvent,
 		CalendarDraftApproval $approval,
-		?\OCA\Mcp\Modules\Calendar\Reading\CheckAvailabilityHandler $availability = null,
+		?CheckAvailabilityHandler $availability = null,
+		?SuggestTimesHandler $suggestions = null,
 	): CalendarModule {
-		return new CalendarModule(self::container(($availability === null ? [] : [\OCA\Mcp\Modules\Calendar\Tools\CheckAvailability::class => new \OCA\Mcp\Modules\Calendar\Tools\CheckAvailability($availability)]) + [
+		return new CalendarModule(self::container(($availability === null ? [] : [CheckAvailability::class => new CheckAvailability($availability)]) + ($suggestions === null ? [] : [SuggestTimes::class => new SuggestTimes($suggestions)]) + [
 			ListCalendars::class => new ListCalendars($listCalendars),
 			ListEvents::class => new ListEvents($listEvents),
 			CreateEvent::class => new CreateEvent(new CreateEventHandler($approval, $createEvent), new CreateEventPreview($approval, $createEvent)),

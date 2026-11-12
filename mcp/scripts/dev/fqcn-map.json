@@ -2,6 +2,12 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Modules/Calendar/Reading/SuggestTimesHandler.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Reading\\SuggestTimesHandler","target":"stays","owner":"Modules\\Calendar","ticket":null},
+		{"path":"lib/Modules/Calendar/Reading/SuggestionInput.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Reading\\SuggestionInput","target":"stays","owner":"Modules\\Calendar","ticket":null},
+		{"path":"lib/Modules/Calendar/Reading/AvailabilityCandidates.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Reading\\AvailabilityCandidates","target":"stays","owner":"Modules\\Calendar","ticket":null},
+		{"path":"lib/Modules/Calendar/Reading/AvailabilityQuery.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Reading\\AvailabilityQuery","target":"stays","owner":"Modules\\Calendar","ticket":null},
+		{"path":"lib/Modules/Calendar/Tools/SuggestTimes.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Tools\\SuggestTimes","target":"stays","owner":"Modules\\Calendar","ticket":null},
+		{"path":"lib/Modules/Calendar/Presentation/SuggestionSchema.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Presentation\\SuggestionSchema","target":"stays","owner":"Modules\\Calendar","ticket":null},
 		{"path":"lib/Modules/Calendar/Reading/CheckAvailabilityHandler.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Reading\\CheckAvailabilityHandler","target":"stays","owner":"Modules\\Calendar","ticket":null},
 		{"path":"lib/Modules/Calendar/Reading/AvailabilityParticipants.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Reading\\AvailabilityParticipants","target":"stays","owner":"Modules\\Calendar","ticket":null},
 		{"path":"lib/Modules/Calendar/Reading/AvailabilityWindow.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Reading\\AvailabilityWindow","target":"stays","owner":"Modules\\Calendar","ticket":null},

@@ -180,6 +180,7 @@ abstract class CalendarTestCase extends TestCase {
 			$transferEvent,
 			new \OCA\Mcp\Modules\Calendar\Approval\CalendarDraftApproval($scheduling, $builder, $guard, $warnings, $zones),
 			CalendarAvailabilityFixture::handler($this->createMock(\OCA\Mcp\Access\Grants\GrantPolicy::class), $this->users(), $this->createMock(\Psr\Container\ContainerInterface::class), $calendarManager, array_keys($this->emails)),
+			CalendarAvailabilityFixture::suggestion($this->createMock(\OCA\Mcp\Access\Grants\GrantPolicy::class), $this->users(), $this->createMock(\Psr\Container\ContainerInterface::class), $calendarManager, array_keys($this->emails)),
 		);
 		$policy = $this->createMock(\OCA\Mcp\Access\Grants\GrantPolicy::class);
 		$policy->method('granted')->willReturn(true);

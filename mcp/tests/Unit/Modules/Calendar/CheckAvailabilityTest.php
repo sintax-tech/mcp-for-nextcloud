@@ -16,6 +16,7 @@ use OCA\Mcp\Modules\Calendar\CalendarModule;
 use OCA\Mcp\Modules\Calendar\Failures\CalendarArgumentException;
 use OCA\Mcp\Modules\Calendar\Integration\CalendarAvailability;
 use OCA\Mcp\Modules\Calendar\Reading\AvailabilityParticipants;
+use OCA\Mcp\Modules\Calendar\Reading\AvailabilityQuery;
 use OCA\Mcp\Modules\Calendar\Reading\AvailabilityWindow;
 use OCA\Mcp\Modules\Calendar\Reading\CheckAvailabilityHandler;
 use OCA\Mcp\Modules\Calendar\Tools\CheckAvailability;
@@ -68,7 +69,7 @@ final class CheckAvailabilityTest extends TestCase {
 			if ($unavailable) throw new PolicyUnavailable('private backend detail');
 			return $scope;
 		});
-		$tool = new CheckAvailability(new CheckAvailabilityHandler($policy, new AvailabilityWindow(), new AvailabilityParticipants($users), new CalendarAvailability($native)));
+		$tool = new CheckAvailability(new CheckAvailabilityHandler(new AvailabilityQuery($policy, new AvailabilityParticipants($users), new CalendarAvailability($native)), new AvailabilityWindow()));
 		$container = $this->createMock(ContainerInterface::class);
 		$container->method('get')->with(CheckAvailability::class)->willReturn($tool);
 		$module = new CalendarModule($container);

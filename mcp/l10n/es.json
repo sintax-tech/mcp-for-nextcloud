@@ -1,4 +1,10 @@
 { "translations": {
+    "Suggest meeting times" : "Sugerir horarios de reunión",
+    "The suggestion horizon must be positive and at most seven local days." : "El horizonte de sugerencias debe ser positivo y de como máximo siete días locales.",
+    "Use a duration of 15–240 minutes and a step of 15 or 30 minutes." : "Use una duración de 15 a 240 minutos y un paso de 15 o 30 minutos.",
+    "Provide distinct working weekdays from 1 (Monday) to 7 (Sunday)." : "Indique días laborables distintos del 1 (lunes) al 7 (domingo).",
+    "Working hours must be an increasing same-day interval; 24:00 is allowed only as the end." : "El horario laboral debe ser un intervalo creciente del mismo día; 24:00 solo se permite como final.",
+    "Provide a valid next candidate index." : "Indique un índice válido para el siguiente candidato.",
     "Check availability" : "Consultar disponibilidad",
     "Provide an explicit IANA timezone." : "Indique una zona horaria IANA explícita.",
     "The availability window must last 15–240 minutes." : "La ventana de disponibilidad debe durar entre 15 y 240 minutos.",

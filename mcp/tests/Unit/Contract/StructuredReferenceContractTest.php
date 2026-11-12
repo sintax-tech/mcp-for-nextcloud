@@ -26,6 +26,7 @@ use OCA\Mcp\Modules\Talk\Reading\ConversationReader;
 use OCA\Mcp\Modules\Talk\Locating\ConversationResolver;
 use OCA\Mcp\Modules\Talk\Integration\TalkServices;
 use OCA\Mcp\Modules\Talk\Integration\UnreadCounter;
+use OCA\Mcp\Modules\Talk\Integration\UnreadRoomView;
 use OCA\Mcp\Modules\Tasks\Composing\TaskData;
 use OCA\Mcp\Modules\Tasks\Locating\TaskStore;
 use OCA\Mcp\Modules\Tasks\TasksModule;
@@ -144,7 +145,7 @@ final class StructuredReferenceContractTest extends TestCase {
 		$services = $this->createMock(TalkServices::class);
 		$services->method('chatManager')->willReturn($chat);
 		$users = $this->createMock(IUserManager::class);
-		return (new ConversationReader($services, $resolver, new ActorNames($users), $this->filter(), new UnreadCounter($users)))->readMessages('alice', 'room1', 50);
+		return (new ConversationReader($services, $resolver, new ActorNames($users), $this->filter(), new UnreadCounter($users), new UnreadRoomView($users, 1)))->readMessages('alice', 'room1', 50);
 	}
 
 	public function testV9ReadMessagesWithholdsTheIdOfAnExcludedFileAndKeepsTheText(): void {

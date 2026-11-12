@@ -26,6 +26,7 @@ use OCA\Mcp\Modules\Talk\Failures\FileAccessException;
 use OCA\Mcp\Modules\Talk\Attachments\FileSharer;
 use OCA\Mcp\Modules\Talk\Integration\TalkServices;
 use OCA\Mcp\Modules\Talk\Integration\UnreadCounter;
+use OCA\Mcp\Modules\Talk\Integration\UnreadRoomView;
 use OCA\Mcp\Modules\Talk\Locating\UserFileResolver;
 use OCA\Mcp\Modules\Talk\Writing\WritePreview;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -168,7 +169,7 @@ final class TalkAttachmentParityContractTest extends TestCase {
 		$comment->method('getCreationDateTime')->willReturn(new DateTimeImmutable('@1700000000'));
 		$resolver = $this->createMock(ConversationResolver::class);
 		$resolver->method('resolveForReading')->willReturn($this->conversation());
-		$reader = new ConversationReader($this->talkServices([$comment]), $resolver, new ActorNames($this->createMock(IUserManager::class)), $this->filter($shares), new UnreadCounter($this->createMock(IUserManager::class)));
+		$reader = new ConversationReader($this->talkServices([$comment]), $resolver, new ActorNames($this->createMock(IUserManager::class)), $this->filter($shares), new UnreadCounter($this->createMock(IUserManager::class)), new UnreadRoomView($this->createMock(IUserManager::class), 1));
 		return $reader->readMessages('alice', 'room1', 10)[0]['attachmentId'];
 	}
 
@@ -304,7 +305,7 @@ final class TalkAttachmentParityContractTest extends TestCase {
 		$sharer = new FileSharer($shares, $files, $this->writer($shares), new \OCA\Mcp\Modules\Talk\Attachments\AttachedFile($this->caller->filesystemRoot()));
 		$preview = new WritePreview($this->writer($shares), $sharer, $this->access($shares), new ActorNames($this->createMock(IUserManager::class)));
 		return \OCA\Mcp\Tests\Unit\Tools\Talk\TalkTestModule::build($this->talkServices(), new ConversationReader($this->talkServices(), $resolver,
-			new ActorNames($this->createMock(IUserManager::class)), $this->filter($shares), new UnreadCounter($this->createMock(IUserManager::class))), $resolver, $this->writer($shares), $sharer, $preview,
+			new ActorNames($this->createMock(IUserManager::class)), $this->filter($shares), new UnreadCounter($this->createMock(IUserManager::class)), new UnreadRoomView($this->createMock(IUserManager::class), 1)), $resolver, $this->writer($shares), $sharer, $preview,
 			$this->createMock(\OCA\Mcp\Modules\Talk\Locating\UserConversationResolver::class), $this->createMock(\OCA\Mcp\Modules\Talk\Groups\GroupCreator::class),
 			$this->createMock(\OCA\Mcp\Modules\Talk\ReferenceLinker::class), $this->createMock(\Psr\Log\LoggerInterface::class));
 	}

@@ -3709,7 +3709,7 @@
                     {
                         "name": "talk_list_conversations",
                         "title": "List Talk conversations",
-                        "description": "Lists the Talk conversations the authenticated user takes part in, with the number of unread messages Talk shows in its own list. When that count cannot be read, the conversation is still listed and unreadMessages is null. It changes no state: it does not mark anything as read, does not touch notifications and does not touch activity.",
+                        "description": "Lists the Talk conversations the authenticated user takes part in, with the number of unread messages Talk shows in its own list. When that count cannot be read, the conversation is still listed and unreadMessages is null. A conversation the lobby bars is still listed and unreadMessages is 0. A lobby whose timer has already passed is treated as open for this answer only, and a lobby that cannot be read counts as closed. The display name is the name Talk already stored: a direct conversation names the other participant only when the two account ids are already stored, a group with no stored name is empty, and the release notes conversation and a password request use the names Talk gives them. It changes no state: it does not mark anything as read, does not open a lobby, does not rename a conversation, does not touch notifications and does not touch activity.",
                         "inputSchema": {
                             "type": "object",
                             "properties": {},

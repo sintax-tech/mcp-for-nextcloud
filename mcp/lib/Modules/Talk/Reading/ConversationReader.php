@@ -6,7 +6,7 @@
 declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Talk\Reading;
-use OCA\Mcp\Modules\Talk\{Presentation\ActorNames, Locating\Conversation, Failures\ConversationAccessException, Locating\ConversationResolver, Presentation\Messages, Integration\TalkServices, Integration\UnreadCounter, Failures\TalkUnavailableException};
+use OCA\Mcp\Modules\Talk\{Presentation\ActorNames, Failures\ConversationAccessException, Locating\ConversationResolver, Presentation\Messages, Integration\TalkServices, Integration\UnreadCounter, Integration\UnreadRoomView, Failures\TalkUnavailableException};
 use DateTimeInterface;
 use InvalidArgumentException;
 use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
@@ -16,7 +16,8 @@ use Throwable;
 /**
  * Read-only view of the conversations of the authenticated user, normalized into plain arrays.
  *
- * Nothing here marks anything as read: reading must not change unread counters, notifications or room activity.
+ * Nothing here marks anything as read, opens a lobby or renames a conversation. Reading must not change unread
+ * counters, notifications, room activity or the name Talk stored.
  */
 class ConversationReader {
 	public const MAX_MESSAGES = 200;
@@ -40,6 +41,7 @@ class ConversationReader {
 	 * @param ActorNames $actorNames caller-visible participant names
 	 * @param OutputReferenceFilter $references existing resource reference policy
 	 * @param UnreadCounter $counter unread count Talk shows in its own list, shared with the unread listing
+	 * @param UnreadRoomView $rooms lobby and display name, both read from values Talk already stored
 	 */
 	public function __construct(
 		private TalkServices $talkServices,
@@ -47,6 +49,7 @@ class ConversationReader {
 		private ActorNames $actorNames,
 		private OutputReferenceFilter $references,
 		private UnreadCounter $counter,
+		private UnreadRoomView $rooms,
 	) {}
 
 	/**
@@ -61,6 +64,13 @@ class ConversationReader {
 		$participantService = $this->talkServices->participantService($userId);
 		$chatManager = $this->talkServices->chatManager($userId);
 		$markers = $this->talkServices->unreadMarkers($userId);
+		$constants = $this->talkServices->conversationConstants($userId);
+		$lobbyNone = $constants['lobbyNone'] ?? null;
+		$ignore = $constants['lobbyIgnorePermission'] ?? null;
+		$changelog = $constants['changelogType'] ?? null;
+		if (!is_int($lobbyNone) || !is_int($ignore) || !is_int($changelog)) {
+			throw new TalkUnavailableException();
+		}
 
 		$conversations = [];
 		foreach ($manager->getRoomsForUser($userId) as $room) {
@@ -74,15 +84,16 @@ class ConversationReader {
 
 			$attendee = $participant->getAttendee();
 			$lastActivity = $room->getLastActivity();
-			// Talk's RoomFormatter reports no unread messages to a participant the lobby keeps out: the count would
-			// tell what the history refuses to show. An unreadable count stays on the list as null: this tool lists
-			// every conversation, and a missing number is not the same as zero.
-			$unread = $this->resolver->keepsOutOfLobby($userId, new Conversation($room, $participant))
+			// The lobby answer is the one the unread listing already uses: decided in memory, never by opening the
+			// lobby. A participant the lobby keeps out gets no count, because the number would tell what the history
+			// refuses to show. The conversation stays listed. An unreadable count stays null: a missing number is
+			// not the same as zero.
+			$unread = $this->rooms->barred($room, $participant, $lobbyNone, $ignore)
 				? 0
 				: $this->unreadCount($room, $attendee, $chatManager, $userId, $markers);
 			$conversations[] = [
 				'token' => $room->getToken(),
-				'displayName' => $room->getDisplayName($userId, false),
+				'displayName' => $this->rooms->displayName($room, $userId, $changelog),
 				'type' => $room->getType(),
 				'participantType' => $attendee->getParticipantType(),
 				'unreadMessages' => $unread,

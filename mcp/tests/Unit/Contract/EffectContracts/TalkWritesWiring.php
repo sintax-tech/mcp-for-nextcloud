@@ -31,6 +31,7 @@ use OCA\Mcp\Modules\Talk\ReferenceLinker;
 use OCA\Mcp\Modules\Talk\TalkModule;
 use OCA\Mcp\Modules\Talk\Integration\TalkServices;
 use OCA\Mcp\Modules\Talk\Integration\UnreadCounter;
+use OCA\Mcp\Modules\Talk\Integration\UnreadRoomView;
 use OCA\Mcp\Modules\Talk\Locating\UserConversationResolver;
 use OCA\Mcp\Modules\Talk\Locating\UserFileResolver;
 use OCA\Mcp\Modules\Talk\Writing\WritePreview;
@@ -117,7 +118,7 @@ final class TalkWritesWiring {
 		$linker = \OCA\Mcp\Tests\Unit\Tools\Talk\ReferenceLinkers::build($this->mock(DeckGatewayInterface::class),
 			new ScopedCalendarAccess($this->mock(CalendarAccess::class), $this->gate->policy()), $store,
 			new EventRepository($store, $classification), $classification, $apps, $this->users, $this->gate->policy(), $urls);
-		return \OCA\Mcp\Tests\Unit\Tools\Talk\TalkTestModule::build($talk, new ConversationReader($talk, $resolver, $names, $references, new UnreadCounter($this->users)), $resolver, $writer, $sharer,
+		return \OCA\Mcp\Tests\Unit\Tools\Talk\TalkTestModule::build($talk, new ConversationReader($talk, $resolver, $names, $references, new UnreadCounter($this->users), new UnreadRoomView($this->users, 1)), $resolver, $writer, $sharer,
 			new WritePreview($writer, $sharer, $attachments, $names), $userConversations,
 			new GroupCreator($talk, $this->users, $userConversations, $logger), $linker, $logger);
 	}

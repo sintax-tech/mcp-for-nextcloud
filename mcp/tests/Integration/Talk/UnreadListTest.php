@@ -185,19 +185,19 @@ final class UnreadListTest extends IntegrationTestCase {
 			->innerJoin('s', 'talk_attendees', 'a', 'a.id = s.attendee_id')
 			->where($sessions->expr()->eq('a.actor_type', $sessions->createNamedParameter('users')))
 			->andWhere($sessions->expr()->eq('a.actor_id', $sessions->createNamedParameter(Fixtures::BOB)));
-		$state = ['rows' => $rows, 'sessions' => $this->count($sessions), 'notifications' => null];
+		$state = ['rows' => $rows, 'sessions' => $this->rowCount($sessions), 'notifications' => null];
 		// The notifications app owns its table; a cell without it has no notification to compare.
 		if ($this->official()->tableExists('notifications')) {
 			$notifications = $this->official()->getQueryBuilder();
 			$notifications->select($notifications->func()->count('notification_id', 'n'))
 				->from('notifications')
 				->where($notifications->expr()->eq('user', $notifications->createNamedParameter(Fixtures::BOB)));
-			$state['notifications'] = $this->count($notifications);
+			$state['notifications'] = $this->rowCount($notifications);
 		}
 		return $state;
 	}
 
-	private function count(IQueryBuilder $query): int {
+	private function rowCount(IQueryBuilder $query): int {
 		$result = $query->executeQuery();
 		$value = $result->fetchOne();
 		$result->closeCursor();

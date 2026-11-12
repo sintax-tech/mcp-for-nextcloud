@@ -59,7 +59,7 @@ final class StructureSourceContractTest extends TestCase {
 			self::assertStringContainsString("'questionType'=>['string']", str_replace([' ', "\n", "\t"], '', $f['sources']['Constants']['source']));
 		}
 		$defaults = array_map(static fn (string $pin): string => self::newOptionDefault($pin), array_keys(FormsSourcePins::all()));
-		self::assertSame(['null', "'choice'", "'choice'", "'choice'", "'choice'"], $defaults, 'option_type is always explicit because of this');
+		self::assertSame(['null', "'choice'", "'choice'", "'choice'"], $defaults, 'option_type is always explicit because of this');
 	}
 
 	/**

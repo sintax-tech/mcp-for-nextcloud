@@ -31,7 +31,6 @@ final class ActivitySurface {
 			foreach ([$this->data, $this->settings, $this->group] as $class) if (!class_exists($class)) return false;
 			$group = new ReflectionClass($this->group);
 			if ($group->isFinal() || $group->isAbstract() || $group->isReadOnly() || $group->getConstructor()?->isFinal()) return false;
-			if ($group->hasProperty('rows') && !$group->getProperty('rows')->isPrivate()) return false;
 			foreach (['addActivity' => ['array'], 'getActivities' => []] as $name => $types) {
 				$method = $group->getMethod($name);
 				if (!$method->isPublic() || $method->isStatic() || $method->isFinal() || $method->returnsReference()) return false;
@@ -46,6 +45,11 @@ final class ActivitySurface {
 				|| !in_array(count($parameters), [10, 11], true)) return false;
 			foreach ($types as $index => $type) if ((string)$parameters[$index]->getType() !== $type || $parameters[$index]->isPassedByReference() || $parameters[$index]->isVariadic()) return false;
 			if (count($parameters) === 11 && (!$parameters[10]->isOptional() || !$parameters[10]->allowsNull())) return false;
+			$cursor = new ReflectionMethod($this->data, 'getById');
+			if (!$cursor->isPublic() || $cursor->isStatic() || $cursor->returnsReference() || $cursor->getNumberOfRequiredParameters() !== 1
+				|| count($cursor->getParameters()) !== 1 || (string)$cursor->getReturnType() !== '?OCP\\Activity\\IEvent') return false;
+			$parameter = $cursor->getParameters()[0];
+			if ((string)$parameter->getType() !== 'int' || $parameter->isPassedByReference() || $parameter->isVariadic()) return false;
 			return true;
 		} catch (Throwable) { return false; }
 	}

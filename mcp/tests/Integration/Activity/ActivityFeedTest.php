@@ -48,16 +48,29 @@ final class ActivityFeedTest extends IntegrationTestCase {
 		$policy->setGrant($uid,'activity','read',true);
 		$config->setUserValue($uid,'activity','notify_stream_files_favorites','0');
 		$manager=Server::get(IManager::class); $data=Server::get(\OCA\Activity\Data::class); $ids=[];
+		$expiredId=$data->send($manager->generateEvent()->setApp('mcp')->setType('mcp_probe')->setAffectedUser($uid)->setAuthor($uid)
+			->setTimestamp(1799999999)->setSubject('Owned retired cursor',[]));
 		foreach ([['',0,''],['files',123,'/secret-deleted-file'],['',0,'']] as $i=>[$type,$id,$name]) {
 			$event=$manager->generateEvent()->setApp('mcp')->setType('mcp_probe')->setAffectedUser($uid)->setAuthor($uid)
 				->setTimestamp(1800000000+$i)->setSubject('Private subject must not appear',[])->setObject($type,$id,$name);
 			$ids[]=$data->send($event);
 		}
+		// These synthetic cursors distinguish another owner, retention inside the stream, and absence above its maximum.
+		$otherUid='mcp-it-activity-'.bin2hex(random_bytes(4));
+		$other=Server::get(IUserManager::class)->createUser($otherUid,bin2hex(random_bytes(24)));
+		self::assertInstanceOf(IUser::class,$other); $this->actors[]=$other;
+		$foreignId=$data->send($manager->generateEvent()->setApp('mcp')->setType('mcp_probe')->setAffectedUser($otherUid)->setAuthor($otherUid)
+			->setTimestamp(1800000003)->setSubject('Foreign private subject',[]));
+		// Retire only an owned synthetic Activity row, never a user file. This simulates native retention between pages.
+		$data->deleteActivities(['activity_id'=>(int)$expiredId,'affecteduser'=>$uid]);
+		$q=Server::get(IDBConnection::class)->getQueryBuilder();
+		$largest=(int)$q->select('activity_id')->from('activity')->orderBy('activity_id','DESC')->setMaxResults(1)->executeQuery()->fetchOne();
+		$missingId=$largest+1;
 		$notifications=Server::get(NotificationManager::class);
 		$notification=$notifications->createNotification()->setApp('activity')->setUser($uid)->setDateTime(new \DateTime())
 			->setObject('activity_notification',(string)$ids[1])->setSubject('mcp_probe',[]);
 		$notifications->notify($notification);
-		$before=$this->snapshot($uid);
+		$before=$this->snapshot($uid); $otherBefore=$this->snapshot($otherUid);
 		$first=$client->tool('activity_list_events',['app'=>'mcp','limit'=>1]); self::assertTrue($first->ok(),$first->describe());
 		self::assertSame((int)$ids[2],$first->json()['items'][0]['id']); self::assertTrue($first->json()['truncated']);
 		$second=$client->tool('activity_list_events',$first->json()['continuation']); self::assertTrue($second->ok(),$second->describe());
@@ -66,6 +79,15 @@ final class ActivityFeedTest extends IntegrationTestCase {
 		self::assertStringNotContainsString('Private subject',$second->fingerprint()); self::assertStringNotContainsString('secret-deleted-file',$second->fingerprint());
 		$period=$client->tool('activity_list_events',['app'=>'mcp','from'=>'2027-01-15T08:00:02Z','to'=>'2027-01-15T08:00:03Z']);
 		self::assertTrue($period->ok(),$period->describe()); self::assertSame([(int)$ids[2]],array_column($period->json()['items'],'id'));
+		$cursorRefusals=[];
+		foreach ([(int)$foreignId,$missingId,(int)$expiredId] as $since) {
+			$refusal=$client->tool('activity_list_events',['since'=>$since]);
+			self::assertTrue($refusal->isError(),$refusal->describe());
+			$cursorRefusals[]=$refusal->result();
+		}
+		self::assertSame($cursorRefusals[0],$cursorRefusals[1],'foreign and nonexistent cursors above the maximum have the same error and text');
+		self::assertSame($cursorRefusals[0],$cursorRefusals[2],'retired cursor cannot restart from the newest event');
+		self::assertSame($otherBefore,$this->snapshot($otherUid),'foreign cursor lookup never changes its owner state');
 		self::assertSame($before,$this->snapshot($uid), 'no activity mutation, notification dismissal, queue write or preference/read-mark update');
 	}
 	/**

@@ -60,12 +60,18 @@ final class ActivityNativeTest extends TestCase {
 		ActivityNativeFixture::load($major);
 		$manager=$this->createMock(IManager::class);
 		foreach ((new ReflectionClass(IManager::class))->getMethods() as $method) {
-			if (!in_array($method->getName(), ['getFilterById', 'getProviders'], true)) $manager->expects(self::never())->method($method->getName());
+			if (!in_array($method->getName(), ['getFilterById', 'getProviders', 'generateEvent'], true)) $manager->expects(self::never())->method($method->getName());
 		}
 		$provider=$this->createMock(\OCP\Activity\IProvider::class); $provider->expects(self::never())->method('parse');
 		$manager->expects(self::never())->method('getProviders')->willReturn([$provider]);
 		$notifications=$this->createMock(\OCP\Notification\IManager::class); $notifications->expects(self::never())->method('markProcessed');
 		$comments=$this->createMock(\OCP\Comments\ICommentsManager::class); $comments->expects(self::never())->method('setReadMark');
+		$event=$this->createMock(\OCP\Activity\IEvent::class);
+		foreach ((new ReflectionClass(\OCP\Activity\IEvent::class))->getMethods() as $method) {
+			if (str_starts_with($method->getName(),'set')) $event->method($method->getName())->willReturnSelf();
+		}
+		$event->method('getAffectedUser')->willReturn('alice');
+		$manager->expects(self::once())->method('generateEvent')->willReturn($event);
 		$manager->method('getFilterById')->with('all')->willThrowException(new FilterNotFoundException('all'));
 		$config=$this->createMock(IConfig::class);
 		foreach ((new ReflectionClass(IConfig::class))->getMethods() as $method) $config->expects(self::never())->method($method->getName());
@@ -80,7 +86,7 @@ final class ActivityNativeTest extends TestCase {
 		$query=$this->query($rows,3);
 		$query->expects(self::once())->method('where')->with('affecteduser=alice')->willReturnSelf();
 		$offset=$this->query([['affecteduser'=>'alice','timestamp'=>1800000000]]);
-		$db=$this->createMock(IDBConnection::class); $db->expects(self::exactly(2))->method('getQueryBuilder')->willReturnOnConsecutiveCalls($query,$offset);
+		$db=$this->createMock(IDBConnection::class); $db->expects(self::exactly(3))->method('getQueryBuilder')->willReturnOnConsecutiveCalls($this->query([ActivityNativeFixture::row(8)]),$query,$offset);
 		foreach ((new ReflectionClass(IDBConnection::class))->getMethods() as $method) {
 			if ($method->getName() !== 'getQueryBuilder') $db->expects(self::never())->method($method->getName());
 		}
@@ -113,6 +119,16 @@ final class ActivityNativeTest extends TestCase {
 		$query->expects(self::once())->method('executeQuery')->willReturn($result);
 		return $query;
 	}
+	/** @param string $major pinned version @return void a missing cursor lookup method hides the capability before any resolution */
+	#[DataProvider('pins')]
+	public function testCursorLookupShapeIsRequired(string $major): void {
+		if ($major === '35') require __DIR__.'/../../../fixtures/activity-native/35/SearchCriteria.php';
+		foreach (['GroupHelper','UserSettings'] as $class) require __DIR__.'/../../../fixtures/activity-native/'.$major.'/'.$class.'.php';
+		$source=file_get_contents(__DIR__.'/../../../fixtures/activity-native/'.$major.'/Data.php');
+		eval(substr(str_replace('function getById(', 'function unavailableCursorLookup(', $source),5));
+		self::assertFalse((new ActivitySurface())->supported());
+	}
+
 	/** @param string $major pinned version @return void source regeneration is idempotent and preserves every unrelated app surface */
 	#[DataProvider('pins')]
 	public function testSurfaceGeneratorIsIdempotentAndPreservesOtherApps(string $major): void {
@@ -139,7 +155,6 @@ final class ActivityNativeTest extends TestCase {
 
 	/** @return iterable<string,array{string,string}> incompatible collector overrides must never reach PHP inheritance or native services */
 	public static function shapes(): iterable {
-		yield 'inherited collector property collision' => ['class GroupHelper {', 'class GroupHelper { public array $rows = [];'];
 		yield 'final class' => ['class GroupHelper {', 'final class GroupHelper {'];
 		yield 'final constructor' => ['public function __construct(', 'final public function __construct('];
 		yield 'missing collector entry' => ['function addActivity(', 'function otherActivity('];

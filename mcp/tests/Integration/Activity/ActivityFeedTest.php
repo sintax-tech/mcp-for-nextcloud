@@ -13,6 +13,7 @@ use OCA\Mcp\Tests\Integration\Support\LoginFactory;
 use OCA\Mcp\Tests\Integration\Support\McpClient;
 use OCP\Activity\IManager;
 use OCP\App\IAppManager;
+use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IUser;
@@ -62,7 +63,20 @@ final class ActivityFeedTest extends IntegrationTestCase {
 		$foreignId=$data->send($manager->generateEvent()->setApp('mcp')->setType('mcp_probe')->setAffectedUser($otherUid)->setAuthor($otherUid)
 			->setTimestamp(1800000003)->setSubject('Foreign private subject',[]));
 		// Retire only an owned synthetic Activity row, never a user file. This simulates native retention between pages.
-		$data->deleteActivities(['activity_id'=>(int)$expiredId,'affecteduser'=>$uid]);
+		// Data::deleteActivities has incompatible condition formats in Activity 7/8; use an explicit owned-row fixture delete.
+		$delete=Server::get(IDBConnection::class)->getQueryBuilder();
+		$delete->delete('activity')
+			->where($delete->expr()->eq('activity_id',$delete->createNamedParameter((int)$expiredId,IQueryBuilder::PARAM_INT)))
+			->andWhere($delete->expr()->eq('affecteduser',$delete->createNamedParameter($uid)));
+		self::assertSame(1,$delete->executeStatement(),'retire exactly one owned synthetic Activity row');
+		$check=Server::get(IDBConnection::class)->getQueryBuilder();
+		$check->select('activity_id')->from('activity')
+			->where($check->expr()->eq('affecteduser',$check->createNamedParameter($uid)))
+			->andWhere($check->expr()->in('activity_id',$check->createNamedParameter(array_map('intval',$ids),IQueryBuilder::PARAM_INT_ARRAY)))
+			->orderBy('activity_id','ASC');
+		$retained=array_map('intval',$check->executeQuery()->fetchFirstColumn());
+		self::assertCount(3,$retained,'all three fixture events must survive cursor retirement');
+		self::assertSame(array_map('intval',$ids),$retained);
 		$q=Server::get(IDBConnection::class)->getQueryBuilder();
 		$largest=(int)$q->select('activity_id')->from('activity')->orderBy('activity_id','DESC')->setMaxResults(1)->executeQuery()->fetchOne();
 		$missingId=$largest+1;

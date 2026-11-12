@@ -11,8 +11,9 @@ use DateTimeInterface;
 use InvalidArgumentException;
 use OCA\Mcp\Modules\Talk\Failures\TalkUnavailableException;
 use OCA\Mcp\Modules\Talk\Integration\TalkServices;
+use OCA\Mcp\Modules\Talk\Integration\UnreadCounter;
 use OCA\Mcp\Modules\Talk\Integration\UnreadRoomView;
-use OCA\Mcp\Modules\Talk\Presentation\Messages;
+use OCA\Mcp\Modules\Talk\Presentation\PageMessages;
 use OCA\Mcp\Modules\Talk\TalkModule;
 use Throwable;
 
@@ -20,7 +21,8 @@ use Throwable;
  * Read-only page of the conversations that still have unread messages.
  *
  * The scan reads the rooms Talk already has. It does not mark anything as read, does not open a lobby and does not
- * rename a conversation. A lobby that bars the caller drops the room before any of its fields are copied. The page
+ * rename a conversation. A lobby that bars the caller drops the room before any of its fields are copied or its
+ * messages counted. The count is the one Talk shows in its own list, see {@see UnreadCounter}. The page
  * is not a frozen mailbox: a conversation that receives a message can change position, and the cursor only
  * continues after the last row of this page for this same reader.
  */
@@ -37,11 +39,13 @@ final class UnreadConversations {
 	/**
 	 * @param TalkServices $talkServices lazy native Talk services
 	 * @param UnreadRoomView $rooms lobby and name, both read from values Talk already stored
+	 * @param UnreadCounter $counter unread count and read marker as Talk reports them
 	 * @param UnreadCursor $cursor continuation bound to this tool and this reader
 	 */
 	public function __construct(
 		private TalkServices $talkServices,
 		private UnreadRoomView $rooms,
+		private UnreadCounter $counter,
 		private UnreadCursor $cursor,
 	) {
 	}
@@ -58,16 +62,19 @@ final class UnreadConversations {
 	 */
 	public function list(string $userId, int $limit, ?string $cursor): array {
 		if ($limit < 1 || $limit > self::MAX_PAGE) {
-			throw new InvalidArgumentException(Messages::invalidPageLimit());
+			throw new InvalidArgumentException(PageMessages::invalidPageLimit());
 		}
 		$position = $this->cursor->position($cursor, TalkModule::TOOL_LIST_UNREAD, $userId);
 
 		$manager = $this->talkServices->manager($userId);
 		$participantService = $this->talkServices->participantService($userId);
+		$chatManager = $this->talkServices->chatManager($userId);
+		$markers = $this->talkServices->unreadMarkers($userId);
 		$constants = $this->talkServices->conversationConstants($userId);
 		$lobbyNone = $constants['lobbyNone'] ?? null;
 		$ignore = $constants['lobbyIgnorePermission'] ?? null;
-		if (!is_int($lobbyNone) || !is_int($ignore)) {
+		$changelog = $constants['changelogType'] ?? null;
+		if (!is_int($lobbyNone) || !is_int($ignore) || !is_int($changelog)) {
 			throw new TalkUnavailableException();
 		}
 		$rows = [];
@@ -80,27 +87,23 @@ final class UnreadConversations {
 				// A room without a readable participant is one this user cannot describe.
 				continue;
 			}
-			$attendee = $participant->getAttendee();
-			$unread = $attendee->getUnreadMessages();
-			if (!is_int($unread) || $unread < 1) {
-				continue;
-			}
 			// The lobby decision comes before any field is copied: a barred room contributes nothing.
 			if ($this->rooms->barred($room, $participant, $lobbyNone, $ignore)) {
 				continue;
 			}
-			$lastRead = $attendee->getLastReadMessage();
-			if (!is_int($lastRead)) {
+			$attendee = $participant->getAttendee();
+			$counted = $this->counter->count($room, $attendee, $chatManager, $userId, $markers);
+			if ($counted === null || $counted['unread'] < 1) {
 				continue;
 			}
 			$lastActivity = $room->getLastActivity();
 			$rows[] = [
 				'token' => (string)$room->getToken(),
-				'displayName' => $this->rooms->displayName($room, $userId),
+				'displayName' => $this->rooms->displayName($room, $userId, $changelog),
 				'type' => (int)$room->getType(),
 				'participantType' => (int)$attendee->getParticipantType(),
-				'unreadMessages' => $unread,
-				'lastReadMessage' => $lastRead,
+				'unreadMessages' => $counted['unread'],
+				'lastReadMessage' => $counted['lastRead'],
 				'archived' => (bool)$attendee->isArchived(),
 				'lastActivity' => $lastActivity instanceof DateTimeInterface ? $lastActivity->getTimestamp() : null,
 			];

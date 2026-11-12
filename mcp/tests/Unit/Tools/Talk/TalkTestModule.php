@@ -98,6 +98,7 @@ final class TalkTestModule {
 		return new \OCA\Mcp\Modules\Talk\Reading\UnreadConversations(
 			$talkServices,
 			new \OCA\Mcp\Modules\Talk\Integration\UnreadRoomView($doubles->users(), 1),
+			new \OCA\Mcp\Modules\Talk\Integration\UnreadCounter($doubles->users()),
 			new \OCA\Mcp\Modules\Talk\Reading\UnreadCursor(new \OCA\Mcp\Mcp\Confirmation\PlanState($doubles->config())),
 		);
 	}

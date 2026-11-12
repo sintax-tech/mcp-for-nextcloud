@@ -556,6 +556,8 @@
     "Invalid %s identifier." : "Identificador de %s inválido.",
     "invalid conversation_token" : "conversation_token no válido",
     "invalid cursor" : "cursor no válido",
+    "Talk updates" : "Actualizaciones de Talk",
+    "Password request: %s" : "Solicitud de contraseña: %s",
     "Invalid data for Deck." : "Datos no válidos para Deck.",
     "Invalid date: %s. Use ISO 8601, e.g. 2026-01-31 or 2026-01-31T12:00:00Z." : "Fecha inválida: %s. Use ISO 8601, por ejemplo 2026-01-31 o 2026-01-31T12:00:00Z.",
     "Invalid edit link." : "Enlace de edición no válido.",

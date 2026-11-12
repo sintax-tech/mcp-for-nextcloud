@@ -128,6 +128,23 @@ class TalkServices {
 	}
 
 	/**
+	 * Talk's special read markers, read from the loaded chat manager class like the other constants.
+	 *
+	 * @param string $userId authenticated caller
+	 * @return array{unreadMigration:int, unreadFirstMessage:int}
+	 * @throws TalkUnavailableException When spreed is disabled for the user or the class is not loaded
+	 */
+	public function unreadMarkers(string $userId): array {
+		if (!$this->isEnabledFor($userId) || !class_exists(self::CHAT_MANAGER_CLASS)) {
+			throw new TalkUnavailableException();
+		}
+		return [
+			'unreadMigration' => (int)constant(self::CHAT_MANAGER_CLASS . '::UNREAD_MIGRATION'),
+			'unreadFirstMessage' => (int)constant(self::CHAT_MANAGER_CLASS . '::UNREAD_FIRST_MESSAGE'),
+		];
+	}
+
+	/**
 	 * Resolves a Talk class by name only after the app is confirmed enabled and the class exists.
 	 *
 	 * @param string $class Fully qualified Talk class name, never a hard reference from the module

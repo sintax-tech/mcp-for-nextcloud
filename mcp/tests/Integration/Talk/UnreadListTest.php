@@ -11,30 +11,22 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Platform\Compat\AppEnablement;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
-use OCA\Mcp\Tests\Integration\Support\EventProbe;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
 use OCA\Mcp\Tests\Integration\Support\McpClient;
 use OCP\App\IAppManager;
 use OCP\DB\QueryBuilder\IQueryBuilder;
-use OCP\EventDispatcher\IEventDispatcher;
 use OCP\IUserManager;
 use OCP\Server;
 
 /**
  * talk_list_unread over the real Talk of the cell.
  *
- * The unit suite cannot load OCA\Talk, so this is the proof that the read writes nothing: the room row and the
- * attendee counters are identical around the call, and the lobby and room events stay at zero. Setup may create
- * the room and the unread message. The actor who must be barred by a lobby is Bob, a guest of Alice's group.
+ * The unit suite cannot load OCA\Talk, so this is the proof that the read writes nothing. The tool runs in the web
+ * server, another process, so the proof is the database: the whole room row and Bob's whole attendee row are
+ * identical around the call, and Bob has as many Talk sessions and notifications after it as before. Setup may
+ * create the room and the unread message. The actor who must be barred by a lobby is Bob, a guest of Alice's group.
  */
 final class UnreadListTest extends IntegrationTestCase {
-	/** @var list<string> */
-	private const ROOM_EVENTS = [
-		'OCA\\Talk\\Events\\BeforeLobbyModifiedEvent',
-		'OCA\\Talk\\Events\\LobbyModifiedEvent',
-		'OCA\\Talk\\Events\\BeforeRoomModifiedEvent',
-		'OCA\\Talk\\Events\\RoomModifiedEvent',
-	];
 
 	/** @var array<string, array<string, bool>> */
 	private array $grants = [];
@@ -74,53 +66,50 @@ final class UnreadListTest extends IntegrationTestCase {
 	public function testAnUnreadConversationIsListed(): void {
 		$token = $this->group('unread');
 		$this->say($token, 'unread');
-		$before = $this->row($token, Fixtures::BOB);
 
-		$tokens = $this->during(fn (): array => $this->allTokens($this->bob()));
+		$found = $this->unchanged([$token], fn (): ?array => $this->find($this->bob(), $token));
 
-		$this->assertContains($token, $tokens);
-		$this->assertSame($before, $this->row($token, Fixtures::BOB));
+		$this->assertIsArray($found);
+		$this->assertGreaterThanOrEqual(1, $found['unreadMessages']);
+		// Talk keeps the attendee counter only for federated rooms; a local count comes from the chat.
+		$this->assertSame('0', $this->row($token, Fixtures::BOB)['attendee']['unread_messages']);
 	}
 
 	public function testAnActiveLobbyIsOmittedAndWritesNothing(): void {
 		$token = $this->group('active');
 		$this->say($token, 'behind the lobby');
 		$this->lobby($token, new \DateTime('+2 days'));
-		$before = $this->row($token, Fixtures::BOB);
 
-		$tokens = $this->during(fn (): array => $this->allTokens($this->bob()));
+		$tokens = $this->unchanged([$token], fn (): array => $this->allTokens($this->bob()));
 
 		$this->assertNotContains($token, $tokens);
-		$this->assertSame($before, $this->row($token, Fixtures::BOB));
-		$this->assertNotSame('0', $before['lobby_state']);
+		$this->assertNotSame('0', $this->row($token, Fixtures::BOB)['room']['lobby_state']);
 	}
 
 	public function testAnExpiredLobbyStaysStoredAndIsListed(): void {
 		$token = $this->group('elapsed');
 		$this->say($token, 'timer already passed');
 		$this->lobby($token, new \DateTime('-2 days'));
-		$before = $this->row($token, Fixtures::BOB);
 
-		$found = $this->during(fn (): ?array => $this->find($this->bob(), $token));
+		$found = $this->unchanged([$token], fn (): ?array => $this->find($this->bob(), $token));
 
 		$this->assertIsArray($found);
-		$this->assertSame($before, $this->row($token, Fixtures::BOB));
-		$this->assertNotSame('0', $before['lobby_state']);
-		$this->assertNotNull($before['lobby_timer']);
+		$room = $this->row($token, Fixtures::BOB)['room'];
+		$this->assertNotSame('0', $room['lobby_state']);
+		$this->assertNotNull($room['lobby_timer']);
 	}
 
 	public function testAnUnnamedRoomKeepsAnEmptyName(): void {
 		$token = $this->group('unnamed');
 		$this->clearName($token);
 		$this->say($token, 'no stored name');
-		$before = $this->row($token, Fixtures::BOB);
-		$this->assertSame('', $before['name']);
+		$this->assertSame('', $this->row($token, Fixtures::BOB)['room']['name']);
 
-		$found = $this->during(fn (): ?array => $this->find($this->bob(), $token));
+		$found = $this->unchanged([$token], fn (): ?array => $this->find($this->bob(), $token));
 
 		$this->assertIsArray($found);
 		$this->assertSame('', $found['displayName']);
-		$this->assertSame($before, $this->row($token, Fixtures::BOB));
+		$this->assertSame('', $this->row($token, Fixtures::BOB)['room']['name']);
 	}
 
 	public function testAMessageBetweenPagesMovesTheConversationOffTheContinuation(): void {
@@ -133,7 +122,7 @@ final class UnreadListTest extends IntegrationTestCase {
 			$before[$token] = $this->row($token, Fixtures::BOB);
 		}
 		$bob = $this->bob();
-		$seen = $this->during(function () use ($bob, $tokens): array {
+		$seen = $this->unchanged($tokens, function () use ($bob, $tokens): array {
 			$seen = [];
 			$cursor = null;
 			for ($step = 0; $step < 60 && count(array_intersect($tokens, $seen)) < 3; $step++) {
@@ -149,40 +138,70 @@ final class UnreadListTest extends IntegrationTestCase {
 			return $seen;
 		});
 		$this->assertSame([], array_diff($tokens, $seen), 'the three rooms are reachable before any bump');
-		$first = $this->during(fn (): array => $this->page($bob, 1, null));
+		$first = $this->unchanged($tokens, fn (): array => $this->page($bob, 1, null));
 		$firstToken = (string)$first['conversations'][0]['token'];
 		$bump = $tokens[0] === $firstToken ? $tokens[1] : $tokens[0];
 		$this->activity($bump, new \DateTime('2099-01-01 00:00:00'));
-		$second = $this->during(fn (): array => $this->page($bob, 1, $first['nextCursor']));
-		$fresh = $this->during(fn (): array => $this->allTokens($bob));
+		$second = $this->unchanged($tokens, fn (): array => $this->page($bob, 1, $first['nextCursor']));
+		$fresh = $this->unchanged($tokens, fn (): array => $this->allTokens($bob));
 
 		$this->assertNotContains($bump, array_column($second['conversations'], 'token'));
 		foreach ($tokens as $token) {
 			$this->assertContains($token, $fresh);
 			$after = $this->row($token, Fixtures::BOB);
 			if ($token === $bump) {
-				$this->assertNotSame($before[$token]['last_activity'], $after['last_activity']);
-				unset($before[$token]['last_activity'], $after['last_activity']);
+				$this->assertNotSame($before[$token]['room']['last_activity'], $after['room']['last_activity']);
+				unset($before[$token]['room']['last_activity'], $after['room']['last_activity']);
 			}
 			$this->assertSame($before[$token], $after);
 		}
 	}
 
-	/** @param callable(): mixed $read one or more tool calls */
-	private function during(callable $read): mixed {
-		$probe = new EventProbe(Server::get(IEventDispatcher::class), $this->official());
-		foreach (self::ROOM_EVENTS as $class) {
-			$this->assertTrue(class_exists($class), $class);
-			$probe->record($class);
-		}
-		try {
-			$result = $read();
-		} finally {
-			$seen = $probe->classes();
-			$probe->detach();
-		}
-		$this->assertSame([], $seen);
+	/**
+	 * Runs the tool calls and proves in the database that they changed nothing Bob or these rooms hold.
+	 *
+	 * @param list<string> $tokens rooms whose rows must stay identical
+	 * @param callable(): mixed $read one or more tool calls
+	 */
+	private function unchanged(array $tokens, callable $read): mixed {
+		$before = $this->state($tokens);
+		$result = $read();
+		$this->assertSame($before, $this->state($tokens));
 		return $result;
+	}
+
+	/**
+	 * @param list<string> $tokens
+	 * @return array{rows: array<string, array{room: array<string, string|null>, attendee: array<string, string|null>}>, sessions: int, notifications: int|null}
+	 */
+	private function state(array $tokens): array {
+		$rows = [];
+		foreach ($tokens as $token) {
+			$rows[$token] = $this->row($token, Fixtures::BOB);
+		}
+		$sessions = $this->official()->getQueryBuilder();
+		$sessions->select($sessions->func()->count('s.id', 'n'))
+			->from('talk_sessions', 's')
+			->innerJoin('s', 'talk_attendees', 'a', 'a.id = s.attendee_id')
+			->where($sessions->expr()->eq('a.actor_type', $sessions->createNamedParameter('users')))
+			->andWhere($sessions->expr()->eq('a.actor_id', $sessions->createNamedParameter(Fixtures::BOB)));
+		$state = ['rows' => $rows, 'sessions' => $this->count($sessions), 'notifications' => null];
+		// The notifications app owns its table; a cell without it has no notification to compare.
+		if ($this->official()->tableExists('notifications')) {
+			$notifications = $this->official()->getQueryBuilder();
+			$notifications->select($notifications->func()->count('notification_id', 'n'))
+				->from('notifications')
+				->where($notifications->expr()->eq('user', $notifications->createNamedParameter(Fixtures::BOB)));
+			$state['notifications'] = $this->count($notifications);
+		}
+		return $state;
+	}
+
+	private function count(IQueryBuilder $query): int {
+		$result = $query->executeQuery();
+		$value = $result->fetchOne();
+		$result->closeCursor();
+		return (int)$value;
 	}
 
 	private function group(string $label): string {
@@ -226,19 +245,32 @@ final class UnreadListTest extends IntegrationTestCase {
 		$this->assertSame(1, $update->executeStatement());
 	}
 
-	/** @return array<string, string|null> */
+	/**
+	 * The whole room row and the whole attendee row of this account, every column.
+	 *
+	 * @return array{room: array<string, string|null>, attendee: array<string, string|null>}
+	 */
 	private function row(string $token, string $uid): array {
-		$query = $this->official()->getQueryBuilder();
-		$query->select('r.name', 'r.lobby_state', 'r.lobby_timer', 'r.last_activity', 'a.unread_messages', 'a.last_read_message')
-			->from('talk_rooms', 'r')
-			->innerJoin('r', 'talk_attendees', 'a', 'a.room_id = r.id')
-			->where($query->expr()->eq('r.token', $query->createNamedParameter($token)))
-			->andWhere($query->expr()->eq('a.actor_type', $query->createNamedParameter('users')))
-			->andWhere($query->expr()->eq('a.actor_id', $query->createNamedParameter($uid)));
+		$room = $this->official()->getQueryBuilder();
+		$room->select('*')
+			->from('talk_rooms')
+			->where($room->expr()->eq('token', $room->createNamedParameter($token)));
+		$roomRow = $this->single($room, $token);
+		$attendee = $this->official()->getQueryBuilder();
+		$attendee->select('*')
+			->from('talk_attendees')
+			->where($attendee->expr()->eq('room_id', $attendee->createNamedParameter((int)$roomRow['id'], IQueryBuilder::PARAM_INT)))
+			->andWhere($attendee->expr()->eq('actor_type', $attendee->createNamedParameter('users')))
+			->andWhere($attendee->expr()->eq('actor_id', $attendee->createNamedParameter($uid)));
+		return ['room' => $roomRow, 'attendee' => $this->single($attendee, $token . '/' . $uid)];
+	}
+
+	/** @return array<string, string|null> the one row of the query, every value as text */
+	private function single(IQueryBuilder $query, string $label): array {
 		$result = $query->executeQuery();
 		$row = $result->fetch();
 		$result->closeCursor();
-		$this->assertIsArray($row, $token);
+		$this->assertIsArray($row, $label);
 		$normalized = [];
 		foreach ($row as $column => $value) {
 			$normalized[(string)$column] = $value === null ? null : (string)$value;

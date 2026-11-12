@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Talk\Reading;
 use InvalidArgumentException;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Modules\Talk\Failures\TalkErrors;
-use OCA\Mcp\Modules\Talk\Presentation\Messages;
+use OCA\Mcp\Modules\Talk\Presentation\PageMessages;
 use OCA\Mcp\Modules\Talk\Presentation\ToolResult;
 
 /** The talk_list_unread read and result envelope. */
@@ -35,11 +35,11 @@ final class ListUnreadHandler {
 		return $this->errors->call('talk_list_unread', function () use ($arguments, $userId): array {
 			$limit = array_key_exists('limit', $arguments) ? $arguments['limit'] : UnreadConversations::DEFAULT_PAGE;
 			if (!is_int($limit)) {
-				throw new InvalidArgumentException(Messages::invalidPageLimit());
+				throw new InvalidArgumentException(PageMessages::invalidPageLimit());
 			}
 			$cursor = $arguments['cursor'] ?? null;
 			if ($cursor !== null && !is_string($cursor)) {
-				throw new InvalidArgumentException(Messages::invalidCursor());
+				throw new InvalidArgumentException(PageMessages::invalidCursor());
 			}
 			return ToolResult::success($this->unread->list($userId, $limit, $cursor));
 		});

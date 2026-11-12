@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Talk\Integration;
 
 use DateTimeInterface;
+use OCA\Mcp\Modules\Talk\Presentation\RoomNames;
 use OCP\IUserManager;
 use Throwable;
 
@@ -17,9 +18,13 @@ use Throwable;
  * Neither answer is written back. An active lobby whose timer is already in the past is treated as open for this
  * answer only, the same moment Talk would open it, without calling the maintenance that persists that opening.
  * A room with no stored name contributes an empty display name, and a direct conversation uses the other
- * participant's name only when Talk has already stored the two account ids.
+ * participant's name only when Talk has already stored the two account ids. The release notes conversation and a
+ * password request get the names Talk gives them, built from the stored values.
  */
 final class UnreadRoomView {
+	/** Room object type of a conversation opened to request the password of a shared file. */
+	private const PASSWORD_REQUEST = 'share:password';
+
 	/** Talk room class, named here because Integration is the only place that may name it. */
 	private const ROOM_CLASS = 'OCA\\Talk\\Room';
 
@@ -73,16 +78,26 @@ final class UnreadRoomView {
 	/**
 	 * The name to show, taken from the value Talk already stored.
 	 *
+	 * The same order as Talk's Manager::resolveRoomDisplayName: password request, then release notes, then the rest.
+	 *
 	 * @param object $room OCA\Talk\Room, unread
 	 * @param string $userId authenticated reader
-	 * @return string stored name, the other participant's display name, or an empty string
+	 * @param int $changelogType Talk's type of the release notes conversation
+	 * @return string stored name, Talk's name of a special room, the other participant's display name, or ''
 	 */
-	public function displayName(object $room, string $userId): string {
+	public function displayName(object $room, string $userId, int $changelogType): string {
 		$stored = $this->storedName($room);
 		try {
 			$type = $room->getType();
+			$objectType = $room->getObjectType();
 		} catch (Throwable) {
 			return '';
+		}
+		if ($objectType === self::PASSWORD_REQUEST) {
+			return RoomNames::passwordRequest($stored);
+		}
+		if (is_int($type) && $type === $changelogType) {
+			return RoomNames::changelog();
 		}
 		$oneToOne = $this->oneToOneType();
 		if ($oneToOne !== null && is_int($type) && $type === $oneToOne) {

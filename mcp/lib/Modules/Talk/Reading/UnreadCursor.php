@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Talk\Reading;
 
 use InvalidArgumentException;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
-use OCA\Mcp\Modules\Talk\Presentation\Messages;
+use OCA\Mcp\Modules\Talk\Presentation\PageMessages;
 
 /**
  * Continuation of one unread page, signed like a plan state and bound to the tool, the actor and the position.
@@ -46,7 +46,7 @@ final class UnreadCursor {
 		}
 		$parts = explode('.', $cursor);
 		if ($cursor === '' || strlen($cursor) > self::MAX_LENGTH || count($parts) !== 3 || $parts[0] !== 'v1') {
-			throw new InvalidArgumentException(Messages::invalidCursor());
+			throw new InvalidArgumentException(PageMessages::invalidCursor());
 		}
 		$raw = base64_decode(strtr($parts[1], '-_', '+/'), true);
 		$value = is_string($raw) ? json_decode($raw, true) : null;
@@ -55,7 +55,7 @@ final class UnreadCursor {
 		if (!is_array($value) || array_keys($value) !== ['a', 't'] || !is_int($activity) || $activity < 0
 			|| !is_string($token) || $token === '' || strlen($token) > self::MAX_TOKEN_LENGTH
 			|| !hash_equals($this->sign($activity, $token, $tool, $uid), $parts[2])) {
-			throw new InvalidArgumentException(Messages::invalidCursor());
+			throw new InvalidArgumentException(PageMessages::invalidCursor());
 		}
 		return ['activity' => $activity, 'token' => $token];
 	}

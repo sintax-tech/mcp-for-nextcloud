@@ -53,6 +53,7 @@ final class UnreadConversationsTest extends TestCase {
 
 	protected function setUp(): void {
 		parent::setUp();
+		UnreadWriteSpy::$calls = 0;
 		$this->services = $this->createMock(TalkServices::class);
 		$this->services->expects($this->never())->method('roomService');
 		$config = new InMemoryConfig();
@@ -67,6 +68,11 @@ final class UnreadConversationsTest extends TestCase {
 			return $uid === 'noname' ? null : $uid;
 		});
 		$this->listing = new UnreadConversations($this->services, new UnreadRoomView($users, 1), new UnreadCounter($users), $this->cursor);
+	}
+
+	protected function tearDown(): void {
+		$this->assertSame(0, UnreadWriteSpy::$calls);
+		parent::tearDown();
 	}
 
 	public function testOnlyConversationsWithUnreadMessagesAreReturned(): void {
@@ -187,6 +193,7 @@ final class UnreadConversationsTest extends TestCase {
 		$this->assertSame('Password request: report.pdf', $names['password']);
 		$this->assertFalse($changelog->described);
 		$this->assertFalse($password->described);
+		$this->assertSame(0, $this->participants->userIdReads);
 	}
 
 	public function testAnEmptyUnreadSetReturnsNoConversations(): void {
@@ -260,6 +267,7 @@ final class UnreadConversationsTest extends TestCase {
 		$this->assertSame('', $page['conversations'][0]['displayName']);
 		$this->assertSame('blank', $page['conversations'][0]['token']);
 		$this->assertFalse($room->described);
+		$this->assertSame(0, $this->participants->userIdReads);
 	}
 
 	public function testADirectConversationUsesTheStoredAccountIds(): void {
@@ -282,6 +290,57 @@ final class UnreadConversationsTest extends TestCase {
 		$this->assertSame('', $names['legacy']);
 		$this->assertSame('', $names['other']);
 		$this->assertFalse($named->described);
+		$this->assertFalse($legacy->described);
+		// Only the empty direct name is not a stored pair, so only that room reads the account ids.
+		$this->assertSame(1, $this->participants->userIdReads);
+	}
+
+	/** The same direct-name rules as the conversation list: legacy, empty, a removed person, and the reader left alone. */
+	public function testUnreadDirectNamesAreRebuiltWithoutWriting(): void {
+		$legacy = $this->room('legacy', 40, 1, 'bob');
+		$empty = $this->room('empty', 30, 1, '');
+		$removed = $this->room('removed', 20, 1, 'bob');
+		$alone = $this->room('alone', 10, 1, 'alice');
+		$legacyParticipant = $this->participant(1, 0);
+		$emptyParticipant = $this->participant(1, 0);
+		$removedParticipant = $this->participant(1, 0);
+		$aloneParticipant = $this->participant(1, 0);
+		$this->givenRooms([
+			[$legacy, $legacyParticipant],
+			[$empty, $emptyParticipant],
+			[$removed, $removedParticipant],
+			[$alone, $aloneParticipant],
+		]);
+		$this->participants->userIds = [
+			spl_object_id($legacy) => ['alice', 'bob'],
+			spl_object_id($empty) => ['bob', 'alice'],
+			spl_object_id($removed) => ['alice'],
+			spl_object_id($alone) => ['alice'],
+		];
+
+		$page = $this->listing->list('alice', 50, null);
+		$names = array_column($page['conversations'], 'displayName', 'token');
+
+		$this->assertSame('bob', $names['legacy']);
+		$this->assertSame('bob', $names['empty']);
+		$this->assertSame('bob', $names['removed']);
+		$this->assertSame('', $names['alone']);
+		$this->assertSame(4, $this->participants->userIdReads);
+		$this->assertFalse($legacy->described);
+		$this->assertSame($legacyParticipant->getAttendee(), $legacyParticipant->getAttendee());
+	}
+
+	/** A participant list that cannot be read leaves the unread direct name empty. */
+	public function testAnUnreadableParticipantListLeavesTheUnreadNameEmpty(): void {
+		$room = $this->room('broken', 20, 1, 'bob');
+		$this->givenRooms([[$room, $this->participant(1, 0)]]);
+		$this->participants->failUserIds = true;
+
+		$page = $this->listing->list('alice', 50, null);
+
+		$this->assertSame('', $page['conversations'][0]['displayName']);
+		$this->assertSame(1, $this->participants->userIdReads);
+		$this->assertFalse($room->described);
 	}
 
 	public function testPagesStopAtFiftyAndTheCursorContinuesAfterTheLastRow(): void {
@@ -543,11 +602,13 @@ final class UnreadRoomStub {
 
 	public function getDisplayName(string $userId, bool $forceName = true): string {
 		$this->described = true;
+		UnreadWriteSpy::hit();
 		throw new RuntimeException('getDisplayName');
 	}
 
 	public function getName(): string {
 		$this->described = true;
+		UnreadWriteSpy::hit();
 		throw new RuntimeException('getName');
 	}
 
@@ -556,7 +617,13 @@ final class UnreadRoomStub {
 	}
 
 	public function setName(string $name): void {
+		UnreadWriteSpy::hit();
 		throw new RuntimeException('setName');
+	}
+
+	public function setLobby(int $state, ?DateTimeImmutable $timer = null): void {
+		UnreadWriteSpy::hit();
+		throw new RuntimeException('setLobby');
 	}
 }
 
@@ -568,33 +635,23 @@ final class UnreadRoomStub {
 final class UnreadParticipantStub {
 	public int $permissions = 0;
 	public int $column = 0;
+	private object $attendee;
 
 	public function __construct(
 		public int $unread,
 		public int $lastRead,
 		private bool $archived,
 	) {
-	}
-
-	public function getPermissions(): int {
-		return $this->permissions;
-	}
-
-	public function getAttendee(): object {
-		return new class ($this->column, $this->lastRead, $this->archived) {
-			public function __construct(
-				private int $unread,
-				private int $lastRead,
-				private bool $archived,
-			) {
+		$this->attendee = new class ($this) {
+			public function __construct(private UnreadParticipantStub $participant) {
 			}
 
 			public function getUnreadMessages(): int {
-				return $this->unread;
+				return $this->participant->column;
 			}
 
 			public function getLastReadMessage(): int {
-				return $this->lastRead;
+				return $this->participant->lastRead;
 			}
 
 			public function getParticipantType(): int {
@@ -602,20 +659,35 @@ final class UnreadParticipantStub {
 			}
 
 			public function isArchived(): bool {
-				return $this->archived;
+				return $this->participant->archived();
 			}
 
 			public function setLastReadMessage(int $message): void {
+				UnreadWriteSpy::hit();
 				throw new RuntimeException('setLastReadMessage');
 			}
 
 			public function setUnreadMessages(int $count): void {
+				UnreadWriteSpy::hit();
 				throw new RuntimeException('setUnreadMessages');
 			}
 		};
 	}
 
+	public function getPermissions(): int {
+		return $this->permissions;
+	}
+
+	public function archived(): bool {
+		return $this->archived;
+	}
+
+	public function getAttendee(): object {
+		return $this->attendee;
+	}
+
 	public function markAsRead(): void {
+		UnreadWriteSpy::hit();
 		throw new RuntimeException('markAsRead');
 	}
 }
@@ -632,6 +704,7 @@ final class UnreadManagerStub {
 	}
 
 	public function resolveRoomDisplayName(object $room, string $userId): string {
+		UnreadWriteSpy::hit();
 		throw new RuntimeException('resolveRoomDisplayName');
 	}
 }
@@ -640,6 +713,11 @@ final class UnreadManagerStub {
 final class UnreadParticipantServiceStub {
 	/** @var list<array{0: string, 1: mixed}> */
 	public array $calls = [];
+	public bool $failUserIds = false;
+	public int $userIdReads = 0;
+
+	/** @var array<int, list<string>> */
+	public array $userIds = [];
 
 	/** @param array<int, UnreadParticipantStub|Throwable> $byId */
 	public function __construct(private array $byId) {
@@ -660,11 +738,17 @@ final class UnreadParticipantServiceStub {
 		return $participant;
 	}
 
+	/** @return list<string> */
 	public function getParticipantUserIds(object $room): array {
-		throw new RuntimeException('getParticipantUserIds');
+		$this->userIdReads++;
+		if ($this->failUserIds) {
+			throw new RuntimeException('getParticipantUserIds');
+		}
+		return $this->userIds[spl_object_id($room)] ?? [];
 	}
 
 	public function updateLastReadMessage(object $participant, int $lastReadMessage): void {
+		UnreadWriteSpy::hit();
 		throw new RuntimeException('updateLastReadMessage');
 	}
 }
@@ -695,6 +779,16 @@ final class UnreadChatManagerStub {
 	}
 
 	public function markAsRead(): void {
+		UnreadWriteSpy::hit();
 		throw new RuntimeException('markAsRead');
+	}
+}
+
+/** Counts a writing call even when the caller catches the failure that follows. */
+final class UnreadWriteSpy {
+	public static int $calls = 0;
+
+	public static function hit(): void {
+		self::$calls++;
 	}
 }

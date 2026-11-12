@@ -93,7 +93,7 @@ class ConversationReader {
 				: $this->unreadCount($room, $attendee, $chatManager, $userId, $markers);
 			$conversations[] = [
 				'token' => $room->getToken(),
-				'displayName' => $this->rooms->displayName($room, $userId, $changelog),
+				'displayName' => $this->rooms->displayName($room, $userId, $changelog, $participantService),
 				'type' => $room->getType(),
 				'participantType' => $attendee->getParticipantType(),
 				'unreadMessages' => $unread,

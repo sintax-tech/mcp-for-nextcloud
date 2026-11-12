@@ -99,7 +99,7 @@ final class UnreadConversations {
 			$lastActivity = $room->getLastActivity();
 			$rows[] = [
 				'token' => (string)$room->getToken(),
-				'displayName' => $this->rooms->displayName($room, $userId, $changelog),
+				'displayName' => $this->rooms->displayName($room, $userId, $changelog, $participantService),
 				'type' => (int)$room->getType(),
 				'participantType' => (int)$attendee->getParticipantType(),
 				'unreadMessages' => $counted['unread'],

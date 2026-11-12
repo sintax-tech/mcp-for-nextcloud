@@ -17,9 +17,12 @@ use Throwable;
  *
  * Neither answer is written back. An active lobby whose timer is already in the past is treated as open for this
  * answer only, the same moment Talk would open it, without calling the maintenance that persists that opening.
- * A room with no stored name contributes an empty display name, and a direct conversation uses the other
- * participant's name only when Talk has already stored the two account ids. The release notes conversation and a
- * password request get the names Talk gives them, built from the stored values.
+ * A direct conversation names the other participant from the two account ids already stored, or from the participants
+ * already in the room when the stored name is empty or still a single legacy account id. That pair is rebuilt in
+ * memory and never written back. The reader must be one of the ids; the name is the other account, and it is empty
+ * when the read fails or that other account cannot be told apart, including when the only id left is the reader.
+ * A group with no stored name stays empty: Talk's own fallback builds that name from display names and saves it,
+ * which this read does not do. The release notes conversation and a password request get the names Talk gives them.
  */
 final class UnreadRoomView {
 	/** Room object type of a conversation opened to request the password of a shared file. */
@@ -83,9 +86,10 @@ final class UnreadRoomView {
 	 * @param object $room OCA\Talk\Room, unread
 	 * @param string $userId authenticated reader
 	 * @param int $changelogType Talk's type of the release notes conversation
+	 * @param object|null $participants OCA\Talk\Service\ParticipantService, read only when a direct name is not the stored pair
 	 * @return string stored name, Talk's name of a special room, the other participant's display name, or ''
 	 */
-	public function displayName(object $room, string $userId, int $changelogType): string {
+	public function displayName(object $room, string $userId, int $changelogType, ?object $participants = null): string {
 		$stored = $this->storedName($room);
 		try {
 			$type = $room->getType();
@@ -101,7 +105,7 @@ final class UnreadRoomView {
 		}
 		$oneToOne = $this->oneToOneType();
 		if ($oneToOne !== null && is_int($type) && $type === $oneToOne) {
-			return $this->oneToOneName($stored, $userId);
+			return $this->oneToOneName($stored, $userId, $room, $participants);
 		}
 		return $stored;
 	}
@@ -124,31 +128,96 @@ final class UnreadRoomView {
 	}
 
 	/**
-	 * The other participant's display name when the stored name is already the two account ids.
+	 * The other participant's display name, from the stored pair or from the accounts already in the room.
 	 *
-	 * An empty or legacy direct conversation stays empty: filling it is the maintenance this read does not do.
+	 * A stored value that already starts with the JSON pair is used as Talk left it. An empty name takes the account
+	 * ids of the room. A legacy name, the other account id as plain text, is appended only when the room no longer
+	 * holds both accounts, which is the complement Talk applies before it would save the pair. The legacy text is
+	 * never itself the name: the other id is the one that is not the reader.
 	 *
 	 * @param string $stored the name column
 	 * @param string $userId authenticated reader
+	 * @param object $room OCA\Talk\Room
+	 * @param object|null $participants OCA\Talk\Service\ParticipantService
 	 */
-	private function oneToOneName(string $stored, string $userId): string {
-		if (!str_starts_with($stored, '["')) {
+	private function oneToOneName(string $stored, string $userId, object $room, ?object $participants): string {
+		if (str_starts_with($stored, '["')) {
+			return $this->displayOfOther($this->decodedIds($stored), $userId);
+		}
+		$ids = $this->participantIds($participants, $room);
+		if ($ids === null) {
 			return '';
 		}
+		if ($stored !== '' && count($ids) !== 2) {
+			$ids[] = $stored;
+		}
+		return $this->displayOfOther($ids, $userId);
+	}
+
+	/**
+	 * Account ids Talk stored as a JSON list, or null when that value is not a list of account ids.
+	 *
+	 * @return list<string>|null
+	 */
+	private function decodedIds(string $stored): ?array {
 		try {
 			$ids = json_decode($stored, true, 8, JSON_THROW_ON_ERROR);
 		} catch (\JsonException) {
-			return '';
+			return null;
 		}
 		if (!is_array($ids)) {
+			return null;
+		}
+		$clean = [];
+		foreach ($ids as $id) {
+			if (!is_string($id) || $id === '') {
+				return null;
+			}
+			$clean[] = $id;
+		}
+		return $clean;
+	}
+
+	/**
+	 * Account ids of the room, read and not saved, or null when that read fails.
+	 *
+	 * @return list<string>|null
+	 */
+	private function participantIds(?object $participants, object $room): ?array {
+		if ($participants === null) {
+			return null;
+		}
+		try {
+			$ids = $participants->getParticipantUserIds($room);
+		} catch (Throwable) {
+			return null;
+		}
+		if (!is_array($ids)) {
+			return null;
+		}
+		$clean = [];
+		foreach ($ids as $id) {
+			if (!is_string($id) || $id === '') {
+				return null;
+			}
+			$clean[] = $id;
+		}
+		return $clean;
+	}
+
+	/**
+	 * The display name of the single account id that is not the reader.
+	 *
+	 * @param list<string>|null $ids account ids of the direct conversation
+	 * @param string $userId authenticated reader, who must be one of them
+	 */
+	private function displayOfOther(?array $ids, string $userId): string {
+		if ($ids === null) {
 			return '';
 		}
 		$other = null;
 		$caller = false;
 		foreach ($ids as $id) {
-			if (!is_string($id) || $id === '') {
-				return '';
-			}
 			if ($id === $userId) {
 				$caller = true;
 				continue;

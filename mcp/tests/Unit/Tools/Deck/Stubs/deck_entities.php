@@ -19,17 +19,7 @@ declare(strict_types=1);
 
 namespace OCA\Deck\Db;
 
-/** Permission levels used by the ACL tables; values taken from Deck `lib/Db/Acl.php:25-28`. */
-class Acl {
-	public const PERMISSION_READ = 0;
-	public const PERMISSION_EDIT = 1;
-	public const PERMISSION_SHARE = 2;
-	public const PERMISSION_MANAGE = 3;
-
-	public const PERMISSION_TYPE_USER = 0;
-	public const PERMISSION_TYPE_GROUP = 1;
-	public const PERMISSION_TYPE_CIRCLE = 7;
-}
+// Acl lives in deck_acl.php, with the getters of a hydrated Deck ACL entry.
 
 /** Marker interface the Deck permission service accepts as a mapper, see Deck `lib/Db/IPermissionMapper.php`. */
 interface IPermissionMapper {

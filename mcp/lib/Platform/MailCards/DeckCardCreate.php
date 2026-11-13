@@ -22,11 +22,13 @@ use OCA\Mcp\Platform\Workflows\WorkflowStep;
  */
 interface DeckCardCreate {
 	/**
-	 * The plan of deck_create_card, with the board, its owner and whether it is shared.
+	 * The plan of deck_create_card, with the board, its owner and whether it is shared, and under `audience` who can
+	 * read that board: `readable` false when its sharing could not be read for the actor (never to be taken for a
+	 * private board), otherwise the owner and every sharing entry, groups and circles named and never expanded.
 	 *
 	 * @param string $userId the actor, owner of the new card
 	 * @param array<string, mixed> $card the arguments of deck_create_card, without confirm
-	 * @return array<string, mixed> the plan of deck_create_card, with nothing written
+	 * @return array<string, mixed> the plan of deck_create_card plus `audience`, with nothing written
 	 * @throws ToolFailure when the step is not allowed for the actor or would be refused
 	 * @throws \InvalidArgumentException on arguments deck_create_card refuses
 	 */

@@ -52,6 +52,8 @@ final class DeckCardCreateStepsTest extends TestCase {
 	/** @var DeckGatewayInterface&MockObject */
 	private DeckGatewayInterface $gateway;
 	private DeckCardCreateSteps $steps;
+	/** The board reader of the plan: its sharing entries, or a refusal. */
+	private DeckAudienceFixture $audience;
 	/** The Deck module whose execution context the steps use; a test hands it another gateway. */
 	private \OCA\Mcp\Modules\Deck\DeckModule $module;
 
@@ -75,7 +77,32 @@ final class DeckCardCreateStepsTest extends TestCase {
 		DeckTestModule::setGateway($this->module, $this->gateway);
 		$context = DeckTestModule::context($this->module);
 		$access = new ToolAccess($this->policy, $apps, $users, null, new CapabilityRegistry([], new NullLogger()));
-		$this->steps = new DeckCardCreateSteps($access, new CreateCardPreview($context), $context);
+		$this->audience = new DeckAudienceFixture($this);
+		$this->steps = new DeckCardCreateSteps($access, new CreateCardPreview($context), $context, $this->audience->audience());
+	}
+
+	/** A private board of the actor: readable, with no sharing entry. @return void */
+	public function testThePlanNamesAPrivateBoardAudience(): void {
+		$plan = $this->steps->planCard('alice', self::CARD);
+
+		self::assertSame(['readable' => true, 'owner' => 'alice', 'ownerDisplayName' => 'Alice Silva', 'entries' => []], $plan['audience']);
+	}
+
+	/** The actor's own board shared with a group: the group is named for its current and future members, never expanded. @return void */
+	public function testThePlanNamesTheGroupOfAnOwnSharedBoard(): void {
+		$this->audience->acls = [new \OCA\Deck\Db\Acl(['type' => \OCA\Deck\Db\Acl::PERMISSION_TYPE_GROUP, 'participant' => 'vendas'])];
+
+		$plan = $this->steps->planCard('alice', self::CARD);
+
+		self::assertSame([], $plan['shared'], 'deck_create_card alone sees only the owner');
+		self::assertSame([['type' => 'group', 'id' => 'vendas', 'displayName' => 'Group vendas', 'edit' => false, 'share' => false, 'manage' => false]], $plan['audience']['entries']);
+	}
+
+	/** A board whose sharing cannot be read is not readable, never private, and the plan itself still answers. @return void */
+	public function testAnUnreadableAudienceIsNeverPrivate(): void {
+		$this->audience->refused = true;
+
+		self::assertSame(['readable' => false], $this->steps->planCard('alice', self::CARD)['audience']);
 	}
 
 	/** The plan is the one of deck_create_card and writes nothing. @return void */

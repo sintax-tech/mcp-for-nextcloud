@@ -12,7 +12,7 @@ use OCA\Mcp\Tests\Unit\Tools\AssertsReadablePlans;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 
-/** The meeting plan is text the person can read, and every name, agenda and notice in it stays inert. */
+/** The routine plans are text the person can read, and every name, agenda, email and notice in them stays inert. */
 final class RoutinesPlanRendererTest extends TestCase {
 	use AssertsReadablePlans;
 
@@ -38,11 +38,32 @@ final class RoutinesPlanRendererTest extends TestCase {
 		];
 	}
 
-	/** @return void the one write of this module renders its own plan */
+	/** @return void every write of this module renders its own plan */
 	public function testEveryWriteHasAReadablePlan(): void {
 		$this->assertEveryWriteToolHasAReadablePlan(new RoutinesModule($this->createMock(ContainerInterface::class)), [
 			'routines_create_meeting' => self::plan(),
+			'routines_create_mail_card' => MailCardPlanSample::plan(),
 		]);
+	}
+
+	/** @return void the email, both steps, the exact card text and the readers are in the text, and the email renders inert */
+	public function testTheMailCardPlanNamesBothStepsTheTextAndTheReaders(): void {
+		$text = (new RoutinesModule($this->createMock(ContainerInterface::class)))->renderPlan('routines_create_mail_card', MailCardPlanSample::plan(
+			['readable' => true, 'owner' => 'alice', 'ownerDisplayName' => 'Alice Silva', 'entries' => [['type' => 'group', 'id' => 'vendas', 'displayName' => 'Vendas']]]));
+
+		self::assertIsString($text);
+		self::assertStringContainsString('/Documentos/pedido.pdf', $text);
+		self::assertStringContainsString('Pedido 42', $text);
+		self::assertStringContainsString('Vendas (group)', $text);
+		self::assertStringNotContainsString('](https://evil.example)', $text, 'a link written in the email never renders');
+	}
+
+	/** @return void a board whose readers could not be read says so, never that it is private */
+	public function testAnUnreadableBoardIsNamedAsSuch(): void {
+		$text = (new RoutinesModule($this->createMock(ContainerInterface::class)))->renderPlan('routines_create_mail_card', MailCardPlanSample::plan(['readable' => false]));
+
+		self::assertStringContainsString('could not be shown', (string)$text);
+		self::assertStringNotContainsString('only its owner', (string)$text);
 	}
 
 	/** @return void the three steps, the time in the account zone and every warning are in the text */

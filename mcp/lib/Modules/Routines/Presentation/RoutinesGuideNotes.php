@@ -13,8 +13,8 @@ final class RoutinesGuideNotes {
 	private function __construct() {
 	}
 
-	/** @return list<string> guidance of the meeting routine */
+	/** @return list<string> guidance of the meeting and mail card routines */
 	public static function notes(): array {
-		return [RoutinesSchema::MEETING_NOTE];
+		return [RoutinesSchema::MEETING_NOTE, MailCardSchema::NOTE];
 	}
 }

@@ -10,7 +10,7 @@ namespace OCA\Mcp\Modules\Routines\Presentation;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Mcp\Confirmation\PlanText;
 
-/** The readable Markdown of a meeting plan; the complete plan of each step stays in structuredContent. */
+/** The readable Markdown of a routine plan; the complete plan of each step stays in structuredContent. */
 final class RoutinesPlanRenderer {
 	/**
 	 * @param string $tool tool name
@@ -18,6 +18,9 @@ final class RoutinesPlanRenderer {
 	 * @return string|null the Markdown body, or null for the generic one
 	 */
 	public function render(string $tool, array $plan): ?string {
+		if ($tool === 'routines_create_mail_card') {
+			return (new MailCardPlanRenderer())->render($plan);
+		}
 		if ($tool !== 'routines_create_meeting') {
 			return null;
 		}

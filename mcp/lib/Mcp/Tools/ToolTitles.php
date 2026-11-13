@@ -218,6 +218,7 @@ final class ToolTitles {
 			'availability_set_absence' => Translator::t('Set own absence'),
 			// Routines
 			'routines_create_meeting' => Translator::t('Create meeting'),
+			'routines_create_mail_card' => Translator::t('Create card from email'),
 			default => ToolPresentation::humanized($name),
 		};
 	}

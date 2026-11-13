@@ -53,6 +53,7 @@ final class ToolPresentationTest extends TestCase {
 		'status_set_type' => ['Set own status type', 'Definir meu tipo de status'],
 		'status_set_message' => ['Set own status message', 'Definir minha mensagem de status'],
 		'routines_create_meeting' => ['Create meeting', 'Criar reunião'],
+		'routines_create_mail_card' => ['Create card from email', 'Criar cartão a partir de e-mail'],
 		'availability_set_absence' => ['Set own absence', 'Definir minha ausência'],
 		'calendar_create_event' => ['Create event', 'Criar evento'],
 		'calendar_update_event' => ['Edit event', 'Editar evento'],

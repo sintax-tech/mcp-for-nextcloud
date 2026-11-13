@@ -120,8 +120,8 @@ final class ToolRegistryTest extends TestCase {
 				// This fixture wraps each admitted definition in a legacy module; discovery owns requires.
 				$definitions = array_map(static function (array $definition): array { unset($definition['requires']); return $definition; }, $definitions);
 			}
-			if ($instance instanceof \OCA\Mcp\Modules\Mail\MailModule || $instance instanceof \OCA\Mcp\Modules\Forms\FormsModule) {
-				// Mail attachments and Forms structure tools are admitted by their probes in discovery; this envelope check covers them unconditionally.
+			if ($instance instanceof \OCA\Mcp\Modules\Mail\MailModule || $instance instanceof \OCA\Mcp\Modules\Forms\FormsModule || $instance instanceof \OCA\Mcp\Modules\Routines\RoutinesModule) {
+				// Mail attachments, the mail card routine and Forms structure tools are admitted by their probes in discovery; this envelope check covers them unconditionally.
 				$definitions = array_map(static function (array $definition): array { unset($definition['requires']); return $definition; }, $definitions);
 			}
 			if ($instance instanceof \OCA\Mcp\Modules\Collectives\CollectivesModule || $instance instanceof \OCA\Mcp\Modules\Availability\AvailabilityModule) {

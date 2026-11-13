@@ -12,6 +12,7 @@ use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
 use OCA\Mcp\Modules\Deck\Creation\CreateCardHandler;
 use OCA\Mcp\Modules\Deck\Creation\CreateCardPreview;
+use OCA\Mcp\Modules\Deck\Integration\DeckBoardAudience;
 use OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages;
 use OCA\Mcp\Modules\Deck\Tools\CreateCard;
 use OCA\Mcp\Platform\MailCards\DeckCardCreate;
@@ -32,11 +33,13 @@ final class DeckCardCreateSteps implements DeckCardCreate {
 	 * @param ToolAccess $access the registry's own decision on grant, Guests and app
 	 * @param CreateCardPreview $plans the plan of deck_create_card
 	 * @param DeckExecutionContext $execution the per-user effect of deck_create_card
+	 * @param DeckBoardAudience $audience who can read the board, for the plan of a card that copies private data
 	 */
 	public function __construct(
 		private ToolAccess $access,
 		private CreateCardPreview $plans,
 		private DeckExecutionContext $execution,
+		private DeckBoardAudience $audience,
 	) {
 	}
 
@@ -45,7 +48,27 @@ final class DeckCardCreateSteps implements DeckCardCreate {
 		if (!$this->allowed($userId)) {
 			throw new ToolFailure(WorkflowMessages::notAllowed(CreateCard::definition()->name));
 		}
-		return $this->plans->plan(ArgumentValidator::validate(CreateCard::definition()->inputSchema, $card), $userId);
+		$arguments = ArgumentValidator::validate(CreateCard::definition()->inputSchema, $card);
+		$plan = $this->plans->plan($arguments, $userId);
+		return $plan + ['audience' => $this->audience((array)($plan['destination'] ?? []), $userId, (int)$arguments['stackId'])];
+	}
+
+	/**
+	 * @param array<string, mixed> $destination the destination of the plan, with the owner of the board
+	 * @param string $userId the actor
+	 * @param int $stackId the list of the card
+	 * @return array{readable: bool, owner?: string, ownerDisplayName?: string, entries?: list<array<string, mixed>>} who
+	 *     can read the board; not readable when Deck refused or failed to answer, which is never a private board
+	 */
+	private function audience(array $destination, string $userId, int $stackId): array {
+		try {
+			$entries = $this->audience->ofStack($userId, $stackId);
+		} catch (\OCA\Mcp\Access\Policy\PolicyUnavailable $e) {
+			throw $e;
+		} catch (\Throwable) {
+			return ['readable' => false];
+		}
+		return ['readable' => true, 'owner' => (string)($destination['owner'] ?? ''), 'ownerDisplayName' => (string)($destination['ownerDisplayName'] ?? ''), 'entries' => $entries];
 	}
 
 	/** {@inheritDoc} */

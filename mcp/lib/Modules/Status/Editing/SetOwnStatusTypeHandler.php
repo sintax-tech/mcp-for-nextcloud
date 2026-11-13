@@ -8,7 +8,6 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Status\Editing;
 
-use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Modules\Status\Integration\StatusEditor;
 use OCA\Mcp\Modules\Status\Integration\StatusGateway;
 use OCA\Mcp\Modules\Status\Presentation\StatusTypes;
@@ -38,16 +37,9 @@ final class SetOwnStatusTypeHandler {
 	 * @throws \InvalidArgumentException when the type is not native
 	 */
 	public function apply(string $actor, string $status): array {
-		$this->known($status);
+		StatusTypes::require($status);
 		$removed = $this->editor->setOwnType($actor, $status);
 		$snapshot = $this->snapshot->project($this->native->find($actor), $this->time->getTime());
 		return $snapshot + ['removed_backup' => $removed];
-	}
-
-	/** @throws \InvalidArgumentException when the type is not one of the six native values */
-	private function known(string $status): void {
-		if (!StatusTypes::known($status)) {
-			throw new \InvalidArgumentException(Translator::t('The status type is not supported.'));
-		}
 	}
 }

@@ -25,9 +25,7 @@ final class SetOwnStatusTypePreview {
 	 * @throws \InvalidArgumentException when the type is not native
 	 */
 	public function plan(string $actor, string $status): array {
-		if (!StatusTypes::known($status)) {
-			throw new \InvalidArgumentException(Translator::t('The status type is not supported.'));
-		}
+		StatusTypes::require($status);
 		$row = $this->native->find($actor);
 		return [
 			'requiresConfirmation' => true,

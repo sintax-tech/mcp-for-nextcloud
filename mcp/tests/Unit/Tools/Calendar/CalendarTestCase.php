@@ -67,6 +67,8 @@ abstract class CalendarTestCase extends TestCase {
 	protected \OCA\Mcp\Mcp\Tools\ToolRegistry $registry;
 	/** @var array<string, \OCA\Mcp\Modules\Calendar\Approval\CalendarDraft> write handlers exercised directly by domain tests */
 	protected array $writeHandlers = [];
+	/** The confirmation every Calendar write goes through, as the module under test uses it. */
+	protected \OCA\Mcp\Modules\Calendar\Approval\CalendarDraftApproval $approval;
 	/** Value returned by dav/calendarRetentionObligation. */
 	protected string $retention = '';
 	/** Value returned by dav/sendInvitations. */
@@ -178,7 +180,7 @@ abstract class CalendarTestCase extends TestCase {
 			$moveEvent,
 			$deleteEvent,
 			$transferEvent,
-			new \OCA\Mcp\Modules\Calendar\Approval\CalendarDraftApproval($scheduling, $builder, $guard, $warnings, $zones),
+			$this->approval = new \OCA\Mcp\Modules\Calendar\Approval\CalendarDraftApproval($scheduling, $builder, $guard, $warnings, $zones),
 			CalendarAvailabilityFixture::handler($this->createMock(\OCA\Mcp\Access\Grants\GrantPolicy::class), $this->users(), $this->createMock(\Psr\Container\ContainerInterface::class), $calendarManager, array_keys($this->emails)),
 			CalendarAvailabilityFixture::suggestion($this->createMock(\OCA\Mcp\Access\Grants\GrantPolicy::class), $this->users(), $this->createMock(\Psr\Container\ContainerInterface::class), $calendarManager, array_keys($this->emails)),
 		);

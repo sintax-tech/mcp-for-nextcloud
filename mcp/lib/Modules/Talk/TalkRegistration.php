@@ -13,13 +13,14 @@ use OCP\IUserManager;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use Psr\Container\ContainerInterface;
 
-/** Constructs the lazy Talk resolver with the app container; no native Talk service is loaded at registration. */
+/** Constructs the lazy Talk resolver with the app container and binds the Talk steps of a meeting; no native Talk service is loaded at registration. */
 final class TalkRegistration implements ModuleRegistration {
 	/** {@inheritDoc} */
 	public function register(IRegistrationContext $context): void {
 		$context->registerService(TalkServices::class, static fn (ContainerInterface $c): TalkServices => new TalkServices(
 			$c->get(IAppManager::class), $c, $c->get(IUserManager::class),
 		));
+		$context->registerService(\OCA\Mcp\Platform\Meetings\MeetingTalk::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\Meetings\MeetingTalk => $c->get(TalkMeetingSteps::class));
 	}
 
 	/** @return list<class-string<\OCA\Mcp\Mcp\Tools\CapabilityProbe>> none: the existing per-user app gate is sufficient */

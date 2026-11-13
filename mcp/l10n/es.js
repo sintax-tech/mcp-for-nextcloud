@@ -2129,6 +2129,8 @@ OC.L10N.register(
     "Currently: %s to %s, status %s." : "Actualmente: %s a %s, estado %s.",
     "Set own absence" : "Establecer mi ausencia",
     "Your absence or its replacement changed since the plan. Review this new plan before confirming again." : "Su ausencia o su sustituto cambió desde el plan. Revise este nuevo plan antes de confirmar de nuevo.",
-    "List file tags" : "Listar etiquetas del archivo"
+    "List file tags" : "Listar etiquetas del archivo",
+    "Using %s through MCP is not allowed for your account." : "Usar %s mediante MCP no está permitido para su cuenta.",
+    "This step could not be confirmed and may have been applied. Check it in Nextcloud before trying again." : "No se pudo confirmar este paso y puede que se haya aplicado. Compruébelo en Nextcloud antes de volver a intentarlo."
     },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

@@ -26,6 +26,8 @@ final class MailRegistration implements ModuleRegistration {
 		$context->registerService(MeetingMailRead::class, static fn (ContainerInterface $c): MeetingMailRead => new MailMeetingSearch(
 			$c->get(ToolAccess::class),
 			$c->get(MailMessageReading::class),
+			$c->get(Integration\MailGateway::class),
+			$c->get(Integration\MailMessageGateway::class),
 		));
 		$context->registerService(\OCA\Mcp\Platform\MailCards\MailCardSource::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\MailCards\MailCardSource => $c->get(MailCardSourceSteps::class));
 		$context->registerService(\OCA\Mcp\Platform\MailCards\MailAttachmentSave::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\MailCards\MailAttachmentSave => $c->get(MailAttachmentSaveSteps::class));

@@ -49,4 +49,31 @@ final class AssignedCardsTest extends TestCase {
 		$cards = new AssignedCards(new DeckServiceContext($container, $session));
 		self::assertSame([12, 4], $cards->ids('alice', 'pedro'));
 	}
+
+	/**
+	 * The lookup stops at the dossier budget. Rows after that are not returned.
+	 *
+	 * @return void
+	 */
+	public function testFindByParticipantStopsAtTheBudget(): void {
+		$rows = [];
+		for ($id = 1; $id <= 25; $id++) {
+			$rows[] = new Assignment(['cardId' => $id]);
+		}
+		$session = $this->createMock(ISession::class);
+		$session->method('get')->willReturn('alice');
+		$board = $this->createMock(BoardService::class);
+		$mapper = $this->createMock(AssignmentMapper::class);
+		$mapper->method('findByParticipant')->willReturn($rows);
+		$container = $this->createMock(ContainerInterface::class);
+		$container->method('get')->willReturnCallback(static function (string $class) use ($board, $mapper): object {
+			return match ($class) {
+				BoardService::class => $board,
+				AssignmentMapper::class => $mapper,
+				default => throw new \RuntimeException($class),
+			};
+		});
+		$cards = new AssignedCards(new DeckServiceContext($container, $session));
+		self::assertSame(range(1, AssignedCards::MAX_IDS), $cards->ids('alice', 'pedro'));
+	}
 }

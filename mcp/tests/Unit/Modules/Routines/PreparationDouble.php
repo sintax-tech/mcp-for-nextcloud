@@ -18,6 +18,9 @@ final class PreparationDouble implements MeetingEventRead, MeetingMailRead, Meet
 	/** @var list<array{0: string, 1: array<string, mixed>}> calls in order, name then arguments */
 	public array $calls = [];
 
+	/** @var list<int> mailbox ids the mail port offers, inbox first */
+	public array $folders = [3];
+
 	/**
 	 * @param array<string, mixed> $events the calendar answer
 	 * @param \Closure(string, array<string, mixed>): array<string, mixed>|null $search mail answer
@@ -58,6 +61,12 @@ final class PreparationDouble implements MeetingEventRead, MeetingMailRead, Meet
 	}
 
 	/** {@inheritDoc} */
+	public function folders(string $userId): array {
+		$this->calls[] = ['folders', []];
+		return $this->folders;
+	}
+
+	/** {@inheritDoc} */
 	public function card(string $userId, array $arguments): array {
 		return $this->answer('card', $this->card, $userId, $arguments);
 	}
@@ -84,12 +93,21 @@ final class PreparationDouble implements MeetingEventRead, MeetingMailRead, Meet
 
 	/** {@inheritDoc} */
 	public function locate(string $userId, string $reference): ?string {
-		$this->calls[] = ['locate', ['reference' => $reference]];
+		$placed = $this->placed($userId, $reference);
+		return $placed['path'] ?? null;
+	}
+
+	/** {@inheritDoc} */
+	public function placed(string $userId, string $reference): ?array {
+		$this->calls[] = ['placed', ['reference' => $reference]];
 		if ($this->locatePath === null) {
 			return null;
 		}
 		$path = ($this->locatePath)($userId, $reference);
-		return is_string($path) && $path !== '' ? $path : null;
+		if (!is_string($path) || $path === '') {
+			return null;
+		}
+		return ['path' => $path, 'id' => 15, 'mtime' => 1710000000, 'url' => 'https://cloud.example/f/15'];
 	}
 
 	/**

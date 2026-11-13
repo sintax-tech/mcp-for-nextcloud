@@ -66,8 +66,9 @@ final class PrepareMeetingHandler {
 		}
 		$people = $this->roster->fromEvent($event, $userId);
 		$deck = $this->cards->collect($userId, $event, $people['participants']);
-		return ToolResult::json([
+		$dossier = [
 			'untrustedDossier' => true,
+			'notice' => RoutinesMessages::untrustedDossier(),
 			'written' => false,
 			'selection' => isset($arguments['uid']) ? 'explicit' : 'next',
 			'event' => $this->project($event),
@@ -78,7 +79,15 @@ final class PrepareMeetingHandler {
 				'deck' => $deck['report'],
 				'files' => $this->files->collect($userId, $event, $deck['paths'], $deck['references']),
 			],
-		]);
+		];
+		$cut = OccurrenceItems::cut($result);
+		if ($cut !== null) {
+			$dossier['window'] = $cut;
+			if ($cut['truncated'] && !isset($arguments['uid'])) {
+				$dossier['windowNotice'] = RoutinesMessages::windowCut();
+			}
+		}
+		return ToolResult::json($dossier);
 	}
 
 	/**

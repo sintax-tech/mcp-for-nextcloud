@@ -20,4 +20,11 @@ interface MeetingFileLookup {
 	 * @return string|null the path files_read can open, or null when the reference is not one readable file
 	 */
 	public function path(string $userId, string $reference): ?string;
+
+	/**
+	 * @param string $userId the actor
+	 * @param string $reference a file id, a file URL or a path
+	 * @return array{path: string, id: int, mtime: int, url: string}|null the file, or null when the reference is not one readable file
+	 */
+	public function placed(string $userId, string $reference): ?array;
 }

@@ -14,6 +14,8 @@ use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry;
 use OCA\Mcp\Mcp\Tools\Discovery\ToolAccess;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Modules\Mail\Integration\MailGateway;
+use OCA\Mcp\Modules\Mail\Integration\MailMessageGateway;
 use OCA\Mcp\Modules\Mail\MailMeetingSearch;
 use OCA\Mcp\Modules\Mail\Reading\ListMessagesHandler;
 use OCA\Mcp\Modules\Mail\Reading\MailSearchListing;
@@ -42,7 +44,7 @@ final class MailMeetingSearchTest extends TestCase {
 	public function testADeniedGrantNeverReachesTheSearch(): void {
 		$this->granted = false;
 		$search = new CountingMailSearch();
-		$mail = new MailMeetingSearch($this->access(), $search);
+		$mail = $this->reader($search);
 
 		try {
 			$mail->search('alice', []);
@@ -62,7 +64,7 @@ final class MailMeetingSearchTest extends TestCase {
 	public function testADisabledAppNeverReachesTheSearch(): void {
 		$this->appEnabled = false;
 		$search = new CountingMailSearch();
-		$mail = new MailMeetingSearch($this->access(), $search);
+		$mail = $this->reader($search);
 
 		try {
 			$mail->search('alice', []);
@@ -81,7 +83,7 @@ final class MailMeetingSearchTest extends TestCase {
 	public function testAGuestTheAppForbidsNeverReachesTheSearch(): void {
 		$this->guestAllowed = false;
 		$search = new CountingMailSearch();
-		$mail = new MailMeetingSearch($this->access(), $search);
+		$mail = $this->reader($search);
 
 		try {
 			$mail->search('alice', []);
@@ -99,7 +101,7 @@ final class MailMeetingSearchTest extends TestCase {
 	 */
 	public function testAnEmptyCallAppliesThePublishedLimitAndSearchesOnce(): void {
 		$search = new CountingMailSearch();
-		$mail = new MailMeetingSearch($this->access(), $search);
+		$mail = $this->reader($search);
 
 		$result = $mail->search('alice', []);
 
@@ -118,7 +120,7 @@ final class MailMeetingSearchTest extends TestCase {
 	 */
 	public function testAnUnknownKeyIsRefusedBeforeTheSearch(): void {
 		$search = new CountingMailSearch();
-		$mail = new MailMeetingSearch($this->access(), $search);
+		$mail = $this->reader($search);
 
 		try {
 			$mail->search('alice', ['uid' => 'one-message']);
@@ -136,7 +138,7 @@ final class MailMeetingSearchTest extends TestCase {
 	public function testAnUnreadableGrantPropagatesAndSkipsTheSearch(): void {
 		$this->unavailable = true;
 		$search = new CountingMailSearch();
-		$mail = new MailMeetingSearch($this->access(), $search);
+		$mail = $this->reader($search);
 
 		$this->expectException(PolicyUnavailable::class);
 		try {
@@ -144,6 +146,19 @@ final class MailMeetingSearchTest extends TestCase {
 		} finally {
 			self::assertSame(0, $search->calls);
 		}
+	}
+
+	/**
+	 * @param MailSearchListing $search the search double
+	 * @return MailMeetingSearch the port; these tests do not list folders
+	 */
+	private function reader(MailSearchListing $search): MailMeetingSearch {
+		return new MailMeetingSearch(
+			$this->access(),
+			$search,
+			$this->createMock(MailGateway::class),
+			$this->createMock(MailMessageGateway::class),
+		);
 	}
 
 	/**

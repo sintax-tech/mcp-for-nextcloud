@@ -24,6 +24,7 @@ use PHPUnit\Framework\TestCase;
 
 /** Mail, Deck, files and people of the dossier: exact matches, missing grants, and the budgets. */
 final class PrepareMeetingSourcesTest extends TestCase {
+	use BuildsCloudLink;
 	/** @var list<string> grants of a dossier that may consult every source */
 	private const ON = ['calendar.read', 'mail.messages', 'deck.read', 'files.read', 'people.read'];
 
@@ -41,6 +42,7 @@ final class PrepareMeetingSourcesTest extends TestCase {
 				self::assertSame('2026-03-10', $arguments['since']);
 				self::assertSame('2026-04-09', $arguments['until']);
 				self::assertSame(20, $arguments['limit']);
+				self::assertSame(3, $arguments['mailbox_id']);
 				self::assertArrayNotHasKey('body', $arguments);
 				return PreparationDouble::json(['messages' => [
 					self::message(1, $field, $email),
@@ -59,7 +61,7 @@ final class PrepareMeetingSourcesTest extends TestCase {
 	 * @return void
 	 */
 	public function testASourceWithoutItsGrantIsOmitted(): void {
-		$item = self::event(['attendees' => ['ada@example.com'], 'cardIds' => [4], 'filePaths' => ['/Notes/a.md']]);
+		$item = self::event(['attendees' => ['ada@example.com'], 'links' => ['/apps/deck/board/1/card/4', '/Notes/a.md']]);
 		$ports = new PreparationDouble(PreparationDouble::json([$item]));
 		$dossier = $this->dossier($this->tool($ports, ['calendar.read']), self::window());
 		self::assertSame(['events'], array_column($ports->calls, 0));
@@ -101,15 +103,17 @@ final class PrepareMeetingSourcesTest extends TestCase {
 		for ($id = 1; $id <= 21; $id++) {
 			$messages[] = self::message($id, 'from', 'p1@example.com');
 		}
-		$folders = [];
-		for ($id = 1; $id <= 21; $id++) {
-			$folders[] = ['mailboxId' => $id];
-		}
 		$messages[] = self::message(90, 'from', 'p1@example.com') + ['mailboxId' => 21];
+		$asked = [];
 		$ports = new PreparationDouble(PreparationDouble::json([self::event(['attendees' => $emails])]),
-			static fn (string $userId, array $arguments): array => PreparationDouble::json([
-				'messages' => $messages, 'folders' => $folders, 'hasMore' => false,
-			]));
+			static function (string $userId, array $arguments) use (&$asked, $messages): array {
+				$asked[] = $arguments['mailbox_id'];
+				self::assertArrayHasKey('mailbox_id', $arguments);
+				return PreparationDouble::json([
+					'messages' => $messages, 'folders' => [], 'hasMore' => false,
+				]);
+			});
+		$ports->folders = range(1, 21);
 		$encoded = json_encode($this->dossier($this->tool($ports, ['calendar.read', 'mail.messages']), self::window()), JSON_THROW_ON_ERROR);
 		$dossier = json_decode($encoded, true);
 		self::assertTrue($dossier['participantsTruncated']);
@@ -121,6 +125,8 @@ final class PrepareMeetingSourcesTest extends TestCase {
 		self::assertStringNotContainsString('"id": 21', $encoded);
 		self::assertStringNotContainsString('"id": 90', $encoded);
 		self::assertStringNotContainsString('21', $encoded);
+		self::assertNotContains(21, $asked);
+		self::assertSame('consulted', $dossier['sources']['mail']['status']);
 	}
 
 	/**
@@ -129,7 +135,7 @@ final class PrepareMeetingSourcesTest extends TestCase {
 	 * @return void
 	 */
 	public function testAnUnreadableCardIsOmittedAndOnlyExplicitPathsAreRead(): void {
-		$item = self::event(['cardIds' => [7, 8], 'filePaths' => ['../secret', '/Notes/a.md']]);
+		$item = self::event(['links' => ['/apps/deck/board/1/card/7', '/apps/deck/board/1/card/8', '../secret', '/Notes/a.md']]);
 		$ports = new PreparationDouble(
 			PreparationDouble::json([$item]),
 			null,
@@ -137,13 +143,23 @@ final class PrepareMeetingSourcesTest extends TestCase {
 				if ($arguments['cardId'] === 7) {
 					throw new ToolFailure('hidden card 7');
 				}
-				return PreparationDouble::json(['title' => 'Brief', 'url' => 'https://cloud/card/8']);
+				return PreparationDouble::json(['id' => 8, 'title' => 'Brief', 'lastModified' => 1710000000, 'url' => 'https://cloud.example/card/8']);
 			},
 			static fn (string $userId, array $arguments): array => PreparationDouble::json(['items' => [['path' => 'Notes/brief.md']]]),
 			static fn (string $userId, array $arguments): array => ['content' => [
 				['type' => 'text', 'text' => 'notes'],
 				['type' => 'text', 'text' => json_encode(['path' => $arguments['path'], 'etag' => 'e1'], JSON_THROW_ON_ERROR)],
 			]],
+			null,
+			static function (string $userId, string $reference): ?string {
+				if (str_starts_with($reference, '/Notes/')) {
+					return $reference;
+				}
+				if (str_starts_with($reference, 'Notes/')) {
+					return '/' . $reference;
+				}
+				return null;
+			},
 		);
 		$dossier = $this->dossier($this->tool($ports, self::ON), self::window());
 		self::assertSame([8], array_column($dossier['sources']['deck']['candidates'], 'cardId'));
@@ -211,7 +227,7 @@ final class PrepareMeetingSourcesTest extends TestCase {
 		$sources = new PreparationSources($ports, $optional ? $ports : null, $optional ? $ports : null, $optional ? $ports : null);
 		$roster = new ParticipantRoster($policy, new AccountEmailMatch($search ?? $this->createMock(ISearch::class)));
 		return new PrepareMeeting(new PrepareMeetingHandler(
-			$sources, $policy, $roster, new MailCandidates($sources, $policy), new CardCandidates($sources, $policy), new FileCandidates($sources, $policy),
+			$sources, $policy, $roster, new MailCandidates($sources, $policy), new CardCandidates($sources, $policy, $this->link()), new FileCandidates($sources, $policy, $this->link()),
 		));
 	}
 

@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Routines\Preparation;
 
+use OCA\Mcp\Platform\Meetings\LocalInstanceLink;
+
 /** Deck card ids and file references copied out of text the readers already returned. Nothing is fetched. */
 final class ReferenceTexts {
 	/** Parsing only. */
@@ -16,16 +18,17 @@ final class ReferenceTexts {
 
 	/**
 	 * @param string $text a link or a description
-	 * @return list<int> card ids named by a Deck card URL, once each
+	 * @param LocalInstanceLink $local which absolute hosts belong to this instance
+	 * @return list<int> card ids named by a Deck card URL of this instance, once each
 	 */
-	public static function deckCardIds(string $text): array {
-		if (preg_match_all('~/apps/deck/(?:#/)?board/\d+/card/(\d+)~', $text, $matches) === false) {
+	public static function deckCardIds(string $text, LocalInstanceLink $local): array {
+		if (preg_match_all('~(?:https?://[^\s<>"\']+)?/apps/deck/(?:#/)?board/\d+/card/(\d+)~', $text, $matches, PREG_SET_ORDER) === false) {
 			return [];
 		}
 		$ids = [];
-		foreach ($matches[1] as $id) {
-			$value = (int)$id;
-			if ($value > 0 && !in_array($value, $ids, true)) {
+		foreach ($matches as $match) {
+			$value = (int)$match[1];
+			if ($value > 0 && $local->accepts($match[0]) && !in_array($value, $ids, true)) {
 				$ids[] = $value;
 			}
 		}
@@ -34,18 +37,19 @@ final class ReferenceTexts {
 
 	/**
 	 * @param string $text a link, a description or a location
-	 * @return list<string> file ids and file links, not Deck card URLs
+	 * @param LocalInstanceLink $local which absolute hosts belong to this instance
+	 * @return list<string> file ids and file links of this instance, not Deck card URLs
 	 */
-	public static function fileReferences(string $text): array {
+	public static function fileReferences(string $text, LocalInstanceLink $local): array {
 		$found = [];
 		if (preg_match_all('#https?://[^\s<>"\']+#i', $text, $urls) !== false) {
 			foreach ($urls[0] as $url) {
-				self::keep($url, $found);
+				self::keep($url, $found, $local);
 			}
 		}
 		if (preg_match_all('#(?<![A-Za-z0-9])(/(?:f/\d+|apps/files/[^\s<>"\']+|remote\.php/(?:dav/files|webdav)[^\s<>"\']*))#', $text, $paths) !== false) {
 			foreach ($paths[1] as $path) {
-				self::keep($path, $found);
+				self::keep($path, $found, $local);
 			}
 		}
 		return $found;
@@ -53,18 +57,20 @@ final class ReferenceTexts {
 
 	/**
 	 * @param string $value one candidate
-	 * @return bool whether it is a Deck card URL
+	 * @param LocalInstanceLink $local which absolute hosts belong to this instance
+	 * @return bool whether it is a Deck card URL of this instance
 	 */
-	public static function isDeckCard(string $value): bool {
-		return preg_match('~/apps/deck/(?:#/)?board/\d+/card/\d+~', $value) === 1;
+	public static function isDeckCard(string $value, LocalInstanceLink $local): bool {
+		return $local->accepts($value) && preg_match('~/apps/deck/(?:#/)?board/\d+/card/\d+~', $value) === 1;
 	}
 
 	/**
 	 * @param string $value one candidate
+	 * @param LocalInstanceLink $local which absolute hosts belong to this instance
 	 * @return bool whether the file port should resolve it
 	 */
-	public static function isFile(string $value): bool {
-		if (self::isDeckCard($value)) {
+	public static function isFile(string $value, LocalInstanceLink $local): bool {
+		if (!$local->accepts($value) || self::isDeckCard($value, $local)) {
 			return false;
 		}
 		if (preg_match('#/(?:f|apps/files/files)/\d+#', $value) === 1) {
@@ -82,10 +88,11 @@ final class ReferenceTexts {
 	/**
 	 * @param string $raw one match
 	 * @param list<string> $found references kept so far
+	 * @param LocalInstanceLink $local which absolute hosts belong to this instance
 	 */
-	private static function keep(string $raw, array &$found): void {
+	private static function keep(string $raw, array &$found, LocalInstanceLink $local): void {
 		$value = rtrim(trim($raw), ".,);]>'\" ");
-		if ($value !== '' && self::isFile($value) && !in_array($value, $found, true)) {
+		if ($value !== '' && self::isFile($value, $local) && !in_array($value, $found, true)) {
 			$found[] = $value;
 		}
 	}

@@ -14,9 +14,13 @@ use OCA\Deck\Db\AssignmentMapper;
 /**
  * The card ids `AssignmentMapper::findByParticipant` returns for one user assignment.
  *
- * The mapper does not apply the board ACL. A later card read drops a card the actor cannot open.
+ * The mapper does not apply the board ACL. A later card read drops a card the actor cannot open, and that drop
+ * is not a truncation. At most the dossier card budget is returned; further rows are not consumed.
  */
 final class AssignedCards implements AssignedCardLookup {
+	/** Card ids kept for one participant: the dossier budget, and no more. */
+	public const MAX_IDS = 20;
+
 	/**
 	 * @param DeckServiceContext $services lazily resolved Deck services
 	 */
@@ -32,7 +36,12 @@ final class AssignedCards implements AssignedCardLookup {
 		/** @var AssignmentMapper $mapper */
 		$mapper = $this->services->get(AssignmentMapper::class);
 		$ids = [];
+		$examined = 0;
 		foreach ($mapper->findByParticipant($participantUid, Assignment::TYPE_USER) as $assignment) {
+			if ($examined >= self::MAX_IDS) {
+				break;
+			}
+			$examined++;
 			$id = (int)$assignment->getCardId();
 			if ($id > 0 && !in_array($id, $ids, true)) {
 				$ids[] = $id;

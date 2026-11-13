@@ -173,6 +173,7 @@ final class NextcloudApiUsage {
 		'OCA\\Deck\\Db\\CardMapper::findBoardId' => ['id'],
 		'OCA\\Deck\\Db\\BoardMapper::findAllByOwner' => ['userId'],
 		'OCA\\Deck\\Db\\AssignmentMapper::findIn' => ['cardIds'],
+		'OCA\\Deck\\Db\\AssignmentMapper::findByParticipant' => ['participant', 'type'],
 		// Mail, resolved by class name in OCA\Mcp\Modules\Mail\Integration\MailServices and held untyped by MailGateway.
 		'OCA\\Mail\\Service\\AccountService::findByUserId' => ['currentUserId'],
 		'OCA\\Mail\\Service\\AccountService::find' => ['userId', 'id'],

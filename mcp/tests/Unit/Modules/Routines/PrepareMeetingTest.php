@@ -30,6 +30,7 @@ use PHPUnit\Framework\TestCase;
  * routines_prepare_meeting over port doubles: the event the calendar reader already returned, and nothing written.
  */
 final class PrepareMeetingTest extends TestCase {
+	use BuildsCloudLink;
 	/** @var list<string> grants of a dossier that may consult every source */
 	private const ON = ['calendar.read', 'mail.messages', 'deck.read', 'files.read', 'people.read'];
 
@@ -112,24 +113,48 @@ final class PrepareMeetingTest extends TestCase {
 	 * @return void
 	 */
 	public function testTheDossierWritesNothing(): void {
-		$item = self::occurrence() + ['attendees' => ['ada@example.com'], 'cardIds' => [4], 'filePaths' => ['/Notes/a.md']];
+		$item = self::occurrence() + ['attendees' => ['ada@example.com'], 'links' => ['/apps/deck/board/1/card/4', '/Notes/a.md']];
 		$ports = new PreparationDouble(
 			PreparationDouble::json([$item]),
 			static fn (string $userId, array $arguments): array => PreparationDouble::json(['messages' => []]),
-			static fn (string $userId, array $arguments): array => PreparationDouble::json(['title' => 'Brief', 'url' => 'https://cloud/card/4']),
+			static fn (string $userId, array $arguments): array => PreparationDouble::json(['id' => 4, 'title' => 'Brief', 'lastModified' => 1710000000, 'url' => 'https://cloud.example/apps/deck/board/1/card/4']),
 			static fn (string $userId, array $arguments): array => PreparationDouble::json(['items' => []]),
 			static fn (string $userId, array $arguments): array => ['content' => [
 				['type' => 'text', 'text' => 'Agenda'],
 				['type' => 'text', 'text' => json_encode(['path' => '/Notes/a.md', 'etag' => 'abc', 'size' => 6], JSON_THROW_ON_ERROR)],
 			]],
+			null,
+			static fn (string $userId, string $reference): ?string => $reference === '/Notes/a.md' ? $reference : null,
 		);
 		$dossier = $this->dossier($this->tool($ports, self::ON), self::window());
 		self::assertFalse($dossier['written']);
-		self::assertSame(['events', 'card', 'links', 'search', 'search', 'search', 'read'], array_column($ports->calls, 0));
+		self::assertTrue($dossier['untrustedDossier']);
+		self::assertSame(RoutinesMessages::untrustedDossier(), $dossier['notice']);
+		self::assertSame(['events', 'card', 'links', 'folders', 'search', 'search', 'search', 'placed', 'read'], array_column($ports->calls, 0));
 		foreach ($ports->calls as [$name, $arguments]) {
-			self::assertContains($name, ['events', 'card', 'links', 'read', 'search']);
+			self::assertContains($name, ['events', 'card', 'links', 'read', 'search', 'folders', 'placed']);
 			self::assertArrayNotHasKey('body', $arguments);
 		}
+	}
+
+	/**
+	 * A cut calendar window is copied, and the next event is not claimed to be the first.
+	 *
+	 * @return void
+	 */
+	public function testACutWindowSaysTheNextEventMayNotBeTheFirst(): void {
+		$item = self::occurrence();
+		$ports = new PreparationDouble(['content' => [
+			['type' => 'text', 'text' => json_encode([$item], JSON_THROW_ON_ERROR)],
+			['type' => 'text', 'text' => json_encode(['truncated' => true, 'limit' => 2000], JSON_THROW_ON_ERROR)],
+		]]);
+		$dossier = $this->dossier($this->tool($ports, ['calendar.read']), self::window());
+		self::assertSame(['truncated' => true, 'limit' => 2000], $dossier['window']);
+		self::assertSame(RoutinesMessages::windowCut(), $dossier['windowNotice']);
+		self::assertSame($item['uid'], $dossier['event']['uid']);
+		$named = $this->dossier($this->tool($ports, ['calendar.read']), self::window(['uid' => $item['uid'], 'calendar' => $item['calendar']]));
+		self::assertSame(['truncated' => true, 'limit' => 2000], $named['window']);
+		self::assertArrayNotHasKey('windowNotice', $named);
 	}
 
 	/**
@@ -170,8 +195,8 @@ final class PrepareMeetingTest extends TestCase {
 			$policy,
 			$roster,
 			new MailCandidates($sources, $policy),
-			new CardCandidates($sources, $policy),
-			new FileCandidates($sources, $policy),
+			new CardCandidates($sources, $policy, $this->link()),
+			new FileCandidates($sources, $policy, $this->link()),
 		));
 	}
 

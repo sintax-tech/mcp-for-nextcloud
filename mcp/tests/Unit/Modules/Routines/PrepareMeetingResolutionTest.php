@@ -24,6 +24,7 @@ use PHPUnit\Framework\TestCase;
 
 /** Who becomes a local account, and which card is left out. */
 final class PrepareMeetingResolutionTest extends TestCase {
+	use BuildsCloudLink;
 	/**
 	 * Without people.read the address stays data. Assigned cards are not looked up.
 	 *
@@ -65,7 +66,7 @@ final class PrepareMeetingResolutionTest extends TestCase {
 			PreparationDouble::json([self::event(['links' => ['https://cloud.example/apps/deck/board/9/card/404']])]),
 			null,
 			static function (string $userId, array $arguments): array {
-				throw new ToolFailure('board refused 404');
+				return ['content' => [['type' => 'text', 'text' => 'You do not have permission']], 'isError' => true];
 			},
 		);
 		$dossier = $this->dossier($ports, ['calendar.read', 'deck.read'], null);
@@ -76,6 +77,57 @@ final class PrepareMeetingResolutionTest extends TestCase {
 		self::assertStringNotContainsString('board refused', $encoded);
 		self::assertStringNotContainsString('"omitted"', $encoded);
 		self::assertArrayNotHasKey('count', $dossier['sources']['deck']);
+	}
+
+	/**
+	 * Assignments the reader refuses do not become cards and do not mark the budget as cut.
+	 *
+	 * @return void
+	 */
+	public function testRefusedAssignmentsDoNotOccupyTheCardBudget(): void {
+		$search = $this->createMock(ISearch::class);
+		$search->method('search')->willReturn([['exact' => ['users' => [
+			['value' => ['shareWith' => 'pedro'], 'subline' => 'ada@example.com'],
+		]]], false]);
+		$ports = new PreparationDouble(
+			PreparationDouble::json([self::event()]),
+			null,
+			static fn (string $userId, array $arguments): array => ['content' => [['type' => 'text', 'text' => 'You do not have permission']], 'isError' => true],
+			null,
+			null,
+			static fn (string $userId, string $participantUid): array => range(1, 25),
+		);
+		$dossier = $this->dossier($ports, ['calendar.read', 'people.read', 'deck.read'], $search);
+		self::assertSame([], $dossier['sources']['deck']['candidates']);
+		self::assertFalse($dossier['sources']['deck']['truncated']);
+		self::assertStringNotContainsString('cardId', json_encode($dossier, JSON_THROW_ON_ERROR));
+	}
+
+	/**
+	 * The twenty-first card that the actor can read is omitted and the cut is marked. Its id is not echoed.
+	 *
+	 * @return void
+	 */
+	public function testTheCardBudgetCountsOnlyCardsTheActorCanRead(): void {
+		$search = $this->createMock(ISearch::class);
+		$search->method('search')->willReturn([['exact' => ['users' => [
+			['value' => ['shareWith' => 'pedro'], 'subline' => 'ada@example.com'],
+		]]], false]);
+		$ports = new PreparationDouble(
+			PreparationDouble::json([self::event()]),
+			null,
+			static fn (string $userId, array $arguments): array => PreparationDouble::json([
+				'id' => $arguments['cardId'], 'title' => 'Card', 'lastModified' => 1710000000,
+			]),
+			static fn (string $userId, array $arguments): array => PreparationDouble::json(['items' => []]),
+			null,
+			static fn (string $userId, string $participantUid): array => range(1, 21),
+		);
+		$dossier = $this->dossier($ports, ['calendar.read', 'people.read', 'deck.read'], $search);
+		self::assertSame(range(1, 20), array_column($dossier['sources']['deck']['candidates'], 'cardId'));
+		self::assertTrue($dossier['sources']['deck']['truncated']);
+		self::assertSame(1710000000, $dossier['sources']['deck']['candidates'][0]['lastModified']);
+		self::assertStringNotContainsString('"cardId": 21', json_encode($dossier, JSON_THROW_ON_ERROR));
 	}
 
 	/**
@@ -94,8 +146,8 @@ final class PrepareMeetingResolutionTest extends TestCase {
 			$policy,
 			new ParticipantRoster($policy, new AccountEmailMatch($search ?? $this->createMock(ISearch::class))),
 			new MailCandidates($sources, $policy),
-			new CardCandidates($sources, $policy),
-			new FileCandidates($sources, $policy),
+			new CardCandidates($sources, $policy, $this->link()),
+			new FileCandidates($sources, $policy, $this->link()),
 		));
 		$result = $tool->execute(['from' => '2026-04-08T00:00:00Z', 'to' => '2026-04-10T00:00:00Z'], new ToolContext('alice'));
 		$decoded = json_decode($result['content'][0]['text'], true);

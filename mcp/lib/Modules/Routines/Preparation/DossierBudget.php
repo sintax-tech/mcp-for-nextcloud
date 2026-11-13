@@ -14,10 +14,15 @@ final class DossierBudget {
 	public const LOOKBACK_DAYS = 30;
 	/** Most messages kept, after the exact address check. */
 	public const MAX_MESSAGES = 20;
-	/** Most cards read from explicit links. */
+	/** Most cards kept after the actor's own read succeeds. A refusal does not take a slot. */
 	public const MAX_CARDS = 20;
 	/** Most files read from explicit links. */
 	public const MAX_FILES = 20;
+	/**
+	 * References resolved while choosing those files. Twice the file budget, so a repeated link can collapse,
+	 * and no further reference is located.
+	 */
+	public const MAX_REFERENCE_LOOKUPS = 40;
 	/** Most participants taken from the event. */
 	public const MAX_PARTICIPANTS = 10;
 	/** Most mail folders one dossier treats as consulted. */

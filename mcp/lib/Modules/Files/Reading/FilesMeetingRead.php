@@ -51,6 +51,14 @@ final class FilesMeetingRead implements MeetingFileRead {
 		return $this->located->path($userId, $reference);
 	}
 
+	/** {@inheritDoc} */
+	public function placed(string $userId, string $reference): ?array {
+		if (!$this->allowed($userId)) {
+			throw new ToolFailure(WorkflowMessages::notAllowed(ReadFile::definition()->name));
+		}
+		return $this->located->placed($userId, $reference);
+	}
+
 	/**
 	 * @param string $userId the actor
 	 * @return bool whether the registry would let the actor call files_read now

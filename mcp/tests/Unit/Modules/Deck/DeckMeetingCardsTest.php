@@ -158,6 +158,51 @@ final class DeckMeetingCardsTest extends TestCase {
 	}
 
 	/**
+	 * assigned repeats the deck_read_card grant. A missing grant, a disabled app and a forbidden guest never reach it.
+	 *
+	 * @return void
+	 */
+	public function testAssignedRechecksTheGrantTheAppAndTheGuest(): void {
+		$assignments = new RecordingAssignments();
+		$cards = new DeckMeetingCards($this->access(), new CountingDeckDispatch(), $assignments);
+		self::assertSame([12], $cards->assigned('alice', 'pedro'));
+		self::assertSame([['alice', 'pedro']], $assignments->calls);
+		self::assertContains(['alice', 'deck'], $this->guestApps);
+
+		$this->granted = false;
+		$assignments = new RecordingAssignments();
+		$cards = new DeckMeetingCards($this->access(), new CountingDeckDispatch(), $assignments);
+		try {
+			$cards->assigned('alice', 'pedro');
+			self::fail('A denied grant reached the assignment lookup');
+		} catch (ToolFailure) {
+			self::assertSame([], $assignments->calls);
+		}
+
+		$this->granted = true;
+		$this->appEnabled = false;
+		$assignments = new RecordingAssignments();
+		$cards = new DeckMeetingCards($this->access(), new CountingDeckDispatch(), $assignments);
+		try {
+			$cards->assigned('alice', 'pedro');
+			self::fail('A disabled app reached the assignment lookup');
+		} catch (ToolFailure) {
+			self::assertSame([], $assignments->calls);
+		}
+
+		$this->appEnabled = true;
+		$this->guestAllowed = false;
+		$assignments = new RecordingAssignments();
+		$cards = new DeckMeetingCards($this->access(), new CountingDeckDispatch(), $assignments);
+		try {
+			$cards->assigned('alice', 'pedro');
+			self::fail('A forbidden guest reached the assignment lookup');
+		} catch (ToolFailure) {
+			self::assertSame([], $assignments->calls);
+		}
+	}
+
+	/**
 	 * The registry gate of the two Deck reads, with the grant, app and guest answers of this test.
 	 *
 	 * @return ToolAccess the real registry decision
@@ -197,6 +242,18 @@ final class CountingDeckDispatch implements DeckReadDispatch {
 			$this->writes++;
 		}
 		return ['name' => $name, 'arguments' => $arguments, 'userId' => $userId];
+	}
+}
+
+/** Records assigned and returns one card id. */
+final class RecordingAssignments implements AssignedCardLookup {
+	/** @var list<array{0: string, 1: string}> */
+	public array $calls = [];
+
+	/** {@inheritDoc} */
+	public function ids(string $userId, string $participantUid): array {
+		$this->calls[] = [$userId, $participantUid];
+		return [12];
 	}
 }
 

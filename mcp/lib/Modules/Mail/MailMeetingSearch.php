@@ -11,6 +11,9 @@ use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Mcp\Tools\Discovery\ToolAccess;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
+use OCA\Mcp\Modules\Mail\Integration\MailGateway;
+use OCA\Mcp\Modules\Mail\Integration\MailMessageGateway;
+use OCA\Mcp\Modules\Mail\Presentation\MailRows;
 use OCA\Mcp\Modules\Mail\Reading\MailSearchListing;
 use OCA\Mcp\Modules\Mail\Tools\SearchMessages;
 use OCA\Mcp\Platform\Meetings\MeetingMailRead;
@@ -26,10 +29,16 @@ final class MailMeetingSearch implements MeetingMailRead {
 	/**
 	 * @param ToolAccess $access the registry's own decision on grant, Guests and app
 	 * @param MailSearchListing $search the read of mail_search_messages
+	 * @param MailGateway $accounts the accounts of the actor
+	 * @param MailMessageGateway $messages the cached folders of those accounts
+	 * @param MailRows $rows the order the Mail reader shows, inbox first
 	 */
 	public function __construct(
 		private ToolAccess $access,
 		private MailSearchListing $search,
+		private MailGateway $accounts,
+		private MailMessageGateway $messages,
+		private MailRows $rows = new MailRows(),
 	) {
 	}
 
@@ -39,6 +48,55 @@ final class MailMeetingSearch implements MeetingMailRead {
 			throw new ToolFailure(WorkflowMessages::notAllowed(SearchMessages::definition()->name));
 		}
 		return $this->search->searchMessages(ArgumentValidator::validate(SearchMessages::definition()->inputSchema, $arguments), $userId);
+	}
+
+	/** {@inheritDoc} */
+	public function folders(string $userId): array {
+		if (!$this->allowed($userId)) {
+			throw new ToolFailure(WorkflowMessages::notAllowed(SearchMessages::definition()->name));
+		}
+		$ids = [];
+		$now = time();
+		foreach ($this->accounts->accounts($userId) as $account) {
+			$owned = $this->accounts->ownedAccount($userId, (int)$account['id']);
+			if ($owned === null) {
+				continue;
+			}
+			$shaped = [];
+			foreach ($this->messages->mailboxes($userId, $owned) as $mailbox) {
+				if (!$this->readable($mailbox, $now)) {
+					continue;
+				}
+				$shaped[] = $this->rows->mailbox([
+					'id' => (int)$mailbox->getId(),
+					'name' => (string)$mailbox->getName(),
+					'delimiter' => $mailbox->getDelimiter() === null ? null : (string)$mailbox->getDelimiter(),
+					'specialUse' => (string)($mailbox->getSpecialUse() ?? '[]'),
+					'unread' => null,
+					'total' => null,
+					'selectable' => true,
+				]);
+			}
+			foreach ($this->rows->sorted($shaped) as $folder) {
+				$ids[] = (int)$folder['id'];
+			}
+		}
+		return $ids;
+	}
+
+	/**
+	 * The same reasons {@see \OCA\Mcp\Modules\Mail\Locating\MailMessageScope} skips a folder for.
+	 *
+	 * @param object $mailbox a cached folder of an account the actor owns
+	 * @param int $now the current Unix time, for a synchronization lock
+	 * @return bool whether a search of this one folder would be able to read it
+	 */
+	private function readable(object $mailbox, int $now): bool {
+		$selectable = $mailbox->getSelectable();
+		if ($selectable !== null && !$selectable) {
+			return false;
+		}
+		return $mailbox->isCached() && !$mailbox->hasLocks($now);
 	}
 
 	/**

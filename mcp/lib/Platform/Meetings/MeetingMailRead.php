@@ -28,4 +28,16 @@ interface MeetingMailRead {
 	 * @throws \InvalidArgumentException on arguments mail_search_messages refuses
 	 */
 	public function search(string $userId, array $arguments): array;
+
+	/**
+	 * Folders a search may read, the inbox of each account first and then the path, in the order of the accounts.
+	 *
+	 * A folder the search would skip is not listed. The caller searches at most its own budget of these ids, one
+	 * mailbox_id at a time, so a larger mailbox never becomes a failure of the whole read.
+	 *
+	 * @param string $userId the actor
+	 * @return list<int> mailbox ids
+	 * @throws ToolFailure when the actor may not call mail_search_messages
+	 */
+	public function folders(string $userId): array;
 }

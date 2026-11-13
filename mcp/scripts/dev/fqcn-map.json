@@ -422,6 +422,7 @@
 		{"path":"lib/Platform/Meetings/MeetingMailRead.php","fqcn":"OCA\\Mcp\\Platform\\Meetings\\MeetingMailRead","target":"stays","owner":"Platform","ticket":null},
 		{"path":"lib/Platform/Meetings/MeetingDeckRead.php","fqcn":"OCA\\Mcp\\Platform\\Meetings\\MeetingDeckRead","target":"stays","owner":"Platform","ticket":null},
 		{"path":"lib/Platform/Meetings/MeetingFileRead.php","fqcn":"OCA\\Mcp\\Platform\\Meetings\\MeetingFileRead","target":"stays","owner":"Platform","ticket":null},
+		{"path":"lib/Platform/Meetings/LocalInstanceLink.php","fqcn":"OCA\\Mcp\\Platform\\Meetings\\LocalInstanceLink","target":"stays","owner":"Platform","ticket":null},
 		{"path":"lib/Platform/Meetings/PreparationSources.php","fqcn":"OCA\\Mcp\\Platform\\Meetings\\PreparationSources","target":"stays","owner":"Platform","ticket":null},
 		{"path":"lib/Modules/Routines/Meetings/CreateMeetingHandler.php","fqcn":"OCA\\Mcp\\Modules\\Routines\\Meetings\\CreateMeetingHandler","target":"stays","owner":"Modules\\Routines","ticket":null},
 		{"path":"lib/Modules/Routines/Meetings/CreateMeetingPreview.php","fqcn":"OCA\\Mcp\\Modules\\Routines\\Meetings\\CreateMeetingPreview","target":"stays","owner":"Modules\\Routines","ticket":null},

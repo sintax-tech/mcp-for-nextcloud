@@ -127,6 +127,44 @@ final class FilesMeetingReadTest extends TestCase {
 	}
 
 	/**
+	 * locate repeats the files_read grant. A guest and a missing grant never reach the locator.
+	 *
+	 * @return void
+	 */
+	public function testLocateRechecksTheGrantTheGuestAndDoesNotSearch(): void {
+		$lookup = new RecordingFileLookup();
+		$read = new FilesMeetingRead($this->access(), new CountingFileRead(), $lookup);
+		self::assertSame('/Notes/a.md', $read->locate('alice', '/f/15'));
+		self::assertSame([
+			'path' => '/Notes/a.md', 'id' => 15, 'mtime' => 1710000000, 'url' => 'https://cloud.example/f/15',
+		], $read->placed('alice', '/f/15'));
+		self::assertSame([['alice', '/f/15']], $lookup->paths);
+		self::assertSame([['alice', '/f/15']], $lookup->placed);
+		self::assertSame(['alice', 'files'], $this->guestApps[0]);
+
+		$this->granted = false;
+		$lookup = new RecordingFileLookup();
+		$read = new FilesMeetingRead($this->access(), new CountingFileRead(), $lookup);
+		try {
+			$read->locate('alice', '/f/15');
+			self::fail('A denied grant reached the locator');
+		} catch (ToolFailure) {
+			self::assertSame([], $lookup->paths);
+		}
+
+		$this->granted = true;
+		$this->guestAllowed = false;
+		$lookup = new RecordingFileLookup();
+		$read = new FilesMeetingRead($this->access(), new CountingFileRead(), $lookup);
+		try {
+			$read->placed('alice', '/f/15');
+			self::fail('A forbidden guest reached the locator');
+		} catch (ToolFailure) {
+			self::assertSame([], $lookup->placed);
+		}
+	}
+
+	/**
 	 * The registry gate of files_read, with the grant and guest answers of this test.
 	 *
 	 * @return ToolAccess the real registry decision
@@ -169,6 +207,26 @@ final class CountingFileRead implements FileTextListing {
 	}
 }
 
+/** Records locate and placed. It does not search by name. */
+final class RecordingFileLookup implements MeetingFileLookup {
+	/** @var list<array{0: string, 1: string}> */
+	public array $paths = [];
+	/** @var list<array{0: string, 1: string}> */
+	public array $placed = [];
+
+	/** {@inheritDoc} */
+	public function path(string $userId, string $reference): ?string {
+		$this->paths[] = [$userId, $reference];
+		return '/Notes/a.md';
+	}
+
+	/** {@inheritDoc} */
+	public function placed(string $userId, string $reference): ?array {
+		$this->placed[] = [$userId, $reference];
+		return ['path' => '/Notes/a.md', 'id' => 15, 'mtime' => 1710000000, 'url' => 'https://cloud.example/f/15'];
+	}
+}
+
 /** Resolves nothing. The files_read tests do not ask for a reference. */
 final class NoFileLookup implements MeetingFileLookup {
 	/**
@@ -177,6 +235,11 @@ final class NoFileLookup implements MeetingFileLookup {
 	 * @return null no path
 	 */
 	public function path(string $userId, string $reference): ?string {
+		return null;
+	}
+
+	/** {@inheritDoc} */
+	public function placed(string $userId, string $reference): ?array {
 		return null;
 	}
 }

@@ -10,22 +10,26 @@ namespace OCA\Mcp\Modules\Routines\Preparation;
 
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Platform\Meetings\LocalInstanceLink;
 use OCA\Mcp\Platform\Meetings\MeetingDeckRead;
 use OCA\Mcp\Platform\Meetings\PreparationSources;
 
 /**
  * Cards named by an explicit Deck URL or by an assignment of a resolved account, and the file paths their links carry.
  *
- * There is no search by title. A card the reader refuses is omitted, with no count of those refusals.
+ * There is no search by title. A card the reader refuses, including a Deck error result, is omitted with no id and
+ * no count. The budget counts only cards that read succeeded. A refusal does not set truncation.
  */
 final class CardCandidates {
 	/**
 	 * @param PreparationSources $sources the read ports
 	 * @param GrantPolicy $grants the actor's grants
+	 * @param LocalInstanceLink $local which absolute hosts belong to this instance
 	 */
 	public function __construct(
 		private PreparationSources $sources,
 		private GrantPolicy $grants,
+		private LocalInstanceLink $local,
 	) {
 	}
 
@@ -58,35 +62,33 @@ final class CardCandidates {
 	 * @return array{report: array<string, mixed>, paths: list<string>, references: list<string>} the Deck source and the linked files
 	 */
 	private function read(MeetingDeckRead $deck, string $userId, array $ids, array $reasons): array {
-		$truncated = count($ids) > DossierBudget::MAX_CARDS;
 		$kept = [];
 		$paths = [];
 		$references = [];
-		foreach (array_slice($ids, 0, DossierBudget::MAX_CARDS) as $id) {
-			try {
-				$card = ResultJson::object($deck->card($userId, ['cardId' => $id]));
-				$links = ResultJson::object($deck->links($userId, ['cardId' => $id]));
-			} catch (ToolFailure | \InvalidArgumentException) {
+		$truncated = false;
+		foreach ($ids as $id) {
+			$card = $this->opened($deck, $userId, $id);
+			if ($card === null) {
 				continue;
+			}
+			if (count($kept) >= DossierBudget::MAX_CARDS) {
+				$truncated = true;
+				break;
 			}
 			$kept[] = [
 				'source' => 'deck',
 				'reason' => $reasons[$id] ?? 'event_card',
 				'cardId' => $id,
-				'title' => mb_substr((string)($card['title'] ?? ''), 0, DossierBudget::EXCERPT),
+				'title' => mb_substr(trim((string)$card['title']), 0, DossierBudget::EXCERPT),
 				'url' => is_string($card['url'] ?? null) ? $card['url'] : '',
+				'lastModified' => (int)$card['lastModified'],
 			];
-			foreach ((array)($links['items'] ?? []) as $item) {
-				$path = $this->pathOf($item);
-				if ($path !== null) {
-					$paths[] = $path;
-				}
+			[$morePaths, $moreReferences] = $this->filesOf($deck, $userId, $id);
+			foreach ($morePaths as $path) {
+				$paths[] = $path;
 			}
-			$encoded = json_encode([$card, $links], JSON_INVALID_UTF8_SUBSTITUTE);
-			if (is_string($encoded)) {
-				foreach (ReferenceTexts::fileReferences($encoded) as $reference) {
-					$references[] = $reference;
-				}
+			foreach ($moreReferences as $reference) {
+				$references[] = $reference;
 			}
 		}
 		$reason = $kept === [] ? 'event_card' : (in_array('event_card', $reasons, true) ? 'event_card' : 'assigned');
@@ -100,6 +102,64 @@ final class CardCandidates {
 	/**
 	 * @param MeetingDeckRead $deck the Deck port
 	 * @param string $userId the actor
+	 * @param int $id the card id that was asked for
+	 * @return array<string, mixed>|null the card when the read succeeded with that id, a title and a modification time
+	 */
+	private function opened(MeetingDeckRead $deck, string $userId, int $id): ?array {
+		try {
+			$result = $deck->card($userId, ['cardId' => $id]);
+		} catch (ToolFailure | \InvalidArgumentException) {
+			return null;
+		}
+		if (($result['isError'] ?? false) === true) {
+			return null;
+		}
+		$card = ResultJson::object($result);
+		$title = trim((string)($card['title'] ?? ''));
+		$found = $card['id'] ?? null;
+		$modified = $card['lastModified'] ?? null;
+		$same = (is_int($found) || (is_string($found) && ctype_digit($found))) && (int)$found === $id;
+		if (!$same || $title === '' || !is_int($modified) && !(is_string($modified) && ctype_digit($modified))) {
+			return null;
+		}
+		$card['lastModified'] = (int)$modified;
+		return $card;
+	}
+
+	/**
+	 * @param MeetingDeckRead $deck the Deck port
+	 * @param string $userId the actor
+	 * @param int $id the card whose links were asked for
+	 * @return array{0: list<string>, 1: list<string>} paths and file references, empty when the link read is refused
+	 */
+	private function filesOf(MeetingDeckRead $deck, string $userId, int $id): array {
+		try {
+			$result = $deck->links($userId, ['cardId' => $id]);
+		} catch (ToolFailure | \InvalidArgumentException) {
+			return [[], []];
+		}
+		if (($result['isError'] ?? false) === true) {
+			return [[], []];
+		}
+		$links = ResultJson::object($result);
+		$paths = [];
+		foreach ((array)($links['items'] ?? []) as $item) {
+			$path = $this->pathOf($item);
+			if ($path !== null) {
+				$paths[] = $path;
+			}
+		}
+		$references = [];
+		$encoded = json_encode($links, JSON_INVALID_UTF8_SUBSTITUTE);
+		if (is_string($encoded)) {
+			$references = ReferenceTexts::fileReferences($encoded, $this->local);
+		}
+		return [$paths, $references];
+	}
+
+	/**
+	 * @param MeetingDeckRead $deck the Deck port
+	 * @param string $userId the actor
 	 * @param array<string, mixed> $event the chosen occurrence
 	 * @param list<array<string, mixed>> $participants resolved accounts
 	 * @return array{0: list<int>, 1: array<int, string>} card ids and the reason of each
@@ -107,14 +167,11 @@ final class CardCandidates {
 	private function ids(MeetingDeckRead $deck, string $userId, array $event, array $participants): array {
 		$ids = [];
 		$reasons = [];
-		foreach ((array)($event['cardIds'] ?? []) as $id) {
-			$this->add($ids, $reasons, $id, 'event_card');
-		}
 		foreach ((array)($event['links'] ?? []) as $link) {
 			if (!is_string($link)) {
 				continue;
 			}
-			foreach (ReferenceTexts::deckCardIds($link) as $id) {
+			foreach (ReferenceTexts::deckCardIds($link, $this->local) as $id) {
 				$this->add($ids, $reasons, $id, 'event_card');
 			}
 		}

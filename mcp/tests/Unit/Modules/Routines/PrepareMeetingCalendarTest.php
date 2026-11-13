@@ -13,7 +13,6 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry;
 use OCA\Mcp\Mcp\Tools\Discovery\ToolAccess;
-use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 use OCA\Mcp\Modules\Calendar\CalendarMeetingEvents;
 use OCA\Mcp\Modules\Calendar\Composing\DateInput;
@@ -49,6 +48,7 @@ use Psr\Log\NullLogger;
  * Mail, Deck and files answer through their ports. The public calendar tool is not this path.
  */
 final class PrepareMeetingCalendarTest extends TestCase {
+	use BuildsCloudLink;
 	private const ON = ['calendar.read', 'mail.messages', 'deck.read', 'files.read', 'people.read'];
 
 	private FakeCalendarStore $store;
@@ -97,6 +97,10 @@ final class PrepareMeetingCalendarTest extends TestCase {
 		self::assertStringNotContainsString('board refused', $encoded);
 		self::assertStringNotContainsString('"omitted"', $encoded);
 		self::assertStringNotContainsString('"failed"', $encoded);
+		self::assertStringNotContainsString('evil.example', $encoded);
+		self::assertStringNotContainsString('/secret/', $encoded);
+		self::assertSame(1710000000, $dossier['sources']['deck']['candidates'][0]['lastModified']);
+		self::assertSame('https://cloud.example/f/15', $dossier['sources']['files']['candidates'][0]['url']);
 		foreach ($ports->calls as [$name, $arguments]) {
 			self::assertArrayNotHasKey('body', $arguments);
 		}
@@ -145,8 +149,8 @@ final class PrepareMeetingCalendarTest extends TestCase {
 			$policy,
 			new ParticipantRoster($policy, new AccountEmailMatch($search)),
 			new MailCandidates($sources, $policy),
-			new CardCandidates($sources, $policy),
-			new FileCandidates($sources, $policy),
+			new CardCandidates($sources, $policy, $this->link()),
+			new FileCandidates($sources, $policy, $this->link()),
 		));
 		$result = $tool->execute(self::window(), new ToolContext('alice'));
 		$decoded = json_decode($result['content'][0]['text'], true);
@@ -158,7 +162,7 @@ final class PrepareMeetingCalendarTest extends TestCase {
 	 * @return PreparationDouble mail, Deck and files, including one card the actor cannot open
 	 */
 	private function ports(): PreparationDouble {
-		return new PreparationDouble(
+		$ports = new PreparationDouble(
 			['content' => []],
 			static fn (string $userId, array $arguments): array => PreparationDouble::json([
 				'messages' => [[
@@ -168,11 +172,11 @@ final class PrepareMeetingCalendarTest extends TestCase {
 				'folders' => [['mailboxId' => 1]],
 			]),
 			static function (string $userId, array $arguments): array {
-				if (($arguments['cardId'] ?? 0) === 99) {
-					throw new ToolFailure('board refused');
-				}
 				$id = (int)$arguments['cardId'];
-				return PreparationDouble::json(['title' => 'Card ' . $id, 'url' => 'https://cloud.example/apps/deck/board/4/card/' . $id]);
+				if ($id === 99) {
+					return ['content' => [['type' => 'text', 'text' => 'You do not have permission']], 'isError' => true];
+				}
+				return PreparationDouble::json(['id' => $id, 'title' => 'Card ' . $id, 'lastModified' => 1710000000, 'url' => 'https://cloud.example/apps/deck/board/4/card/' . $id]);
 			},
 			static fn (string $userId, array $arguments): array => PreparationDouble::json(['items' => [['path' => '/Notes/from-card.md']]]),
 			static fn (string $userId, array $arguments): array => ['content' => [
@@ -181,15 +185,23 @@ final class PrepareMeetingCalendarTest extends TestCase {
 			]],
 			static fn (string $userId, string $participantUid): array => $participantUid === 'pedro' ? [12] : [],
 			static function (string $userId, string $reference): ?string {
+				if (str_contains($reference, 'evil.example')) {
+					return '/secret/evil.md';
+				}
 				if (str_contains($reference, '/f/15')) {
 					return '/Notes/from-event.md';
 				}
 				if (str_contains($reference, '/remote.php/dav/files/')) {
 					return '/Notes/slide.md';
 				}
+				if (str_starts_with($reference, '/Notes/')) {
+					return $reference;
+				}
 				return null;
 			},
 		);
+		$ports->folders = [1];
+		return $ports;
 	}
 
 	/**
@@ -215,7 +227,7 @@ final class PrepareMeetingCalendarTest extends TestCase {
 		return "UID:$uid\nSUMMARY:Planning\nDTSTART:20260409T100000Z\nDTEND:20260409T110000Z\n"
 			. "ORGANIZER;CN=Ada:mailto:ada@example.com\nATTENDEE;CN=Pedro:mailto:pedro@example.com\n"
 			. "URL:https://cloud.example/apps/deck/board/4/card/8\n"
-			. "DESCRIPTION:Notes https://cloud.example/f/15 and https://cloud.example/apps/deck/board/9/card/99\n"
+			. "DESCRIPTION:Notes https://cloud.example/f/15 and https://cloud.example/apps/deck/board/9/card/99 and https://evil.example/f/123\n"
 			. "LOCATION:https://cloud.example/remote.php/dav/files/alice/Notes/slide.md\n"
 			. "ATTACH;ENCODING=BASE64;VALUE=BINARY:AAAA\n";
 	}

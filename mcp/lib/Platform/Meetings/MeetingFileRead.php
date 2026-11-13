@@ -38,4 +38,14 @@ interface MeetingFileRead {
 	 * @throws ToolFailure when the actor may not call files_read
 	 */
 	public function locate(string $userId, string $reference): ?string;
+
+	/**
+	 * The path, the file id, the modification time and the canonical URL of one reference.
+	 *
+	 * @param string $userId the actor
+	 * @param string $reference a file id, a file URL or a path already found on the event or a card
+	 * @return array{path: string, id: int, mtime: int, url: string}|null the file, or null when it is not one readable file
+	 * @throws ToolFailure when the actor may not call files_read
+	 */
+	public function placed(string $userId, string $reference): ?array;
 }

@@ -40,4 +40,27 @@ final class OccurrenceItems {
 		}
 		return $items;
 	}
+
+	/**
+	 * The companion block calendar_list_events adds when the window was cut.
+	 *
+	 * @param array<string, mixed> $result the answer of MeetingEventRead
+	 * @return array{truncated: bool, limit: int}|null that block, when the reader sent one
+	 */
+	public static function cut(array $result): ?array {
+		if (($result['isError'] ?? false) === true) {
+			return null;
+		}
+		foreach ((array)($result['content'] ?? []) as $block) {
+			if (!is_array($block)) {
+				continue;
+			}
+			$decoded = json_decode((string)($block['text'] ?? ''), true);
+			if (!is_array($decoded) || array_is_list($decoded) || !array_key_exists('truncated', $decoded) || isset($decoded['uid'], $decoded['start'])) {
+				continue;
+			}
+			return ['truncated' => $decoded['truncated'] === true, 'limit' => (int)($decoded['limit'] ?? 0)];
+		}
+		return null;
+	}
 }

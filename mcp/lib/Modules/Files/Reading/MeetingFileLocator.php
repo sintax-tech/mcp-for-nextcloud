@@ -10,38 +10,54 @@ namespace OCA\Mcp\Modules\Files\Reading;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
+use OCA\Mcp\Platform\Meetings\LocalInstanceLink;
 use OCP\Files\FileInfo;
 use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
 use OCP\Files\Node;
+use OCP\IURLGenerator;
 
 /**
  * Resolves a file id or a file link to one path in the actor's tree.
  *
  * Every alias has to pass the scope and the exclusion, and one of them has to be a readable file.
- * A link is not followed beyond that lookup. A Deck card URL is not a file.
+ * A link is not followed beyond that lookup. A Deck card URL is not a file. An absolute URL is accepted only
+ * when its host is this instance; a relative path is accepted as written.
  */
 final class MeetingFileLocator implements MeetingFileLookup {
+	/** Route of the canonical `/f/<id>` link. */
+	private const FILE_ROUTE = 'files.View.showFile';
+
 	/**
 	 * @param IRootFolder $root the actor's files
 	 * @param FilesAccessGuard $guard scope, aliases and tags
+	 * @param LocalInstanceLink $local which absolute hosts belong to this instance
+	 * @param IURLGenerator $urls the canonical file link
 	 */
 	public function __construct(
 		private IRootFolder $root,
 		private FilesAccessGuard $guard,
+		private LocalInstanceLink $local,
+		private IURLGenerator $urls,
 	) {
 	}
 
 	/** {@inheritDoc} */
 	public function path(string $userId, string $reference): ?string {
-		$this->guard->assertScopeReadable();
+		$placed = $this->placed($userId, $reference);
+		return $placed['path'] ?? null;
+	}
+
+	/** {@inheritDoc} */
+	public function placed(string $userId, string $reference): ?array {
+		if (!$this->local->accepts($reference)) {
+			return null;
+		}
 		$parsed = $this->parse($reference);
-		if ($parsed === null) {
+		if ($parsed === null || ($parsed['uid'] !== null && $parsed['uid'] !== $userId)) {
 			return null;
 		}
-		if ($parsed['uid'] !== null && $parsed['uid'] !== $userId) {
-			return null;
-		}
+		$this->guard->assertScopeReadable();
 		try {
 			$folder = $this->root->getUserFolder($userId);
 			return $parsed['id'] !== null ? $this->fromId($folder, $parsed['id']) : $this->fromPath($folder, (string)$parsed['path']);
@@ -110,9 +126,9 @@ final class MeetingFileLocator implements MeetingFileLookup {
 	/**
 	 * @param Folder $folder the actor's folder
 	 * @param int $id the file id
-	 * @return string|null the relative path of one readable file alias
+	 * @return array{path: string, id: int, mtime: int, url: string}|null one readable file alias
 	 */
-	private function fromId(Folder $folder, int $id): ?string {
+	private function fromId(Folder $folder, int $id): ?array {
 		if ($id <= 0) {
 			return null;
 		}
@@ -129,15 +145,19 @@ final class MeetingFileLocator implements MeetingFileLookup {
 				$chosen = $node;
 			}
 		}
-		return $chosen === null ? null : $this->relative($folder, $chosen);
+		if ($chosen === null) {
+			return null;
+		}
+		$path = $this->relative($folder, $chosen);
+		return $path === null ? null : $this->describe($chosen, $path);
 	}
 
 	/**
 	 * @param Folder $folder the actor's folder
 	 * @param string $path a path in that folder
-	 * @return string|null the normalized path when it is one readable file
+	 * @return array{path: string, id: int, mtime: int, url: string}|null the file when it is one readable file
 	 */
-	private function fromPath(Folder $folder, string $path): ?string {
+	private function fromPath(Folder $folder, string $path): ?array {
 		$normalized = PathGuard::normalize($path);
 		if ($normalized === '/') {
 			return null;
@@ -146,7 +166,22 @@ final class MeetingFileLocator implements MeetingFileLookup {
 		if (!$node instanceof Node || !$this->visible($node) || !$node->isReadable() || $this->isFolder($node)) {
 			return null;
 		}
-		return $normalized;
+		return $this->describe($node, $normalized);
+	}
+
+	/**
+	 * @param Node $node the readable file
+	 * @param string $path its user-relative path
+	 * @return array{path: string, id: int, mtime: int, url: string} the file the dossier may quote
+	 */
+	private function describe(Node $node, string $path): array {
+		$id = (int)$node->getId();
+		return [
+			'path' => $path,
+			'id' => $id,
+			'mtime' => (int)$node->getMTime(),
+			'url' => $this->urls->linkToRouteAbsolute(self::FILE_ROUTE, ['fileid' => $id]),
+		];
 	}
 
 	/**

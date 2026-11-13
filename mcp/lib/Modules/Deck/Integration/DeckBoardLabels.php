@@ -1,6 +1,7 @@
 <?php
 /*
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-FileCopyrightText: 2026 Roman Matkivskyy <roman91@live.it>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 declare(strict_types=1);
@@ -24,7 +25,7 @@ use OCA\Mcp\Modules\Deck\Presentation\DeckLabelMessages;
  * The labels of a board as a catalog: read, created, renamed, recoloured and deleted through Deck's LabelService.
  *
  * LabelService::create(title, color, boardId), update(id, title, color) and delete(id) have the same positional
- * parameters from Deck 1.15.0 to 1.19.0; each checks MANAGE on the board, refuses an archived board and a title the
+ * parameters in the pinned Deck versions for NC34 and NC35; each checks MANAGE on the board, refuses an archived board and a title the
  * board already has. Deleting a label also removes it from every card of the board, with no trash.
  */
 final class DeckBoardLabels implements DeckLabelCatalog {
@@ -42,6 +43,7 @@ final class DeckBoardLabels implements DeckLabelCatalog {
 	 */
 	public function boardLabelState(string $userId, int $boardId): array {
 		$boards = $this->services->bindUser($userId);
+		$this->requireApi();
 		$this->services->get(PermissionService::class)->checkPermission(null, $boardId, Acl::PERMISSION_MANAGE);
 		$board = null;
 		// BoardService::find() answers from the entity cache of the request; the listing queries anew.
@@ -56,15 +58,19 @@ final class DeckBoardLabels implements DeckLabelCatalog {
 		}
 		$mapper = $this->services->get(LabelMapper::class);
 		$usage = [];
+		$associations = [];
 		// One row per card association, deleted and archived cards of the board included.
 		foreach ($mapper->findAssignedLabelsForBoard($boardId) as $assigned) {
+			$associations[(int)$assigned->getId()][] = (int)$assigned->getCardId();
 			$usage[(int)$assigned->getId()] = ($usage[(int)$assigned->getId()] ?? 0) + 1;
 		}
 		ksort($usage);
+		foreach ($associations as &$ids) { sort($ids); }
+		unset($ids);
 		$owner = (string)$board->getOwner();
 		return ['boardId' => $boardId,
 			'board' => ['owner' => $owner, 'ownerDisplayName' => $this->services->displayName($owner), 'name' => (string)$board->getTitle()],
-			'labels' => $this->catalog($boardId), 'usage' => $usage];
+			'labels' => $this->catalog($boardId), 'usage' => $usage, 'associations' => $associations];
 	}
 
 	/**
@@ -84,7 +90,7 @@ final class DeckBoardLabels implements DeckLabelCatalog {
 		$state = $this->boardLabelState($userId, (int)$boardId);
 		foreach ($state['labels'] as $label) {
 			if ($label['id'] === $labelId) {
-				return $state + ['label' => $label, 'cards' => $state['usage'][$labelId] ?? 0];
+				return $state + ['label' => $label, 'cards' => $state['usage'][$labelId] ?? 0, 'cardIds' => $state['associations'][$labelId] ?? []];
 			}
 		}
 		throw new NoPermissionException('Permission denied');
@@ -100,6 +106,7 @@ final class DeckBoardLabels implements DeckLabelCatalog {
 	 */
 	public function stackLabels(string $userId, int $stackId): array {
 		$this->services->bindUser($userId);
+		$this->requireApi();
 		$permissions = $this->services->get(PermissionService::class);
 		$stacks = $this->services->get(StackMapper::class);
 		$permissions->checkPermission($stacks, $stackId, Acl::PERMISSION_EDIT);
@@ -171,7 +178,20 @@ final class DeckBoardLabels implements DeckLabelCatalog {
 	 */
 	public function assignCardLabel(string $userId, int $cardId, int $labelId): void {
 		$this->services->bindUser($userId);
+		(new DeckLabelGateway($this->services, new CardReferenceFilter($this->services)))->cardLabelState($userId, $cardId, [$labelId]);
 		$this->services->get(CardService::class)->assignLabel($cardId, $labelId);
+	}
+
+	/** @return void Refuses missing native label services or methods before any card or label can be written. */
+	private function requireApi(): void {
+		foreach (['create', 'update', 'delete'] as $method) {
+			if (!method_exists($this->services->get(LabelService::class), $method)) {
+				throw new NoPermissionException('Permission denied');
+			}
+		}
+		if (!method_exists($this->services->get(CardService::class), 'assignLabel')) {
+			throw new NoPermissionException('Permission denied');
+		}
 	}
 
 	/**

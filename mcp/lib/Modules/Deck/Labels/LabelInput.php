@@ -1,6 +1,7 @@
 <?php
 /*
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-FileCopyrightText: 2026 Roman Matkivskyy <roman91@live.it>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 declare(strict_types=1);
@@ -12,9 +13,9 @@ use OCA\Mcp\Modules\Deck\Structure\BoardBlueprint;
 /**
  * Titles and colours of board labels, and how a title sent by the model finds a label of the board.
  *
- * Deck refuses a second label with exactly the same title on a board. A title is matched here without regard to case,
- * as GitHub matches label names, so "Bug" finds "bug" instead of creating a near duplicate; when only case-insensitive
- * matches exist and there are several, the title is ambiguous and the request is refused.
+ * Deck checks title uniqueness through its native mapper. This helper finds exact matches first and also identifies
+ * possible case-only collisions. Card creation resolves only an exact title or explicit ID; a case-only alternative
+ * is refused rather than inventing an identity. Creation conservatively refuses any case-only collision.
  */
 final class LabelInput {
 	/** Deck's own limit for a label title (LabelServiceValidator max:100). */

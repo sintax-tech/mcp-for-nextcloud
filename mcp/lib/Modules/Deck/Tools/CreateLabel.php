@@ -1,6 +1,7 @@
 <?php
 /*
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-FileCopyrightText: 2026 Roman Matkivskyy <roman91@live.it>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 declare(strict_types=1);
@@ -27,18 +28,20 @@ final class CreateLabel implements \OCA\Mcp\Mcp\Tools\WriteTool {
 		return new \OCA\Mcp\Mcp\Tools\ToolDefinition(
 			CreateLabelHandler::TOOL,
 			'deck',
-			'edit',
+			'labels',
 			DeckLabelMessages::TOOL_CREATE_LABEL_DESCRIPTION . DeckRefusalMessages::CONFIRM_SHARED_DESCRIPTION,
 			DeckSchema::schema(
 				[
 					'boardId' => DeckSchema::integer(DeckRefusalMessages::PARAM_BOARD_ID),
 					'title' => DeckSchema::string(DeckLabelMessages::PARAM_LABEL_TITLE, 1, LabelInput::MAX_TITLE_LENGTH),
 					'color' => DeckSchema::string(DeckLabelMessages::PARAM_LABEL_COLOR, 6, 7),
-					'confirm_shared' => DeckSchema::confirmShared(),
+					\OCA\Mcp\Mcp\Confirmation\PlanState::ARGUMENT => \OCA\Mcp\Mcp\Confirmation\PlanState::property(),
+						'confirm_shared' => DeckSchema::confirmShared(),
 				],
 				['boardId', 'title'],
 			),
 			'deck',
+			destructiveHint: true,
 		);
 	}
 

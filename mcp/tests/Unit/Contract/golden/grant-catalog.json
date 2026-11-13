@@ -24,7 +24,8 @@
             "create",
             "edit",
             "move",
-            "delete"
+            "delete",
+            "labels"
         ],
         "contacts": [
             "read",

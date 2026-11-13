@@ -1,6 +1,7 @@
 <?php
 /*
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-FileCopyrightText: 2026 Roman Matkivskyy <roman91@live.it>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 declare(strict_types=1);
@@ -12,11 +13,11 @@ use OCA\Mcp\Mcp\Confirmation\PlanText;
 
 /** Descriptions, plans, refusals and warnings of the board label tools and of labels on a new card. */
 final class DeckLabelMessages {
-	public const TOOL_CREATE_LABEL_DESCRIPTION = 'Creates a label on a Deck board you manage (owner or manage permission), without assigning it to any card. The title (1 to 100 characters) must not match an existing label of the board, ignoring letter case; use deck_list_labels first. Without color, the same title always gets the same colour. Requires deck.edit. Preview first, then confirm: true. To create a card with labels in one step, use deck_create_card with labels.';
+	public const TOOL_CREATE_LABEL_DESCRIPTION = 'Creates a label on a Deck board you manage (owner or manage permission), without assigning it to any card. The title (1 to 100 characters) must not match an existing label of the board, ignoring letter case; use deck_list_labels first. Without color, the same title always gets the same colour. Requires deck.labels. Preview first, then confirm: true with the returned plan_state. To create a card with labels in one step, use deck_create_card with labels.';
 
-	public const TOOL_UPDATE_LABEL_DESCRIPTION = 'Renames or recolours a label of a Deck board you manage; every card carrying it shows the change. Send title, color or both. The new title must not match another label of the board, ignoring letter case. Requires deck.edit. Preview first, then confirm: true with the returned plan_state; a label changed in between needs a new approval.';
+	public const TOOL_UPDATE_LABEL_DESCRIPTION = 'Renames or recolours a label of a Deck board you manage; every card carrying it shows the change. Send title, color or both. The new title must not match another label of the board, ignoring letter case. Requires deck.labels. Preview first, then confirm: true with the returned plan_state; a label changed in between needs a new approval.';
 
-	public const TOOL_DELETE_LABEL_DESCRIPTION = 'Deletes a label from a Deck board you manage and removes it from every card that carries it, archived and deleted cards included. Deck has no trash for labels: this cannot be undone. Requires deck.delete. The plan shows how many cards carry the label. Preview first, then confirm: true with the returned plan_state; a label changed or assigned in between needs a new approval.';
+	public const TOOL_DELETE_LABEL_DESCRIPTION = 'Deletes a label from a Deck board you manage and removes it from every card that carries it, archived and deleted cards included. Deck has no trash for labels: this cannot be undone. Requires deck.labels. The plan shows how many cards carry the label. Preview first, then confirm: true with the returned plan_state; a label changed or assigned in between needs a new approval.';
 
 	public const PARAM_LABEL_ID = 'Id of the Deck label, from deck_list_labels.';
 
@@ -24,9 +25,9 @@ final class DeckLabelMessages {
 
 	public const PARAM_LABEL_COLOR = 'Label colour as six hexadecimal digits, with or without a leading #, for example ff7a66.';
 
-	public const PARAM_CARD_LABELS = 'Optional labels for the new card, at most 20, like the labels of a GitHub issue: a title (for example "bug" or "sev:medium") or the ID of a label of the board. A title matches an existing label ignoring letter case; a title the board does not have yet is created with a default colour, which needs deck.edit and permission to manage the board. The plan lists which labels are assigned and which are created.';
+	public const PARAM_CARD_LABELS = 'Optional labels for the new card, at most 20, like the labels of a GitHub issue: a title (for example "bug" or "sev:medium") or the ID of a label of the board. A title matches an existing label exactly; case-only differences require an explicit label ID; a title the board does not have yet is created with a default colour, which needs deck.labels and permission to manage the board. The plan lists which labels are assigned and which are created.';
 
-	public const GUIDE_NOTE = 'Board labels: deck_create_label, deck_update_label (deck.edit) and deck_delete_label (deck.delete) need permission to manage the board. A title matches ignoring letter case and two labels of a board cannot share one. Deleting a label removes it from every card and cannot be undone. deck_create_card accepts labels as titles or IDs: existing ones are assigned and missing titles are created on the board in the same confirmation (deck.edit and manage permission needed only for those), so a card can be filed like a GitHub issue with "bug" and "sev:medium". deck_edit_card_labels changes the labels of an existing card by ID.';
+	public const GUIDE_NOTE = 'Board labels: deck_create_label, deck_update_label (deck.labels) and deck_delete_label (deck.labels) need permission to manage the board. Titles resolve exactly; case-only alternatives require an explicit label ID. Deleting a label removes it from every card and cannot be undone. deck_create_card accepts labels as titles or IDs: existing ones are assigned and missing titles are created on the board in the same confirmation (deck.labels always required; native manage permission required for new labels), so a card can be filed like a GitHub issue with "bug" and "sev:medium". deck_edit_card_labels changes the labels of an existing card by ID.';
 
 	/** @return string Localized refusal for a board that is archived, deleted or not managed by the caller. */
 	public static function boardUnavailable(): string {
@@ -82,10 +83,10 @@ final class DeckLabelMessages {
 
 	/**
 	 * @param list<string> $titles Titles the board does not have.
-	 * @return string Localized refusal when the deck.edit grant is missing.
+	 * @return string Localized refusal when the deck.labels grant is missing.
 	 */
 	public static function creationNeedsGrant(array $titles): string {
-		return Translator::t('The board has no label %s, and creating labels needs the deck.edit permission of this app. Use existing labels (deck_list_labels) or ask an administrator.', [self::titles($titles)]);
+		return Translator::t('Using labels while creating a card requires the deck.labels permission of this app. Ask an administrator.', []);
 	}
 
 	/**
@@ -93,7 +94,7 @@ final class DeckLabelMessages {
 	 * @return string Localized warning after the card was created.
 	 */
 	public static function cardLabelsFailed(array $titles): string {
-		return Translator::t('The card was created, but the labels %s could not be created or assigned. Read the card and use deck_edit_card_labels before trying again.', [self::titles($titles)]);
+		return Translator::t('The card was created, but labels %s were not completed. Some writes may have succeeded; later steps were stopped. Read the board and card before making any new request.', [self::titles($titles)]);
 	}
 
 	/** @return string Localized warning when the card was only probably created. */

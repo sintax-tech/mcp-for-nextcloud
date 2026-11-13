@@ -1,6 +1,7 @@
 <?php
 /*
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-FileCopyrightText: 2026 Roman Matkivskyy <roman91@live.it>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 declare(strict_types=1);
@@ -27,7 +28,7 @@ final class DeleteLabel implements \OCA\Mcp\Mcp\Tools\WriteTool {
 		return new \OCA\Mcp\Mcp\Tools\ToolDefinition(
 			DeleteLabelHandler::TOOL,
 			'deck',
-			'delete',
+			'labels',
 			DeckLabelMessages::TOOL_DELETE_LABEL_DESCRIPTION . DeckRefusalMessages::CONFIRM_SHARED_DESCRIPTION,
 			DeckSchema::schema(
 				[

@@ -3037,7 +3037,7 @@
                     {
                         "name": "deck_create_card",
                         "title": "Create card in Deck",
-                        "description": "Creates a Deck card at the end of a list (stack), owned by you. Optional assignees are account IDs with access to the board; use users_search to resolve IDs. If assignment fails after creation, the created card is returned with a warning. If the resource belongs to somebody else, the agent MUST ask the user before sending confirm_shared: true.",
+                        "description": "Creates a Deck card at the end of a list (stack), owned by you. Optional assignees are account IDs with access to the board; use users_search to resolve IDs. Optional labels work like the labels of a GitHub issue: titles or label IDs of the board, existing ones are assigned and new titles are created on the board in the same confirmation. If assignment or labelling fails after creation, the created card is returned with a warning. If the resource belongs to somebody else, the agent MUST ask the user before sending confirm_shared: true.",
                         "inputSchema": {
                             "type": "object",
                             "properties": {
@@ -3073,6 +3073,26 @@
                                         "maxLength": 255
                                     },
                                     "description": "Optional list of account IDs to assign (maximum 100). Each account must exist and have access to the board. Omit or send an empty list to create without explicit assignments."
+                                },
+                                "labels": {
+                                    "type": "array",
+                                    "maxItems": 20,
+                                    "items": {
+                                        "type": [
+                                            "string",
+                                            "integer"
+                                        ],
+                                        "minLength": 1,
+                                        "maxLength": 100,
+                                        "minimum": 1
+                                    },
+                                    "description": "Optional labels for the new card, at most 20, like the labels of a GitHub issue: a title (for example \"bug\" or \"sev:medium\") or the ID of a label of the board. A title matches an existing label exactly; case-only differences require an explicit label ID; a title the board does not have yet is created with a default colour, which needs deck.labels and permission to manage the board. The plan lists which labels are assigned and which are created."
+                                },
+                                "plan_state": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
                                 },
                                 "confirm_shared": {
                                     "type": "boolean",
@@ -3714,6 +3734,148 @@
                         },
                         "annotations": {
                             "title": "Change Deck card archive state",
+                            "readOnlyHint": false,
+                            "destructiveHint": true,
+                            "idempotentHint": false,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
+                        "name": "deck_create_label",
+                        "title": "Create Deck label",
+                        "description": "Creates a label on a Deck board you manage (owner or manage permission), without assigning it to any card. The title (1 to 100 characters) must not match an existing label of the board, ignoring letter case; use deck_list_labels first. Without color, the same title always gets the same colour. Requires deck.labels. Preview first, then confirm: true with the returned plan_state. To create a card with labels in one step, use deck_create_card with labels. If the resource belongs to somebody else, the agent MUST ask the user before sending confirm_shared: true.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "boardId": {
+                                    "type": "integer",
+                                    "description": "Id of the Deck board."
+                                },
+                                "title": {
+                                    "type": "string",
+                                    "description": "Label title, 1 to 100 characters.",
+                                    "minLength": 1,
+                                    "maxLength": 100
+                                },
+                                "color": {
+                                    "type": "string",
+                                    "description": "Label colour as six hexadecimal digits, with or without a leading #, for example ff7a66.",
+                                    "minLength": 6,
+                                    "maxLength": 7
+                                },
+                                "plan_state": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                                },
+                                "confirm_shared": {
+                                    "type": "boolean",
+                                    "description": "Set to true only after the user has confirmed the change on somebody else's board."
+                                },
+                                "confirm": {
+                                    "type": "boolean",
+                                    "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "boardId",
+                                "title"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Create Deck label",
+                            "readOnlyHint": false,
+                            "destructiveHint": true,
+                            "idempotentHint": false,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
+                        "name": "deck_update_label",
+                        "title": "Change Deck label",
+                        "description": "Renames or recolours a label of a Deck board you manage; every card carrying it shows the change. Send title, color or both. The new title must not match another label of the board, ignoring letter case. Requires deck.labels. Preview first, then confirm: true with the returned plan_state; a label changed in between needs a new approval. If the resource belongs to somebody else, the agent MUST ask the user before sending confirm_shared: true.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "labelId": {
+                                    "type": "integer",
+                                    "description": "Id of the Deck label, from deck_list_labels."
+                                },
+                                "title": {
+                                    "type": "string",
+                                    "description": "Label title, 1 to 100 characters.",
+                                    "minLength": 1,
+                                    "maxLength": 100
+                                },
+                                "color": {
+                                    "type": "string",
+                                    "description": "Label colour as six hexadecimal digits, with or without a leading #, for example ff7a66.",
+                                    "minLength": 6,
+                                    "maxLength": 7
+                                },
+                                "confirm_shared": {
+                                    "type": "boolean",
+                                    "description": "Set to true only after the user has confirmed the change on somebody else's board."
+                                },
+                                "plan_state": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                                },
+                                "confirm": {
+                                    "type": "boolean",
+                                    "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "labelId"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Change Deck label",
+                            "readOnlyHint": false,
+                            "destructiveHint": true,
+                            "idempotentHint": false,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
+                        "name": "deck_delete_label",
+                        "title": "Delete Deck label",
+                        "description": "Deletes a label from a Deck board you manage and removes it from every card that carries it, archived and deleted cards included. Deck has no trash for labels: this cannot be undone. Requires deck.labels. The plan shows how many cards carry the label. Preview first, then confirm: true with the returned plan_state; a label changed or assigned in between needs a new approval. If the resource belongs to somebody else, the agent MUST ask the user before sending confirm_shared: true.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "labelId": {
+                                    "type": "integer",
+                                    "description": "Id of the Deck label, from deck_list_labels."
+                                },
+                                "confirm_shared": {
+                                    "type": "boolean",
+                                    "description": "Set to true only after the user has confirmed the change on somebody else's board."
+                                },
+                                "plan_state": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                                },
+                                "confirm": {
+                                    "type": "boolean",
+                                    "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "labelId"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Delete Deck label",
                             "readOnlyHint": false,
                             "destructiveHint": true,
                             "idempotentHint": false,

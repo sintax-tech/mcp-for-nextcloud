@@ -736,7 +736,7 @@
 	'use strict'
 
 	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
-	catalog.tiers.deck = [['read'], ['create', 'edit', 'move'], ['delete']]
+	catalog.tiers.deck = [['read'], ['create', 'edit', 'move'], ['delete', 'labels']]
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
 /* admin/access/levels/calendar.js */
@@ -1052,6 +1052,7 @@
 			"availability": t('mcp', 'check availability'),
 			"dismiss": t('mcp', 'dismiss notifications'),
 			"absence": t('mcp', 'set absence'),
+			"labels": t('mcp', 'manage board labels'),
 			"tags": t('mcp', 'manage tags'),
 			"comments": t('mcp', 'add comments'),
 			"prepare": t('mcp', 'prepare meetings'),
@@ -1075,6 +1076,7 @@
 			"availability.absence": t('mcp', 'Create or update own absence; starts off'),
 			"status.read": t('mcp', 'Read own configured status and message; starts off'),
 			"status.edit": t('mcp', 'Change own status and message; starts off'),
+			"deck.labels": t('mcp', 'Create, edit and permanently delete Deck board labels, and use labels when creating a card; starts off'),
 			"files.tags": t('mcp', 'Assign or unassign existing file tags; starts off'),
 			"files.comments": t('mcp', 'Add comments to accessible files; starts off'),
 			"routines.prepare": t('mcp', 'Prepare a meeting using permitted sources; starts off'),

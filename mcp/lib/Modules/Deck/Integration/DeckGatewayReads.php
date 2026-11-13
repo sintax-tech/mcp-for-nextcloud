@@ -86,6 +86,8 @@ interface DeckGatewayReads {
 	 * @return list<\OCA\Deck\Db\Label> Labels in the native mapper order.
 	 */
 	public function listLabels(string $userId, int $boardId, int $limit, int $offset): array;
+	/** @return DeckLabelCatalog The label catalog of boards, reads and writes, sharing this gateway's native context. */
+	public function boardLabels(): DeckLabelCatalog;
 	/**
 	 * Stacks of one board, with their cards embedded by the Deck service.
 	 *

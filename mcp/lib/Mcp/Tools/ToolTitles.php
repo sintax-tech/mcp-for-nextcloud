@@ -92,6 +92,9 @@ final class ToolTitles {
 			// Deck
 			'deck_list_boards' => Translator::t('List Deck boards'),
 			'deck_list_stacks' => Translator::t('List Deck lists'),
+			'deck_create_label' => Translator::t('Create Deck label'),
+			'deck_update_label' => Translator::t('Change Deck label'),
+			'deck_delete_label' => Translator::t('Delete Deck label'),
 			'deck_list_labels' => Translator::t('List Deck labels'),
 			'deck_edit_card_labels' => Translator::t('Change Deck card labels'),
 			'deck_list_cards' => Translator::t('List Deck cards'),

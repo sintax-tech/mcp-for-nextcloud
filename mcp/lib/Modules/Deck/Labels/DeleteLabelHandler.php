@@ -1,6 +1,7 @@
 <?php
 /*
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-FileCopyrightText: 2026 Roman Matkivskyy <roman91@live.it>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 declare(strict_types=1);
@@ -29,9 +30,10 @@ final class DeleteLabelHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 	/**
 	 * @param DeckGatewayInterface $gateway Deck access, the only door to the Deck app.
 	 * @param LoggerInterface $logger Receives tool name and exception class on failure.
+	 * @param \Closure():bool|null $granted Registered policy reader, checked again at the native effect.
 	 * @param Closure(): PlanState $stateFactory Lazy instance-secret fingerprint service.
 	 */
-	public function __construct(DeckGatewayInterface $gateway, LoggerInterface $logger, private Closure $stateFactory) {
+	public function __construct(DeckGatewayInterface $gateway, LoggerInterface $logger, private Closure $stateFactory, private ?Closure $granted = null) {
 		parent::__construct($gateway, $logger);
 	}
 
@@ -68,6 +70,7 @@ final class DeleteLabelHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 			try {
 				$this->afterWrite(
 					function () use ($userId, $labelId, $state): bool {
+						LabelGrantGate::require($this->granted);
 						$this->gateway->boardLabels()->deleteLabel($userId, $labelId, LabelSnapshot::of($state, true));
 						return true;
 					},

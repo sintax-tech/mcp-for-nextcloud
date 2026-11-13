@@ -95,6 +95,7 @@ final class DeckExecutionContext {
 			throw new InvalidArgumentException(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::errorDeckAppUnavailable());
 		}
 
+		$this->requireLabelGrant($name, $userId);
 		return $handler->handle($arguments, $userId);
 	}
 
@@ -110,6 +111,7 @@ final class DeckExecutionContext {
 			&& !$this->dependencyCapabilities()->dependencies()) {
 			throw new InvalidArgumentException(\OCA\Mcp\Modules\Deck\Presentation\DeckDependencyMessages::dependenciesUnavailable());
 		}
+		$this->requireLabelGrant($name, $userId);
 		try {
 			$plan = $operation();
 			$plan['timezone'] = $this->zones()?->forUser($userId)->getName();
@@ -143,6 +145,9 @@ final class DeckExecutionContext {
 			\OCA\Mcp\Modules\Deck\Reading\ListCardFilesHandler::TOOL, \OCA\Mcp\Modules\Deck\Deletion\UnlinkCardFileHandler::TOOL => $this->fileHandler($name, $userId),
 			\OCA\Mcp\Modules\Deck\Dependencies\AddCardDependencyHandler::TOOL, \OCA\Mcp\Modules\Deck\Dependencies\RemoveCardDependencyHandler::TOOL => $this->dependencyHandler($name, $userId),
 			EditCardLabelsHandler::TOOL => $this->labelHandler($userId),
+			\OCA\Mcp\Modules\Deck\Labels\CreateLabelHandler::TOOL => new \OCA\Mcp\Modules\Deck\Labels\CreateLabelHandler($this->gateway(), $this->logger, fn (array $args, string $uid): array => (new \OCA\Mcp\Modules\Deck\Labels\CreateLabelPreview($this))->plan($args, $uid), fn (): bool => $this->labelsGranted($userId)),
+			\OCA\Mcp\Modules\Deck\Labels\UpdateLabelHandler::TOOL => new \OCA\Mcp\Modules\Deck\Labels\UpdateLabelHandler($this->gateway(), $this->logger, fn (): PlanState => $this->planState(), fn (): bool => $this->labelsGranted($userId)),
+			\OCA\Mcp\Modules\Deck\Labels\DeleteLabelHandler::TOOL => new \OCA\Mcp\Modules\Deck\Labels\DeleteLabelHandler($this->gateway(), $this->logger, fn (): PlanState => $this->planState(), fn (): bool => $this->labelsGranted($userId)),
 			ListLabelsHandler::TOOL => new ListLabelsHandler($this->gateway(), $this->logger),
 			ListBoardsHandler::TOOL => new ListBoardsHandler($this->gateway(), $this->logger, $formatter),
 			ListStacksHandler::TOOL => new ListStacksHandler($this->gateway(), $this->logger, $formatter),
@@ -150,7 +155,7 @@ final class DeckExecutionContext {
 			FollowupCardsHandler::TOOL => new FollowupCardsHandler($this->gateway(), $this->logger, $formatter),
 			ReadCardDependenciesHandler::TOOL => new ReadCardDependenciesHandler($this->gateway(), $this->logger, $formatter),
 			ReadCardHandler::TOOL => new ReadCardHandler($this->gateway(), $this->logger, $formatter),
-			CreateCardHandler::TOOL => new CreateCardHandler($this->gateway(), $this->logger, $formatter),
+			CreateCardHandler::TOOL => new CreateCardHandler($this->gateway(), $this->logger, $formatter, fn (): bool => $this->labelsGranted($userId) && $this->container->get(GrantPolicy::class)->granted($userId, 'deck', 'create'), fn (array $args, string $uid): array => (new \OCA\Mcp\Modules\Deck\Creation\CreateCardPreview($this))->plan($args, $uid)),
 			EditCardHandler::TOOL => new EditCardHandler($this->gateway(), $this->logger, $formatter),
 			MoveCardHandler::TOOL => new MoveCardHandler($this->gateway(), $this->logger, $formatter),
 			DeleteCardHandler::TOOL => new DeleteCardHandler($this->gateway(), $this->logger, $formatter),
@@ -266,6 +271,16 @@ final class DeckExecutionContext {
 	/** @return \OCA\Mcp\Modules\Deck\Attachments\CardFiles lazy unchanged Files boundary */
 	public function files(): \OCA\Mcp\Modules\Deck\Attachments\CardFiles {
 		return $this->cardFiles ??= new \OCA\Mcp\Modules\Deck\Attachments\CardFiles($this->gateway(), $this->container->get(GrantPolicy::class), $this->container->get(FilesAccessGuard::class), $this->container->get(IRootFolder::class));
+	}
+	/** @param string $userId Caller UID. @return bool Whether labels were explicitly granted. */
+	public function labelsGranted(string $userId): bool {
+		return $this->container->get(GrantPolicy::class)->granted($userId, 'deck', 'labels');
+	}
+	/** @param string $name Tool being called. @param string $userId Caller UID. @return void */
+	private function requireLabelGrant(string $name, string $userId): void {
+		if (in_array($name, ['deck_create_label', 'deck_update_label', 'deck_delete_label'], true) && !$this->labelsGranted($userId)) {
+			throw new ToolFailure(\OCA\Mcp\Modules\Deck\Presentation\DeckLabelMessages::creationNeedsGrant([]));
+		}
 	}
 	/** @return PlanState unchanged lazy instance-secret service */
 	public function planState(): PlanState {

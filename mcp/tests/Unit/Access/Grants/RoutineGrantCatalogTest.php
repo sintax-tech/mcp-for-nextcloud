@@ -19,7 +19,7 @@ use PHPUnit\Framework\TestCase;
 final class RoutineGrantCatalogTest extends TestCase {
 	/** @var array<string,list<string>> Exact approved pairs; Mail saving belongs to MA-2. */
 	private const NEW_GRANTS = [
-		'mail' => ['save'],
+		'mail' => ['save'], 'deck' => ['labels'],
 		'files' => ['tags', 'comments'], 'calendar' => ['availability'],
 		'activity' => ['read'], 'notifications' => ['read', 'dismiss'],
 		'availability' => ['read', 'absence'], 'status' => ['read', 'edit'],

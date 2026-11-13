@@ -1,0 +1,20 @@
+{
+  "34": {
+    "deck": "1.18.0",
+    "files": {
+      "apps/deck/lib/Service/LabelService.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/deck/v1.18.0/lib/Service/LabelService.php",
+        "sha256": "afd804a6445bc7f00855fa7fba1159f03c7cb79c520d6b1b84fc8615879ec344"
+      }
+    }
+  },
+  "35": {
+    "deck": "1.19.0",
+    "files": {
+      "apps/deck/lib/Service/LabelService.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/deck/v1.19.0/lib/Service/LabelService.php",
+        "sha256": "afd804a6445bc7f00855fa7fba1159f03c7cb79c520d6b1b84fc8615879ec344"
+      }
+    }
+  }
+}

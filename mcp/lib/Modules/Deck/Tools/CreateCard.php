@@ -30,6 +30,13 @@ final class CreateCard implements \OCA\Mcp\Mcp\Tools\WriteTool {
 						'description' => \OCA\Mcp\Modules\Deck\Presentation\DeckSchema::string(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::PARAM_DESCRIPTION, 0, null, ''),
 						'duedate' => \OCA\Mcp\Modules\Deck\Presentation\DeckSchema::nullableString(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::PARAM_DUEDATE, null),
 						'assignees' => \OCA\Mcp\Modules\Deck\Presentation\DeckSchema::accountList(\OCA\Mcp\Modules\Deck\Presentation\DeckRefusalMessages::PARAM_ASSIGNEES),
+						'labels' => [
+							'type' => 'array',
+							'maxItems' => \OCA\Mcp\Modules\Deck\Labels\LabelInput::MAX_CARD_LABELS,
+							'items' => ['type' => ['string', 'integer'], 'minLength' => 1, 'maxLength' => \OCA\Mcp\Modules\Deck\Labels\LabelInput::MAX_TITLE_LENGTH, 'minimum' => 1],
+							'description' => \OCA\Mcp\Modules\Deck\Presentation\DeckLabelMessages::PARAM_CARD_LABELS,
+						],
+						\OCA\Mcp\Mcp\Confirmation\PlanState::ARGUMENT => \OCA\Mcp\Mcp\Confirmation\PlanState::property(),
 						'confirm_shared' => \OCA\Mcp\Modules\Deck\Presentation\DeckSchema::confirmShared(),
 					],
 					['stackId', 'title'],

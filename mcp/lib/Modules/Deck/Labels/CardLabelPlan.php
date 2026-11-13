@@ -1,6 +1,7 @@
 <?php
 /*
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-FileCopyrightText: 2026 Roman Matkivskyy <roman91@live.it>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 declare(strict_types=1);
@@ -17,7 +18,7 @@ use OCA\Mcp\Modules\Deck\Presentation\DeckLabelMessages;
  * The labels of a card about to be created, sent like the labels of a GitHub issue: titles or IDs.
  *
  * An ID must be a label of the board of the list. A title finds a label of that board ({@see LabelInput::matches()});
- * a title the board does not have is created with {@see LabelInput::defaultColor()}. Creating needs the deck.edit grant
+ * a title the board does not have is created with {@see LabelInput::defaultColor()}. Creating needs the deck.labels grant
  * and native MANAGE on the board, both checked before the card exists, so a refusal leaves nothing behind.
  */
 final class CardLabelPlan {
@@ -25,13 +26,19 @@ final class CardLabelPlan {
 	 * @param DeckGatewayInterface $gateway Deck access.
 	 * @param array<string, mixed> $arguments Validated deck_create_card arguments.
 	 * @param string $userId Authenticated caller.
-	 * @param Closure(): bool $mayCreate Whether the caller holds the deck.edit grant, asked only when needed.
+	 * @param Closure(): bool $mayCreate Whether the caller holds the deck.labels grant, required whenever the labels argument is present.
 	 * @return array{boardId: int, assign: list<array{id: int, boardId: int, title: string, color: string}>, create: list<array{title: string, color: string}>}|null
 	 *     Null when the call sends no labels.
 	 * @throws \Throwable When an item is invalid, unknown or ambiguous, or creation is not allowed.
 	 */
 	public static function prepare(DeckGatewayInterface $gateway, array $arguments, string $userId, Closure $mayCreate): ?array {
-		$requested = self::requested($arguments['labels'] ?? []);
+		if (!array_key_exists('labels', $arguments)) {
+			return null;
+		}
+		if (!$mayCreate()) {
+			throw new DeckRefusalException(DeckLabelMessages::creationNeedsGrant([]));
+		}
+		$requested = self::requested($arguments['labels']);
 		if ($requested === []) {
 			return null;
 		}
@@ -39,9 +46,6 @@ final class CardLabelPlan {
 		$plan = self::resolve($requested, $board['labels']);
 		if ($plan['create'] !== []) {
 			$titles = array_column($plan['create'], 'title');
-			if (!$mayCreate()) {
-				throw new DeckRefusalException(DeckLabelMessages::creationNeedsGrant($titles));
-			}
 			if (!$board['manage']) {
 				throw new DeckRefusalException(DeckLabelMessages::creationNeedsManage($titles));
 			}
@@ -59,12 +63,18 @@ final class CardLabelPlan {
 			throw new ArgumentValidationException('Invalid argument: labels', 'labels', DeckLabelMessages::errorCardLabels());
 		}
 		$out = [];
+		$folded = [];
 		foreach ($raw as $item) {
 			if (is_int($item) && $item > 0) {
 				$out['#' . $item] = $item;
 			} elseif (is_string($item)) {
 				$title = LabelInput::title($item, 'labels');
-				$out['t' . mb_strtolower($title)] ??= $title;
+				$key = mb_strtolower($title);
+				if (isset($folded[$key]) && $folded[$key] !== $title) {
+					throw new DeckRefusalException(DeckLabelMessages::titleAmbiguous($title));
+				}
+				$folded[$key] = $title;
+				$out['t' . $title] ??= $title;
 			} else {
 				throw new ArgumentValidationException('Invalid argument: labels', 'labels', DeckLabelMessages::errorCardLabels());
 			}
@@ -88,7 +98,7 @@ final class CardLabelPlan {
 				continue;
 			}
 			$matches = LabelInput::matches($catalog, $item);
-			if (count($matches) > 1) {
+			if (count($matches) > 1 || ($matches !== [] && $matches[0]['title'] !== $item)) {
 				throw new DeckRefusalException(DeckLabelMessages::titleAmbiguous($item));
 			}
 			if ($matches !== []) {

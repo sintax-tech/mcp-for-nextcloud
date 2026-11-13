@@ -87,6 +87,11 @@ final class NextcloudApiUsage {
 	public const POSITIONAL = [
 		'OCP\\IGroup::count' => [],
 		// BoardRecipientResolver authorizes the source before DeckRecipientDirectory reads complete native ACLs/readers.
+		'OCA\\Deck\\Db\\LabelMapper::findAssignedLabelsForBoard' => ['boardId'],
+		'OCA\\Deck\\Db\\LabelMapper::findBoardId' => ['id'],
+		'OCA\\Deck\\Service\\LabelService::create' => ['title', 'color', 'boardId'],
+		'OCA\\Deck\\Service\\LabelService::update' => ['id', 'title', 'color'],
+		'OCA\\Deck\\Service\\LabelService::delete' => ['id'],
 		'OCA\\Deck\\Db\\AclMapper::findAll' => ['boardId'],
 		'OCA\\Deck\\Service\\CirclesService::getCircle' => ['circleId'],
 		'OCA\\Circles\\Model\\Circle::getInheritedMembers' => ['detailed'],
@@ -289,6 +294,10 @@ final class NextcloudApiUsage {
 	 * @var array<string, array<string, string>> "Class::method" => parameter => why its default is right
 	 */
 	public const REVIEWED_TRAILING = [
+		'OCA\\Deck\\Db\\LabelMapper::findAssignedLabelsForBoard' => [
+			'limit' => 'null: complete deletion impact, including archived and deleted cards',
+			'offset' => '0: every association from the first row',
+		],
 		'OCP\\IGroup::count' => ['search' => '"": estimate the entire group; false/zero/subcounts do not replace post-load limits'],
 		'OCA\\Deck\\Db\\AclMapper::findAll' => [
 			'limit' => 'null: complete authorized board ACLs, bounded after loading',
@@ -571,6 +580,7 @@ final class NextcloudApiUsage {
 			'elsewhere' => [
 				'Modules/Deck/Integration/CardFormatter.php' => 'OCA\\Deck\\Db\\Board::getColor',
 				'Modules/Deck/Reading/ListLabelsHandler.php' => 'OCA\\Deck\\Db\\Label::getColor',
+				'Modules/Deck/Integration/DeckBoardLabels.php' => 'OCA\\Deck\\Db\\Label::getColor',
 				'Modules/Deck/Integration/DeckLabelGateway.php' => 'OCA\\Deck\\Db\\Label::getColor',
 			],
 		],

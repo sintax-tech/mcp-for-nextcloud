@@ -26,7 +26,7 @@ final class DeckDescriptions {
 		= 'Reads a Deck card with its description and dates.';
 
 	public const TOOL_CREATE_CARD_DESCRIPTION
-		= 'Creates a Deck card at the end of a list (stack), owned by you. Optional assignees are account IDs with access to the board; use users_search to resolve IDs. If assignment fails after creation, the created card is returned with a warning.';
+		= 'Creates a Deck card at the end of a list (stack), owned by you. Optional assignees are account IDs with access to the board; use users_search to resolve IDs. Optional labels work like the labels of a GitHub issue: titles or label IDs of the board, existing ones are assigned and new titles are created on the board in the same confirmation. If assignment or labelling fails after creation, the created card is returned with a warning.';
 
 	public const TOOL_EDIT_CARD_DESCRIPTION
 		= 'Edits the title, description, due date and assignees of a Deck card. Use assign and unassign (lists of account IDs; use users_search to resolve IDs) to change who is responsible for it. Use lastModified to avoid overwriting a concurrent edit. If an assignment fails midway, the result lists what was assigned, unassigned and failed; nothing is undone.';

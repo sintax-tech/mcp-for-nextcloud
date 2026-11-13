@@ -899,7 +899,8 @@
                                         "create": false,
                                         "edit": false,
                                         "move": false,
-                                        "delete": false
+                                        "delete": false,
+                                        "labels": false
                                     },
                                     "contacts": {
                                         "read": true,
@@ -1086,6 +1087,10 @@
                                                 "groupIds": []
                                             },
                                             "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "labels": {
                                                 "source": "default",
                                                 "groupIds": []
                                             }
@@ -1447,7 +1452,8 @@
                                         "create": false,
                                         "edit": false,
                                         "move": false,
-                                        "delete": false
+                                        "delete": false,
+                                        "labels": false
                                     },
                                     "contacts": {
                                         "read": true,
@@ -1634,6 +1640,10 @@
                                                 "groupIds": []
                                             },
                                             "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "labels": {
                                                 "source": "default",
                                                 "groupIds": []
                                             }
@@ -2322,7 +2332,8 @@
                                         "create": false,
                                         "edit": false,
                                         "move": false,
-                                        "delete": false
+                                        "delete": false,
+                                        "labels": false
                                     },
                                     "contacts": {
                                         "read": true,
@@ -2509,6 +2520,10 @@
                                                 "groupIds": []
                                             },
                                             "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "labels": {
                                                 "source": "default",
                                                 "groupIds": []
                                             }
@@ -2870,7 +2885,8 @@
                                         "create": false,
                                         "edit": false,
                                         "move": false,
-                                        "delete": false
+                                        "delete": false,
+                                        "labels": false
                                     },
                                     "contacts": {
                                         "read": true,
@@ -3057,6 +3073,10 @@
                                                 "groupIds": []
                                             },
                                             "delete": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "labels": {
                                                 "source": "default",
                                                 "groupIds": []
                                             }

@@ -381,11 +381,21 @@ class Label {
 	public function __construct(private array $fields = []) {}
 	public function getId(): int { return $this->fields['id'] ?? 0; }
 	public function getBoardId(): int { return $this->fields['boardId'] ?? 0; }
+	/** @return int Native association card identity. */
+	public function getCardId(): int { return $this->fields['cardId'] ?? 0; }
 	public function getTitle(): string { return $this->fields['title'] ?? ''; }
 	public function getColor(): string { return $this->fields['color'] ?? ''; }
 }
 class LabelMapper {
 	public function findAll(int $boardId, ?int $limit = null, int $offset = 0): array {
+		throw new \LogicException('Stub: expected a PHPUnit mock.');
+	}
+	/** One Label per card association of the board, as Deck v1.19.0 returns it. */
+	public function findAssignedLabelsForBoard(int $boardId, ?int $limit = null, int $offset = 0): array {
+		throw new \LogicException('Stub: expected a PHPUnit mock.');
+	}
+	/** @param int $id Label identity. @return int|null Native parent board. */
+	public function findBoardId(int $id): ?int {
 		throw new \LogicException('Stub: expected a PHPUnit mock.');
 	}
 }

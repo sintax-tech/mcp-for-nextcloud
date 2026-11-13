@@ -1,6 +1,7 @@
 <?php
 /*
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-FileCopyrightText: 2026 Roman Matkivskyy <roman91@live.it>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 declare(strict_types=1);
@@ -16,15 +17,16 @@ use Psr\Log\LoggerInterface;
  * Creates the missing labels of a new card on its board, then assigns every requested label to the card.
  *
  * Runs only after the card exists, so nothing here turns into an error that would invite creating the card again: a
- * write that throws is read back (the catalog for a label, the card for an assignment) and counted as done when the
- * state shows it, otherwise listed as failed in one warning. Nothing is undone.
+ * failed assignment is read back using its known label ID. A failed label creation remains uncertain, because a
+ * title cannot establish identity. An unconfirmed step stops subsequent writes and reports the retained partial state.
  */
 final class CardLabelWriter {
 	/**
 	 * @param DeckGatewayInterface $gateway Deck access.
 	 * @param LoggerInterface $logger Receives exception classes only.
+	 * @param \Closure():bool|null $granted Rechecks the labels grant before each native effect.
 	 */
-	public function __construct(private DeckGatewayInterface $gateway, private LoggerInterface $logger) {
+	public function __construct(private DeckGatewayInterface $gateway, private LoggerInterface $logger, private ?\Closure $granted = null) {
 	}
 
 	/**
@@ -40,21 +42,22 @@ final class CardLabelWriter {
 		$created = [];
 		$failed = [];
 		$warnings = [];
-		foreach ($plan['create'] as $new) {
+		foreach ($plan['create'] as $index => $new) {
 			$label = $this->attempt(
 				fn (): array => $this->gateway->boardLabels()->createLabel($userId, $plan['boardId'], $new['title'], $new['color']),
-				fn (): ?array => LabelInput::matches($this->gateway->boardLabels()->stackLabels($userId, $stackId)['labels'], $new['title'])[0] ?? null,
+				static fn (): ?array => null,
 				$warnings,
 			);
 			if ($label === null) {
-				$failed[] = $new['title'];
-				continue;
+				$failed = array_merge(array_column(array_slice($plan['create'], $index), 'title'), array_column($labels, 'title'));
+				$warnings[] = DeckLabelMessages::cardLabelsFailed($failed);
+				return ['labels' => [], 'created' => $created, 'warnings' => $warnings];
 			}
 			$created[] = $label;
 			$labels[] = $label;
 		}
 		$assigned = [];
-		foreach ($labels as $label) {
+		foreach ($labels as $index => $label) {
 			$done = $this->attempt(
 				function () use ($userId, $cardId, $label): bool {
 					$this->gateway->boardLabels()->assignCardLabel($userId, $cardId, $label['id']);
@@ -64,8 +67,8 @@ final class CardLabelWriter {
 				$warnings,
 			);
 			if ($done === null) {
-				$failed[] = $label['title'];
-				continue;
+				$failed = array_column(array_slice($labels, $index), 'title');
+				break;
 			}
 			$assigned[] = ['id' => $label['id'], 'title' => $label['title'], 'color' => $label['color']];
 		}
@@ -83,6 +86,9 @@ final class CardLabelWriter {
 	 */
 	private function attempt(callable $write, callable $verify, array &$warnings): mixed {
 		try {
+			if ($this->granted !== null && !($this->granted)()) {
+				return null;
+			}
 			return $write();
 		} catch (\Throwable $e) {
 			$this->logger->warning('MCP Deck label write failed after card creation ({exception})', ['exception' => $e::class]);

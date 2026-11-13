@@ -37,7 +37,7 @@ final class StatusRow {
 	 * @param object $entity native entity already loaded for this actor
 	 * @param string $actor authenticated owner the row must belong to
 	 * @return self copied fields
-	 * @throws PolicyUnavailable when the entity shape is not the pinned one
+	 * @throws PolicyUnavailable when the row is a backup or its shape is not the pinned one
 	 */
 	public static function from(object $entity, string $actor): self {
 		$status = $entity->getStatus();
@@ -47,7 +47,8 @@ final class StatusRow {
 		$custom = $entity->getCustomMessage();
 		$clearAt = $entity->getClearAt();
 		$messageTimestamp = $entity->getStatusMessageTimestamp();
-		if ($entity->getUserId() !== $actor || !is_string($status) || $status === '' || !is_int($timestamp)
+		if ($entity->getIsBackup() !== false || $entity->getUserId() !== $actor
+			|| !is_string($status) || $status === '' || !is_int($timestamp)
 			|| !is_bool($userDefined) || ($messageId !== null && !is_string($messageId))
 			|| ($custom !== null && !is_string($custom)) || ($clearAt !== null && !is_int($clearAt))
 			|| !is_int($messageTimestamp)) {

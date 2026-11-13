@@ -2082,7 +2082,7 @@ OC.L10N.register(
     "Your absence settings are unavailable." : "Suas configurações de ausência estão indisponíveis.",
     "Read own status" : "Ler meu status",
     "No status is configured." : "Nenhum status está configurado.",
-    "The status snapshot is unavailable." : "O snapshot de status está indisponível.",
+    "The status snapshot is unavailable." : "O status configurado está indisponível.",
     "In a meeting" : "Em uma reunião",
     "Commuting" : "Em deslocamento",
     "Out sick" : "Ausente por doença",

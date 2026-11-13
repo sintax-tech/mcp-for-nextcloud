@@ -106,6 +106,38 @@ final class StatusReadTest extends TestCase {
 		self::assertFalse($payload['expired']);
 	}
 
+	/** @return void a backup stored under this actor's id is refused and nothing is written */
+	public function testBackupRowIsRefusedWithoutWriting(): void {
+		$mapper = new CountingStatusMapper(row: new StoredStatusRow([
+			'userId' => '_bob', 'isBackup' => true, 'status' => 'dnd', 'statusTimestamp' => 10,
+			'userDefined' => true, 'messageId' => 'meeting', 'customMessage' => 'bob-secret',
+			'clearAt' => null, 'statusMessageTimestamp' => 10,
+		]));
+		$this->expectException(PolicyUnavailable::class);
+		try {
+			$this->read($mapper, 10, [], '_bob');
+		} finally {
+			self::assertSame([['_bob', false]], $mapper->reads);
+			self::assertSame(0, $mapper->writes);
+		}
+	}
+
+	/** @return void a row owned by someone else is refused and nothing is written */
+	public function testAnotherUsersRowIsRefusedWithoutWriting(): void {
+		$mapper = new CountingStatusMapper(row: new StoredStatusRow([
+			'userId' => 'bob', 'isBackup' => false, 'status' => 'online', 'statusTimestamp' => 10,
+			'userDefined' => false, 'messageId' => null, 'customMessage' => 'bob-secret',
+			'clearAt' => null, 'statusMessageTimestamp' => 0,
+		]));
+		$this->expectException(PolicyUnavailable::class);
+		try {
+			$this->read($mapper, 10);
+		} finally {
+			self::assertSame([['alice', false]], $mapper->reads);
+			self::assertSame(0, $mapper->writes);
+		}
+	}
+
 	/** @return void more than one row is a refusal and still writes nothing */
 	public function testMultipleRowsAreRefusedWithoutWriting(): void {
 		$mapper = new CountingStatusMapper(many: true);
@@ -136,9 +168,10 @@ final class StatusReadTest extends TestCase {
 	 * @param CountingStatusMapper $mapper stand-in reached by the real gateway
 	 * @param int $now clock used only for projection
 	 * @param array<string, mixed> $arguments ignored caller arguments
+	 * @param string $actor authenticated owner
 	 * @return array<string, mixed> decoded snapshot
 	 */
-	private function read(CountingStatusMapper $mapper, int $now, array $arguments = []): array {
+	private function read(CountingStatusMapper $mapper, int $now, array $arguments = [], string $actor = 'alice'): array {
 		$container = $this->createMock(ContainerInterface::class);
 		$container->expects(self::once())->method('get')->with(StatusSurface::MAPPER)->willReturn($mapper);
 		$time = $this->createMock(ITimeFactory::class);
@@ -148,7 +181,7 @@ final class StatusReadTest extends TestCase {
 			$time,
 			new StatusSnapshot(),
 		));
-		$result = $tool->execute($arguments, new ToolContext('alice'));
+		$result = $tool->execute($arguments, new ToolContext($actor));
 		self::assertArrayNotHasKey('isError', $result);
 		$payload = json_decode($result['content'][0]['text'], true);
 		self::assertIsArray($payload);
@@ -218,6 +251,11 @@ final class StoredStatusRow extends \OCA\UserStatus\Db\UserStatus {
 	/** @return bool stored user-defined flag */
 	public function getIsUserDefined(): bool {
 		return $this->fields['userDefined'];
+	}
+
+	/** @return bool whether the row is a backup of another user */
+	public function getIsBackup(): bool {
+		return $this->fields['isBackup'] ?? false;
 	}
 
 	/** @return string|null stored message id */

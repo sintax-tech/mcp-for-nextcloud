@@ -9,6 +9,7 @@ namespace OCA\Mcp\Modules\Talk\Reading;
 use OCA\Mcp\Modules\Talk\{Presentation\ActorNames, Failures\ConversationAccessException, Locating\ConversationResolver, Presentation\Messages, Integration\TalkServices, Integration\UnreadCounter, Integration\UnreadRoomView, Failures\TalkUnavailableException};
 use DateTimeInterface;
 use InvalidArgumentException;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
 use OCP\Comments\IComment;
 use Throwable;
@@ -143,18 +144,42 @@ class ConversationReader {
 		if ($limit < 1 || $limit > self::MAX_MESSAGES) {
 			throw new InvalidArgumentException(Messages::invalidLimit());
 		}
-		// Messages can carry attachments: an unreadable Files scope is the same 503 before the conversation is
-		// looked up, whatever it holds.
-		$this->references->assertAvailable($userId);
+		$this->assertReferencesAvailable($userId);
 
 		$conversation = $this->resolver->resolveForReading($userId, $token);
 		$chatManager = $this->talkServices->chatManager($userId);
 
+		return $this->project($userId, $conversation->token(), $chatManager->getHistory($conversation->room, -$limit, $limit, false));
+	}
+
+	/**
+	 * Refuses before any conversation is looked up when the Files scope of the reader cannot be resolved.
+	 *
+	 * Messages can carry attachments, so every read of messages asks this first: an unreadable scope is the same
+	 * answer whatever the conversation holds.
+	 *
+	 * @param string $userId Authenticated user
+	 * @return void
+	 * @throws PolicyUnavailable When the Files scope is unreadable
+	 */
+	public function assertReferencesAvailable(string $userId): void {
+		$this->references->assertAvailable($userId);
+	}
+
+	/**
+	 * Chat comments already read from Talk, as module messages in the order given.
+	 *
+	 * @param string $userId Authenticated user
+	 * @param string $token Conversation the comments belong to
+	 * @param iterable<IComment> $comments Chat comments as Talk returned them
+	 * @return list<array{id:string, type:string, text:?string, actorType:string, actorId:string, actorDisplayName:string, timestamp:int, parentId:?string, attachmentId:?int}>
+	 */
+	public function project(string $userId, string $token, iterable $comments): array {
 		$messages = [];
-		foreach ($chatManager->getHistory($conversation->room, -$limit, $limit, false) as $comment) {
+		foreach ($comments as $comment) {
 			$message = $this->normalizeMessage($comment);
 			// The card stays, with its type; only the id of a file the user may not reach is withheld.
-			$message['attachmentId'] = $this->references->attachmentId($userId, $conversation->token(), $message['attachmentId']);
+			$message['attachmentId'] = $this->references->attachmentId($userId, $token, $message['attachmentId']);
 			$messages[] = $message;
 		}
 

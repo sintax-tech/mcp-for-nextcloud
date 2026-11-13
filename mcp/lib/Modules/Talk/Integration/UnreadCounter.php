@@ -71,6 +71,24 @@ final class UnreadCounter {
 	}
 
 	/**
+	 * The read marker of a local conversation as Talk would report it, read without counting and without saving.
+	 *
+	 * @param object $room OCA\Talk\Room, unread
+	 * @param object $attendee OCA\Talk\Model\Attendee of the reader
+	 * @param object $chatManager OCA\Talk\Chat\ChatManager
+	 * @param string $userId authenticated reader
+	 * @param array{unreadMigration: int, unreadFirstMessage: int} $markers Talk's special read markers
+	 * @return int|null the stored marker, a legacy one converted in memory, or null when it cannot be read
+	 */
+	public function marker(object $room, object $attendee, object $chatManager, string $userId, array $markers): ?int {
+		try {
+			return $this->localLastRead($room, $attendee, $chatManager, $userId, $markers['unreadMigration']);
+		} catch (Throwable) {
+			return null;
+		}
+	}
+
+	/**
 	 * The read marker of a local conversation, converting the legacy marker in memory only.
 	 *
 	 * @param object $room OCA\Talk\Room

@@ -2069,6 +2069,9 @@ OC.L10N.register(
     "List own activity" : "Listar mi actividad",
     "Provide valid Activity filters and an activity ID from your own feed." : "Indica filtros válidos de Activity y un ID de actividad de tu propio feed.",
     "The Activity feed is unavailable." : "El feed de Activity no está disponible.",
-    "The Activity folder or file reference is unavailable." : "La carpeta o referencia de archivo de Activity no está disponible."
+    "The Activity folder or file reference is unavailable." : "La carpeta o referencia de archivo de Activity no está disponible.",
+    "Read unread Talk messages" : "Leer mensajes no leídos de Talk",
+    "This conversation is hosted on another server: its unread messages cannot be read here." : "Esta conversación está alojada en otro servidor: sus mensajes no leídos no se pueden leer aquí.",
+    "The read marker of this conversation could not be read." : "No se pudo leer el marcador de lectura de esta conversación."
     },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

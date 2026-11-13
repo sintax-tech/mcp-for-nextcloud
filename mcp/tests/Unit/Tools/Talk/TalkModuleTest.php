@@ -87,6 +87,7 @@ class TalkModuleTest extends TestCase {
 				'talk_send_batch' => 'reply',
 				'talk_create_group' => 'create',
 				'talk_list_unread' => 'read',
+				'talk_read_unread' => 'read',
 			],
 			array_column($this->module->definitions(), 'operation', 'name'),
 		);
@@ -124,6 +125,11 @@ class TalkModuleTest extends TestCase {
 		$this->assertSame(512, $schemas['talk_list_unread']['properties']['cursor']['maxLength']);
 		$this->assertStringContainsString('not frozen', $schemas['talk_list_unread']['properties']['cursor']['description']);
 		$this->assertArrayNotHasKey('confirm', $schemas['talk_list_unread']['properties']);
+		$this->assertSame(['conversation_token'], $schemas['talk_read_unread']['required']);
+		$this->assertSame(200, $schemas['talk_read_unread']['properties']['limit']['maximum']);
+		$this->assertSame(50, $schemas['talk_read_unread']['properties']['limit']['default']);
+		$this->assertSame(512, $schemas['talk_read_unread']['properties']['cursor']['maxLength']);
+		$this->assertArrayNotHasKey('confirm', $schemas['talk_read_unread']['properties']);
 		$this->assertSame(GroupCreator::MAX_PARTICIPANTS, $schemas['talk_create_group']['properties']['participants']['maxItems']);
 		// The account id goes through the same bound as a token, and the text through the same bound as a message.
 		$this->assertSame(64, $schemas['talk_message_user']['properties']['user']['maxLength']);
@@ -288,7 +294,7 @@ class TalkModuleTest extends TestCase {
 			$this->assertStringNotContainsString('approval_id', $descriptions[$name], $name);
 		}
 
-		foreach (['talk_list_conversations', 'talk_read_messages', 'talk_list_unread'] as $name) {
+		foreach (['talk_list_conversations', 'talk_read_messages', 'talk_list_unread', 'talk_read_unread'] as $name) {
 			$this->assertStringNotContainsString('confirm: true', $descriptions[$name], $name);
 		}
 	}

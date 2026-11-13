@@ -113,6 +113,7 @@ final class ToolTitles {
 			'talk_list_conversations' => Translator::t('List Talk conversations'),
 			'talk_list_unread' => Translator::t('List unread Talk conversations'),
 			'talk_read_messages' => Translator::t('Read Talk messages'),
+			'talk_read_unread' => Translator::t('Read unread Talk messages'),
 			'talk_reply' => Translator::t('Reply in Talk'),
 			'talk_attach_file' => Translator::t('Attach file in Talk'),
 			'talk_quote_file' => Translator::t('Quote file in Talk'),

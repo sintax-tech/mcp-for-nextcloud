@@ -111,6 +111,7 @@ final class NextcloudApiUsage {
 		'OCA\\Talk\\Chat\\ChatManager::addSystemMessage' => ['chat', 'participant', 'actorType', 'actorId', 'message', 'creationDateTime', 'sendNotifications'],
 		'OCA\\Talk\\Chat\\ChatManager::getParentComment' => ['chat', 'parentId'],
 		'OCA\\Talk\\Chat\\ChatManager::getHistory' => ['chat', 'offset', 'limit', 'includeLastKnown'],
+		'OCA\\Talk\\Chat\\ChatManager::waitForNewMessages' => ['chat', 'offset', 'limit', 'timeout', 'user', 'includeLastKnown', 'markNotificationsAsRead', 'threadId'],
 		'OCA\\Talk\\Chat\\ChatManager::getUnreadCount' => ['chat', 'lastReadMessage'],
 		'OCA\\Talk\\Chat\\ChatManager::getLastReadMessageFromLegacy' => ['chat', 'user'],
 		'OCA\\Talk\\Service\\RoomService::createConversation' => ['type', 'name', 'owner'],

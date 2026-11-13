@@ -42,7 +42,7 @@ use RuntimeException;
  *
  * Each Talk call that persists something (a lobby, a room name, a read marker, a session, a message, a room) is
  * counted before it answers, so a caller that swallows an exception cannot hide it. tearDown requires exactly the
- * writes a test expects: none for a read or a plan, and for a confirmed call the writes Talk's own controller makes,
+ * writes a test expects: none for a read, an unread read or a plan, and for a confirmed call the writes Talk's own controller makes,
  * the elapsed lobby opened first. The listings are covered the same way by ConversationReaderTest and
  * UnreadConversationsTest.
  */
@@ -55,6 +55,7 @@ final class TalkPlansWriteNothingTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 		PlanWriteSpy::$calls = [];
+		PlanChat::$forwardReads = [];
 		$this->group = new PlanRoom('grupo1234', 'Projeto', 2, 2, new DateTimeImmutable('-1 minute'));
 		$direct = new PlanRoom('direto1234', 'bob', 1);
 		$created = new PlanRoom('direto1234', '["alice","bob"]', 1);
@@ -71,6 +72,18 @@ final class TalkPlansWriteNothingTest extends TestCase {
 		$result = $this->module->call(TalkModule::TOOL_READ, ['conversation_token' => 'grupo1234', 'limit' => 5], 'alice');
 
 		$this->assertArrayNotHasKey('isError', $result);
+		$this->assertSame(2, $this->group->getLobbyState());
+	}
+
+	/** Both pages of the unread read, behind an elapsed lobby, write nothing and never ask Talk to notify. */
+	public function testReadingUnreadMessagesWritesNothing(): void {
+		$first = $this->module->call(TalkModule::TOOL_READ_UNREAD, ['conversation_token' => 'grupo1234', 'limit' => 1], 'alice');
+		$page = $first['structuredContent'] ?? json_decode($first['content'][0]['text'], true);
+		$second = $this->module->call(TalkModule::TOOL_READ_UNREAD, ['conversation_token' => 'grupo1234', 'limit' => 1, 'cursor' => $page['nextCursor']], 'alice');
+
+		$this->assertArrayNotHasKey('isError', $second, json_encode($second) ?: '');
+		$this->assertSame(5, $page['lastReadMessage']);
+		$this->assertSame([[5, 2, 0, null, false, false, 0], [10, 2, 0, null, false, false, 0]], PlanChat::$forwardReads);
 		$this->assertSame(2, $this->group->getLobbyState());
 	}
 
@@ -162,6 +175,7 @@ final class TalkPlansWriteNothingTest extends TestCase {
 		$talk->method('participantService')->willReturn(new PlanParticipants());
 		$talk->method('roomService')->willReturn(new PlanRooms($created));
 		$talk->method('chatManager')->willReturn(new PlanChat($comment));
+		$talk->method('unreadMarkers')->willReturn(['unreadMigration' => -1, 'unreadFirstMessage' => -2]);
 		$talk->method('conversationConstants')->willReturn([
 			'chatPermission' => 128, 'lobbyIgnorePermission' => 8, 'readOnly' => 1, 'changelogType' => 4,
 			'lobbyNone' => 0, 'actorUsers' => 'users', 'groupType' => 2,
@@ -274,6 +288,21 @@ final class PlanParticipant {
 	public function getPermissions(): int {
 		return 128;
 	}
+
+	public function getAttendee(): PlanAttendee {
+		return new PlanAttendee();
+	}
+}
+
+/** OCA\Talk\Model\Attendee of alice: the marker is read; setting it is counted. */
+final class PlanAttendee {
+	public function getLastReadMessage(): int {
+		return 5;
+	}
+
+	public function setLastReadMessage(int $id): void {
+		PlanWriteSpy::$calls[] = 'Attendee::setLastReadMessage';
+	}
 }
 
 /** OCA\Talk\Manager: the room lookup, a read. */
@@ -340,7 +369,20 @@ final class PlanRooms {
 
 /** OCA\Talk\Chat\ChatManager: history and parent are reads; messages are counted. */
 final class PlanChat {
+	/** @var list<array{int, int, int, mixed, bool, bool, int}> arguments of each forward read */
+	public static array $forwardReads = [];
+
 	public function __construct(private IComment $comment) {}
+
+	/** @return list<IComment> */
+	public function waitForNewMessages(object $room, int $offset, int $limit, int $timeout, ?IUser $user, bool $includeLastKnown, bool $markNotificationsAsRead = true, int $threadId = 0): array {
+		self::$forwardReads[] = [$offset, $limit, $timeout, $user, $includeLastKnown, $markNotificationsAsRead, $threadId];
+		if ($markNotificationsAsRead && $user !== null) {
+			PlanWriteSpy::$calls[] = 'Notifier::markMentionNotificationsRead';
+		}
+		// Message 10 and one more, so the first page carries a cursor.
+		return $offset < 10 ? [$this->comment, $this->comment] : [];
+	}
 
 	/** @return list<IComment> */
 	public function getHistory(object $room, int $offset, int $limit, bool $includeLastKnown): array {

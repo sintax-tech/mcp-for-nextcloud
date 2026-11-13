@@ -49,6 +49,7 @@ final class TalkTestModule {
 			\OCA\Mcp\Modules\Talk\Tools\SendBatch::class => new \OCA\Mcp\Modules\Talk\Tools\SendBatch(new \OCA\Mcp\Modules\Talk\Batching\SendBatchHandler($arguments, $resolver, $writer, $logger, $errors), new \OCA\Mcp\Modules\Talk\Batching\SendBatchPreview($arguments, $resolver, $preview, $errors)),
 			\OCA\Mcp\Modules\Talk\Tools\CreateGroup::class => new \OCA\Mcp\Modules\Talk\Tools\CreateGroup(new \OCA\Mcp\Modules\Talk\Groups\CreateGroupHandler($arguments, $groups, $errors), new \OCA\Mcp\Modules\Talk\Groups\CreateGroupPreview($arguments, $userConversations, $preview, $errors)),
 			\OCA\Mcp\Modules\Talk\Tools\ListUnread::class => new \OCA\Mcp\Modules\Talk\Tools\ListUnread(new \OCA\Mcp\Modules\Talk\Reading\ListUnreadHandler(self::unread($talkServices), $errors)),
+			\OCA\Mcp\Modules\Talk\Tools\ReadUnread::class => new \OCA\Mcp\Modules\Talk\Tools\ReadUnread(new \OCA\Mcp\Modules\Talk\Reading\ReadUnreadHandler(self::unreadMessages($talkServices, $resolver, $reader), $arguments, $errors)),
 		];
 		return new TalkModule(new class($tools) implements \Psr\Container\ContainerInterface {
 			/** @param array<class-string, \OCA\Mcp\Mcp\Tools\Tool> $tools prebuilt real tools with original test collaborators */
@@ -79,7 +80,36 @@ final class TalkTestModule {
 	 * a room double that answers getDisplayName fails the test, because that method writes.
 	 */
 	private static function unread(TalkServices $talkServices): \OCA\Mcp\Modules\Talk\Reading\UnreadConversations {
-		$doubles = new class('talk-unread-cursor') extends \PHPUnit\Framework\TestCase {
+		$doubles = self::doubles();
+		return new \OCA\Mcp\Modules\Talk\Reading\UnreadConversations(
+			$talkServices,
+			new \OCA\Mcp\Modules\Talk\Integration\UnreadRoomView($doubles->users(), 1),
+			new \OCA\Mcp\Modules\Talk\Integration\UnreadCounter($doubles->users()),
+			new \OCA\Mcp\Modules\Talk\Reading\UnreadCursor(new \OCA\Mcp\Mcp\Confirmation\PlanState($doubles->config())),
+		);
+	}
+
+	/**
+	 * The unread messages read with the supplied resolver and reader, the real counter and a signed cursor.
+	 *
+	 * @param TalkServices $talkServices original test collaborator
+	 * @param ConversationResolver $resolver original test collaborator
+	 * @param ConversationReader $reader original test collaborator
+	 */
+	private static function unreadMessages(TalkServices $talkServices, ConversationResolver $resolver, ConversationReader $reader): \OCA\Mcp\Modules\Talk\Reading\UnreadMessages {
+		$doubles = self::doubles();
+		return new \OCA\Mcp\Modules\Talk\Reading\UnreadMessages(
+			$talkServices,
+			$resolver,
+			$reader,
+			new \OCA\Mcp\Modules\Talk\Integration\UnreadCounter($doubles->users()),
+			new \OCA\Mcp\Modules\Talk\Reading\MessageCursor(new \OCA\Mcp\Mcp\Confirmation\PlanState($doubles->config())),
+		);
+	}
+
+	/** The cursor secret and the display-name lookup shared by the unread reads. */
+	private static function doubles(): object {
+		return new class('talk-unread-cursor') extends \PHPUnit\Framework\TestCase {
 			public function testHolder(): void {
 			}
 
@@ -95,11 +125,5 @@ final class TalkTestModule {
 				return $users;
 			}
 		};
-		return new \OCA\Mcp\Modules\Talk\Reading\UnreadConversations(
-			$talkServices,
-			new \OCA\Mcp\Modules\Talk\Integration\UnreadRoomView($doubles->users(), 1),
-			new \OCA\Mcp\Modules\Talk\Integration\UnreadCounter($doubles->users()),
-			new \OCA\Mcp\Modules\Talk\Reading\UnreadCursor(new \OCA\Mcp\Mcp\Confirmation\PlanState($doubles->config())),
-		);
 	}
 }

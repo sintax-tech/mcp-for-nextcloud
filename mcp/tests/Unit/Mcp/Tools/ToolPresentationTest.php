@@ -63,6 +63,7 @@ final class ToolPresentationTest extends TestCase {
 		'talk_list_conversations' => ['List Talk conversations', 'Listar conversas do Talk'],
 		'talk_list_unread' => ['List unread Talk conversations', 'Listar conversas não lidas do Talk'],
 		'talk_read_messages' => ['Read Talk messages', 'Ler mensagens do Talk'],
+		'talk_read_unread' => ['Read unread Talk messages', 'Ler mensagens não lidas do Talk'],
 		'talk_reply' => ['Reply in Talk', 'Responder no Talk'],
 		'talk_attach_file' => ['Attach file in Talk', 'Anexar arquivo no Talk'],
 		'talk_quote_file' => ['Quote file in Talk', 'Citar arquivo no Talk'],

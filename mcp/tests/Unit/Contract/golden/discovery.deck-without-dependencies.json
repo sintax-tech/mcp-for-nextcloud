@@ -3957,6 +3957,44 @@
                         }
                     },
                     {
+                        "name": "talk_read_unread",
+                        "title": "Read unread Talk messages",
+                        "description": "Reads the messages of a conversation that come after the read marker of the authenticated user, oldest first, up to 200 per page. lastReadMessage is the marker the read started from; 0 means no read is known, so the read starts at the oldest message Talk still keeps. nextCursor continues after the last message returned, so a marker moved meanwhile by another client neither skips nor repeats messages; it is null when no message remained at the time of the read. The pages are not a frozen mailbox: messages that arrive while paging show up in later pages, and a message deleted or expired by retention leaves no entry. A conversation hosted on another server is refused. It changes no state: it does not mark anything as read, does not change lastReadMessage, the session, the status, notifications or the lobby.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "conversation_token": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 30
+                                },
+                                "limit": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 200,
+                                    "default": 50
+                                },
+                                "cursor": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 512,
+                                    "description": "Continuation from the previous page of this same read: the same user and the same conversation. It continues after the last message already returned, even if the read marker moved meanwhile. Starting again from the current marker means calling without this cursor."
+                                }
+                            },
+                            "required": [
+                                "conversation_token"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "annotations": {
+                            "title": "Read unread Talk messages",
+                            "readOnlyHint": true,
+                            "destructiveHint": false,
+                            "idempotentHint": true,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
                         "name": "users_search",
                         "title": "Search people",
                         "description": "Searches the accounts of this Nextcloud by name, account ID or e-mail and returns their account IDs (uid), display names and, when available, e-mail; every row carries a type, \"user\" for an account. Use it whenever you are not sure of someone's account ID. Groups are not searched by default: to also match groups, pass include_groups: true, and the group rows come back with the type \"group\" and the group ID, which is what a share takes as group:<id>.",

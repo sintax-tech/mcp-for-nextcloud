@@ -2068,6 +2068,9 @@
     "List own activity" : "Eigene Aktivitäten auflisten",
     "Provide valid Activity filters and an activity ID from your own feed." : "Gib gültige Activity-Filter und eine Aktivitäts-ID aus deinem eigenen Feed an.",
     "The Activity feed is unavailable." : "Der Activity-Feed ist nicht verfügbar.",
-    "The Activity folder or file reference is unavailable." : "Der Activity-Ordner oder Dateiverweis ist nicht verfügbar."
+    "The Activity folder or file reference is unavailable." : "Der Activity-Ordner oder Dateiverweis ist nicht verfügbar.",
+    "Read unread Talk messages" : "Ungelesene Talk-Nachrichten lesen",
+    "This conversation is hosted on another server: its unread messages cannot be read here." : "Diese Unterhaltung liegt auf einem anderen Server: ihre ungelesenen Nachrichten können hier nicht gelesen werden.",
+    "The read marker of this conversation could not be read." : "Die Lesemarke dieser Unterhaltung konnte nicht gelesen werden."
 },"pluralForm" : "nplurals=2; plural=(n != 1);"
 }

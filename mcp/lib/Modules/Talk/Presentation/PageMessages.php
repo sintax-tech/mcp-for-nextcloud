@@ -10,7 +10,7 @@ namespace OCA\Mcp\Modules\Talk\Presentation;
 use OCA\Mcp\L10n\Translator;
 
 /**
- * Localized refusals of the paged Talk listing: page size and continuation cursor.
+ * Localized refusals of the paged Talk reads: page size, continuation cursor and the read marker they start from.
  *
  * Each method translates its unchanged English source text for the authenticated user through Translator.
  */
@@ -30,10 +30,26 @@ final class PageMessages {
 	}
 
 	/**
-	 * Opaque cursor for talk_list_unread that this tool did not issue.
+	 * Opaque cursor for talk_list_unread or talk_read_unread that the tool did not issue for this reader.
 	 * @return string The message in the language of the current user.
 	 */
 	public static function invalidCursor(): string {
 		return Translator::t('invalid cursor');
+	}
+
+	/**
+	 * A federated conversation keeps its messages on the server that hosts it, where this server cannot read them.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function federatedUnread(): string {
+		return Translator::t('This conversation is hosted on another server: its unread messages cannot be read here.');
+	}
+
+	/**
+	 * The read marker could not be read, so there is no starting point that would not skip or repeat messages.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function unreadableMarker(): string {
+		return Translator::t('The read marker of this conversation could not be read.');
 	}
 }

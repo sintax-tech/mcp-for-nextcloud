@@ -19,8 +19,8 @@ use OCA\Mcp\Modules\Talk\Presentation\PageMessages;
  * a conversation whose activity changes can move, and the next page only continues after that row.
  */
 final class UnreadCursor {
-	/** Longest cursor the schema and the decoder accept, the same bound a signed polls cursor uses. */
-	public const MAX_LENGTH = 512;
+	/** Longest cursor the schema and the decoder accept, shared with the other signed Talk cursors. */
+	public const MAX_LENGTH = CursorCodec::MAX_LENGTH;
 
 	/** Longest room token Talk publishes. */
 	private const MAX_TOKEN_LENGTH = 30;
@@ -44,17 +44,12 @@ final class UnreadCursor {
 		if ($cursor === null) {
 			return null;
 		}
-		$parts = explode('.', $cursor);
-		if ($cursor === '' || strlen($cursor) > self::MAX_LENGTH || count($parts) !== 3 || $parts[0] !== 'v1') {
-			throw new InvalidArgumentException(PageMessages::invalidCursor());
-		}
-		$raw = base64_decode(strtr($parts[1], '-_', '+/'), true);
-		$value = is_string($raw) ? json_decode($raw, true) : null;
+		[$value, $mac] = CursorCodec::unpack($cursor) ?? [null, ''];
 		$activity = is_array($value) ? ($value['a'] ?? null) : null;
 		$token = is_array($value) ? ($value['t'] ?? null) : null;
 		if (!is_array($value) || array_keys($value) !== ['a', 't'] || !is_int($activity) || $activity < 0
 			|| !is_string($token) || $token === '' || strlen($token) > self::MAX_TOKEN_LENGTH
-			|| !hash_equals($this->sign($activity, $token, $tool, $uid), $parts[2])) {
+			|| !hash_equals($this->sign($activity, $token, $tool, $uid), $mac)) {
 			throw new InvalidArgumentException(PageMessages::invalidCursor());
 		}
 		return ['activity' => $activity, 'token' => $token];
@@ -70,8 +65,7 @@ final class UnreadCursor {
 	 * @return string signed cursor
 	 */
 	public function next(int $activity, string $token, string $tool, string $uid): string {
-		$public = rtrim(strtr(base64_encode(json_encode(['a' => $activity, 't' => $token], JSON_THROW_ON_ERROR)), '+/', '-_'), '=');
-		return 'v1.' . $public . '.' . $this->sign($activity, $token, $tool, $uid);
+		return CursorCodec::pack(['a' => $activity, 't' => $token], $this->sign($activity, $token, $tool, $uid));
 	}
 
 	/**

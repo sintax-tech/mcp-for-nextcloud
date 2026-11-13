@@ -44,6 +44,30 @@ final class AbsenceNativeTest extends TestCase {
 		self::assertNotContains('insert', $this->calls(AbsenceSurface::ENTITY, 'toOutOufOfficeData', 64, 86));
 	}
 
+	/**
+	 * AbsenceService.php:44-106 createOrUpdateAbsence selects the actor's row (54), inserts or updates that entity and
+	 * dispatches Scheduled/Changed (67-81), then schedules start/end jobs with this absence's own ID as argument
+	 * (83-103). It never removes a job or deletes a row; that is clearAbsence (111-125), which this app never calls.
+	 *
+	 * @return void
+	 */
+	public function testTheNativeWriteSchedulesOnlyItsOwnJobsAndRemovesNothing(): void {
+		AbsenceNativeRig::load();
+		$calls = $this->calls(AbsenceSurface::SERVICE, 'createOrUpdateAbsence', 44, 106);
+		self::assertSame(['findByUserId', 'insert', 'dispatchTyped', 'update', 'scheduleAfter'], array_values(array_intersect(array_unique($calls),
+			['findByUserId', 'insert', 'update', 'delete', 'remove', 'removeById', 'dispatchTyped', 'scheduleAfter', 'add'])));
+		self::assertSame(['delete', 'remove'], array_values(array_intersect($this->calls(AbsenceSurface::SERVICE, 'clearAbsence', 111, 125), ['delete', 'remove'])));
+		$found = [];
+		foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(dirname(__DIR__, 4) . '/lib/Modules/Availability', \FilesystemIterator::SKIP_DOTS)) as $file) {
+			$tokens = array_values(array_filter(\PhpToken::tokenize((string)file_get_contents($file->getPathname())), static fn (\PhpToken $t): bool => !$t->isIgnorable()));
+			foreach ($tokens as $i => $token) {
+				if ($i > 0 && $token->is(T_STRING) && in_array($token->text, ['clearAbsence', 'remove', 'removeById', 'delete', 'deleteByUserId', 'insert', 'update'], true)
+					&& in_array($tokens[$i - 1]->id, [T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR], true)) $found[] = $file->getFilename() . ':' . $token->text;
+			}
+		}
+		self::assertSame([], $found, 'the module never clears an absence, removes jobs or writes rows itself');
+	}
+
 	/** @return void the surface accepts the pinned sources and refuses each broken signature */
 	public function testSurfaceFailsClosed(): void {
 		AbsenceNativeRig::load();
@@ -53,6 +77,10 @@ final class AbsenceNativeTest extends TestCase {
 		self::assertFalse((new AbsenceSurface(entity: AbsenceWithoutConversion::class))->supported());
 		self::assertFalse((new AbsenceSurface(timezone: TimezoneWithoutDefault::class))->supported());
 		self::assertFalse((new AbsenceSurface(service: 'OCA\\DAV\\Service\\Missing'))->supported());
+		self::assertTrue((new AbsenceSurface())->writable());
+		$readOnly = new AbsenceSurface(service: AbsenceServiceWithoutWrite::class);
+		self::assertTrue($readOnly->supported());
+		self::assertFalse($readOnly->writable(), 'the write key needs createOrUpdateAbsence with the verified signature');
 	}
 
 	/** @return void the probe needs DAV enabled for someone and the intact surface; no version comparison */
@@ -63,8 +91,9 @@ final class AbsenceNativeTest extends TestCase {
 			$apps->method('isEnabledForAnyone')->willReturn($enabled);
 			$apps->expects(self::never())->method('isEnabledForUser');
 			$probe = new AbsenceCapabilities($apps, $surface);
-			self::assertSame(['availability.native'], $probe->keys());
+			self::assertSame(['availability.native', 'availability.write'], $probe->keys());
 			self::assertSame($expected, $probe->supports('availability.native'));
+			self::assertSame($expected, $probe->supports('availability.write'));
 			self::assertFalse($probe->supports('availability.other'));
 		}
 	}
@@ -91,6 +120,14 @@ final class AbsenceNativeTest extends TestCase {
 
 /** Mutant: the read method is gone. */
 final class AbsenceServiceWithoutRead {
+	/** @param \OCP\User\IOutOfOfficeData $absence data @return bool never */
+	public function isInEffect(\OCP\User\IOutOfOfficeData $absence): bool { return false; }
+}
+
+/** Mutant: the read path only, without createOrUpdateAbsence. */
+final class AbsenceServiceWithoutWrite {
+	/** @param string $userId user @return \OCA\DAV\Db\Absence|null never */
+	public function getAbsence(string $userId): ?\OCA\DAV\Db\Absence { return null; }
 	/** @param \OCP\User\IOutOfOfficeData $absence data @return bool never */
 	public function isInEffect(\OCP\User\IOutOfOfficeData $absence): bool { return false; }
 }

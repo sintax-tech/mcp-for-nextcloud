@@ -1,0 +1,1055 @@
+{
+    "tool": "availability_set_absence",
+    "grant": "availability.absence",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "first_day": "2027-02-01",
+                "last_day": "2027-02-03",
+                "status": "Vacation",
+                "message": "Ask Carol"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Set own absence**\n\nChange your absence to **2027-02-01** – **2027-02-03**.\n\n- Time zone: America/Sao\\_Paulo, from 2027-02-01T00:00:00-03:00 to 2027-02-03T23:59:00-03:00.\n- Status: Vacation\n- Message: Ask Carol\n- Replacement: Carol (carol)\n- Currently: 2027-01-20 to 2027-01-22, status Away.\n- Nextcloud updates the out-of-office event of this absence in your personal calendar.\n- Nextcloud background jobs start the absence on the first day and end it after the last day; apps such as your user status react then.\n- This tool cannot remove an absence; it only creates or changes one.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "availability_set_absence",
+                            "title": "Set own absence",
+                            "action": "availability_set_absence",
+                            "mode": "update",
+                            "before": {
+                                "state": "upcoming",
+                                "first_day": "2027-01-20",
+                                "last_day": "2027-01-22",
+                                "timezone": "America/Sao_Paulo",
+                                "starts_at": "2027-01-20T00:00:00-03:00",
+                                "ends_at": "2027-01-22T23:59:00-03:00",
+                                "status": "Away",
+                                "message": "Back soon",
+                                "replacement": {
+                                    "user_id": "carol",
+                                    "display_name": "Carol"
+                                }
+                            },
+                            "after": {
+                                "first_day": "2027-02-01",
+                                "last_day": "2027-02-03",
+                                "timezone": "America/Sao_Paulo",
+                                "starts_at": "2027-02-01T00:00:00-03:00",
+                                "ends_at": "2027-02-03T23:59:00-03:00",
+                                "status": "Vacation",
+                                "message": "Ask Carol",
+                                "replacement": {
+                                    "user_id": "carol",
+                                    "display_name": "Carol"
+                                }
+                            },
+                            "recoverable": true,
+                            "notices": [
+                                "Nextcloud updates the out-of-office event of this absence in your personal calendar.",
+                                "Nextcloud background jobs start the absence on the first day and end it after the last day; apps such as your user status react then.",
+                                "This tool cannot remove an absence; it only creates or changes one."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "absences": {
+                    "101": {
+                        "userId": "bob",
+                        "firstDay": "2027-03-01",
+                        "lastDay": "2027-03-05",
+                        "status": "Away",
+                        "message": "Back soon",
+                        "replacementUserId": null,
+                        "replacementUserDisplayName": null,
+                        "id": 101
+                    },
+                    "102": {
+                        "userId": "alice",
+                        "firstDay": "2027-01-20",
+                        "lastDay": "2027-01-22",
+                        "status": "Away",
+                        "message": "Back soon",
+                        "replacementUserId": "carol",
+                        "replacementUserDisplayName": "Carol",
+                        "id": 102
+                    }
+                },
+                "jobs": [
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1803855600,
+                        "argument": {
+                            "id": 101,
+                            "event": "start"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1804287540,
+                        "argument": {
+                            "id": 101,
+                            "event": "end"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1800414000,
+                        "argument": {
+                            "id": 102,
+                            "event": "start"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1800673140,
+                        "argument": {
+                            "id": 102,
+                            "event": "end"
+                        }
+                    }
+                ],
+                "effects": [],
+                "events": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "first_day": "2027-02-01",
+                "last_day": "2027-02-03",
+                "status": "Vacation",
+                "message": "Ask Carol",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "absences": {
+                    "101": {
+                        "userId": "bob",
+                        "firstDay": "2027-03-01",
+                        "lastDay": "2027-03-05",
+                        "status": "Away",
+                        "message": "Back soon",
+                        "replacementUserId": null,
+                        "replacementUserDisplayName": null,
+                        "id": 101
+                    },
+                    "102": {
+                        "userId": "alice",
+                        "firstDay": "2027-01-20",
+                        "lastDay": "2027-01-22",
+                        "status": "Away",
+                        "message": "Back soon",
+                        "replacementUserId": "carol",
+                        "replacementUserDisplayName": "Carol",
+                        "id": 102
+                    }
+                },
+                "jobs": [
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1803855600,
+                        "argument": {
+                            "id": 101,
+                            "event": "start"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1804287540,
+                        "argument": {
+                            "id": 101,
+                            "event": "end"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1800414000,
+                        "argument": {
+                            "id": 102,
+                            "event": "start"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1800673140,
+                        "argument": {
+                            "id": 102,
+                            "event": "end"
+                        }
+                    }
+                ],
+                "effects": [],
+                "events": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "first_day": "2027-02-01",
+                "last_day": "2027-02-03",
+                "status": "Vacation",
+                "message": "Ask Carol",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Set own absence**\n\nChange your absence to **2027-02-01** – **2027-02-03**.\n\n- Time zone: America/Sao\\_Paulo, from 2027-02-01T00:00:00-03:00 to 2027-02-03T23:59:00-03:00.\n- Status: Vacation\n- Message: Ask Carol\n- Replacement: Carol (carol)\n- Currently: 2027-01-20 to 2027-01-22, status Away.\n- Nextcloud updates the out-of-office event of this absence in your personal calendar.\n- Nextcloud background jobs start the absence on the first day and end it after the last day; apps such as your user status react then.\n- This tool cannot remove an absence; it only creates or changes one.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "availability_set_absence",
+                            "title": "Set own absence",
+                            "action": "availability_set_absence",
+                            "mode": "update",
+                            "before": {
+                                "state": "upcoming",
+                                "first_day": "2027-01-20",
+                                "last_day": "2027-01-22",
+                                "timezone": "America/Sao_Paulo",
+                                "starts_at": "2027-01-20T00:00:00-03:00",
+                                "ends_at": "2027-01-22T23:59:00-03:00",
+                                "status": "Away",
+                                "message": "Back soon",
+                                "replacement": {
+                                    "user_id": "carol",
+                                    "display_name": "Carol"
+                                }
+                            },
+                            "after": {
+                                "first_day": "2027-02-01",
+                                "last_day": "2027-02-03",
+                                "timezone": "America/Sao_Paulo",
+                                "starts_at": "2027-02-01T00:00:00-03:00",
+                                "ends_at": "2027-02-03T23:59:00-03:00",
+                                "status": "Vacation",
+                                "message": "Ask Carol",
+                                "replacement": {
+                                    "user_id": "carol",
+                                    "display_name": "Carol"
+                                }
+                            },
+                            "recoverable": true,
+                            "notices": [
+                                "Nextcloud updates the out-of-office event of this absence in your personal calendar.",
+                                "Nextcloud background jobs start the absence on the first day and end it after the last day; apps such as your user status react then.",
+                                "This tool cannot remove an absence; it only creates or changes one."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "absences": {
+                    "101": {
+                        "userId": "bob",
+                        "firstDay": "2027-03-01",
+                        "lastDay": "2027-03-05",
+                        "status": "Away",
+                        "message": "Back soon",
+                        "replacementUserId": null,
+                        "replacementUserDisplayName": null,
+                        "id": 101
+                    },
+                    "102": {
+                        "userId": "alice",
+                        "firstDay": "2027-01-20",
+                        "lastDay": "2027-01-22",
+                        "status": "Away",
+                        "message": "Back soon",
+                        "replacementUserId": "carol",
+                        "replacementUserDisplayName": "Carol",
+                        "id": 102
+                    }
+                },
+                "jobs": [
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1803855600,
+                        "argument": {
+                            "id": 101,
+                            "event": "start"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1804287540,
+                        "argument": {
+                            "id": 101,
+                            "event": "end"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1800414000,
+                        "argument": {
+                            "id": 102,
+                            "event": "start"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1800673140,
+                        "argument": {
+                            "id": 102,
+                            "event": "end"
+                        }
+                    }
+                ],
+                "effects": [],
+                "events": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "arguments": {
+                "first_day": "2027-02-01",
+                "last_day": "2027-02-03",
+                "status": "Vacation",
+                "message": "Ask Carol",
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Set own absence**\n\nChange your absence to **2027-02-01** – **2027-02-03**.\n\n- Time zone: America/Sao\\_Paulo, from 2027-02-01T00:00:00-03:00 to 2027-02-03T23:59:00-03:00.\n- Status: Vacation\n- Message: Ask Carol\n- Replacement: Carol (carol)\n- Currently: 2027-01-20 to 2027-01-23, status Elsewhere.\n- Nextcloud updates the out-of-office event of this absence in your personal calendar.\n- Nextcloud background jobs start the absence on the first day and end it after the last day; apps such as your user status react then.\n- This tool cannot remove an absence; it only creates or changes one.\n\n### Warnings\n\n- Your absence or its replacement changed since the plan. Review this new plan before confirming again.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "availability_set_absence",
+                            "title": "Set own absence",
+                            "action": "availability_set_absence",
+                            "mode": "update",
+                            "before": {
+                                "state": "upcoming",
+                                "first_day": "2027-01-20",
+                                "last_day": "2027-01-23",
+                                "timezone": "America/Sao_Paulo",
+                                "starts_at": "2027-01-20T00:00:00-03:00",
+                                "ends_at": "2027-01-23T23:59:00-03:00",
+                                "status": "Elsewhere",
+                                "message": "Changed by another client",
+                                "replacement": {
+                                    "user_id": "carol",
+                                    "display_name": "Carol"
+                                }
+                            },
+                            "after": {
+                                "first_day": "2027-02-01",
+                                "last_day": "2027-02-03",
+                                "timezone": "America/Sao_Paulo",
+                                "starts_at": "2027-02-01T00:00:00-03:00",
+                                "ends_at": "2027-02-03T23:59:00-03:00",
+                                "status": "Vacation",
+                                "message": "Ask Carol",
+                                "replacement": {
+                                    "user_id": "carol",
+                                    "display_name": "Carol"
+                                }
+                            },
+                            "recoverable": true,
+                            "notices": [
+                                "Nextcloud updates the out-of-office event of this absence in your personal calendar.",
+                                "Nextcloud background jobs start the absence on the first day and end it after the last day; apps such as your user status react then.",
+                                "This tool cannot remove an absence; it only creates or changes one."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#2>",
+                            "warnings": [
+                                {
+                                    "message": "Your absence or its replacement changed since the plan. Review this new plan before confirming again."
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "state": {
+                "absences": {
+                    "101": {
+                        "userId": "bob",
+                        "firstDay": "2027-03-01",
+                        "lastDay": "2027-03-05",
+                        "status": "Away",
+                        "message": "Back soon",
+                        "replacementUserId": null,
+                        "replacementUserDisplayName": null,
+                        "id": 101
+                    },
+                    "102": {
+                        "userId": "alice",
+                        "firstDay": "2027-01-20",
+                        "lastDay": "2027-01-23",
+                        "status": "Elsewhere",
+                        "message": "Changed by another client",
+                        "replacementUserId": "carol",
+                        "replacementUserDisplayName": "Carol",
+                        "id": 102
+                    }
+                },
+                "jobs": [
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1803855600,
+                        "argument": {
+                            "id": 101,
+                            "event": "start"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1804287540,
+                        "argument": {
+                            "id": 101,
+                            "event": "end"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1800414000,
+                        "argument": {
+                            "id": 102,
+                            "event": "start"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1800759540,
+                        "argument": {
+                            "id": 102,
+                            "event": "end"
+                        }
+                    }
+                ],
+                "effects": [
+                    "mapper.update",
+                    "events.dispatchTyped",
+                    "jobs.scheduleAfter",
+                    "jobs.scheduleAfter"
+                ],
+                "events": [
+                    [
+                        "OCP\\User\\Events\\OutOfOfficeChangedEvent",
+                        "alice",
+                        "102"
+                    ]
+                ]
+            }
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "first_day": "2027-02-01",
+                "last_day": "2027-02-03",
+                "status": "Vacation",
+                "message": "Ask Carol"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Set own absence**\n\nChange your absence to **2027-02-01** – **2027-02-03**.\n\n- Time zone: America/Sao\\_Paulo, from 2027-02-01T00:00:00-03:00 to 2027-02-03T23:59:00-03:00.\n- Status: Vacation\n- Message: Ask Carol\n- Replacement: Carol (carol)\n- Currently: 2027-01-20 to 2027-01-23, status Elsewhere.\n- Nextcloud updates the out-of-office event of this absence in your personal calendar.\n- Nextcloud background jobs start the absence on the first day and end it after the last day; apps such as your user status react then.\n- This tool cannot remove an absence; it only creates or changes one.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user and repeat the same call with confirm: true and the plan\\_state only after they agree.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "availability_set_absence",
+                            "title": "Set own absence",
+                            "action": "availability_set_absence",
+                            "mode": "update",
+                            "before": {
+                                "state": "upcoming",
+                                "first_day": "2027-01-20",
+                                "last_day": "2027-01-23",
+                                "timezone": "America/Sao_Paulo",
+                                "starts_at": "2027-01-20T00:00:00-03:00",
+                                "ends_at": "2027-01-23T23:59:00-03:00",
+                                "status": "Elsewhere",
+                                "message": "Changed by another client",
+                                "replacement": {
+                                    "user_id": "carol",
+                                    "display_name": "Carol"
+                                }
+                            },
+                            "after": {
+                                "first_day": "2027-02-01",
+                                "last_day": "2027-02-03",
+                                "timezone": "America/Sao_Paulo",
+                                "starts_at": "2027-02-01T00:00:00-03:00",
+                                "ends_at": "2027-02-03T23:59:00-03:00",
+                                "status": "Vacation",
+                                "message": "Ask Carol",
+                                "replacement": {
+                                    "user_id": "carol",
+                                    "display_name": "Carol"
+                                }
+                            },
+                            "recoverable": true,
+                            "notices": [
+                                "Nextcloud updates the out-of-office event of this absence in your personal calendar.",
+                                "Nextcloud background jobs start the absence on the first day and end it after the last day; apps such as your user status react then.",
+                                "This tool cannot remove an absence; it only creates or changes one."
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user and repeat the same call with confirm: true and the plan_state only after they agree.",
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "absences": {
+                    "101": {
+                        "userId": "bob",
+                        "firstDay": "2027-03-01",
+                        "lastDay": "2027-03-05",
+                        "status": "Away",
+                        "message": "Back soon",
+                        "replacementUserId": null,
+                        "replacementUserDisplayName": null,
+                        "id": 101
+                    },
+                    "102": {
+                        "userId": "alice",
+                        "firstDay": "2027-01-20",
+                        "lastDay": "2027-01-23",
+                        "status": "Elsewhere",
+                        "message": "Changed by another client",
+                        "replacementUserId": "carol",
+                        "replacementUserDisplayName": "Carol",
+                        "id": 102
+                    }
+                },
+                "jobs": [
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1803855600,
+                        "argument": {
+                            "id": 101,
+                            "event": "start"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1804287540,
+                        "argument": {
+                            "id": 101,
+                            "event": "end"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1800414000,
+                        "argument": {
+                            "id": 102,
+                            "event": "start"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1800759540,
+                        "argument": {
+                            "id": 102,
+                            "event": "end"
+                        }
+                    }
+                ],
+                "effects": [
+                    "mapper.update",
+                    "events.dispatchTyped",
+                    "jobs.scheduleAfter",
+                    "jobs.scheduleAfter"
+                ],
+                "events": [
+                    [
+                        "OCP\\User\\Events\\OutOfOfficeChangedEvent",
+                        "alice",
+                        "102"
+                    ]
+                ]
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "first_day": "2027-02-01",
+                "last_day": "2027-02-03",
+                "status": "Vacation",
+                "message": "Ask Carol",
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"saved\": true,\n    \"mode\": \"update\",\n    \"configured\": true,\n    \"absence\": {\n        \"state\": \"upcoming\",\n        \"first_day\": \"2027-02-01\",\n        \"last_day\": \"2027-02-03\",\n        \"timezone\": \"America/Sao_Paulo\",\n        \"starts_at\": \"2027-02-01T00:00:00-03:00\",\n        \"ends_at\": \"2027-02-03T23:59:00-03:00\",\n        \"status\": \"Vacation\",\n        \"message\": \"Ask Carol\",\n        \"replacement\": {\n            \"user_id\": \"carol\",\n            \"display_name\": \"Carol\"\n        }\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "absences": {
+                    "101": {
+                        "userId": "bob",
+                        "firstDay": "2027-03-01",
+                        "lastDay": "2027-03-05",
+                        "status": "Away",
+                        "message": "Back soon",
+                        "replacementUserId": null,
+                        "replacementUserDisplayName": null,
+                        "id": 101
+                    },
+                    "102": {
+                        "userId": "alice",
+                        "firstDay": "2027-02-01",
+                        "lastDay": "2027-02-03",
+                        "status": "Vacation",
+                        "message": "Ask Carol",
+                        "replacementUserId": "carol",
+                        "replacementUserDisplayName": "Carol",
+                        "id": 102
+                    }
+                },
+                "jobs": [
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1803855600,
+                        "argument": {
+                            "id": 101,
+                            "event": "start"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1804287540,
+                        "argument": {
+                            "id": 101,
+                            "event": "end"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1801450800,
+                        "argument": {
+                            "id": 102,
+                            "event": "start"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1801709940,
+                        "argument": {
+                            "id": 102,
+                            "event": "end"
+                        }
+                    }
+                ],
+                "effects": [
+                    "mapper.update",
+                    "events.dispatchTyped",
+                    "jobs.scheduleAfter",
+                    "jobs.scheduleAfter",
+                    "mapper.update",
+                    "events.dispatchTyped",
+                    "jobs.scheduleAfter",
+                    "jobs.scheduleAfter",
+                    "coordinator.clearCache:alice"
+                ],
+                "events": [
+                    [
+                        "OCP\\User\\Events\\OutOfOfficeChangedEvent",
+                        "alice",
+                        "102"
+                    ],
+                    [
+                        "OCP\\User\\Events\\OutOfOfficeChangedEvent",
+                        "alice",
+                        "102"
+                    ]
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "first_day": "2027-02-01",
+                "last_day": "2027-02-03",
+                "status": "Vacation",
+                "message": "Ask Carol",
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "absences": {
+                    "101": {
+                        "userId": "bob",
+                        "firstDay": "2027-03-01",
+                        "lastDay": "2027-03-05",
+                        "status": "Away",
+                        "message": "Back soon",
+                        "replacementUserId": null,
+                        "replacementUserDisplayName": null,
+                        "id": 101
+                    },
+                    "102": {
+                        "userId": "alice",
+                        "firstDay": "2027-02-01",
+                        "lastDay": "2027-02-03",
+                        "status": "Vacation",
+                        "message": "Ask Carol",
+                        "replacementUserId": "carol",
+                        "replacementUserDisplayName": "Carol",
+                        "id": 102
+                    }
+                },
+                "jobs": [
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1803855600,
+                        "argument": {
+                            "id": 101,
+                            "event": "start"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1804287540,
+                        "argument": {
+                            "id": 101,
+                            "event": "end"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1801450800,
+                        "argument": {
+                            "id": 102,
+                            "event": "start"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1801709940,
+                        "argument": {
+                            "id": 102,
+                            "event": "end"
+                        }
+                    }
+                ],
+                "effects": [
+                    "mapper.update",
+                    "events.dispatchTyped",
+                    "jobs.scheduleAfter",
+                    "jobs.scheduleAfter",
+                    "mapper.update",
+                    "events.dispatchTyped",
+                    "jobs.scheduleAfter",
+                    "jobs.scheduleAfter",
+                    "coordinator.clearCache:alice"
+                ],
+                "events": [
+                    [
+                        "OCP\\User\\Events\\OutOfOfficeChangedEvent",
+                        "alice",
+                        "102"
+                    ],
+                    [
+                        "OCP\\User\\Events\\OutOfOfficeChangedEvent",
+                        "alice",
+                        "102"
+                    ]
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "first_day": "2027-02-01",
+                "last_day": "2027-02-03",
+                "status": "Vacation",
+                "message": "Ask Carol"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "absences": {
+                    "101": {
+                        "userId": "bob",
+                        "firstDay": "2027-03-01",
+                        "lastDay": "2027-03-05",
+                        "status": "Away",
+                        "message": "Back soon",
+                        "replacementUserId": null,
+                        "replacementUserDisplayName": null,
+                        "id": 101
+                    },
+                    "102": {
+                        "userId": "alice",
+                        "firstDay": "2027-02-01",
+                        "lastDay": "2027-02-03",
+                        "status": "Vacation",
+                        "message": "Ask Carol",
+                        "replacementUserId": "carol",
+                        "replacementUserDisplayName": "Carol",
+                        "id": 102
+                    }
+                },
+                "jobs": [
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1803855600,
+                        "argument": {
+                            "id": 101,
+                            "event": "start"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1804287540,
+                        "argument": {
+                            "id": 101,
+                            "event": "end"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1801450800,
+                        "argument": {
+                            "id": 102,
+                            "event": "start"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1801709940,
+                        "argument": {
+                            "id": 102,
+                            "event": "end"
+                        }
+                    }
+                ],
+                "effects": [
+                    "mapper.update",
+                    "events.dispatchTyped",
+                    "jobs.scheduleAfter",
+                    "jobs.scheduleAfter",
+                    "mapper.update",
+                    "events.dispatchTyped",
+                    "jobs.scheduleAfter",
+                    "jobs.scheduleAfter",
+                    "coordinator.clearCache:alice"
+                ],
+                "events": [
+                    [
+                        "OCP\\User\\Events\\OutOfOfficeChangedEvent",
+                        "alice",
+                        "102"
+                    ],
+                    [
+                        "OCP\\User\\Events\\OutOfOfficeChangedEvent",
+                        "alice",
+                        "102"
+                    ]
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "first_day": "2027-02-01",
+                "last_day": "2027-02-03",
+                "status": "Vacation",
+                "message": "Ask Carol",
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "absences": {
+                    "101": {
+                        "userId": "bob",
+                        "firstDay": "2027-03-01",
+                        "lastDay": "2027-03-05",
+                        "status": "Away",
+                        "message": "Back soon",
+                        "replacementUserId": null,
+                        "replacementUserDisplayName": null,
+                        "id": 101
+                    },
+                    "102": {
+                        "userId": "alice",
+                        "firstDay": "2027-02-01",
+                        "lastDay": "2027-02-03",
+                        "status": "Vacation",
+                        "message": "Ask Carol",
+                        "replacementUserId": "carol",
+                        "replacementUserDisplayName": "Carol",
+                        "id": 102
+                    }
+                },
+                "jobs": [
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1803855600,
+                        "argument": {
+                            "id": 101,
+                            "event": "start"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1804287540,
+                        "argument": {
+                            "id": 101,
+                            "event": "end"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1801450800,
+                        "argument": {
+                            "id": 102,
+                            "event": "start"
+                        }
+                    },
+                    {
+                        "class": "OCA\\DAV\\BackgroundJob\\OutOfOfficeEventDispatcherJob",
+                        "time": 1801709940,
+                        "argument": {
+                            "id": 102,
+                            "event": "end"
+                        }
+                    }
+                ],
+                "effects": [
+                    "mapper.update",
+                    "events.dispatchTyped",
+                    "jobs.scheduleAfter",
+                    "jobs.scheduleAfter",
+                    "mapper.update",
+                    "events.dispatchTyped",
+                    "jobs.scheduleAfter",
+                    "jobs.scheduleAfter",
+                    "coordinator.clearCache:alice"
+                ],
+                "events": [
+                    [
+                        "OCP\\User\\Events\\OutOfOfficeChangedEvent",
+                        "alice",
+                        "102"
+                    ],
+                    [
+                        "OCP\\User\\Events\\OutOfOfficeChangedEvent",
+                        "alice",
+                        "102"
+                    ]
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "An absence is the actor's own account setting, not a Files node; no other account can be addressed."
+        }
+    ]
+}

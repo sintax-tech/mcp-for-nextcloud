@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Availability\Presentation;
 
-/** Fixed absence guidance, shared by the guide and the tool description. */
+/** Fixed absence guidance, shared by the guide and the tool descriptions. */
 final class AvailabilityGuideNotes {
 	/** Static guide only. */
 	private function __construct() {}
-	/** @return list<string> read-only absence guidance */
-	public static function notes(): array { return [AvailabilitySchema::NOTE]; }
+	/** @return list<string> absence guidance of both tools */
+	public static function notes(): array { return [AvailabilitySchema::NOTE, AvailabilitySchema::SET_NOTE]; }
 }

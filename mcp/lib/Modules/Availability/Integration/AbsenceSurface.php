@@ -11,15 +11,15 @@ use ReflectionClass;
 use ReflectionMethod;
 use Throwable;
 
-/** Lazy inspection of the DAV absence read path verified in server 34.0.4 and 35.0.1; nothing is built. */
+/** Lazy inspection of the DAV absence paths verified in server 34.0.4 and 35.0.1; nothing is built. */
 final class AbsenceSurface {
-	/** Native absence service; only getAbsence and isInEffect are called. */
+	/** Native absence service; getAbsence and isInEffect read, createOrUpdateAbsence is the only write. */
 	public const SERVICE = 'OCA\\DAV\\Service\\AbsenceService';
 	/** Native absence entity returned by getAbsence. */
 	public const ENTITY = 'OCA\\DAV\\Db\\Absence';
 	/** Native time zone resolution used by AbsenceService for the same absence. */
 	public const TIMEZONE = 'OCA\\DAV\\CalDAV\\TimezoneService';
-	/** Public feature switch and cache owner; only isEnabled is called. */
+	/** Public feature switch and cache owner; isEnabled, and clearCache after a confirmed write. */
 	public const COORDINATOR = 'OCP\\User\\IAvailabilityCoordinator';
 	/** Public out-of-office data returned by the entity conversion. */
 	public const DATA = 'OCP\\User\\IOutOfOfficeData';
@@ -31,6 +31,14 @@ final class AbsenceSurface {
 	 * @param string $timezone time zone class; overrides are source-contract test seams
 	 */
 	public function __construct(private string $service = self::SERVICE, private string $entity = self::ENTITY, private string $timezone = self::TIMEZONE) {}
+	/** @return bool the native create-or-update and the cache reset are present with the verified signatures */
+	public function writable(): bool {
+		try {
+			return $this->supported()
+				&& $this->method($this->service, 'createOrUpdateAbsence', ['OCP\\IUser', 'string', 'string', 'string', 'string', '?string', '?string'], $this->entity, 5)
+				&& $this->method(self::COORDINATOR, 'clearCache', ['string'], 'void');
+		} catch (Throwable) { return false; }
+	}
 	/** @return bool every native signature the read relies on is present; no constructor, SQL or cache runs */
 	public function supported(): bool {
 		try {
@@ -50,12 +58,13 @@ final class AbsenceSurface {
 	 * @param string $name method
 	 * @param list<string> $types exact parameter types
 	 * @param string $return exact return type
+	 * @param int|null $required required parameters when trailing ones are optional; null means all
 	 * @return bool public instance method with exactly this signature
 	 */
-	private function method(string $class, string $name, array $types, string $return): bool {
+	private function method(string $class, string $name, array $types, string $return, ?int $required = null): bool {
 		$method = new ReflectionMethod($class, $name);
 		if (!$method->isPublic() || $method->isStatic() || $method->returnsReference() || (string)$method->getReturnType() !== $return) return false;
-		if (count($method->getParameters()) !== count($types) || $method->getNumberOfRequiredParameters() !== count($types)) return false;
+		if (count($method->getParameters()) !== count($types) || $method->getNumberOfRequiredParameters() !== ($required ?? count($types))) return false;
 		foreach ($method->getParameters() as $index => $parameter) {
 			if ((string)$parameter->getType() !== $types[$index] || $parameter->isPassedByReference() || $parameter->isVariadic()) return false;
 		}

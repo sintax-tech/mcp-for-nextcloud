@@ -13,11 +13,11 @@ use OCA\Mcp\Mcp\Tools\CapabilityProbe;
 final class AvailabilityDiscoveryProbe implements CapabilityProbe {
 	/** @param bool $enabled simulated capability */
 	public function __construct(private bool $enabled = true) {}
-	/** @return list<string> test key */
-	public function keys(): array { return ['availability.native']; }
+	/** @return list<string> test keys */
+	public function keys(): array { return ['availability.native', 'availability.write']; }
 	/**
 	 * @param string $key queried key
 	 * @return bool explicit discovery state
 	 */
-	public function supports(string $key): bool { return $key === 'availability.native' && $this->enabled; }
+	public function supports(string $key): bool { return in_array($key, $this->keys(), true) && $this->enabled; }
 }

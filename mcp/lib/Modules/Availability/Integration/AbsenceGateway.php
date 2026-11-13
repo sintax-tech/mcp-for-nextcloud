@@ -45,15 +45,26 @@ final class AbsenceGateway {
 		$absence = $service->getAbsence($actor);
 		if ($absence === null) return null;
 		if ($absence->getUserId() !== $actor) throw new RuntimeException('Foreign absence.');
-		$zones = $this->container->get(AbsenceSurface::TIMEZONE);
 		// The same time zone fallback AbsenceService and its jobs use when converting this absence.
-		$timezone = $zones->getUserTimezone($actor) ?? $zones->getDefaultTimezone();
+		$timezone = $this->timezone($actor);
 		$data = $absence->toOutOufOfficeData($user, $timezone);
 		return ['first_day' => (string)$absence->getFirstDay(), 'last_day' => (string)$absence->getLastDay(), 'status' => (string)$absence->getStatus(),
 			'message' => (string)$absence->getMessage(), 'replacement_user_id' => $absence->getReplacementUserId(),
 			'replacement_display_name' => $absence->getReplacementUserDisplayName(), 'timezone' => $timezone,
 			'start' => $data->getStartDate(), 'end' => $data->getEndDate(), 'in_effect' => $service->isInEffect($data), 'now' => $this->time->getTime()];
 	}
+	/**
+	 * @param string $actor authenticated user ID
+	 * @return string the zone AbsenceService converts this actor's days with: user zone, else the server default
+	 * @throws RuntimeException native surface missing
+	 */
+	public function timezone(string $actor): string {
+		$this->guard();
+		$zones = $this->container->get(AbsenceSurface::TIMEZONE);
+		return $zones->getUserTimezone($actor) ?? $zones->getDefaultTimezone();
+	}
+	/** @return int the server clock AbsenceService schedules against */
+	public function now(): int { return $this->time->getTime(); }
 	/** @throws RuntimeException when the verified native signatures are gone */
 	private function guard(): void {
 		if (!$this->surface->supported()) throw new RuntimeException('Absence read path unavailable.');

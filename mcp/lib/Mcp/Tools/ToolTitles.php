@@ -204,6 +204,7 @@ final class ToolTitles {
 			'availability_read_absence' => Translator::t('Read own absence'),
 			// Status
 			'status_read_own' => Translator::t('Read own status'),
+			'availability_set_absence' => Translator::t('Set own absence'),
 			default => ToolPresentation::humanized($name),
 		};
 	}

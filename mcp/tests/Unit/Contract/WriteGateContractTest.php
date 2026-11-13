@@ -101,6 +101,7 @@ final class WriteGateContractTest extends TestCase {
 			$this->build(\OCA\Mcp\Modules\Collectives\Integration\CollectivesCapabilities::class),
 			$this->build(\OCA\Mcp\Modules\Collectives\Integration\FoundingCapabilities::class),
 			$this->build(\OCA\Mcp\Modules\Collectives\Integration\TeamsCapabilities::class),
+			new \OCA\Mcp\Tests\Unit\Modules\Availability\AvailabilityDiscoveryProbe(),
 		], $logger));
 	}
 

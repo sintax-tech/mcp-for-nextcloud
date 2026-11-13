@@ -8,11 +8,12 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Availability;
 
 use OCA\Mcp\Modules\Availability\Tools\ReadAbsence;
+use OCA\Mcp\Modules\Availability\Tools\SetAbsence;
 
 /** Published Availability tools, in discovery order. */
 final class AvailabilityToolCatalog {
 	/** Ordered tools; new tools append here. */
-	public const TOOLS = [ReadAbsence::class];
+	public const TOOLS = [ReadAbsence::class, SetAbsence::class];
 	/** Static catalog only. */
 	private function __construct() {}
 }

@@ -8234,6 +8234,72 @@
                         }
                     },
                     {
+                        "name": "availability_set_absence",
+                        "title": "Set own absence",
+                        "description": "Creates or changes the authenticated user's own out-of-office absence through Nextcloud, the same way the absence settings do; no other account can be changed. first_day and last_day are inclusive real days (YYYY-MM-DD), interpreted in the user's time zone from 00:00 of the first day to 23:59 of the last. status is the short text (at most 100 characters) shown as user status during the absence; message (at most 4000 characters) is shown to others. Omit replacement_user_id to keep the current replacement, send null to remove it, or send an existing user ID to set it. Without confirm: true the answer is the plan (before and after, time zone, native effects) and nothing changes; repeat with confirm: true and the plan_state only after the user agrees. Nextcloud then stores the absence, adds or updates an out-of-office calendar event and schedules start/end background jobs for this absence only. Refused when the administrator turned absence settings off. Removing an absence is not offered.",
+                        "inputSchema": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "first_day": {
+                                    "type": "string",
+                                    "minLength": 10,
+                                    "maxLength": 10,
+                                    "format": "date",
+                                    "description": "First day of the absence, inclusive, YYYY-MM-DD."
+                                },
+                                "last_day": {
+                                    "type": "string",
+                                    "minLength": 10,
+                                    "maxLength": 10,
+                                    "format": "date",
+                                    "description": "Last day of the absence, inclusive, YYYY-MM-DD; not before first_day."
+                                },
+                                "status": {
+                                    "type": "string",
+                                    "maxLength": 100,
+                                    "description": "Short status shown during the absence."
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "maxLength": 4000,
+                                    "description": "Longer message shown to others during the absence."
+                                },
+                                "replacement_user_id": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "maxLength": 64,
+                                    "description": "Existing user ID of the replacement; null removes it; omitted keeps the current one."
+                                },
+                                "plan_state": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                                },
+                                "confirm": {
+                                    "type": "boolean",
+                                    "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                                }
+                            },
+                            "required": [
+                                "first_day",
+                                "last_day",
+                                "status",
+                                "message"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Set own absence",
+                            "readOnlyHint": false,
+                            "destructiveHint": true,
+                            "idempotentHint": false,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
                         "name": "status_read_own",
                         "title": "Read own status",
                         "description": "Reads the authenticated user's own configured user status and nothing else. The answer is the stored snapshot: status, status_timestamp, user_defined, message_id, an accessible message, clear_at, status_message_timestamp, and expired. expired is true only when clear_at is set and already earlier than the current time; the stored row is never changed. A missing row answers configured=false and \"No status is configured.\" and does not create a row. This is not live presence: automatic online expiry, calendar status and heartbeat are not applied. No emoji, icon or custom icon is returned. A custom message, when set, is the accessible text; otherwise a known predefined message id is shown as fixed accessible text. An unknown message id is returned as message_id with message null. snapshot is always \"configured\" and live_presence is always false.",

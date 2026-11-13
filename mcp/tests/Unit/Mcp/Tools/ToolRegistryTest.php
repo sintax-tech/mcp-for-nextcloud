@@ -124,8 +124,8 @@ final class ToolRegistryTest extends TestCase {
 				// The Forms structure tools are admitted by their probe in discovery; this envelope check covers them unconditionally.
 				$definitions = array_map(static function (array $definition): array { unset($definition['requires']); return $definition; }, $definitions);
 			}
-			if ($instance instanceof \OCA\Mcp\Modules\Collectives\CollectivesModule) {
-				// Every Collectives tool requires collectives.native; this fixture admits them as a supporting installation.
+			if ($instance instanceof \OCA\Mcp\Modules\Collectives\CollectivesModule || $instance instanceof \OCA\Mcp\Modules\Availability\AvailabilityModule) {
+				// Every Collectives tool requires collectives.native, the absence write availability.*; this fixture admits them as a supporting installation.
 				$definitions = array_map(static function (array $definition): array { unset($definition['requires']); return $definition; }, $definitions);
 			}
 			$module = new class($definitions) implements ToolModule {

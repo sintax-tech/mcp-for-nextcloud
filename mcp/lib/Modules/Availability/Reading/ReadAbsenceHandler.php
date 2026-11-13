@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Availability\Reading;
 
-use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCA\Mcp\Modules\Availability\Integration\AbsenceGateway;
+use OCA\Mcp\Modules\Availability\Presentation\AvailabilityMessages;
 use Throwable;
 
 /** Reads only the authenticated actor's absence; the feature switch is honoured before any absence read. */
@@ -25,10 +25,10 @@ final class ReadAbsenceHandler {
 	 */
 	public function handle(string $userId): array {
 		try {
-			if (!$this->native->enabled()) return ToolResult::error(Translator::t('Absence settings are turned off on this Nextcloud server.'));
+			if (!$this->native->enabled()) return ToolResult::error(AvailabilityMessages::turnedOff());
 			return ToolResult::json($this->view->project($this->native->read($userId)));
 		} catch (Throwable) {
-			return ToolResult::error(Translator::t('Your absence settings are unavailable.'));
+			return ToolResult::error(AvailabilityMessages::unavailable());
 		}
 	}
 }

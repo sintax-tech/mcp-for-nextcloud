@@ -393,6 +393,10 @@ final class PlanChat {
 		return $this->comment;
 	}
 
+	public function getComment(object $room, string $messageId): IComment {
+		return $this->comment;
+	}
+
 	public function sendMessage(mixed ...$arguments): IComment {
 		PlanWriteSpy::$calls[] = 'ChatManager::sendMessage';
 		return $this->comment;

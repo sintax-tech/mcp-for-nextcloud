@@ -2071,6 +2071,7 @@
     "The Activity folder or file reference is unavailable." : "Der Activity-Ordner oder Dateiverweis ist nicht verfügbar.",
     "Read unread Talk messages" : "Ungelesene Talk-Nachrichten lesen",
     "This conversation is hosted on another server: its unread messages cannot be read here." : "Diese Unterhaltung liegt auf einem anderen Server: ihre ungelesenen Nachrichten können hier nicht gelesen werden.",
-    "The read marker of this conversation could not be read." : "Die Lesemarke dieser Unterhaltung konnte nicht gelesen werden."
+    "The read marker of this conversation could not be read." : "Die Lesemarke dieser Unterhaltung konnte nicht gelesen werden.",
+    "The message this read continued from is no longer in the conversation. Call again without cursor to start from the read marker." : "Die Nachricht, an der diese Lesung fortgesetzt wurde, ist nicht mehr in der Unterhaltung. Rufe erneut ohne Cursor auf, um bei der Lesemarke zu beginnen."
 },"pluralForm" : "nplurals=2; plural=(n != 1);"
 }

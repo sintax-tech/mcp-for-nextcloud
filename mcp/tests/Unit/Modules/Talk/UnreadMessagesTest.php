@@ -37,7 +37,8 @@ use RuntimeException;
  *
  * This process cannot load OCA\Talk, so doubles stand in for the room, the participant and the chat manager. Every
  * call that would persist something (a marker, a session, a lobby, a name, a mention notification) is counted before
- * it answers, and tearDown requires none. The chat double records the exact arguments of each forward read.
+ * it answers, and tearDown requires none. The chat double records the exact arguments of each forward read and
+ * selects rows the way the server does, including its fallback when the position message is gone.
  */
 final class UnreadMessagesTest extends TestCase {
 	private MarkerRoom $room;
@@ -53,7 +54,7 @@ final class UnreadMessagesTest extends TestCase {
 		$this->room = new MarkerRoom('sala1234', 'Projeto');
 		$this->attendee = new MarkerAttendee(20);
 		$this->participant = new MarkerParticipant($this->attendee);
-		$this->chat = new MarkerChat(range(11, 40), $this->comment(...));
+		$this->chat = new MarkerChat(array_combine(range(11, 40), range(11, 40)), $this->comment(...));
 
 		$users = $this->createMock(IUserManager::class);
 		$users->method('get')->willReturnCallback(fn (string $uid): ?IUser => $uid === 'alice' ? $this->createMock(IUser::class) : null);
@@ -125,7 +126,7 @@ final class UnreadMessagesTest extends TestCase {
 
 	public function testAMessageArrivingWhilePagingShowsUpOnALaterPage(): void {
 		$first = $this->unread->read('alice', 'sala1234', 10, null);
-		$this->chat->ids[] = 41;
+		$this->chat->times[41] = 41;
 
 		$second = $this->unread->read('alice', 'sala1234', 20, $first['nextCursor']);
 
@@ -227,6 +228,61 @@ final class UnreadMessagesTest extends TestCase {
 
 		$this->expectExceptionObject(new InvalidArgumentException(PageMessages::invalidCursor()));
 		$this->unread->read('alice', 'sala1234', 5, $forged);
+	}
+
+	/** 101 was created after 102: ids and creation times are not in the same order. */
+	private function invertedChat(): void {
+		$this->chat->times = [101 => 2, 102 => 1, 103 => 3];
+	}
+
+	public function testAPositionRemovedBeforeTheNextPageIsRefusedInsteadOfSkipping(): void {
+		$this->invertedChat();
+		$this->attendee->lastRead = 0;
+		$first = $this->unread->read('alice', 'sala1234', 1, null);
+		$this->assertSame(['102'], array_column($first['messages'], 'id'));
+		// Talk's fallback would now continue with "id > 102" and leave 101 out.
+		unset($this->chat->times[102]);
+
+		try {
+			$this->unread->read('alice', 'sala1234', 1, $first['nextCursor']);
+			$this->fail('A lost position must refuse the continuation.');
+		} catch (ConversationAccessException $e) {
+			$this->assertSame(PageMessages::continuationLost(), $e->getMessage());
+		}
+		$again = $this->unread->read('alice', 'sala1234', 50, null);
+		$this->assertSame(['101', '103'], array_column($again['messages'], 'id'));
+	}
+
+	public function testAPositionRemovedWhileTheNextPageIsReadIsRefused(): void {
+		$this->invertedChat();
+		$this->attendee->lastRead = 0;
+		$first = $this->unread->read('alice', 'sala1234', 1, null);
+		$this->chat->afterRead = function (): void {
+			unset($this->chat->times[102]);
+		};
+
+		$this->expectExceptionObject(new ConversationAccessException(PageMessages::continuationLost()));
+		$this->unread->read('alice', 'sala1234', 1, $first['nextCursor']);
+	}
+
+	public function testAPositionWithASmallerIdThanTheMarkerContinuesInTalksOrder(): void {
+		$this->invertedChat();
+		$this->attendee->lastRead = 102;
+
+		$first = $this->unread->read('alice', 'sala1234', 1, null);
+		$this->assertSame(['101'], array_column($first['messages'], 'id'));
+		$this->assertSame(['message' => 101, 'baseline' => 102], $this->cursor->position($first['nextCursor'], TalkModule::TOOL_READ_UNREAD, 'alice', 'sala1234'));
+		$second = $this->unread->read('alice', 'sala1234', 1, $first['nextCursor']);
+
+		$this->assertSame(['103'], array_column($second['messages'], 'id'));
+		$this->assertSame(102, $second['lastReadMessage']);
+		$this->assertNull($second['nextCursor']);
+	}
+
+	public function testACursorRoundTripsWhateverOrderItsIdsHave(): void {
+		$cursor = $this->cursor->next('sala1234', 101, 102, TalkModule::TOOL_READ_UNREAD, 'alice');
+
+		$this->assertSame(['message' => 101, 'baseline' => 102], $this->cursor->position($cursor, TalkModule::TOOL_READ_UNREAD, 'alice', 'sala1234'));
 	}
 
 	private function comment(int $id): IComment {
@@ -365,17 +421,25 @@ final class MarkerParticipants {
 	}
 }
 
-/** OCA\Talk\Chat\ChatManager: the forward read and the legacy marker; mention notifications counted. */
+/**
+ * OCA\Talk\Chat\ChatManager over the server's comment order: creation time, then id.
+ *
+ * The forward read is Comments\Manager::getCommentsWithVerbForObjectSinceComment in ascending order: after the
+ * position message on the (time, id) pair while that message exists, and on "id greater than the position" once it
+ * is gone. Mention notifications are counted as a write.
+ */
 final class MarkerChat {
 	/** @var list<array{int, int, int, mixed, bool, bool, int}> */
 	public array $reads = [];
 	public ?int $legacy = null;
+	/** @var (\Closure(): void)|null runs once the read has selected its rows, to race it */
+	public ?\Closure $afterRead = null;
 
 	/**
-	 * @param list<int> $ids every comment id of the room, ascending
+	 * @param array<int, int> $times creation time of every comment of the room, by id
 	 * @param \Closure(int): IComment $comment builds the comment of one id
 	 */
-	public function __construct(public array $ids, private \Closure $comment) {}
+	public function __construct(public array $times, private \Closure $comment) {}
 
 	/** @return list<IComment> */
 	public function waitForNewMessages(object $room, int $offset, int $limit, int $timeout, ?IUser $user, bool $includeLastKnown, bool $markNotificationsAsRead = true, int $threadId = 0): array {
@@ -383,8 +447,24 @@ final class MarkerChat {
 		if ($markNotificationsAsRead && $user !== null) {
 			MarkerWriteSpy::$calls[] = 'Notifier::markMentionNotificationsRead';
 		}
-		$after = array_values(array_filter($this->ids, static fn (int $id): bool => $id > $offset));
-		return array_map($this->comment, array_slice($after, 0, $limit));
+		$anchor = $offset > 0 ? ($this->times[$offset] ?? null) : null;
+		$after = [];
+		foreach ($this->times as $id => $time) {
+			$later = $anchor === null ? $id > $offset : [$time, $id] > [$anchor, $offset];
+			if ($later) {
+				$after[] = $id;
+			}
+		}
+		usort($after, fn (int $a, int $b): int => [$this->times[$a], $a] <=> [$this->times[$b], $b]);
+		$rows = array_map($this->comment, array_slice($after, 0, $limit));
+		if ($this->afterRead !== null) {
+			($this->afterRead)();
+		}
+		return $rows;
+	}
+
+	public function getComment(object $room, string $messageId): IComment {
+		return isset($this->times[(int)$messageId]) ? ($this->comment)((int)$messageId) : throw new RuntimeException('Message not found');
 	}
 
 	public function getLastReadMessageFromLegacy(object $room, IUser $user): int {

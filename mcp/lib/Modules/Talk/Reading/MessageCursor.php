@@ -17,7 +17,8 @@ use OCA\Mcp\Modules\Talk\Presentation\PageMessages;
  *
  * The position is the id of the last message already returned, not the read marker. Another client that moves the
  * marker while this read is paging cannot make the next page skip or repeat a message. The cursor also carries the
- * marker the read started from, so every page reports the same starting point.
+ * marker the read started from, so every page reports the same starting point. Talk orders the chat by creation
+ * time, then id, so the position can have a smaller id than that marker: the two are not compared.
  */
 final class MessageCursor {
 	/** Longest room token Talk publishes. */
@@ -49,7 +50,7 @@ final class MessageCursor {
 		$baseline = is_array($value) ? ($value['b'] ?? null) : null;
 		if (!is_array($value) || array_keys($value) !== ['t', 'm', 'b']
 			|| !is_string($room) || $room === '' || strlen($room) > self::MAX_TOKEN_LENGTH || $room !== $token
-			|| !is_int($message) || $message < 1 || !is_int($baseline) || $baseline < 0 || $baseline > $message
+			|| !is_int($message) || $message < 1 || !is_int($baseline) || $baseline < 0
 			|| !hash_equals($this->sign($room, $message, $baseline, $tool, $uid), $mac)) {
 			throw new InvalidArgumentException(PageMessages::invalidCursor());
 		}

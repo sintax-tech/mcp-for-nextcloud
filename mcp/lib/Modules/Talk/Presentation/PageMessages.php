@@ -52,4 +52,12 @@ final class PageMessages {
 	public static function unreadableMarker(): string {
 		return Translator::t('The read marker of this conversation could not be read.');
 	}
+
+	/**
+	 * The message a continuation started after is gone, so the next page cannot be placed without skipping messages.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function continuationLost(): string {
+		return Translator::t('The message this read continued from is no longer in the conversation. Call again without cursor to start from the read marker.');
+	}
 }

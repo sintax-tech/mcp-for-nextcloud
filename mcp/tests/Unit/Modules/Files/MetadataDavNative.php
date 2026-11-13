@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Modules\Files;
 
+use OCA\Mcp\Modules\Files\Integration\AppDavPlugins;
 use OCA\Mcp\Platform\Dav\MetadataServer;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Files\IRootFolder;
@@ -46,6 +47,7 @@ final class MetadataDavNative implements MetadataServer {
 		'apps/dav/lib/SystemTag/SystemTagsRelationsCollection.php',
 		'apps/dav/lib/SystemTag/SystemTagPlugin.php',
 		'apps/comments/lib/Listener/CommentsEntityEventListener.php',
+		'apps/dav/lib/Events/SabrePluginAddEvent.php',
 	];
 	/** Fixture directory. */
 	public const DIR = __DIR__ . '/../../../fixtures/dav-metadata-native';
@@ -54,6 +56,8 @@ final class MetadataDavNative implements MetadataServer {
 	public array $built = [];
 	/** @var list<string> method and path of every request the native pipeline started */
 	public array $methods = [];
+	/** @var list<\Sabre\DAV\ServerPlugin> plugins the app plugin manager hands out, installed when a request starts */
+	public array $appPlugins = [];
 	/** @var int authentication backend calls across every server */
 	public int $backendCalls = 0;
 	/** @var Server|null last server built */
@@ -107,6 +111,8 @@ final class MetadataDavNative implements MetadataServer {
 		$server->addPlugin($auth);
 		$server->addPlugin(new \OCA\DAV\SystemTag\SystemTagPlugin($this->tags, $this->groups, $this->session, $this->roots, $this->mapper));
 		$server->addPlugin(new \OCA\DAV\Comments\CommentsPlugin($this->comments, $this->session));
+		// The production installer of the app extension points, as the Files module's embedded server runs it.
+		AppDavPlugins::install($server, $root, $this->events, fn (): array => [$this->appPlugins, []]);
 		$server->on('beforeMethod:*', function (\Sabre\HTTP\RequestInterface $request): void {
 			$this->methods[] = $request->getMethod() . ' ' . $request->getPath();
 		});

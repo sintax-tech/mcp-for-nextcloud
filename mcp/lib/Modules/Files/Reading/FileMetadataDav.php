@@ -135,7 +135,7 @@ final class FileMetadataDav {
 	 * @param bool $assigned true to assign (PUT, 201), false to remove (DELETE, 204)
 	 * @return void
 	 * @throws InvalidArgumentException when the tag ID is not a positive integer
-	 * @throws ToolFailure when the file is not reachable, or DAV refuses the tag or the file
+	 * @throws ToolFailure when the file is not reachable, the tag is an MCP exclusion tag now, or DAV refuses the tag or the file
 	 * @throws PolicyUnavailable when the Files scope cannot be read
 	 * @throws RuntimeException when the session or the native pipeline answers unexpectedly
 	 */
@@ -144,6 +144,13 @@ final class FileMetadataDav {
 			throw new InvalidArgumentException('Tag ID out of range');
 		}
 		$this->admit($actor, $fileId);
+		// The exclusion selection read now, not the one the plan saw: a tag the administrator selected meanwhile would
+		// hide the file when assigned, or reveal it when removed. An unreadable selection refuses like a selected tag.
+		$this->guard->clearCache();
+		$hidden = $this->guard->getHiddenTagIds();
+		if (!$this->guard->isConfigurationValid() || in_array($tagId, $hidden, true)) {
+			throw new ToolFailure(CommonMessages::notFound());
+		}
 		$this->send($actor, $assigned ? 'PUT' : 'DELETE', 'systemtags-relations/files/' . $fileId . '/' . $tagId, [], '',
 			$assigned ? 201 : 204, self::WRITE_REFUSALS);
 	}

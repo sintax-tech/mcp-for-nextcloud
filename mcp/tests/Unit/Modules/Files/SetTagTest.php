@@ -127,6 +127,77 @@ final class SetTagTest extends TestCase {
 		self::assertSame([], $this->world->writes);
 	}
 
+	/** @return iterable<string,array{string,array<string,mixed>,bool}> a tag selected for exclusion while the confirmation runs */
+	public static function selectedMeanwhile(): iterable {
+		foreach (self::pins() as $pin => [$major]) {
+			yield 'assign by ID on ' . $pin => [$major, ['path' => '/f42.txt', 'tag_id' => SetTagWorld::CONTRACT, 'assigned' => true], false];
+			yield 'assign by name on ' . $pin => [$major, ['path' => '/f42.txt', 'tag' => 'Contract', 'assigned' => true], false];
+			yield 'remove by ID on ' . $pin => [$major, ['path' => '/f42.txt', 'tag_id' => SetTagWorld::CONTRACT, 'assigned' => false], true];
+			yield 'remove by name on ' . $pin => [$major, ['path' => '/f42.txt', 'tag' => 'Contract', 'assigned' => false], true];
+		}
+	}
+
+	#[DataProvider('selectedMeanwhile')]
+	public function testATagSelectedForExclusionDuringTheConfirmationIsNeverWritten(string $major, array $arguments, bool $tagged): void {
+		$this->world = new SetTagWorld($this, $major);
+		$this->world->relations[SetTagWorld::OWN] = $tagged ? [SetTagWorld::CONTRACT] : [];
+		$plan = $this->world->preview->plan($arguments, 'alice');
+		// The administrator selects the tag once the confirmed call has rebuilt the plan, while it reads the relation
+		// back over DAV, so the plan and its plan_state still match: only the check at the sink can stop the write.
+		$this->world->native->afterMethod = function (): void {
+			if (end($this->world->native->methods) === 'PROPFIND systemtags-relations/files/42') {
+				$this->world->exclusions[] = SetTagWorld::CONTRACT;
+			}
+		};
+		self::assertSame(SetTagWorld::notFound(), $this->world->refusal(fn () => $this->confirm($arguments, $plan)));
+		self::assertContains(SetTagWorld::CONTRACT, $this->world->exclusions, 'the selection changed during the confirmation');
+		self::assertSame([], $this->world->writes);
+		self::assertSame([], array_filter($this->world->native->methods, static fn (string $m): bool => !str_starts_with($m, 'PROPFIND ')));
+	}
+
+	#[DataProvider('pins')]
+	public function testAnUnreadableExclusionSelectionAtTheSinkRefusesTheWrite(string $major): void {
+		$this->world = new SetTagWorld($this, $major);
+		$arguments = ['path' => '/f42.txt', 'tag' => 'Contract', 'assigned' => true];
+		$plan = $this->world->preview->plan($arguments, 'alice');
+		$this->world->native->afterMethod = function (): void {
+			if (end($this->world->native->methods) === 'PROPFIND systemtags-relations/files/42') {
+				$this->world->exclusionsReadable = false;
+			}
+		};
+		self::assertSame(SetTagWorld::notFound(), $this->world->refusal(fn () => $this->confirm($arguments, $plan)));
+		self::assertSame([], $this->world->writes);
+	}
+
+	/** @return iterable<string,array{string,string,bool}> each way an app adds a DAV plugin, assigning and removing */
+	public static function vetoRoutes(): iterable {
+		foreach (self::pins() as $pin => [$major]) {
+			foreach (['typed SabrePluginAddEvent' => 'eventPlugins', 'legacy addPlugin event' => 'legacyPlugins', 'PluginManager' => 'appPlugins'] as $route => $property) {
+				yield $route . ', assign, on ' . $pin => [$major, $property, true];
+				yield $route . ', remove, on ' . $pin => [$major, $property, false];
+			}
+		}
+	}
+
+	#[DataProvider('vetoRoutes')]
+	public function testAnAppPluginVetoStopsTheWriteAndLeavesTheReadsAlone(string $major, string $property, bool $assign): void {
+		$this->world = new SetTagWorld($this, $major);
+		$this->world->relations[SetTagWorld::OWN] = $assign ? [] : [SetTagWorld::CONTRACT];
+		$veto = new VetoPlugin();
+		if ($property === 'appPlugins') {
+			$this->world->native->appPlugins = [$veto];
+		} else {
+			$this->world->{$property} = [$veto];
+		}
+		$arguments = ['path' => '/f42.txt', 'tag' => 'Contract', 'assigned' => $assign];
+		$plan = $this->world->preview->plan($arguments, 'alice');
+		self::assertSame($assign ? 'assign' : 'remove', $plan['change'], 'the reads (catalog and relation) answer as without the plugin');
+		self::assertSame(SetTagWorld::notFound(), $this->world->refusal(fn () => $this->confirm($arguments, $plan)));
+		self::assertSame([($assign ? 'beforeBind' : 'beforeUnbind') . ' systemtags-relations/files/42/1'], $veto->vetoed);
+		self::assertSame([], $this->world->writes, 'the vetoed relation was not written');
+		self::assertSame($assign ? [] : [SetTagWorld::CONTRACT], $this->world->relations[SetTagWorld::OWN]);
+	}
+
 	#[DataProvider('pins')]
 	public function testAFileOfSomeoneElseNeedsConfirmShared(string $major): void {
 		$this->world = new SetTagWorld($this, $major);

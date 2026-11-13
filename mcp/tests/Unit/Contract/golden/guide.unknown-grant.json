@@ -266,7 +266,7 @@
                                 "title": "Add or remove a file tag",
                                 "description": "Assign one existing collaborative (system) tag to one file or folder, or remove it, through the native Nextcloud tag relation. Name the tag by tag_id (from files_list_tags) or by its exact name, never both. Nextcloud decides as in the web interface: the tag must be one the user may see and assign, and the user must be allowed to change the file. Tags the administrator uses to hide files from MCP can never be assigned or removed here. A hidden, missing or unchangeable file and an unknown or unusable tag get the same not-found answer. Tags are seen by everyone who sees the file and may start automated rules. No file content changes and nothing is deleted. Requires the files.tags permission, a plan, confirm: true with its plan_state, and confirm_shared for a file of someone else.",
                                 "read_only": false,
-                                "destructive": false,
+                                "destructive": true,
                                 "confirmation": [
                                     "confirm",
                                     "confirm_shared"

@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Integration;
 
+use OCA\DAV\AppInfo\PluginManager;
 use OCA\DAV\CalDAV\Auth\CustomPrincipalPlugin;
 use OCA\DAV\Comments\CommentsPlugin;
 use OCA\DAV\Connector\Sabre\CachingTree;
@@ -18,6 +19,7 @@ use OCA\DAV\Events\SabrePluginAuthInitEvent;
 use OCA\DAV\RootCollection;
 use OCA\DAV\SystemTag\SystemTagPlugin;
 use OCA\Mcp\Platform\Dav\MetadataServer;
+use OCP\App\IAppManager;
 use OCP\Comments\ICommentsManager;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\IConfig;
@@ -25,6 +27,7 @@ use OCP\IURLGenerator;
 use OCP\IUserSession;
 use OCP\L10N\IFactory;
 use OCP\Server;
+use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Sabre\DAV\Server as DavServer;
 
@@ -37,7 +40,8 @@ use Sabre\DAV\Server as DavServer;
  * (195-202 / 197-204), `SystemTagPlugin` (241 / 243) and `CommentsPlugin` (244-247 / 246-249). The only difference is
  * the `auth` plugin: `CustomPrincipalPlugin` instead of the backend chain, because the request is already
  * authenticated by the MCP endpoint and the backend chain would log that session out
- * ({@see \OCA\Mcp\Platform\Dav\PinnedDispatch}). Nothing is sent over HTTP.
+ * ({@see \OCA\Mcp\Platform\Dav\PinnedDispatch}). Plugins and collections other apps add to the native server are
+ * added here too ({@see AppDavPlugins}), so their vetos guard the tag and comment writes. Nothing is sent over HTTP.
  */
 final class EmbeddedMetadataDavServer implements MetadataServer {
 	/**
@@ -46,7 +50,8 @@ final class EmbeddedMetadataDavServer implements MetadataServer {
 	 * @throws \Psr\Container\ContainerExceptionInterface when a native DAV dependency cannot be resolved
 	 */
 	public function create(string $path): DavServer {
-		$server = new EmbeddedServer(new CachingTree(new RootCollection()));
+		$root = new RootCollection();
+		$server = new EmbeddedServer(new CachingTree($root));
 		$base = Server::get(IURLGenerator::class)->getWebroot() . '/remote.php/dav/';
 		$server->setBaseUri($base);
 		// CommentsPlugin::initialize() reads the request URI while it is added (CommentsPlugin.php:68 / 69).
@@ -71,6 +76,11 @@ final class EmbeddedMetadataDavServer implements MetadataServer {
 		$server->addPlugin(
 			new CommentsPlugin(Server::get(ICommentsManager::class), Server::get(IUserSession::class))
 		);
+		AppDavPlugins::install($server, $root, Server::get(IEventDispatcher::class), static function (): array {
+			// The server container itself, which PluginManager requires, without the private \OC::$server (as Contacts).
+			$manager = new PluginManager(Server::get(ContainerInterface::class), Server::get(IAppManager::class));
+			return [$manager->getAppPlugins(), $manager->getAppCollections()];
+		});
 		return $server;
 	}
 }

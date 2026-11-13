@@ -27,9 +27,11 @@ final class SetTag implements WriteTool {
 	public function __construct(private SetTagHandler $handler, private SetTagPreview $preview) {
 	}
 
-	/** @return ToolDefinition default-denied files.tags write */
+	/** @return ToolDefinition default-denied files.tags write, published as destructive */
 	public static function definition(): ToolDefinition {
-		return FilesSchema::definition(['name' => 'files_set_tag', 'module' => 'files', 'operation' => 'tags',
+		// Destructive by the plan (phase 5): a relation change can trigger retention or access rules, and `tags` is not
+		// one of ToolPresentation's destructive operations.
+		return FilesSchema::definition(['name' => 'files_set_tag', 'module' => 'files', 'operation' => 'tags', 'destructiveHint' => true,
 			'description' => TaggingMessages::setTagTool(),
 			'inputSchema' => FilesSchema::schema([
 				'path' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::path()],

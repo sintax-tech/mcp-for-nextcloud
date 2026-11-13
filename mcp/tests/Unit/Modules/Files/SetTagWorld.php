@@ -76,8 +76,18 @@ final class SetTagWorld {
 	public array $relations = [self::OWN => [], self::SHARED => [], self::NATIVE_READ_ONLY => [], self::HIDDEN => [], 45 => [], 46 => [], 47 => []];
 	/** @var list<int> files the MCP Files gate hides */
 	public array $hidden = [self::HIDDEN];
+	/** @var list<string> the administrator's MCP exclusion tag selection, as the guard reads it now */
+	public array $exclusions = [self::EXCLUSION];
+	/** Whether that selection can be read. */
+	public bool $exclusionsReadable = true;
+	/** @var (\Closure(): void)|null run when the guard's cache is cleared: the moment a change of the selection lands */
+	public ?\Closure $onClearCache = null;
 	/** @var list<array{string,string,string}> every relation write, as [assign|unassign, file ID, tag ID] */
 	public array $writes = [];
+	/** @var list<\Sabre\DAV\ServerPlugin> plugins apps add on the typed SabrePluginAddEvent */
+	public array $eventPlugins = [];
+	/** @var list<\Sabre\DAV\ServerPlugin> plugins apps add on the legacy OCA\DAV\Connector\Sabre::addPlugin event */
+	public array $legacyPlugins = [];
 	/** Whether alice still holds files.tags. */
 	public bool $granted = true;
 
@@ -93,7 +103,7 @@ final class SetTagWorld {
 		$groups = $this->mock(IGroupManager::class);
 		$groups->method('isAdmin')->willReturn(false);
 		$this->native = new MetadataDavNative($this->mock(ICommentsManager::class), $this->manager(), $this->mapper(), $session, $roots,
-			$this->mock(IUserManager::class), $groups, $this->mock(IEventDispatcher::class));
+			$this->mock(IUserManager::class), $groups, $this->events());
 		$guard = $this->guard();
 		$actorRoot = new ActorRoot($roots, $session);
 		$dav = new FileMetadataDav($actorRoot, $guard, $this->native, new PinnedDispatch(new Session($session)), new NullLogger());
@@ -143,6 +153,26 @@ final class SetTagWorld {
 	/** @return array{string,string,int} the refusal of a missing file, the one every other refusal must equal */
 	public static function notFound(): array {
 		return [ToolFailure::class, CommonMessages::notFound(), 0];
+	}
+
+	/** @return IEventDispatcher the dispatcher apps listen on: it adds {@see self::$eventPlugins} and {@see self::$legacyPlugins} */
+	private function events(): IEventDispatcher {
+		$events = $this->mock(IEventDispatcher::class);
+		$events->method('dispatchTyped')->willReturnCallback(function (object $event): void {
+			if ($event instanceof \OCA\DAV\Events\SabrePluginAddEvent) {
+				foreach ($this->eventPlugins as $plugin) {
+					$event->getServer()->addPlugin($plugin);
+				}
+			}
+		});
+		$events->method('dispatch')->willReturnCallback(function (string $name, object $event): void {
+			if ($name === 'OCA\DAV\Connector\Sabre::addPlugin' && $event instanceof \OCP\SabrePluginEvent) {
+				foreach ($this->legacyPlugins as $plugin) {
+					$event->getServer()->addPlugin($plugin);
+				}
+			}
+		});
+		return $events;
 	}
 
 	/** @return IUserSession alice's session, which can only be read */
@@ -200,7 +230,13 @@ final class SetTagWorld {
 				throw new ToolFailure(CommonMessages::notFound());
 			}
 		});
-		$guard->method('getHiddenTagIds')->willReturn([self::EXCLUSION]);
+		$guard->method('getHiddenTagIds')->willReturnCallback(fn (): array => $this->exclusionsReadable ? $this->exclusions : []);
+		$guard->method('isConfigurationValid')->willReturnCallback(fn (): bool => $this->exclusionsReadable);
+		$guard->method('clearCache')->willReturnCallback(function (): void {
+			if ($this->onClearCache !== null) {
+				($this->onClearCache)();
+			}
+		});
 		return $guard;
 	}
 

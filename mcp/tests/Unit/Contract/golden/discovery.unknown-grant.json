@@ -1020,7 +1020,7 @@
                         "annotations": {
                             "title": "Add or remove a file tag",
                             "readOnlyHint": false,
-                            "destructiveHint": false,
+                            "destructiveHint": true,
                             "idempotentHint": false,
                             "openWorldHint": false
                         }

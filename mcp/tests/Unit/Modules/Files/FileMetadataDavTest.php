@@ -104,6 +104,17 @@ final class FileMetadataDavTest extends TestCase {
 	}
 
 	#[DataProvider('pins')]
+	public function testAnAppPluginThatVetoesWritesLeavesTheReadsAlone(string $major): void {
+		$this->boot($major);
+		$veto = new VetoPlugin();
+		$this->native->appPlugins = [$veto];
+		self::assertStringContainsString('first comment', (string)$this->dav->comments('alice', self::FILE, 20, 0)->body);
+		self::assertStringContainsString('Visible tag', (string)$this->dav->tags('alice', self::FILE)->body);
+		self::assertSame([], $veto->vetoed, 'REPORT and PROPFIND bind and unbind nothing');
+		self::assertSame(['REPORT comments/files/' . self::FILE, 'PROPFIND systemtags-relations/files/' . self::FILE], $this->native->methods);
+	}
+
+	#[DataProvider('pins')]
 	public function testUnreachableFilesAreRefusedAlike(string $major): void {
 		$this->boot($major);
 		$messages = [];

@@ -65,6 +65,14 @@
       "apps/dav/lib/SystemTag/SystemTagsByIdCollection.php": {
         "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/SystemTag/SystemTagsByIdCollection.php",
         "sha256": "66ef999ad2e1e6161712272d74ac794e0ea0e7f32163afd9e74a64649beffa35"
+      },
+      "apps/dav/lib/Events/SabrePluginAddEvent.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/Events/SabrePluginAddEvent.php",
+        "sha256": "71a517a8f0e8b78794477dd2be9b2632f4ce74bd08bf44c4ab3afad88cc310d7"
+      },
+      "lib/public/SabrePluginEvent.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/lib/public/SabrePluginEvent.php",
+        "sha256": "35b6efcca7341bdb9f90b0a760a5550b5edeb34a07deb617cea69b6409e27309"
       }
     },
     "35": {
@@ -131,6 +139,14 @@
       "apps/dav/lib/SystemTag/SystemTagsByIdCollection.php": {
         "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/SystemTag/SystemTagsByIdCollection.php",
         "sha256": "8866898acd023c1f04c7c55efda47ace4b0bb3afc3534f8a4f6912001614fea3"
+      },
+      "apps/dav/lib/Events/SabrePluginAddEvent.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/Events/SabrePluginAddEvent.php",
+        "sha256": "c046240c3a10e1e0ae15a3accd52caea724ebd29e6e4544dce0ac64a48415396"
+      },
+      "lib/public/SabrePluginEvent.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/lib/public/SabrePluginEvent.php",
+        "sha256": "3a686007f00e079403a166a28e8abf278364ae8729059be90294681be0eb9dbb"
       }
     }
   }

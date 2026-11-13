@@ -4,9 +4,15 @@
 -->
 # Testing
 
-Use focused tests while developing and the required gates for the final committed change. Keep the command, PHP configuration, revision, exit status and evidence together. A test count alone is not a behavioral comparison.
+Read the [contribution guide](../../CONTRIBUTING.md) for the development philosophy and access requirements. Use focused tests while developing and the required gates for the final committed change. Keep the command, PHP configuration, revision, exit status and evidence together. A test count alone is not a behavioral comparison.
 
 When moving or splitting code, reconfirm source-reader paths and move certificates against the affected revisions. The commands below refer to the checked-in harness; integration image pins and the chosen execution matrix belong to the workflow and dated validation record.
+
+## Validation policy
+
+For code changes, both author and reviewer run the focused and affected tests, all of `tests/Architecture`, `tests/Unit/Scripts/Dev/MapCoverageTest.php`, all of `tests/Unit/Contract`, and REUSE on a clean copy as described in [Packaging](packaging.md#licenses-and-attribution). The complete unit and integration suites run in the existing GitHub Actions release validation, once on the authorized release-branch push; do not repeat them locally for each patch. Local native integration is limited to an explicitly scoped diagnostic, not an unfiltered cell or the full matrix.
+
+New tests belong in the existing `tests.yml` partitions and `integration.yml` cells, without a parallel workflow, runner or PHPUnit configuration. Use `scripts/ci/phpunit.php prepare <report-directory>` from `mcp/` to inspect the unit inventory; the existing CI verify step proves each inventoried identity executed exactly once. Changes to integration tests, fixtures or doubles require renewed integration validation in the existing CI. Markdown-only changes need a content and link review, without application tests or CI.
 
 ## Prerequisites
 
@@ -19,7 +25,7 @@ composer install
 
 Use a PHP version supported by `appinfo/info.xml` and the dependencies in `composer.lock`. The extensions and PHP matrix used by CI are in [tests.yml](../../.github/workflows/tests.yml). The local unit bootstrap supplies OCP test support; it does not install Nextcloud. Do not run these unit fixtures against a live user's installation.
 
-Before collecting evidence, commit the change and ensure the app's source directories contain no hidden ignored code. From the repository root, this should produce no output:
+Before collecting evidence, record the revision and any uncommitted changes; final release evidence must identify the committed content. Check that the app's source directories contain no hidden ignored code. From the repository root, review every entry in:
 
 ```sh
 git status --short --ignored mcp/lib mcp/src mcp/templates mcp/appinfo mcp/css mcp/js mcp/img mcp/l10n
@@ -27,10 +33,9 @@ git status --short --ignored mcp/lib mcp/src mcp/templates mcp/appinfo mcp/css m
 
 ## Unit and contract suites
 
-The following commands run from `mcp/`:
+The following commands run from `mcp/`: the first is an example focused test, and the second is the required Contract gate. They do not run the complete unit suite.
 
 ```sh
-php -d memory_limit=1G vendor/bin/phpunit --do-not-cache-result --log-junit /tmp/mcp-unit.xml
 php -d memory_limit=1G vendor/bin/phpunit --do-not-cache-result tests/Unit/Tools/Files/FilesPlanTest.php
 php -d memory_limit=1G vendor/bin/phpunit --do-not-cache-result tests/Unit/Contract
 ```
@@ -51,6 +56,7 @@ From `mcp/`:
 
 ```sh
 php -d memory_limit=1G vendor/bin/phpunit --do-not-cache-result tests/Architecture
+php -d memory_limit=1G vendor/bin/phpunit --do-not-cache-result tests/Unit/Scripts/Dev/MapCoverageTest.php
 php -d memory_limit=1G scripts/dev/map_check.php
 ```
 
@@ -86,13 +92,15 @@ A baseline identity may match through the reviewed FQCN/test map, not an arbitra
 
 Read the [integration guide](../../mcp/tests/Integration/README.md) and [integration workflow](../../.github/workflows/integration.yml) for the current cells, native-app versions, image digests, upgrade baseline and artifacts. Use a disposable installation, never a user's instance.
 
-On a Mac, the supported local entrypoint runs from the repository root:
+The active 1.4.0 matrix has eight cells: NC34/MariaDB and NC35/MariaDB, PostgreSQL and SQLite, each in fresh and upgrade mode. New coverage is NC34/35 only; the unchanged installation range in `info.xml` does not require active NC32/33 cells.
+
+For an explicitly scoped diagnostic on a Mac, the existing entrypoint runs from the repository root. This example selects only CalendarToolsTest:
 
 ```sh
-mcp/tests/Integration/ci/run-local.sh 32 mariadb fresh
+MCP_IT_PHPUNIT_ARGS='--filter CalendarToolsTest' sh mcp/tests/Integration/ci/run-local.sh 34 mariadb fresh
 ```
 
-That is one cell, not a claim of full matrix coverage. Select the cells required by the change and the approved validation plan; record any reduced matrix explicitly. `MCP_IT_PHPUNIT_ARGS` can filter a diagnostic run as documented by the integration guide. A filtered pass does not replace an unfiltered cell.
+A filtered diagnostic is not full-cell or matrix evidence and does not replace release CI. Keep its filter, selected cell and limitations with the result; do not remove the filter to run the complete suite locally.
 
 The entrypoint manages the shared Colima engine, queue and per-run resources. Coordinate resource slots, preserve other runs and do not stop the shared profile or prune global resources. The harness collects JUnit and Nextcloud/database logs. Real integration covers native permissions, mount behavior, version APIs, transactions and upgrade state that mocks cannot establish.
 

@@ -2,16 +2,19 @@
 
 Português (Brasil): [README.pt-BR.md](README.pt-BR.md)
 
-Version for **Nextcloud 32 to 35** (`info.xml` declares 32–35; the API contract has fixtures for 31 to 35, and 31 is still checked without being declared). The endpoint serves MCP 2026-07-28 clients, stateless, through `server/discover` and per-request `_meta`, and also earlier clients, which use `initialize` with 2025-06-18. It exposes MCP `2025-06-18` over sessionless Streamable HTTP without SSE, on the app's own route:
+Version for **Nextcloud 34 and 35**, the supported and tested versions of 1.4.0. `info.xml` still declares 32–35 and the existing 32/33 code is kept, but nothing new targets 32 or 33; the API contract fixtures and the CI cover 34 and 35 only. The endpoint serves MCP 2026-07-28 clients, stateless, through `server/discover` and per-request `_meta`, and also earlier clients, which use `initialize` with 2025-06-18. It exposes MCP `2025-06-18` over sessionless Streamable HTTP without SSE, on the app's own route:
 
 - `https://<instance>/apps/mcp/` with clean URLs;
 - `https://<instance>/index.php/apps/mcp/` without clean URLs.
 
 The exact URL of the instance appears on the administration and personal pages.
 
-## What's new in 1.3.5
+## What's new in 1.4.0
 
-- Forms 5.4.2 now supports private form creation and question/option structure edits ([#35](https://github.com/sintax-tech/mcp-for-nextcloud/issues/35)), with the existing preview, confirmation and permission checks. Changing a question type on Forms 5.4.2 is refused before any native call or editing lock. Folder safety checks and warnings cover both 5.4.1 and 5.4.2, and refusal messages distinguish the installed version from creation permission. No database or permission change; updating from 1.3.4 needs no extra step.
+- **Routines after one confirmation:** `routines_create_meeting` creates a private Talk room, posts the agenda and creates the calendar event with the room link; `routines_create_mail_card` saves one email attachment as a new file and creates a Deck card that references it; `routines_prepare_meeting` builds a read-only dossier for one event you can see. A routine stops at the first failed or uncertain step and keeps what was created: no rollback, no retry and no promise that invitations are delivered. The mail card routine never shares the saved file with the board, because that disclosure needs its own decision.
+- **New tools:** calendar availability and suggested times (local free/busy, up to 20 people, at most 7 days), your own Activity feed, unread Talk conversations and messages (the read marker never moves), your own notifications (list and dismiss), your own out-of-office absence (read, create and change), your own user status, file tags and comments, saving a mail attachment to Files ([#36](https://github.com/sintax-tech/mcp-for-nextcloud/issues/36)) and Deck label management. Thanks to @Roman991 ([#37](https://github.com/sintax-tech/mcp-for-nextcloud/pull/37)) for the Deck label code.
+- **Opt-in permissions:** all 15 new permissions are denied by default, the new reads included, and an upgrade grants no new access. Clearing an absence is not offered: Nextcloud's own clearing can remove the absence jobs of every user, so it stays out until that is fixed upstream.
+- **Nextcloud 34 and 35** are the supported and tested versions. The declared installation range stays 32–35 and the existing 32/33 code is kept, without new guarantees. No database migration; updating from 1.3.5 needs no extra step.
 
 [Full changes](../CHANGELOG.md).
 
@@ -24,6 +27,7 @@ Earlier releases: [History](../HISTORY.md).
 - **Forms ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** independent `forms.read`, `forms.results`, `forms.create` and `forms.edit` grants cover structure discovery, authorized submissions, private form creation and editing. Editing includes adding, reordering and deleting questions/options and changing supported question types. Existing `forms.edit` grants include these actions; review them. Native upload-folder, answer-orphaning, editing-lock and confirmation-email-selection effects are explained in the plan.
 - **Polls ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** `polls.read` discovers polls/options/status; `polls.results` and `polls.links` separately admit permitted results and existing direct participation links. `polls.create`, `polls.configure`, `polls.options`, `polls.options.remove`, `polls.share` and `polls.invite` control creation, settings/state, options, sharing and individual invitations. Native visibility/anonymity still apply; no voting tool is exposed.
 - **Collectives ([#22](https://github.com/sintax-tech/mcp-for-nextcloud/issues/22)):** `collectives.read` reads/searches pages; `collectives.create`, `collectives.edit` and `collectives.move` write pages. On NC33–35, `collectives.collective.create` creates a collective and `collectives.members` lists/manages members. These grants are independent of `files.*`; Full includes all Collectives operations, subject to native rights.
+- **1.4.0 permissions:** `calendar.availability`, `activity.read`, `notifications.read`, `notifications.dismiss`, `availability.read`, `availability.absence`, `status.read`, `status.edit`, `files.tags`, `files.comments`, `mail.save`, `deck.labels`, `routines.prepare`, `routines.meeting`, `routines.mailtask`. All start denied, the new reads included; saved policies and group grants are kept, and a permission missing from a saved policy counts as denied. Listing file tags and reading file comments use `files.read`, and the Talk unread tools use `talk.read`. Each routine also needs the permissions of the steps it runs.
 - **Files ([#20](https://github.com/sintax-tech/mcp-for-nextcloud/issues/20)):** the separate, default-denied `files.delete` covers eligible local files/folders and permitted shared descendants, with confirmation and residual recovery risk. Received share roots and unsupported backends remain refused; see deletion below.
 - **OAuth:** strict Basic public-client identification with an empty password can supply a missing `client_id`. PKCE and native client validation still apply. There is no dynamic registration or client-secret authentication; Zapia compatibility awaits the reporter's test.
 
@@ -764,12 +768,13 @@ Expected responses:
 
 ## Development
 
+Read the [contribution guide and development philosophy](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/CONTRIBUTING.md) before proposing a substantial change. It is also available in [Português (Brasil)](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/CONTRIBUTING.pt-BR.md), [Español](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/CONTRIBUTING.es.md) and [Deutsch](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/CONTRIBUTING.de.md). Follow the [testing guide](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/docs/en/testing.md) for focused checks and release validation.
+
 ```sh
 composer install
-vendor/bin/phpunit
 ```
 
-The tests are unit tests, with mocks of the OCP interfaces (`nextcloud/ocp` stable33) and an in-memory file tree (`tests/Unit/Tools/FakeTree.php`). They do not replace installation on a real Nextcloud, which is the only place where share ACL, version creation, trash bin and external storage are verified.
+The tests are unit tests, with mocks of the OCP interfaces (`nextcloud/ocp` stable34) and an in-memory file tree (`tests/Unit/Tools/FakeTree.php`). They do not replace installation on a real Nextcloud, which is the only place where share ACL, version creation, trash bin and external storage are verified.
 
 The capability-module layout separates `lib/Modules`, `lib/Mcp`, `lib/Access`, `lib/OAuth` and `lib/Platform`; Nextcloud controllers and infrastructure remain under `lib/`. Module registration uses `Application::MODULES`; each module lists its tools in `<App>ToolCatalog::TOOLS`. Development documentation in the repository (English):
 

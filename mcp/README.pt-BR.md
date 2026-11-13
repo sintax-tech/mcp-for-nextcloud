@@ -2,16 +2,19 @@
 
 English: [README.md](README.md)
 
-Versão para **Nextcloud 32 a 35** (o `info.xml` declara 32–35; o contrato de API tem fixtures de 31 a 35, e o 31 segue conferido sem ser declarado). O endpoint atende clientes MCP 2026-07-28, sem estado, via `server/discover` e `_meta` por requisição, e também clientes anteriores, que usam `initialize` com 2025-06-18. Expõe MCP `2025-06-18` via Streamable HTTP sem sessão e sem SSE, na rota do próprio app:
+Versão para **Nextcloud 34 e 35**, as versões suportadas e testadas da 1.4.0. O `info.xml` ainda declara 32–35 e o código existente para 32/33 é mantido, mas nada novo visa o 32 ou o 33; as fixtures do contrato de API e o CI cobrem só 34 e 35. O endpoint atende clientes MCP 2026-07-28, sem estado, via `server/discover` e `_meta` por requisição, e também clientes anteriores, que usam `initialize` com 2025-06-18. Expõe MCP `2025-06-18` via Streamable HTTP sem sessão e sem SSE, na rota do próprio app:
 
 - `https://<instância>/apps/mcp/` com URLs limpas;
 - `https://<instância>/index.php/apps/mcp/` sem URLs limpas.
 
 A URL exata da instância aparece nas páginas de administração e pessoal.
 
-## Novidades da 1.3.5
+## Novidades da 1.4.0
 
-- O Forms 5.4.2 passa a aceitar criação de formulários privados e alterações na estrutura de perguntas/opções ([#35](https://github.com/sintax-tech/mcp-for-nextcloud/issues/35)), com a prévia, confirmação e verificações de permissão existentes. A troca de tipo de uma pergunta no Forms 5.4.2 é recusada antes de qualquer chamada nativa ou lock de edição. As verificações e os avisos de pastas cobrem a 5.4.1 e a 5.4.2, e as mensagens de recusa distinguem a versão instalada da permissão para criar. Sem mudança no banco de dados ou nas permissões; atualizar da 1.3.4 não exige passo adicional.
+- **Rotinas com uma confirmação:** `routines_create_meeting` cria uma sala privada do Talk, publica a pauta e cria o evento no calendário com o link da sala; `routines_create_mail_card` salva um anexo de e-mail como arquivo novo e cria um cartão do Deck que o referencia; `routines_prepare_meeting` monta um dossiê somente leitura de um evento que você já vê. A rotina para no primeiro passo que falha ou fica incerto e mantém o que foi criado: sem desfazer, sem nova tentativa e sem garantia de entrega de convites. A rotina do cartão nunca compartilha o arquivo salvo com o quadro, porque essa divulgação precisa de decisão própria.
+- **Ferramentas novas:** disponibilidade e sugestão de horários no calendário (livre/ocupado local, até 20 pessoas, no máximo 7 dias), o seu próprio feed de Atividades, conversas e mensagens não lidas do Talk (o marcador de leitura nunca avança), as suas notificações (listar e dispensar), a sua ausência (ler, criar e alterar), o seu status de usuário, etiquetas e comentários de arquivos, salvar um anexo de e-mail no Arquivos ([#36](https://github.com/sintax-tech/mcp-for-nextcloud/issues/36)) e gestão de etiquetas do Deck. Agradecimento a @Roman991 ([#37](https://github.com/sintax-tech/mcp-for-nextcloud/pull/37)) pelo código das etiquetas do Deck.
+- **Permissões opcionais:** as 15 permissões novas começam negadas, inclusive as leituras novas, e a atualização não concede acesso novo. Limpar uma ausência não é oferecido: a limpeza do próprio Nextcloud pode remover os jobs de ausência de todos os usuários, então fica de fora até a correção no Nextcloud.
+- **Nextcloud 34 e 35** são as versões suportadas e testadas. A faixa de instalação declarada continua 32–35 e o código existente para 32/33 é mantido, sem garantias novas. Sem migração de banco de dados; atualizar da 1.3.5 não exige passo adicional.
 
 [Mudanças completas](../CHANGELOG.md).
 
@@ -24,6 +27,7 @@ Versões anteriores: [Histórico](../HISTORY.pt-BR.md).
 - **Forms ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** os grants independentes `forms.read`, `forms.results`, `forms.create` e `forms.edit` cobrem descoberta de estrutura, submissões autorizadas, criação de formulário privado e edição. Editar inclui adicionar, ordenar e excluir perguntas/opções e trocar tipos de pergunta suportados. Grants `forms.edit` existentes incluem essas ações; revise-os. Efeitos nativos em pastas de upload, respostas órfãs, lock de edição e seleção de email de confirmação são explicados no plano.
 - **Polls ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** `polls.read` descobre enquetes/opções/status; `polls.results` e `polls.links` liberam separadamente resultados permitidos e links diretos de participação existentes. `polls.create`, `polls.configure`, `polls.options`, `polls.options.remove`, `polls.share` e `polls.invite` controlam criação, configurações/estado, opções, compartilhamento e convites individuais. Visibilidade/anonimato nativos continuam valendo; não há ferramenta de voto.
 - **Collectives ([#22](https://github.com/sintax-tech/mcp-for-nextcloud/issues/22)):** `collectives.read` lê/busca páginas; `collectives.create`, `collectives.edit` e `collectives.move` escrevem páginas. No NC33–35, `collectives.collective.create` cria um coletivo e `collectives.members` lista/gerencia membros. Esses grants são independentes de `files.*`; Total inclui todas as operações do Collectives, respeitando os direitos nativos.
+- **Permissões da 1.4.0:** `calendar.availability`, `activity.read`, `notifications.read`, `notifications.dismiss`, `availability.read`, `availability.absence`, `status.read`, `status.edit`, `files.tags`, `files.comments`, `mail.save`, `deck.labels`, `routines.prepare`, `routines.meeting`, `routines.mailtask`. Todas começam negadas, inclusive as leituras novas; políticas salvas e permissões de grupos são mantidas, e uma permissão ausente de uma política salva conta como negada. Listar etiquetas e ler comentários de arquivos usam `files.read`, e as ferramentas de não lidas do Talk usam `talk.read`. Cada rotina também precisa das permissões dos passos que executa.
 - **Arquivos ([#20](https://github.com/sintax-tech/mcp-for-nextcloud/issues/20)):** o grant separado e negado por padrão `files.delete` cobre arquivos/pastas locais elegíveis e descendentes compartilhados permitidos, com confirmação e risco residual de recuperação. Raízes recebidas e backends sem suporte continuam recusados; veja exclusão abaixo.
 - **OAuth:** identificação Basic estrita de cliente público com senha vazia pode preencher `client_id` ausente. PKCE e validação nativa continuam valendo. Não há registro dinâmico nem autenticação por segredo; compatibilidade com Zapia aguarda o teste do relator.
 
@@ -764,12 +768,13 @@ Respostas esperadas:
 
 ## Desenvolvimento
 
+Leia o [guia de contribuição e a filosofia de desenvolvimento](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/CONTRIBUTING.pt-BR.md) antes de propor uma mudança maior. Ele também está disponível em [English](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/CONTRIBUTING.md), [Español](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/CONTRIBUTING.es.md) e [Deutsch](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/CONTRIBUTING.de.md). Siga o [guia de testes](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/docs/en/testing.md) para verificações focais e validação da release.
+
 ```sh
 composer install
-vendor/bin/phpunit
 ```
 
-Os testes são unitários, com mocks das interfaces OCP (`nextcloud/ocp` stable33) e uma árvore de arquivos em memória (`tests/Unit/Tools/FakeTree.php`). Eles não substituem a instalação num Nextcloud real, que é o único lugar onde se verificam ACL de compartilhamento, criação de versão, lixeira e storages externos.
+Os testes são unitários, com mocks das interfaces OCP (`nextcloud/ocp` stable34) e uma árvore de arquivos em memória (`tests/Unit/Tools/FakeTree.php`). Eles não substituem a instalação num Nextcloud real, que é o único lugar onde se verificam ACL de compartilhamento, criação de versão, lixeira e storages externos.
 
 A estrutura de módulos por capacidades separa `lib/Modules`, `lib/Mcp`, `lib/Access`, `lib/OAuth` e `lib/Platform`; controllers e infraestrutura do Nextcloud permanecem em `lib/`. O registro de módulos usa `Application::MODULES`; cada módulo lista suas ferramentas em `<App>ToolCatalog::TOOLS`. Documentação de desenvolvimento no repositório (em inglês):
 

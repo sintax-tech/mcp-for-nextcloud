@@ -2,6 +2,10 @@
 
 [English](HISTORY.md) · Português (Brasil) · [Deutsch](HISTORY.de.md) · [Español](HISTORY.es.md)
 
+## Novidades da 1.3.5
+
+- O Forms 5.4.2 passa a aceitar criação de formulários privados e alterações na estrutura de perguntas/opções ([#35](https://github.com/sintax-tech/mcp-for-nextcloud/issues/35)), com a prévia, confirmação e verificações de permissão existentes. A troca de tipo de uma pergunta no Forms 5.4.2 é recusada antes de qualquer chamada nativa ou lock de edição. As verificações e os avisos de pastas cobrem a 5.4.1 e a 5.4.2, e as mensagens de recusa distinguem a versão instalada da permissão para criar. Sem mudança no banco de dados ou nas permissões; atualizar da 1.3.4 não exige passo adicional.
+
 ## Novidades da 1.3.4
 
 - Administradores podem configurar o limite de leitura de arquivos (20 MiB por padrão, com teto de memória do PHP acima desse limite; [PR #33](https://github.com/sintax-tech/mcp-for-nextcloud/pull/33), com contribuição de @johkoenig). O pacote inclui o changelog para o gerenciador de apps ([#32](https://github.com/sintax-tech/mcp-for-nextcloud/issues/32)). A resposta vazia de `notes_read` não foi reproduzida; a cobertura de regressão agora verifica Notes e Notizen, sem afirmar uma correção ([#34](https://github.com/sintax-tech/mcp-for-nextcloud/issues/34)).

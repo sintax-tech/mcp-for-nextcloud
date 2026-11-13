@@ -4,7 +4,7 @@
 -->
 # Adding a module or tool
 
-Use the capability-module contract for new work. Start with the existing module when adding a tool to an app already supported. Read [Architecture](architecture.md) before selecting dependency boundaries.
+Read the [contribution guide and development philosophy](../../CONTRIBUTING.md) before choosing the scope and access model. Use the capability-module contract for new work. Start with the existing module when adding a tool to an app already supported. Read [Architecture](architecture.md) before selecting dependency boundaries.
 
 Use the linked catalog modules as examples; keep dispatch in the shared catalog base and business logic in focused work classes.
 
@@ -12,7 +12,9 @@ Use the linked catalog modules as examples; keep dispatch in the shared catalog 
 
 Define the user operation, its grant, optional native app, inputs, return shape and refusal cases first. A new feature needs explicit scope; a restructuring ticket must preserve the existing behavior. Published MCP tool names and persisted names must not be renamed as an incidental cleanup.
 
-Check [`GrantCatalog`](../../mcp/lib/Access/Grants/GrantCatalog.php) for grant operations, [`GrantMatrix`](../../mcp/lib/Access/Grants/GrantMatrix.php) for module-to-native-app mapping, [`Application::MODULES`](../../mcp/lib/AppInfo/Application.php) and [`ToolDefinition`](../../mcp/lib/Mcp/Tools/ToolDefinition.php) instead of inventing an operation or registration API. A new grant or persisted key needs its own compatibility review and contract evidence.
+Check [`GrantCatalog`](../../mcp/lib/Access/Grants/GrantCatalog.php) for grant operations, [`GrantMatrix`](../../mcp/lib/Access/Grants/GrantMatrix.php) for module-to-native-app mapping, [`Application::MODULES`](../../mcp/lib/AppInfo/Application.php) and [`ToolDefinition`](../../mcp/lib/Mcp/Tools/ToolDefinition.php) instead of inventing an operation or registration API. A new grant or persisted key needs its own compatibility review and contract evidence. Preserve saved policies; new writes and newly introduced sensitive reads start denied. Expanding an existing grant also needs an explicit access review, including arguments that introduce new effects through an existing tool.
+
+For work targeting 1.4.0, new compatibility guarantees and test coverage are NC34/35 only. Preserve existing NC32/33 production code and the declared installation range; do not introduce NC32/33-specific guards, fallbacks or fixtures. Follow the active workflow matrix rather than historical test data.
 
 ## Module folder and catalog
 

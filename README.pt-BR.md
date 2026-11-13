@@ -6,7 +6,7 @@
 Deixe o Claude e outros clientes MCP trabalharem com seus arquivos, notas, calendários, contatos, tarefas, Deck, Talk, Mail, Tables, Forms, Polls e Collectives. Cada usuário usa as próprias permissões, e nada sai do servidor sem liberação do admin.
 
 [![Tests](https://github.com/sintax-tech/mcp-for-nextcloud/actions/workflows/tests.yml/badge.svg)](https://github.com/sintax-tech/mcp-for-nextcloud/actions/workflows/tests.yml)
-[![Nextcloud 32–35](https://img.shields.io/badge/Nextcloud-32--35-0082c9?logo=nextcloud&logoColor=white)](https://nextcloud.com)
+[![Nextcloud 34–35](https://img.shields.io/badge/Nextcloud-34--35-0082c9?logo=nextcloud&logoColor=white)](https://nextcloud.com)
 [![App Store do Nextcloud](https://img.shields.io/badge/App%20Store-mcp-0082c9?logo=nextcloud&logoColor=white)](https://apps.nextcloud.com/apps/mcp)
 [![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-777bb4?logo=php&logoColor=white)](https://www.php.net)
 [![MCP](https://img.shields.io/badge/MCP-2025--06--18%20%7C%202026--07--28-111)](https://modelcontextprotocol.io)
@@ -19,9 +19,12 @@ Deixe o Claude e outros clientes MCP trabalharem com seus arquivos, notas, calen
 
 ---
 
-## Novidades da 1.3.5
+## Novidades da 1.4.0
 
-- O Forms 5.4.2 passa a aceitar criação de formulários privados e alterações na estrutura de perguntas/opções ([#35](https://github.com/sintax-tech/mcp-for-nextcloud/issues/35)), com a prévia, confirmação e verificações de permissão existentes. A troca de tipo de uma pergunta no Forms 5.4.2 é recusada antes de qualquer chamada nativa ou lock de edição. As verificações e os avisos de pastas cobrem a 5.4.1 e a 5.4.2, e as mensagens de recusa distinguem a versão instalada da permissão para criar. Sem mudança no banco de dados ou nas permissões; atualizar da 1.3.4 não exige passo adicional.
+- **Rotinas com uma confirmação:** `routines_create_meeting` cria uma sala privada do Talk, publica a pauta e cria o evento no calendário com o link da sala; `routines_create_mail_card` salva um anexo de e-mail como arquivo novo e cria um cartão do Deck que o referencia; `routines_prepare_meeting` monta um dossiê somente leitura de um evento que você já vê. A rotina para no primeiro passo que falha ou fica incerto e mantém o que foi criado: sem desfazer, sem nova tentativa e sem garantia de entrega de convites. A rotina do cartão nunca compartilha o arquivo salvo com o quadro, porque essa divulgação precisa de decisão própria.
+- **Ferramentas novas:** disponibilidade e sugestão de horários no calendário (livre/ocupado local, até 20 pessoas, no máximo 7 dias), o seu próprio feed de Atividades, conversas e mensagens não lidas do Talk (o marcador de leitura nunca avança), as suas notificações (listar e dispensar), a sua ausência (ler, criar e alterar), o seu status de usuário, etiquetas e comentários de arquivos, salvar um anexo de e-mail no Arquivos ([#36](https://github.com/sintax-tech/mcp-for-nextcloud/issues/36)) e gestão de etiquetas do Deck. Agradecimento a @Roman991 ([#37](https://github.com/sintax-tech/mcp-for-nextcloud/pull/37)) pelo código das etiquetas do Deck.
+- **Permissões opcionais:** as 15 permissões novas começam negadas, inclusive as leituras novas, e a atualização não concede acesso novo. Limpar uma ausência não é oferecido: a limpeza do próprio Nextcloud pode remover os jobs de ausência de todos os usuários, então fica de fora até a correção no Nextcloud.
+- **Nextcloud 34 e 35** são as versões suportadas e testadas. A faixa de instalação declarada continua 32–35 e o código existente para 32/33 é mantido, sem garantias novas. Sem migração de banco de dados; atualizar da 1.3.5 não exige passo adicional.
 
 [Mudanças completas](CHANGELOG.md).
 
@@ -76,6 +79,7 @@ E também:
 - **Forms ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** os grants independentes `forms.read`, `forms.results`, `forms.create` e `forms.edit` cobrem descoberta de estrutura, submissões autorizadas, criação de formulário privado e edição. Editar inclui adicionar, ordenar e excluir perguntas/opções e trocar tipos de pergunta suportados. Grants `forms.edit` existentes incluem essas ações; revise-os. Efeitos nativos em pastas de upload, respostas órfãs, lock de edição e seleção de email de confirmação são explicados no plano.
 - **Polls ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** `polls.read` descobre enquetes/opções/status; `polls.results` e `polls.links` liberam separadamente resultados permitidos e links diretos de participação existentes. `polls.create`, `polls.configure`, `polls.options`, `polls.options.remove`, `polls.share` e `polls.invite` controlam criação, configurações/estado, opções, compartilhamento e convites individuais. Visibilidade/anonimato nativos continuam valendo; não há ferramenta de voto.
 - **Collectives ([#22](https://github.com/sintax-tech/mcp-for-nextcloud/issues/22)):** `collectives.read` lê/busca páginas; `collectives.create`, `collectives.edit` e `collectives.move` escrevem páginas. No NC33–35, `collectives.collective.create` cria um coletivo e `collectives.members` lista/gerencia membros. Esses grants são independentes de `files.*`; Total inclui todas as operações do Collectives, respeitando os direitos nativos.
+- **Permissões da 1.4.0:** `calendar.availability`, `activity.read`, `notifications.read`, `notifications.dismiss`, `availability.read`, `availability.absence`, `status.read`, `status.edit`, `files.tags`, `files.comments`, `mail.save`, `deck.labels`, `routines.prepare`, `routines.meeting`, `routines.mailtask`. Todas começam negadas, inclusive as leituras novas; políticas salvas e permissões de grupos são mantidas, e uma permissão ausente de uma política salva conta como negada. Listar etiquetas e ler comentários de arquivos usam `files.read`, e as ferramentas de não lidas do Talk usam `talk.read`. Cada rotina também precisa das permissões dos passos que executa.
 - **Arquivos ([#20](https://github.com/sintax-tech/mcp-for-nextcloud/issues/20)):** o grant separado e negado por padrão `files.delete` cobre arquivos/pastas locais elegíveis e descendentes compartilhados permitidos, com confirmação e risco residual de recuperação. Raízes recebidas e backends sem suporte continuam recusados; veja exclusão abaixo.
 - **OAuth:** identificação Basic estrita de cliente público com senha vazia pode preencher `client_id` ausente. PKCE e validação nativa continuam valendo. Não há registro dinâmico nem autenticação por segredo; compatibilidade com Zapia aguarda o teste do relator.
 
@@ -171,7 +175,7 @@ Etiquetas, hora de vencimento, dependências nativas e o vínculo nativo de arqu
 
 ## Requisitos
 
-- Nextcloud **32 a 35**, cada versão conferida pelos testes de contrato de API contra o primeiro build da major (com o Deck e o Talk correspondentes); Deck 1.16+ e Talk 22+ no 32, até Deck 1.19 e Talk 25 no 35
+- Nextcloud **34 e 35** são suportados e testados na 1.4.0. O app ainda instala no **32 a 35** (o `info.xml` não mudou) e mantém o código existente para 32/33, mas nada novo visa o 32 ou o 33 e o CI testa só 34 e 35; as menções a 32/33 em outras seções descrevem esse código existente. Os testes de contrato de API conferem o primeiro build do 34 e do 35, com o Deck e o Talk correspondentes, até Deck 1.19 e Talk 25 no 35
 - PHP **8.2+** com `zip`, `mbstring` e `dom`
 - Apps opcionais, só para as próprias ferramentas (ocultas enquanto o app estiver desativado): Notes, Calendar, Contacts, Deck, Talk (`spreed`), Versões (`files_versions`, obrigatório para editar), Arquivos excluídos (`files_trashbin`, obrigatório para excluir)
 - Deck e Talk são opcionais: as ferramentas deles só aparecem com o app ativo numa versão suportada; uma versão anterior conta como desativada, as ferramentas dela ficam ocultas e a página de administração diz qual versão as traz de volta
@@ -410,10 +414,11 @@ O administrador pode restringir um usuário específico para que, em vez de aces
 
 ## Desenvolvimento
 
+Leia o [guia de contribuição e a filosofia de desenvolvimento](CONTRIBUTING.pt-BR.md) antes de propor uma mudança maior. Ele também está disponível em [English](CONTRIBUTING.md), [Español](CONTRIBUTING.es.md) e [Deutsch](CONTRIBUTING.de.md). Siga o [guia de testes](docs/en/testing.md) para verificações focais e validação da release.
+
 ```bash
 cd mcp
 composer install
-vendor/bin/phpunit          # testes unitários com mocks do OCP, sem precisar de Nextcloud
 ```
 
 Organização em `mcp/`: `lib/Modules/<App>` (módulos por capacidades e ferramentas), `lib/Mcp` (protocolo, descoberta e confirmação), `lib/Access` (permissões, visibilidade e escopos), `lib/OAuth` (servidor de autorização), `lib/Platform` (primitivas compartilhadas), além de `lib/Controller`, templates e assets. Veja a [documentação de desenvolvimento em inglês](docs/en/architecture.md) e as notas técnicas detalhadas em [`mcp/README.pt-BR.md`](mcp/README.pt-BR.md). O registro de módulos usa `Application::MODULES`; cada módulo lista suas ferramentas em `<App>ToolCatalog::TOOLS`.
@@ -432,7 +437,7 @@ AGPL-3.0-or-later, com o termo adicional de atribuição da seção 7(b) no [NOT
 
 O pacote inclui Smalot PdfParser, Symfony Polyfill Mbstring e o autoloader do Composer. Consulte versões, licenças, autoria e dependências de desenvolvimento em [THIRD-PARTY-NOTICES.md](mcp/THIRD-PARTY-NOTICES.md).
 
-**Contribuidores.** Agradecimento a @NightDragon1 ([#5](https://github.com/sintax-tech/mcp-for-nextcloud/pull/5)) pela checagem de visibilidade da raiz, a @matt-ek ([#10](https://github.com/sintax-tech/mcp-for-nextcloud/issues/10)) pela tradução para o alemão, a @Zegorax ([#8](https://github.com/sintax-tech/mcp-for-nextcloud/pull/8)) pelos clientes OAuth cadastrados pelo administrador, e a @mturgeonferland ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)) pelas subtarefas nas ferramentas de Tarefas. A auditoria de tags ocultas seguiu o relato em [#4](https://github.com/sintax-tech/mcp-for-nextcloud/issues/4). Agradecimentos a Marc-Olivier Turgeon-Ferland (@mturgeonferland) ([#29](https://github.com/sintax-tech/mcp-for-nextcloud/pull/29)) pelo código que serviu de base ao suporte ao status de tarefas. Rascunhos HTML são documentados na [#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30). A arquitetura de módulos por capacidades segue a proposta de Marc J. Cabrer Rosselló (@marcjoancr) na [#14](https://github.com/sintax-tech/mcp-for-nextcloud/pull/14). Agradecimentos a Johannes Koenig (@johkoenig) ([#33](https://github.com/sintax-tech/mcp-for-nextcloud/pull/33)) pelo aumento do limite de leitura de arquivos, agora configurável. O changelog no gerenciador de apps seguiu o pedido em [#32](https://github.com/sintax-tech/mcp-for-nextcloud/issues/32).
+**Contribuidores.** Agradecimento a @NightDragon1 ([#5](https://github.com/sintax-tech/mcp-for-nextcloud/pull/5)) pela checagem de visibilidade da raiz, a @matt-ek ([#10](https://github.com/sintax-tech/mcp-for-nextcloud/issues/10)) pela tradução para o alemão, a @Zegorax ([#8](https://github.com/sintax-tech/mcp-for-nextcloud/pull/8)) pelos clientes OAuth cadastrados pelo administrador, e a @mturgeonferland ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)) pelas subtarefas nas ferramentas de Tarefas. A auditoria de tags ocultas seguiu o relato em [#4](https://github.com/sintax-tech/mcp-for-nextcloud/issues/4). Agradecimentos a Marc-Olivier Turgeon-Ferland (@mturgeonferland) ([#29](https://github.com/sintax-tech/mcp-for-nextcloud/pull/29)) pelo código que serviu de base ao suporte ao status de tarefas. Rascunhos HTML são documentados na [#30](https://github.com/sintax-tech/mcp-for-nextcloud/issues/30). A arquitetura de módulos por capacidades segue a proposta de Marc J. Cabrer Rosselló (@marcjoancr) na [#14](https://github.com/sintax-tech/mcp-for-nextcloud/pull/14). Agradecimentos a Johannes Koenig (@johkoenig) ([#33](https://github.com/sintax-tech/mcp-for-nextcloud/pull/33)) pelo aumento do limite de leitura de arquivos, agora configurável. O changelog no gerenciador de apps seguiu o pedido em [#32](https://github.com/sintax-tech/mcp-for-nextcloud/issues/32). Agradecimento a @Roman991 ([#37](https://github.com/sintax-tech/mcp-for-nextcloud/pull/37)) pela gestão de etiquetas do Deck. Salvar anexos de e-mail no Arquivos seguiu o pedido em [#36](https://github.com/sintax-tech/mcp-for-nextcloud/issues/36).
 
 ## Sobre a Sintax
 

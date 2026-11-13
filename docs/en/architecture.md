@@ -6,6 +6,8 @@
 
 MCP for Cloud is a native Nextcloud app. The MCP endpoint exposes Nextcloud operations through tools and resources, using the authenticated account and the app's access policy. Nextcloud remains responsible for the underlying application data and native permissions.
 
+Read the [contribution guide and development philosophy](../../CONTRIBUTING.md) for the product principles behind these boundaries.
+
 ## Repository and runtime layout
 
 The repository root holds user READMEs, the CHANGELOG, legal documents and these development guides. The installable app is under `mcp/`; paths below are relative to that directory.

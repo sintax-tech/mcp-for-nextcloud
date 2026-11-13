@@ -4,13 +4,13 @@
 -->
 # Packaging
 
-The package is the installable `mcp` app, not a copy of the entire repository. Building and checking an archive does not sign, publish or install it.
+Read the [contribution guide](../../CONTRIBUTING.md) for the development philosophy and review expectations. The package is the installable `mcp` app, not a copy of the entire repository. Building and checking an archive does not sign, publish or install it.
 
 ## Package inputs and exclusions
 
 [`package.sh`](../../mcp/scripts/package.sh) stages `appinfo`, `lib`, templates, the two technical READMEs, the root `CHANGELOG.md`, legal documents, Composer metadata and runtime asset directories. It installs production dependencies from the lock file into the stage and removes that staged lock file before archiving. The archive has one top-level `mcp/` directory.
 
-The root READMEs, these `docs/en` guides, tests, development scripts, authored `src/`, development dependencies, credentials, logs and user data are not package inputs. Do not copy them into the app to repair a documentation link. The packaged technical READMEs link to the development guides by explicit repository URLs; the repository's current documentation may describe a newer tree than an older installed release.
+The root READMEs, the `CONTRIBUTING*.md` guides, these `docs/en` guides, tests, development scripts, authored `src/`, development dependencies, credentials, logs and user data are not package inputs. Do not copy them into the app to repair a documentation link. The packaged technical READMEs link to the development guides by explicit repository URLs; the repository's current documentation may describe a newer tree than an older installed release.
 
 Production `vendor/` is checked against an explicit allowlist; the local development `vendor/` is not copied wholesale. PHP source and UI bundle files must already be tracked. Check ignored source files as described in [Testing](testing.md#prerequisites).
 
@@ -44,7 +44,7 @@ php scripts/check_package.php build/mcp-VERSION.tar.gz templates lib
 
 The gate does not check Markdown links or replace installation testing. Inspect the packaged READMEs separately; root-relative development-guide links would not resolve inside an installed archive.
 
-When running frontend package checks, provide the generated archive. From the repository root, replacing `VERSION`:
+The existing Node-based frontend checks are optional verification, not an app build or required test prerequisite. When running those frontend package checks, provide the generated archive. From the repository root, replacing `VERSION`:
 
 ```sh
 MCP_PACKAGE="$PWD/mcp/build/mcp-VERSION.tar.gz" node --test mcp/tests/Frontend/*.test.cjs
@@ -56,7 +56,7 @@ Record skips as well as failures. Package-dependent tests without `MCP_PACKAGE` 
 
 Preserve `LICENSE`, `NOTICE`, `THIRD-PARTY-NOTICES.md`, the license texts under `LICENSES/` and the bundled dependency notices. The app is AGPL-3.0-or-later with the additional attribution term in NOTICE; architecture credits do not replace that term or change dependencies' licenses.
 
-New repository documentation uses SPDX headers and the explicit Markdown annotation in [`REUSE.toml`](../../REUSE.toml). If the REUSE tool is installed, run `reuse lint` from the repository root; CI also has a REUSE check in [package.yml](../../.github/workflows/package.yml). Do not install tools or alter licenses merely to suppress a diagnostic without reviewing its cause.
+New repository documentation uses appropriate SPDX headers; existing Markdown annotations are in [`REUSE.toml`](../../REUSE.toml). For code changes, author and reviewer run `fsfe/reuse:5 lint` against a clean copy of the versioned content, without development vendor, caches or local evidence. The independent CI REUSE check in [package.yml](../../.github/workflows/package.yml) remains required; a package build does not replace it. Do not add exclusions to hide missing notices or alter licenses merely to suppress a diagnostic. Markdown-only changes require a content, link and notice review, without running application tests, CI or a package build.
 
 ## Installation and upgrade boundaries
 

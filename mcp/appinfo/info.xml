@@ -7,6 +7,13 @@
     <summary lang="es">Servidor MCP para su Nextcloud: conecte Claude, ChatGPT y otros clientes de IA, con permisos por usuario y por grupo</summary>
     <summary lang="de">MCP-Server für Nextcloud: KI-Clients mit Berechtigungen pro Benutzer und Gruppe verbinden</summary>
     <description><![CDATA[
+## What's new in 1.4.0
+
+- **Routines after one confirmation:** `routines_create_meeting` creates a private Talk room, posts the agenda and creates the calendar event with the room link; `routines_create_mail_card` saves one email attachment as a new file and creates a Deck card that references it; `routines_prepare_meeting` builds a read-only dossier for one event you can see. A routine stops at the first failed or uncertain step and keeps what was created: no rollback, no retry and no promise that invitations are delivered. The mail card routine never shares the saved file with the board, because that disclosure needs its own decision.
+- **New tools:** calendar availability and suggested times (local free/busy, up to 20 people, at most 7 days), your own Activity feed, unread Talk conversations and messages (the read marker never moves), your own notifications (list and dismiss), your own out-of-office absence (read, create and change), your own user status, file tags and comments, saving a mail attachment to Files ([#36](https://github.com/sintax-tech/mcp-for-nextcloud/issues/36)) and Deck label management. Thanks to @Roman991 ([#37](https://github.com/sintax-tech/mcp-for-nextcloud/pull/37)) for the Deck label code.
+- **Opt-in permissions:** all 15 new permissions are denied by default, the new reads included, and an upgrade grants no new access. Clearing an absence is not offered: Nextcloud's own clearing can remove the absence jobs of every user, so it stays out until that is fixed upstream.
+- **Nextcloud 34 and 35** are the supported and tested versions. The declared installation range stays 32–35 and the existing 32/33 code is kept, without new guarantees. No database migration; updating from 1.3.5 needs no extra step.
+
 ## What's new in 1.3.5, 1.3.4, 1.3.3, 1.3.2, 1.3.1 and 1.3.0
 
 - **1.3.5: Forms 5.4.2 compatibility.** Forms 5.4.2 now supports private form creation and question/option structure edits ([#35](https://github.com/sintax-tech/mcp-for-nextcloud/issues/35)), with the existing preview, confirmation and permission checks. Changing a question type on Forms 5.4.2 is refused before any native call or editing lock. Folder safety checks and warnings cover both 5.4.1 and 5.4.2, and refusal messages distinguish the installed version from creation permission. No database or permission change; updating from 1.3.4 needs no extra step.
@@ -90,9 +97,16 @@ Claude (claude.ai and Claude Desktop), ChatGPT and Gemini CLI sign in with OAuth
 
 ## Requirements
 
-Nextcloud 32–35 and PHP 8.2 or later. Mail 5.0.0+ (attachment text 5.10.11+), Tables 1.0.0+, Forms 5.3.0+ and Polls 8.6.3+ are optional. Deck and Talk are optional: their tools appear only when the app is enabled in a supported version.
+Nextcloud 32–35 and PHP 8.2 or later; 1.4.0 is supported and tested on Nextcloud 34 and 35, and nothing new targets 32 or 33. Mail 5.0.0+ (attachment text 5.10.11+), Tables 1.0.0+, Forms 5.3.0+ and Polls 8.6.3+ are optional. Deck and Talk are optional: their tools appear only when the app is enabled in a supported version.
     ]]></description>
     <description lang="pt-br"><![CDATA[
+## Novidades da 1.4.0
+
+- **Rotinas com uma confirmação:** `routines_create_meeting` cria uma sala privada do Talk, publica a pauta e cria o evento no calendário com o link da sala; `routines_create_mail_card` salva um anexo de e-mail como arquivo novo e cria um cartão do Deck que o referencia; `routines_prepare_meeting` monta um dossiê somente leitura de um evento que você já vê. A rotina para no primeiro passo que falha ou fica incerto e mantém o que foi criado: sem desfazer, sem nova tentativa e sem garantia de entrega de convites. A rotina do cartão nunca compartilha o arquivo salvo com o quadro, porque essa divulgação precisa de decisão própria.
+- **Ferramentas novas:** disponibilidade e sugestão de horários no calendário (livre/ocupado local, até 20 pessoas, no máximo 7 dias), o seu próprio feed de Atividades, conversas e mensagens não lidas do Talk (o marcador de leitura nunca avança), as suas notificações (listar e dispensar), a sua ausência (ler, criar e alterar), o seu status de usuário, etiquetas e comentários de arquivos, salvar um anexo de e-mail no Arquivos ([#36](https://github.com/sintax-tech/mcp-for-nextcloud/issues/36)) e gestão de etiquetas do Deck. Agradecimento a @Roman991 ([#37](https://github.com/sintax-tech/mcp-for-nextcloud/pull/37)) pelo código das etiquetas do Deck.
+- **Permissões opcionais:** as 15 permissões novas começam negadas, inclusive as leituras novas, e a atualização não concede acesso novo. Limpar uma ausência não é oferecido: a limpeza do próprio Nextcloud pode remover os jobs de ausência de todos os usuários, então fica de fora até a correção no Nextcloud.
+- **Nextcloud 34 e 35** são as versões suportadas e testadas. A faixa de instalação declarada continua 32–35 e o código existente para 32/33 é mantido, sem garantias novas. Sem migração de banco de dados; atualizar da 1.3.5 não exige passo adicional.
+
 ## Novidades da 1.3.5, da 1.3.4, da 1.3.3, da 1.3.2, da 1.3.1 e da 1.3.0
 
 - **1.3.5: compatibilidade com o Forms 5.4.2.** O Forms 5.4.2 passa a aceitar criação de formulários privados e alterações na estrutura de perguntas/opções ([#35](https://github.com/sintax-tech/mcp-for-nextcloud/issues/35)), com a prévia, confirmação e verificações de permissão existentes. A troca de tipo de uma pergunta no Forms 5.4.2 é recusada antes de qualquer chamada nativa ou lock de edição. As verificações e os avisos de pastas cobrem a 5.4.1 e a 5.4.2, e as mensagens de recusa distinguem a versão instalada da permissão para criar. Sem mudança no banco de dados ou nas permissões; atualizar da 1.3.4 não exige passo adicional.
@@ -176,9 +190,16 @@ O Claude (claude.ai e Claude Desktop), o ChatGPT e o Gemini CLI entram com OAuth
 
 ## Requisitos
 
-Nextcloud 32–35 e PHP 8.2 ou superior. Mail 5.0.0+ (texto de anexos 5.10.11+), Tables 1.0.0+, Forms 5.3.0+ e Polls 8.6.3+ são opcionais. O Deck e o Talk são opcionais: as ferramentas deles só aparecem com o app ativo numa versão suportada.
+Nextcloud 32–35 e PHP 8.2 ou superior; a 1.4.0 é suportada e testada no Nextcloud 34 e 35, e nada novo visa o 32 ou o 33. Mail 5.0.0+ (texto de anexos 5.10.11+), Tables 1.0.0+, Forms 5.3.0+ e Polls 8.6.3+ são opcionais. O Deck e o Talk são opcionais: as ferramentas deles só aparecem com o app ativo numa versão suportada.
     ]]></description>
     <description lang="es"><![CDATA[
+## Novedades de la 1.4.0
+
+- **Rutinas con una confirmación:** `routines_create_meeting` crea una sala privada de Talk, publica la agenda y crea el evento del calendario con el enlace de la sala; `routines_create_mail_card` guarda un adjunto de correo como archivo nuevo y crea una tarjeta de Deck que lo referencia; `routines_prepare_meeting` prepara un dosier de solo lectura de un evento que ya puedes ver. Una rutina se detiene en el primer paso que falla o queda incierto y conserva lo creado: sin deshacer, sin reintentos y sin garantía de entrega de invitaciones. La rutina de la tarjeta nunca comparte el archivo guardado con el tablero, porque esa divulgación necesita su propia decisión.
+- **Herramientas nuevas:** disponibilidad y sugerencia de horarios del calendario (libre/ocupado local, hasta 20 personas, como máximo 7 días), tu propio registro de Actividad, conversaciones y mensajes no leídos de Talk (el marcador de lectura nunca avanza), tus notificaciones (listar y descartar), tu ausencia (leer, crear y cambiar), tu estado de usuario, etiquetas y comentarios de archivos, guardar un adjunto de correo en Archivos ([#36](https://github.com/sintax-tech/mcp-for-nextcloud/issues/36)) y gestión de etiquetas de Deck. Gracias a @Roman991 ([#37](https://github.com/sintax-tech/mcp-for-nextcloud/pull/37)) por el código de las etiquetas de Deck.
+- **Permisos opcionales:** los 15 permisos nuevos empiezan denegados, incluidas las lecturas nuevas, y una actualización no concede acceso nuevo. Borrar una ausencia no se ofrece: el borrado del propio Nextcloud puede eliminar los trabajos de ausencia de todos los usuarios, así que queda fuera hasta que Nextcloud lo corrija.
+- **Nextcloud 34 y 35** son las versiones compatibles y probadas. El rango de instalación declarado sigue siendo 32–35 y se mantiene el código existente para 32/33, sin garantías nuevas. Sin migración de base de datos; actualizar desde 1.3.5 no requiere pasos adicionales.
+
 ## Novedades de la 1.3.5, la 1.3.4, la 1.3.3, la 1.3.2, la 1.3.1 y la 1.3.0
 
 - **1.3.5: compatibilidad con Forms 5.4.2.** Forms 5.4.2 admite ahora la creación de formularios privados y cambios en la estructura de preguntas/opciones ([#35](https://github.com/sintax-tech/mcp-for-nextcloud/issues/35)), con la vista previa, confirmación y comprobaciones de permisos existentes. Cambiar el tipo de una pregunta en Forms 5.4.2 se rechaza antes de cualquier llamada nativa o bloqueo de edición. Las comprobaciones y avisos de carpetas cubren 5.4.1 y 5.4.2, y los mensajes de rechazo distinguen la versión instalada del permiso de creación. Sin cambios en la base de datos ni en los permisos; actualizar desde 1.3.4 no requiere pasos adicionales.
@@ -262,9 +283,16 @@ Claude (claude.ai y Claude Desktop), ChatGPT y Gemini CLI inician sesión con OA
 
 ## Requisitos
 
-Nextcloud 32–35 y PHP 8.2 o superior. Mail 5.0.0+ (texto de adjuntos 5.10.11+), Tables 1.0.0+, Forms 5.3.0+ y Polls 8.6.3+ son opcionales. Deck y Talk son opcionales: sus herramientas solo aparecen con la aplicación activa en una versión compatible.
+Nextcloud 32–35 y PHP 8.2 o superior; la 1.4.0 es compatible y probada en Nextcloud 34 y 35, y nada nuevo apunta a 32 o 33. Mail 5.0.0+ (texto de adjuntos 5.10.11+), Tables 1.0.0+, Forms 5.3.0+ y Polls 8.6.3+ son opcionales. Deck y Talk son opcionales: sus herramientas solo aparecen con la aplicación activa en una versión compatible.
     ]]></description>
     <description lang="de"><![CDATA[
+## Neu in 1.4.0
+
+- **Routinen mit einer Bestätigung:** `routines_create_meeting` erstellt einen privaten Talk-Raum, veröffentlicht die Agenda und legt den Kalendertermin mit dem Raumlink an; `routines_create_mail_card` speichert einen E-Mail-Anhang als neue Datei und erstellt eine Deck-Karte, die darauf verweist; `routines_prepare_meeting` erstellt ein schreibgeschütztes Dossier zu einem Termin, den du sehen kannst. Eine Routine stoppt beim ersten fehlgeschlagenen oder unsicheren Schritt und behält, was erstellt wurde: kein Zurücksetzen, keine Wiederholung und keine Zusage, dass Einladungen zugestellt werden. Die Karten-Routine teilt die gespeicherte Datei nie mit dem Board, weil diese Offenlegung eine eigene Entscheidung braucht.
+- **Neue Werkzeuge:** Kalenderverfügbarkeit und Terminvorschläge (lokale Frei/Gebucht-Daten, bis zu 20 Personen, höchstens 7 Tage), der eigene Aktivitäten-Feed, ungelesene Talk-Unterhaltungen und -Nachrichten (die Lesemarke bewegt sich nie), eigene Benachrichtigungen (auflisten und verwerfen), die eigene Abwesenheit (lesen, anlegen und ändern), der eigene Benutzerstatus, Datei-Tags und -Kommentare, einen E-Mail-Anhang in Dateien speichern ([#36](https://github.com/sintax-tech/mcp-for-nextcloud/issues/36)) und Deck-Labels verwalten. Danke an @Roman991 ([#37](https://github.com/sintax-tech/mcp-for-nextcloud/pull/37)) für den Code der Deck-Labels.
+- **Opt-in-Berechtigungen:** alle 15 neuen Berechtigungen sind standardmäßig verweigert, auch die neuen Lesezugriffe, und ein Update gewährt keinen neuen Zugriff. Das Löschen einer Abwesenheit wird nicht angeboten: Das Löschen in Nextcloud selbst kann die Abwesenheits-Jobs aller Benutzer entfernen, daher bleibt es draußen, bis Nextcloud das behebt.
+- **Nextcloud 34 und 35** sind die unterstützten und getesteten Versionen. Der deklarierte Installationsbereich bleibt 32–35, und der bestehende Code für 32/33 bleibt erhalten, ohne neue Garantien. Keine Datenbankmigration; das Update von 1.3.5 erfordert keinen zusätzlichen Schritt.
+
 ## Neu in 1.3.5, 1.3.4, 1.3.3, 1.3.2, 1.3.1 und 1.3.0
 
 - **1.3.5: Kompatibilität mit Forms 5.4.2.** Forms 5.4.2 unterstützt jetzt das Erstellen privater Formulare und Strukturänderungen an Fragen/Optionen ([#35](https://github.com/sintax-tech/mcp-for-nextcloud/issues/35)), mit der bestehenden Vorschau, Bestätigung und Berechtigungsprüfung. Fragetypwechsel in Forms 5.4.2 werden vor jedem nativen Aufruf und jeder Bearbeitungssperre abgelehnt. Ordnerprüfungen und Warnungen gelten für 5.4.1 und 5.4.2; Ablehnungsmeldungen unterscheiden die installierte Version von der Erstellungsberechtigung. Keine Datenbank- oder Berechtigungsänderung; das Update von 1.3.4 erfordert keinen zusätzlichen Schritt.
@@ -319,9 +347,9 @@ Forms- und Polls-Erstellung erfolgt schrittweise, nicht atomar: Fehler können t
 
 MCP for Cloud verbindet Claude, ChatGPT, Gemini CLI und andere KI-Clients über OAuth mit Dateien, Notes, Kalendern, Kontakten, Aufgaben sowie mit Deck, Talk, Mail, Tables, Forms, Polls und Collectives unter den Berechtigungen der handelnden Person.
 
-Nextcloud 32–35, PHP 8.2+. Mail 5.0.0+ (Anhangtext 5.10.11+), Tables 1.0.0+, Forms 5.3.0+ und Polls 8.6.3+; Notes, Mail, Tables, Forms, Polls, Deck und Talk sind optional. Der Administrator verwaltet Berechtigungen, Ausschluss-Tags und Ressourcenbereiche. Bestehende Dateikopien und Versions-Voraussetzungen bleiben gültig; Kontaktlöschung braucht eine geprüfte Sicherung.
+Nextcloud 32–35, PHP 8.2+; 1.4.0 wird auf Nextcloud 34 und 35 unterstützt und getestet, nichts Neues zielt auf 32 oder 33. Mail 5.0.0+ (Anhangtext 5.10.11+), Tables 1.0.0+, Forms 5.3.0+ und Polls 8.6.3+; Notes, Mail, Tables, Forms, Polls, Deck und Talk sind optional. Der Administrator verwaltet Berechtigungen, Ausschluss-Tags und Ressourcenbereiche. Bestehende Dateikopien und Versions-Voraussetzungen bleiben gültig; Kontaktlöschung braucht eine geprüfte Sicherung.
     ]]></description>
-    <version>1.3.5</version>
+    <version>1.4.0</version>
     <licence>AGPL-3.0-or-later</licence>
     <author mail="jhonatan@sintax.tech">Jhonatan Jaworski</author>
     <namespace>Mcp</namespace>

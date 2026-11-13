@@ -9,6 +9,7 @@ namespace OCA\Mcp\Modules\Talk;
 use OCA\Mcp\Mcp\Tools\Discovery\ToolAccess;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\ToolDefinition;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
 use OCA\Mcp\Modules\Talk\Groups\CreateGroupHandler;
 use OCA\Mcp\Modules\Talk\Groups\CreateGroupPreview;
@@ -22,6 +23,8 @@ use OCA\Mcp\Platform\Meetings\MeetingMessages;
 use OCA\Mcp\Platform\Meetings\MeetingStep;
 use OCA\Mcp\Platform\Meetings\MeetingTalk;
 use OCP\IURLGenerator;
+use Psr\Log\LoggerInterface;
+use Throwable;
 
 /**
  * The Talk steps of a meeting, through the very work classes of talk_create_group and talk_reply.
@@ -42,6 +45,7 @@ final class TalkMeetingSteps implements MeetingTalk {
 	 * @param ReplyPreview $agendaPlans the plan of talk_reply
 	 * @param ReplyHandler $agendas the effect of talk_reply
 	 * @param IURLGenerator $urls the absolute URL of the new room on this instance
+	 * @param LoggerInterface $logger the class and code of a room link that could not be built, never its message
 	 */
 	public function __construct(
 		private ToolAccess $access,
@@ -50,6 +54,7 @@ final class TalkMeetingSteps implements MeetingTalk {
 		private ReplyPreview $agendaPlans,
 		private ReplyHandler $agendas,
 		private IURLGenerator $urls,
+		private LoggerInterface $logger,
 	) {
 	}
 
@@ -75,11 +80,14 @@ final class TalkMeetingSteps implements MeetingTalk {
 			return MeetingStep::uncertain(MeetingMessages::uncertain());
 		}
 		$token = $room['conversation_token'];
-		$room['url'] = $this->urls->linkToRouteAbsolute(self::ROOM_ROUTE, ['token' => $token]);
 		$ids = ['conversation_token' => $token];
-		return ($room['invitations_failed'] ?? []) === []
-			? MeetingStep::applied($ids, $room)
-			: MeetingStep::partial($ids, $room, Messages::invitationFailed());
+		$room['url'] = $this->roomUrl($token);
+		// The room exists from here on: nothing below may lose its token or invite a second createRoom.
+		$note = $room['url'] === null ? MeetingMessages::roomLinkMissing() : null;
+		if (($room['invitations_failed'] ?? []) !== []) {
+			return MeetingStep::partial($ids, $room, $note === null ? Messages::invitationFailed() : Messages::invitationFailed() . ' ' . $note);
+		}
+		return MeetingStep::applied($ids, $room, $note);
 	}
 
 	/** {@inheritDoc} */
@@ -115,6 +123,19 @@ final class TalkMeetingSteps implements MeetingTalk {
 			return MeetingStep::uncertain(MeetingMessages::uncertain(), ['conversation_token' => $token]);
 		}
 		return MeetingStep::applied(['conversation_token' => $token, 'messageId' => $sent['messageId']], $sent);
+	}
+
+	/**
+	 * @param string $token the token of a room that already exists
+	 * @return string|null the absolute URL of the room on this instance; null when it cannot be built, never a failure
+	 */
+	private function roomUrl(string $token): ?string {
+		try {
+			return $this->urls->linkToRouteAbsolute(self::ROOM_ROUTE, ['token' => $token]);
+		} catch (Throwable $e) {
+			$this->logger->warning('MCP meeting room link failed: {exception_detail}', ['app' => 'mcp', 'exception_detail' => ToolRegistry::loggable($e)]);
+			return null;
+		}
 	}
 
 	/**

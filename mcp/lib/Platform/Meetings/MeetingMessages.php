@@ -24,6 +24,13 @@ final class MeetingMessages {
 	}
 
 	/**
+	 * @return string the note of a room that exists but whose link this instance could not build
+	 */
+	public static function roomLinkMissing(): string {
+		return Translator::t('The room was created, but its link could not be built. Open it in Talk and do not create it again.');
+	}
+
+	/**
 	 * @return string the outcome of a step whose effect may have been persisted
 	 */
 	public static function uncertain(): string {

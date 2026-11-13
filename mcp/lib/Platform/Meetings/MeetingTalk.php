@@ -31,6 +31,7 @@ interface MeetingTalk {
 
 	/**
 	 * Creates the room as talk_create_group does, once, and reports the room token and its URL on this instance.
+	 * Once the room exists the step always carries its token; a URL this instance cannot build is null, with a note.
 	 *
 	 * @param string $userId the actor, owner of the new room
 	 * @param string $name the room name

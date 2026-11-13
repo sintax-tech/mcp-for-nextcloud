@@ -2130,6 +2130,7 @@
     "Your absence or its replacement changed since the plan. Review this new plan before confirming again." : "Ihre Abwesenheit oder deren Vertretung hat sich seit dem Plan geändert. Prüfen Sie diesen neuen Plan, bevor Sie erneut bestätigen.",
     "List file tags" : "Datei-Schlagwörter auflisten",
     "Using %s through MCP is not allowed for your account." : "Die Verwendung von %s über MCP ist für Ihr Konto nicht erlaubt.",
-    "This step could not be confirmed and may have been applied. Check it in Nextcloud before trying again." : "Dieser Schritt konnte nicht bestätigt werden und wurde möglicherweise ausgeführt. Prüfen Sie ihn in Nextcloud, bevor Sie es erneut versuchen."
+    "This step could not be confirmed and may have been applied. Check it in Nextcloud before trying again." : "Dieser Schritt konnte nicht bestätigt werden und wurde möglicherweise ausgeführt. Prüfen Sie ihn in Nextcloud, bevor Sie es erneut versuchen.",
+    "The room was created, but its link could not be built. Open it in Talk and do not create it again." : "Der Raum wurde erstellt, aber sein Link konnte nicht erzeugt werden. Öffnen Sie ihn in Talk und erstellen Sie ihn nicht erneut."
 },"pluralForm" : "nplurals=2; plural=(n != 1);"
 }

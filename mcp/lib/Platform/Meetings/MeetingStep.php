@@ -28,7 +28,7 @@ final class MeetingStep {
 	 * @param string $status one of the constants of this class
 	 * @param array<string, string|int> $ids identifiers the step observed (room token, message id, event UID)
 	 * @param array<string, mixed> $result the result of the original tool, as that tool answers it; empty on a refusal
-	 * @param string|null $message a sentence written for the user, for every status but applied
+	 * @param string|null $message a sentence written for the user: always for partial, failed and uncertain, and for applied only when there is a note
 	 */
 	private function __construct(
 		public readonly string $status,
@@ -41,10 +41,11 @@ final class MeetingStep {
 	/**
 	 * @param array<string, string|int> $ids identifiers of what was written
 	 * @param array<string, mixed> $result the result of the original tool
+	 * @param string|null $message a note the user has to read although the effect exists, e.g. a missing room link
 	 * @return self an applied step
 	 */
-	public static function applied(array $ids, array $result): self {
-		return new self(self::APPLIED, $ids, $result, null);
+	public static function applied(array $ids, array $result, ?string $message = null): self {
+		return new self(self::APPLIED, $ids, $result, $message);
 	}
 
 	/**

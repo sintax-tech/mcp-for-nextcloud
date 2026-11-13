@@ -64,6 +64,8 @@ final class TalkMeetingStepsTest extends TestCase {
 	private bool $appEnabled = true;
 	/** @var list<array{string, string, list<string>}> grant questions asked, in order */
 	private array $asked = [];
+	/** Whether this instance fails to build the room link. */
+	private bool $linkFails = false;
 	/** Whether bob may be enumerated by alice. */
 	private bool $bobReachable = true;
 	private MeetingTalkRoom $group;
@@ -121,7 +123,9 @@ final class TalkMeetingStepsTest extends TestCase {
 		$apps->method('getAppVersion')->willReturn('25.0.6');
 		$access = new ToolAccess($policy, $apps, $users, null, new CapabilityRegistry([], $logger));
 		$urls = $this->createMock(IURLGenerator::class);
-		$urls->method('linkToRouteAbsolute')->willReturnCallback(static fn (string $route, array $parameters): string => 'https://cloud.example/' . $route . '/' . $parameters['token']);
+		$urls->method('linkToRouteAbsolute')->willReturnCallback(fn (string $route, array $parameters): string => $this->linkFails
+			? throw new RuntimeException('route not registered')
+			: 'https://cloud.example/' . $route . '/' . $parameters['token']);
 
 		$this->steps = new TalkMeetingSteps(
 			$access,
@@ -130,6 +134,7 @@ final class TalkMeetingStepsTest extends TestCase {
 			new ReplyPreview($draft, $preview, $errors),
 			new ReplyHandler($draft, $writer, $resolver, $errors),
 			$urls,
+			$logger,
 		);
 	}
 
@@ -155,6 +160,7 @@ final class TalkMeetingStepsTest extends TestCase {
 		$this->assertSame(MeetingStep::APPLIED, $step->status);
 		$this->assertSame(['conversation_token' => 'novasala1'], $step->ids);
 		$this->assertSame('https://cloud.example/spreed.Page.showCall/novasala1', $step->result['url']);
+		$this->assertNull($step->message);
 		$this->assertSame([2, 'Reunião', 'alice'], $this->rooms->created);
 	}
 
@@ -167,6 +173,33 @@ final class TalkMeetingStepsTest extends TestCase {
 		$this->assertSame(MeetingStep::PARTIAL, $step->status);
 		$this->assertSame('novasala1', $step->ids['conversation_token']);
 		$this->assertSame(['carla'], array_column($step->result['invitations_failed'], 'id'));
+	}
+
+	/** A room that exists always comes back with its token, so the caller never creates it a second time. */
+	public function testARoomLinkThatCannotBeBuiltStillReturnsTheRoom(): void {
+		$this->linkFails = true;
+		$this->expectedWrites = ['RoomService::createConversation', 'ParticipantService::addUsers:bob'];
+
+		$step = $this->steps->createRoom('alice', 'Reunião', ['bob']);
+
+		$this->assertSame(MeetingStep::APPLIED, $step->status);
+		$this->assertSame(['conversation_token' => 'novasala1'], $step->ids);
+		$this->assertNull($step->result['url']);
+		$this->assertStringContainsString('do not create it again', (string)$step->message);
+	}
+
+	public function testAPartialRoomWithoutLinkKeepsItsTokenAndBothNotes(): void {
+		$this->linkFails = true;
+		$this->participants->refuse = 'bob';
+		$this->expectedWrites = ['RoomService::createConversation', 'ParticipantService::addUsers:bob'];
+
+		$step = $this->steps->createRoom('alice', 'Reunião', ['bob']);
+
+		$this->assertSame(MeetingStep::PARTIAL, $step->status);
+		$this->assertSame(['conversation_token' => 'novasala1'], $step->ids);
+		$this->assertNull($step->result['url']);
+		$this->assertStringContainsString('invitation', (string)$step->message);
+		$this->assertStringContainsString('do not create it again', (string)$step->message);
 	}
 
 	public function testAnUnreachableGuestRefusesTheRoomBeforeItExists(): void {

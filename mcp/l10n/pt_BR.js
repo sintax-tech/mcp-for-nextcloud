@@ -2092,6 +2092,7 @@ OC.L10N.register(
     "The read marker of this conversation could not be read." : "Não foi possível ler o marcador de leitura desta conversa.",
     "The message this read continued from is no longer in the conversation. Call again without cursor to start from the read marker." : "A mensagem de onde esta leitura continuava não está mais na conversa. Chame de novo sem cursor para começar do marcador de leitura.",
     "Read own absence" : "Ler minha ausência",
+    "Read file comments" : "Ler comentários do arquivo",
     "Absence settings are turned off on this Nextcloud server." : "As configurações de ausência estão desativadas neste servidor Nextcloud.",
     "Your absence settings are unavailable." : "Suas configurações de ausência estão indisponíveis.",
     "Read own status" : "Ler meu status",

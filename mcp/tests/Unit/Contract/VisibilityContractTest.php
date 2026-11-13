@@ -80,6 +80,7 @@ final class VisibilityContractTest extends TestCase {
 		'files_upload' => 'upload',
 		'files_create' => 'create',
 		'files_list_tags' => 'list_tags',
+		'files_read_comments' => 'read_comments',
 		'notes_list' => 'notes_list',
 		'notes_search' => 'notes_search',
 		'notes_read' => 'notes_read',
@@ -407,6 +408,14 @@ final class VisibilityContractTest extends TestCase {
 		// 5b. files_list_tags
 		foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt', '/SecretFolder'] as $p) {
 			$res = $registry->call('files_list_tags', ['path' => $p], 'alice');
+			$this->assertTrue($res['isError'] ?? false);
+			$this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+			$assertNoLeak($res['content'][0]['text']);
+		}
+
+		// 5c. files_read_comments: refused before the comments REPORT, like a missing file
+		foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt', '/SecretFolder'] as $p) {
+			$res = $registry->call('files_read_comments', ['path' => $p], 'alice');
 			$this->assertTrue($res['isError'] ?? false);
 			$this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
 			$assertNoLeak($res['content'][0]['text']);
@@ -933,6 +942,8 @@ final class VisibilityContractTest extends TestCase {
 			['files_versions_list', ['path' => '/private.jpg']],
 			['files_list_tags', ['path' => '/private.jpg']],
 			['files_list_tags', ['path' => '/private']],
+			['files_read_comments', ['path' => '/private.jpg']],
+			['files_read_comments', ['path' => '/private']],
 			['files_version_read', ['path' => '/private.jpg', 'version' => '1']],
 			['files_version_restore', ['path' => '/private.jpg', 'version' => '1']],
 			['files_edit', ['path' => '/private.jpg', 'content' => 'x']],

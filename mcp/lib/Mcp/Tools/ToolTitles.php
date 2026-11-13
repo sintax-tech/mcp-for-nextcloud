@@ -44,6 +44,7 @@ final class ToolTitles {
 			'files_upload' => Translator::t('Upload new file'),
 			'files_create' => Translator::t('Create text file'),
 			'files_versions_list' => Translator::t('List file versions'),
+			'files_read_comments' => Translator::t('Read file comments'),
 			'files_version_read' => Translator::t('Read file version'),
 			'files_version_restore' => Translator::t('Restore file version'),
 			'files_list_tags' => Translator::t('List file tags'),

@@ -33,6 +33,22 @@ final class ReadingMessages {
 			. 'limits, and warns when truncated.';
 	}
 
+	/** @return string description of files_read_comments */
+	public static function readCommentsTool(): string {
+		return 'Read the comments of a file or folder, newest first, as Nextcloud\'s own comments service shows them. '
+			. 'Reading never marks comments as read. Page with offset; comments added between calls shift later pages.';
+	}
+
+	/** @return string description of the comment page size parameter */
+	public static function commentsLimit(): string {
+		return 'Comments per page, newest first.';
+	}
+
+	/** @return string description of the comment offset parameter */
+	public static function commentsOffset(): string {
+		return 'Comments to skip from the newest; use next_offset of the previous page.';
+	}
+
 	/** @return string description of the search query parameter */
 	public static function searchQuery(): string {
 		return 'Search query to find in file names or content.';

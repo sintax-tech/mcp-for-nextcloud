@@ -36,6 +36,7 @@ final class FilesToolCatalog {
 		Tools\CreateFile::class,
 		Tools\DeleteFile::class,
 		Tools\ListTags::class,
+		Tools\ReadComments::class,
 	];
 	/** Static catalog only. */
 	private function __construct() {

@@ -936,6 +936,45 @@
                         }
                     },
                     {
+                        "name": "files_read_comments",
+                        "title": "Read file comments",
+                        "description": "Read the comments of a file or folder, newest first, as Nextcloud's own comments service shows them. Reading never marks comments as read. Page with offset; comments added between calls shift later pages.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "path": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                                },
+                                "limit": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 100,
+                                    "default": 20,
+                                    "description": "Comments per page, newest first."
+                                },
+                                "offset": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "default": 0,
+                                    "description": "Comments to skip from the newest; use next_offset of the previous page."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "path"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Read file comments",
+                            "readOnlyHint": true,
+                            "destructiveHint": false,
+                            "idempotentHint": true,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
                         "name": "users_search",
                         "title": "Search people",
                         "description": "Searches the accounts of this Nextcloud by name, account ID or e-mail and returns their account IDs (uid), display names and, when available, e-mail; every row carries a type, \"user\" for an account. Use it whenever you are not sure of someone's account ID. Groups are not searched by default: to also match groups, pass include_groups: true, and the group rows come back with the type \"group\" and the group ID, which is what a share takes as group:<id>.",

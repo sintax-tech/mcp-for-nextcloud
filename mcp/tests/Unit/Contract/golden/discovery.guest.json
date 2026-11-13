@@ -936,6 +936,45 @@
                         }
                     },
                     {
+                        "name": "files_read_comments",
+                        "title": "Read file comments",
+                        "description": "Read the comments of a file or folder, newest first, as Nextcloud's own comments service shows them. Reading never marks comments as read. Page with offset; comments added between calls shift later pages.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "path": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                                },
+                                "limit": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 100,
+                                    "default": 20,
+                                    "description": "Comments per page, newest first."
+                                },
+                                "offset": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "default": 0,
+                                    "description": "Comments to skip from the newest; use next_offset of the previous page."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "path"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Read file comments",
+                            "readOnlyHint": true,
+                            "destructiveHint": false,
+                            "idempotentHint": true,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
                         "name": "talk_list_conversations",
                         "title": "List Talk conversations",
                         "description": "Lists the Talk conversations the authenticated user takes part in, with the number of unread messages Talk shows in its own list. When that count cannot be read, the conversation is still listed and unreadMessages is null. A conversation the lobby bars is still listed and unreadMessages is 0. A lobby whose timer has already passed is treated as open for this answer only, and a lobby that cannot be read counts as closed. The display name is the name Talk already stored: a direct conversation names the other participant from the stored pair of account ids, or from the participants already in the room when the stored name is empty or still the legacy account id, and the name is empty when that read fails or the other participant cannot be identified, a group with no stored name is empty, and the release notes conversation and a password request use the names Talk gives them. It changes no state: it does not mark anything as read, does not open a lobby, does not rename a conversation, does not touch notifications and does not touch activity.",

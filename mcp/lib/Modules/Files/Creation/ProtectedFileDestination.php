@@ -85,7 +85,7 @@ final class ProtectedFileDestination implements NewFileDestination {
 				'exception_class' => $e::class,
 				'exception_code' => ExceptionDetails::code($e),
 			]);
-			return ['path' => $target['path'], 'outcome' => 'uncertain', 'verified' => false];
+			return $this->uncertain($target, null);
 		}
 		$writtenId = null;
 		try {
@@ -124,28 +124,23 @@ final class ProtectedFileDestination implements NewFileDestination {
 				&& (string)$file->getEtag() === $receipt['etag'];
 			return $receipt + ['outcome' => $verified ? 'saved' : 'uncertain', 'verified' => $verified, 'sha256' => $actual];
 		} catch (Throwable) {
-			if ($this->hidden($target)) {
+			if ((new NewFileVisibility($this->visibility))->of($target['folder'], $target['name']) === NewFileVisibility::HIDDEN) {
 				// The file the actor just wrote is now hidden from MCP: the answer is the opaque one of any hidden item.
 				throw new ToolFailure(CommonMessages::notFound());
 			}
 			// The file was written: whatever else stops its read-back, an unreadable policy included, leaves it uncertain
 			// and named, never a refusal or a 503 that hides it.
-			return ['path' => $target['path']] + ($writtenId === null ? [] : ['fileId' => $writtenId]) + ['outcome' => 'uncertain', 'verified' => false];
+			return $this->uncertain($target, $writtenId);
 		}
 	}
 
 	/**
-	 * @param array{folder: \OCP\Files\Folder, name: string} $target the destination of the write
-	 * @return bool whether the visibility rules now hide the folder or the file; false when that cannot be read, which is
-	 *     unavailability and not a hidden item
+	 * @param array{path: string, name: string, folder: \OCP\Files\Folder} $target the destination of the write
+	 * @param int|null $fileId the id of the file written, null when it is not known
+	 * @return array<string, mixed> the uncertain receipt, naming the file only when the rules do not hide it now
 	 */
-	private function hidden(array $target): bool {
-		try {
-			$this->visibility->clearCache();
-			return !$this->visibility->isVisible($target['folder'])
-				|| ($target['folder']->nodeExists($target['name']) && !$this->visibility->isVisible($target['folder']->get($target['name'])));
-		} catch (Throwable) {
-			return false;
-		}
+	private function uncertain(array $target, ?int $fileId): array {
+		$named = (new NewFileVisibility($this->visibility))->of($target['folder'], $target['name']) !== NewFileVisibility::HIDDEN;
+		return ($named ? ['path' => $target['path']] + ($fileId === null ? [] : ['fileId' => $fileId]) : []) + ['outcome' => 'uncertain', 'verified' => false];
 	}
 }

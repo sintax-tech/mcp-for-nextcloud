@@ -9,6 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Modules\Files\Presentation\CreationMessages;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * files_create when a lock or a full quota stops it while the new file is read back, after Nextcloud created it and
@@ -118,5 +119,64 @@ final class FilesCreateLeftBehindTest extends FilesToolsTestCase {
 		$this->assertArrayHasKey('/alice/files/Documentos/novo.md', $this->tree->nodes);
 		$this->assertArrayHasKey('/alice/files/Documentos/outro.md', $this->tree->nodes);
 		$this->assertStringNotContainsString('delete', implode(' ', $this->tree->ops));
+	}
+
+	/** @var list<int> ids of the nodes the administrator's hidden tag is on */
+	private array $hiddenIds = [];
+
+	/**
+	 * Rebuilds the Files module over a gate that reads {@see self::$hiddenIds} as the nodes carrying the hidden tag.
+	 *
+	 * @return void
+	 */
+	private function withHiddenTag(): void {
+		$mapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+		$mapper->method('getTagIdsForObjects')->willReturnCallback(fn (array $ids): array
+			=> array_combine($ids, array_map(fn ($id): array => in_array((int)$id, $this->hiddenIds, true) ? ['999'] : [], $ids)));
+		$this->config->app['mcp'][\OCA\Mcp\Access\Visibility\VisibilityGuard::CONFIG_KEY] = '["999"]';
+		$this->visibilityGuard = new \OCA\Mcp\Access\ResourceScope\FilesAccessGuard($this->config->mock($this), $mapper, $this->visibilityRoot());
+		$this->setUp();
+	}
+
+	/** @return array<string, array{\Closure(self): void}> each phase of files_create after newFile, where the new file is hidden and something throws */
+	public static function hideAndThrow(): array {
+		$hide = static function (self $test): void { $test->hiddenIds[] = (int)$test->tree->nodes[self::FILE]['id']; };
+		$once = static function (self $test) use ($hide): void {
+			$test->tree->beforeGet = static function () use ($test, $hide): void { $test->tree->beforeGet = null; $hide($test); throw new \RuntimeException('read failed'); };
+		};
+		return [
+			'inside newFile' => [static function (self $test) use ($hide): void { $test->tree->afterCreate = static function () use ($test, $hide): void {
+				$test->tree->afterCreate = null; $hide($test); throw new \OCA\Mcp\Access\Policy\PolicyUnavailable('hook failed'); }; }],
+			'assertVisible after newFile' => [static function (self $test) use ($hide): void { $test->tree->afterCreate = static function () use ($test, $hide): void {
+				$test->tree->afterCreate = null; $hide($test); }; }],
+			'read again before the content' => [static function (self $test) use ($once): void { $test->tree->afterCreate = static function () use ($test, $once): void {
+				$test->tree->afterCreate = null; $once($test); }; }],
+			'putContent' => [static function (self $test) use ($hide): void { $test->tree->afterWrite = static function () use ($test, $hide): void {
+				$test->tree->afterWrite = null; $hide($test); throw new \RuntimeException('post-write hook'); }; }],
+			'read-back of the receipt' => [static function (self $test) use ($once): void { $test->tree->afterWrite = static function () use ($test, $once): void {
+				$test->tree->afterWrite = null; $once($test); }; }],
+		];
+	}
+
+	/**
+	 * In every phase that hides the new file and throws, files_create answers without its name or path, and the file
+	 * stays where it was written.
+	 *
+	 * @param \Closure(self): void $arrange the phase that hides the file and throws
+	 * @return void
+	 */
+	#[DataProvider('hideAndThrow')]
+	public function testAFileHiddenInAnyPhaseIsNeverNamed(\Closure $arrange): void {
+		$this->withHiddenTag();
+		$arrange($this);
+
+		try {
+			$answer = json_encode($this->tool('files_create', ['path' => '/Documentos/novo.md', 'content' => 'texto']));
+		} catch (\Throwable $e) {
+			$answer = $e->getMessage();
+		}
+
+		$this->assertStringNotContainsString('novo.md', $answer);
+		$this->assertArrayHasKey(self::FILE, $this->tree->nodes, 'nothing is deleted');
 	}
 }

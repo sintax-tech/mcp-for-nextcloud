@@ -105,8 +105,9 @@ final class FileCreationWriter {
 	/**
 	 * What a newFile that threw leaves behind, read again: the name was free before it, so a name still free means
 	 * nothing was created and the failure leaves as it always did (a refusal, a 503, the original exception). A name
-	 * that now exists may hold a file of this write or of another client: it is named when the actor may see it,
-	 * without an id that would claim it as ours; when it is hidden or cannot be read, the answer names nothing.
+	 * that now exists may hold a file of this write or of another client: it is named when the actor may see it
+	 * ({@see NewFileVisibility}), without an id that would claim it as ours; when it is hidden or cannot be read, the
+	 * answer names nothing.
 	 *
 	 * @param Folder $folder the destination folder
 	 * @param string $name the basename the write tried to create
@@ -128,11 +129,10 @@ final class FileCreationWriter {
 			if (!$folder->nodeExists($name)) {
 				return $e;
 			}
-			$visible = $this->visibilityGuard->isVisible($folder->get($name));
 		} catch (Throwable) {
-			$visible = false;
+			// The name cannot be read again: whatever is there is never named.
 		}
-		if (!$visible) {
+		if ((new NewFileVisibility($this->visibilityGuard))->of($folder, $name) !== NewFileVisibility::VISIBLE) {
 			return new FileCreationFailure(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createUnconfirmed($reason?->getMessage()), null, null, $reason);
 		}
 		$path = $this->visiblePath($folder, $name, $userId);
@@ -165,7 +165,8 @@ final class FileCreationWriter {
 	}
 
 	/**
-	 * The failure of a write that stopped after Nextcloud created the file, naming the file it left.
+	 * The failure of a write that stopped after Nextcloud created the file, naming the file it left unless the rules
+	 * hide it now ({@see NewFileVisibility}).
 	 *
 	 * @param Folder $folder the destination folder
 	 * @param string $name the basename of the new file
@@ -175,6 +176,10 @@ final class FileCreationWriter {
 	 * @return FileCreationFailure the reason, kept as the previous exception, and the file left behind
 	 */
 	private function leftBehind(Folder $folder, string $name, File $file, ?string $userId, ?ToolFailure $reason): FileCreationFailure {
+		if ((new NewFileVisibility($this->visibilityGuard))->of($folder, $name) === NewFileVisibility::HIDDEN) {
+			// Hidden since it was written: the failure says a file may exist and names nothing.
+			return new FileCreationFailure(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createUnconfirmed($reason?->getMessage()), null, null, $reason);
+		}
 		$path = $this->visiblePath($folder, $name, $userId);
 		$fileId = null;
 		try {

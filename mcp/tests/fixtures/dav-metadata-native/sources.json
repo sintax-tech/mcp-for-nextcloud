@@ -73,6 +73,14 @@
       "lib/public/SabrePluginEvent.php": {
         "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/lib/public/SabrePluginEvent.php",
         "sha256": "35b6efcca7341bdb9f90b0a760a5550b5edeb34a07deb617cea69b6409e27309"
+      },
+      "lib/private/Comments/Comment.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/lib/private/Comments/Comment.php",
+        "sha256": "0c66ab921c7a219fb7bc7a76c717a110ad1d22dee88519174b7e9dee3a40d016"
+      },
+      "apps/comments/lib/Notification/Listener.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/comments/lib/Notification/Listener.php",
+        "sha256": "d998b9fe0c241b3e5d976d014c454509d124e9eefd6bca763c94ddeed85fead0"
       }
     },
     "35": {
@@ -147,6 +155,14 @@
       "lib/public/SabrePluginEvent.php": {
         "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/lib/public/SabrePluginEvent.php",
         "sha256": "3a686007f00e079403a166a28e8abf278364ae8729059be90294681be0eb9dbb"
+      },
+      "lib/private/Comments/Comment.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/lib/private/Comments/Comment.php",
+        "sha256": "157e9d2e79c1774789225616a6bb5257c689b07196dde079a2818f42c84193cc"
+      },
+      "apps/comments/lib/Notification/Listener.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/comments/lib/Notification/Listener.php",
+        "sha256": "fb39ba6da5b19759e098d6e42887fbd066132499ce7e4cde906f7bbf690cba1b"
       }
     }
   }

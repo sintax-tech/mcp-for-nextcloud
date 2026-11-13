@@ -1031,6 +1031,53 @@
                         }
                     },
                     {
+                        "name": "files_add_comment",
+                        "title": "Add file comment",
+                        "description": "Add a comment to a file or folder, as you, through Nextcloud's own comments service. Without confirm: true it only shows the plan. Mentions of existing accounts notify them; any other mention is refused. Adding a comment marks the file's comments as read for you. Comments are never edited or deleted.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "path": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                                },
+                                "text": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 1000,
+                                    "description": "Exact text of the comment, up to 1000 characters; leading and trailing spaces are removed, as Nextcloud does."
+                                },
+                                "confirm_shared": {
+                                    "type": "boolean",
+                                    "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                                },
+                                "plan_state": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                                },
+                                "confirm": {
+                                    "type": "boolean",
+                                    "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "path",
+                                "text"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Add file comment",
+                            "readOnlyHint": false,
+                            "destructiveHint": false,
+                            "idempotentHint": false,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
                         "name": "talk_list_conversations",
                         "title": "List Talk conversations",
                         "description": "Lists the Talk conversations the authenticated user takes part in, with the number of unread messages Talk shows in its own list. When that count cannot be read, the conversation is still listed and unreadMessages is null. A conversation the lobby bars is still listed and unreadMessages is 0. A lobby whose timer has already passed is treated as open for this answer only, and a lobby that cannot be read counts as closed. The display name is the name Talk already stored: a direct conversation names the other participant from the stored pair of account ids, or from the participants already in the room when the stored name is empty or still the legacy account id, and the name is empty when that read fails or the other participant cannot be identified, a group with no stored name is empty, and the release notes conversation and a password request use the names Talk gives them. It changes no state: it does not mark anything as read, does not open a lobby, does not rename a conversation, does not touch notifications and does not touch activity.",

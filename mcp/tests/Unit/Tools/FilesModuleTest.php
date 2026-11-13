@@ -145,10 +145,10 @@ final class FilesModuleTest extends TestCase {
 			'files_move_batch', 'files_undo_batch', 'files_read', 'files_edit', 'files_replace',
 			'files_checkout', 'files_versions_list', 'files_version_read', 'files_version_restore',
 			'files_image_view', 'files_images_view', 'files_image_search', 'files_list_shares', 'files_share', 'files_unshare',
-			'files_upload', 'files_create', 'files_delete', 'files_list_tags', 'files_read_comments', 'files_set_tag'],
+			'files_upload', 'files_create', 'files_delete', 'files_list_tags', 'files_read_comments', 'files_set_tag', 'files_add_comment'],
 			array_keys($defs));
 		$this->assertSame(['read', 'read', 'read', 'create', 'create', 'move', 'move', 'move', 'read', 'edit',
-			'edit', 'edit', 'read', 'read', 'restore', 'read', 'read', 'read', 'read', 'share', 'share', 'create', 'create', 'delete', 'read', 'read', 'tags'], array_column($defs, 'operation'));
+			'edit', 'edit', 'read', 'read', 'restore', 'read', 'read', 'read', 'read', 'share', 'share', 'create', 'create', 'delete', 'read', 'read', 'tags', 'comments'], array_column($defs, 'operation'));
 		$this->assertTrue($defs['files_set_tag']['destructiveHint'] ?? false, 'a tag relation change is published as destructive (plan, phase 5)');
 		$this->assertSame(['readOnlyHint' => false, 'destructiveHint' => true], array_intersect_key(
 			\OCA\Mcp\Mcp\Tools\ToolPresentation::annotations('files_set_tag', 'tags', true), ['readOnlyHint' => 0, 'destructiveHint' => 0]));

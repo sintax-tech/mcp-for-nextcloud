@@ -8,16 +8,10 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Files\Reading;
 
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
-use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCA\Mcp\Modules\Files\FilesCallContext;
-use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCP\Files\Folder;
-use OCP\Files\ForbiddenException;
-use OCP\Files\NotFoundException;
-use OCP\Files\NotPermittedException;
 
 /**
  * Reads one page of the comments of a visible file or folder through the native comments REPORT.
@@ -56,11 +50,7 @@ final class ReadCommentsHandler {
 		$limit = (int)($arguments['limit'] ?? self::DEFAULT_LIMIT);
 		$offset = (int)($arguments['offset'] ?? 0);
 		return $this->context->run($userId, function (Folder $root) use ($path, $limit, $offset, $userId): array {
-			try {
-				$id = (int)NodeAccess::get($root, $path, $this->guard)->getId();
-			} catch (ToolFailure|NotFoundException|NotPermittedException|ForbiddenException) {
-				throw new ToolFailure(CommonMessages::notFound());
-			}
+			$id = (int)VisibleNode::get($root, $path, $this->guard)->getId();
 			$comments = $this->feed->comments((string)$this->dav->comments($userId, $id, $limit, $offset)->body);
 			return ToolResult::json([
 				'path' => $path,

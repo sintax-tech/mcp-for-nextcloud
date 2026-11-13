@@ -38,6 +38,7 @@ final class FilesToolCatalog {
 		Tools\ListTags::class,
 		Tools\ReadComments::class,
 		Tools\SetTag::class,
+		Tools\AddComment::class,
 	];
 	/** Static catalog only. */
 	private function __construct() {

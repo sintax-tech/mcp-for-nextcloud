@@ -25,7 +25,7 @@ use Sabre\HTTP\Request;
 use Throwable;
 
 /**
- * Reads the comments and the system tags of one file, and changes one tag relation, through the native DAV pipeline,
+ * Reads the comments and the system tags of one file, changes one tag relation and adds one comment, through the native DAV pipeline,
  * as the authenticated actor.
  *
  * The MCP Files gate comes first, because the DAV app does not know it: Files scope, Guests external storage,
@@ -36,13 +36,21 @@ use Throwable;
  * relation needs the file in the user folder and returns only tags the user may see
  * (apps/dav/lib/SystemTag/SystemTagsRelationsCollection.php:40-48, SystemTagsObjectMappingCollection). A file
  * outside the gate, missing, or refused by DAV gives the same failure. Reading never moves the read marker: the
- * REPORT only reads (CommentsPlugin::onReport); the marker moves on POST and PROPPATCH, which this class never sends.
+ * REPORT and the PROPFIND only read (CommentsPlugin::onReport, EntityCollection::getProperties); the marker moves on
+ * POST and PROPPATCH.
  *
- * The only writes are one tag relation of one admitted file ({@see self::relate()}): PUT or DELETE on
- * `systemtags-relations/files/<file ID>/<tag ID>`, built here from two integers, never PROPPATCH or POST and never a
- * Files node. The native collections decide them as for a web client: SystemTagsObjectMappingCollection::createFile
- * (v34.0.4:39-58 / v35.0.1:40-59) and SystemTagMappingNode::delete (102-119 in both) check canUserSeeTag,
- * canUserAssignTag and UPDATE on one alias of the file (SystemTagsRelationsCollection.php:53 / 54).
+ * Two kinds of write, each built here from integers and fixed values, never on a Files node:
+ * - one tag relation of one admitted file ({@see self::relate()}): PUT or DELETE on
+ *   `systemtags-relations/files/<file ID>/<tag ID>`. The native collections decide them as for a web client:
+ *   SystemTagsObjectMappingCollection::createFile (v34.0.4:39-58 / v35.0.1:40-59) and SystemTagMappingNode::delete
+ *   (102-119 in both) check canUserSeeTag, canUserAssignTag and UPDATE on one alias of the file
+ *   (SystemTagsRelationsCollection.php:53 / 54);
+ * - one new comment on one admitted file ({@see self::comment()}): a POST of the fixed JSON
+ *   `{actorType: "users", verb: "comment", message}` on `comments/files/<file ID>`. The native plugin takes the author
+ *   from the session and moves the author's own read marker to now (CommentsPlugin::httpPost and createComment,
+ *   CommentsPlugin.php:89-115 and 203-234 of v34.0.4, 90-116 and 204-235 of v35.0.1); the comments entity decides
+ *   whether the item can be commented, as for a web client.
+ * PROPPATCH is never sent.
  */
 final class FileMetadataDav {
 	/** The native comments REPORT (CommentsPlugin::REPORT_NAME). */
@@ -54,6 +62,9 @@ final class FileMetadataDav {
 		. '<D:propfind xmlns:D="DAV:" xmlns:oc="http://owncloud.org/ns"><D:prop>'
 		. '<oc:id/><oc:display-name/><oc:user-visible/><oc:user-assignable/><oc:can-assign/>'
 		. '</D:prop></D:propfind>';
+	/** The read marker of the actor on a file's comments (EntityCollection::PROPERTY_NAME_READ_MARKER). */
+	private const MARKER_PROPFIND = '<?xml version="1.0" encoding="utf-8"?>'
+		. '<D:propfind xmlns:D="DAV:" xmlns:oc="http://owncloud.org/ns"><D:prop><oc:readMarker/></D:prop></D:propfind>';
 	/** DAV answers that read as a missing file, unchanged for the reads. */
 	private const READ_REFUSALS = [403, 404];
 	/** DAV answers that read as a missing file or tag on a relation write: 412 is createFile's unknown or unseen tag. */
@@ -153,6 +164,40 @@ final class FileMetadataDav {
 		}
 		$this->send($actor, $assigned ? 'PUT' : 'DELETE', 'systemtags-relations/files/' . $fileId . '/' . $tagId, [], '',
 			$assigned ? 201 : 204, self::WRITE_REFUSALS);
+	}
+
+	/**
+	 * The actor's own read marker on the file's comments, as the native multistatus document.
+	 *
+	 * @param string $actor authenticated MCP actor
+	 * @param int $fileId file ID in the actor's tree
+	 * @return DavResult status 207 and the multistatus body, with an empty `oc:readMarker` when the actor has none
+	 * @throws ToolFailure when the file is not reachable for the actor
+	 * @throws PolicyUnavailable when the Files scope cannot be read
+	 * @throws RuntimeException when the session or the native pipeline answers unexpectedly
+	 */
+	public function readMarker(string $actor, int $fileId): DavResult {
+		$this->admit($actor, $fileId);
+		return $this->send($actor, 'PROPFIND', 'comments/files/' . $fileId, ['Content-Type' => 'application/xml', 'Depth' => '0'], self::MARKER_PROPFIND);
+	}
+
+	/**
+	 * Adds one comment to one file as the actor, through the native comments collection.
+	 *
+	 * The file is admitted again right here, with the Files gate cache cleared, so a change since the plan wins.
+	 *
+	 * @param string $actor authenticated MCP actor, the author the native plugin reads from the session
+	 * @param int $fileId file ID in the actor's tree
+	 * @param string $message exact text, already within the native limits
+	 * @return void
+	 * @throws ToolFailure when the file is not reachable, or DAV refuses the file
+	 * @throws PolicyUnavailable when the Files scope cannot be read
+	 * @throws RuntimeException when the session or the native pipeline answers unexpectedly (an invalid message included)
+	 */
+	public function comment(string $actor, int $fileId, string $message): void {
+		$this->admit($actor, $fileId);
+		$body = json_encode(['actorType' => 'users', 'verb' => 'comment', 'message' => $message], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+		$this->send($actor, 'POST', 'comments/files/' . $fileId, ['Content-Type' => 'application/json'], $body, 201);
 	}
 
 	/**

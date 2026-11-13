@@ -1,0 +1,597 @@
+{
+    "tool": "files_add_comment",
+    "grant": "files.comments",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "path": "/f42.txt",
+                "text": "Approved, @bob"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Add file comment**\n\nAdd this comment to **/f42.txt**, as you:\n\n> Approved, @bob\n\n- Everyone who can see this item sees the comment, with your name.\n- Mentioned people are notified: **Bob Lima (bob)**.\n- Your read marker for the comments of this item moves to now: earlier comments count as read for you.\n- The comment cannot be edited or deleted through MCP.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_add_comment",
+                            "title": "Add file comment",
+                            "action": "files_add_comment",
+                            "path": "/f42.txt",
+                            "isDir": false,
+                            "text": "Approved, @bob",
+                            "notifies": [
+                                {
+                                    "id": "bob",
+                                    "display_name": "Bob Lima"
+                                }
+                            ],
+                            "read_marker": {
+                                "now": "2026-11-01T10:00:00Z",
+                                "after": "now"
+                            },
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": false,
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "saves": [],
+                "markers": [],
+                "notified": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "path": "/f42.txt",
+                "text": "Approved, @bob",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "saves": [],
+                "markers": [],
+                "notified": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "path": "/f42.txt",
+                "text": "Approved, @bob",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Add file comment**\n\nAdd this comment to **/f42.txt**, as you:\n\n> Approved, @bob\n\n- Everyone who can see this item sees the comment, with your name.\n- Mentioned people are notified: **Bob Lima (bob)**.\n- Your read marker for the comments of this item moves to now: earlier comments count as read for you.\n- The comment cannot be edited or deleted through MCP.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_add_comment",
+                            "title": "Add file comment",
+                            "action": "files_add_comment",
+                            "path": "/f42.txt",
+                            "isDir": false,
+                            "text": "Approved, @bob",
+                            "notifies": [
+                                {
+                                    "id": "bob",
+                                    "display_name": "Bob Lima"
+                                }
+                            ],
+                            "read_marker": {
+                                "now": "2026-11-01T10:00:00Z",
+                                "after": "now"
+                            },
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": false,
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "saves": [],
+                "markers": [],
+                "notified": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "arguments": {
+                "path": "/f42.txt",
+                "text": "Approved, @bob",
+                "confirm": true,
+                "confirm_shared": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Add file comment**\n\nAdd this comment to **/f42.txt**, as you:\n\n> Approved, @bob\n\n- Everyone who can see this item sees the comment, with your name.\n- Mentioned people are notified: **Bob Lima (bob)**.\n- Your read marker for the comments of this item moves to now: earlier comments count as read for you.\n- The comment cannot be edited or deleted through MCP.\n- It was shared with you by **Bob Lima**, so the change reaches them too.\n- Because other people are affected, an extra confirmation of the shared content is needed.\n\n### Warnings\n\n- The file or the comment changed since the plan. Review the new plan and confirm again.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_add_comment",
+                            "title": "Add file comment",
+                            "action": "files_add_comment",
+                            "path": "/f42.txt",
+                            "isDir": false,
+                            "text": "Approved, @bob",
+                            "notifies": [
+                                {
+                                    "id": "bob",
+                                    "display_name": "Bob Lima"
+                                }
+                            ],
+                            "read_marker": {
+                                "now": "2026-11-01T10:00:00Z",
+                                "after": "now"
+                            },
+                            "access": {
+                                "scope": "shared",
+                                "owner": "bob",
+                                "ownerDisplayName": "Bob Lima",
+                                "sharedBy": "Bob Lima",
+                                "permissions": {
+                                    "read": true,
+                                    "update": false,
+                                    "create": false,
+                                    "delete": false,
+                                    "share": false
+                                }
+                            },
+                            "shared": [
+                                {
+                                    "requiresConfirmation": true,
+                                    "scope": "shared",
+                                    "owner": "bob",
+                                    "ownerDisplayName": "Bob Lima",
+                                    "sharedBy": "Bob Lima",
+                                    "resource": "/f42.txt",
+                                    "message": "This file was shared by Bob Lima. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true."
+                                }
+                            ],
+                            "requiresSharedConfirmation": true,
+                            "recoverable": false,
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "plan_state": "<plan_state#2>",
+                            "warnings": [
+                                {
+                                    "message": "The file or the comment changed since the plan. Review the new plan and confirm again."
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "state": {
+                "saves": [],
+                "markers": [],
+                "notified": []
+            }
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "path": "/f42.txt",
+                "text": "Approved, @bob"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Add file comment**\n\nAdd this comment to **/f42.txt**, as you:\n\n> Approved, @bob\n\n- Everyone who can see this item sees the comment, with your name.\n- Mentioned people are notified: **Bob Lima (bob)**.\n- Your read marker for the comments of this item moves to now: earlier comments count as read for you.\n- The comment cannot be edited or deleted through MCP.\n- It was shared with you by **Bob Lima**, so the change reaches them too.\n- Because other people are affected, an extra confirmation of the shared content is needed.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_add_comment",
+                            "title": "Add file comment",
+                            "action": "files_add_comment",
+                            "path": "/f42.txt",
+                            "isDir": false,
+                            "text": "Approved, @bob",
+                            "notifies": [
+                                {
+                                    "id": "bob",
+                                    "display_name": "Bob Lima"
+                                }
+                            ],
+                            "read_marker": {
+                                "now": "2026-11-01T10:00:00Z",
+                                "after": "now"
+                            },
+                            "access": {
+                                "scope": "shared",
+                                "owner": "bob",
+                                "ownerDisplayName": "Bob Lima",
+                                "sharedBy": "Bob Lima",
+                                "permissions": {
+                                    "read": true,
+                                    "update": false,
+                                    "create": false,
+                                    "delete": false,
+                                    "share": false
+                                }
+                            },
+                            "shared": [
+                                {
+                                    "requiresConfirmation": true,
+                                    "scope": "shared",
+                                    "owner": "bob",
+                                    "ownerDisplayName": "Bob Lima",
+                                    "sharedBy": "Bob Lima",
+                                    "resource": "/f42.txt",
+                                    "message": "This file was shared by Bob Lima. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true."
+                                }
+                            ],
+                            "requiresSharedConfirmation": true,
+                            "recoverable": false,
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "saves": [],
+                "markers": [],
+                "notified": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "path": "/f42.txt",
+                "text": "Approved, @bob",
+                "confirm": true,
+                "confirm_shared": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"added\": true,\n    \"path\": \"/f42.txt\",\n    \"comment\": {\n        \"id\": \"100\",\n        \"author\": {\n            \"type\": \"users\",\n            \"id\": \"alice\",\n            \"display_name\": \"Alice\"\n        },\n        \"created_at\": \"2026-11-13T12:00:00Z\",\n        \"text\": \"Approved, @bob\",\n        \"reply_to\": null,\n        \"verb\": \"comment\",\n        \"unread\": false,\n        \"mentions\": [\n            {\n                \"type\": \"user\",\n                \"id\": \"bob\",\n                \"display_name\": \"Bob Lima\"\n            }\n        ]\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "saves": [
+                    [
+                        "42",
+                        "alice",
+                        "Approved, @bob"
+                    ]
+                ],
+                "markers": [
+                    [
+                        "42",
+                        "alice"
+                    ]
+                ],
+                "notified": [
+                    "bob"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "path": "/f42.txt",
+                "text": "Approved, @bob",
+                "confirm": true,
+                "confirm_shared": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "saves": [
+                    [
+                        "42",
+                        "alice",
+                        "Approved, @bob"
+                    ]
+                ],
+                "markers": [
+                    [
+                        "42",
+                        "alice"
+                    ]
+                ],
+                "notified": [
+                    "bob"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "path": "/f42.txt",
+                "text": "Approved, @bob"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Add file comment**\n\nAdd this comment to **/f42.txt**, as you:\n\n> Approved, @bob\n\n- Everyone who can see this item sees the comment, with your name.\n- Mentioned people are notified: **Bob Lima (bob)**.\n- Your read marker for the comments of this item moves to now: earlier comments count as read for you.\n- The comment cannot be edited or deleted through MCP.\n- It was shared with you by **Bob Lima**, so the change reaches them too.\n- Because other people are affected, an extra confirmation of the shared content is needed.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_add_comment",
+                            "title": "Add file comment",
+                            "action": "files_add_comment",
+                            "path": "/f42.txt",
+                            "isDir": false,
+                            "text": "Approved, @bob",
+                            "notifies": [
+                                {
+                                    "id": "bob",
+                                    "display_name": "Bob Lima"
+                                }
+                            ],
+                            "read_marker": {
+                                "now": "<read-marker-now>",
+                                "after": "now"
+                            },
+                            "access": {
+                                "scope": "shared",
+                                "owner": "bob",
+                                "ownerDisplayName": "Bob Lima",
+                                "sharedBy": "Bob Lima",
+                                "permissions": {
+                                    "read": true,
+                                    "update": false,
+                                    "create": false,
+                                    "delete": false,
+                                    "share": false
+                                }
+                            },
+                            "shared": [
+                                {
+                                    "requiresConfirmation": true,
+                                    "scope": "shared",
+                                    "owner": "bob",
+                                    "ownerDisplayName": "Bob Lima",
+                                    "sharedBy": "Bob Lima",
+                                    "resource": "/f42.txt",
+                                    "message": "This file was shared by Bob Lima. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true."
+                                }
+                            ],
+                            "requiresSharedConfirmation": true,
+                            "recoverable": false,
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "saves": [
+                    [
+                        "42",
+                        "alice",
+                        "Approved, @bob"
+                    ]
+                ],
+                "markers": [
+                    [
+                        "42",
+                        "alice"
+                    ]
+                ],
+                "notified": [
+                    "bob"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "path": "/f42.txt",
+                "text": "Approved, @bob",
+                "confirm": true,
+                "confirm_shared": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"added\": true,\n    \"path\": \"/f42.txt\",\n    \"comment\": {\n        \"id\": \"101\",\n        \"author\": {\n            \"type\": \"users\",\n            \"id\": \"alice\",\n            \"display_name\": \"Alice\"\n        },\n        \"created_at\": \"2026-11-13T12:00:00Z\",\n        \"text\": \"Approved, @bob\",\n        \"reply_to\": null,\n        \"verb\": \"comment\",\n        \"unread\": false,\n        \"mentions\": [\n            {\n                \"type\": \"user\",\n                \"id\": \"bob\",\n                \"display_name\": \"Bob Lima\"\n            }\n        ]\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "saves": [
+                    [
+                        "42",
+                        "alice",
+                        "Approved, @bob"
+                    ],
+                    [
+                        "42",
+                        "alice",
+                        "Approved, @bob"
+                    ]
+                ],
+                "markers": [
+                    [
+                        "42",
+                        "alice"
+                    ],
+                    [
+                        "42",
+                        "alice"
+                    ]
+                ],
+                "notified": [
+                    "bob",
+                    "bob"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "arguments": {
+                "path": "/f42.txt",
+                "text": "Approved, @bob",
+                "confirm": true,
+                "confirm_shared": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "saves": [
+                    [
+                        "42",
+                        "alice",
+                        "Approved, @bob"
+                    ],
+                    [
+                        "42",
+                        "alice",
+                        "Approved, @bob"
+                    ]
+                ],
+                "markers": [
+                    [
+                        "42",
+                        "alice"
+                    ],
+                    [
+                        "42",
+                        "alice"
+                    ]
+                ],
+                "notified": [
+                    "bob",
+                    "bob"
+                ]
+            }
+        }
+    ]
+}

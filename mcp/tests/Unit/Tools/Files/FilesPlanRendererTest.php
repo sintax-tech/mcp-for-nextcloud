@@ -280,6 +280,9 @@ final class FilesPlanRendererTest extends FilesToolsTestCase {
 		// The tag change runs on the native DAV pipeline, which this fake tree has not: its plan is the sample whose keys
 		// SetTagTest keeps equal to the real plan's.
 		$plans['files_set_tag'] = \OCA\Mcp\Tests\Unit\Modules\Files\SetTagWorld::samplePlan();
+		// The comment runs on the native DAV pipeline, which this fake tree has not: its plan is the sample whose keys
+		// AddCommentTest keeps equal to the real plan's.
+		$plans['files_add_comment'] = \OCA\Mcp\Tests\Unit\Modules\Files\CommentWorld::samplePlan();
 		$this->assertEveryWriteToolHasAReadablePlan($this->module, \OCA\Mcp\Tests\Unit\Tools\Files\Deletion\DeletePlanContract::include($this, $this->tree, $plans));
 	}
 

@@ -82,6 +82,7 @@ final class VisibilityContractTest extends TestCase {
 		'files_list_tags' => 'list_tags',
 		'files_read_comments' => 'read_comments',
 		'files_set_tag' => 'set_tag',
+		'files_add_comment' => 'add_comment',
 		'notes_list' => 'notes_list',
 		'notes_search' => 'notes_search',
 		'notes_read' => 'notes_read',
@@ -426,6 +427,16 @@ final class VisibilityContractTest extends TestCase {
 		foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt', '/SecretFolder'] as $p) {
 			foreach ([[], ['confirm' => true, 'plan_state' => str_repeat('a', 64), 'confirm_shared' => true]] as $confirm) {
 				$res = $registry->call('files_set_tag', ['path' => $p, 'tag' => 'Contract', 'assigned' => true] + $confirm, 'alice');
+				$this->assertTrue($res['isError'] ?? false);
+				$this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+				$assertNoLeak($res['content'][0]['text']);
+			}
+		}
+
+		// 5e. files_add_comment: plan and confirmed call refused before any DAV request, like a missing file
+		foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt', '/SecretFolder'] as $p) {
+			foreach ([[], ['confirm' => true, 'plan_state' => str_repeat('a', 64)]] as $confirm) {
+				$res = $registry->call('files_add_comment', ['path' => $p, 'text' => 'Leak?', 'confirm_shared' => true] + $confirm, 'alice');
 				$this->assertTrue($res['isError'] ?? false);
 				$this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
 				$assertNoLeak($res['content'][0]['text']);
@@ -957,6 +968,8 @@ final class VisibilityContractTest extends TestCase {
 			['files_read_comments', ['path' => '/private']],
 			['files_set_tag', ['path' => '/private.jpg', 'tag' => 'Contract', 'assigned' => true]],
 			['files_set_tag', ['path' => '/private', 'tag_id' => '7', 'assigned' => false]],
+			['files_add_comment', ['path' => '/private.jpg', 'text' => 'Hi']],
+			['files_add_comment', ['path' => '/private', 'text' => 'Hi']],
 			['files_version_read', ['path' => '/private.jpg', 'version' => '1']],
 			['files_version_restore', ['path' => '/private.jpg', 'version' => '1']],
 			['files_edit', ['path' => '/private.jpg', 'content' => 'x']],

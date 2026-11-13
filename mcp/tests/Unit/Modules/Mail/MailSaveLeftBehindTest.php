@@ -125,4 +125,33 @@ final class MailSaveLeftBehindTest extends MailSaveAttachmentTestCase {
 			self::assertArrayNotHasKey(self::TARGET, $this->tree->nodes);
 		}
 	}
+
+	/**
+	 * newFile throws after the node exists: a file visible at the name is named, without an id that would claim it;
+	 * a name that cannot be read again names nothing. Nothing is deleted.
+	 *
+	 * @return void
+	 */
+	public function testAFailureInsideNewFileIsReconciledWithTheName(): void {
+		$this->tree->afterCreate = function (): void {
+			$this->tree->afterCreate = null;
+			throw new \OCA\Mcp\Access\Policy\PolicyUnavailable('hook failed');
+		};
+		$out = $this->saveFile();
+		self::assertSame(['uncertain', '/Documentos/saved.pdf', CreationMessages::createMayExist(null, '/Documentos/saved.pdf')], [$out['outcome'], $out['path'], $out['message']]);
+		self::assertArrayNotHasKey('fileId', $out);
+
+		unset($this->tree->nodes[self::TARGET]);
+		$this->tree->afterCreate = function (): void {
+			$this->tree->afterCreate = null;
+			$this->tree->beforeGet = static fn () => throw new \RuntimeException('storage');
+			throw new \OCA\Mcp\Access\Policy\PolicyUnavailable('hook failed');
+		};
+		$out = $this->saveFile();
+		$this->tree->beforeGet = null;
+		self::assertSame(['uncertain', CreationMessages::createUnconfirmed(null)], [$out['outcome'], $out['message']]);
+		self::assertArrayNotHasKey('path', $out);
+		self::assertArrayNotHasKey('fileId', $out);
+		self::assertArrayHasKey(self::TARGET, $this->tree->nodes);
+	}
 }

@@ -118,6 +118,25 @@ final class CreationMessages {
 		return $reason === null ? $left : $reason . ' ' . $left;
 	}
 
+	/**
+	 * @param string|null $reason the refusal the creation answered, null for an unexplained failure
+	 * @param string $path the path of the new file as the actor sees it
+	 * @return string the reason, then that a file now exists at that path, of this write or of another client
+	 */
+	public static function createMayExist(?string $reason, string $path): string {
+		$may = Translator::t('The new file could not be confirmed: a file now exists at %s, created by this write or by another client. Check it before trying again; nothing was deleted.', [$path]);
+		return $reason === null ? $may : $reason . ' ' . $may;
+	}
+
+	/**
+	 * @param string|null $reason the refusal the creation answered, null for an unexplained failure
+	 * @return string the reason, then that a file may have been created, without naming it
+	 */
+	public static function createUnconfirmed(?string $reason): string {
+		$may = Translator::t('The new file could not be confirmed and a file may have been created. Check Files before trying again; nothing was deleted.');
+		return $reason === null ? $may : $reason . ' ' . $may;
+	}
+
 	/** @return string the rule of a path that names no file Nextcloud accepts */
 	public static function newFileNameRule(): string {
 		return Translator::t('must end in a file name Nextcloud accepts: no reserved name, forbidden character or extension, at most 250 bytes');

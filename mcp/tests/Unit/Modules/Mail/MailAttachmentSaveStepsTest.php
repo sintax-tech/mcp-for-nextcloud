@@ -48,6 +48,7 @@ final class MailAttachmentSaveStepsTest extends FilesToolsTestCase {
 	/** Builds the real plan, reader, authorization and Files creation, and the registry gate of mail_save_attachment. @return void */
 	protected function setUp(): void {
 		parent::setUp();
+		$this->items = null;
 		$this->mail = (new FakeMailMessageApp())->withAccount(1, 'alice', 'Private', 'alice@example.com');
 		$this->mail->withFolder(1, ['id' => 1, 'name' => 'INBOX']);
 		$structure = FakeMimePart::multipart('multipart/mixed', [new FakeMimePart('text/plain'), new FakeMimePart('application/pdf', 'original.pdf', 'attachment')]);
@@ -230,6 +231,8 @@ final class MailAttachmentSaveStepsTest extends FilesToolsTestCase {
 			'lock at the read-back, after the file exists' => [static function (self $test): void { $test->failReadBack(new \OCP\Lock\LockedException(self::TARGET)); }, WorkflowStep::UNCERTAIN],
 			'quota at the read-back, after the file exists' => [static function (self $test): void { $test->failReadBack(new \OCP\Files\NotEnoughSpaceException(self::TARGET)); }, WorkflowStep::UNCERTAIN],
 			'policy unreadable at the read-back, after the file exists' => [static function (self $test): void { $test->failReadBack(new \OCA\Mcp\Access\Policy\PolicyUnavailable('readback unavailable')); }, WorkflowStep::UNCERTAIN],
+			'destination hidden at the read-back' => [static function (self $test): void { $test->tree->afterWrite = function () use ($test): void { $test->items = [(string)$test->tree->nodes['/alice/files/Outros']['id']]; }; }, WorkflowStep::FAILED],
+			'newFile throws after the node exists' => [static function (self $test): void { $test->tree->afterCreate = function () use ($test): void { $test->tree->afterCreate = null; throw new \OCA\Mcp\Access\Policy\PolicyUnavailable('hook failed'); }; }, WorkflowStep::UNCERTAIN],
 			'storage failure at the sink, after the file exists' => [static function (self $test): void { $test->tree->writeFailure = new \RuntimeException('native sink failure'); }, WorkflowStep::UNCERTAIN],
 		];
 	}
@@ -260,8 +263,9 @@ final class MailAttachmentSaveStepsTest extends FilesToolsTestCase {
 		self::assertSame([$status, $message], [$step->status, $step->message]);
 		self::assertStringNotContainsString('delete', implode(' ', $this->tree->ops));
 		if ($expected === WorkflowStep::UNCERTAIN) {
-			// The file the failed write left is named, by path and id, and stays empty or incomplete in place.
-			self::assertSame(['path' => '/Documentos/saved.pdf', 'fileId' => $this->tree->nodes[self::TARGET]['id']], $step->ids);
+			// The file the failed write left is named by its path, and by its id only when the write is known to be ours.
+			self::assertSame('/Documentos/saved.pdf', $step->ids['path']);
+			self::assertContains($step->ids['fileId'] ?? null, [null, $this->tree->nodes[self::TARGET]['id']]);
 			self::assertStringContainsString('/Documentos/saved.pdf', (string)$step->message);
 		}
 	}

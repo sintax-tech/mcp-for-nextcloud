@@ -72,7 +72,8 @@ final class ProtectedFileDestination implements NewFileDestination {
 			$written = $this->creation->write($target['folder'], $target['name'], $content, $userId);
 		} catch (FileCreationFailure $e) {
 			// The file exists, empty or incomplete: the receipt names it, with the reason the write stopped.
-			return ['path' => $target['path']] + ($e->fileId === null ? [] : ['fileId' => $e->fileId])
+			// Without a path the failure could not tell whether the file is visible: the receipt names nothing.
+			return ($e->path === null ? [] : ['path' => $target['path']]) + ($e->fileId === null ? [] : ['fileId' => $e->fileId])
 				+ ['outcome' => 'uncertain', 'verified' => false, 'message' => $e->getMessage()];
 		} catch (ToolFailure|ArgumentValidationException|PolicyUnavailable $e) {
 			throw $e;
@@ -123,9 +124,28 @@ final class ProtectedFileDestination implements NewFileDestination {
 				&& (string)$file->getEtag() === $receipt['etag'];
 			return $receipt + ['outcome' => $verified ? 'saved' : 'uncertain', 'verified' => $verified, 'sha256' => $actual];
 		} catch (Throwable) {
-			// The file was written: whatever stops its read-back, an unreadable policy included, leaves it uncertain and
-			// named, never a refusal or a 503 that hides it.
+			if ($this->hidden($target)) {
+				// The file the actor just wrote is now hidden from MCP: the answer is the opaque one of any hidden item.
+				throw new ToolFailure(CommonMessages::notFound());
+			}
+			// The file was written: whatever else stops its read-back, an unreadable policy included, leaves it uncertain
+			// and named, never a refusal or a 503 that hides it.
 			return ['path' => $target['path']] + ($writtenId === null ? [] : ['fileId' => $writtenId]) + ['outcome' => 'uncertain', 'verified' => false];
+		}
+	}
+
+	/**
+	 * @param array{folder: \OCP\Files\Folder, name: string} $target the destination of the write
+	 * @return bool whether the visibility rules now hide the folder or the file; false when that cannot be read, which is
+	 *     unavailability and not a hidden item
+	 */
+	private function hidden(array $target): bool {
+		try {
+			$this->visibility->clearCache();
+			return !$this->visibility->isVisible($target['folder'])
+				|| ($target['folder']->nodeExists($target['name']) && !$this->visibility->isVisible($target['folder']->get($target['name'])));
+		} catch (Throwable) {
+			return false;
 		}
 	}
 }

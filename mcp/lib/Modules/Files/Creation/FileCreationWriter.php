@@ -58,16 +58,8 @@ final class FileCreationWriter {
 			$file = NodeAccess::requireFile(NodeAccess::run(fn () => NodeAccess::mutate(fn () => $folder->newFile($name), $this->visibilityGuard)));
 		} catch (InvalidPathException) {
 			throw new ArgumentValidationException('Invalid argument: path', 'path', \OCA\Mcp\Modules\Files\Presentation\CreationMessages::newFileNameRule());
-		} catch (ToolFailure $e) {
-			throw $e;
 		} catch (Throwable $e) {
-			// Preserve the original exception for the tool registry and checkout diagnostics.
-			$this->logger->error('MCP new file write failed: {exception_class} (code {exception_code})', [
-				'app' => 'mcp',
-				'exception_class' => $e::class,
-				'exception_code' => ExceptionDetails::code($e),
-			]);
-			throw $e;
+			throw $this->reconciled($folder, $name, $userId, $e);
 		}
 		// A file the visibility rules hide answers as missing, never named: it is left in place, as it always was. A policy
 		// that cannot be read here comes after the file exists, so it names the file like any other failure from here on.
@@ -111,6 +103,43 @@ final class FileCreationWriter {
 	}
 
 	/**
+	 * What a newFile that threw leaves behind, read again: the name was free before it, so a name still free means
+	 * nothing was created and the failure leaves as it always did (a refusal, a 503, the original exception). A name
+	 * that now exists may hold a file of this write or of another client: it is named when the actor may see it,
+	 * without an id that would claim it as ours; when it is hidden or cannot be read, the answer names nothing.
+	 *
+	 * @param Folder $folder the destination folder
+	 * @param string $name the basename the write tried to create
+	 * @param string|null $userId the actor, whose own view gives the path
+	 * @param Throwable $e what newFile threw
+	 * @return Throwable the original failure, or a FileCreationFailure when a file may have been created
+	 */
+	private function reconciled(Folder $folder, string $name, ?string $userId, Throwable $e): Throwable {
+		if (!$e instanceof ToolFailure) {
+			// Preserve the original exception for the tool registry and checkout diagnostics.
+			$this->logger->error('MCP new file write failed: {exception_class} (code {exception_code})', [
+				'app' => 'mcp',
+				'exception_class' => $e::class,
+				'exception_code' => ExceptionDetails::code($e),
+			]);
+		}
+		$reason = $e instanceof ToolFailure ? $e : null;
+		try {
+			if (!$folder->nodeExists($name)) {
+				return $e;
+			}
+			$visible = $this->visibilityGuard->isVisible($folder->get($name));
+		} catch (Throwable) {
+			$visible = false;
+		}
+		if (!$visible) {
+			return new FileCreationFailure(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createUnconfirmed($reason?->getMessage()), null, null, $reason);
+		}
+		$path = $this->visiblePath($folder, $name, $userId);
+		return new FileCreationFailure(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createMayExist($reason?->getMessage(), $path), $path, null, $reason);
+	}
+
+	/**
 	 * The failure of a step that ran after Nextcloud created the file, with the reason it keeps.
 	 *
 	 * @param Folder $folder the destination folder
@@ -146,18 +175,32 @@ final class FileCreationWriter {
 	 * @return FileCreationFailure the reason, kept as the previous exception, and the file left behind
 	 */
 	private function leftBehind(Folder $folder, string $name, File $file, ?string $userId, ?ToolFailure $reason): FileCreationFailure {
-		$path = $name;
+		$path = $this->visiblePath($folder, $name, $userId);
 		$fileId = null;
 		try {
-			$prefix = '/' . $userId . '/files';
-			$folderPath = $folder->getPath();
-			if ($userId !== null && ($folderPath === $prefix || str_starts_with($folderPath, $prefix . '/'))) {
-				$path = rtrim(substr($folderPath, strlen($prefix)), '/') . '/' . $name;
-			}
 			$fileId = (int)$file->getId();
 		} catch (Throwable) {
-			// The file is still named by what is known; never a second failure on top of the first.
+			// The file is still named by its path; never a second failure on top of the first.
 		}
 		return new FileCreationFailure(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createLeftBehind($reason?->getMessage(), $path), $path, $fileId, $reason);
+	}
+
+	/**
+	 * @param Folder $folder the destination folder
+	 * @param string $name the basename of the file
+	 * @param string|null $userId the actor, whose own view gives the path; null names the file by its basename only
+	 * @return string the path of the file as the actor sees it, or its basename when that cannot be told
+	 */
+	private function visiblePath(Folder $folder, string $name, ?string $userId): string {
+		try {
+			$folderPath = $folder->getPath();
+			$prefix = '/' . $userId . '/files';
+			if ($userId !== null && ($folderPath === $prefix || str_starts_with($folderPath, $prefix . '/'))) {
+				return rtrim(substr($folderPath, strlen($prefix)), '/') . '/' . $name;
+			}
+		} catch (Throwable) {
+			// The basename is all that is known.
+		}
+		return $name;
 	}
 }

@@ -93,4 +93,30 @@ final class FilesCreateLeftBehindTest extends FilesToolsTestCase {
 			$this->assertArrayNotHasKey('/alice/files/Documentos/outro.md', $this->tree->nodes);
 		}
 	}
+
+	/**
+	 * newFile throws after the node exists: the name is read again; a visible file there is named without claiming it,
+	 * a name that cannot be read again is not named at all, and nothing is deleted.
+	 *
+	 * @return void
+	 */
+	public function testAFailureInsideNewFileIsReconciledWithTheName(): void {
+		$this->tree->afterCreate = function (): void {
+			$this->tree->afterCreate = null;
+			throw new \OCA\Mcp\Access\Policy\PolicyUnavailable('hook failed');
+		};
+		$this->assertSame(CreationMessages::createMayExist(null, '/Documentos/novo.md'), $this->failure('files_create', ['path' => '/Documentos/novo.md', 'content' => 'texto']));
+
+		$this->tree->afterCreate = function (): void {
+			$this->tree->afterCreate = null;
+			$this->tree->beforeGet = static fn () => throw new \RuntimeException('storage');
+			throw new \OCA\Mcp\Access\Policy\PolicyUnavailable('hook failed');
+		};
+		$message = $this->failure('files_create', ['path' => '/Documentos/outro.md', 'content' => 'texto']);
+		$this->tree->beforeGet = null;
+		$this->assertSame(CreationMessages::createUnconfirmed(null), $message);
+		$this->assertArrayHasKey('/alice/files/Documentos/novo.md', $this->tree->nodes);
+		$this->assertArrayHasKey('/alice/files/Documentos/outro.md', $this->tree->nodes);
+		$this->assertStringNotContainsString('delete', implode(' ', $this->tree->ops));
+	}
 }

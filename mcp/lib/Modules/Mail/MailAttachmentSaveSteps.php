@@ -84,7 +84,7 @@ final class MailAttachmentSaveSteps implements MailAttachmentSave {
 			return WorkflowStep::failed((string)$receipt['message']);
 		}
 		$fileId = is_int($receipt['fileId'] ?? null) ? $receipt['fileId'] : null;
-		$ids = ['path' => (string)$receipt['path']] + ($fileId === null ? [] : ['fileId' => $fileId]);
+		$ids = (is_string($receipt['path'] ?? null) ? ['path' => $receipt['path']] : []) + ($fileId === null ? [] : ['fileId' => $fileId]);
 		if (($receipt['outcome'] ?? null) !== 'saved' || ($receipt['verified'] ?? false) !== true || $fileId === null) {
 			return WorkflowStep::uncertain((string)($receipt['message'] ?? MailSaveMessages::uncertain()), $ids, $receipt);
 		}

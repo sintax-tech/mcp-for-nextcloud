@@ -182,17 +182,24 @@ final class MailCardGatesTest extends MailCardWorld {
 		self::assertSame([10, 10, 10], $this->readers->checked, 'plan, preflight and again after the save');
 	}
 
+	/** @return array<string, array{bool}> a policy failure that says it may have applied, and one that says nothing */
+	public static function readBackPolicies(): array {
+		return ['marked uncertain' => [true], 'default flag' => [false]];
+	}
+
 	/**
-	 * A policy the read-back of the saved file cannot read leaves the file uncertain with its path and starts no card:
-	 * the receipt reaches the user instead of a 503, and nothing is deleted.
+	 * A policy the read-back of the saved file cannot read leaves the file uncertain with its path and id and starts no
+	 * card, whatever the exception says of itself: the receipt reaches the user instead of a 503, and nothing is deleted.
 	 *
+	 * @param bool $uncertain the flag the policy failure carries
 	 * @return void
 	 */
-	public function testAnUncertainPolicyAfterTheSinkAnswersAReceiptWithoutACard(): void {
-		$this->tree->afterWrite = function (): void {
-			$this->tree->beforeGet = function (): void {
+	#[DataProvider('readBackPolicies')]
+	public function testAnUncertainPolicyAfterTheSinkAnswersAReceiptWithoutACard(bool $uncertain): void {
+		$this->tree->afterWrite = function () use ($uncertain): void {
+			$this->tree->beforeGet = function () use ($uncertain): void {
 				$this->tree->beforeGet = null;
-				throw new \OCA\Mcp\Access\Policy\PolicyUnavailable('policy', true);
+				throw new \OCA\Mcp\Access\Policy\PolicyUnavailable('readback unavailable', $uncertain);
 			};
 		};
 
@@ -201,7 +208,7 @@ final class MailCardGatesTest extends MailCardWorld {
 		self::assertFalse($error);
 		self::assertSame(['stopped', 'file'], [$receipt['status'], $receipt['stopped_at']]);
 		self::assertSame([WorkflowStep::UNCERTAIN, 'not_started'], array_column($receipt['steps'], 'status'));
-		self::assertSame(['path' => '/Documentos/pedido.pdf'], $receipt['steps'][0]['ids']);
+		self::assertSame(['path' => '/Documentos/pedido.pdf', 'fileId' => $this->tree->nodes[self::TARGET]['id']], $receipt['steps'][0]['ids']);
 		self::assertSame(self::BYTES, $this->tree->nodes[self::TARGET]['content']);
 		self::assertSame([], $this->created);
 		self::assertStringNotContainsString('delete', implode(' ', $this->tree->ops));

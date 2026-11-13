@@ -88,10 +88,11 @@ final class CreateMailCardHandler {
 	}
 
 	/**
-	 * The save, the first write, with its error boundary: an exception that may come after the sink (a policy the
-	 * read-back could not read, anything unexpected) is an uncertain file with the path it was saved to, so the receipt
-	 * reaches the user and no card is created; a refusal of the arguments or a policy unreadable before any write
-	 * leaves as it does everywhere else (-32602, 503).
+	 * The save, the first write, with its error boundary. Files decides the phase: whatever stops the save after the
+	 * file exists, an unreadable policy included, comes back as an uncertain receipt that names the file. What still
+	 * escapes the port is a refusal of the arguments or a policy unreadable before any write, which leave as they do
+	 * everywhere else (-32602, 503); anything else unexpected is an uncertain file with its path, so the receipt reaches
+	 * the user and no card is created.
 	 *
 	 * @param string $userId the actor
 	 * @param array<string, mixed> $arguments validated arguments of routines_create_mail_card
@@ -103,12 +104,7 @@ final class CreateMailCardHandler {
 		try {
 			return $this->files->save($userId, MailCardRequest::messageId($arguments), MailCardRequest::attachmentId($arguments),
 				MailCardRequest::path($arguments), MailCardRequest::confirmShared($arguments));
-		} catch (PolicyUnavailable $e) {
-			if (!$e->uncertain) {
-				throw $e;
-			}
-			$this->logger->warning('MCP routine step failed: {exception_detail}', ['app' => 'mcp', 'exception_detail' => ToolRegistry::loggable($e)]);
-		} catch (\InvalidArgumentException $e) {
+		} catch (PolicyUnavailable|\InvalidArgumentException $e) {
 			throw $e;
 		} catch (\Throwable $e) {
 			$this->logger->warning('MCP routine step failed: {exception_detail}', ['app' => 'mcp', 'exception_detail' => ToolRegistry::loggable($e)]);

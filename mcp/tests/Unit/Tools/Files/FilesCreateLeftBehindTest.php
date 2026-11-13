@@ -65,4 +65,32 @@ final class FilesCreateLeftBehindTest extends FilesToolsTestCase {
 		$this->assertSame($reason, $this->failure('files_create', ['path' => '/Documentos/novo.md', 'content' => 'texto']));
 		$this->assertArrayNotHasKey(self::FILE, $this->tree->nodes);
 	}
+
+	/**
+	 * A policy unreadable after the file exists, with the default flag, names the empty file left like any other
+	 * failure from there on; before the file exists it stays the 503 of the endpoint, with nothing created.
+	 *
+	 * @return void
+	 */
+	public function testAPolicyUnreadableAfterTheFileExistsNamesItAndBeforeStaysA503(): void {
+		$this->tree->afterCreate = function (): void {
+			$this->tree->beforeGet = function (string $path): void {
+				if ($path === self::FILE) {
+					$this->tree->beforeGet = null;
+					throw new \OCA\Mcp\Access\Policy\PolicyUnavailable('readback unavailable');
+				}
+			};
+		};
+		$this->assertSame(CreationMessages::createLeftBehind(null, '/Documentos/novo.md'), $this->failure('files_create', ['path' => '/Documentos/novo.md', 'content' => 'texto']));
+		$this->assertSame('', $this->tree->nodes[self::FILE]['content']);
+
+		$this->tree->afterCreate = null;
+		$this->tree->beforeCreate = static fn () => throw new \OCA\Mcp\Access\Policy\PolicyUnavailable('policy');
+		$this->expectException(\OCA\Mcp\Access\Policy\PolicyUnavailable::class);
+		try {
+			$this->tool('files_create', ['path' => '/Documentos/outro.md', 'content' => 'texto']);
+		} finally {
+			$this->assertArrayNotHasKey('/alice/files/Documentos/outro.md', $this->tree->nodes);
+		}
+	}
 }

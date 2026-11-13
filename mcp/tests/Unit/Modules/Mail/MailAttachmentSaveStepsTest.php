@@ -229,6 +229,7 @@ final class MailAttachmentSaveStepsTest extends FilesToolsTestCase {
 			'lock at the sink, after the file exists' => [static function (self $test): void { $test->tree->writeFailure = new \OCP\Lock\LockedException('saved.pdf'); }, WorkflowStep::UNCERTAIN],
 			'lock at the read-back, after the file exists' => [static function (self $test): void { $test->failReadBack(new \OCP\Lock\LockedException(self::TARGET)); }, WorkflowStep::UNCERTAIN],
 			'quota at the read-back, after the file exists' => [static function (self $test): void { $test->failReadBack(new \OCP\Files\NotEnoughSpaceException(self::TARGET)); }, WorkflowStep::UNCERTAIN],
+			'policy unreadable at the read-back, after the file exists' => [static function (self $test): void { $test->failReadBack(new \OCA\Mcp\Access\Policy\PolicyUnavailable('readback unavailable')); }, WorkflowStep::UNCERTAIN],
 			'storage failure at the sink, after the file exists' => [static function (self $test): void { $test->tree->writeFailure = new \RuntimeException('native sink failure'); }, WorkflowStep::UNCERTAIN],
 		];
 	}
@@ -263,5 +264,19 @@ final class MailAttachmentSaveStepsTest extends FilesToolsTestCase {
 			self::assertSame(['path' => '/Documentos/saved.pdf', 'fileId' => $this->tree->nodes[self::TARGET]['id']], $step->ids);
 			self::assertStringContainsString('/Documentos/saved.pdf', (string)$step->message);
 		}
+	}
+
+	/** A policy unreadable before the file exists leaves both the tool and the step as the same 503, with nothing created. @return void */
+	public function testAPolicyUnreadableBeforeTheFileIsThe503OfBoth(): void {
+		$this->tree->beforeCreate = static fn () => throw new \OCA\Mcp\Access\Policy\PolicyUnavailable('policy');
+		foreach ([fn () => $this->original->handle(['message_id' => 7, 'attachment_id' => '2', 'path' => '/Documentos/saved.pdf', 'confirm' => true], 'alice'),
+			fn () => $this->steps->save('alice', 7, '2', '/Documentos/saved.pdf', false)] as $call) {
+			try {
+				$call();
+				self::fail('A policy unreadable before the file must leave as a 503');
+			} catch (\OCA\Mcp\Access\Policy\PolicyUnavailable) {
+			}
+		}
+		self::assertArrayNotHasKey(self::TARGET, $this->tree->nodes);
 	}
 }

@@ -86,6 +86,7 @@ final class ProtectedFileDestination implements NewFileDestination {
 			]);
 			return ['path' => $target['path'], 'outcome' => 'uncertain', 'verified' => false];
 		}
+		$writtenId = null;
 		try {
 			$writtenId = (int)$written->getId();
 			$file = NodeAccess::requireFile($target['folder']->get($target['name']));
@@ -121,10 +122,10 @@ final class ProtectedFileDestination implements NewFileDestination {
 				&& hash_equals($expected, $actual)
 				&& (string)$file->getEtag() === $receipt['etag'];
 			return $receipt + ['outcome' => $verified ? 'saved' : 'uncertain', 'verified' => $verified, 'sha256' => $actual];
-		} catch (PolicyUnavailable $e) {
-			throw $e;
 		} catch (Throwable) {
-			return ['path' => $target['path'], 'outcome' => 'uncertain', 'verified' => false];
+			// The file was written: whatever stops its read-back, an unreadable policy included, leaves it uncertain and
+			// named, never a refusal or a 503 that hides it.
+			return ['path' => $target['path']] + ($writtenId === null ? [] : ['fileId' => $writtenId]) + ['outcome' => 'uncertain', 'verified' => false];
 		}
 	}
 }

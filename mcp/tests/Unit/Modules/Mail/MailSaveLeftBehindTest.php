@@ -91,4 +91,38 @@ final class MailSaveLeftBehindTest extends MailSaveAttachmentTestCase {
 		self::assertNotContains('write ' . self::TARGET, $this->tree->ops);
 		self::assertStringNotContainsString('delete', implode(' ', $this->tree->ops));
 	}
+
+	/**
+	 * A policy the read-back of the written file cannot read, with the default flag, answers the uncertain receipt
+	 * with the path and id of the file, never a 503: the file exists with its bytes.
+	 *
+	 * @return void
+	 */
+	public function testAPolicyUnreadableAtTheReadBackIsUncertainAndNamesTheFile(): void {
+		$this->tree->afterWrite = function (): void {
+			$this->tree->beforeGet = function (): void {
+				$this->tree->beforeGet = null;
+				throw new \OCA\Mcp\Access\Policy\PolicyUnavailable('readback unavailable');
+			};
+		};
+
+		$out = $this->saveFile();
+
+		self::assertSame(['uncertain', false], [$out['outcome'], $out['verified']]);
+		self::assertSame(['/Documentos/saved.pdf', $this->tree->nodes[self::TARGET]['id']], [$out['path'], $out['fileId']]);
+		self::assertNotSame('', $this->tree->nodes[self::TARGET]['content']);
+		self::assertStringNotContainsString('delete', implode(' ', $this->tree->ops));
+	}
+
+	/** A policy unreadable before the file exists still leaves as the endpoint's 503, with nothing created. @return void */
+	public function testAPolicyUnreadableBeforeTheFileExistsStaysA503(): void {
+		$this->tree->beforeCreate = static fn () => throw new \OCA\Mcp\Access\Policy\PolicyUnavailable('policy');
+
+		$this->expectException(\OCA\Mcp\Access\Policy\PolicyUnavailable::class);
+		try {
+			$this->saveFile();
+		} finally {
+			self::assertArrayNotHasKey(self::TARGET, $this->tree->nodes);
+		}
+	}
 }

@@ -69,17 +69,22 @@ final class FileCreationWriter {
 			]);
 			throw $e;
 		}
-		// A file the visibility rules hide answers as missing, never named: it is left in place, as it always was.
-		$this->visibilityGuard->assertVisible($file);
+		// A file the visibility rules hide answers as missing, never named: it is left in place, as it always was. A policy
+		// that cannot be read here comes after the file exists, so it names the file like any other failure from here on.
+		try {
+			$this->visibilityGuard->assertVisible($file);
+		} catch (PolicyUnavailable $e) {
+			throw $this->failedAfterCreation($folder, $name, $file, $userId, $e);
+		}
 		// From here on the file exists: a failure leaves it, empty or incomplete, and names it (never deleted, never
-		// retried). Only another client's file at the name (FileExists), a vanished one and an unreadable policy are
-		// answered as before.
+		// retried), an unreadable policy included, whatever it says of itself. Only another client's file at the name
+		// (FileExists) and a vanished one are answered as before.
 		try {
 			$size = (int)$file->getSize();
 			$created = [(int)$file->getId(), (string)$file->getEtag()];
 			$found = $content === '' ? $file : $folder->get($name);
 			$now = $found instanceof File ? [(int)$found->getId(), (string)$found->getEtag(), (int)$found->getSize()] : null;
-		} catch (PolicyUnavailable|NotFoundException $e) {
+		} catch (NotFoundException $e) {
 			throw $e;
 		} catch (Throwable $e) {
 			throw $this->failedAfterCreation($folder, $name, $file, $userId, $e);
@@ -99,8 +104,6 @@ final class FileCreationWriter {
 			FileWriteBoundary::check($this->fileTypes, $current->getName());
 			$put = static fn () => $current->putContent($content);
 			NodeAccess::mutate(fn () => $userId === null ? $put() : $this->locks->run($put, $current, $userId, null, $asUser, false), $this->visibilityGuard);
-		} catch (PolicyUnavailable $e) {
-			throw $e;
 		} catch (Throwable $e) {
 			throw $this->failedAfterCreation($folder, $name, $current, $userId, $e);
 		}
@@ -115,7 +118,7 @@ final class FileCreationWriter {
 	 * @param File $file the file Nextcloud created
 	 * @param string|null $userId the actor
 	 * @param Throwable $e what stopped the write: a readable refusal (type policy, lock check, storage), a native lock or
-	 *                     full quota, or an unexplained failure, which is logged by class only
+	 *                     full quota, or an unexplained failure (an unreadable policy included), which is logged by class only
 	 * @return FileCreationFailure the reason and the file left behind
 	 */
 	private function failedAfterCreation(Folder $folder, string $name, File $file, ?string $userId, Throwable $e): FileCreationFailure {

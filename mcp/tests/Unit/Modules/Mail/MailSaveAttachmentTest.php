@@ -153,20 +153,20 @@ final class MailSaveAttachmentTest extends MailSaveAttachmentTestCase {
 		self::assertArrayNotHasKey('/alice/files/Documentos/saved.pdf', $this->tree->nodes);
 	}
 
-	/** Scope storage becoming unavailable at the post-create gate keeps the endpoint's 503 signal. */
-	public function testPolicyUnavailableAtCreationVisibilityPropagatesWithoutUncertain(): void {
-		$failure = new PolicyUnavailable();
-		$this->tree->afterCreate = function () use ($failure): void {
-			$this->creationPolicyFailure = $failure;
+	/**
+	 * Scope storage becoming unavailable at the post-create gate comes after the file exists: the receipt is uncertain
+	 * and names the empty file left, never a 503 that hides it.
+	 *
+	 * @return void
+	 */
+	public function testPolicyUnavailableAtCreationVisibilityNamesTheFileLeft(): void {
+		$this->tree->afterCreate = function (): void {
+			$this->creationPolicyFailure = new PolicyUnavailable();
 		};
-		$this->destinationLogger->expects($this->never())->method('error');
-		try {
-			$this->saveFile();
-			self::fail('The policy failure must propagate instead of returning an uncertain receipt');
-		} catch (PolicyUnavailable $e) {
-			self::assertSame($failure, $e);
-			self::assertSame(503, $e->getCode());
-		}
+		$out = $this->saveFile();
+		self::assertSame(['uncertain', false], [$out['outcome'], $out['verified']]);
+		self::assertSame(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createLeftBehind(null, '/Documentos/saved.pdf'), $out['message']);
+		self::assertSame($this->tree->nodes['/alice/files/Documentos/saved.pdf']['id'], $out['fileId']);
 		self::assertSame('', $this->tree->nodes['/alice/files/Documentos/saved.pdf']['content']);
 		self::assertNotContains('write /alice/files/Documentos/saved.pdf', $this->tree->ops);
 	}

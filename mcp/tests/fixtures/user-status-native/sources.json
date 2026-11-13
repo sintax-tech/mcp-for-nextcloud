@@ -1,5 +1,5 @@
 {
-  "purpose": "Verbatim user_status and calendar-status sources for NC 34.0.4 and 35.0.1; no network access in tests.",
+  "purpose": "Verbatim user_status and calendar-status sources for NC 34.0.4 and 35.0.1, plus the OCP mapper exception the status read names. Those two OCP files are byte-identical to server v34.0.0 and v35.0.0. No network access in tests.",
   "versions": {
     "34": {
       "UserStatusMapper.php": {
@@ -29,6 +29,14 @@
       "DavStatusService.php": {
         "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/CalDAV/Status/StatusService.php",
         "sha256": "6070f2ba858433c45866d151eee68c661c74db7ec9832aef9f9d82fb5b28af93"
+      },
+      "MultipleObjectsReturnedException.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/lib/public/AppFramework/Db/MultipleObjectsReturnedException.php",
+        "sha256": "90ff082d55bb8bbdd74ffa782b5be1001e675c0e930dd3b30c47e762d3faa7b6"
+      },
+      "IMapperException.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/lib/public/AppFramework/Db/IMapperException.php",
+        "sha256": "dc121932013875592b1c049511bdc08be3c4af58cb9b40807f534133f0ad1d0e"
       }
     },
     "35": {
@@ -59,6 +67,14 @@
       "DavStatusService.php": {
         "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/CalDAV/Status/StatusService.php",
         "sha256": "d20d2f7fa0c2c57ee8e540eb8997883009edc3288329a0b29674161a05ecc6d1"
+      },
+      "MultipleObjectsReturnedException.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/lib/public/AppFramework/Db/MultipleObjectsReturnedException.php",
+        "sha256": "f0c753e3ed6f72a1e36c3dc5d4c96bd357bb4441746a4215651ac9909bbea4f4"
+      },
+      "IMapperException.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/lib/public/AppFramework/Db/IMapperException.php",
+        "sha256": "0390ff8a4c72c48b9275db85534b3e419636cca6d402689e3f926d5705b8aea9"
       }
     }
   }

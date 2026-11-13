@@ -69,6 +69,7 @@ final class DeckServiceGatewayTest extends TestCase {
 			CardMapper::class => $this->createMock(CardMapper::class),
 			StackMapper::class => $this->createMock(StackMapper::class),
 			AssignmentMapper::class => $this->createMock(AssignmentMapper::class),
+			\OCA\Deck\Db\LabelMapper::class => $this->createMock(\OCA\Deck\Db\LabelMapper::class),
 			IUserManager::class => $this->createMock(IUserManager::class),
 			\OCP\Notification\IManager::class => $this->createMock(\OCP\Notification\IManager::class),
 		];

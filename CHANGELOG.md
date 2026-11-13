@@ -36,6 +36,7 @@ Minor release on top of 1.3.5. It adds routine reads and writes around the calen
 
 - **Files that a failed write leaves behind:** when `files_create`, the `files_checkout` upload link or `mail_save_attachment` fails after the new file was created, the answer now names the empty or incomplete file left at that path and suggests another name or replacing it. Before, the answer looked like a clean refusal and the next attempt failed because the name was taken. If the file became hidden in the meantime, the answer gives only a generic reason, without a path or id. A failure inside the creation itself reports that the file at that name may come from this write or from another client. Nothing is deleted; answers before the file exists and the upload HTTP statuses are unchanged.
 - **`deck_create_card`:** new optional `labels` (with `deck.labels`) and `plan_state` arguments.
+- **`deck_read_card` and `deck_list_cards`:** each card now shows its `labels` (id, title and color, in Deck's order) under `deck.read`, the same as `deck_list_labels`. A listing page reads the labels of all its cards in one query.
 
 ### Fixed
 

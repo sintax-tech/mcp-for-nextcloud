@@ -45,7 +45,7 @@ final class ReadCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 	 */
 	public function handle(array $arguments, string $userId): array {
 		return $this->run(function () use ($arguments, $userId): array {
-			return $this->formatter->card($this->gateway->findCard($userId, (int)$arguments['cardId']));
+			return $this->formatter->cardWithLabels($this->gateway->findCard($userId, (int)$arguments['cardId']));
 		});
 	}
 

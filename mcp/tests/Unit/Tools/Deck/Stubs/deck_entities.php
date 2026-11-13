@@ -111,6 +111,8 @@ class Stack {
 /** Card entity double. */
 class Card {
 	public function getLabels(): array { return $this->fields['labels'] ?? []; }
+	/** @param Label[] $labels Labels of the card, as `CardService::enrichCards()` attaches them. */
+	public function setLabels(array $labels): void { $this->fields['labels'] = $labels; }
 	protected ?array $dependentCards = null;
 	public function getDependentCards(): ?array { return $this->fields['dependentCards'] ?? null; }
 	public function setDependentCards(array $ids): void { $this->fields['dependentCards'] = $ids; }
@@ -396,6 +398,14 @@ class LabelMapper {
 	}
 	/** One Label per card association of the board, as Deck v1.19.0 returns it. */
 	public function findAssignedLabelsForBoard(int $boardId, ?int $limit = null, int $offset = 0): array {
+		throw new \LogicException('Stub: expected a PHPUnit mock.');
+	}
+	/**
+	 * One full Label per card association, `l.*` plus `card_id`, ordered by label id (Deck v1.18.5–v1.19.0).
+	 *
+	 * @param list<int> $cardIds Cards whose labels are read.
+	 */
+	public function findAssignedLabelsForCards(array $cardIds, ?int $limit = null, int $offset = 0): array {
 		throw new \LogicException('Stub: expected a PHPUnit mock.');
 	}
 	/** @param int $id Label identity. @return int|null Native parent board. */

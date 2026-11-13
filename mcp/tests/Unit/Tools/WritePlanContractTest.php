@@ -55,6 +55,7 @@ final class WritePlanContractTest extends TestCase {
 			\OCA\Mcp\Modules\Notifications\NotificationsModule::class => \OCA\Mcp\Tests\Unit\Modules\Notifications\NotificationsPlanRendererTest::class,
 			\OCA\Mcp\Modules\Status\StatusModule::class => \OCA\Mcp\Tests\Unit\Modules\Status\StatusPlanRendererTest::class,
 			\OCA\Mcp\Modules\Availability\AvailabilityModule::class => \OCA\Mcp\Tests\Unit\Modules\Availability\AvailabilityPlanRendererTest::class,
+			\OCA\Mcp\Modules\Routines\RoutinesModule::class => \OCA\Mcp\Tests\Unit\Modules\Routines\RoutinesPlanRendererTest::class,
 		];
 	}
 

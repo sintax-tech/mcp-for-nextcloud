@@ -71,8 +71,14 @@ final class MailSaveMessages {
 		return Translator::t('The file was replaced and read back; its size and SHA-256 match the attachment.');
 	}
 
-	/** @return string Honest uncertain receipt of a replacement. */
-	public static function replaceUncertain(): string {
+	/**
+	 * @param string $backup Path of the verified pre-write copy, or empty when the administrator suspended copies.
+	 * @return string Honest uncertain receipt of a replacement, pointing at the copy only when one exists.
+	 */
+	public static function replaceUncertain(string $backup): string {
+		if ($backup === '') {
+			return Translator::t('The replacement could not be verified. The file may hold partial content; nothing was restored or deleted. No MCP pre-write copy was made (see the backup note in this receipt): check the file and its native versions before trying again.');
+		}
 		return Translator::t('The replacement could not be verified. The file may hold partial content; nothing was restored or deleted. Check the file and the backup named in this receipt before trying again.');
 	}
 

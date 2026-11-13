@@ -33,7 +33,7 @@ final class SaveAttachmentHandler {
 		if (!isset($receipt['requiresConfirmation'])) {
 			$verified = $receipt['verified'] ?? false;
 			$receipt['message'] = MailSaveContext::replacing($arguments)
-				? ($verified ? MailSaveMessages::replaced() : MailSaveMessages::replaceUncertain())
+				? ($verified ? MailSaveMessages::replaced() : MailSaveMessages::replaceUncertain((string)($receipt['backup'] ?? '')))
 				: ($verified ? MailSaveMessages::saved() : MailSaveMessages::uncertain());
 		}
 		return ToolResult::json($receipt);

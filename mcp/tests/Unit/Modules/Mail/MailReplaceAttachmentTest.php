@@ -279,10 +279,25 @@ final class MailReplaceAttachmentTest extends FilesToolsTestCase {
 		$out = $this->replaceFile();
 		self::assertFalse($out['verified']);
 		self::assertSame('uncertain', $out['outcome']);
-		self::assertSame(MailSaveMessages::replaceUncertain(), $out['message']);
+		self::assertSame(MailSaveMessages::replaceUncertain($out['backup']), $out['message']);
+		self::assertStringContainsString('backup named in this receipt', $out['message']);
 		self::assertSame('old content', $this->tree->nodes['/alice/files' . $out['backup']]['content']);
 		self::assertTrue($out['backupVerified']);
 		self::assertSame(1, count(array_filter($this->tree->ops, static fn (string $op): bool => $op === 'write ' . self::TARGET)));
+		self::assertStringNotContainsString('delete', implode(' ', $this->tree->ops));
+	}
+
+	public function testUncertainSuspendedReplacementNeverClaimsANamedCopy(): void {
+		$this->wire(false);
+		$this->tree->writeFailure = new \RuntimeException('private filename', 17);
+		$out = $this->replaceFile();
+		self::assertSame('uncertain', $out['outcome']);
+		self::assertSame('', $out['backup']);
+		self::assertSame(BackupMessages::originalKept(''), $out['backupNote']);
+		self::assertSame(MailSaveMessages::replaceUncertain(''), $out['message']);
+		self::assertStringNotContainsString('backup named in this receipt', $out['message']);
+		self::assertStringContainsString('native versions', $out['message']);
+		self::assertSame([], $this->copies());
 		self::assertStringNotContainsString('delete', implode(' ', $this->tree->ops));
 	}
 

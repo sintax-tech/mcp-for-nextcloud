@@ -34,7 +34,7 @@ final class ContainerResolutionTest extends TestCase {
 			$invoked[] = $key;
 		}
 		self::assertSame(array_keys($factories), $invoked);
-		self::assertCount(18, Application::MODULES);
+		self::assertCount(19, Application::MODULES);
 		self::assertContains(\OCA\Mcp\Modules\Collectives\CollectivesModule::class, Application::MODULES);
 		foreach (Application::MODULES as $root) { $value = Server::get($root); self::assertInstanceOf($root, $value); self::initialize($value); }
 	}

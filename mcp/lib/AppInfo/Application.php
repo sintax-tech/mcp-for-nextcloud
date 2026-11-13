@@ -59,6 +59,7 @@ class Application extends App implements IBootstrap {
 		\OCA\Mcp\Modules\Notifications\NotificationsModule::class,
 		\OCA\Mcp\Modules\Availability\AvailabilityModule::class,
 		StatusModule::class,
+		\OCA\Mcp\Modules\Routines\RoutinesModule::class,
 	];
 
 	public function __construct() {

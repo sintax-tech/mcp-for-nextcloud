@@ -2161,6 +2161,24 @@
     "Remove the tag %s from %s." : "Remover a etiqueta %s de %s.",
     "Everyone who can see this item and this tag sees the change." : "Todos que veem este item e esta etiqueta veem a mudança.",
     "Rules that react to tags, such as automated tagging, retention or access control, may act on it." : "Regras que reagem a etiquetas, como etiquetagem automática, retenção ou controle de acesso, podem agir sobre ele.",
-    "Its content does not change and nothing is deleted." : "O conteúdo não muda e nada é apagado."
+    "Its content does not change and nothing is deleted." : "O conteúdo não muda e nada é apagado.",
+    "Nothing was created. Show this plan to the user; with confirm: true the three steps run once, in this order." : "Nada foi criado. Mostre este plano ao usuário; com confirm: true as três etapas rodam uma vez, nesta ordem.",
+    "The link of the new room becomes the location of the event once the room exists." : "O link da nova sala vira o local do evento assim que a sala existir.",
+    "The meeting stops at the first step that does not succeed; what was created stays and nothing is retried or deleted." : "A reunião para na primeira etapa que não der certo; o que foi criado fica e nada é repetido nem apagado.",
+    "The calendar belongs to somebody else: the event needs confirm_shared: true." : "O calendário é de outra pessoa: o evento precisa de confirm_shared: true.",
+    "The room, its agenda and the event were created." : "A sala, a pauta e o evento foram criados.",
+    "The meeting stopped at %s. What was created stays and is listed here; nothing was deleted. Do not repeat this call, it would create another room: ask the user how to continue and plan only the missing steps with the Talk and Calendar tools." : "A reunião parou em %s. O que foi criado fica e está listado aqui; nada foi apagado. Não repita esta chamada, ela criaria outra sala: pergunte ao usuário como continuar e planeje só as etapas que faltam com as ferramentas do Talk e do Calendário.",
+    "Nothing was created: %s would be refused." : "Nada foi criado: %s seria recusado(a).",
+    "Not started: an earlier step did not succeed." : "Não iniciada: uma etapa anterior não deu certo.",
+    "Not started: the meeting was refused before anything was created." : "Não iniciada: a reunião foi recusada antes de qualquer criação.",
+    "Not started: the link of the room could not be built, and the event would have no room to point to." : "Não iniciada: não foi possível montar o link da sala, e o evento ficaria sem sala para apontar.",
+    "the room" : "a sala",
+    "the agenda" : "a pauta",
+    "the event" : "o evento",
+    "Create the meeting %s in three steps, in this order:" : "Criar a reunião %s em três etapas, nesta ordem:",
+    "A new private Talk room with %s." : "Uma nova sala privada do Talk com %s.",
+    "The agenda, posted as the first message of the room: %s" : "A pauta, publicada como primeira mensagem da sala: %s",
+    "An event in the calendar %s from %s to %s (%s), with the participants as guests and the room link as its location." : "Um evento no calendário %s de %s a %s (%s), com os participantes como convidados e o link da sala como local.",
+    "Create meeting" : "Criar reunião"
 },"pluralForm" : "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

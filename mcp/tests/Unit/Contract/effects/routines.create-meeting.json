@@ -1,0 +1,857 @@
+{
+    "tool": "routines_create_meeting",
+    "grant": "routines.meeting",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "title": "Kickoff",
+                "participants": [
+                    "pedro"
+                ],
+                "agenda": "1. Scope\n2. Dates",
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "start": "2026-03-11T09:00:00-03:00",
+                "end": "2026-03-11T10:00:00-03:00"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create meeting**\n\nCreate the meeting Kickoff in three steps, in this order:\n1. A new private Talk room with pedro.\n2. The agenda, posted as the first message of the room: 1\\. Scope 2. Dates\n3. An event in the calendar Pessoal from 2026-03-11 09:00 to 2026-03-11 10:00 (America/Sao\\_Paulo), with the participants as guests and the room link as its location.\n\n- No invitations or cancellations will be scheduled in this change.\n- Could not check the availability of Paulo Exemplo.\n- The calendar Pessoal is not shared with Paulo Exemplo.\n- The link of the new room becomes the location of the event once the room exists.\n- The meeting stops at the first step that does not succeed; what was created stays and nothing is retried or deleted.\n\nNothing was changed. Confirm to execute.\n\n*Nothing was created. Show this plan to the user; with confirm: true the three steps run once, in this order.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "routines_create_meeting",
+                            "title": "Create meeting",
+                            "action": "routines_create_meeting",
+                            "message": "Nothing was created. Show this plan to the user; with confirm: true the three steps run once, in this order.",
+                            "steps": [
+                                {
+                                    "step": "room",
+                                    "tool": "talk_create_group",
+                                    "plan": {
+                                        "action": "talk_create_group",
+                                        "draft": {
+                                            "name": "Kickoff",
+                                            "participants": [
+                                                {
+                                                    "id": "pedro",
+                                                    "displayName": "pedro"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    "step": "agenda",
+                                    "tool": "talk_reply",
+                                    "plan": {
+                                        "action": "talk_reply",
+                                        "conversation": null,
+                                        "draft": {
+                                            "message": "1. Scope\n2. Dates"
+                                        }
+                                    }
+                                },
+                                {
+                                    "step": "event",
+                                    "tool": "calendar_create_event",
+                                    "plan": {
+                                        "action": "calendar_create_event",
+                                        "calendar": {
+                                            "id": 1,
+                                            "uri": "personal",
+                                            "name": "Pessoal",
+                                            "ownerId": "alice",
+                                            "ownerPrincipal": "principals/users/alice",
+                                            "writable": true,
+                                            "path": "/remote.php/dav/calendars/alice/personal/"
+                                        },
+                                        "destination": null,
+                                        "uid": null,
+                                        "etag": null,
+                                        "before": null,
+                                        "after": {
+                                            "summary": "Kickoff",
+                                            "location": "",
+                                            "description": "",
+                                            "start": "2026-03-11T12:00:00+00:00",
+                                            "end": "2026-03-11T13:00:00+00:00",
+                                            "allDay": false,
+                                            "timeZone": null,
+                                            "attendees": [
+                                                "mailto:pedro@example.invalid"
+                                            ],
+                                            "organizer": "mailto:alice@example.invalid",
+                                            "recurring": false
+                                        },
+                                        "participants": {
+                                            "current": [],
+                                            "proposed": [
+                                                "mailto:pedro@example.invalid"
+                                            ],
+                                            "added": [
+                                                "mailto:pedro@example.invalid"
+                                            ],
+                                            "removed": [],
+                                            "names": {
+                                                "pedro@example.invalid": "Paulo Exemplo"
+                                            }
+                                        },
+                                        "recoverable": false,
+                                        "consequence": null,
+                                        "scheduling": {
+                                            "requested": false,
+                                            "imipEnabled": true,
+                                            "participantsNotified": false,
+                                            "message": "No invitations or cancellations will be scheduled in this change.",
+                                            "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                                        },
+                                        "timezone": "America/Sao_Paulo",
+                                        "shared": [],
+                                        "warnings": [
+                                            {
+                                                "type": "unverifiable",
+                                                "message": "Could not check the availability of Paulo Exemplo."
+                                            },
+                                            {
+                                                "type": "calendarNotShared",
+                                                "message": "The calendar Pessoal is not shared with Paulo Exemplo."
+                                            }
+                                        ],
+                                        "sharedCalendars": [],
+                                        "suggestedCalendar": null
+                                    },
+                                    "room_link": {
+                                        "field": "location",
+                                        "value": null
+                                    }
+                                }
+                            ],
+                            "notices": [
+                                "The link of the new room becomes the location of the event once the room exists.",
+                                "The meeting stops at the first step that does not succeed; what was created stays and nothing is retried or deleted."
+                            ]
+                        }
+                    }
+                }
+            },
+            "state": {
+                "talk": {
+                    "messages": [],
+                    "rooms": [
+                        "abcd1234"
+                    ],
+                    "created": [],
+                    "invited": [],
+                    "shares": []
+                },
+                "calendar": {
+                    "objects": {
+                        "1": []
+                    },
+                    "dav": []
+                }
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "title": "Kickoff",
+                "participants": [
+                    "pedro"
+                ],
+                "agenda": "1. Scope\n2. Dates",
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "start": "2026-03-11T09:00:00-03:00",
+                "end": "2026-03-11T10:00:00-03:00",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "talk": {
+                    "messages": [],
+                    "rooms": [
+                        "abcd1234"
+                    ],
+                    "created": [],
+                    "invited": [],
+                    "shares": []
+                },
+                "calendar": {
+                    "objects": {
+                        "1": []
+                    },
+                    "dav": []
+                }
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "title": "Kickoff",
+                "participants": [
+                    "pedro"
+                ],
+                "agenda": "1. Scope\n2. Dates",
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "start": "2026-03-11T09:00:00-03:00",
+                "end": "2026-03-11T10:00:00-03:00",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create meeting**\n\nCreate the meeting Kickoff in three steps, in this order:\n1. A new private Talk room with pedro.\n2. The agenda, posted as the first message of the room: 1\\. Scope 2. Dates\n3. An event in the calendar Pessoal from 2026-03-11 09:00 to 2026-03-11 10:00 (America/Sao\\_Paulo), with the participants as guests and the room link as its location.\n\n- No invitations or cancellations will be scheduled in this change.\n- Could not check the availability of Paulo Exemplo.\n- The calendar Pessoal is not shared with Paulo Exemplo.\n- The link of the new room becomes the location of the event once the room exists.\n- The meeting stops at the first step that does not succeed; what was created stays and nothing is retried or deleted.\n\nNothing was changed. Confirm to execute.\n\n*Nothing was created. Show this plan to the user; with confirm: true the three steps run once, in this order.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "routines_create_meeting",
+                            "title": "Create meeting",
+                            "action": "routines_create_meeting",
+                            "message": "Nothing was created. Show this plan to the user; with confirm: true the three steps run once, in this order.",
+                            "steps": [
+                                {
+                                    "step": "room",
+                                    "tool": "talk_create_group",
+                                    "plan": {
+                                        "action": "talk_create_group",
+                                        "draft": {
+                                            "name": "Kickoff",
+                                            "participants": [
+                                                {
+                                                    "id": "pedro",
+                                                    "displayName": "pedro"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    "step": "agenda",
+                                    "tool": "talk_reply",
+                                    "plan": {
+                                        "action": "talk_reply",
+                                        "conversation": null,
+                                        "draft": {
+                                            "message": "1. Scope\n2. Dates"
+                                        }
+                                    }
+                                },
+                                {
+                                    "step": "event",
+                                    "tool": "calendar_create_event",
+                                    "plan": {
+                                        "action": "calendar_create_event",
+                                        "calendar": {
+                                            "id": 1,
+                                            "uri": "personal",
+                                            "name": "Pessoal",
+                                            "ownerId": "alice",
+                                            "ownerPrincipal": "principals/users/alice",
+                                            "writable": true,
+                                            "path": "/remote.php/dav/calendars/alice/personal/"
+                                        },
+                                        "destination": null,
+                                        "uid": null,
+                                        "etag": null,
+                                        "before": null,
+                                        "after": {
+                                            "summary": "Kickoff",
+                                            "location": "",
+                                            "description": "",
+                                            "start": "2026-03-11T12:00:00+00:00",
+                                            "end": "2026-03-11T13:00:00+00:00",
+                                            "allDay": false,
+                                            "timeZone": null,
+                                            "attendees": [
+                                                "mailto:pedro@example.invalid"
+                                            ],
+                                            "organizer": "mailto:alice@example.invalid",
+                                            "recurring": false
+                                        },
+                                        "participants": {
+                                            "current": [],
+                                            "proposed": [
+                                                "mailto:pedro@example.invalid"
+                                            ],
+                                            "added": [
+                                                "mailto:pedro@example.invalid"
+                                            ],
+                                            "removed": [],
+                                            "names": {
+                                                "pedro@example.invalid": "Paulo Exemplo"
+                                            }
+                                        },
+                                        "recoverable": false,
+                                        "consequence": null,
+                                        "scheduling": {
+                                            "requested": false,
+                                            "imipEnabled": true,
+                                            "participantsNotified": false,
+                                            "message": "No invitations or cancellations will be scheduled in this change.",
+                                            "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                                        },
+                                        "timezone": "America/Sao_Paulo",
+                                        "shared": [],
+                                        "warnings": [
+                                            {
+                                                "type": "unverifiable",
+                                                "message": "Could not check the availability of Paulo Exemplo."
+                                            },
+                                            {
+                                                "type": "calendarNotShared",
+                                                "message": "The calendar Pessoal is not shared with Paulo Exemplo."
+                                            }
+                                        ],
+                                        "sharedCalendars": [],
+                                        "suggestedCalendar": null
+                                    },
+                                    "room_link": {
+                                        "field": "location",
+                                        "value": null
+                                    }
+                                }
+                            ],
+                            "notices": [
+                                "The link of the new room becomes the location of the event once the room exists.",
+                                "The meeting stops at the first step that does not succeed; what was created stays and nothing is retried or deleted."
+                            ]
+                        }
+                    }
+                }
+            },
+            "state": {
+                "talk": {
+                    "messages": [],
+                    "rooms": [
+                        "abcd1234"
+                    ],
+                    "created": [],
+                    "invited": [],
+                    "shares": []
+                },
+                "calendar": {
+                    "objects": {
+                        "1": []
+                    },
+                    "dav": []
+                }
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "The meeting keeps no plan fingerprint: the confirmed call plans every step again before the room exists and each port checks again in its own sink; a change refuses the meeting or stops it at that step."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "title": "Kickoff",
+                "participants": [
+                    "pedro"
+                ],
+                "agenda": "1. Scope\n2. Dates",
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "start": "2026-03-11T09:00:00-03:00",
+                "end": "2026-03-11T10:00:00-03:00"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create meeting**\n\nCreate the meeting Kickoff in three steps, in this order:\n1. A new private Talk room with pedro.\n2. The agenda, posted as the first message of the room: 1\\. Scope 2. Dates\n3. An event in the calendar Pessoal from 2026-03-11 09:00 to 2026-03-11 10:00 (America/Sao\\_Paulo), with the participants as guests and the room link as its location.\n\n- No invitations or cancellations will be scheduled in this change.\n- Could not check the availability of Paulo Exemplo.\n- The calendar Pessoal is not shared with Paulo Exemplo.\n- The link of the new room becomes the location of the event once the room exists.\n- The meeting stops at the first step that does not succeed; what was created stays and nothing is retried or deleted.\n\nNothing was changed. Confirm to execute.\n\n*Nothing was created. Show this plan to the user; with confirm: true the three steps run once, in this order.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "routines_create_meeting",
+                            "title": "Create meeting",
+                            "action": "routines_create_meeting",
+                            "message": "Nothing was created. Show this plan to the user; with confirm: true the three steps run once, in this order.",
+                            "steps": [
+                                {
+                                    "step": "room",
+                                    "tool": "talk_create_group",
+                                    "plan": {
+                                        "action": "talk_create_group",
+                                        "draft": {
+                                            "name": "Kickoff",
+                                            "participants": [
+                                                {
+                                                    "id": "pedro",
+                                                    "displayName": "pedro"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    "step": "agenda",
+                                    "tool": "talk_reply",
+                                    "plan": {
+                                        "action": "talk_reply",
+                                        "conversation": null,
+                                        "draft": {
+                                            "message": "1. Scope\n2. Dates"
+                                        }
+                                    }
+                                },
+                                {
+                                    "step": "event",
+                                    "tool": "calendar_create_event",
+                                    "plan": {
+                                        "action": "calendar_create_event",
+                                        "calendar": {
+                                            "id": 1,
+                                            "uri": "personal",
+                                            "name": "Pessoal",
+                                            "ownerId": "alice",
+                                            "ownerPrincipal": "principals/users/alice",
+                                            "writable": true,
+                                            "path": "/remote.php/dav/calendars/alice/personal/"
+                                        },
+                                        "destination": null,
+                                        "uid": null,
+                                        "etag": null,
+                                        "before": null,
+                                        "after": {
+                                            "summary": "Kickoff",
+                                            "location": "",
+                                            "description": "",
+                                            "start": "2026-03-11T12:00:00+00:00",
+                                            "end": "2026-03-11T13:00:00+00:00",
+                                            "allDay": false,
+                                            "timeZone": null,
+                                            "attendees": [
+                                                "mailto:pedro@example.invalid"
+                                            ],
+                                            "organizer": "mailto:alice@example.invalid",
+                                            "recurring": false
+                                        },
+                                        "participants": {
+                                            "current": [],
+                                            "proposed": [
+                                                "mailto:pedro@example.invalid"
+                                            ],
+                                            "added": [
+                                                "mailto:pedro@example.invalid"
+                                            ],
+                                            "removed": [],
+                                            "names": {
+                                                "pedro@example.invalid": "Paulo Exemplo"
+                                            }
+                                        },
+                                        "recoverable": false,
+                                        "consequence": null,
+                                        "scheduling": {
+                                            "requested": false,
+                                            "imipEnabled": true,
+                                            "participantsNotified": false,
+                                            "message": "No invitations or cancellations will be scheduled in this change.",
+                                            "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                                        },
+                                        "timezone": "America/Sao_Paulo",
+                                        "shared": [],
+                                        "warnings": [
+                                            {
+                                                "type": "unverifiable",
+                                                "message": "Could not check the availability of Paulo Exemplo."
+                                            },
+                                            {
+                                                "type": "calendarNotShared",
+                                                "message": "The calendar Pessoal is not shared with Paulo Exemplo."
+                                            }
+                                        ],
+                                        "sharedCalendars": [],
+                                        "suggestedCalendar": null
+                                    },
+                                    "room_link": {
+                                        "field": "location",
+                                        "value": null
+                                    }
+                                }
+                            ],
+                            "notices": [
+                                "The link of the new room becomes the location of the event once the room exists.",
+                                "The meeting stops at the first step that does not succeed; what was created stays and nothing is retried or deleted."
+                            ]
+                        }
+                    }
+                }
+            },
+            "state": {
+                "talk": {
+                    "messages": [],
+                    "rooms": [
+                        "abcd1234"
+                    ],
+                    "created": [],
+                    "invited": [],
+                    "shares": []
+                },
+                "calendar": {
+                    "objects": {
+                        "1": []
+                    },
+                    "dav": []
+                }
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "title": "Kickoff",
+                "participants": [
+                    "pedro"
+                ],
+                "agenda": "1. Scope\n2. Dates",
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "start": "2026-03-11T09:00:00-03:00",
+                "end": "2026-03-11T10:00:00-03:00",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"status\": \"completed\",\n    \"message\": \"The room, its agenda and the event were created.\",\n    \"steps\": [\n        {\n            \"step\": \"room\",\n            \"status\": \"applied\",\n            \"ids\": {\n                \"conversation_token\": \"group000\"\n            },\n            \"url\": \"https://cloud.example/index.php/call/group000\",\n            \"result\": {\n                \"conversation_token\": \"group000\",\n                \"name\": \"Kickoff\",\n                \"participants\": [\n                    {\n                        \"id\": \"pedro\",\n                        \"displayName\": \"pedro\"\n                    }\n                ],\n                \"invitations_failed\": [],\n                \"url\": \"https://cloud.example/index.php/call/group000\"\n            }\n        },\n        {\n            \"step\": \"agenda\",\n            \"status\": \"applied\",\n            \"ids\": {\n                \"conversation_token\": \"group000\",\n                \"messageId\": 55\n            },\n            \"result\": {\n                \"conversation_token\": \"group000\",\n                \"messageId\": 55\n            }\n        },\n        {\n            \"step\": \"event\",\n            \"status\": \"applied\",\n            \"ids\": {\n                \"uid\": \"<drawn-uid#1>\"\n            },\n            \"result\": {\n                \"uid\": \"<drawn-uid#1>\",\n                \"summary\": \"Kickoff\",\n                \"start\": \"2026-03-11T12:00:00.000Z\",\n                \"end\": \"2026-03-11T13:00:00.000Z\",\n                \"location\": \"https://cloud.example/index.php/call/group000\",\n                \"allDay\": false,\n                \"calendar\": \"/remote.php/dav/calendars/alice/personal/\",\n                \"etag\": \"\\\"<etag-of-drawn-object#1>\\\"\",\n                \"scheduling\": {\n                    \"requested\": false,\n                    \"imipEnabled\": true,\n                    \"message\": \"no invitations were scheduled\",\n                    \"participants\": [\n                        {\n                            \"email\": \"mailto:pedro@example.invalid\",\n                            \"scheduleStatus\": null,\n                            \"meaning\": \"no delivery record\"\n                        }\n                    ]\n                }\n            }\n        }\n    ],\n    \"not_done\": []\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "talk": {
+                    "messages": [
+                        {
+                            "id": 55,
+                            "room": "group000",
+                            "actorType": "users",
+                            "actor": "alice",
+                            "message": "1. Scope\n2. Dates",
+                            "at": "2026-01-02T03:04:05+00:00",
+                            "replyTo": null
+                        }
+                    ],
+                    "rooms": [
+                        "abcd1234",
+                        "group000"
+                    ],
+                    "created": [
+                        {
+                            "kind": 2,
+                            "name": "Kickoff",
+                            "owner": "alice",
+                            "token": "group000"
+                        }
+                    ],
+                    "invited": [
+                        {
+                            "room": "group000",
+                            "users": [
+                                {
+                                    "actorType": "users",
+                                    "actorId": "pedro",
+                                    "displayName": "pedro"
+                                }
+                            ],
+                            "by": "alice"
+                        }
+                    ],
+                    "shares": []
+                },
+                "calendar": {
+                    "objects": {
+                        "1": [
+                            "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:<drawn-uid#1>\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART:20260311T120000Z\r\nDTEND:20260311T130000Z\r\nSUMMARY:Kickoff\r\nLOCATION:https://cloud.example/index.php/call/group000\r\nORGANIZER;CN=Alice:mailto:alice@example.invalid\r\nATTENDEE;CN=Paulo Exemplo;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=N\r\n EEDS-ACTION;RSVP=TRUE:mailto:pedro@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                        ]
+                    },
+                    "dav": [
+                        "put personal/<drawn-uid#1>.ics"
+                    ]
+                }
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "title": "Kickoff",
+                "participants": [
+                    "pedro"
+                ],
+                "agenda": "1. Scope\n2. Dates",
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "start": "2026-03-12T09:00:00-03:00",
+                "end": "2026-03-12T10:00:00-03:00",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "talk": {
+                    "messages": [
+                        {
+                            "id": 55,
+                            "room": "group000",
+                            "actorType": "users",
+                            "actor": "alice",
+                            "message": "1. Scope\n2. Dates",
+                            "at": "2026-01-02T03:04:05+00:00",
+                            "replyTo": null
+                        }
+                    ],
+                    "rooms": [
+                        "abcd1234",
+                        "group000"
+                    ],
+                    "created": [
+                        {
+                            "kind": 2,
+                            "name": "Kickoff",
+                            "owner": "alice",
+                            "token": "group000"
+                        }
+                    ],
+                    "invited": [
+                        {
+                            "room": "group000",
+                            "users": [
+                                {
+                                    "actorType": "users",
+                                    "actorId": "pedro",
+                                    "displayName": "pedro"
+                                }
+                            ],
+                            "by": "alice"
+                        }
+                    ],
+                    "shares": []
+                },
+                "calendar": {
+                    "objects": {
+                        "1": [
+                            "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:<drawn-uid#1>\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART:20260311T120000Z\r\nDTEND:20260311T130000Z\r\nSUMMARY:Kickoff\r\nLOCATION:https://cloud.example/index.php/call/group000\r\nORGANIZER;CN=Alice:mailto:alice@example.invalid\r\nATTENDEE;CN=Paulo Exemplo;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=N\r\n EEDS-ACTION;RSVP=TRUE:mailto:pedro@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                        ]
+                    },
+                    "dav": [
+                        "put personal/<drawn-uid#1>.ics"
+                    ]
+                }
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "title": "Kickoff",
+                "participants": [
+                    "pedro"
+                ],
+                "agenda": "1. Scope\n2. Dates",
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "start": "2026-03-12T09:00:00-03:00",
+                "end": "2026-03-12T10:00:00-03:00"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "talk": {
+                    "messages": [
+                        {
+                            "id": 55,
+                            "room": "group000",
+                            "actorType": "users",
+                            "actor": "alice",
+                            "message": "1. Scope\n2. Dates",
+                            "at": "2026-01-02T03:04:05+00:00",
+                            "replyTo": null
+                        }
+                    ],
+                    "rooms": [
+                        "abcd1234",
+                        "group000"
+                    ],
+                    "created": [
+                        {
+                            "kind": 2,
+                            "name": "Kickoff",
+                            "owner": "alice",
+                            "token": "group000"
+                        }
+                    ],
+                    "invited": [
+                        {
+                            "room": "group000",
+                            "users": [
+                                {
+                                    "actorType": "users",
+                                    "actorId": "pedro",
+                                    "displayName": "pedro"
+                                }
+                            ],
+                            "by": "alice"
+                        }
+                    ],
+                    "shares": []
+                },
+                "calendar": {
+                    "objects": {
+                        "1": [
+                            "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:<drawn-uid#1>\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART:20260311T120000Z\r\nDTEND:20260311T130000Z\r\nSUMMARY:Kickoff\r\nLOCATION:https://cloud.example/index.php/call/group000\r\nORGANIZER;CN=Alice:mailto:alice@example.invalid\r\nATTENDEE;CN=Paulo Exemplo;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=N\r\n EEDS-ACTION;RSVP=TRUE:mailto:pedro@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                        ]
+                    },
+                    "dav": [
+                        "put personal/<drawn-uid#1>.ics"
+                    ]
+                }
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "title": "Kickoff",
+                "participants": [
+                    "pedro"
+                ],
+                "agenda": "1. Scope\n2. Dates",
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "start": "2026-03-12T09:00:00-03:00",
+                "end": "2026-03-12T10:00:00-03:00",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "talk": {
+                    "messages": [
+                        {
+                            "id": 55,
+                            "room": "group000",
+                            "actorType": "users",
+                            "actor": "alice",
+                            "message": "1. Scope\n2. Dates",
+                            "at": "2026-01-02T03:04:05+00:00",
+                            "replyTo": null
+                        }
+                    ],
+                    "rooms": [
+                        "abcd1234",
+                        "group000"
+                    ],
+                    "created": [
+                        {
+                            "kind": 2,
+                            "name": "Kickoff",
+                            "owner": "alice",
+                            "token": "group000"
+                        }
+                    ],
+                    "invited": [
+                        {
+                            "room": "group000",
+                            "users": [
+                                {
+                                    "actorType": "users",
+                                    "actorId": "pedro",
+                                    "displayName": "pedro"
+                                }
+                            ],
+                            "by": "alice"
+                        }
+                    ],
+                    "shares": []
+                },
+                "calendar": {
+                    "objects": {
+                        "1": [
+                            "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:<drawn-uid#1>\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART:20260311T120000Z\r\nDTEND:20260311T130000Z\r\nSUMMARY:Kickoff\r\nLOCATION:https://cloud.example/index.php/call/group000\r\nORGANIZER;CN=Alice:mailto:alice@example.invalid\r\nATTENDEE;CN=Paulo Exemplo;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=N\r\n EEDS-ACTION;RSVP=TRUE:mailto:pedro@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                        ]
+                    },
+                    "dav": [
+                        "put personal/<drawn-uid#1>.ics"
+                    ]
+                }
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "A meeting creates a new room and a new event; it reads no Files node that a tag or excluded folder could hide."
+        }
+    ]
+}

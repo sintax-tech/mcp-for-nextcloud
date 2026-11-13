@@ -15,6 +15,10 @@ use OCA\Mcp\Modules\Calendar\Composing\AttendeeResolver;
 use OCA\Mcp\Modules\Calendar\Writing\CalendarDav;
 use OCA\Mcp\Modules\Calendar\Approval\CalendarDraftApproval;
 use OCA\Mcp\Modules\Calendar\CalendarModule;
+use OCA\Mcp\Modules\Calendar\CalendarMeetingSteps;
+use OCA\Mcp\Modules\Calendar\Creation\CreateEventHandler;
+use OCA\Mcp\Modules\Calendar\Creation\CreateEventPreview;
+use OCA\Mcp\Mcp\Tools\Discovery\ToolAccess;
 use OCA\Mcp\Modules\Calendar\Locating\Classification;
 use OCA\Mcp\Modules\Calendar\Composing\DateInput;
 use OCA\Mcp\Modules\Calendar\Composing\EventBuilder;
@@ -70,6 +74,47 @@ final class CalendarEffectsWiring {
 	 * @return CalendarModule the module of one request
 	 */
 	public static function module(TestCase $test, FakeCalendarStore $store, CalendarDav $dav, IConfig $config, IUserManager $users): CalendarModule {
+		['access' => $access, 'repository' => $repository, 'classification' => $classification, 'mapper' => $mapper, 'dates' => $dates,
+			'time' => $time, 'logger' => $logger, 'guard' => $guard, 'builder' => $builder, 'attendees' => $attendees, 'scheduling' => $scheduling,
+			'relocator' => $relocator, 'create' => $create, 'approval' => $approval] = self::parts($test, $store, $dav, $config, $users);
+		return \OCA\Mcp\Tests\Unit\Tools\Calendar\CalendarTestModule::build(
+			new ListCalendarsHandler($access),
+			new ListEventsHandler($access, $store, $repository, $classification, new EventExpander(), $mapper, $dates, $time, $logger),
+			$create,
+			new UpdateEventDraft($access, $guard, $dav, $store, $repository, $builder, $mapper, $dates, $attendees, $scheduling, $time),
+			new MoveEventDraft($access, $relocator, $guard),
+			new DeleteEventDraft($access, $guard, $dav, $store, $repository, new TrashPolicy($config), $scheduling),
+			new TransferEventDraft($relocator),
+			$approval,
+		);
+	}
+
+	/**
+	 * The event step of a meeting over the same store and CalDAV double, through the work classes of
+	 * calendar_create_event, as the container autowires CalendarMeetingSteps.
+	 *
+	 * @param TestCase $test the running test, owner of the mocks
+	 * @param FakeCalendarStore $store the calendars and objects, persistent across requests
+	 * @param CalendarDav $dav the write pipeline double
+	 * @param IConfig $config the configuration of the gate
+	 * @param IUserManager $users the accounts the module resolves owners and guests with
+	 * @param ToolAccess $access the gate's own grant, Guests and app decision
+	 * @return CalendarMeetingSteps the Calendar port of one request
+	 */
+	public static function meetingSteps(TestCase $test, FakeCalendarStore $store, CalendarDav $dav, IConfig $config, IUserManager $users, ToolAccess $access): CalendarMeetingSteps {
+		['create' => $create, 'approval' => $approval] = self::parts($test, $store, $dav, $config, $users);
+		return new CalendarMeetingSteps($access, new CreateEventPreview($approval, $create), new CreateEventHandler($approval, $create), new NullLogger());
+	}
+
+	/**
+	 * @param TestCase $test the running test, owner of the mocks
+	 * @param FakeCalendarStore $store the calendars and objects, persistent across requests
+	 * @param CalendarDav $dav the write pipeline double
+	 * @param IConfig $config the configuration of the gate
+	 * @param IUserManager $users the accounts the module resolves owners and guests with
+	 * @return array<string, object> the collaborators of one request, shared by the module and the meeting port
+	 */
+	private static function parts(TestCase $test, FakeCalendarStore $store, CalendarDav $dav, IConfig $config, IUserManager $users): array {
 		$time = self::mock($test, ITimeFactory::class);
 		$time->method('now')->willReturnCallback(static fn (): DateTimeImmutable => new DateTimeImmutable(self::NOW));
 		$appConfig = self::mock($test, IAppConfig::class);
@@ -100,16 +145,11 @@ final class CalendarEffectsWiring {
 			$logger,
 			$zones,
 		);
-		return \OCA\Mcp\Tests\Unit\Tools\Calendar\CalendarTestModule::build(
-			new ListCalendarsHandler($access),
-			new ListEventsHandler($access, $store, $repository, $classification, new EventExpander(), $mapper, $dates, $time, $logger),
-			new CreateEventDraft($access, $guard, $dav, $store, $repository, $builder, $mapper, $dates, $attendees, $scheduling, $time),
-			new UpdateEventDraft($access, $guard, $dav, $store, $repository, $builder, $mapper, $dates, $attendees, $scheduling, $time),
-			new MoveEventDraft($access, $relocator, $guard),
-			new DeleteEventDraft($access, $guard, $dav, $store, $repository, new TrashPolicy($config), $scheduling),
-			new TransferEventDraft($relocator),
-			new CalendarDraftApproval($scheduling, $builder, $guard, $warnings, $zones),
-		);
+		$create = new CreateEventDraft($access, $guard, $dav, $store, $repository, $builder, $mapper, $dates, $attendees, $scheduling, $time);
+		$approval = new CalendarDraftApproval($scheduling, $builder, $guard, $warnings, $zones);
+		return ['access' => $access, 'repository' => $repository, 'classification' => $classification, 'mapper' => $mapper, 'dates' => $dates,
+			'time' => $time, 'logger' => $logger, 'guard' => $guard, 'builder' => $builder, 'attendees' => $attendees, 'scheduling' => $scheduling,
+			'relocator' => $relocator, 'create' => $create, 'approval' => $approval];
 	}
 
 	/**

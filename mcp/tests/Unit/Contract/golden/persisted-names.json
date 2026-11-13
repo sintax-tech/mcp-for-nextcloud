@@ -104,7 +104,8 @@
             "OCA\\Mcp\\Modules\\Activity\\ActivityModule",
             "OCA\\Mcp\\Modules\\Notifications\\NotificationsModule",
             "OCA\\Mcp\\Modules\\Availability\\AvailabilityModule",
-            "OCA\\Mcp\\Modules\\Status\\StatusModule"
+            "OCA\\Mcp\\Modules\\Status\\StatusModule",
+            "OCA\\Mcp\\Modules\\Routines\\RoutinesModule"
         ]
     }
 }

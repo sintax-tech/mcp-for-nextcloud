@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tests\Unit\Tools\Deck\Handler;
+namespace OCA\Mcp\Tests\Unit\Modules\Deck;
 
 use OCA\Deck\Db\AssignmentMapper;
 use OCA\Deck\Db\Board;
@@ -27,7 +27,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
-require_once __DIR__ . '/../Stubs/deck_stubs.php';
+require_once __DIR__ . '/../../Tools/Deck/Stubs/deck_stubs.php';
 
 /** `deck_read_card` and `deck_list_cards` show the labels Deck attached to a card, in one shape. */
 final class CardLabelsReadTest extends TestCase {

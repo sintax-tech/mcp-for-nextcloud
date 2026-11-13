@@ -14,6 +14,8 @@ use OCA\Mcp\Modules\Mail\Locating\MailMessageLocator;
 use OCA\Mcp\Modules\Files\Creation\ProtectedFileDestination;
 use OCA\Mcp\Platform\FileAccess\{ActorRoot, NodeAccessInfo, SharedWriteGuard};
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use Psr\Log\LoggerInterface;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\IUserSession;
 
@@ -22,6 +24,8 @@ final class MailSaveAttachmentTest extends FilesToolsTestCase {
 	private FakeMailMessageApp $mail;
 	private MailSaveContext $save;
 	private FakeMimePart $part;
+	private LoggerInterface $destinationLogger;
+	private ?PolicyUnavailable $creationPolicyFailure = null;
 	private \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture $types;
 	private const ARGS = ['message_id' => 7, 'attachment_id' => '2', 'path' => '/Documentos/saved.pdf'];
 
@@ -38,11 +42,21 @@ final class MailSaveAttachmentTest extends FilesToolsTestCase {
 		$access = $wiring->named('accessInfo');
 		$this->types = new \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture();
 		$visibility = new FilesAccessGuard($this->config->mock($this), $this->tagMapper, $root);
+		$creationVisibility = $this->getMockBuilder(FilesAccessGuard::class)
+			->setConstructorArgs([$this->config->mock($this), $this->tagMapper, $root])
+			->onlyMethods(['assertVisible'])->getMock();
+		$creationVisibility->method('assertVisible')->willReturnCallback(function ($node) use ($visibility): void {
+			if ($this->creationPolicyFailure !== null) {
+				throw $this->creationPolicyFailure;
+			}
+			$visibility->assertVisible($node);
+		});
+		$this->destinationLogger = $this->createMock(LoggerInterface::class);
 		$creation = new \OCA\Mcp\Modules\Files\Creation\FileCreation($access, new SharedWriteGuard($access), $wiring->named('checkout'), $this->filenames,
-			$visibility, $this->creationLogger, $wiring->named('locks'), $this->types->guard($this),
+			$creationVisibility, $this->creationLogger, $wiring->named('locks'), $this->types->guard($this),
 			new \OCA\Mcp\Platform\Backups\BackupLocation($this->createMock(\OCA\Mcp\Platform\Backups\BackupSettingsDocument::class)));
 		$files = new ProtectedFileDestination(new ActorRoot($root, $session), $creation, new SharedWriteGuard($access),
-			$access, new FilesAccessGuard($this->config->mock($this), $this->tagMapper, $root));
+			$access, new FilesAccessGuard($this->config->mock($this), $this->tagMapper, $root), $this->destinationLogger);
 		$this->sharePolicy->setGrant('alice', 'mail', 'save', true);
 		$apps = $this->createMock(\OCP\App\IAppManager::class); $apps->method('getAppVersion')->willReturn('5.10.11');
 		$this->save = new MailSaveContext($this->sharePolicy, $this->mail, $apps,
@@ -211,6 +225,40 @@ final class MailSaveAttachmentTest extends FilesToolsTestCase {
 		self::assertSame('uncertain', $out['outcome']);
 		self::assertFalse($out['verified']);
 		self::assertArrayNotHasKey('/alice/files/Documentos/saved.pdf', $this->tree->nodes);
+	}
+
+	/** Scope storage becoming unavailable at the post-create gate keeps the endpoint's 503 signal. */
+	public function testPolicyUnavailableAtCreationVisibilityPropagatesWithoutUncertain(): void {
+		$failure = new PolicyUnavailable();
+		$this->tree->afterCreate = function () use ($failure): void {
+			$this->creationPolicyFailure = $failure;
+		};
+		$this->destinationLogger->expects($this->never())->method('error');
+		try {
+			$this->saveFile();
+			self::fail('The policy failure must propagate instead of returning an uncertain receipt');
+		} catch (PolicyUnavailable $e) {
+			self::assertSame($failure, $e);
+			self::assertSame(503, $e->getCode());
+		}
+		self::assertSame('', $this->tree->nodes['/alice/files/Documentos/saved.pdf']['content']);
+		self::assertNotContains('write /alice/files/Documentos/saved.pdf', $this->tree->ops);
+	}
+
+	/** Unexpected failure while resolving the created node is uncertain, with safe diagnostics. */
+	public function testUnexpectedGetAfterCreationReturnsUncertainAndLogsClassAndCode(): void {
+		$this->tree->afterCreate = function (): void {
+			$this->tree->beforeGet = static fn () => throw new \RuntimeException('private filename', 17);
+		};
+		$this->destinationLogger->expects($this->once())->method('error')->with(
+			'MCP attachment save write failed: {exception_class} (code {exception_code})',
+			['app' => 'mcp', 'exception_class' => \RuntimeException::class, 'exception_code' => 17],
+		);
+		$out = $this->saveFile();
+		self::assertSame('uncertain', $out['outcome']);
+		self::assertFalse($out['verified']);
+		self::assertSame('', $this->tree->nodes['/alice/files/Documentos/saved.pdf']['content']);
+		self::assertNotContains('write /alice/files/Documentos/saved.pdf', $this->tree->ops);
 	}
 
 	/** The prepared limit already reserves the decoded allocation; the sink must not count it twice. */

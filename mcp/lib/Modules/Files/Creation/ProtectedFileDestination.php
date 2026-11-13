@@ -8,6 +8,9 @@ namespace OCA\Mcp\Modules\Files\Creation;
 
 use OCA\Mcp\Platform\FileAccess\{ActorRoot, NewFileDestination, NodeAccessInfo, SharedWriteGuard, NodeAccess, CommonMessages};
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Platform\Logging\ExceptionDetails;
+use Psr\Log\LoggerInterface;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCP\Files\NotEnoughSpaceException;
@@ -23,6 +26,7 @@ final class ProtectedFileDestination implements NewFileDestination {
 	 * @param SharedWriteGuard $shared Shared guard.
 	 * @param NodeAccessInfo $access Access metadata.
 	 * @param FilesAccessGuard $visibility Current scope and visibility.
+	 * @param LoggerInterface $logger Safe storage diagnostics.
 	 */
 	public function __construct(
 		private ActorRoot $roots,
@@ -30,6 +34,7 @@ final class ProtectedFileDestination implements NewFileDestination {
 		private SharedWriteGuard $shared,
 		private NodeAccessInfo $access,
 		private FilesAccessGuard $visibility,
+		private LoggerInterface $logger,
 	) {
 	}
 
@@ -67,11 +72,16 @@ final class ProtectedFileDestination implements NewFileDestination {
 			$written = $this->creation->write($target['folder'], $target['name'], $content, $userId);
 		} catch (FileCreationFailure) {
 			return ['path' => $target['path'], 'outcome' => 'uncertain', 'verified' => false];
-		} catch (ToolFailure|ArgumentValidationException $e) {
+		} catch (ToolFailure|ArgumentValidationException|PolicyUnavailable $e) {
 			throw $e;
 		} catch (LockedException|NotEnoughSpaceException $e) {
 			NodeAccess::run(static fn () => throw $e);
-		} catch (Throwable) {
+		} catch (Throwable $e) {
+			$this->logger->error('MCP attachment save write failed: {exception_class} (code {exception_code})', [
+				'app' => 'mcp',
+				'exception_class' => $e::class,
+				'exception_code' => ExceptionDetails::code($e),
+			]);
 			return ['path' => $target['path'], 'outcome' => 'uncertain', 'verified' => false];
 		}
 		try {
@@ -109,6 +119,8 @@ final class ProtectedFileDestination implements NewFileDestination {
 				&& hash_equals($expected, $actual)
 				&& (string)$file->getEtag() === $receipt['etag'];
 			return $receipt + ['outcome' => $verified ? 'saved' : 'uncertain', 'verified' => $verified, 'sha256' => $actual];
+		} catch (PolicyUnavailable $e) {
+			throw $e;
 		} catch (Throwable) {
 			return ['path' => $target['path'], 'outcome' => 'uncertain', 'verified' => false];
 		}

@@ -45,6 +45,8 @@ final class StatusNativeTest extends TestCase {
 			'UserStatusController.php' => [
 				59 => '$this->calendarStatusService->processCalendarStatus($this->userId);',
 				60 => '$userStatus = $this->service->findByUserId($this->userId);',
+				81 => '$this->service->setStatus($this->userId, $statusType, null, true)',
+				83 => '$this->service->removeBackupUserStatus($this->userId)',
 			],
 			'HeartbeatController.php' => [55 => 'function heartbeat(string $status)'],
 			'DavStatusService.php' => [42 => 'function processCalendarStatus(string $userId)'],
@@ -67,6 +69,8 @@ final class StatusNativeTest extends TestCase {
 			'UserStatusController.php' => [
 				60 => '$this->calendarStatusService->processCalendarStatus($this->userId);',
 				61 => '$userStatus = $this->service->findByUserId($this->userId);',
+				82 => '$this->service->setStatus($this->userId, $statusType, null, true)',
+				84 => '$this->service->removeBackupUserStatus($this->userId)',
 			],
 			'HeartbeatController.php' => [56 => 'function heartbeat(string $status)'],
 			'DavStatusService.php' => [43 => 'function processCalendarStatus(string $userId)'],
@@ -100,18 +104,31 @@ final class StatusNativeTest extends TestCase {
 		}
 	}
 
-	/** @return void production code of this module does not name the maintenance path */
+	/** @return void only the type editor calls setStatus, and only as the status menu does */
 	public function testModuleSourceDoesNotCallMaintenance(): void {
-		$files = glob(dirname(__DIR__, 4) . '/lib/Modules/Status/*.php') ?: [];
-		$files = array_merge($files, glob(dirname(__DIR__, 4) . '/lib/Modules/Status/*/*.php') ?: []);
-		self::assertNotEmpty($files);
+		$root = dirname(__DIR__, 4) . '/lib/Modules/Status';
+		$files = glob($root . '/*.php') ?: [];
+		$files = array_merge($files, glob($root . '/*/*.php') ?: []);
+		$editor = $root . '/Integration/StatusEditor.php';
+		self::assertContains($editor, $files);
 		$joined = '';
+		$editorBody = '';
 		foreach ($files as $file) {
-			$joined .= (string)file_get_contents($file);
+			$body = (string)file_get_contents($file);
+			if ($file === $editor) {
+				$editorBody = $body;
+				continue;
+			}
+			$joined .= $body;
 		}
 		foreach (self::FORBIDDEN as $token) {
 			self::assertStringNotContainsString($token, $joined, $token);
 		}
+		foreach (array_diff(self::FORBIDDEN, ['->setStatus(']) as $token) {
+			self::assertStringNotContainsString($token, $editorBody, $token);
+		}
+		self::assertStringContainsString('->setStatus($actor, $type, null, true)', $editorBody);
+		self::assertStringContainsString('->removeBackupUserStatus($actor)', $editorBody);
 		self::assertStringContainsString('findByUserId($actor, false)', $joined);
 	}
 }

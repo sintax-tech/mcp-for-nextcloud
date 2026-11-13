@@ -26,12 +26,16 @@ $target = ($argv[2] ?? __DIR__) . '/' . $major . '.php';
 $placed = [
 	'UserStatus.php' => 'apps/user_status/lib/Db/UserStatus.php',
 	'UserStatusMapper.php' => 'apps/user_status/lib/Db/UserStatusMapper.php',
+	'StatusService.php' => 'apps/user_status/lib/Service/StatusService.php',
+	'InvalidStatusTypeException.php' => 'apps/user_status/lib/Exception/InvalidStatusTypeException.php',
 	'MultipleObjectsReturnedException.php' => 'lib/public/AppFramework/Db/MultipleObjectsReturnedException.php',
 	'IMapperException.php' => 'lib/public/AppFramework/Db/IMapperException.php',
 ];
 $classes = [
 	'OCA\\UserStatus\\Db\\UserStatus',
 	'OCA\\UserStatus\\Db\\UserStatusMapper',
+	'OCA\\UserStatus\\Service\\StatusService',
+	'OCA\\UserStatus\\Exception\\InvalidStatusTypeException',
 	'OCP\\AppFramework\\Db\\MultipleObjectsReturnedException',
 ];
 $tree = sys_get_temp_dir() . '/mcp-user-status-api-' . bin2hex(random_bytes(6));

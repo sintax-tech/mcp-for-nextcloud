@@ -37,6 +37,10 @@
       "IMapperException.php": {
         "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/lib/public/AppFramework/Db/IMapperException.php",
         "sha256": "dc121932013875592b1c049511bdc08be3c4af58cb9b40807f534133f0ad1d0e"
+      },
+      "InvalidStatusTypeException.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/user_status/lib/Exception/InvalidStatusTypeException.php",
+        "sha256": "dc517a9719af23fc0d062c2cb5d06f6130a404f3ffe5056cb10c3996479d0269"
       }
     },
     "35": {
@@ -75,6 +79,10 @@
       "IMapperException.php": {
         "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/lib/public/AppFramework/Db/IMapperException.php",
         "sha256": "0390ff8a4c72c48b9275db85534b3e419636cca6d402689e3f926d5705b8aea9"
+      },
+      "InvalidStatusTypeException.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/user_status/lib/Exception/InvalidStatusTypeException.php",
+        "sha256": "a87319e24dc609ea8f58d99db406dafce12dcfea71bacda6b6e1e00c29724b52"
       }
     }
   }

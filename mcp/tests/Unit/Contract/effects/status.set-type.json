@@ -1,0 +1,17 @@
+{
+    "tool": "status_set_type",
+    "grant": "status.edit",
+    "set_status": [
+        "alice",
+        "dnd",
+        null,
+        true
+    ],
+    "remove_backup": "alice",
+    "readback": [
+        "alice",
+        false
+    ],
+    "removed_backup": true,
+    "message": "At the desk"
+}

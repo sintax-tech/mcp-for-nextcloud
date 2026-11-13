@@ -31,7 +31,13 @@ use PHPUnit\Framework\TestCase;
  */
 final class WritePlanContractTest extends TestCase {
 	/** Registered modules that publish no write tool. */
-	private const READ_ONLY = [\OCA\Mcp\Modules\People\PeopleModule::class, \OCA\Mcp\Modules\Logs\LogsModule::class];
+	private const READ_ONLY = [
+		\OCA\Mcp\Modules\People\PeopleModule::class,
+		\OCA\Mcp\Modules\Logs\LogsModule::class,
+		\OCA\Mcp\Modules\Activity\ActivityModule::class,
+		\OCA\Mcp\Modules\Notifications\NotificationsModule::class,
+		\OCA\Mcp\Modules\Availability\AvailabilityModule::class,
+	];
 
 	/** @return array<class-string, class-string> test class of each writing module, which runs the contract with that module's fakes */
 	private static function contractTests(): array {
@@ -48,6 +54,7 @@ final class WritePlanContractTest extends TestCase {
 			\OCA\Mcp\Modules\Tables\TablesModule::class => TablesPlanRendererTest::class,
 			\OCA\Mcp\Modules\Forms\FormsModule::class => \OCA\Mcp\Tests\Unit\Tools\Forms\Creation\CreatePlanRendererTest::class,
 			\OCA\Mcp\Modules\Collectives\CollectivesModule::class => \OCA\Mcp\Tests\Unit\Modules\Collectives\CollectivesPlanRendererTest::class,
+			\OCA\Mcp\Modules\Status\StatusModule::class => \OCA\Mcp\Tests\Unit\Modules\Status\StatusPlanRendererTest::class,
 		];
 	}
 

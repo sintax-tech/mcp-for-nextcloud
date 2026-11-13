@@ -128,6 +128,10 @@ final class ToolRegistryTest extends TestCase {
 				// Every Collectives tool requires collectives.native, the absence write availability.*; this fixture admits them as a supporting installation.
 				$definitions = array_map(static function (array $definition): array { unset($definition['requires']); return $definition; }, $definitions);
 			}
+			if ($instance instanceof \OCA\Mcp\Modules\Status\StatusModule) {
+				// status_set_type requires status.native; this fixture admits it the same way discovery does when the app is on.
+				$definitions = array_map(static function (array $definition): array { unset($definition['requires']); return $definition; }, $definitions);
+			}
 			$module = new class($definitions) implements ToolModule {
 				public function __construct(private array $definitions) {}
 				public function definitions(): array {

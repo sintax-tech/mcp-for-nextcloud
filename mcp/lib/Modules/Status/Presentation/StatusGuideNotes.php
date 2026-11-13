@@ -14,8 +14,8 @@ final class StatusGuideNotes {
 	private function __construct() {
 	}
 
-	/** @return list<string> configured-snapshot guidance */
+	/** @return list<string> configured-snapshot guidance and the confirmed type change */
 	public static function notes(): array {
-		return [StatusSchema::NOTE];
+		return [StatusSchema::NOTE, StatusTypeSchema::NOTE];
 	}
 }

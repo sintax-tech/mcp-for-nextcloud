@@ -22,7 +22,11 @@ final class ToolContracts {
 			if (isset($seen[$name]) || (!str_starts_with($name, $module . '_') && !($module === 'people' && $name === 'users_search')) || $module === '') { $errors[] = 'Duplicate/wrong module prefix: ' . $name; }
 			// The exact published people/users_search name is kept for client compatibility.
 			$seen[$name] = true;
-			foreach ([$operation, ...($row['grantAnyOf'] ?? [])] as $grant) {
+			// operation `read` with grantAnyOf is the annotation, not a grant: routines.prepare must not add routines.read,
+			// because a catalogued read would be allowed by default.
+			$alternatives = $row['grantAnyOf'] ?? [];
+			$grants = $alternatives !== [] && $operation === 'read' ? $alternatives : [$operation, ...$alternatives];
+			foreach ($grants as $grant) {
 				if (!in_array($grant, GrantCatalog::CATALOG[$module] ?? [], true)) { $errors[] = 'Unknown grant: ' . $module . '.' . $grant; }
 			}
 			foreach ($row['requires'] ?? [] as $key) { if (!in_array($key, $probes, true)) { $errors[] = 'Missing capability probe: ' . $key; } }

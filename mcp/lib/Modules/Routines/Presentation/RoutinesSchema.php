@@ -29,6 +29,14 @@ final class RoutinesSchema {
 		. 'receipt, ask the user and plan only the missing steps with the Talk and Calendar tools. send_invitations is false by default; '
 		. 'with true Nextcloud scheduling may email the guests and delivery is not confirmed. A calendar of somebody else needs '
 		. 'confirm_shared: true. Besides this permission, each step needs its own: talk.create, talk.reply and calendar.create.';
+	/** English model guidance of routines_prepare_meeting, shared by discovery and the guide. */
+	public const PREPARE_NOTE = 'Builds a read-only dossier of one event the actor can already see. Pass calendar and uid together to name '
+		. 'the event, or omit both and pass from and to: the earliest visible occurrence that overlaps that window is used. Recurrence and '
+		. 'private or confidential events stay with the calendar reader; an event it does not return is refused. Participants are addresses '
+		. 'already on the occurrence, at most 10. An address becomes a local account id only with people.read and one exact match. Mail, Deck '
+		. 'and files are consulted only with their own grants, and only from those addresses or from card and file references already on the '
+		. 'occurrence. A source without its grant is omitted and named, and the dossier still returns. The mail lookback is 30 days, with at '
+		. 'most 20 messages, 20 cards, 20 files and 20 mail folders. Partial coverage is marked. Nothing is saved or written.';
 
 	/** Static schema only. */
 	private function __construct() {
@@ -55,5 +63,21 @@ final class RoutinesSchema {
 			],
 			'required' => ['title', 'participants', 'agenda', 'calendar', 'start', 'end'],
 		], destructiveHint: true, apps: ['spreed', 'calendar']);
+	}
+
+	/** @return ToolDefinition the default-denied routines.prepare read */
+	public static function prepareDefinition(): ToolDefinition {
+		$when = ['type' => 'string', 'minLength' => 10, 'maxLength' => 40, 'description' => 'Bound of the window, ISO 8601.'];
+		return new ToolDefinition('routines_prepare_meeting', 'routines', 'read', self::PREPARE_NOTE, [
+			'type' => 'object',
+			'additionalProperties' => false,
+			'properties' => [
+				'from' => $when,
+				'to' => $when,
+				'calendar' => DavCollectionSchema::calendar(),
+				'uid' => DavCollectionSchema::uid(),
+			],
+			'required' => ['from', 'to'],
+		], app: 'calendar', grantAnyOf: ['prepare']);
 	}
 }

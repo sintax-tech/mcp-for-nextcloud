@@ -219,6 +219,7 @@ final class ToolTitles {
 			// Routines
 			'routines_create_meeting' => Translator::t('Create meeting'),
 			'routines_create_mail_card' => Translator::t('Create card from email'),
+			'routines_prepare_meeting' => Translator::t('Prepare meeting'),
 			default => ToolPresentation::humanized($name),
 		};
 	}

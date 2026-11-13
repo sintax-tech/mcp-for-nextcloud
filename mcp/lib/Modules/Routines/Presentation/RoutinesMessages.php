@@ -92,4 +92,24 @@ final class RoutinesMessages {
 			default => Translator::t('the event'),
 		};
 	}
+
+	/** @return string the refusal of a named event the calendar reader did not return */
+	public static function eventNotVisible(): string {
+		return Translator::t('The named event is not among the events visible in that window.');
+	}
+
+	/** @return string the refusal when the window has no visible event */
+	public static function noVisibleEvent(): string {
+		return Translator::t('There is no visible event in that window.');
+	}
+
+	/** @return string the refusal when calendar and uid are not given together */
+	public static function calendarAndUid(): string {
+		return Translator::t('Name the calendar together with the event UID, or omit both and give the window.');
+	}
+
+	/** @return string the refusal when the calendar reader returned an error */
+	public static function calendarUnreadable(): string {
+		return Translator::t('The calendar could not be read.');
+	}
 }

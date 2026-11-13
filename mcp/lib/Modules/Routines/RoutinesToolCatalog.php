@@ -9,11 +9,12 @@ namespace OCA\Mcp\Modules\Routines;
 
 use OCA\Mcp\Modules\Routines\Tools\CreateMailCard;
 use OCA\Mcp\Modules\Routines\Tools\CreateMeeting;
+use OCA\Mcp\Modules\Routines\Tools\PrepareMeeting;
 
 /** Published Routines tools, in discovery order. A new tool goes at the end. */
 final class RoutinesToolCatalog {
 	/** @var list<class-string<\OCA\Mcp\Mcp\Tools\Tool>> tool classes, in tools/list order */
-	public const TOOLS = [CreateMeeting::class, CreateMailCard::class];
+	public const TOOLS = [CreateMeeting::class, CreateMailCard::class, PrepareMeeting::class];
 
 	/** Static catalog only. */
 	private function __construct() {

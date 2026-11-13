@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Calendar\Integration;
 
+use OCA\Mcp\Platform\Meetings\LocalInstanceLink;
 use Sabre\VObject\Component\VEvent;
 use Sabre\VObject\Property;
 
@@ -22,8 +23,10 @@ final class MeetingEventFacts {
 	/** Most links copied from one event. */
 	public const MAX_LINKS = 40;
 
-	/** Extraction only. */
-	public function __construct() {
+	/**
+	 * @param LocalInstanceLink $local the same tokenizer the dossier uses for a card or a file link
+	 */
+	public function __construct(private LocalInstanceLink $local) {
 	}
 
 	/**
@@ -102,16 +105,16 @@ final class MeetingEventFacts {
 	private function links(VEvent $event): array {
 		$found = [];
 		foreach ($event->select('URL') as $url) {
-			$this->keep((string)$url->getValue(), $found);
+			$this->collect((string)$url->getValue(), $found);
 		}
 		foreach ($event->select('ATTACH') as $attach) {
 			if (!$attach instanceof Property || $this->binary($attach)) {
 				continue;
 			}
-			$this->keep((string)$attach->getValue(), $found);
+			$this->collect((string)$attach->getValue(), $found);
 		}
 		foreach (['DESCRIPTION', 'LOCATION'] as $name) {
-			$this->fromText((string)($event->$name ?? ''), $found);
+			$this->collect((string)($event->$name ?? ''), $found);
 		}
 		return $found;
 	}
@@ -128,46 +131,14 @@ final class MeetingEventFacts {
 	}
 
 	/**
-	 * @param string $text description or location
+	 * @param string $text one property or a description
 	 * @param list<string> $found links kept so far
 	 */
-	private function fromText(string $text, array &$found): void {
-		if (preg_match_all('#https?://[^\s<>"\']+#i', $text, $urls) !== false) {
-			foreach ($urls[0] as $url) {
-				$this->keep($url, $found);
+	private function collect(string $text, array &$found): void {
+		foreach ($this->local->references($text) as $token) {
+			if (!in_array($token, $found, true)) {
+				$found[] = $token;
 			}
 		}
-		if (preg_match_all('#(?:^|[\s"\'])(/(?:f/\d+|apps/(?:files|deck)/[^\s<>"\']+))#', $text, $paths) !== false) {
-			foreach ($paths[1] as $path) {
-				$this->keep($path, $found);
-			}
-		}
-	}
-
-	/**
-	 * @param string $raw one link
-	 * @param list<string> $found links kept so far
-	 */
-	private function keep(string $raw, array &$found): void {
-		$link = rtrim(trim($raw), ".,);]>'\" ");
-		if ($link === '' || in_array($link, $found, true) || !$this->acceptableLink($link)) {
-			return;
-		}
-		$found[] = $link;
-	}
-
-	/**
-	 * A URL property, an attachment URI, or a link copied from text.
-	 *
-	 * Only http(s) or a path that starts with one slash. A scheme-relative URL, another scheme and a data URI are not links.
-	 *
-	 * @param string $link one trimmed value
-	 * @return bool whether the dossier may carry it
-	 */
-	private function acceptableLink(string $link): bool {
-		if (str_starts_with(strtolower($link), 'http://') || str_starts_with(strtolower($link), 'https://')) {
-			return true;
-		}
-		return str_starts_with($link, '/') && !str_starts_with($link, '//');
 	}
 }

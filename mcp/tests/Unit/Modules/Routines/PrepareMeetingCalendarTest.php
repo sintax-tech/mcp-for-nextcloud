@@ -67,7 +67,7 @@ final class PrepareMeetingCalendarTest extends TestCase {
 		$time = $this->createMock(ITimeFactory::class);
 		$time->method('now')->willReturn(new DateTimeImmutable('2026-04-09T00:00:00Z'));
 		$listing = new ListEventsHandler($access, $this->store, $repository, $classification, new EventExpander(), new EventMapper(), new DateInput(), $time, new NullLogger());
-		$facts = new MeetingEventSupplement($access, $this->store, $repository, $classification, new EventExpander(), new EventMapper(), new DateInput(), $time, new NullLogger(), new MeetingEventFacts());
+		$facts = new MeetingEventSupplement($access, $this->store, $repository, $classification, new EventExpander(), new EventMapper(), new DateInput(), $time, new NullLogger(), new MeetingEventFacts($this->link()));
 		$this->events = new CalendarMeetingEvents($this->registry(), $listing, $facts);
 	}
 

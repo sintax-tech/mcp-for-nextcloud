@@ -23,13 +23,8 @@ final class ReferenceTexts {
 	 */
 	public static function deckCardIds(string $text, LocalInstanceLink $local): array {
 		$ids = [];
-		foreach (self::absoluteUrls($text) as $url) {
-			self::addCard($url, $local, $ids);
-		}
-		if (preg_match_all('~(?:^|[\s"\'])(/apps/deck/(?:#/)?board/\d+/card/(\d+))~', $text, $paths, PREG_SET_ORDER) !== false) {
-			foreach ($paths as $match) {
-				self::addCard($match[1], $local, $ids);
-			}
+		foreach ($local->references($text) as $token) {
+			self::addCard($token, $local, $ids);
 		}
 		return $ids;
 	}
@@ -41,38 +36,8 @@ final class ReferenceTexts {
 	 */
 	public static function fileReferences(string $text, LocalInstanceLink $local): array {
 		$found = [];
-		foreach (self::absoluteUrls($text) as $url) {
-			self::keep($url, $found, $local);
-		}
-		if (preg_match_all('#(?:^|[\s"\'])(/(?:f/\d+|apps/files/[^\s<>"\']+|remote\.php/(?:dav/files|webdav)[^\s<>"\']*))#', $text, $paths) !== false) {
-			foreach ($paths[1] as $path) {
-				self::keep($path, $found, $local);
-			}
-		}
-		return $found;
-	}
-
-	/**
-	 * Whole absolute URLs, including a scheme-relative form that starts a token.
-	 *
-	 * A relative path is not taken from inside one of these. The caller decides by the host.
-	 *
-	 * @param string $text a link or a description
-	 * @return list<string> each absolute URL once, in order
-	 */
-	private static function absoluteUrls(string $text): array {
-		$found = [];
-		if (preg_match_all('#[a-z][a-z0-9+.-]*://[^\s<>"\']+#i', $text, $urls) !== false) {
-			foreach ($urls[0] as $url) {
-				$found[] = $url;
-			}
-		}
-		if (preg_match_all('#(?:^|[\s"\'])(//[^\s<>"\']+)#', $text, $relative) !== false) {
-			foreach ($relative[1] as $url) {
-				if (!in_array($url, $found, true)) {
-					$found[] = $url;
-				}
-			}
+		foreach ($local->references($text) as $token) {
+			self::keep($token, $found, $local);
 		}
 		return $found;
 	}

@@ -67,6 +67,8 @@ final class PrepareMeetingBoundsTest extends TestCase {
 		self::assertSame(['https://cloud.example/f/15'], ReferenceTexts::fileReferences('https://cloud.example/f/15', $local));
 		self::assertSame(['/f/15'], ReferenceTexts::fileReferences(' /f/15', $local));
 		self::assertSame(['/f/15'], ReferenceTexts::fileReferences('"/f/15"', $local));
+		self::assertSame(['/f/15'], ReferenceTexts::fileReferences("'/f/15'", $local));
+		self::assertSame(['https://cloud.example/a\'/f/15'], ReferenceTexts::fileReferences('https://cloud.example/a\'/f/15', $local));
 		self::assertStringContainsString(
 			'Deck assignments of a local account are the first 20 rows the mapper returns for that account, in an undefined order',
 			RoutinesSchema::PREPARE_NOTE,
@@ -74,7 +76,7 @@ final class PrepareMeetingBoundsTest extends TestCase {
 	}
 
 	/**
-	 * A URL or an attachment is http(s) or a single-slash path. A foreign URL is not sliced into a relative path.
+	 * The event uses the same tokenizer. A foreign URL stays one token and is not a link of this instance.
 	 *
 	 * @return void
 	 */
@@ -82,21 +84,20 @@ final class PrepareMeetingBoundsTest extends TestCase {
 		$calendar = Reader::read("BEGIN:VCALENDAR\r\nVERSION:2.0\r\nBEGIN:VEVENT\r\n"
 			. "UID:meet\r\nSUMMARY:Planning\r\nDTSTART:20260409T100000Z\r\nDTEND:20260409T110000Z\r\n"
 			. "URL:ftp://evil.com/apps/deck/board/1/card/3\r\n"
-			. "ATTACH:https://evil.com/share/-/f/123\r\n"
-			. "DESCRIPTION:https://evil.com//f/123 https://evil.com/?x=/f/9 https://evil.com/x//apps/files/?fileid=5 //evil.com/apps/deck/board/1/card/3 partner.cloud/apps/deck/#/board/1/card/2 /f/15\r\n"
+			. "URL:https://cloud.example/apps/deck/board/4/card/8\r\n"
+			. "ATTACH:/f/22\r\n"
+			. "DESCRIPTION:https://evil.com//f/123 https://evil.com/'/f/27 https://cloud.example/f/15 /f/16\r\n"
 			. "END:VEVENT\r\nEND:VCALENDAR\r\n");
-		$facts = (new MeetingEventFacts())->of($calendar->VEVENT);
-		self::assertContains('https://evil.com//f/123', $facts['links']);
-		self::assertContains('https://evil.com/?x=/f/9', $facts['links']);
-		self::assertContains('https://evil.com/x//apps/files/?fileid=5', $facts['links']);
-		self::assertContains('https://evil.com/share/-/f/123', $facts['links']);
-		self::assertContains('/f/15', $facts['links']);
+		$facts = (new MeetingEventFacts($this->link()))->of($calendar->VEVENT);
+		self::assertContains('https://cloud.example/apps/deck/board/4/card/8', $facts['links']);
+		self::assertContains('https://cloud.example/f/15', $facts['links']);
+		self::assertContains('/f/22', $facts['links']);
+		self::assertContains('/f/16', $facts['links']);
 		self::assertNotContains('/f/123', $facts['links']);
-		self::assertNotContains('/f/9', $facts['links']);
+		self::assertNotContains('/f/27', $facts['links']);
+		self::assertNotContains('https://evil.com/', $facts['links']);
+		self::assertNotContains("https://evil.com/'/f/27", $facts['links']);
 		self::assertNotContains('ftp://evil.com/apps/deck/board/1/card/3', $facts['links']);
-		self::assertNotContains('//evil.com/apps/deck/board/1/card/3', $facts['links']);
-		self::assertNotContains('/apps/deck/board/1/card/3', $facts['links']);
-		self::assertNotContains('/apps/deck/#/board/1/card/2', $facts['links']);
 	}
 
 	/**

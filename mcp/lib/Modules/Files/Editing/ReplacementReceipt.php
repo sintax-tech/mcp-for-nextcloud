@@ -47,7 +47,7 @@ final class ReplacementReceipt {
 			'backup' => $copy,
 			'backupNote' => BackupMessages::originalKept($copy),
 		];
-		[$backupVerified, $backupSize] = $this->copy($root, $copy, $previous['size']);
+		[$backupVerified, $backupSize] = $this->verifyCopy($root, $copy, $previous['size']);
 		$base += ['backupVerified' => $backupVerified] + ($backupSize === null ? [] : ['backupSize' => $backupSize]);
 		if ($uncertain) {
 			return $base + ['outcome' => 'uncertain', 'verified' => false];
@@ -86,7 +86,7 @@ final class ReplacementReceipt {
 	 * @param int $size Size of the original right before the copy.
 	 * @return array{0: bool, 1: int|null} Whether the copy matches, and its size as read back.
 	 */
-	private function copy(Folder $root, string $copy, int $size): array {
+	private function verifyCopy(Folder $root, string $copy, int $size): array {
 		if ($copy === '') {
 			return [true, null];
 		}

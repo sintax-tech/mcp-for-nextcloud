@@ -260,6 +260,25 @@ final class MailReplaceAttachmentTest extends FilesToolsTestCase {
 		self::assertSame([], $this->tree->ops);
 	}
 
+	public function testTypePolicyChangedAfterTheCopyRefusesAtTheSinkAndKeepsTheCopy(): void {
+		$this->tree->beforeWrite = function (string $path): void {
+			if (str_contains($path, '/MCP backups/')) {
+				$this->types->allow(['txt']);
+			}
+		};
+		try {
+			$this->replaceFile();
+			self::fail('The type policy is read again right before the write');
+		} catch (ToolFailure $e) {
+			self::assertStringContainsString('/MCP backups/Documentos/saved.pdf.', $e->getMessage());
+		}
+		self::assertSame('old content', $this->tree->nodes[self::TARGET]['content']);
+		self::assertNotContains('write ' . self::TARGET, $this->tree->ops);
+		$backups = array_values(array_filter($this->copies(), static fn (string $p): bool => str_ends_with($p, '.bak')));
+		self::assertCount(1, $backups);
+		self::assertSame('old content', $this->tree->nodes[$backups[0]]['content']);
+	}
+
 	public function testSharedFileNeedsItsOwnConfirmationBeforeTheDownload(): void {
 		$this->tree->addFolder('/alice/files/Documentos', ['scope' => 'shared']);
 		$this->tree->addFile(self::TARGET, 'old content', 'application/pdf', ['scope' => 'shared']);

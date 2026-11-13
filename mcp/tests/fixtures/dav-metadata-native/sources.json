@@ -1,0 +1,129 @@
+{
+  "purpose": "Verbatim nextcloud/server sources of the DAV comments and system-tag pipeline for NC34/35; no network access in tests.",
+  "versions": {
+    "34": {
+      "apps/dav/lib/CalDAV/Auth/CustomPrincipalPlugin.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/CalDAV/Auth/CustomPrincipalPlugin.php",
+        "sha256": "7d8d9ff4f8964123b4534e990323f16c6f5f620e4276f3b62067187b19fdbe38"
+      },
+      "apps/dav/lib/Comments/CommentsPlugin.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/Comments/CommentsPlugin.php",
+        "sha256": "bc7ef4a3579d91fd06b15d772584526c38f6ef86c57c41f986be1cce1332fcea"
+      },
+      "apps/dav/lib/Comments/RootCollection.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/Comments/RootCollection.php",
+        "sha256": "981b585812c78aaaab1f0a980b7fdf21c32720cfabe379c144657f0597973ae8"
+      },
+      "apps/dav/lib/Comments/EntityTypeCollection.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/Comments/EntityTypeCollection.php",
+        "sha256": "08a6890c8d220508c81f62ed205d34a29edf47f641d20e94cf9175fc3d20d7b2"
+      },
+      "apps/dav/lib/Comments/EntityCollection.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/Comments/EntityCollection.php",
+        "sha256": "dcc248b982cd7e01e8e5d3ac4c6db7ba7bef35675e023c458c43d7ca8eb85121"
+      },
+      "apps/dav/lib/Comments/CommentNode.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/Comments/CommentNode.php",
+        "sha256": "565fa52478f5c2d09126440e890cbd96408285d75a6b8af211cce6b545dc8e56"
+      },
+      "apps/dav/lib/Connector/Sabre/FilesPlugin.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/Connector/Sabre/FilesPlugin.php",
+        "sha256": "d245da1a44f886202339d517db8aa1f8585fd1ceef6d6faa0e298f8abbbbcdac"
+      },
+      "apps/dav/lib/SystemTag/SystemTagPlugin.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/SystemTag/SystemTagPlugin.php",
+        "sha256": "e7079e96d2a1812079e2cdb4f67f4278a2ae7900a7f0d3901df15d28949a76bc"
+      },
+      "apps/dav/lib/SystemTag/SystemTagsRelationsCollection.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/SystemTag/SystemTagsRelationsCollection.php",
+        "sha256": "cec67660750a72622cf85946a1508be3651df64e6ec1fccf44dcdd84c5d41e50"
+      },
+      "apps/dav/lib/SystemTag/SystemTagsObjectTypeCollection.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/SystemTag/SystemTagsObjectTypeCollection.php",
+        "sha256": "5b49b134a010b3bbec324e91e16656a2476698d7ef0d24721f6b3bb4fcc5562f"
+      },
+      "apps/dav/lib/SystemTag/SystemTagsObjectMappingCollection.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/SystemTag/SystemTagsObjectMappingCollection.php",
+        "sha256": "c5716965cbe630f3245f2a90ea850c367c946df373f1a84df28b17dc124b71d8"
+      },
+      "apps/dav/lib/SystemTag/SystemTagNode.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/SystemTag/SystemTagNode.php",
+        "sha256": "b7a0b3db51bcc721b0af436535006627e19e1b5e1e0b23b5533104b9eec394ba"
+      },
+      "apps/dav/lib/SystemTag/SystemTagMappingNode.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/SystemTag/SystemTagMappingNode.php",
+        "sha256": "13804121ebfc97249bc1ef5c554fd7e0336a8ae2c09040413a7333d8ee21fd90"
+      },
+      "apps/comments/lib/Listener/CommentsEntityEventListener.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/comments/lib/Listener/CommentsEntityEventListener.php",
+        "sha256": "420c9236adc917bf6b8bf8984028e02b700f559a3c918edceb03272a88a77a85"
+      },
+      "lib/public/Comments/ICommentsManager.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/lib/public/Comments/ICommentsManager.php",
+        "sha256": "465cda4f7ed763e3a952bc67bf6caf22df3b57754db81b7553b2a4111165dc45"
+      }
+    },
+    "35": {
+      "apps/dav/lib/CalDAV/Auth/CustomPrincipalPlugin.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/CalDAV/Auth/CustomPrincipalPlugin.php",
+        "sha256": "7d8d9ff4f8964123b4534e990323f16c6f5f620e4276f3b62067187b19fdbe38"
+      },
+      "apps/dav/lib/Comments/CommentsPlugin.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/Comments/CommentsPlugin.php",
+        "sha256": "6eea56cdd5a66685491e9b69c30e79bf8d08f012ebf31f388f3013189d7b3fcb"
+      },
+      "apps/dav/lib/Comments/RootCollection.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/Comments/RootCollection.php",
+        "sha256": "23ffdbe287a3a0cd486931f2fb6e3a952417146b19e67aa218e8511066f540f7"
+      },
+      "apps/dav/lib/Comments/EntityTypeCollection.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/Comments/EntityTypeCollection.php",
+        "sha256": "b0315c462203111f8120bfcaad507b89dc5ff7f8c6ea7729c89d521fbc2acf59"
+      },
+      "apps/dav/lib/Comments/EntityCollection.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/Comments/EntityCollection.php",
+        "sha256": "d823bee1eb7731e10ebccb721eee99ae123f53a2e70c31db6379c1a19cd1ee03"
+      },
+      "apps/dav/lib/Comments/CommentNode.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/Comments/CommentNode.php",
+        "sha256": "eb3346800fd219c6dab13ef8f38e8c932b22d31c4dd28bb44709f0078525a1bd"
+      },
+      "apps/dav/lib/Connector/Sabre/FilesPlugin.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/Connector/Sabre/FilesPlugin.php",
+        "sha256": "8fd10f8534053cc212c19450bacbf29ec788be0c33cab9b42f234b112e1f504c"
+      },
+      "apps/dav/lib/SystemTag/SystemTagPlugin.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/SystemTag/SystemTagPlugin.php",
+        "sha256": "5a9793186c7df2d1a6d0d3aca3a83a909dccf7fb6670094ba51b5c0d2afc9361"
+      },
+      "apps/dav/lib/SystemTag/SystemTagsRelationsCollection.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/SystemTag/SystemTagsRelationsCollection.php",
+        "sha256": "b21fba4cdabd2a9729162fc25d1c1ddaa77bf82cb91fc4d055e2a98de42841a9"
+      },
+      "apps/dav/lib/SystemTag/SystemTagsObjectTypeCollection.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/SystemTag/SystemTagsObjectTypeCollection.php",
+        "sha256": "2759f5543dcdb23fdb189add8b0a559885d16f8116083ba880f92f86236753e9"
+      },
+      "apps/dav/lib/SystemTag/SystemTagsObjectMappingCollection.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/SystemTag/SystemTagsObjectMappingCollection.php",
+        "sha256": "9b7c9dbc1d4215512f09d68ae50db7918f3f2d89f79edbf582b6c4b819aae430"
+      },
+      "apps/dav/lib/SystemTag/SystemTagNode.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/SystemTag/SystemTagNode.php",
+        "sha256": "2c6ed28e717d16eb51033f085ecc32b65495baebf74ae06b032eed8052e6d8df"
+      },
+      "apps/dav/lib/SystemTag/SystemTagMappingNode.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/SystemTag/SystemTagMappingNode.php",
+        "sha256": "b9fe79f4bd9d5c45bdc6c6a269a7d20fae30ad6ff3e457c6dbe36107abbd830a"
+      },
+      "apps/comments/lib/Listener/CommentsEntityEventListener.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/comments/lib/Listener/CommentsEntityEventListener.php",
+        "sha256": "c665b97b2d437d1333f3b3663924b85436a13d2b0ad09fd9e2bbd76a677e412c"
+      },
+      "lib/public/Comments/ICommentsManager.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/lib/public/Comments/ICommentsManager.php",
+        "sha256": "e0ecaf762abb107beae9766ca9e2d1dec279978d114400ff5fda99a80c9756cd"
+      }
+    }
+  }
+}

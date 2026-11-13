@@ -11,6 +11,7 @@ use Closure;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Platform\Dav\CapturingSapi;
 use OCA\Mcp\Platform\Dav\DavResult;
+use OCA\Mcp\Platform\Dav\PinnedDispatch;
 use OCA\Mcp\Platform\Dav\Session;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Platform\Logging\ExceptionDetails;
@@ -18,17 +19,15 @@ use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\IAppConfig;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
-use Sabre\DAV\Auth\Plugin as AuthPlugin;
 use Sabre\DAV\Exception as DavException;
 use Sabre\DAV\Server;
 use Sabre\HTTP\Request;
-use Sabre\HTTP\Response;
 use Throwable;
 
 /** Native CardDAV request dispatch, with fresh plugin state and the acting session pinned. */
 class EmbeddedCardDavDispatcher implements ContactDav {
-	/** Principal prefix shared by the authenticated user and native DAV ACL. */
-	private const PRINCIPAL_PREFIX = 'principals/users/';
+	/** Pins the session's own principal and runs the native request. */
+	private PinnedDispatch $pinned;
 
 	/**
 	 * Receives a fresh-server factory, authenticated session, size policy and DAV logger.
@@ -44,7 +43,9 @@ class EmbeddedCardDavDispatcher implements ContactDav {
 		private Session $session,
 		private IAppConfig $config,
 		private LoggerInterface $logger,
-	) {}
+	) {
+		$this->pinned = new PinnedDispatch($session);
+	}
 
 	/**
 	 * Creates a contact through native CardDAV without overwriting an existing object.
@@ -126,17 +127,7 @@ class EmbeddedCardDavDispatcher implements ContactDav {
 		if ($body !== null && strlen($body) > $this->config->getValueInt('dav', 'card_size_limit', 5242880)) {
 			throw new ToolFailure(Translator::t('The contact exceeds the server vCard size limit.'));
 		}
-		CapturingSapi::reset();
 		$server = ($this->serverFactory)();
-		$auth = $server->getPlugin('auth');
-		if (!$auth instanceof AuthPlugin || !method_exists($auth, 'setCurrentPrincipal')) {
-			throw new RuntimeException('CardDAV principal cannot be pinned');
-		}
-		$principal = self::PRINCIPAL_PREFIX . $userId;
-		$auth->setCurrentPrincipal($principal);
-		if ($auth->getCurrentPrincipal() !== $principal) {
-			throw new RuntimeException('CardDAV principal mismatch');
-		}
 		$base = $server->getBaseUri();
 		$path = 'addressbooks/users/' . rawurlencode($userId) . '/' . rawurlencode($bookUri) . '/' . rawurlencode($uri);
 		if ($body !== null) {
@@ -147,12 +138,8 @@ class EmbeddedCardDavDispatcher implements ContactDav {
 		}
 		$request = new Request($method, $base . $path, $headers, $body);
 		$request->setBaseUrl($base);
-		$response = new Response();
-		$server->httpRequest = $request;
-		$server->httpResponse = $response;
-		$server->sapi = new CapturingSapi();
 		try {
-			$server->invokeMethod($request, $response, false);
+			$response = $this->pinned->send($server, $userId, $request);
 		} catch (DavException $error) {
 			$this->logger->error(
 				'MCP CardDAV write refused: {exception_class} (code {exception_code}, HTTP {http_code})',

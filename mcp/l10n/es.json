@@ -2224,7 +2224,7 @@
     "Add the tag %s to %s." : "Añadir la etiqueta %s a %s.",
     "Remove the tag %s from %s." : "Quitar la etiqueta %s de %s.",
     "Everyone who can see this item and this tag sees the change." : "Todas las personas que ven este elemento y esta etiqueta ven el cambio.",
-    "Rules that react to tags, such as automated tagging, retention or access control, may act on it." : "Las reglas que reaccionan a etiquetas, como el etiquetado automático, la retención o el control de acceso, pueden actuar sobre él.",
+    "Rules that react to tags, such as automated tagging, access control or rules that remove files after a set time, may act on it." : "Las reglas que reaccionan a etiquetas, como el etiquetado automático, el control de acceso o las reglas que eliminan archivos tras un plazo fijado, pueden actuar sobre él.",
     "Its content does not change and nothing is deleted." : "Su contenido no cambia y no se elimina nada.",
     "Nothing was created. Show this plan to the user; with confirm: true the three steps run once, in this order." : "No se creó nada. Muestre este plan al usuario; con confirm: true los tres pasos se ejecutan una vez, en este orden.",
     "The link of the new room becomes the location of the event once the room exists." : "El enlace de la nueva sala será la ubicación del evento en cuanto la sala exista.",

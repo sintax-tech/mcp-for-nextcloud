@@ -35,7 +35,7 @@ final class TaggingPlanText {
 			$assign ? Translator::t('Add the tag %s to %s.', [$tag, $what]) : Translator::t('Remove the tag %s from %s.', [$tag, $what]),
 			'',
 			'- ' . Translator::t('Everyone who can see this item and this tag sees the change.'),
-			'- ' . Translator::t('Rules that react to tags, such as automated tagging, retention or access control, may act on it.'),
+			'- ' . Translator::t('Rules that react to tags, such as automated tagging, access control or rules that remove files after a set time, may act on it.'),
 			'- ' . Translator::t('Its content does not change and nothing is deleted.'),
 			...PlanConsequences::sharing($plan),
 		];

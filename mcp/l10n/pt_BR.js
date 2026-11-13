@@ -2225,7 +2225,7 @@ OC.L10N.register(
     "Add the tag %s to %s." : "Adicionar a etiqueta %s a %s.",
     "Remove the tag %s from %s." : "Remover a etiqueta %s de %s.",
     "Everyone who can see this item and this tag sees the change." : "Todos que veem este item e esta etiqueta veem a mudança.",
-    "Rules that react to tags, such as automated tagging, retention or access control, may act on it." : "Regras que reagem a etiquetas, como etiquetagem automática, retenção ou controle de acesso, podem agir sobre ele.",
+    "Rules that react to tags, such as automated tagging, access control or rules that remove files after a set time, may act on it." : "Regras que reagem a etiquetas, como etiquetagem automática, controle de acesso ou regras que removem arquivos após um prazo definido, podem agir sobre ele.",
     "Its content does not change and nothing is deleted." : "O conteúdo não muda e nada é apagado.",
     "Nothing was created. Show this plan to the user; with confirm: true the three steps run once, in this order." : "Nada foi criado. Mostre este plano ao usuário; com confirm: true as três etapas rodam uma vez, nesta ordem.",
     "The link of the new room becomes the location of the event once the room exists." : "O link da nova sala vira o local do evento assim que a sala existir.",

@@ -2225,7 +2225,7 @@ OC.L10N.register(
     "Add the tag %s to %s." : "Das Schlagwort %s zu %s hinzufügen.",
     "Remove the tag %s from %s." : "Das Schlagwort %s von %s entfernen.",
     "Everyone who can see this item and this tag sees the change." : "Alle, die dieses Element und dieses Schlagwort sehen, sehen die Änderung.",
-    "Rules that react to tags, such as automated tagging, retention or access control, may act on it." : "Regeln, die auf Schlagwörter reagieren, etwa automatisches Verschlagworten, Aufbewahrung oder Zugriffskontrolle, können darauf wirken.",
+    "Rules that react to tags, such as automated tagging, access control or rules that remove files after a set time, may act on it." : "Regeln, die auf Schlagwörter reagieren, etwa automatisches Verschlagworten, Zugriffskontrolle oder Regeln, die Dateien nach einer festgelegten Zeit entfernen, können darauf wirken.",
     "Its content does not change and nothing is deleted." : "Der Inhalt ändert sich nicht und nichts wird gelöscht.",
     "Nothing was created. Show this plan to the user; with confirm: true the three steps run once, in this order." : "Es wurde nichts erstellt. Zeigen Sie diesen Plan dem Benutzer; mit confirm: true laufen die drei Schritte einmal in dieser Reihenfolge.",
     "The link of the new room becomes the location of the event once the room exists." : "Der Link des neuen Raums wird zum Ort des Termins, sobald der Raum existiert.",

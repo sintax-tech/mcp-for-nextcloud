@@ -60,6 +60,11 @@ final class MailCardMessages {
 		return Translator::t('The folder or the board can be reached by other people: confirm_shared: true is needed.');
 	}
 
+	/** @return string why the card did not start: the board changed while the file was saved */
+	public static function boardChanged(): string {
+		return Translator::t('Who can read the board, or the board itself, changed after the plan, so the card was not created; the saved file stays. Show the user who can read the board now; if they agree, plan the card with deck_create_card.');
+	}
+
 	/** @return string the notice of a plan the confirmed call found changed */
 	public static function planChanged(): string {
 		return Translator::t('Something changed since the plan; nothing was saved or created. This is the new plan.');

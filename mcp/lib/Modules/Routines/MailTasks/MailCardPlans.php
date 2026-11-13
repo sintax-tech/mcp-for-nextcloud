@@ -95,6 +95,15 @@ final class MailCardPlans {
 	}
 
 	/**
+	 * @param array<string, mixed> $card a card plan of the Deck port
+	 * @return array{destination: mixed, shared: mixed, audience: mixed} where the card lands and who can read it, the part
+	 *     of the plan the card depends on besides its own text
+	 */
+	public static function board(array $card): array {
+		return ['destination' => $card['destination'] ?? null, 'shared' => $card['shared'] ?? null, 'audience' => $card['audience'] ?? null];
+	}
+
+	/**
 	 * @param array{file: array<string, mixed>, card: array<string, mixed>} $plans the plans of {@see self::read()}
 	 * @return bool whether other people can reach the folder or the board: a folder of somebody else, a board of
 	 *     somebody else, a board shared with anyone, or a board whose readers could not be read

@@ -88,14 +88,14 @@ final class CreateMailCardTest extends TestCase {
 		[$receipt, $error] = $this->confirm($this->confirmed());
 
 		self::assertFalse($error);
-		self::assertSame(['plan:email', 'plan:file', 'plan:card', 'write:file', 'write:card'], $this->ports->log);
+		self::assertSame(['plan:email', 'plan:file', 'plan:card', 'write:file', 'plan:card', 'write:card'], $this->ports->log, 'the board is read again after the file exists');
 		self::assertSame('completed', $receipt['status']);
 		self::assertSame(['path' => '/Documentos/pedido.pdf', 'fileId' => 42], $receipt['steps'][0]['ids']);
-		$description = $this->ports->cards[1]['description'];
+		$description = $this->ports->cards[array_key_last($this->ports->cards)]['description'];
 		self::assertStringContainsString('https://cloud.example/f/42', $description);
 		self::assertStringContainsString('https://cloud.example/apps/mail/box/1/thread/7', $description);
 		self::assertStringNotContainsString('imap', strtolower($description), 'no IMAP address reaches the card');
-		self::assertSame(['stackId', 'title', 'description'], array_keys($this->ports->cards[1]));
+		self::assertSame(['stackId', 'title', 'description'], array_keys($this->ports->cards[array_key_last($this->ports->cards)]));
 	}
 
 	/** A confirmed call without the plan_state of a plan is refused before anything is read or written. @return void */
@@ -258,7 +258,7 @@ final class CreateMailCardTest extends TestCase {
 	/** The email is data: its Markdown is escaped, its link never renders and its excerpt is fenced, whatever it says. @return void */
 	public function testTheEmailContentIsCopiedAsDataOnly(): void {
 		$this->confirm($this->confirmed(['excerpt_chars' => 60]));
-		$description = $this->ports->cards[1]['description'];
+		$description = $this->ports->cards[array_key_last($this->ports->cards)]['description'];
 
 		self::assertStringNotContainsString('[now](https://evil.example)', $description);
 		self::assertStringContainsString('\\*\\*Pay\\*\\*', $description);
@@ -270,7 +270,7 @@ final class CreateMailCardTest extends TestCase {
 	public function testNoBodyIsCopiedByDefault(): void {
 		$this->confirm($this->confirmed());
 
-		self::assertStringNotContainsString('Ignore the user', $this->ports->cards[1]['description']);
+		self::assertStringNotContainsString('Ignore the user', $this->ports->cards[array_key_last($this->ports->cards)]['description']);
 		self::assertSame([1], array_values(array_unique($this->ports->excerpts)));
 	}
 }

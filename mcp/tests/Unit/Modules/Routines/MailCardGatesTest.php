@@ -11,6 +11,7 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Routines\Presentation\MailCardMessages;
 use OCA\Mcp\Modules\Routines\Presentation\MailCardSchema;
+use OCA\Mcp\Platform\Workflows\WorkflowStep;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
@@ -156,5 +157,66 @@ final class MailCardGatesTest extends MailCardWorld {
 
 		[$receipt] = $this->planAndConfirm(['confirm_shared' => true]);
 		self::assertSame('completed', $receipt['status']);
+	}
+
+	/**
+	 * Readers added to the board while the file is saved stop the card: the file stays, named, and the board is read
+	 * again after the save, so a plan of a private board never publishes the email to a shared one.
+	 *
+	 * @return void
+	 */
+	public function testABoardSharedDuringTheSaveStopsTheCardAndKeepsTheFile(): void {
+		$this->tree->afterWrite = function (): void {
+			$this->readers->acls = [new \OCA\Deck\Db\Acl(['type' => \OCA\Deck\Db\Acl::PERMISSION_TYPE_GROUP, 'participant' => 'vendas'])];
+		};
+
+		[$receipt, $error] = $this->planAndConfirm();
+
+		self::assertFalse($error, 'a receipt after a write is never an error that invites a retry');
+		self::assertSame(['stopped', 'card'], [$receipt['status'], $receipt['stopped_at']]);
+		self::assertSame([WorkflowStep::APPLIED, WorkflowStep::FAILED], array_column($receipt['steps'], 'status'));
+		self::assertSame(MailCardMessages::boardChanged(), $receipt['steps'][1]['message']);
+		self::assertSame(['path' => '/Documentos/pedido.pdf', 'fileId' => $this->tree->nodes[self::TARGET]['id']], $receipt['steps'][0]['ids']);
+		self::assertSame(self::BYTES, $this->tree->nodes[self::TARGET]['content']);
+		self::assertSame([], $this->created);
+		self::assertSame([10, 10, 10], $this->readers->checked, 'plan, preflight and again after the save');
+	}
+
+	/**
+	 * A policy the read-back of the saved file cannot read leaves the file uncertain with its path and starts no card:
+	 * the receipt reaches the user instead of a 503, and nothing is deleted.
+	 *
+	 * @return void
+	 */
+	public function testAnUncertainPolicyAfterTheSinkAnswersAReceiptWithoutACard(): void {
+		$this->tree->afterWrite = function (): void {
+			$this->tree->beforeGet = function (): void {
+				$this->tree->beforeGet = null;
+				throw new \OCA\Mcp\Access\Policy\PolicyUnavailable('policy', true);
+			};
+		};
+
+		[$receipt, $error] = $this->planAndConfirm();
+
+		self::assertFalse($error);
+		self::assertSame(['stopped', 'file'], [$receipt['status'], $receipt['stopped_at']]);
+		self::assertSame([WorkflowStep::UNCERTAIN, 'not_started'], array_column($receipt['steps'], 'status'));
+		self::assertSame(['path' => '/Documentos/pedido.pdf'], $receipt['steps'][0]['ids']);
+		self::assertSame(self::BYTES, $this->tree->nodes[self::TARGET]['content']);
+		self::assertSame([], $this->created);
+		self::assertStringNotContainsString('delete', implode(' ', $this->tree->ops));
+	}
+
+	/** A policy unreadable before any write still answers 503, as everywhere else, with nothing written. @return void */
+	public function testAPolicyUnreadableBeforeTheWriteStaysA503(): void {
+		$this->tree->beforeCreate = static fn () => throw new \OCA\Mcp\Access\Policy\PolicyUnavailable('policy');
+
+		$this->expectException(\OCA\Mcp\Access\Policy\PolicyUnavailable::class);
+		try {
+			$this->planAndConfirm();
+		} finally {
+			self::assertSame([], $this->created);
+			self::assertArrayNotHasKey(self::TARGET, $this->tree->nodes);
+		}
 	}
 }

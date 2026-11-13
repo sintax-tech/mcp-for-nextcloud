@@ -34,7 +34,7 @@ final class MailTestModule {
 		$stub = \Closure::bind(static fn (string $type): object => \PHPUnit\Framework\TestCase::createStub($type), null, \PHPUnit\Framework\TestCase::class);
 		$save = new \OCA\Mcp\Modules\Mail\Writing\MailSaveContext($grants, $services, $apps, $locator,
 			new Integration\MailSaveReader($services, new \OCA\Mcp\Modules\Mail\Writing\MailSavePreflight()),
-			new \OCA\Mcp\Modules\Mail\Writing\MailSaveBudget($stub(\OCP\IConfig::class)), new MailSaveDestinationFixture());
+			new \OCA\Mcp\Modules\Mail\Writing\MailSaveBudget($stub(\OCP\IConfig::class)), new MailSaveDestinationFixture(), new MailReplacementFixture());
 		$tools = [
 			Tools\SaveAttachment::class => new Tools\SaveAttachment(new \OCA\Mcp\Modules\Mail\Writing\SaveAttachmentHandler($save), new \OCA\Mcp\Modules\Mail\Writing\SaveAttachmentPreview($save)),
 			Tools\ListAccounts::class => new Tools\ListAccounts(new Reading\ListAccountsHandler($accounts)),

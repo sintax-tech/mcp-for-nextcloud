@@ -61,7 +61,8 @@ final class MailSaveAttachmentTest extends FilesToolsTestCase {
 		$apps = $this->createMock(\OCP\App\IAppManager::class); $apps->method('getAppVersion')->willReturn('5.10.11');
 		$this->save = new MailSaveContext($this->sharePolicy, $this->mail, $apps,
 			new MailMessageLocator(new MailGateway($this->mail), new MailMessageGateway($this->mail)),
-			new MailSaveReader($this->mail, new MailSavePreflight()), new MailSaveBudget($this->config->mock($this)), $files);
+			new MailSaveReader($this->mail, new MailSavePreflight()), new MailSaveBudget($this->config->mock($this)), $files,
+			new \OCA\Mcp\Tests\Unit\Tools\Mail\MailReplacementFixture());
 	}
 	/** @param string $bytes Decoded source bytes. @param int $size Declared whole-message size. */
 	private function source(string $bytes, int $size = 2000): void {
@@ -187,7 +188,7 @@ final class MailSaveAttachmentTest extends FilesToolsTestCase {
 		try { $this->saveFile(); self::fail(); } catch (ToolFailure) {}
 		self::assertSame([], $this->tree->ops);
 	}
-	/** A clean race refuses with FileExists and preserves the other creator's bytes. */
+	/** A clean race refuses with the replace explanation and preserves the other creator's bytes. */
 	public function testNameTakenDuringCreationKeepsItsActionableRefusal(): void {
 		$this->tree->beforeCreate = function (string $path): void {
 			$this->tree->addFile($path, 'someone else');
@@ -195,8 +196,8 @@ final class MailSaveAttachmentTest extends FilesToolsTestCase {
 		try {
 			$this->saveFile();
 			self::fail('The collision must refuse');
-		} catch (\OCA\Mcp\Modules\Files\Creation\FileExists $e) {
-			self::assertSame(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::fileExists(), $e->getMessage());
+		} catch (ToolFailure $e) {
+			self::assertSame(\OCA\Mcp\Modules\Mail\Presentation\MailSaveMessages::occupied(), $e->getMessage());
 		}
 		self::assertSame('someone else', $this->tree->nodes['/alice/files/Documentos/saved.pdf']['content']);
 		self::assertNotContains('write /alice/files/Documentos/saved.pdf', $this->tree->ops);

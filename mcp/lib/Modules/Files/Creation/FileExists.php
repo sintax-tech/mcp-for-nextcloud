@@ -7,13 +7,14 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Creation;
 
-use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Platform\FileAccess\FileNameTaken;
 
 /**
  * A new file whose name is already taken, found before the write or by the write itself when another client created
  * the same name in between.
  *
  * A ToolFailure so a tool answers with its message as with any other refusal, and a subclass so the upload route can
- * answer 409 instead of the status of a denied or missing folder.
+ * answer 409 instead of the status of a denied or missing folder. The Platform parent lets other modules recognize
+ * the taken name through {@see \OCA\Mcp\Platform\FileAccess\NewFileDestination} without importing Files.
  */
-final class FileExists extends ToolFailure {}
+final class FileExists extends FileNameTaken {}

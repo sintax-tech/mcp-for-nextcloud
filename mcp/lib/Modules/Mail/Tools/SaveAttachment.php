@@ -30,6 +30,8 @@ final class SaveAttachment implements WriteTool {
 				'attachment_id' => MailSchema::attachmentId(),
 				'path' => MailSchema::newFilePath(),
 				'confirm_shared' => MailSchema::boolean('Confirm saving into a folder owned by someone else.'),
+				'replace' => MailSchema::replace(),
+				'etag' => MailSchema::replaceEtag(),
 			],
 			['message_id', 'attachment_id', 'path'],
 			null,

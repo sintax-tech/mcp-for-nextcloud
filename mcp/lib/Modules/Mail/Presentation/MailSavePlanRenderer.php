@@ -9,7 +9,7 @@ namespace OCA\Mcp\Modules\Mail\Presentation;
 use OCA\Mcp\Mcp\Confirmation\PlanText;
 use OCA\Mcp\L10n\Translator;
 
-/** Makes sender-controlled metadata inert in the conversational plan. */
+/** Makes sender-controlled metadata inert in the conversational plan, including the file a replacement changes. */
 final class MailSavePlanRenderer {
 	/**
 	 * @param array<string,mixed> $plan Fresh metadata-only plan.
@@ -34,9 +34,31 @@ final class MailSavePlanRenderer {
 			. PlanText::inline((string)($plan['access']['ownerDisplayName'] ?? $plan['access']['owner'] ?? ''), 255)
 			. "\n\n"
 			. PlanText::inline((string)($plan['shared'][0]['message'] ?? ''), 800)
+			. $this->replacement($plan)
 			. "\n\n"
 			. PlanText::strong((string)$plan['budget'], 300)
 			. "\n\n"
 			. PlanText::inline((string)$plan['consequence'], 800);
+	}
+
+	/**
+	 * The file a replacement changes and the copy taken first, or the administrator suspension that skips it.
+	 *
+	 * @param array<string,mixed> $plan Fresh metadata-only plan.
+	 * @return string Plan lines, empty for a new file.
+	 */
+	private function replacement(array $plan): string {
+		if (!isset($plan['replaces'], $plan['backupNote'])) {
+			return '';
+		}
+		$backup = (string)($plan['backup'] ?? '');
+		return "\n\n"
+			. PlanText::strong(MailSaveMessages::replaces(
+				PlanText::flat((string)($plan['replaces']['size'] ?? ''), 30),
+				PlanText::flat((string)($plan['replaces']['etag'] ?? ''), 200),
+			), 400)
+			. "\n\n"
+			. ($backup === '' ? '' : PlanText::inline(MailSaveMessages::copyFolder(PlanText::flat($backup, 4000)), 4200) . ' ')
+			. PlanText::inline((string)$plan['backupNote'], 800);
 	}
 }

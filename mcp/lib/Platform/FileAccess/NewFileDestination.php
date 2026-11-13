@@ -12,6 +12,7 @@ interface NewFileDestination {
 	 * @param string $userId Actor UID.
 	 * @param string $path Final path.
 	 * @return array<string,mixed> Guarded destination metadata, without creating a node.
+	 * @throws FileNameTaken When the name is already taken; {@see FileReplacement} is the explicit alternative.
 	 */
 	public function inspect(string $userId, string $path): array;
 	/**
@@ -21,6 +22,7 @@ interface NewFileDestination {
 	 * @param bool $shared Shared-write confirmation.
 	 * @param int $folderId Previously resolved folder.
 	 * @return array<string,mixed> Read-back receipt or shared confirmation.
+	 * @throws FileNameTaken When the name was taken since the inspection; nothing is overwritten.
 	 */
 	public function create(string $userId, string $path, string $content, bool $shared, int $folderId): array;
 }

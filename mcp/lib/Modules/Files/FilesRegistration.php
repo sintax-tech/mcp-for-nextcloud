@@ -12,11 +12,12 @@ use OCA\Mcp\Platform\Dav\MetadataServer;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use Psr\Container\ContainerInterface;
 
-/** Registers the lazy Files resource text port and the embedded DAV server for comments and system tags. */
+/** Registers the protected file creation and replacement ports, the lazy Files resource text port and the embedded DAV server for comments and system tags. */
 final class FilesRegistration implements ModuleRegistration {
 	/** @param IRegistrationContext $context app registration context @return void */
 	public function register(IRegistrationContext $context): void {
 		$context->registerService(\OCA\Mcp\Platform\FileAccess\NewFileDestination::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\FileAccess\NewFileDestination => $c->get(Creation\ProtectedFileDestination::class));
+		$context->registerService(\OCA\Mcp\Platform\FileAccess\FileReplacement::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\FileAccess\FileReplacement => $c->get(Editing\ProtectedFileReplacement::class));
 		$context->registerService(FileTextResource::class, static fn (ContainerInterface $c): FileTextResource => $c->get(Extraction\ExtractedFileText::class));
 		$context->registerService(MetadataServer::class, static fn (): MetadataServer => new Integration\EmbeddedMetadataDavServer());
 	}

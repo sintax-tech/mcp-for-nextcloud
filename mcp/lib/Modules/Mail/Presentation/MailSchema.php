@@ -16,7 +16,11 @@ final class MailSchema {
 	/** @return array<string,mixed> One MIME part ID; zero (all attachments) is never accepted. */
 	public static function attachmentId(): array { return ['type' => 'string', 'minLength' => 1, 'maxLength' => 64, 'description' => 'One attachment MIME part number, such as 2 or 2.1; never 0.']; }
 	/** @return array<string,mixed> Final actor-relative file path. */
-	public static function newFilePath(): array { return ['type' => 'string', 'minLength' => 1, 'maxLength' => 4000, 'description' => 'Full destination path in Files, including the final file name. The folder must exist and the name must be free.']; }
+	public static function newFilePath(): array { return ['type' => 'string', 'minLength' => 1, 'maxLength' => 4000, 'description' => 'Full destination path in Files, including the final file name. The folder must exist and the name must be free, unless replace is true.']; }
+	/** @return array<string,mixed> Explicit replacement of an existing file. */
+	public static function replace(): array { return ['type' => 'boolean', 'description' => 'Replace the existing file at path. Only after the user reviewed the plan: a verified copy of the current file is kept unless the administrator suspended copies while native versioning is active. Default false: an occupied name is refused.']; }
+	/** @return array<string,mixed> ETag of the file to replace. */
+	public static function replaceEtag(): array { return ['type' => 'string', 'minLength' => 1, 'maxLength' => 200, 'description' => 'With replace: the ETag of the file from the plan. If the file changed since, nothing is written.']; }
 	/** Static schema construction only. */
 	private function __construct() {}
 

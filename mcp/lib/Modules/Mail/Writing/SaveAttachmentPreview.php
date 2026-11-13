@@ -8,7 +8,7 @@ namespace OCA\Mcp\Modules\Mail\Writing;
 
 use OCA\Mcp\Modules\Mail\Presentation\{MailSaveMessages, MailRows, MailMessages};
 
-/** Metadata-only plan; never downloads the attachment or creates a node. */
+/** Metadata-only plan; never downloads the attachment, creates a node or copies the file a replacement would change. */
 final class SaveAttachmentPreview {
 	/** @param MailSaveContext $context Fresh source/destination authorization. */
 	public function __construct(private MailSaveContext $context) {
@@ -22,8 +22,10 @@ final class SaveAttachmentPreview {
 	public function plan(array $arguments, string $userId): array {
 		$prepared = $this->context->prepare($arguments, $userId, false);
 		$part = $prepared['read']['part'];
+		$replace = MailSaveContext::replacing($arguments);
 		return [
 			'action' => 'mail_save_attachment',
+			'replace' => $replace,
 			'messageId' => (int)$arguments['message_id'],
 			'attachmentId' => $part->id,
 			'name' => $part->name === null ? null : MailRows::text($part->name),
@@ -31,7 +33,7 @@ final class SaveAttachmentPreview {
 			'declaredUpperBytes' => $prepared['read']['declaredUpperBytes'],
 			'effectiveMaxBytes' => $prepared['limit'],
 			'budget' => MailSaveMessages::budget($prepared['limit']),
-			'consequence' => MailSaveMessages::consequence(),
+			'consequence' => $replace ? MailSaveMessages::replaceConsequence() : MailSaveMessages::consequence(),
 			'untrustedMailData' => true,
 			'notice' => MailMessages::UNTRUSTED_NOTICE,
 		] + $prepared['destination'];

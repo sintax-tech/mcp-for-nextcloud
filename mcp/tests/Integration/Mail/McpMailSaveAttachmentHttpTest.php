@@ -12,7 +12,7 @@ use OCP\Server;
 use OCP\Files\IRootFolder;
 use PHPUnit\Framework\Attributes\Group;
 
-/** The existing Mail cells exercise Basic/Bearer plans and binary creation without changing Mail state. */
+/** The existing Mail cells exercise Basic/Bearer plans, binary creation and replacement without changing Mail state. */
 #[Group('mail')]
 final class McpMailSaveAttachmentHttpTest extends ExclusionTestCase {
 	use MailCellRows;
@@ -58,5 +58,37 @@ final class McpMailSaveAttachmentHttpTest extends ExclusionTestCase {
 			}
 			self::assertSame($imapBefore, $probe->state()); self::assertSame($before, $this->cacheHash($account));
 		} finally { $probe->close(); }
+	}
+
+	/** replace keeps a verified pre-write copy of the existing file, keeps its id and reads both back. */
+	public function testReplaceThroughBothEndpointCredentialsKeepsAVerifiedCopy(): void {
+		if (getenv('MCP_IT_WITH_MAIL') !== '1') { self::markTestSkipped('Existing disposable Mail cells only'); }
+		Server::get(GrantPolicy::class)->setGrant(self::ALICE, 'mail', 'save', true);
+		$account = $this->account(self::ALICE);
+		$message = $this->subjects($this->mailbox($account, 'Attachments'))['Attachment csv'];
+		$root = Server::get(IRootFolder::class)->getUserFolder(self::ALICE);
+		$expected = base64_decode('bm9tZTtjaWRhZGUNCkpv4287U+NvIFBhdWxvDQo=', true);
+		foreach (['basic', 'bearer'] as $kind) {
+			$path = '/mail-replace-' . $kind . '-' . bin2hex(random_bytes(6)) . '.csv';
+			$file = $root->newFile(ltrim($path, '/'), "old;bytes\r\n");
+			$etag = (string)$file->getEtag();
+			$args = ['message_id' => $message, 'attachment_id' => '2', 'path' => $path];
+			$client = $this->mcp(self::ALICE, $kind);
+			$refused = $client->tool('mail_save_attachment', $args + ['confirm' => true]);
+			self::assertTrue($refused->isError()); self::assertSame("old;bytes\r\n", $file->getContent());
+			$plan = $client->tool('mail_save_attachment', $args + ['replace' => true]);
+			self::assertTrue($plan->ok(), $plan->describe()); self::assertSame("old;bytes\r\n", $file->getContent());
+			$stale = $client->tool('mail_save_attachment', $args + ['replace' => true, 'etag' => 'stale', 'confirm' => true]);
+			self::assertTrue($stale->isError()); self::assertSame($etag, (string)$root->get(ltrim($path, '/'))->getEtag());
+			$saved = $client->tool('mail_save_attachment', $args + ['replace' => true, 'etag' => $etag, 'confirm' => true]);
+			self::assertTrue($saved->ok(), $saved->describe());
+			$receipt = $saved->json();
+			self::assertTrue($receipt['verified']); self::assertSame('replaced', $receipt['outcome']);
+			$current = $root->get(ltrim($path, '/'));
+			self::assertSame($expected, $current->getContent()); self::assertSame((int)$file->getId(), (int)$current->getId());
+			self::assertSame($receipt['sha256'], hash('sha256', $expected)); self::assertSame($receipt['fileId'], (int)$current->getId());
+			self::assertNotSame('', $receipt['backup']); self::assertTrue($receipt['backupVerified']);
+			self::assertSame("old;bytes\r\n", $root->get(ltrim($receipt['backup'], '/'))->getContent());
+		}
 	}
 }

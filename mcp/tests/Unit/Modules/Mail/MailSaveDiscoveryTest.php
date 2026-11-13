@@ -34,7 +34,8 @@ final class MailSaveDiscoveryTest extends TestCase {
 		$save = array_values(array_filter($listed, static fn ($t) => $t['name'] === 'mail_save_attachment'));
 		self::assertCount(1, $save); self::assertFalse($save[0]['annotations']['readOnlyHint']);
 		self::assertArrayHasKey('confirm', $save[0]['inputSchema']['properties']);
-		self::assertArrayNotHasKey('replace', $save[0]['inputSchema']['properties']);
+		self::assertSame('boolean', $save[0]['inputSchema']['properties']['replace']['type']);
+		self::assertNotContains('replace', $save[0]['inputSchema']['required']);
 		self::assertNotContains('mail_read_message', array_column($listed, 'name'));
 	}
 	public function testUnsupportedInstallationsHideAndRefuseDirectCalls(): void {

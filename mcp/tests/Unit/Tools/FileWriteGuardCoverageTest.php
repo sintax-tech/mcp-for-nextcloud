@@ -58,6 +58,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Controller/CheckoutController.php#inputStream:fopen:1' => 'read: php input stream',
 			'Modules/Files/Presentation/FilesPlanRenderer.php#render:copy:1' => 'render: static plan text, no Files mutation',
 			'Modules/Files/Presentation/FilesPlanRenderer.php#render:move:1' => 'render: static plan text, no Files mutation',
+			'Modules/Files/Creation/ProtectedFileDestination.php#create:fopen:1' => 'read: read-back of the just-created file for the SHA-256 check, read-only mode; the write itself is FileCreationWriter, classified above',
 			'Modules/Files/Images/ImageMetadata.php#originalDimensions:fopen:1' => 'read: original image bytes',
 			'Modules/Files/Backups/FileBackupCopy.php#copy:fopen:1' => 'read: original bytes for internal recovery',
 			'Modules/Files/Integration/VersionRestore.php#writeVersion:fopen:1' => 'temporary: php temp stream buffer, not a Files node',
@@ -122,7 +123,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 		$calls = FileWriteSinkInventory::calls(FileWriteSinkInventory::sources(__DIR__ . '/../../../lib'));
 		$literals = array_values(array_filter($calls, static fn (string $call): bool => str_contains($call, ':literal-')));
 		self::assertCount(29, $literals);
-		self::assertCount(52, array_diff($calls, $literals));
+		self::assertCount(53, array_diff($calls, $literals));
 		foreach ($calls as $call) {
 			self::assertDoesNotMatchRegularExpression('/:(?:literal-)?(?:writestream|fputs):/', $call);
 		}

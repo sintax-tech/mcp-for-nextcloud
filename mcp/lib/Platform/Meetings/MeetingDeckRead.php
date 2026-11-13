@@ -39,4 +39,14 @@ interface MeetingDeckRead {
 	 * @throws \InvalidArgumentException on arguments deck_list_card_files refuses
 	 */
 	public function links(string $userId, array $arguments): array;
+
+	/**
+	 * Card ids assigned to this local account. The board ACL is applied when each card is read, not here.
+	 *
+	 * @param string $userId the actor
+	 * @param string $participantUid the local account
+	 * @return list<int> card ids, once each
+	 * @throws ToolFailure when the actor may not read a Deck card
+	 */
+	public function assigned(string $userId, string $participantUid): array;
 }

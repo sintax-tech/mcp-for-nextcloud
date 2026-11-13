@@ -11,6 +11,7 @@ use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Mcp\Tools\Discovery\ToolAccess;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
+use OCA\Mcp\Modules\Calendar\Integration\MeetingOccurrenceFacts;
 use OCA\Mcp\Modules\Calendar\Reading\CalendarEventListing;
 use OCA\Mcp\Modules\Calendar\Tools\ListEvents;
 use OCA\Mcp\Platform\Meetings\MeetingEventRead;
@@ -20,16 +21,19 @@ use OCA\Mcp\Platform\Workflows\WorkflowMessages;
  * The calendar read of a meeting dossier, through the work class of calendar_list_events.
  *
  * The registry's own check (grant, Guests and the Calendar app) runs again, then the published schema. Recurrence
- * and a private or confidential occurrence stay inside that reader. The call does not write.
+ * and a private or confidential occurrence stay inside that reader. Attendees and explicit links are copied from
+ * the same objects, and only when that reader shows the occurrence in full. The call does not write.
  */
 final class CalendarMeetingEvents implements MeetingEventRead {
 	/**
 	 * @param ToolAccess $access the registry's own decision on grant, Guests and app
 	 * @param CalendarEventListing $events the read of calendar_list_events
+	 * @param MeetingOccurrenceFacts $facts attendees and links the public tool does not return
 	 */
 	public function __construct(
 		private ToolAccess $access,
 		private CalendarEventListing $events,
+		private MeetingOccurrenceFacts $facts,
 	) {
 	}
 
@@ -38,7 +42,12 @@ final class CalendarMeetingEvents implements MeetingEventRead {
 		if (!$this->allowed($userId)) {
 			throw new ToolFailure(WorkflowMessages::notAllowed(ListEvents::definition()->name));
 		}
-		return $this->events->handle($userId, ArgumentValidator::validate(ListEvents::definition()->inputSchema, $arguments));
+		$arguments = ArgumentValidator::validate(ListEvents::definition()->inputSchema, $arguments);
+		$result = $this->events->handle($userId, $arguments);
+		if (($result['isError'] ?? false) === true) {
+			return $result;
+		}
+		return $this->facts->apply($userId, $arguments, $result);
 	}
 
 	/**

@@ -23,6 +23,7 @@ final class FilesRegistration implements ModuleRegistration {
 		$context->registerService(\OCA\Mcp\Platform\Meetings\MeetingFileRead::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\Meetings\MeetingFileRead => new Reading\FilesMeetingRead(
 			$c->get(\OCA\Mcp\Mcp\Tools\Discovery\ToolAccess::class),
 			$c->get(Reading\ReadFileHandler::class),
+			$c->get(Reading\MeetingFileLocator::class),
 		));
 	}
 	/** @return list<class-string<\OCA\Mcp\Mcp\Tools\CapabilityProbe>> no installation probes */

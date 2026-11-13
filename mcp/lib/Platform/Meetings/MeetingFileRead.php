@@ -28,4 +28,14 @@ interface MeetingFileRead {
 	 * @throws \InvalidArgumentException on arguments files_read refuses
 	 */
 	public function read(string $userId, array $arguments): array;
+
+	/**
+	 * The user-relative path of one file id or file link, or null when it is not one readable file of the actor.
+	 *
+	 * @param string $userId the actor
+	 * @param string $reference a file id, a file URL or a path already found on the event or a card
+	 * @return string|null the path files_read can open
+	 * @throws ToolFailure when the actor may not call files_read
+	 */
+	public function locate(string $userId, string $reference): ?string;
 }

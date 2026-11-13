@@ -353,6 +353,9 @@ class Assignment {
 	public function getType(): int {
 		return (int)($this->fields['type'] ?? 0);
 	}
+
+	/** A user assignment. Deck v1.17.5 stores this as 0; {@see \OCA\Mcp\Modules\Deck\Integration\CardFormatter::assignmentOf()}. */
+	public const TYPE_USER = 0;
 }
 
 /** Assignment mapper double; signatures mirror Deck `v1.17.5` `lib/Db/AssignmentMapper.php`. */
@@ -362,6 +365,17 @@ class AssignmentMapper {
 	 * @return Assignment[] Assignments of those cards.
 	 */
 	public function findIn(array $cardIds): array {
+		return [];
+	}
+
+	/**
+	 * Assignments of one participant. The real mapper does not apply the board ACL.
+	 *
+	 * @param string $participant the account id
+	 * @param int $type assignment type, {@see Assignment::TYPE_USER} by default
+	 * @return Assignment[] the rows Deck stores for that participant
+	 */
+	public function findByParticipant(string $participant, int $type = Assignment::TYPE_USER): array {
 		return [];
 	}
 }

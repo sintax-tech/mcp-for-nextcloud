@@ -24,6 +24,8 @@ final class PreparationDouble implements MeetingEventRead, MeetingMailRead, Meet
 	 * @param \Closure(string, array<string, mixed>): array<string, mixed>|null $card Deck card answer
 	 * @param \Closure(string, array<string, mixed>): array<string, mixed>|null $links Deck links answer
 	 * @param \Closure(string, array<string, mixed>): array<string, mixed>|null $read file answer
+	 * @param \Closure(string, string): list<int>|null $assigned card ids of one account
+	 * @param \Closure(string, string): string|null|null $locate path of one file reference
 	 */
 	public function __construct(
 		private array $events = ['content' => [['type' => 'text', 'text' => '[]']]],
@@ -31,6 +33,8 @@ final class PreparationDouble implements MeetingEventRead, MeetingMailRead, Meet
 		private ?\Closure $card = null,
 		private ?\Closure $links = null,
 		private ?\Closure $read = null,
+		private ?\Closure $assignedCards = null,
+		private ?\Closure $locatePath = null,
 	) {
 	}
 
@@ -66,6 +70,26 @@ final class PreparationDouble implements MeetingEventRead, MeetingMailRead, Meet
 	/** {@inheritDoc} */
 	public function read(string $userId, array $arguments): array {
 		return $this->answer('read', $this->read, $userId, $arguments);
+	}
+
+	/** {@inheritDoc} */
+	public function assigned(string $userId, string $participantUid): array {
+		$this->calls[] = ['assigned', ['participant' => $participantUid]];
+		if ($this->assignedCards === null) {
+			return [];
+		}
+		$ids = ($this->assignedCards)($userId, $participantUid);
+		return is_array($ids) ? array_values(array_filter($ids, static fn (mixed $id): bool => is_int($id))) : [];
+	}
+
+	/** {@inheritDoc} */
+	public function locate(string $userId, string $reference): ?string {
+		$this->calls[] = ['locate', ['reference' => $reference]];
+		if ($this->locatePath === null) {
+			return null;
+		}
+		$path = ($this->locatePath)($userId, $reference);
+		return is_string($path) && $path !== '' ? $path : null;
 	}
 
 	/**

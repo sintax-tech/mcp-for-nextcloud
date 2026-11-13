@@ -31,23 +31,30 @@ final class ParticipantRoster {
 	 */
 	public function fromEvent(array $event, string $userId): array {
 		$emails = [];
+		$names = [];
 		foreach ((array)($event['attendees'] ?? []) as $attendee) {
 			$email = $this->emailOf($attendee);
-			if ($email !== null && !in_array($email, $emails, true)) {
-				$emails[] = $email;
+			if ($email === null || isset($names[$email])) {
+				continue;
 			}
+			$emails[] = $email;
+			$names[$email] = $this->nameOf($attendee);
 		}
-		$truncated = count($emails) > DossierBudget::MAX_PARTICIPANTS;
+		$truncated = count($emails) > DossierBudget::MAX_PARTICIPANTS || ($event['attendeesTruncated'] ?? false) === true;
 		$kept = array_slice($emails, 0, DossierBudget::MAX_PARTICIPANTS);
 		$people = $this->grants->granted($userId, 'people', 'read');
 		$rows = [];
 		foreach ($kept as $email) {
-			$rows[] = [
+			$row = [
 				'email' => $email,
 				'uid' => $people ? $this->accounts->soleUid($email) : null,
 				'reason' => 'event_attendee',
 				'account' => $people ? 'exact_or_none' : 'not_consulted',
 			];
+			if ($names[$email] !== null) {
+				$row['name'] = $names[$email];
+			}
+			$rows[] = $row;
 		}
 		return ['participants' => $rows, 'truncated' => $truncated];
 	}
@@ -64,5 +71,17 @@ final class ParticipantRoster {
 			return ExactEmail::normalize((string)$attendee['email']);
 		}
 		return null;
+	}
+
+	/**
+	 * @param mixed $attendee one attendee value from the occurrence
+	 * @return string|null the common name, when the value carries one
+	 */
+	private function nameOf(mixed $attendee): ?string {
+		if (!is_array($attendee) || !is_string($attendee['name'] ?? null)) {
+			return null;
+		}
+		$name = trim($attendee['name']);
+		return $name === '' ? null : $name;
 	}
 }

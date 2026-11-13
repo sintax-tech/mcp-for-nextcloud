@@ -65,7 +65,7 @@ final class PrepareMeetingHandler {
 			throw new ToolFailure(isset($arguments['uid']) ? RoutinesMessages::eventNotVisible() : RoutinesMessages::noVisibleEvent());
 		}
 		$people = $this->roster->fromEvent($event, $userId);
-		$deck = $this->cards->collect($userId, $event);
+		$deck = $this->cards->collect($userId, $event, $people['participants']);
 		return ToolResult::json([
 			'untrustedDossier' => true,
 			'written' => false,
@@ -76,7 +76,7 @@ final class PrepareMeetingHandler {
 			'sources' => [
 				'mail' => $this->mail->collect($userId, $event, $people['participants']),
 				'deck' => $deck['report'],
-				'files' => $this->files->collect($userId, $event, $deck['paths']),
+				'files' => $this->files->collect($userId, $event, $deck['paths'], $deck['references']),
 			],
 		]);
 	}

@@ -16,6 +16,7 @@ use OCA\Mcp\Mcp\Tools\Discovery\ToolAccess;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Files\Reading\FilesMeetingRead;
 use OCA\Mcp\Modules\Files\Reading\FileTextListing;
+use OCA\Mcp\Modules\Files\Reading\MeetingFileLookup;
 use OCP\App\IAppManager;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -40,7 +41,7 @@ final class FilesMeetingReadTest extends TestCase {
 	public function testADeniedGrantNeverReachesTheReader(): void {
 		$this->granted = false;
 		$files = new CountingFileRead();
-		$read = new FilesMeetingRead($this->access(), $files);
+		$read = new FilesMeetingRead($this->access(), $files, new NoFileLookup());
 
 		try {
 			$read->read('alice', ['path' => '/Notes/agenda.md']);
@@ -60,7 +61,7 @@ final class FilesMeetingReadTest extends TestCase {
 	public function testAGuestTheAppForbidsNeverReachesTheReader(): void {
 		$this->guestAllowed = false;
 		$files = new CountingFileRead();
-		$read = new FilesMeetingRead($this->access(), $files);
+		$read = new FilesMeetingRead($this->access(), $files, new NoFileLookup());
 
 		try {
 			$read->read('alice', ['path' => '/Notes/agenda.md']);
@@ -78,7 +79,7 @@ final class FilesMeetingReadTest extends TestCase {
 	 */
 	public function testAnAllowedCallValidatesThenReadsThePathOnce(): void {
 		$files = new CountingFileRead();
-		$read = new FilesMeetingRead($this->access(), $files);
+		$read = new FilesMeetingRead($this->access(), $files, new NoFileLookup());
 
 		$result = $read->read('alice', ['path' => '/Notes/agenda.md']);
 
@@ -97,7 +98,7 @@ final class FilesMeetingReadTest extends TestCase {
 	 */
 	public function testAMissingPathIsRefusedBeforeTheReader(): void {
 		$files = new CountingFileRead();
-		$read = new FilesMeetingRead($this->access(), $files);
+		$read = new FilesMeetingRead($this->access(), $files, new NoFileLookup());
 
 		try {
 			$read->read('alice', []);
@@ -115,7 +116,7 @@ final class FilesMeetingReadTest extends TestCase {
 	public function testAnUnreadableGrantPropagatesAndSkipsTheReader(): void {
 		$this->unavailable = true;
 		$files = new CountingFileRead();
-		$read = new FilesMeetingRead($this->access(), $files);
+		$read = new FilesMeetingRead($this->access(), $files, new NoFileLookup());
 
 		$this->expectException(PolicyUnavailable::class);
 		try {
@@ -165,5 +166,17 @@ final class CountingFileRead implements FileTextListing {
 		$this->arguments = $arguments;
 		$this->userId = $userId;
 		return ['text' => 'agenda'];
+	}
+}
+
+/** Resolves nothing. The files_read tests do not ask for a reference. */
+final class NoFileLookup implements MeetingFileLookup {
+	/**
+	 * @param string $userId the actor
+	 * @param string $reference a file reference
+	 * @return null no path
+	 */
+	public function path(string $userId, string $reference): ?string {
+		return null;
 	}
 }

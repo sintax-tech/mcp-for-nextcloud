@@ -15,6 +15,7 @@ use OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry;
 use OCA\Mcp\Mcp\Tools\Discovery\ToolAccess;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Calendar\CalendarMeetingEvents;
+use OCA\Mcp\Modules\Calendar\Integration\MeetingOccurrenceFacts;
 use OCA\Mcp\Modules\Calendar\Reading\CalendarEventListing;
 use OCP\App\IAppManager;
 use OCP\IUser;
@@ -41,7 +42,7 @@ final class CalendarMeetingEventsTest extends TestCase {
 	public function testADeniedGrantNeverReachesTheReader(): void {
 		$this->granted = false;
 		$reader = new CountingEventListing();
-		$events = new CalendarMeetingEvents($this->access(), $reader);
+		$events = new CalendarMeetingEvents($this->access(), $reader, new UnchangedOccurrenceFacts());
 
 		try {
 			$events->events('alice', []);
@@ -61,7 +62,7 @@ final class CalendarMeetingEventsTest extends TestCase {
 	public function testADisabledAppNeverReachesTheReader(): void {
 		$this->appEnabled = false;
 		$reader = new CountingEventListing();
-		$events = new CalendarMeetingEvents($this->access(), $reader);
+		$events = new CalendarMeetingEvents($this->access(), $reader, new UnchangedOccurrenceFacts());
 
 		try {
 			$events->events('alice', []);
@@ -80,7 +81,7 @@ final class CalendarMeetingEventsTest extends TestCase {
 	public function testAGuestTheAppForbidsNeverReachesTheReader(): void {
 		$this->guestAllowed = false;
 		$reader = new CountingEventListing();
-		$events = new CalendarMeetingEvents($this->access(), $reader);
+		$events = new CalendarMeetingEvents($this->access(), $reader, new UnchangedOccurrenceFacts());
 
 		try {
 			$events->events('alice', []);
@@ -98,7 +99,7 @@ final class CalendarMeetingEventsTest extends TestCase {
 	 */
 	public function testAnAllowedCallValidatesThenAsksTheReaderOnce(): void {
 		$reader = new CountingEventListing();
-		$events = new CalendarMeetingEvents($this->access(), $reader);
+		$events = new CalendarMeetingEvents($this->access(), $reader, new UnchangedOccurrenceFacts());
 
 		$result = $events->events('alice', ['from' => '2026-11-13']);
 
@@ -117,7 +118,7 @@ final class CalendarMeetingEventsTest extends TestCase {
 	 */
 	public function testAnUnknownKeyIsRefusedBeforeTheReader(): void {
 		$reader = new CountingEventListing();
-		$events = new CalendarMeetingEvents($this->access(), $reader);
+		$events = new CalendarMeetingEvents($this->access(), $reader, new UnchangedOccurrenceFacts());
 
 		try {
 			$events->events('alice', ['uid' => 'one-event']);
@@ -135,7 +136,7 @@ final class CalendarMeetingEventsTest extends TestCase {
 	public function testAnUnreadableGrantPropagatesAndSkipsTheReader(): void {
 		$this->unavailable = true;
 		$reader = new CountingEventListing();
-		$events = new CalendarMeetingEvents($this->access(), $reader);
+		$events = new CalendarMeetingEvents($this->access(), $reader, new UnchangedOccurrenceFacts());
 
 		$this->expectException(PolicyUnavailable::class);
 		try {
@@ -185,5 +186,18 @@ final class CountingEventListing implements CalendarEventListing {
 		$this->userId = $userId;
 		$this->arguments = $arguments;
 		return ['events' => true];
+	}
+}
+
+/** Leaves the calendar_list_events answer unchanged. The grant tests never need the second walk. */
+final class UnchangedOccurrenceFacts implements MeetingOccurrenceFacts {
+	/**
+	 * @param string $userId the actor
+	 * @param array<string, mixed> $arguments the listing arguments
+	 * @param array<string, mixed> $result the listing answer
+	 * @return array<string, mixed> the same answer
+	 */
+	public function apply(string $userId, array $arguments, array $result): array {
+		return $result;
 	}
 }

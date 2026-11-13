@@ -58,6 +58,7 @@ final class CalendarRegistration implements ModuleRegistration {
 		$context->registerService(\OCA\Mcp\Platform\Meetings\MeetingEventRead::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\Meetings\MeetingEventRead => new CalendarMeetingEvents(
 			$c->get(\OCA\Mcp\Mcp\Tools\Discovery\ToolAccess::class),
 			$c->get(\OCA\Mcp\Modules\Calendar\Reading\ListEventsHandler::class),
+			$c->get(\OCA\Mcp\Modules\Calendar\Integration\MeetingEventSupplement::class),
 		));
 	}
 

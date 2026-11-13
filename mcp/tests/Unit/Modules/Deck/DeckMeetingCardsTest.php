@@ -16,6 +16,7 @@ use OCA\Mcp\Mcp\Tools\Discovery\ToolAccess;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Deck\DeckMeetingCards;
 use OCA\Mcp\Modules\Deck\DeckReadDispatch;
+use OCA\Mcp\Modules\Deck\Integration\AssignedCardLookup;
 use OCA\Mcp\Modules\Deck\Reading\ListCardFilesHandler;
 use OCA\Mcp\Modules\Deck\Reading\ReadCardHandler;
 use OCP\App\IAppManager;
@@ -43,7 +44,7 @@ final class DeckMeetingCardsTest extends TestCase {
 	public function testADeniedCardGrantNeverReachesTheDispatch(): void {
 		$this->granted = false;
 		$deck = new CountingDeckDispatch();
-		$cards = new DeckMeetingCards($this->access(), $deck);
+		$cards = new DeckMeetingCards($this->access(), $deck, new NoAssignments());
 
 		try {
 			$cards->card('alice', ['cardId' => 7]);
@@ -64,7 +65,7 @@ final class DeckMeetingCardsTest extends TestCase {
 	public function testADisabledAppNeverReachesTheDispatch(): void {
 		$this->appEnabled = false;
 		$deck = new CountingDeckDispatch();
-		$cards = new DeckMeetingCards($this->access(), $deck);
+		$cards = new DeckMeetingCards($this->access(), $deck, new NoAssignments());
 
 		try {
 			$cards->links('alice', ['cardId' => 7]);
@@ -84,7 +85,7 @@ final class DeckMeetingCardsTest extends TestCase {
 	public function testAGuestTheAppForbidsNeverReachesTheDispatch(): void {
 		$this->guestAllowed = false;
 		$deck = new CountingDeckDispatch();
-		$cards = new DeckMeetingCards($this->access(), $deck);
+		$cards = new DeckMeetingCards($this->access(), $deck, new NoAssignments());
 
 		try {
 			$cards->card('alice', ['cardId' => 7]);
@@ -103,7 +104,7 @@ final class DeckMeetingCardsTest extends TestCase {
 	 */
 	public function testCardAndLinksDispatchOnlyTheTwoReadTools(): void {
 		$deck = new CountingDeckDispatch();
-		$cards = new DeckMeetingCards($this->access(), $deck);
+		$cards = new DeckMeetingCards($this->access(), $deck, new NoAssignments());
 
 		$card = $cards->card('alice', ['cardId' => 7]);
 		$links = $cards->links('alice', ['cardId' => 7]);
@@ -126,7 +127,7 @@ final class DeckMeetingCardsTest extends TestCase {
 	 */
 	public function testAMistypedCardIdIsRefusedBeforeTheDispatch(): void {
 		$deck = new CountingDeckDispatch();
-		$cards = new DeckMeetingCards($this->access(), $deck);
+		$cards = new DeckMeetingCards($this->access(), $deck, new NoAssignments());
 
 		try {
 			$cards->card('alice', ['cardId' => '7']);
@@ -145,7 +146,7 @@ final class DeckMeetingCardsTest extends TestCase {
 	public function testAnUnreadableGrantPropagatesAndSkipsTheDispatch(): void {
 		$this->unavailable = true;
 		$deck = new CountingDeckDispatch();
-		$cards = new DeckMeetingCards($this->access(), $deck);
+		$cards = new DeckMeetingCards($this->access(), $deck, new NoAssignments());
 
 		$this->expectException(PolicyUnavailable::class);
 		try {
@@ -196,5 +197,17 @@ final class CountingDeckDispatch implements DeckReadDispatch {
 			$this->writes++;
 		}
 		return ['name' => $name, 'arguments' => $arguments, 'userId' => $userId];
+	}
+}
+
+/** No assigned cards. The read tests do not ask for them. */
+final class NoAssignments implements AssignedCardLookup {
+	/**
+	 * @param string $userId the actor
+	 * @param string $participantUid the account
+	 * @return list<int> no card ids
+	 */
+	public function ids(string $userId, string $participantUid): array {
+		return [];
 	}
 }

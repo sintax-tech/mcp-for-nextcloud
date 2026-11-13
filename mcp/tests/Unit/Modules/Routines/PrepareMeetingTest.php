@@ -92,7 +92,7 @@ final class PrepareMeetingTest extends TestCase {
 		self::assertFalse(GrantPolicy::defaultGranted('routines', 'prepare'));
 		self::assertSame('read', $definition->operation);
 		self::assertSame(['prepare'], $definition->grantAnyOf);
-		self::assertNull($definition->app);
+		self::assertSame('calendar', $definition->app);
 		self::assertArrayNotHasKey('confirm', $definition->inputSchema['properties']);
 		self::assertTrue(ToolPresentation::annotations($definition->name, $definition->operation, $definition->destructiveHint)['readOnlyHint']);
 		self::assertSame(PrepareMeeting::class, RoutinesToolCatalog::TOOLS[array_key_last(RoutinesToolCatalog::TOOLS)]);

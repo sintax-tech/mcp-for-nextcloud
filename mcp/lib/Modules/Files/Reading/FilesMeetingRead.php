@@ -19,17 +19,19 @@ use OCA\Mcp\Platform\Workflows\WorkflowMessages;
  * The file read of a meeting dossier, through the work class of files_read.
  *
  * The registry's own check (grant and Guests) runs again, then the published schema. Scope, aliases and the
- * actor's view stay inside that reader. The call reads one path; it does not write the node and it does not touch
- * a comment read marker.
+ * actor's view stay inside that reader. A reference becomes a path before that read; there is no search by name.
+ * The call reads one path; it does not write the node and it does not touch a comment read marker.
  */
 final class FilesMeetingRead implements MeetingFileRead {
 	/**
 	 * @param ToolAccess $access the registry's own decision on grant and Guests
 	 * @param FileTextListing $files the read of files_read
+	 * @param MeetingFileLookup $located the path of one reference already in hand
 	 */
 	public function __construct(
 		private ToolAccess $access,
 		private FileTextListing $files,
+		private MeetingFileLookup $located,
 	) {
 	}
 
@@ -39,6 +41,14 @@ final class FilesMeetingRead implements MeetingFileRead {
 			throw new ToolFailure(WorkflowMessages::notAllowed(ReadFile::definition()->name));
 		}
 		return $this->files->handle(ArgumentValidator::validate(ReadFile::definition()->inputSchema, $arguments), $userId);
+	}
+
+	/** {@inheritDoc} */
+	public function locate(string $userId, string $reference): ?string {
+		if (!$this->allowed($userId)) {
+			throw new ToolFailure(WorkflowMessages::notAllowed(ReadFile::definition()->name));
+		}
+		return $this->located->path($userId, $reference);
 	}
 
 	/**

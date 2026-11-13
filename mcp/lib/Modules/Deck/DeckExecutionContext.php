@@ -43,7 +43,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
 /** Composes the existing handlers per caller and preserves their admission and plan failures. */
-final class DeckExecutionContext {
+final class DeckExecutionContext implements DeckReadDispatch {
 	private ?\OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface $gateway = null;
 	private ?\OCA\Mcp\Modules\Deck\Attachments\CardFiles $cardFiles = null;
 

@@ -28,7 +28,7 @@ use OCA\Mcp\Modules\Mail\Reading\SearchMessagesHandler;
 use OCA\Mcp\Modules\Mail\MailLinks;
 
 /** Builds the message read work with a fresh actor timezone and clock for each call. */
-final class MailMessageReading {
+final class MailMessageReading implements MailSearchListing {
 	/**
 	 * Receives the Mail classes, the account boundary, the time zone resolver and the Mail app links.
 	 *

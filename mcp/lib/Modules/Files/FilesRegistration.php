@@ -20,6 +20,10 @@ final class FilesRegistration implements ModuleRegistration {
 		$context->registerService(\OCA\Mcp\Platform\FileAccess\FileReplacement::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\FileAccess\FileReplacement => $c->get(Editing\ProtectedFileReplacement::class));
 		$context->registerService(FileTextResource::class, static fn (ContainerInterface $c): FileTextResource => $c->get(Extraction\ExtractedFileText::class));
 		$context->registerService(MetadataServer::class, static fn (): MetadataServer => new Integration\EmbeddedMetadataDavServer());
+		$context->registerService(\OCA\Mcp\Platform\Meetings\MeetingFileRead::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\Meetings\MeetingFileRead => new Reading\FilesMeetingRead(
+			$c->get(\OCA\Mcp\Mcp\Tools\Discovery\ToolAccess::class),
+			$c->get(Reading\ReadFileHandler::class),
+		));
 	}
 	/** @return list<class-string<\OCA\Mcp\Mcp\Tools\CapabilityProbe>> no installation probes */
 	public function probes(): array { return []; }

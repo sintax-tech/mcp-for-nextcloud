@@ -37,6 +37,10 @@ final class DeckRegistration implements ModuleRegistration {
 			new \OCA\Mcp\Modules\Deck\Integration\DeckServiceContext($c, $c->get(\OCP\ISession::class)), $c->get(IConfig::class),
 		));
 		$context->registerService(\OCA\Mcp\Access\References\ReadableDeckCard::class, static fn (ContainerInterface $c): \OCA\Mcp\Access\References\ReadableDeckCard => $c->get(\OCA\Mcp\Modules\Deck\DeckCardReference::class));
+		$context->registerService(\OCA\Mcp\Platform\Meetings\MeetingDeckRead::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\Meetings\MeetingDeckRead => new DeckMeetingCards(
+			$c->get(\OCA\Mcp\Mcp\Tools\Discovery\ToolAccess::class),
+			$c->get(DeckExecutionContext::class),
+		));
 	}
 
 	/**

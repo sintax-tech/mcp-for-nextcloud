@@ -55,6 +55,10 @@ final class CalendarRegistration implements ModuleRegistration {
 		$context->registerService(\OCA\Mcp\Access\ResourceScope\ScopedCalendarLookup::class, static fn (ContainerInterface $c): \OCA\Mcp\Access\ResourceScope\ScopedCalendarLookup => $c->get(\OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess::class));
 		$context->registerService(\OCA\Mcp\Access\References\ReadableCalendarEvent::class, static fn (ContainerInterface $c): \OCA\Mcp\Access\References\ReadableCalendarEvent => $c->get(CalendarEventReference::class));
 		$context->registerService(\OCA\Mcp\Platform\Meetings\MeetingCalendar::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\Meetings\MeetingCalendar => $c->get(CalendarMeetingSteps::class));
+		$context->registerService(\OCA\Mcp\Platform\Meetings\MeetingEventRead::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\Meetings\MeetingEventRead => new CalendarMeetingEvents(
+			$c->get(\OCA\Mcp\Mcp\Tools\Discovery\ToolAccess::class),
+			$c->get(\OCA\Mcp\Modules\Calendar\Reading\ListEventsHandler::class),
+		));
 	}
 
 	/**

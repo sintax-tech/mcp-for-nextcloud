@@ -60,6 +60,33 @@ final class McpMailSaveAttachmentHttpTest extends ExclusionTestCase {
 		} finally { $probe->close(); }
 	}
 
+	/** Without the grant a direct call is an unknown tool; with it the seeded PDF is saved and its size read back. */
+	public function testPdfIsSavedWithItsSizeReadBackAndIsNotCallableWithoutTheGrant(): void {
+		if (getenv('MCP_IT_WITH_MAIL') !== '1') { self::markTestSkipped('Existing disposable Mail cells only'); }
+		$policy = Server::get(GrantPolicy::class);
+		$message = $this->subjects($this->mailbox($this->account(self::ALICE), 'Attachments'))['Attachment pdf'];
+		$root = Server::get(IRootFolder::class)->getUserFolder(self::ALICE);
+		foreach (['basic', 'bearer'] as $kind) {
+			$path = '/mail-save-pdf-' . $kind . '-' . bin2hex(random_bytes(6)) . '.pdf';
+			$args = ['message_id' => $message, 'attachment_id' => '2', 'path' => $path, 'confirm' => true];
+			$policy->setGrant(self::ALICE, 'mail', 'save', false);
+			$hidden = $this->mcp(self::ALICE, $kind)->tool('mail_save_attachment', $args);
+			self::assertSame(-32602, $hidden->body['error']['code'] ?? null, $hidden->describe());
+			self::assertSame('unknown tool; use one listed by tools/list', $hidden->body['error']['data']['rule'] ?? null);
+			self::assertFalse($root->nodeExists(ltrim($path, '/')));
+			$policy->setGrant(self::ALICE, 'mail', 'save', true);
+			$saved = $this->mcp(self::ALICE, $kind)->tool('mail_save_attachment', $args);
+			self::assertTrue($saved->ok(), $saved->describe());
+			$receipt = $saved->json();
+			self::assertTrue($receipt['verified']); self::assertSame('saved', $receipt['outcome']);
+			$file = $root->get(ltrim($path, '/'));
+			// The one-page invoice.pdf of seed-attachments.sh, byte for byte.
+			self::assertSame(590, $file->getSize()); self::assertSame(590, $receipt['size']);
+			self::assertSame('36c395ad230b3cb6c7364e9002a81add72d09e1282ee6177904885a108d81019', hash('sha256', $file->getContent()));
+			self::assertSame($receipt['sha256'], hash('sha256', $file->getContent()));
+		}
+	}
+
 	/** replace keeps a verified pre-write copy of the existing file, keeps its id and reads both back. */
 	public function testReplaceThroughBothEndpointCredentialsKeepsAVerifiedCopy(): void {
 		if (getenv('MCP_IT_WITH_MAIL') !== '1') { self::markTestSkipped('Existing disposable Mail cells only'); }

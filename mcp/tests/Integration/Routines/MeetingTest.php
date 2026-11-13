@@ -14,6 +14,8 @@ use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
 use OCA\Mcp\Tests\Integration\Support\McpClient;
 use OCP\App\IAppManager;
+use OCP\IUser;
+use OCP\IUserManager;
 use OCP\Server;
 
 /**
@@ -34,6 +36,8 @@ final class MeetingTest extends IntegrationTestCase {
 	private array $rooms = [];
 	/** @var list<string> event UIDs this test created */
 	private array $events = [];
+	/** @var array<string, string> address of each fixture account before the test, '' for none */
+	private array $emails = [];
 
 	protected function setUp(): void {
 		parent::setUp();
@@ -49,9 +53,18 @@ final class MeetingTest extends IntegrationTestCase {
 			$this->before[$module . '.' . $operation] = $policy->granted(Fixtures::ALICE, $module, $operation);
 			$policy->setGrant(Fixtures::ALICE, $module, $operation, true);
 		}
+		// An event with guests needs an address for its organizer and for each guest, as calendar_create_event does.
+		foreach ([Fixtures::ALICE, Fixtures::BOB] as $uid) {
+			$user = $this->fixture($uid);
+			$this->emails[$uid] = (string)$user->getSystemEMailAddress();
+			$user->setSystemEMailAddress($uid . '@example.invalid');
+		}
 	}
 
 	protected function tearDown(): void {
+		foreach ($this->emails as $uid => $email) {
+			$this->fixture($uid)->setSystemEMailAddress($email);
+		}
 		$policy = Server::get(GrantPolicy::class);
 		foreach ($this->before as $grant => $enabled) {
 			[$module, $operation] = explode('.', $grant, 2);
@@ -118,6 +131,16 @@ final class MeetingTest extends IntegrationTestCase {
 		return ['title' => 'mcp-c1-' . $label . '-' . bin2hex(random_bytes(4)), 'participants' => [Fixtures::BOB],
 			'agenda' => "1. Opening\n2. Deadlines", 'calendar' => '/remote.php/dav/calendars/' . Fixtures::ALICE . '/personal/',
 			'start' => $day . 'T14:00:00Z', 'end' => $day . 'T15:00:00Z'];
+	}
+
+	/**
+	 * @param string $uid a fixture account
+	 * @return IUser the account, which the harness creates before the suite
+	 */
+	private function fixture(string $uid): IUser {
+		$user = Server::get(IUserManager::class)->get($uid);
+		$this->assertInstanceOf(IUser::class, $user);
+		return $user;
 	}
 
 	/**

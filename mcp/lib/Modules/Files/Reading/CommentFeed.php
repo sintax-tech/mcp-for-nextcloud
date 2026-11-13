@@ -9,7 +9,6 @@ namespace OCA\Mcp\Modules\Files\Reading;
 
 use DateTimeImmutable;
 use DateTimeZone;
-use DOMDocument;
 use DOMElement;
 use RuntimeException;
 
@@ -24,26 +23,16 @@ use RuntimeException;
  * mentions with the display names the DAV app already resolved. Nothing else is looked up.
  */
 final class CommentFeed {
-	/** Namespace of the comment properties. */
-	private const OC = 'http://owncloud.org/ns';
-	/** Namespace of the multistatus envelope. */
-	private const DAV = 'DAV:';
-
 	/**
 	 * @param string $xml native multistatus document
 	 * @return list<array{id: string, author: array{type: string, id: string, display_name: ?string}, created_at: ?string,
 	 *     text: string, reply_to: ?string, verb: string, unread: ?bool, mentions: list<array{type: string, id: string,
 	 *     display_name: string}>}> the comments in the native order (newest first)
-	 * @throws RuntimeException when the document is not a multistatus answer
+	 * @throws RuntimeException when the document is not a plain multistatus answer ({@see MultistatusDocument})
 	 */
 	public function comments(string $xml): array {
-		$document = new DOMDocument();
-		if ($xml === '' || str_contains($xml, '<!DOCTYPE') || !@$document->loadXML($xml, LIBXML_NONET)
-			|| $document->documentElement?->namespaceURI !== self::DAV || $document->documentElement->localName !== 'multistatus') {
-			throw new RuntimeException('Unexpected comments REPORT answer');
-		}
 		$rows = [];
-		foreach ($document->getElementsByTagNameNS(self::DAV, 'prop') as $prop) {
+		foreach (MultistatusDocument::xpath($xml)->document->getElementsByTagNameNS(MultistatusDocument::DAV, 'prop') as $prop) {
 			$rows[] = $this->row($prop);
 		}
 		return $rows;
@@ -58,7 +47,7 @@ final class CommentFeed {
 		$parent = $value('parentId');
 		$unread = $value('isUnread');
 		$mentions = [];
-		foreach ($prop->getElementsByTagNameNS(self::OC, 'mention') as $mention) {
+		foreach ($prop->getElementsByTagNameNS(MultistatusDocument::OC, 'mention') as $mention) {
 			$part = fn (string $name): string => (string)$this->child($mention, $name)?->textContent;
 			$mentions[] = ['type' => $part('mentionType'), 'id' => $part('mentionId'), 'display_name' => $part('mentionDisplayName')];
 		}
@@ -81,7 +70,7 @@ final class CommentFeed {
 	 */
 	private function child(DOMElement $parent, string $name): ?DOMElement {
 		foreach ($parent->childNodes as $node) {
-			if ($node instanceof DOMElement && $node->namespaceURI === self::OC && $node->localName === $name) {
+			if ($node instanceof DOMElement && $node->namespaceURI === MultistatusDocument::OC && $node->localName === $name) {
 				return $node;
 			}
 		}

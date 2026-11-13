@@ -40,6 +40,9 @@ final class FileTagListTest extends TestCase {
 		yield 'not xml' => ['tags'];
 		yield 'other root' => ['<?xml version="1.0"?><d:error xmlns:d="DAV:"/>'];
 		yield 'doctype' => ['<?xml version="1.0"?><!DOCTYPE d:multistatus [<!ENTITY x "y">]><d:multistatus xmlns:d="DAV:"/>'];
+		foreach (MultistatusDocumentCases::refused() as $name => $answer) {
+			yield $name => [$answer];
+		}
 		yield 'non-numeric id' => [str_replace('<oc:id>5</oc:id>', '<oc:id>5x</oc:id>', self::ANSWER)];
 	}
 

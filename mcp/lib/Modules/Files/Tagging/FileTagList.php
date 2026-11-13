@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Files\Tagging;
 
-use DOMDocument;
 use DOMElement;
 use DOMXPath;
+use OCA\Mcp\Modules\Files\Reading\MultistatusDocument;
 use RuntimeException;
 
 /**
@@ -21,11 +21,6 @@ use RuntimeException;
  * to hide files from MCP is dropped without a trace: its ID, name and count never reach the output.
  */
 final class FileTagList {
-	/** WebDAV namespace of the multistatus envelope. */
-	private const DAV = 'DAV:';
-	/** Namespace of the tag properties (SystemTagPlugin::*_PROPERTYNAME). */
-	private const OC = 'http://owncloud.org/ns';
-
 	/** Static projection only. */
 	private function __construct() {
 	}
@@ -34,10 +29,10 @@ final class FileTagList {
 	 * @param string $multistatus native PROPFIND answer for systemtags-relations/files/<id>, Depth 1
 	 * @param list<string> $hiddenTagIds exclusion tag IDs configured for MCP
 	 * @return list<array{id:string,name:string,user_visible:bool,user_assignable:bool,can_assign:bool}> visible tags, in native order
-	 * @throws RuntimeException when the answer is not the expected multistatus document
+	 * @throws RuntimeException when the answer is not a plain multistatus document ({@see MultistatusDocument}) or has a bad tag ID
 	 */
 	public static function parse(string $multistatus, array $hiddenTagIds): array {
-		$xpath = self::document($multistatus);
+		$xpath = MultistatusDocument::xpath($multistatus);
 		$tags = [];
 		foreach ($xpath->query('/d:multistatus/d:response') ?: [] as $response) {
 			$props = self::okProps($xpath, $response);
@@ -60,30 +55,6 @@ final class FileTagList {
 			];
 		}
 		return $tags;
-	}
-
-	/**
-	 * @param string $multistatus native answer
-	 * @return DOMXPath query over the parsed answer, with the d and oc prefixes bound
-	 * @throws RuntimeException when the answer is not a multistatus document
-	 */
-	private static function document(string $multistatus): DOMXPath {
-		$document = new DOMDocument();
-		$previous = libxml_use_internal_errors(true);
-		try {
-			$loaded = $multistatus !== '' && $document->loadXML($multistatus, LIBXML_NONET);
-		} finally {
-			libxml_clear_errors();
-			libxml_use_internal_errors($previous);
-		}
-		if (!$loaded || $document->doctype !== null || $document->documentElement?->namespaceURI !== self::DAV
-			|| $document->documentElement->localName !== 'multistatus') {
-			throw new RuntimeException('Unexpected DAV tag answer');
-		}
-		$xpath = new DOMXPath($document);
-		$xpath->registerNamespace('d', self::DAV);
-		$xpath->registerNamespace('oc', self::OC);
-		return $xpath;
 	}
 
 	/**

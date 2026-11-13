@@ -15,6 +15,7 @@ use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCP\Files\Folder;
+use OCP\Files\ForbiddenException;
 use OCP\Files\NotFoundException;
 use OCP\Files\NotPermittedException;
 
@@ -57,7 +58,7 @@ final class ReadCommentsHandler {
 		return $this->context->run($userId, function (Folder $root) use ($path, $limit, $offset, $userId): array {
 			try {
 				$id = (int)NodeAccess::get($root, $path, $this->guard)->getId();
-			} catch (ToolFailure|NotFoundException|NotPermittedException) {
+			} catch (ToolFailure|NotFoundException|NotPermittedException|ForbiddenException) {
 				throw new ToolFailure(CommonMessages::notFound());
 			}
 			$comments = $this->feed->comments((string)$this->dav->comments($userId, $id, $limit, $offset)->body);

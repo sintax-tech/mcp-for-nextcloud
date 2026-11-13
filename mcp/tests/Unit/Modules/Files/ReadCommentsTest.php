@@ -100,7 +100,7 @@ final class ReadCommentsTest extends TestCase {
 	public function testHiddenMissingAndNativelyRefusedNodesAreRefusedAlike(string $major): void {
 		$this->boot($major);
 		$answers = [];
-		foreach (['/hidden.txt', '/missing.txt', '/foreign.txt', '/unreadable.txt'] as $path) {
+		foreach (['/hidden.txt', '/missing.txt', '/foreign.txt', '/unreadable.txt', '/forbidden.txt'] as $path) {
 			try {
 				$this->read(['path' => $path]);
 				self::fail('Read ' . $path);
@@ -115,13 +115,16 @@ final class ReadCommentsTest extends TestCase {
 
 	public function testOnlyAMultistatusDocumentIsRead(): void {
 		$feed = new CommentFeed();
-		foreach (['', '<html/>', '<!DOCTYPE x [<!ENTITY e "x">]><d:multistatus xmlns:d="DAV:"/>', 'not xml'] as $body) {
+		$cases = ['empty' => '', 'html' => '<html/>', 'bare doctype' => '<!DOCTYPE x [<!ENTITY e "x">]><d:multistatus xmlns:d="DAV:"/>', 'not xml' => 'not xml'] + MultistatusDocumentCases::refused();
+		$accepted = [];
+		foreach ($cases as $name => $body) {
 			try {
 				$feed->comments($body);
-				self::fail('Accepted ' . $body);
+				$accepted[] = $name;
 			} catch (RuntimeException) {
 			}
 		}
+		self::assertSame([], $accepted, 'refused like a plain ASCII DOCTYPE');
 		self::assertSame([], $feed->comments('<?xml version="1.0"?><d:multistatus xmlns:d="DAV:"/>'));
 	}
 
@@ -202,7 +205,8 @@ final class ReadCommentsTest extends TestCase {
 
 	/**
 	 * Alice's tree: report.txt (42) is hers; hidden.txt (77) is hidden by the Files gate; foreign.txt (55) is admitted by
-	 * the gate but the native comments entity does not resolve it; unreadable.txt cannot be read; missing.txt is absent.
+	 * the gate but the native comments entity does not resolve it; unreadable.txt cannot be read; missing.txt is absent;
+	 * forbidden.txt is refused by the node API with a ForbiddenException (an access-control rule).
 	 *
 	 * @return IRootFolder native root double
 	 */
@@ -220,7 +224,9 @@ final class ReadCommentsTest extends TestCase {
 		$folder->method('getId')->willReturn(1);
 		$folder->method('getPath')->willReturn('/alice/files');
 		$folder->method('getRelativePath')->willReturnCallback(static fn (string $path): ?string => str_starts_with($path, '/alice/files/') ? substr($path, 12) : null);
-		$folder->method('get')->willReturnCallback(static fn (string $path): File => $files[$path] ?? throw new NotFoundException($path));
+		$folder->method('get')->willReturnCallback(static fn (string $path): File => $path === 'forbidden.txt'
+			? throw new \OCP\Files\ForbiddenException('Blocked by an access control', false)
+			: ($files[$path] ?? throw new NotFoundException($path)));
 		$folder->method('getById')->willReturnCallback($byId);
 		$folder->method('getFirstNodeById')->willReturnCallback(static fn (int $id): ?File => $id === 55 ? null : ($byId($id)[0] ?? null));
 		$roots = $this->createMock(IRootFolder::class);

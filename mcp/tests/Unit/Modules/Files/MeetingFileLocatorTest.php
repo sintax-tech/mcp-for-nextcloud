@@ -37,6 +37,11 @@ final class MeetingFileLocatorTest extends TestCase {
 
 		self::assertNull($locator->placed('alice', 'https://evil.example/f/123'));
 		self::assertNull($locator->placed('alice', 'https://outro.example/apps/files/?fileid=9'));
+		self::assertNull($locator->placed('alice', '/\\evil.com/f/1'));
+		self::assertNull($locator->placed('alice', '/\\\\evil.com/f/2'));
+		self::assertNull($locator->placed('alice', '/\\evil.com/apps/deck/board/1/card/5'));
+		self::assertNull($locator->placed('alice', '/\\evil.com/index.php/apps/files/?fileid=7'));
+		self::assertNull($locator->placed('alice', '\\/evil.com/f/3'));
 	}
 
 	/**

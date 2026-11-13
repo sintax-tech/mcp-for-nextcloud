@@ -84,6 +84,11 @@ final class PrepareMeetingEscapeTest extends TestCase {
 		yield 'backslash and the instance host' => ['https://evil.com\@cloud.example/f/1'];
 		yield 'http scheme without slashes' => ['http:\\evil.com/f/1'];
 		yield 'https scheme and a colon only' => ['https:evil.com/f/1'];
+		yield 'backslash as the second slash' => ['/\\evil.com/f/1'];
+		yield 'two backslashes as slashes' => ['/\\\\evil.com/f/2'];
+		yield 'backslash before a deck path' => ['/\\evil.com/apps/deck/board/1/card/5'];
+		yield 'backslash before a file id query' => ['/\\evil.com/index.php/apps/files/?fileid=7'];
+		yield 'leading backslash' => ['\\/evil.com/f/3'];
 	}
 
 	/**

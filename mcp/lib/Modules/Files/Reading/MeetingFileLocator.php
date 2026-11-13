@@ -22,7 +22,8 @@ use OCP\IURLGenerator;
  *
  * Every alias has to pass the scope and the exclusion, and one of them has to be a readable file.
  * A link is not followed beyond that lookup. A Deck card URL is not a file. An absolute URL is accepted only
- * when its host is this instance; a relative path is accepted as written.
+ * when its host is this instance. A backslash is a slash before that decision, and this parser only sees a
+ * reference that decision already accepted.
  */
 final class MeetingFileLocator implements MeetingFileLookup {
 	/** Route of the canonical `/f/<id>` link. */
@@ -73,8 +74,8 @@ final class MeetingFileLocator implements MeetingFileLookup {
 	 * @return array{id: int|null, path: string|null, uid: string|null}|null the shape, or null when it is not a file
 	 */
 	private function parse(string $reference): ?array {
-		$reference = rtrim(trim($reference), ".,);]>'\" ");
-		if ($reference === '' || str_starts_with(strtolower($reference), 'data:') || preg_match('~/apps/deck/(?:#/)?board/\d+/card/\d+~', $reference) === 1) {
+		$reference = str_replace('\\', '/', rtrim(trim($reference), ".,);]>'\" "));
+		if ($reference === '' || !$this->local->accepts($reference) || preg_match('~/apps/deck/(?:#/)?board/\d+/card/\d+~', $reference) === 1) {
 			return null;
 		}
 		if (ctype_digit($reference)) {

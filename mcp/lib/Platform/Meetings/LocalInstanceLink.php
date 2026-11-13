@@ -14,11 +14,12 @@ use OCP\IURLGenerator;
 /**
  * Whether a link belongs to this Nextcloud, and the only tokenizer of those links.
  *
- * A relative reference is a numeric file id or a path that starts with exactly one slash. An absolute URL starts
- * with a scheme and "://" or with "//", and it belongs here only when its host is loopback, one of trusted_domains
- * (with their wildcards), overwrite.cli.url or the URL generator's own host. A scheme without "//", a backslash
- * before the path, and a host written without a scheme do not. ITrustedDomainHelper is not used: with overwritehost
- * set it trusts every host. A foreign host is not fetched and is not turned into an object of this instance.
+ * A backslash is a slash before a token is classified, as it is for a special scheme. A relative reference is then
+ * a numeric file id or a path that starts with exactly one slash. An absolute URL starts with a scheme and "://" or
+ * with "//", and it belongs here only when its host is loopback, one of trusted_domains (with their wildcards),
+ * overwrite.cli.url or the URL generator's own host. A scheme without "//" and a host written without a scheme do
+ * not. ITrustedDomainHelper is not used: with overwritehost set it trusts every host. A foreign host is not fetched
+ * and is not turned into an object of this instance.
  */
 final class LocalInstanceLink {
 	/**
@@ -36,8 +37,8 @@ final class LocalInstanceLink {
 	 * @return bool whether it is a numeric id, a single-slash path, or an absolute URL of this instance
 	 */
 	public function accepts(string $reference): bool {
-		$reference = trim($reference);
-		if ($reference === '' || str_starts_with(strtolower($reference), 'data:') || $this->schemeWithoutSlashes($reference) || $this->backslashBeforePath($reference)) {
+		$reference = $this->normalized($reference);
+		if ($reference === '' || str_starts_with(strtolower($reference), 'data:') || $this->schemeWithoutSlashes($reference)) {
 			return false;
 		}
 		if (ctype_digit($reference)) {
@@ -68,7 +69,8 @@ final class LocalInstanceLink {
 	 * Whole tokens of a text, keeping only a reference of this instance.
 	 *
 	 * Whitespace and angle brackets separate tokens. A quote or an apostrophe is removed only when it is the first
-	 * or the last character, so one in the middle cannot end an absolute URL and start a relative path.
+	 * or the last character, so one in the middle cannot end an absolute URL and start a relative path. A backslash
+	 * is a slash before that token is classified.
 	 *
 	 * @param string $text a description, a location, or one property value
 	 * @return list<string> each kept reference once, in order
@@ -76,7 +78,8 @@ final class LocalInstanceLink {
 	public function references(string $text): array {
 		$found = [];
 		foreach ($this->tokens($text) as $token) {
-			if (!$this->referenceToken($token) || in_array($token, $found, true)) {
+			$token = $this->normalized($token);
+			if ($token === '' || !$this->referenceToken($token) || in_array($token, $found, true)) {
 				continue;
 			}
 			$found[] = $token;
@@ -129,36 +132,18 @@ final class LocalInstanceLink {
 
 	/**
 	 * @param string $reference a path or a URL
+	 * @return string the same text with every backslash read as a slash
+	 */
+	private function normalized(string $reference): string {
+		return str_replace('\\', '/', trim($reference));
+	}
+
+	/**
+	 * @param string $reference a path or a URL
 	 * @return bool whether a scheme is written without the two slashes an absolute URL needs
 	 */
 	private function schemeWithoutSlashes(string $reference): bool {
 		return preg_match('#^[a-z][a-z0-9+.-]*:(?!//)#i', $reference) === 1;
-	}
-
-	/**
-	 * A backslash before the path is a different host under the WHATWG URL parser than under parse_url.
-	 *
-	 * @param string $reference a path or a URL
-	 * @return bool whether the scheme or the authority contains a backslash
-	 */
-	private function backslashBeforePath(string $reference): bool {
-		if (str_starts_with($reference, '/') && !str_starts_with($reference, '//')) {
-			return false;
-		}
-		$rest = $reference;
-		if (preg_match('#^[a-z][a-z0-9+.-]*://#i', $rest, $scheme) === 1) {
-			$rest = substr($rest, strlen($scheme[0]));
-		} elseif (str_starts_with($rest, '//')) {
-			$rest = substr($rest, 2);
-		}
-		$end = strlen($rest);
-		foreach (['/', '?', '#'] as $stop) {
-			$at = strpos($rest, $stop);
-			if ($at !== false && $at < $end) {
-				$end = $at;
-			}
-		}
-		return str_contains(substr($rest, 0, $end), '\\');
 	}
 
 	/**

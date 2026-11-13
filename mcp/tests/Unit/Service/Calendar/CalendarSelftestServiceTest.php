@@ -6,6 +6,7 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Service\Calendar;
 
+use OCA\Mcp\Modules\Calendar\CalendarToolCatalog;
 use OCA\Mcp\Modules\Calendar\Selftest\CalendarSelftestService;
 use OCA\Mcp\Modules\Calendar\Selftest\CalendarSelftestReader;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\CalendarTestCase;
@@ -25,8 +26,11 @@ final class CalendarSelftestServiceTest extends CalendarTestCase {
 	private ?IUser $active = null;
 
 	public function testSuccessfulRunReportsAndCleansUpWithoutChangingExposure(): void {
+		$exposed = $this->module->definitions();
 		self::assertTrue($this->service()->run('alice', [], $this->report(...)));
-		self::assertCount(7, $this->module->definitions());
+		// The selftest is only a diagnostic: every catalogued tool is exposed before it runs and nothing changes after.
+		self::assertSame(array_map(static fn (string $tool): string => $tool::definition()->name, CalendarToolCatalog::TOOLS), array_column($exposed, 'name'));
+		self::assertSame($exposed, $this->module->definitions());
 		self::assertSame('OK', $this->steps['result']['status']);
 		self::assertSame('OK', $this->steps['cleanup']['status']);
 		self::assertNull($this->active);

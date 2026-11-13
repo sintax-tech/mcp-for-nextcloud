@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Calendar\Integration;
 
 use DateTimeImmutable;
+use DateTimeZone;
 use OCP\Calendar\IManager;
 use OCP\IUser;
 use Psr\Container\ContainerInterface;
@@ -26,7 +27,9 @@ final class CalendarAvailability {
 	 */
 	public function check(DateTimeImmutable $start, DateTimeImmutable $end, IUser $organizer, array $emails): array {
 		if ($emails === []) return [];
-		$results = $this->container->get(IManager::class)->checkAvailability($start, $end, $organizer, $emails);
+		// Sabre writes an offset-only zone as an unresolvable TZID and reads it back as UTC wall time; UTC keeps the instant.
+		$utc = new DateTimeZone('UTC');
+		$results = $this->container->get(IManager::class)->checkAvailability($start->setTimezone($utc), $end->setTimezone($utc), $organizer, $emails);
 		$verdicts = [];
 		foreach ($results as $result) {
 			$email = strtolower(preg_replace('/^mailto:/i', '', $result->getAttendeeEmail()));

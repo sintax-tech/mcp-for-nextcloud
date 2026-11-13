@@ -85,7 +85,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Modules/Files/Reorganization/UndoBatchHandler.php#undoBatch:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testUndoRechecksEverySinkAndKeepsOnlyRemainingMoves',
 			'Modules/Files/Reorganization/ListedTreeCopy.php#native:copy:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testListedCopyExcludesLateChildrenAndReportsRenamedSource',
 			'Modules/Files/Reorganization/ListedTreeCopy.php#execute:newfolder:1' => 'directory: only entries of the wholly prevalidated listed tree, never a file',
-			'Modules/Files/Editing/ProtectedFileReplacement.php#write:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Modules\\Mail\\MailReplaceAttachmentTest::testTypePolicyChangedAfterTheCopyRefusesAtTheSinkAndKeepsTheCopy',
+			'Modules/Files/Editing/ProtectedFileReplacement.php#write:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Modules\\Mail\\MailReplaceAttachmentGuardsTest::testTypePolicyChangedAfterTheCopyRefusesAtTheSinkAndKeepsTheCopy',
 			'Modules/Files/Writing/ContentCommit.php#commit:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\FileContentTypePolicyTest::testSinkDenialAfterBackupKeepsTheOriginalAndTheBackup',
 			'Modules/Files/Writing/ContentCommit.php#commit:putcontent:2' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\FileContentTypePolicyTest::testSinkDenialAfterBackupKeepsTheOriginalAndTheBackup',
 			'Modules/Files/Integration/VersionRestore.php#restore:rollback:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\FileContentTypePolicyTest::testSinkDenialAfterBackupOnRestoreKeepsTheOriginalAndTheBackup',

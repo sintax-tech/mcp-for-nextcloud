@@ -110,9 +110,10 @@ final class OwnInboxTest extends IntegrationTestCase {
 		$done = $client->write('notifications_dismiss', ['id' => $own]);
 		self::assertTrue($done->ok(), $done->describe());
 		$receipt = $done->json();
+		self::assertSame('dismissed', $receipt['outcome']);
+		self::assertSame('sent', $receipt['push']);
+		self::assertFalse($receipt['partial']);
 		self::assertFalse($receipt['still_present']);
-		self::assertContains($receipt['outcome'], ['dismissed', 'uncertain']);
-		self::assertSame($receipt['outcome'] === 'uncertain', $receipt['partial']);
 		self::assertStringNotContainsString('secret', $done->fingerprint());
 		$left = array_map('strval', array_column($this->snapshot($actor)['notifications'], 'notification_id'));
 		self::assertNotContains((string)$own, $left);

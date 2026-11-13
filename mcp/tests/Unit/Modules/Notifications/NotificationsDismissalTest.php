@@ -253,13 +253,14 @@ final class NotificationsDismissalTest extends TestCase {
 		}
 	}
 
-	/** @param string $major source pin @return void declare the exception and the push prefix the product reflects */
-	private function declareDismissTypes(): void {
+	/** @param string $major source pin @return void load the verbatim push and not-found classes this pin reflects */
+	private function declareDismissTypes(string $major): void {
+		$root = __DIR__ . '/../../../fixtures/notifications-native/' . $major . '/';
 		if (!class_exists(\OCA\Notifications\Exceptions\NotificationNotFoundException::class, false)) {
-			eval('namespace OCA\\Notifications\\Exceptions { class NotificationNotFoundException extends \\Exception {} }');
+			require $root . 'Exceptions/NotificationNotFoundException.php';
 		}
 		if (!class_exists(\OCA\Notifications\Push::class, false)) {
-			eval('namespace OCA\\Notifications { class Push { public array $calls = []; public ?\\Throwable $error = null; public function pushDeleteToDevice(string $userId, ?array $notificationIds, string $app = \'\'): void { $this->calls[] = [$userId, $notificationIds, $app]; if ($this->error !== null) { throw $this->error; } } } }');
+			require $root . 'Push.php';
 		}
 	}
 
@@ -270,7 +271,7 @@ final class NotificationsDismissalTest extends TestCase {
 	 */
 	private function open(string $major, ?array $row, ?string $impersonator = null, string $sessionUid = 'alice', bool $grant = true, ?\Throwable $grantError = null): stdClass {
 		$this->sources($major);
-		$this->declareDismissTypes();
+		$this->declareDismissTypes($major);
 		self::assertTrue((new NotificationsSurface())->dismissSupported());
 		$script = new stdClass();
 		$script->selects = 0;
@@ -293,7 +294,16 @@ final class NotificationsDismissalTest extends TestCase {
 		$db = $this->createMock(IDBConnection::class);
 		$db->method('getQueryBuilder')->willReturnCallback(fn (): IQueryBuilder => $this->builder($script));
 		$handler = new \OCA\Notifications\Handler($db, $manager);
-		$push = new \OCA\Notifications\Push();
+		$push = new class {
+			public array $calls = [];
+			public ?\Throwable $error = null;
+			public function pushDeleteToDevice(string $userId, ?array $notificationIds, string $app = ''): void {
+				$this->calls[] = [$userId, $notificationIds, $app];
+				if ($this->error !== null) {
+					throw $this->error;
+				}
+			}
+		};
 		$gets = [];
 		$container = $this->createMock(ContainerInterface::class);
 		$container->method('get')->willReturnCallback(function (string $id) use (&$gets, $handler, $push): object {

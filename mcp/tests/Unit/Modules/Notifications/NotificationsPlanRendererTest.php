@@ -48,11 +48,12 @@ final class NotificationsPlanRendererTest extends TestCase {
 			}
 		};
 		$handlerClass = $handler::class;
+		$root = __DIR__ . '/../../../fixtures/notifications-native/35/';
 		if (!class_exists(\OCA\Notifications\Exceptions\NotificationNotFoundException::class, false)) {
-			eval('namespace OCA\\Notifications\\Exceptions { class NotificationNotFoundException extends \\Exception {} }');
+			require $root . 'Exceptions/NotificationNotFoundException.php';
 		}
 		if (!class_exists(\OCA\Notifications\Push::class, false)) {
-			eval('namespace OCA\\Notifications { class Push { public function pushDeleteToDevice(string $userId, ?array $notificationIds, string $app = \'\'): void {} } }');
+			require $root . 'Push.php';
 		}
 		$container = $this->createMock(ContainerInterface::class);
 		$container->method('get')->willReturnCallback(static function (string $id) use ($handler): object {

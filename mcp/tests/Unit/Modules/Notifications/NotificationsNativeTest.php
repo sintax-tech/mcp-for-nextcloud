@@ -114,15 +114,20 @@ final class NotificationsNativeTest extends TestCase {
 		$this->load($major); $root=__DIR__.'/../../../fixtures/notifications-native/';
 		$pins=json_decode(file_get_contents($root.'sources.json'),true)['versions'][$major];
 		foreach ($pins as $file=>$pin) self::assertSame($pin['sha256'],hash_file('sha256',$root.$major.'/'.$file));
-		self::assertTrue((new NotificationsSurface())->supported());
+		$surface=new NotificationsSurface(); self::assertTrue($surface->supported()); self::assertFalse($surface->dismissSupported());
+		require $root.$major.'/Push.php'; require $root.$major.'/Exceptions/NotificationNotFoundException.php';
+		self::assertTrue((new NotificationsSurface())->dismissSupported());
 		foreach (['7.0.0-dev.1'=>true,'7.0.0'=>true,'8.0.0'=>true,'6.9.9'=>false,'9.0.0'=>false,''=>false] as $version=>$expected) {
 			$apps=$this->createMock(IAppManager::class); $apps->method('getAppVersion')->willReturn($version); $apps->method('isEnabledForAnyone')->willReturn(true);
-			$probe=new NotificationsCapabilities($apps,new NotificationsSurface()); self::assertSame($expected,$probe->supports('notifications.native')); self::assertFalse($probe->supports('other'));
+			$probe=new NotificationsCapabilities($apps,new NotificationsSurface());
+			self::assertSame($expected,$probe->supports('notifications.native')); self::assertSame($expected,$probe->supports('notifications.dismiss')); self::assertFalse($probe->supports('other'));
 		}
 		$apps=$this->createMock(IAppManager::class); $apps->method('getAppVersion')->willReturn('8.0.0'); $apps->method('isEnabledForAnyone')->willReturn(false);
 		self::assertFalse((new NotificationsCapabilities($apps,new NotificationsSurface()))->supports('notifications.native'));
+		self::assertFalse((new NotificationsCapabilities($apps,new NotificationsSurface()))->supports('notifications.dismiss'));
 		$apps=$this->createMock(IAppManager::class); $apps->method('getAppVersion')->willReturn('8.0.0'); $apps->method('isEnabledForAnyone')->willReturn(true);
-		self::assertFalse((new NotificationsCapabilities($apps,new NotificationsSurface('MissingHandler')))->supports('notifications.native'));
+		$missing=new NotificationsCapabilities($apps,new NotificationsSurface('MissingHandler'));
+		self::assertFalse($missing->supports('notifications.native')); self::assertFalse($missing->supports('notifications.dismiss'));
 		$source=file_get_contents($root.$major.'/Manager.php');
 		self::assertStringContainsString('$notification = $notifier->prepare($notification, $languageCode);',$source);
 		self::assertStringContainsString('$this->markProcessed($notification);',$source);

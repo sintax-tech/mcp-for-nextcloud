@@ -67,5 +67,11 @@ final class NotificationsAdmissionTest extends TestCase {
 			}
 		}
 		self::assertContains('notifications',GrantPolicy::DENIED_READS);
+		$policy=$this->createMock(GrantPolicy::class); $policy->method('grantedAny')->willReturn(true);
+		$apps=$this->createMock(IAppManager::class); $apps->method('isEnabledForUser')->willReturn(true);
+		$users=$this->createMock(IUserManager::class); $users->method('get')->willReturn($this->createMock(IUser::class));
+		$registry=new ToolRegistry([new NotificationsModule($this->createMock(ContainerInterface::class))],$policy,$apps,$users,new NullLogger(),null,new CapabilityRegistry([new NotificationsDiscoveryProbe(true,false)],new NullLogger()));
+		$names=array_column($registry->list('alice'),'name');
+		self::assertContains('notifications_list',$names); self::assertNotContains('notifications_dismiss',$names);
 	}
 }

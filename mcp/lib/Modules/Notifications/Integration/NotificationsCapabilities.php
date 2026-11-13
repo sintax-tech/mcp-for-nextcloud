@@ -15,12 +15,15 @@ use OCP\App\IAppManager;
 final class NotificationsCapabilities implements CapabilityProbe {
 	/** @param IAppManager $apps native enablement and version @param NotificationsSurface $surface lazy signature guard */
 	public function __construct(private IAppManager $apps, private NotificationsSurface $surface) {}
-	/** @return list<string> owned read capability */
-	public function keys(): array { return ['notifications.native']; }
-	/** @param string $key requested capability @return bool supported app and shape only */
+	/** @return list<string> read capability, then the separate dismiss shape */
+	public function keys(): array { return ['notifications.native', 'notifications.dismiss']; }
+	/** @param string $key requested capability @return bool supported app, and the shape that key names */
 	public function supports(string $key): bool {
+		if ($key !== 'notifications.native' && $key !== 'notifications.dismiss') return false;
 		$version = (string)$this->apps->getAppVersion('notifications');
-		return $key === 'notifications.native' && version_compare($version, '7.0.0-dev.1', '>=') && version_compare($version, '9.0.0', '<')
-			&& AppEnablement::forAnyone($this->apps, 'notifications') && $this->surface->supported();
+		$installed = version_compare($version, '7.0.0-dev.1', '>=') && version_compare($version, '9.0.0', '<')
+			&& AppEnablement::forAnyone($this->apps, 'notifications');
+		if (!$installed) return false;
+		return $key === 'notifications.native' ? $this->surface->supported() : $this->surface->dismissSupported();
 	}
 }

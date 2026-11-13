@@ -24,13 +24,15 @@ try {
 	foreach ($pins[$major] as $file => $pin) {
 		$source = __DIR__ . '/../notifications-native/' . $major . '/' . $file;
 		if (hash_file('sha256', $source) !== $pin['sha256']) throw new RuntimeException('Notifications source SHA256 mismatch: ' . $file);
-		copy($source, $tree . '/apps/notifications/lib/' . $file);
+		$dest = $tree . '/apps/notifications/lib/' . $file;
+		if (!is_dir(dirname($dest))) mkdir(dirname($dest), recursive: true);
+		copy($source, $dest);
 	}
 	mkdir($tree . '/lib/public/Notification', recursive: true);
 	copy(__DIR__ . '/../notifications-native/' . $major . '/INotification.php', $tree . '/lib/public/Notification/INotification.php');
 	$fixture = require $target;
 	$parser = new SourceParser($tree);
-	foreach (['OCA\\Notifications\\Handler', 'OCP\\Notification\\INotification'] as $class) {
+	foreach (['OCA\\Notifications\\Handler', 'OCA\\Notifications\\Push', 'OCA\\Notifications\\Exceptions\\NotificationNotFoundException', 'OCP\\Notification\\INotification'] as $class) {
 		$surface = $parser->surface($class);
 		if ($surface === null) throw new RuntimeException('Missing pinned Notifications surface: ' . $class);
 		$fixture['classes'][$class] = $surface;

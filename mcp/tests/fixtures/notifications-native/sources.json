@@ -28,6 +28,14 @@
       "Action.php": {
         "url": "https://raw.githubusercontent.com/nextcloud/server/v34.0.0/lib/private/Notification/Action.php",
         "sha256": "9605fd1e7e544510fda88331c2eaf6b501d74942414207906cc6b5b882570ff5"
+      },
+      "Push.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/notifications/v34.0.0/lib/Push.php",
+        "sha256": "5756bee1a0d88f67ad4b0f198d31b12e5d561d56683875ab2fef193f4d9b3093"
+      },
+      "Exceptions/NotificationNotFoundException.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/notifications/v34.0.0/lib/Exceptions/NotificationNotFoundException.php",
+        "sha256": "f5c632d9ade1924079fb0365bdf41346e797a2437f18c58522a3aca82c4c2edf"
       }
     },
     "35": {
@@ -58,6 +66,14 @@
       "Action.php": {
         "url": "https://raw.githubusercontent.com/nextcloud/server/v35.0.0/lib/private/Notification/Action.php",
         "sha256": "837a6546cb0c9280cd6d8b0ac7b841f15ec7040f00321db9689ad9e8ef810ff8"
+      },
+      "Push.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/notifications/v35.0.0/lib/Push.php",
+        "sha256": "601c809daa5362d127b88077f064607a818896840c5f0a4037ac4a1d6e61c53e"
+      },
+      "Exceptions/NotificationNotFoundException.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/notifications/v35.0.0/lib/Exceptions/NotificationNotFoundException.php",
+        "sha256": "f5c632d9ade1924079fb0365bdf41346e797a2437f18c58522a3aca82c4c2edf"
       }
     }
   }

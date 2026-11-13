@@ -32,6 +32,6 @@ final class NotificationsSchema {
 		return new ToolDefinition('notifications_dismiss', 'notifications', 'dismiss', self::DISMISS, [
 			'type' => 'object', 'additionalProperties' => false, 'required' => ['id'],
 			'properties' => ['id' => ['type' => 'integer', 'minimum' => 1]],
-		], app: 'notifications', destructiveHint: true, requires: ['notifications.native']);
+		], app: 'notifications', destructiveHint: true, requires: ['notifications.dismiss']);
 	}
 }

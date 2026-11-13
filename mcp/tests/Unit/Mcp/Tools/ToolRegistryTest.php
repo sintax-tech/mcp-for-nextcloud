@@ -133,7 +133,7 @@ final class ToolRegistryTest extends TestCase {
 				$definitions = array_map(static function (array $definition): array { unset($definition['requires']); return $definition; }, $definitions);
 			}
 			if ($instance instanceof \OCA\Mcp\Modules\Notifications\NotificationsModule) {
-				// notifications_dismiss requires notifications.native; this fixture admits it as a supporting installation.
+				// notifications_dismiss requires notifications.dismiss; this fixture admits it as a supporting installation.
 				$definitions = array_map(static function (array $definition): array { unset($definition['requires']); return $definition; }, $definitions);
 			}
 			$module = new class($definitions) implements ToolModule {

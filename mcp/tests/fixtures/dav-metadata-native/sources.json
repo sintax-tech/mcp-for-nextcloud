@@ -61,6 +61,10 @@
       "lib/public/Comments/ICommentsManager.php": {
         "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/lib/public/Comments/ICommentsManager.php",
         "sha256": "465cda4f7ed763e3a952bc67bf6caf22df3b57754db81b7553b2a4111165dc45"
+      },
+      "apps/dav/lib/SystemTag/SystemTagsByIdCollection.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/SystemTag/SystemTagsByIdCollection.php",
+        "sha256": "66ef999ad2e1e6161712272d74ac794e0ea0e7f32163afd9e74a64649beffa35"
       }
     },
     "35": {
@@ -123,6 +127,10 @@
       "lib/public/Comments/ICommentsManager.php": {
         "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/lib/public/Comments/ICommentsManager.php",
         "sha256": "e0ecaf762abb107beae9766ca9e2d1dec279978d114400ff5fda99a80c9756cd"
+      },
+      "apps/dav/lib/SystemTag/SystemTagsByIdCollection.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/SystemTag/SystemTagsByIdCollection.php",
+        "sha256": "8866898acd023c1f04c7c55efda47ace4b0bb3afc3534f8a4f6912001614fea3"
       }
     }
   }

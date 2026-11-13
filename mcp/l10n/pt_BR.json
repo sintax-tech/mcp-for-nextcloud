@@ -2149,6 +2149,18 @@
     "List file tags" : "Listar etiquetas do arquivo",
     "Using %s through MCP is not allowed for your account." : "Usar %s pelo MCP não é permitido para sua conta.",
     "This step could not be confirmed and may have been applied. Check it in Nextcloud before trying again." : "Não foi possível confirmar esta etapa e ela pode ter sido aplicada. Confira no Nextcloud antes de tentar de novo.",
-    "The room was created, but its link could not be built. Open it in Talk and do not create it again." : "A sala foi criada, mas não foi possível montar o link dela. Abra-a no Talk e não a crie de novo."
+    "The room was created, but its link could not be built. Open it in Talk and do not create it again." : "A sala foi criada, mas não foi possível montar o link dela. Abra-a no Talk e não a crie de novo.",
+    "Add or remove a file tag" : "Adicionar ou remover etiqueta do arquivo",
+    "Give exactly one of tag_id and tag." : "Informe exatamente um entre tag_id e tag.",
+    "Changing file tags is not allowed for your account." : "Sua conta não tem permissão para mudar etiquetas de arquivos.",
+    "The file or its tags changed since the plan. Review this new plan before confirming again." : "O arquivo ou as etiquetas dele mudaram desde o plano. Revise este novo plano antes de confirmar de novo.",
+    "Nextcloud did not finish the tag change. The tags read back now are shown." : "O Nextcloud não concluiu a mudança da etiqueta. As etiquetas mostradas são as lidas agora.",
+    "Nothing to do: %s already has the tag %s." : "Nada a fazer: %s já tem a etiqueta %s.",
+    "Nothing to do: %s does not have the tag %s." : "Nada a fazer: %s não tem a etiqueta %s.",
+    "Add the tag %s to %s." : "Adicionar a etiqueta %s a %s.",
+    "Remove the tag %s from %s." : "Remover a etiqueta %s de %s.",
+    "Everyone who can see this item and this tag sees the change." : "Todos que veem este item e esta etiqueta veem a mudança.",
+    "Rules that react to tags, such as automated tagging, retention or access control, may act on it." : "Regras que reagem a etiquetas, como etiquetagem automática, retenção ou controle de acesso, podem agir sobre ele.",
+    "Its content does not change and nothing is deleted." : "O conteúdo não muda e nada é apagado."
 },"pluralForm" : "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

@@ -24,7 +24,7 @@ use Sabre\DAV\Tree;
 /**
  * The comments and system-tag part of the native DAV server, built from the verbatim server sources of one pin.
  *
- * Mirrors the Files module's embedded server: the native `comments` and `systemtags-relations` collections, the native
+ * Mirrors the Files module's embedded server: the native `comments`, `systemtags-relations` and `systemtags` collections, the native
  * `CustomPrincipalPlugin`, `SystemTagPlugin` and `CommentsPlugin`, the request URL set before the plugins. The only
  * addition is an authentication backend that records every call, so a test can prove no backend ever runs.
  */
@@ -39,6 +39,7 @@ final class MetadataDavNative implements MetadataServer {
 		'apps/dav/lib/Comments/CommentsPlugin.php',
 		'apps/dav/lib/Connector/Sabre/FilesPlugin.php',
 		'apps/dav/lib/SystemTag/SystemTagNode.php',
+		'apps/dav/lib/SystemTag/SystemTagsByIdCollection.php',
 		'apps/dav/lib/SystemTag/SystemTagMappingNode.php',
 		'apps/dav/lib/SystemTag/SystemTagsObjectMappingCollection.php',
 		'apps/dav/lib/SystemTag/SystemTagsObjectTypeCollection.php',
@@ -51,6 +52,8 @@ final class MetadataDavNative implements MetadataServer {
 
 	/** @var list<string> paths of every server built */
 	public array $built = [];
+	/** @var list<string> method and path of every request the native pipeline started */
+	public array $methods = [];
 	/** @var int authentication backend calls across every server */
 	public int $backendCalls = 0;
 	/** @var Server|null last server built */
@@ -94,6 +97,7 @@ final class MetadataDavNative implements MetadataServer {
 		$root = new SimpleCollection('root', [
 			new \OCA\DAV\Comments\RootCollection($this->comments, $this->users, $this->session, $this->events, new NullLogger()),
 			new \OCA\DAV\SystemTag\SystemTagsRelationsCollection($this->tags, $this->mapper, $this->session, $this->groups, $this->events, $this->roots),
+			new \OCA\DAV\SystemTag\SystemTagsByIdCollection($this->tags, $this->session, $this->groups, $this->mapper),
 		]);
 		$server = new Server(new Tree($root));
 		$server->setBaseUri('/remote.php/dav/');
@@ -103,6 +107,9 @@ final class MetadataDavNative implements MetadataServer {
 		$server->addPlugin($auth);
 		$server->addPlugin(new \OCA\DAV\SystemTag\SystemTagPlugin($this->tags, $this->groups, $this->session, $this->roots, $this->mapper));
 		$server->addPlugin(new \OCA\DAV\Comments\CommentsPlugin($this->comments, $this->session));
+		$server->on('beforeMethod:*', function (\Sabre\HTTP\RequestInterface $request): void {
+			$this->methods[] = $request->getMethod() . ' ' . $request->getPath();
+		});
 		$server->on('afterMethod:*', function (): void {
 			if ($this->afterMethod !== null) {
 				($this->afterMethod)();

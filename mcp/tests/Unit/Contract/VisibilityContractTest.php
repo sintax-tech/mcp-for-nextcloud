@@ -81,6 +81,7 @@ final class VisibilityContractTest extends TestCase {
 		'files_create' => 'create',
 		'files_list_tags' => 'list_tags',
 		'files_read_comments' => 'read_comments',
+		'files_set_tag' => 'set_tag',
 		'notes_list' => 'notes_list',
 		'notes_search' => 'notes_search',
 		'notes_read' => 'notes_read',
@@ -419,6 +420,16 @@ final class VisibilityContractTest extends TestCase {
 			$this->assertTrue($res['isError'] ?? false);
 			$this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
 			$assertNoLeak($res['content'][0]['text']);
+		}
+
+		// 5d. files_set_tag
+		foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt', '/SecretFolder'] as $p) {
+			foreach ([[], ['confirm' => true, 'plan_state' => str_repeat('a', 64), 'confirm_shared' => true]] as $confirm) {
+				$res = $registry->call('files_set_tag', ['path' => $p, 'tag' => 'Contract', 'assigned' => true] + $confirm, 'alice');
+				$this->assertTrue($res['isError'] ?? false);
+				$this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+				$assertNoLeak($res['content'][0]['text']);
+			}
 		}
 
 		// 6. files_version_read
@@ -944,6 +955,8 @@ final class VisibilityContractTest extends TestCase {
 			['files_list_tags', ['path' => '/private']],
 			['files_read_comments', ['path' => '/private.jpg']],
 			['files_read_comments', ['path' => '/private']],
+			['files_set_tag', ['path' => '/private.jpg', 'tag' => 'Contract', 'assigned' => true]],
+			['files_set_tag', ['path' => '/private', 'tag_id' => '7', 'assigned' => false]],
 			['files_version_read', ['path' => '/private.jpg', 'version' => '1']],
 			['files_version_restore', ['path' => '/private.jpg', 'version' => '1']],
 			['files_edit', ['path' => '/private.jpg', 'content' => 'x']],
@@ -966,7 +979,7 @@ final class VisibilityContractTest extends TestCase {
 		];
 		foreach ($cases as [$tool, $args]) {
 			foreach ([false, true] as $confirm) {
-				$write = in_array($tool, ['files_version_restore', 'files_edit', 'files_replace', 'files_checkout', 'files_copy', 'files_move', 'files_share', 'files_unshare', 'notes_edit', 'notes_move', 'notes_delete'], true);
+				$write = in_array($tool, ['files_set_tag', 'files_version_restore', 'files_edit', 'files_replace', 'files_checkout', 'files_copy', 'files_move', 'files_share', 'files_unshare', 'notes_edit', 'notes_move', 'notes_delete'], true);
 				$input = $write ? $args + ['confirm' => $confirm] : $args;
 				$excluded = $registry->call($tool, $input, 'alice');
 				$nodes = $this->tree->nodes;

@@ -970,6 +970,62 @@
                         }
                     },
                     {
+                        "name": "files_set_tag",
+                        "title": "Add or remove a file tag",
+                        "description": "Assign one existing collaborative (system) tag to one file or folder, or remove it, through the native Nextcloud tag relation. Name the tag by tag_id (from files_list_tags) or by its exact name, never both. Nextcloud decides as in the web interface: the tag must be one the user may see and assign, and the user must be allowed to change the file. Tags the administrator uses to hide files from MCP can never be assigned or removed here. A hidden, missing or unchangeable file and an unknown or unusable tag get the same not-found answer. Tags are seen by everyone who sees the file and may start automated rules. No file content changes and nothing is deleted. Requires the files.tags permission, a plan, confirm: true with its plan_state, and confirm_shared for a file of someone else.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "path": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                                },
+                                "tag_id": {
+                                    "type": "string",
+                                    "pattern": "^[1-9][0-9]{0,18}$",
+                                    "description": "ID of an existing tag, as files_list_tags returns it. Give tag_id or tag, not both."
+                                },
+                                "tag": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 255,
+                                    "description": "Exact name of an existing tag, as Nextcloud shows it. Give tag_id or tag, not both."
+                                },
+                                "assigned": {
+                                    "type": "boolean",
+                                    "description": "true to assign the tag to the file, false to remove it from the file."
+                                },
+                                "confirm_shared": {
+                                    "type": "boolean",
+                                    "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                                },
+                                "plan_state": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                                },
+                                "confirm": {
+                                    "type": "boolean",
+                                    "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "path",
+                                "assigned"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "Add or remove a file tag",
+                            "readOnlyHint": false,
+                            "destructiveHint": false,
+                            "idempotentHint": false,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
                         "name": "notes_list",
                         "title": "List notes",
                         "description": "Lists the notes (Notes app) of the user.",

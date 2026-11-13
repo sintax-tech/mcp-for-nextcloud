@@ -2149,6 +2149,18 @@
     "List file tags" : "Datei-Schlagwörter auflisten",
     "Using %s through MCP is not allowed for your account." : "Die Verwendung von %s über MCP ist für Ihr Konto nicht erlaubt.",
     "This step could not be confirmed and may have been applied. Check it in Nextcloud before trying again." : "Dieser Schritt konnte nicht bestätigt werden und wurde möglicherweise ausgeführt. Prüfen Sie ihn in Nextcloud, bevor Sie es erneut versuchen.",
-    "The room was created, but its link could not be built. Open it in Talk and do not create it again." : "Der Raum wurde erstellt, aber sein Link konnte nicht erzeugt werden. Öffnen Sie ihn in Talk und erstellen Sie ihn nicht erneut."
+    "The room was created, but its link could not be built. Open it in Talk and do not create it again." : "Der Raum wurde erstellt, aber sein Link konnte nicht erzeugt werden. Öffnen Sie ihn in Talk und erstellen Sie ihn nicht erneut.",
+    "Add or remove a file tag" : "Datei-Schlagwort hinzufügen oder entfernen",
+    "Give exactly one of tag_id and tag." : "Gib genau eines von tag_id und tag an.",
+    "Changing file tags is not allowed for your account." : "Dein Konto darf keine Datei-Schlagwörter ändern.",
+    "The file or its tags changed since the plan. Review this new plan before confirming again." : "Die Datei oder ihre Schlagwörter haben sich seit dem Plan geändert. Prüfe diesen neuen Plan, bevor du erneut bestätigst.",
+    "Nextcloud did not finish the tag change. The tags read back now are shown." : "Nextcloud hat die Schlagwort-Änderung nicht abgeschlossen. Angezeigt werden die jetzt gelesenen Schlagwörter.",
+    "Nothing to do: %s already has the tag %s." : "Nichts zu tun: %s hat das Schlagwort %s bereits.",
+    "Nothing to do: %s does not have the tag %s." : "Nichts zu tun: %s hat das Schlagwort %s nicht.",
+    "Add the tag %s to %s." : "Das Schlagwort %s zu %s hinzufügen.",
+    "Remove the tag %s from %s." : "Das Schlagwort %s von %s entfernen.",
+    "Everyone who can see this item and this tag sees the change." : "Alle, die dieses Element und dieses Schlagwort sehen, sehen die Änderung.",
+    "Rules that react to tags, such as automated tagging, retention or access control, may act on it." : "Regeln, die auf Schlagwörter reagieren, etwa automatisches Verschlagworten, Aufbewahrung oder Zugriffskontrolle, können darauf wirken.",
+    "Its content does not change and nothing is deleted." : "Der Inhalt ändert sich nicht und nichts wird gelöscht."
 },"pluralForm" : "nplurals=2; plural=(n != 1);"
 }

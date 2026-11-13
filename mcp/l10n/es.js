@@ -2150,6 +2150,18 @@ OC.L10N.register(
     "List file tags" : "Listar etiquetas del archivo",
     "Using %s through MCP is not allowed for your account." : "Usar %s mediante MCP no está permitido para su cuenta.",
     "This step could not be confirmed and may have been applied. Check it in Nextcloud before trying again." : "No se pudo confirmar este paso y puede que se haya aplicado. Compruébelo en Nextcloud antes de volver a intentarlo.",
-    "The room was created, but its link could not be built. Open it in Talk and do not create it again." : "La sala se creó, pero no se pudo generar su enlace. Ábrala en Talk y no la vuelva a crear."
+    "The room was created, but its link could not be built. Open it in Talk and do not create it again." : "La sala se creó, pero no se pudo generar su enlace. Ábrala en Talk y no la vuelva a crear.",
+    "Add or remove a file tag" : "Añadir o quitar etiqueta del archivo",
+    "Give exactly one of tag_id and tag." : "Indique exactamente uno de tag_id y tag.",
+    "Changing file tags is not allowed for your account." : "Su cuenta no tiene permiso para cambiar etiquetas de archivos.",
+    "The file or its tags changed since the plan. Review this new plan before confirming again." : "El archivo o sus etiquetas cambiaron desde el plan. Revise este nuevo plan antes de confirmar de nuevo.",
+    "Nextcloud did not finish the tag change. The tags read back now are shown." : "Nextcloud no terminó el cambio de etiqueta. Se muestran las etiquetas leídas ahora.",
+    "Nothing to do: %s already has the tag %s." : "Nada que hacer: %s ya tiene la etiqueta %s.",
+    "Nothing to do: %s does not have the tag %s." : "Nada que hacer: %s no tiene la etiqueta %s.",
+    "Add the tag %s to %s." : "Añadir la etiqueta %s a %s.",
+    "Remove the tag %s from %s." : "Quitar la etiqueta %s de %s.",
+    "Everyone who can see this item and this tag sees the change." : "Todas las personas que ven este elemento y esta etiqueta ven el cambio.",
+    "Rules that react to tags, such as automated tagging, retention or access control, may act on it." : "Las reglas que reaccionan a etiquetas, como el etiquetado automático, la retención o el control de acceso, pueden actuar sobre él.",
+    "Its content does not change and nothing is deleted." : "Su contenido no cambia y no se elimina nada."
     },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

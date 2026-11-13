@@ -25,7 +25,8 @@ use Sabre\HTTP\Request;
 use Throwable;
 
 /**
- * Reads the comments and the system tags of one file through the native DAV pipeline, as the authenticated actor.
+ * Reads the comments and the system tags of one file, and changes one tag relation, through the native DAV pipeline,
+ * as the authenticated actor.
  *
  * The MCP Files gate comes first, because the DAV app does not know it: Files scope, Guests external storage,
  * exclusion tags and the backup folder ({@see FilesAccessGuard}), on every alias of the file ID in the actor's root.
@@ -36,6 +37,12 @@ use Throwable;
  * (apps/dav/lib/SystemTag/SystemTagsRelationsCollection.php:40-48, SystemTagsObjectMappingCollection). A file
  * outside the gate, missing, or refused by DAV gives the same failure. Reading never moves the read marker: the
  * REPORT only reads (CommentsPlugin::onReport); the marker moves on POST and PROPPATCH, which this class never sends.
+ *
+ * The only writes are one tag relation of one admitted file ({@see self::relate()}): PUT or DELETE on
+ * `systemtags-relations/files/<file ID>/<tag ID>`, built here from two integers, never PROPPATCH or POST and never a
+ * Files node. The native collections decide them as for a web client: SystemTagsObjectMappingCollection::createFile
+ * (v34.0.4:39-58 / v35.0.1:40-59) and SystemTagMappingNode::delete (102-119 in both) check canUserSeeTag,
+ * canUserAssignTag and UPDATE on one alias of the file (SystemTagsRelationsCollection.php:53 / 54).
  */
 final class FileMetadataDav {
 	/** The native comments REPORT (CommentsPlugin::REPORT_NAME). */
@@ -47,6 +54,10 @@ final class FileMetadataDav {
 		. '<D:propfind xmlns:D="DAV:" xmlns:oc="http://owncloud.org/ns"><D:prop>'
 		. '<oc:id/><oc:display-name/><oc:user-visible/><oc:user-assignable/><oc:can-assign/>'
 		. '</D:prop></D:propfind>';
+	/** DAV answers that read as a missing file, unchanged for the reads. */
+	private const READ_REFUSALS = [403, 404];
+	/** DAV answers that read as a missing file or tag on a relation write: 412 is createFile's unknown or unseen tag. */
+	private const WRITE_REFUSALS = [403, 404, 412];
 	/** Hard limit of one native REPORT page (CommentsPlugin::onReport clamps to 1..100). */
 	public const MAX_COMMENTS = 100;
 	/** Alias bound, as for every Files read by ID. */
@@ -104,6 +115,40 @@ final class FileMetadataDav {
 	}
 
 	/**
+	 * The system tags the actor may see in the whole instance, as the native multistatus document of `systemtags/`
+	 * (SystemTagsByIdCollection::getChildren: user-visible tags, every tag for an administrator).
+	 *
+	 * @param string $actor authenticated MCP actor
+	 * @return DavResult status 207 and the multistatus body (the collection itself, then one response per tag)
+	 * @throws RuntimeException when the session or the native pipeline answers unexpectedly
+	 */
+	public function catalog(string $actor): DavResult {
+		return $this->send($actor, 'PROPFIND', 'systemtags/', ['Content-Type' => 'application/xml', 'Depth' => '1'], self::TAGS_PROPFIND);
+	}
+
+	/**
+	 * Assigns or removes one existing tag on one file, through the native relation collection, as the actor.
+	 *
+	 * @param string $actor authenticated MCP actor
+	 * @param int $fileId file ID in the actor's tree, admitted again here
+	 * @param string $tagId positive tag ID
+	 * @param bool $assigned true to assign (PUT, 201), false to remove (DELETE, 204)
+	 * @return void
+	 * @throws InvalidArgumentException when the tag ID is not a positive integer
+	 * @throws ToolFailure when the file is not reachable, or DAV refuses the tag or the file
+	 * @throws PolicyUnavailable when the Files scope cannot be read
+	 * @throws RuntimeException when the session or the native pipeline answers unexpectedly
+	 */
+	public function relate(string $actor, int $fileId, string $tagId, bool $assigned): void {
+		if (!ctype_digit($tagId) || ltrim($tagId, '0') === '') {
+			throw new InvalidArgumentException('Tag ID out of range');
+		}
+		$this->admit($actor, $fileId);
+		$this->send($actor, $assigned ? 'PUT' : 'DELETE', 'systemtags-relations/files/' . $fileId . '/' . $tagId, [], '',
+			$assigned ? 201 : 204, self::WRITE_REFUSALS);
+	}
+
+	/**
 	 * Refuses, like a missing file, an ID that has no alias in the actor's root or any alias the Files gate hides.
 	 *
 	 * @param string $actor authenticated MCP actor
@@ -135,15 +180,18 @@ final class FileMetadataDav {
 
 	/**
 	 * @param string $actor authenticated MCP actor
-	 * @param string $method DAV read method
+	 * @param string $method DAV method, fixed by the callers above
 	 * @param string $path request path below the DAV base
 	 * @param array<string,string> $headers request headers
 	 * @param string $body request body
-	 * @return DavResult the native multistatus answer
+	 * @param int $expected the only status that counts as done: 207 for the reads
+	 * @param list<int> $refusals DAV statuses answered like a missing file
+	 * @return DavResult the native answer
 	 * @throws ToolFailure when DAV refuses or does not find the file, with the same message as a missing file
 	 * @throws RuntimeException when the session or the native pipeline answers unexpectedly
 	 */
-	private function send(string $actor, string $method, string $path, array $headers, string $body): DavResult {
+	private function send(string $actor, string $method, string $path, array $headers, string $body, int $expected = 207,
+		array $refusals = self::READ_REFUSALS): DavResult {
 		$server = $this->servers->create($path);
 		$base = $server->getBaseUri();
 		$request = new Request($method, $base . $path, $headers, $body);
@@ -154,7 +202,7 @@ final class FileMetadataDav {
 			$this->logger->info('MCP DAV metadata read refused: {exception_class} (HTTP {http_code})', [
 				'app' => 'mcp', 'exception_class' => $error::class, 'http_code' => $error->getHTTPCode(),
 			]);
-			if (in_array($error->getHTTPCode(), [403, 404], true)) {
+			if (in_array($error->getHTTPCode(), $refusals, true)) {
 				throw new ToolFailure(CommonMessages::notFound(), 404, $error);
 			}
 			throw new RuntimeException('DAV metadata read failed', 0, $error);
@@ -166,9 +214,9 @@ final class FileMetadataDav {
 			]);
 			throw new RuntimeException('DAV metadata dispatch failed', 0, $error);
 		}
-		if ($response->getStatus() !== 207) {
+		if ($response->getStatus() !== $expected) {
 			throw new RuntimeException('Unexpected DAV metadata status');
 		}
-		return new DavResult(207, null, $response->getBodyAsString());
+		return new DavResult($expected, null, $response->getBodyAsString());
 	}
 }

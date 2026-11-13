@@ -1,0 +1,602 @@
+{
+    "tool": "files_set_tag",
+    "grant": "files.tags",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "path": "/f42.txt",
+                "tag": "Contract",
+                "assigned": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Add or remove a file tag**\n\nAdd the tag **Contract** to **/f42.txt**.\n\n- Everyone who can see this item and this tag sees the change.\n- Rules that react to tags, such as automated tagging, retention or access control, may act on it.\n- Its content does not change and nothing is deleted.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_set_tag",
+                            "title": "Add or remove a file tag",
+                            "action": "files_set_tag",
+                            "path": "/f42.txt",
+                            "isDir": false,
+                            "tag": {
+                                "id": "1",
+                                "name": "Contract"
+                            },
+                            "change": "assign",
+                            "assigned_now": false,
+                            "nothing_to_do": false,
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": true,
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "relations": {
+                    "42": [],
+                    "43": [],
+                    "56": [],
+                    "77": [],
+                    "45": [],
+                    "46": [],
+                    "47": []
+                },
+                "writes": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "path": "/f42.txt",
+                "tag": "Contract",
+                "assigned": true,
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "relations": {
+                    "42": [],
+                    "43": [],
+                    "56": [],
+                    "77": [],
+                    "45": [],
+                    "46": [],
+                    "47": []
+                },
+                "writes": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "path": "/f42.txt",
+                "tag": "Contract",
+                "assigned": true,
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Add or remove a file tag**\n\nAdd the tag **Contract** to **/f42.txt**.\n\n- Everyone who can see this item and this tag sees the change.\n- Rules that react to tags, such as automated tagging, retention or access control, may act on it.\n- Its content does not change and nothing is deleted.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_set_tag",
+                            "title": "Add or remove a file tag",
+                            "action": "files_set_tag",
+                            "path": "/f42.txt",
+                            "isDir": false,
+                            "tag": {
+                                "id": "1",
+                                "name": "Contract"
+                            },
+                            "change": "assign",
+                            "assigned_now": false,
+                            "nothing_to_do": false,
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": true,
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "relations": {
+                    "42": [],
+                    "43": [],
+                    "56": [],
+                    "77": [],
+                    "45": [],
+                    "46": [],
+                    "47": []
+                },
+                "writes": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "arguments": {
+                "path": "/f42.txt",
+                "tag": "Contract",
+                "assigned": true,
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Add or remove a file tag**\n\nNothing to do: **/f42.txt** already has the tag **Contract**.\n\n### Warnings\n\n- The file or its tags changed since the plan. Review this new plan before confirming again.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_set_tag",
+                            "title": "Add or remove a file tag",
+                            "action": "files_set_tag",
+                            "path": "/f42.txt",
+                            "isDir": false,
+                            "tag": {
+                                "id": "1",
+                                "name": "Contract"
+                            },
+                            "change": "assign",
+                            "assigned_now": true,
+                            "nothing_to_do": true,
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": true,
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "plan_state": "<plan_state#2>",
+                            "warnings": [
+                                {
+                                    "message": "The file or its tags changed since the plan. Review this new plan before confirming again."
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "state": {
+                "relations": {
+                    "42": [
+                        "1"
+                    ],
+                    "43": [],
+                    "56": [],
+                    "77": [],
+                    "45": [],
+                    "46": [],
+                    "47": []
+                },
+                "writes": []
+            }
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "path": "/f45.txt",
+                "tag": "Contract",
+                "assigned": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Add or remove a file tag**\n\nAdd the tag **Contract** to **/f45.txt**.\n\n- Everyone who can see this item and this tag sees the change.\n- Rules that react to tags, such as automated tagging, retention or access control, may act on it.\n- Its content does not change and nothing is deleted.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#3>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_set_tag",
+                            "title": "Add or remove a file tag",
+                            "action": "files_set_tag",
+                            "path": "/f45.txt",
+                            "isDir": false,
+                            "tag": {
+                                "id": "1",
+                                "name": "Contract"
+                            },
+                            "change": "assign",
+                            "assigned_now": false,
+                            "nothing_to_do": false,
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": true,
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "plan_state": "<plan_state#3>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "relations": {
+                    "42": [
+                        "1"
+                    ],
+                    "43": [],
+                    "56": [],
+                    "77": [],
+                    "45": [],
+                    "46": [],
+                    "47": []
+                },
+                "writes": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "path": "/f45.txt",
+                "tag": "Contract",
+                "assigned": true,
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"changed\": true,\n    \"path\": \"/f45.txt\",\n    \"tag\": {\n        \"id\": \"1\",\n        \"name\": \"Contract\"\n    },\n    \"assigned\": true,\n    \"tags\": [\n        {\n            \"id\": \"1\",\n            \"name\": \"Contract\",\n            \"user_visible\": true,\n            \"user_assignable\": true,\n            \"can_assign\": true\n        }\n    ]\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "relations": {
+                    "42": [
+                        "1"
+                    ],
+                    "43": [],
+                    "56": [],
+                    "77": [],
+                    "45": [
+                        "1"
+                    ],
+                    "46": [],
+                    "47": []
+                },
+                "writes": [
+                    [
+                        "assign",
+                        "45",
+                        "1"
+                    ]
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "path": "/f46.txt",
+                "tag": "Contract",
+                "assigned": true,
+                "confirm": true,
+                "plan_state": "<plan_state#4>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "relations": {
+                    "42": [
+                        "1"
+                    ],
+                    "43": [],
+                    "56": [],
+                    "77": [],
+                    "45": [
+                        "1"
+                    ],
+                    "46": [],
+                    "47": []
+                },
+                "writes": [
+                    [
+                        "assign",
+                        "45",
+                        "1"
+                    ]
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "path": "/f46.txt",
+                "tag": "Contract",
+                "assigned": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Add or remove a file tag**\n\nAdd the tag **Contract** to **/f46.txt**.\n\n- Everyone who can see this item and this tag sees the change.\n- Rules that react to tags, such as automated tagging, retention or access control, may act on it.\n- Its content does not change and nothing is deleted.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#4>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_set_tag",
+                            "title": "Add or remove a file tag",
+                            "action": "files_set_tag",
+                            "path": "/f46.txt",
+                            "isDir": false,
+                            "tag": {
+                                "id": "1",
+                                "name": "Contract"
+                            },
+                            "change": "assign",
+                            "assigned_now": false,
+                            "nothing_to_do": false,
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": true,
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "plan_state": "<plan_state#4>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "relations": {
+                    "42": [
+                        "1"
+                    ],
+                    "43": [],
+                    "56": [],
+                    "77": [],
+                    "45": [
+                        "1"
+                    ],
+                    "46": [],
+                    "47": []
+                },
+                "writes": [
+                    [
+                        "assign",
+                        "45",
+                        "1"
+                    ]
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "path": "/f46.txt",
+                "tag": "Contract",
+                "assigned": true,
+                "confirm": true,
+                "plan_state": "<plan_state#4>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"changed\": true,\n    \"path\": \"/f46.txt\",\n    \"tag\": {\n        \"id\": \"1\",\n        \"name\": \"Contract\"\n    },\n    \"assigned\": true,\n    \"tags\": [\n        {\n            \"id\": \"1\",\n            \"name\": \"Contract\",\n            \"user_visible\": true,\n            \"user_assignable\": true,\n            \"can_assign\": true\n        }\n    ]\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "relations": {
+                    "42": [
+                        "1"
+                    ],
+                    "43": [],
+                    "56": [],
+                    "77": [],
+                    "45": [
+                        "1"
+                    ],
+                    "46": [
+                        "1"
+                    ],
+                    "47": []
+                },
+                "writes": [
+                    [
+                        "assign",
+                        "45",
+                        "1"
+                    ],
+                    [
+                        "assign",
+                        "46",
+                        "1"
+                    ]
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "arguments": {
+                "path": "/f47.txt",
+                "tag": "Contract",
+                "assigned": true,
+                "confirm": true,
+                "plan_state": "<plan_state#5>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "relations": {
+                    "42": [
+                        "1"
+                    ],
+                    "43": [],
+                    "56": [],
+                    "77": [],
+                    "45": [
+                        "1"
+                    ],
+                    "46": [
+                        "1"
+                    ],
+                    "47": []
+                },
+                "writes": [
+                    [
+                        "assign",
+                        "45",
+                        "1"
+                    ],
+                    [
+                        "assign",
+                        "46",
+                        "1"
+                    ]
+                ]
+            }
+        }
+    ]
+}

@@ -48,6 +48,7 @@ final class ToolTitles {
 			'files_version_read' => Translator::t('Read file version'),
 			'files_version_restore' => Translator::t('Restore file version'),
 			'files_list_tags' => Translator::t('List file tags'),
+			'files_set_tag' => Translator::t('Add or remove a file tag'),
 			'files_image_view' => Translator::t('View image'),
 			'files_images_view' => Translator::t('View several images'),
 			'files_image_search' => Translator::t('Search images'),

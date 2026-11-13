@@ -3086,7 +3086,7 @@
                                         "maxLength": 100,
                                         "minimum": 1
                                     },
-                                    "description": "Optional labels for the new card, at most 20, like the labels of a GitHub issue: a title (for example \"bug\" or \"sev:medium\") or the ID of a label of the board. A title matches an existing label exactly; case-only differences require an explicit label ID; a title the board does not have yet is created with a default colour, which needs deck.labels and permission to manage the board. The plan lists which labels are assigned and which are created."
+                                    "description": "Optional labels for the new card, at most 20, like the labels of a GitHub issue: a title (for example \"bug\" or \"sev:medium\") or the ID of a label of the board. A title matches an existing label exactly; case-only differences require an explicit label ID; a title the board does not have yet is created with a default colour, which needs permission to manage the board. Any use of labels requires deck.labels, including existing IDs or an empty list. The plan lists which labels are assigned and which are created."
                                 },
                                 "plan_state": {
                                     "type": "string",
@@ -3787,7 +3787,7 @@
                         "annotations": {
                             "title": "Create Deck label",
                             "readOnlyHint": false,
-                            "destructiveHint": true,
+                            "destructiveHint": false,
                             "idempotentHint": false,
                             "openWorldHint": false
                         }

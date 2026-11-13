@@ -1,13 +1,14 @@
 OC.L10N.register(
     "mcp",
     {
+    "Managing board labels requires the deck.labels permission of this app. Ask an administrator." : "Gerenciar etiquetas do quadro exige a permissão deck.labels deste app. Consulte um administrador.",
     "Create Deck label" : "Criar etiqueta do Deck",
     "Change Deck label" : "Alterar etiqueta do Deck",
     "Delete Deck label" : "Excluir etiqueta do Deck",
     "The labels of this board cannot be changed: the board is archived or deleted, or you cannot manage it." : "As etiquetas deste quadro não podem ser alteradas: o quadro está arquivado ou excluído, ou você não pode gerenciá-lo.",
     "The label changed since the plan was shown. Review and approve the new plan before trying again." : "A etiqueta mudou desde que o plano foi mostrado. Revise e aprove o novo plano antes de tentar novamente.",
     "The board already has a label named %s, ignoring letter case. Use deck_list_labels to find it, or choose another title." : "O quadro já tem uma etiqueta chamada %s, sem diferenciar maiúsculas e minúsculas. Use deck_list_labels para encontrá-la ou escolha outro título.",
-    "Several labels of the board match %s apart from letter case. Send the exact title or the label ID." : "Várias etiquetas do quadro correspondem a %s, exceto por maiúsculas e minúsculas. Envie o título exato ou o ID da etiqueta.",
+    "Label titles conflict apart from letter case: %s. Send an exact title or a label ID; do not request case-only variants together." : "Os títulos de etiquetas conflitam quanto a maiúsculas e minúsculas: %s. Envie um título exato ou um ID de etiqueta; não solicite juntas variantes que diferem apenas em maiúsculas e minúsculas.",
     "The board of this list has no label with ID %s. Use deck_list_labels for its labels, or send a title." : "O quadro desta lista não tem etiqueta com o ID %s. Use deck_list_labels para ver as etiquetas dele ou envie um título.",
     "send a new title, a new color or both" : "envie um título novo, uma cor nova ou ambos",
     "use at most 20 label titles or positive label IDs" : "use no máximo 20 títulos de etiqueta ou IDs de etiqueta positivos",

@@ -1,13 +1,14 @@
 OC.L10N.register(
     "mcp",
     {
+    "Managing board labels requires the deck.labels permission of this app. Ask an administrator." : "Das Verwalten von Board-Labels erfordert die Berechtigung deck.labels dieser App. Fragen Sie einen Administrator.",
     "Create Deck label" : "Deck-Label erstellen",
     "Change Deck label" : "Deck-Label ändern",
     "Delete Deck label" : "Deck-Label löschen",
     "The labels of this board cannot be changed: the board is archived or deleted, or you cannot manage it." : "Die Labels dieses Boards können nicht geändert werden: Das Board ist archiviert oder gelöscht, oder Sie dürfen es nicht verwalten.",
     "The label changed since the plan was shown. Review and approve the new plan before trying again." : "Das Label hat sich geändert, seit der Plan angezeigt wurde. Prüfen und bestätigen Sie den neuen Plan, bevor Sie es erneut versuchen.",
     "The board already has a label named %s, ignoring letter case. Use deck_list_labels to find it, or choose another title." : "Das Board hat bereits ein Label namens %s (ohne Berücksichtigung der Groß-/Kleinschreibung). Verwenden Sie deck_list_labels, um es zu finden, oder wählen Sie einen anderen Titel.",
-    "Several labels of the board match %s apart from letter case. Send the exact title or the label ID." : "Mehrere Labels des Boards entsprechen %s, abgesehen von der Groß-/Kleinschreibung. Senden Sie den exakten Titel oder die Label-ID.",
+    "Label titles conflict apart from letter case: %s. Send an exact title or a label ID; do not request case-only variants together." : "Label-Titel unterscheiden sich nur in der Groß-/Kleinschreibung: %s. Senden Sie einen exakten Titel oder eine Label-ID; fordern Sie Varianten, die sich nur in der Groß-/Kleinschreibung unterscheiden, nicht gemeinsam an.",
     "The board of this list has no label with ID %s. Use deck_list_labels for its labels, or send a title." : "Das Board dieser Liste hat kein Label mit der ID %s. Verwenden Sie deck_list_labels für seine Labels oder senden Sie einen Titel.",
     "send a new title, a new color or both" : "senden Sie einen neuen Titel, eine neue Farbe oder beides",
     "use at most 20 label titles or positive label IDs" : "verwenden Sie höchstens 20 Label-Titel oder positive Label-IDs",

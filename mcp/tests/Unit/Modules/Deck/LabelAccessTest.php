@@ -213,6 +213,15 @@ final class LabelAccessTest extends TestCase {
 		$this->labels->expects(self::never())->method('createLabel');
 		$result = $registry->call('deck_create_label', $args + ['confirm' => true, 'plan_state' => $plan['plan_state']], 'alice');
 		self::assertTrue($result['isError']);
+		self::assertStringContainsString('Managing board labels', $result['content'][0]['text']);
+		self::assertStringNotContainsString('creating a card', $result['content'][0]['text']);
+	}
+
+	/** @return void Client annotations distinguish additive creation from destructive label changes. */
+	public function testLabelWriteAnnotationsReflectTheirEffects(): void {
+		self::assertFalse(\OCA\Mcp\Modules\Deck\Tools\CreateLabel::definition()->destructiveHint);
+		self::assertTrue(\OCA\Mcp\Modules\Deck\Tools\UpdateLabel::definition()->destructiveHint);
+		self::assertTrue(\OCA\Mcp\Modules\Deck\Tools\DeleteLabel::definition()->destructiveHint);
 	}
 
 }

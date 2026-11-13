@@ -36,7 +36,7 @@ final class CardLabelPlan {
 			return null;
 		}
 		if (!$mayCreate()) {
-			throw new DeckRefusalException(DeckLabelMessages::creationNeedsGrant([]));
+			throw new DeckRefusalException(DeckLabelMessages::creationNeedsGrant());
 		}
 		$requested = self::requested($arguments['labels']);
 		if ($requested === []) {

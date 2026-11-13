@@ -25,7 +25,7 @@ final class DeckLabelMessages {
 
 	public const PARAM_LABEL_COLOR = 'Label colour as six hexadecimal digits, with or without a leading #, for example ff7a66.';
 
-	public const PARAM_CARD_LABELS = 'Optional labels for the new card, at most 20, like the labels of a GitHub issue: a title (for example "bug" or "sev:medium") or the ID of a label of the board. A title matches an existing label exactly; case-only differences require an explicit label ID; a title the board does not have yet is created with a default colour, which needs deck.labels and permission to manage the board. The plan lists which labels are assigned and which are created.';
+	public const PARAM_CARD_LABELS = 'Optional labels for the new card, at most 20, like the labels of a GitHub issue: a title (for example "bug" or "sev:medium") or the ID of a label of the board. A title matches an existing label exactly; case-only differences require an explicit label ID; a title the board does not have yet is created with a default colour, which needs permission to manage the board. Any use of labels requires deck.labels, including existing IDs or an empty list. The plan lists which labels are assigned and which are created.';
 
 	public const GUIDE_NOTE = 'Board labels: deck_create_label, deck_update_label (deck.labels) and deck_delete_label (deck.labels) need permission to manage the board. Titles resolve exactly; case-only alternatives require an explicit label ID. Deleting a label removes it from every card and cannot be undone. deck_create_card accepts labels as titles or IDs: existing ones are assigned and missing titles are created on the board in the same confirmation (deck.labels always required; native manage permission required for new labels), so a card can be filed like a GitHub issue with "bug" and "sev:medium". deck_edit_card_labels changes the labels of an existing card by ID.';
 
@@ -49,10 +49,10 @@ final class DeckLabelMessages {
 
 	/**
 	 * @param string $title Title sent for a card.
-	 * @return string Localized refusal of a title that several labels match.
+	 * @return string Localized refusal of case-only collisions in the board or request.
 	 */
 	public static function titleAmbiguous(string $title): string {
-		return Translator::t('Several labels of the board match %s apart from letter case. Send the exact title or the label ID.', [PlanText::inline($title)]);
+		return Translator::t('Label titles conflict apart from letter case: %s. Send an exact title or a label ID; do not request case-only variants together.', [PlanText::inline($title)]);
 	}
 
 	/**
@@ -81,12 +81,14 @@ final class DeckLabelMessages {
 		return Translator::t('The board has no label %s, and creating labels needs permission to manage the board. Use existing labels (deck_list_labels) or ask the board owner.', [self::titles($titles)]);
 	}
 
-	/**
-	 * @param list<string> $titles Titles the board does not have.
-	 * @return string Localized refusal when the deck.labels grant is missing.
-	 */
-	public static function creationNeedsGrant(array $titles): string {
-		return Translator::t('Using labels while creating a card requires the deck.labels permission of this app. Ask an administrator.', []);
+	/** @return string Localized refusal when card creation lacks the deck.labels grant. */
+	public static function creationNeedsGrant(): string {
+		return Translator::t('Using labels while creating a card requires the deck.labels permission of this app. Ask an administrator.');
+	}
+
+	/** @return string Localized refusal when board label management lacks its grant. */
+	public static function managementNeedsGrant(): string {
+		return Translator::t('Managing board labels requires the deck.labels permission of this app. Ask an administrator.');
 	}
 
 	/**

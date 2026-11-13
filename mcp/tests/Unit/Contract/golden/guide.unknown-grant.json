@@ -876,7 +876,7 @@
                                 "title": "Create Deck label",
                                 "description": "Creates a label on a Deck board you manage (owner or manage permission), without assigning it to any card. The title (1 to 100 characters) must not match an existing label of the board, ignoring letter case; use deck_list_labels first. Without color, the same title always gets the same colour. Requires deck.labels. Preview first, then confirm: true with the returned plan_state. To create a card with labels in one step, use deck_create_card with labels. If the resource belongs to somebody else, the agent MUST ask the user before sending confirm_shared: true.",
                                 "read_only": false,
-                                "destructive": true,
+                                "destructive": false,
                                 "confirmation": [
                                     "confirm",
                                     "confirm_shared"

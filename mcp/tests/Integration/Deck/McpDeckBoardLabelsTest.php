@@ -78,6 +78,7 @@ final class McpDeckBoardLabelsTest extends IntegrationTestCase {
 			self::assertSame(2, $after['cardCount']);
 		} finally {
 			self::assertTrue(DeckFixture::run(DeckFixture::OWNER, 'board-label-cleanup', $f)['cleaned']);
+			self::assertSame($f['grants'], DeckFixture::run(DeckFixture::OWNER, 'board-label-grants'));
 		}
 	}
 }

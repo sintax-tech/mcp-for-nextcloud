@@ -41,7 +41,7 @@ final class CreateLabel implements \OCA\Mcp\Mcp\Tools\WriteTool {
 				['boardId', 'title'],
 			),
 			'deck',
-			destructiveHint: true,
+			destructiveHint: false,
 		);
 	}
 

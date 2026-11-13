@@ -57,7 +57,7 @@ final class CreateCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 	public function handle(array $arguments, string $userId): array {
 		return $this->run(function () use ($arguments, $userId): array {
 			if (array_key_exists('labels', $arguments) && !($this->mayCreateLabels ?? static fn (): bool => false)()) {
-				throw new \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException(\OCA\Mcp\Modules\Deck\Presentation\DeckLabelMessages::creationNeedsGrant([]));
+				throw new \OCA\Mcp\Modules\Deck\Failures\DeckRefusalException(\OCA\Mcp\Modules\Deck\Presentation\DeckLabelMessages::creationNeedsGrant());
 			}
 			if (array_key_exists('labels', $arguments) && $this->approvedPlan !== null) {
 				\OCA\Mcp\Modules\Deck\Labels\LabelCreationPlan::require($arguments, ($this->approvedPlan)($arguments, $userId));
@@ -92,7 +92,7 @@ final class CreateCardHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 			$card = $this->afterApproximateWrite(
 				function () use ($userId, $stackId, $title, $description, $duedate, $arguments): object {
 					if (array_key_exists('labels', $arguments)) {
-						\OCA\Mcp\Modules\Deck\Labels\LabelGrantGate::require($this->mayCreateLabels);
+						\OCA\Mcp\Modules\Deck\Labels\LabelGrantGate::require($this->mayCreateLabels, true);
 					}
 					return $this->gateway->createCard($userId, $stackId, $title, $description, $duedate);
 				},

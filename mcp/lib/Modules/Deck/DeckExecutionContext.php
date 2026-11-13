@@ -279,7 +279,7 @@ final class DeckExecutionContext {
 	/** @param string $name Tool being called. @param string $userId Caller UID. @return void */
 	private function requireLabelGrant(string $name, string $userId): void {
 		if (in_array($name, ['deck_create_label', 'deck_update_label', 'deck_delete_label'], true) && !$this->labelsGranted($userId)) {
-			throw new ToolFailure(\OCA\Mcp\Modules\Deck\Presentation\DeckLabelMessages::creationNeedsGrant([]));
+			throw new ToolFailure(\OCA\Mcp\Modules\Deck\Presentation\DeckLabelMessages::managementNeedsGrant());
 		}
 	}
 	/** @return PlanState unchanged lazy instance-secret service */

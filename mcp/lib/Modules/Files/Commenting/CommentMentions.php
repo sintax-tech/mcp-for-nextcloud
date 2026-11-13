@@ -9,27 +9,30 @@ namespace OCA\Mcp\Modules\Files\Commenting;
 
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Files\Presentation\CommentingMessages;
-use OCP\IUserManager;
+use OCA\Mcp\Platform\Sharing\ShareableAccount;
 
 /**
  * The mentions a new comment will carry, read exactly as Nextcloud will read them, and who they will notify.
  *
  * {@see self::scan()} is `OC\Comments\Comment::getMentions()` with markdown support (lib/private/Comments/Comment.php
- * :208-261, the same in v34.0.4 and v35.0.1). The comments app notifies only the `user` mentions of existing accounts
- * other than the author (apps/comments/lib/Notification/Listener.php, evaluate and extractMentions). This first slice
- * keeps exactly those: a mention of any other kind (guest, email, group, team, federated) or of an account that does
- * not exist is refused before anything is written, so no mention is ever silently dropped or sent somewhere unseen.
+ * :208-261, the same in v34.0.4 and v35.0.1). The comments app notifies the `user` mentions of existing accounts other
+ * than the author (apps/comments/lib/Notification/Listener.php, evaluate and extractMentions). This first slice accepts
+ * only a `user` mention of the author or of an account the people search returns to the author
+ * ({@see ShareableAccount}: enumeration and group restrictions apply); any other kind (guest, email, group, team,
+ * federated) is refused by its syntax, and an account the search does not return is refused with one message whether
+ * it exists or not. So no mention is silently dropped, none reaches an account the author could not find, and the
+ * refusal reveals nothing about hidden accounts.
  */
 final class CommentMentions {
-	/** @param IUserManager $users the accounts the native listener checks with userExists */
-	public function __construct(private IUserManager $users) {
+	/** @param ShareableAccount $accounts the accounts the author may name, as the people search returns them */
+	public function __construct(private ShareableAccount $accounts) {
 	}
 
 	/**
 	 * @param string $message exact comment text
 	 * @param string $author the actor, never notified of their own mention
 	 * @return list<array{id:string,display_name:string}> the accounts the comment will notify
-	 * @throws ToolFailure when a mention is not of a single existing account
+	 * @throws ToolFailure when a mention is not of one account, or of an account the people search does not return
 	 */
 	public function notified(string $message, string $author): array {
 		$notified = [];
@@ -37,12 +40,14 @@ final class CommentMentions {
 			if ($mention['type'] !== 'user') {
 				throw new ToolFailure(CommentingMessages::unsupportedMention($mention['raw']));
 			}
-			if (!$this->users->userExists($mention['id'])) {
-				throw new ToolFailure(CommentingMessages::unknownMention($mention['raw']));
+			if ($mention['id'] === $author) {
+				continue;
 			}
-			if ($mention['id'] !== $author) {
-				$notified[] = ['id' => $mention['id'], 'display_name' => $this->users->getDisplayName($mention['id']) ?? $mention['id']];
+			$name = $this->accounts->displayName($mention['id']);
+			if ($name === null) {
+				throw new ToolFailure(CommentingMessages::unavailableMention($mention['raw']));
 			}
+			$notified[] = ['id' => $mention['id'], 'display_name' => $name];
 		}
 		return $notified;
 	}

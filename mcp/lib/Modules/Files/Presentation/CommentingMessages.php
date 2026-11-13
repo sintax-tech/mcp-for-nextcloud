@@ -50,10 +50,10 @@ final class CommentingMessages {
 
 	/**
 	 * @param string $mention the mention as written
-	 * @return string refusal of a mention of an account that does not exist
+	 * @return string refusal of a mention of an account the people search does not return, existing or not
 	 */
-	public static function unknownMention(string $mention): string {
-		return Translator::t('The comment mentions %s, but there is no such account. Remove the mention or use the account ID.', [$mention]);
+	public static function unavailableMention(string $mention): string {
+		return Translator::t('The comment mentions %s, who cannot be mentioned here. Mention only accounts that people search finds for you.', [$mention]);
 	}
 
 	/** @return string refusal when the files.comments grant is gone */

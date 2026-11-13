@@ -297,7 +297,7 @@
                                 "title": "Add file comment",
                                 "description": "Add a comment to a file or folder, as you, through Nextcloud's own comments service. Without confirm: true it only shows the plan. Mentions of existing accounts notify them; any other mention is refused. Adding a comment marks the file's comments as read for you. Comments are never edited or deleted.",
                                 "read_only": false,
-                                "destructive": false,
+                                "destructive": true,
                                 "confirmation": [
                                     "confirm",
                                     "confirm_shared"

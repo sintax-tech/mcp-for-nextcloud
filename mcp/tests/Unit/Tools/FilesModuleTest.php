@@ -152,6 +152,9 @@ final class FilesModuleTest extends TestCase {
 		$this->assertTrue($defs['files_set_tag']['destructiveHint'] ?? false, 'a tag relation change is published as destructive (plan, phase 5)');
 		$this->assertSame(['readOnlyHint' => false, 'destructiveHint' => true], array_intersect_key(
 			\OCA\Mcp\Mcp\Tools\ToolPresentation::annotations('files_set_tag', 'tags', true), ['readOnlyHint' => 0, 'destructiveHint' => 0]));
+		$this->assertTrue($defs['files_add_comment']['destructiveHint'] ?? false, 'a new comment is published as destructive (plan, phase 5)');
+		$this->assertSame(['readOnlyHint' => false, 'destructiveHint' => true], array_intersect_key(
+			\OCA\Mcp\Mcp\Tools\ToolPresentation::annotations('files_add_comment', 'comments', true), ['readOnlyHint' => 0, 'destructiveHint' => 0]));
 		$this->assertSame(['files_versions', 'files_versions', 'files_versions'],
 			array_values(array_filter(array_column($defs, 'app', 'name'))));
 		$this->assertArrayNotHasKey('app', $defs['files_tree'], 'a árvore só depende de arquivos, que sempre existem');

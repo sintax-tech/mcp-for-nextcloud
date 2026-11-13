@@ -28,9 +28,9 @@ final class AddComment implements WriteTool {
 	public function __construct(private AddCommentHandler $handler, private AddCommentPreview $preview) {
 	}
 
-	/** @return ToolDefinition default-denied files.comments write */
+	/** @return ToolDefinition default-denied files.comments write, published as destructive (plan, phase 5) */
 	public static function definition(): ToolDefinition {
-		return FilesSchema::definition(['name' => AddCommentPlan::TOOL, 'module' => 'files', 'operation' => 'comments',
+		return FilesSchema::definition(['name' => AddCommentPlan::TOOL, 'module' => 'files', 'operation' => 'comments', 'destructiveHint' => true,
 			'description' => CommentingMessages::addCommentTool(),
 			'inputSchema' => FilesSchema::schema([
 				'path' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::path()],

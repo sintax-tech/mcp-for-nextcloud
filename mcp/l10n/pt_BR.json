@@ -2110,7 +2110,7 @@
     "The comment has no text." : "O comentário não tem texto.",
     "The comment is longer than %d characters." : "O comentário tem mais de %d caracteres.",
     "The comment mentions %s, which is not a single account. Only mentions of existing accounts are allowed." : "O comentário menciona %s, que não é uma única conta. Só são permitidas menções a contas existentes.",
-    "The comment mentions %s, but there is no such account. Remove the mention or use the account ID." : "O comentário menciona %s, mas essa conta não existe. Remova a menção ou use o ID da conta.",
+    "The comment mentions %s, who cannot be mentioned here. Mention only accounts that people search finds for you." : "O comentário menciona %s, que não pode ser mencionado aqui. Mencione só contas que a busca de pessoas encontra para você.",
     "Adding comments through MCP is not allowed for you." : "Você não tem permissão para adicionar comentários pelo MCP.",
     "The file or the comment changed since the plan. Review the new plan and confirm again." : "O arquivo ou o comentário mudou desde o plano. Revise o novo plano e confirme de novo.",
     "The comment may not have been saved. Check the comments of the file before trying again." : "O comentário pode não ter sido salvo. Confira os comentários do arquivo antes de tentar de novo.",

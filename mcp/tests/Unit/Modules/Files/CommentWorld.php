@@ -26,6 +26,8 @@ use OCA\Mcp\Platform\FileAccess\ActorRoot;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
+use OCA\Mcp\Platform\Sharing\ShareableAccount;
+use OCP\Collaboration\Collaborators\ISearch;
 use OCP\Comments\CommentsEntityEvent;
 use OCP\Comments\CommentsEvent;
 use OCP\Comments\IComment;
@@ -42,6 +44,7 @@ use OCP\IUserManager;
 use OCP\IUserSession;
 use OCP\Notification\IManager as NotificationManager;
 use OCP\Notification\INotification;
+use OCP\Share\IShare;
 use OCP\SystemTag\ISystemTagManager;
 use OCP\SystemTag\ISystemTagObjectMapper;
 use PHPUnit\Framework\TestCase;
@@ -62,8 +65,8 @@ final class CommentWorld {
 	public const HIDDEN = 77;
 	/** File MCP admits but the native comments entity does not resolve. */
 	public const NATIVE_REFUSED = 55;
-	/** Accounts that exist. */
-	public const ACCOUNTS = ['alice' => 'Alice', 'bob' => 'Bob Lima', 'carol' => 'Carol'];
+	/** Accounts that exist; dave exists but the people search hides him from alice (enumeration restricted). */
+	public const ACCOUNTS = ['alice' => 'Alice', 'bob' => 'Bob Lima', 'carol' => 'Carol', 'dave' => 'Dave'];
 
 	public MetadataDavNative $native;
 	public AddComment $tool;
@@ -83,6 +86,16 @@ final class CommentWorld {
 	public array $hidden = [self::HIDDEN];
 	/** @var list<int> files shared with alice by bob */
 	public array $shared = [self::SHARED];
+	/** @var list<string> accounts the people search returns to alice */
+	public array $searchable = ['alice', 'bob', 'carol'];
+	/** @var list<\Sabre\DAV\ServerPlugin> plugins apps add on the typed SabrePluginAddEvent */
+	public array $eventPlugins = [];
+	/** @var list<\Sabre\DAV\ServerPlugin> plugins apps add on the legacy addPlugin event */
+	public array $legacyPlugins = [];
+	/** @var (\Closure(IComment): void)|null run right after a comment is saved: another client acting at the same moment */
+	public ?\Closure $afterSave = null;
+	/** Whether the next save fails inside the native store. */
+	public bool $failSave = false;
 	/** Whether alice still holds files.comments. */
 	public bool $granted = true;
 	/** @var (\Closure(): void)|null run when the guard's cache is cleared: the moment a change since the plan lands */
@@ -100,12 +113,7 @@ final class CommentWorld {
 		$session = $this->session();
 		$roots = $this->roots();
 		$users = $this->users();
-		$events = $this->mock(IEventDispatcher::class);
-		$events->method('dispatchTyped')->willReturnCallback(static function (object $event) use ($roots): void {
-			if ($event instanceof CommentsEntityEvent) {
-				(new \OCA\Comments\Listener\CommentsEntityEventListener($roots, 'alice'))->handle($event);
-			}
-		});
+		$events = $this->events($roots);
 		$this->native = new MetadataDavNative($this->manager($users), $this->mock(ISystemTagManager::class), $this->mock(ISystemTagObjectMapper::class),
 			$session, $roots, $users, $this->mock(IGroupManager::class), $events);
 		$guard = $this->guard();
@@ -113,7 +121,7 @@ final class CommentWorld {
 		$dav = new FileMetadataDav($actorRoot, $guard, $this->native, new PinnedDispatch(new Session($session)), new NullLogger());
 		$config = $this->mock(IConfig::class);
 		$config->method('getSystemValueString')->willReturn('instance-secret');
-		$plans = new AddCommentPlan(new FilesCallContext($roots, $guard, $actorRoot), $guard, $dav, new CommentMentions($users), $this->access(),
+		$plans = new AddCommentPlan(new FilesCallContext($roots, $guard, $actorRoot), $guard, $dav, new CommentMentions(new ShareableAccount($this->search())), $this->access(),
 			new SharedWriteGuard($this->access()), new PlanState($config));
 		if ($policy === null) {
 			$policy = $this->mock(GrantPolicy::class);
@@ -121,7 +129,7 @@ final class CommentWorld {
 				&& $module === 'files' && $operation === 'comments' && $this->granted);
 		}
 		$this->preview = new AddCommentPreview($plans);
-		$this->handler = new AddCommentHandler($plans, $policy, $dav, new CommentFeed());
+		$this->handler = new AddCommentHandler($plans, $policy, $dav, new CommentFeed(), new CommentMentions(new ShareableAccount($this->search())));
 		$this->tool = new AddComment($this->handler, $this->preview);
 	}
 
@@ -168,6 +176,58 @@ final class CommentWorld {
 				'ownerDisplayName' => 'Bruno Lima', 'sharedBy' => 'Bruno Lima', 'resource' => '/Documentos/ata.md', 'message' => 'Shared by Bruno Lima.']],
 			'requiresSharedConfirmation' => true, 'recoverable' => false, 'message' => CommonMessages::planNothingChanged(),
 			'plan_state' => str_repeat('0', 64)];
+	}
+
+	/**
+	 * Adds a comment the way another client of alice would, outside the MCP call.
+	 *
+	 * @param string $fileId commented file
+	 * @param string $text exact text
+	 * @return void
+	 */
+	public function addOwnComment(string $fileId, string $text): void {
+		$comment = (new \OC\Comments\Comment())->setActor('users', 'alice')->setObject('files', $fileId)->setMessage($text)->setVerb('comment');
+		$comment->setId((string)$this->nextId++);
+		$comment->setCreationDateTime(new DateTime('2026-11-13 12:00:00'));
+		$this->comments[$fileId][] = $comment;
+	}
+
+	/**
+	 * @param IRootFolder $roots alice's tree, for the native comments entity listener
+	 * @return IEventDispatcher the dispatcher apps listen on: the comments entity, and {@see self::$eventPlugins} and
+	 *     {@see self::$legacyPlugins} added to the embedded server
+	 */
+	private function events(IRootFolder $roots): IEventDispatcher {
+		$events = $this->mock(IEventDispatcher::class);
+		$events->method('dispatchTyped')->willReturnCallback(function (object $event) use ($roots): void {
+			if ($event instanceof CommentsEntityEvent) {
+				(new \OCA\Comments\Listener\CommentsEntityEventListener($roots, 'alice'))->handle($event);
+			}
+			if ($event instanceof \OCA\DAV\Events\SabrePluginAddEvent) {
+				foreach ($this->eventPlugins as $plugin) {
+					$event->getServer()->addPlugin($plugin);
+				}
+			}
+		});
+		$events->method('dispatch')->willReturnCallback(function (string $name, object $event): void {
+			if ($name === 'OCA\DAV\Connector\Sabre::addPlugin' && $event instanceof \OCP\SabrePluginEvent) {
+				foreach ($this->legacyPlugins as $plugin) {
+					$event->getServer()->addPlugin($plugin);
+				}
+			}
+		});
+		return $events;
+	}
+
+	/** @return ISearch the people search of alice's session: exact hits of {@see self::$searchable} only */
+	private function search(): ISearch {
+		$search = $this->mock(ISearch::class);
+		$search->method('search')->willReturnCallback(fn (string $term, array $types): array => [
+			['exact' => ['users' => in_array($term, $this->searchable, true) && in_array(IShare::TYPE_USER, $types, true)
+				? [['label' => self::ACCOUNTS[$term], 'value' => ['shareType' => IShare::TYPE_USER, 'shareWith' => $term]]] : []], 'users' => []],
+			false,
+		]);
+		return $search;
 	}
 
 	/** @return IUserSession alice's session, which can only be read */
@@ -295,11 +355,17 @@ final class CommentWorld {
 		$manager->method('create')->willReturnCallback(static fn (string $actorType, string $actorId, string $objectType, string $objectId): IComment
 			=> (new \OC\Comments\Comment())->setActor($actorType, $actorId)->setObject($objectType, $objectId));
 		$manager->method('save')->willReturnCallback(function (IComment $comment) use ($listener): bool {
+			if ($this->failSave) {
+				throw new \RuntimeException('Store unavailable');
+			}
 			$comment->setId((string)$this->nextId++);
 			$comment->setCreationDateTime(new DateTime('2026-11-13 12:00:00'));
 			$this->comments[$comment->getObjectId()][] = $comment;
 			$this->saves[] = [$comment->getObjectId(), $comment->getActorId(), $comment->getMessage()];
 			$listener->evaluate(new CommentsEvent(CommentsEvent::EVENT_ADD, $comment));
+			if ($this->afterSave !== null) {
+				($this->afterSave)($comment);
+			}
 			return true;
 		});
 		$manager->method('get')->willReturnCallback(function (string $id): IComment {

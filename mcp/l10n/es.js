@@ -2111,7 +2111,7 @@ OC.L10N.register(
     "The comment has no text." : "El comentario no tiene texto.",
     "The comment is longer than %d characters." : "El comentario tiene más de %d caracteres.",
     "The comment mentions %s, which is not a single account. Only mentions of existing accounts are allowed." : "El comentario menciona %s, que no es una sola cuenta. Solo se permiten menciones de cuentas existentes.",
-    "The comment mentions %s, but there is no such account. Remove the mention or use the account ID." : "El comentario menciona %s, pero esa cuenta no existe. Quita la mención o usa el ID de la cuenta.",
+    "The comment mentions %s, who cannot be mentioned here. Mention only accounts that people search finds for you." : "El comentario menciona a %s, a quien no se puede mencionar aquí. Menciona solo cuentas que la búsqueda de personas encuentre para ti.",
     "Adding comments through MCP is not allowed for you." : "No tienes permiso para añadir comentarios a través de MCP.",
     "The file or the comment changed since the plan. Review the new plan and confirm again." : "El archivo o el comentario cambió desde el plan. Revisa el nuevo plan y vuelve a confirmar.",
     "The comment may not have been saved. Check the comments of the file before trying again." : "Es posible que el comentario no se haya guardado. Revisa los comentarios del archivo antes de volver a intentarlo.",

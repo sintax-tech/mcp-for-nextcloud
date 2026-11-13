@@ -63,7 +63,8 @@ final class AddCommentTest extends TestCase {
 		self::assertSame([['42', 'alice', 'Approved, @bob']], $this->world->saves, 'one comment, author taken from the session');
 		self::assertSame([['42', 'alice']], $this->world->markerWrites, 'only the author\'s own marker moves');
 		self::assertSame(['bob'], $this->world->notified, 'the native listener notified exactly whom the plan named');
-		self::assertSame(array_fill(0, 4, 'comments/files/42'), $this->world->native->built, 'preview marker, then marker, POST and receipt');
+		self::assertSame(['comments/files/42', 'comments/files/42', 'comments/files/42', 'comments/files/42/100'], $this->world->native->built,
+			'preview marker, then marker, POST, and the receipt of exactly the created comment');
 		self::assertSame(0, $this->world->native->backendCalls);
 	}
 
@@ -80,15 +81,15 @@ final class AddCommentTest extends TestCase {
 	}
 
 	#[DataProvider('pins')]
-	public function testMentionsOfAnythingButAnExistingAccountAreRefusedBeforeDav(string $major): void {
+	public function testMentionsOfAnythingButOneAccountAreRefusedBeforeDav(string $major): void {
 		$this->world = new CommentWorld($this, $major);
 		foreach ([
-			'Hi @ghost' => CommentingMessages::unknownMention('@ghost'),
+			'Hi @ghost' => CommentingMessages::unavailableMention('@ghost'),
 			'Hi @"group/admin"' => CommentingMessages::unsupportedMention('@"group/admin"'),
 			'Hi @"guest/0a1b"' => CommentingMessages::unsupportedMention('@"guest/0a1b"'),
 			'Hi @"email/0a1b"' => CommentingMessages::unsupportedMention('@"email/0a1b"'),
 			'Hi @"federated_user/bob@other"' => CommentingMessages::unsupportedMention('@"federated_user/bob@other"'),
-			'Hi @"user/bob"' => CommentingMessages::unknownMention('@"user/bob"'),
+			'Hi @"user/bob"' => CommentingMessages::unavailableMention('@"user/bob"'),
 			'   ' => CommentingMessages::emptyText(),
 			str_repeat('x', AddCommentPlan::MAX_LENGTH + 1) => CommentingMessages::tooLong(AddCommentPlan::MAX_LENGTH),
 		] as $text => $message) {
@@ -96,6 +97,83 @@ final class AddCommentTest extends TestCase {
 		}
 		self::assertSame([], $this->world->native->built);
 		self::assertSame([], $this->world->notified);
+	}
+
+	#[DataProvider('pins')]
+	public function testAHiddenAccountAndAMissingOneAreRefusedAlikeAndAVisibleOneIsAccepted(string $major): void {
+		$this->world = new CommentWorld($this, $major);
+		$hidden = $this->world->refusal(fn () => $this->world->preview->plan(['path' => '/f42.txt', 'text' => 'Hi @dave'], 'alice'));
+		self::assertSame($hidden, [ToolFailure::class, CommentingMessages::unavailableMention('@dave'), 0], 'dave exists, the search hides him');
+		self::assertSame(str_replace('@dave', '@zed', $hidden[1]), $this->world->refusal(fn () => $this->world->preview->plan(['path' => '/f42.txt', 'text' => 'Hi @zed'], 'alice'))[1],
+			'an account that does not exist reads exactly like a hidden one');
+		self::assertSame([['id' => 'carol', 'display_name' => 'Carol']], $this->world->preview->plan(['path' => '/f42.txt', 'text' => 'Hi @carol'], 'alice')['notifies']);
+		self::assertSame([[], []], [$this->world->saves, $this->world->notified]);
+	}
+
+	#[DataProvider('pins')]
+	public function testAnAccountHiddenRightBeforeThePostIsRefused(string $major): void {
+		$this->world = new CommentWorld($this, $major);
+		$arguments = ['path' => '/f42.txt', 'text' => 'Hi @carol'];
+		$state = $this->world->preview->plan($arguments, 'alice')[PlanState::ARGUMENT];
+		// The confirmed call resolves the mentions while it rebuilds the plan, then reads the marker (the first cache
+		// clear); carol disappears from alice's search only then, so only the check right before the POST can see it.
+		$this->world->onClearCache = function (): void { $this->world->searchable = ['alice', 'bob']; };
+		self::assertSame([ToolFailure::class, CommentingMessages::unavailableMention('@carol'), 0],
+			$this->world->refusal(fn () => $this->world->handler->handle($arguments + [PlanState::ARGUMENT => $state], 'alice')));
+		self::assertSame([[], [], []], [$this->world->saves, $this->world->markerWrites, $this->world->notified]);
+	}
+
+	#[DataProvider('pins')]
+	public function testTheReceiptIsTheCommentOfThisCallOnly(string $major): void {
+		$this->world = new CommentWorld($this, $major);
+		$arguments = ['path' => '/f42.txt', 'text' => 'Same words'];
+		$state = $this->world->preview->plan($arguments, 'alice')[PlanState::ARGUMENT];
+		// Another client of alice posts the very same text right after this call's comment is stored.
+		$this->world->afterSave = function (): void {
+			$this->world->afterSave = null;
+			$this->world->addOwnComment('42', 'Same words');
+		};
+		$receipt = $this->world->handler->handle($arguments + [PlanState::ARGUMENT => $state], 'alice');
+		self::assertSame(['100', '101'], array_map(static fn ($c): string => $c->getId(), $this->world->comments[42]));
+		self::assertSame('100', $receipt['comment']['id'], 'the newer twin from the other client is not this call\'s comment');
+		self::assertSame('Same words', $receipt['comment']['text']);
+	}
+
+	#[DataProvider('pins')]
+	public function testAFailedPostNamesNoComment(string $major): void {
+		$this->world = new CommentWorld($this, $major);
+		$this->world->addOwnComment('42', 'Same words');
+		$arguments = ['path' => '/f42.txt', 'text' => 'Same words'];
+		$state = $this->world->preview->plan($arguments, 'alice')[PlanState::ARGUMENT];
+		$this->world->failSave = true;
+		$receipt = $this->world->handler->handle($arguments + [PlanState::ARGUMENT => $state], 'alice');
+		self::assertSame([false, null, CommentingMessages::writeFailed()], [$receipt['added'], $receipt['comment'], $receipt['error']],
+			'an older comment with the same text is never offered as this call\'s');
+	}
+
+	/** @return iterable<string,array{string,string}> both pins with each way an app adds a DAV plugin */
+	public static function vetoRoutes(): iterable {
+		foreach (self::pins() as $pin => [$major]) {
+			foreach (['typed SabrePluginAddEvent' => 'eventPlugins', 'legacy addPlugin event' => 'legacyPlugins', 'PluginManager' => 'appPlugins'] as $route => $property) {
+				yield $pin . ', ' . $route => [$major, $property];
+			}
+		}
+	}
+
+	#[DataProvider('vetoRoutes')]
+	public function testAnAppPluginThatVetoesThePostLeavesNoComment(string $major, string $property): void {
+		$this->world = new CommentWorld($this, $major);
+		$veto = new CommentVetoPlugin();
+		if ($property === 'appPlugins') {
+			$this->world->native->appPlugins = [$veto];
+		} else {
+			$this->world->{$property} = [$veto];
+		}
+		$arguments = ['path' => '/f42.txt', 'text' => 'Approved'];
+		$state = $this->world->preview->plan($arguments, 'alice')[PlanState::ARGUMENT];
+		self::assertSame(CommentWorld::notFound(), $this->world->refusal(fn () => $this->world->handler->handle($arguments + [PlanState::ARGUMENT => $state], 'alice')));
+		self::assertSame(['POST comments/files/42'], $veto->vetoed);
+		self::assertSame([[], [], []], [$this->world->saves, $this->world->markerWrites, $this->world->notified]);
 	}
 
 	#[DataProvider('pins')]
@@ -167,5 +245,6 @@ final class AddCommentTest extends TestCase {
 		self::assertSame(['path', 'text'], $definition->inputSchema['required']);
 		self::assertSame(AddCommentPlan::MAX_LENGTH, $definition->inputSchema['properties']['text']['maxLength']);
 		self::assertContains('comments', \OCA\Mcp\Access\Grants\GrantCatalog::CATALOG['files']);
+		self::assertTrue($definition->destructiveHint, 'a new comment is published as destructive (plan, phase 5)');
 	}
 }

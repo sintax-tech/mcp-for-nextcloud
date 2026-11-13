@@ -389,6 +389,7 @@
 		{"path":"lib/Platform/Dav/CalDavWrite.php","fqcn":"OCA\\Mcp\\Platform\\Dav\\CalDavWrite","target":"stays","owner":"Platform","ticket":null},
 		{"path":"lib/Platform/Dav/MetadataServer.php","fqcn":"OCA\\Mcp\\Platform\\Dav\\MetadataServer","target":"stays","owner":"Platform","ticket":null},
 		{"path":"lib/Platform/Dav/PinnedDispatch.php","fqcn":"OCA\\Mcp\\Platform\\Dav\\PinnedDispatch","target":"stays","owner":"Platform","ticket":null},
+		{"path":"lib/Platform/Sharing/ShareableAccount.php","fqcn":"OCA\\Mcp\\Platform\\Sharing\\ShareableAccount","target":"stays","owner":"Platform","ticket":null},
 		{"path":"lib/Platform/Meetings/MeetingCalendar.php","fqcn":"OCA\\Mcp\\Platform\\Meetings\\MeetingCalendar","target":"stays","owner":"Platform","ticket":null},
 		{"path":"lib/Platform/Meetings/MeetingMessages.php","fqcn":"OCA\\Mcp\\Platform\\Meetings\\MeetingMessages","target":"stays","owner":"Platform","ticket":null},
 		{"path":"lib/Platform/Meetings/MeetingStep.php","fqcn":"OCA\\Mcp\\Platform\\Meetings\\MeetingStep","target":"stays","owner":"Platform","ticket":null},

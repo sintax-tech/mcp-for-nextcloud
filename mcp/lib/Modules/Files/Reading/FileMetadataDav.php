@@ -25,8 +25,8 @@ use Sabre\HTTP\Request;
 use Throwable;
 
 /**
- * Reads the comments and the system tags of one file, changes one tag relation and adds one comment, through the native DAV pipeline,
- * as the authenticated actor.
+ * Reads the comments and the system tags of one file, changes one tag relation and adds one comment, through the native
+ * DAV pipeline, as the authenticated actor.
  *
  * The MCP Files gate comes first, because the DAV app does not know it: Files scope, Guests external storage,
  * exclusion tags and the backup folder ({@see FilesAccessGuard}), on every alias of the file ID in the actor's root.
@@ -49,8 +49,7 @@ use Throwable;
  *   `{actorType: "users", verb: "comment", message}` on `comments/files/<file ID>`. The native plugin takes the author
  *   from the session and moves the author's own read marker to now (CommentsPlugin::httpPost and createComment,
  *   CommentsPlugin.php:89-115 and 203-234 of v34.0.4, 90-116 and 204-235 of v35.0.1); the comments entity decides
- *   whether the item can be commented, as for a web client.
- * PROPPATCH is never sent.
+ *   whether the item can be commented, as for a web client. PROPPATCH is never sent.
  */
 final class FileMetadataDav {
 	/** The native comments REPORT (CommentsPlugin::REPORT_NAME). */
@@ -65,6 +64,10 @@ final class FileMetadataDav {
 	/** The read marker of the actor on a file's comments (EntityCollection::PROPERTY_NAME_READ_MARKER). */
 	private const MARKER_PROPFIND = '<?xml version="1.0" encoding="utf-8"?>'
 		. '<D:propfind xmlns:D="DAV:" xmlns:oc="http://owncloud.org/ns"><D:prop><oc:readMarker/></D:prop></D:propfind>';
+	/** The properties of one comment, those CommentNode::getPropertyNames() lists for the REPORT. */
+	private const COMMENT_PROPFIND = '<?xml version="1.0" encoding="utf-8"?><D:propfind xmlns:D="DAV:" xmlns:oc="http://owncloud.org/ns"><D:prop>'
+		. '<oc:id/><oc:parentId/><oc:topmostParentId/><oc:childrenCount/><oc:verb/><oc:actorType/><oc:actorId/><oc:creationDateTime/>'
+		. '<oc:latestChildDateTime/><oc:objectType/><oc:objectId/><oc:message/><oc:actorDisplayName/><oc:isUnread/><oc:mentions/></D:prop></D:propfind>';
 	/** DAV answers that read as a missing file, unchanged for the reads. */
 	private const READ_REFUSALS = [403, 404];
 	/** DAV answers that read as a missing file or tag on a relation write: 412 is createFile's unknown or unseen tag. */
@@ -189,15 +192,38 @@ final class FileMetadataDav {
 	 * @param string $actor authenticated MCP actor, the author the native plugin reads from the session
 	 * @param int $fileId file ID in the actor's tree
 	 * @param string $message exact text, already within the native limits
-	 * @return void
+	 * @return string|null the ID of the new comment, read from the Content-Location the native POST answers with
+	 *     (CommentsPlugin::httpPost, 34:108-110 / 35:109-111); null when the answer names none
 	 * @throws ToolFailure when the file is not reachable, or DAV refuses the file
 	 * @throws PolicyUnavailable when the Files scope cannot be read
 	 * @throws RuntimeException when the session or the native pipeline answers unexpectedly (an invalid message included)
 	 */
-	public function comment(string $actor, int $fileId, string $message): void {
+	public function comment(string $actor, int $fileId, string $message): ?string {
 		$this->admit($actor, $fileId);
-		$body = json_encode(['actorType' => 'users', 'verb' => 'comment', 'message' => $message], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
-		$this->send($actor, 'POST', 'comments/files/' . $fileId, ['Content-Type' => 'application/json'], $body, 201);
+		$created = $this->send($actor, 'POST', 'comments/files/' . $fileId, ['Content-Type' => 'application/json'],
+			json_encode(['actorType' => 'users', 'verb' => 'comment', 'message' => $message], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE), 201);
+		$id = rawurldecode((string)substr(strrchr('/' . (string)$created->location, '/'), 1));
+		return ctype_digit($id) ? $id : null;
+	}
+
+	/**
+	 * One comment of the file, by its ID, as the native multistatus document of a Depth 0 PROPFIND.
+	 *
+	 * @param string $actor authenticated MCP actor
+	 * @param int $fileId file ID in the actor's tree
+	 * @param string $commentId comment ID, digits only
+	 * @return DavResult status 207 and the multistatus body with the properties a comments REPORT carries
+	 * @throws InvalidArgumentException when the comment ID is not made of digits
+	 * @throws ToolFailure when the file or the comment is not reachable for the actor
+	 * @throws PolicyUnavailable when the Files scope cannot be read
+	 * @throws RuntimeException when the session or the native pipeline answers unexpectedly
+	 */
+	public function commentById(string $actor, int $fileId, string $commentId): DavResult {
+		if (!ctype_digit($commentId)) {
+			throw new InvalidArgumentException('Comment ID out of range');
+		}
+		$this->admit($actor, $fileId);
+		return $this->send($actor, 'PROPFIND', 'comments/files/' . $fileId . '/' . $commentId, ['Content-Type' => 'application/xml', 'Depth' => '0'], self::COMMENT_PROPFIND);
 	}
 
 	/**
@@ -269,6 +295,6 @@ final class FileMetadataDav {
 		if ($response->getStatus() !== $expected) {
 			throw new RuntimeException('Unexpected DAV metadata status');
 		}
-		return new DavResult($expected, null, $response->getBodyAsString());
+		return new DavResult($expected, null, $response->getBodyAsString(), $response->getHeader('Content-Location'));
 	}
 }

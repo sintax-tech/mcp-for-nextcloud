@@ -138,6 +138,7 @@ final class ToolTitles {
 			'mail_move_message' => Translator::t('Move a mail message to another folder'),
 			'mail_create_draft' => Translator::t('Create a mail draft'),
 			'mail_send_message' => Translator::t('Send a mail message'),
+			'mail_save_attachment' => Translator::t('Save a mail attachment to Files'),
 			// Forms
 			'forms_list_forms' => Translator::t('List forms'),
 			'forms_read_form' => Translator::t('Read form'),

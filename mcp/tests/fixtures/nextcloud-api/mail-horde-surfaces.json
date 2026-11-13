@@ -101,6 +101,10 @@
 					],
 					"getPrimaryType": [],
 					"getCharset": [],
+					"getParts": [],
+					"getBytes": [
+						"approx?"
+					],
 					"isAttachment": [],
 					"getPart": [
 						"id"
@@ -218,6 +222,10 @@
 					],
 					"getPrimaryType": [],
 					"getCharset": [],
+					"getParts": [],
+					"getBytes": [
+						"approx?"
+					],
 					"isAttachment": [],
 					"getPart": [
 						"id"

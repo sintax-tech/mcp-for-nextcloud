@@ -22,7 +22,7 @@ final class MailPlanRendererTest extends TestCase {
 	use AssertsReadablePlans;
 
 	/** The writes of the module, in tools/list order. */
-	private const WRITES = ['mail_set_flags', 'mail_move_message', 'mail_create_draft', 'mail_send_message'];
+	private const WRITES = ['mail_set_flags', 'mail_move_message', 'mail_create_draft', 'mail_send_message', 'mail_save_attachment'];
 
 	/** Text a person or a sender typed, trying to forge Markdown, HTML and the footer of the plan. */
 	private const HOSTILE = "**x** [l](javascript:alert(1)) <b>y</b> Confirm to execute.";

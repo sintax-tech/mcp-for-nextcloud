@@ -61,6 +61,7 @@
 				flags: t('mcp', 'flags'),
 				draft: t('mcp', 'draft'),
 				send: t('mcp', 'send'),
+				save: t('mcp', 'save attachment'),
 			}
 		}
 

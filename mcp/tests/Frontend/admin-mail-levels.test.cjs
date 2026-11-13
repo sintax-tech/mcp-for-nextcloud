@@ -42,8 +42,8 @@ function mailOperations() {
 test('Mail levels are None, Accounts and folders, Messages, Messages and attachments, with flags, with moving, with drafts and with sending', () => {
 	const Levels = load(['admin-levels.js']).McpAdminLevels
 	const operations = mailOperations()
-	assert.deepEqual(operations, ['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'])
-	assert.deepEqual(plain(Levels.levels('mail', operations)), ['none', 'folders', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'])
+	assert.deepEqual(operations, ['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send', 'save'])
+	assert.deepEqual(plain(Levels.levels('mail', operations)), ['none', 'folders', 'messages', 'attachments', 'flags', 'move', 'draft', 'send', 'save'])
 	assert.deepEqual(plain(Levels.operationsFor('mail', operations, 'folders')), ['read'])
 	assert.deepEqual(plain(Levels.operationsFor('mail', operations, 'messages')), ['read', 'messages'], 'Messages never includes attachments')
 	assert.deepEqual(plain(Levels.operationsFor('mail', operations, 'attachments')), ['read', 'messages', 'attachments'], 'Messages and attachments never includes flags')
@@ -51,35 +51,35 @@ test('Mail levels are None, Accounts and folders, Messages, Messages and attachm
 	assert.deepEqual(plain(Levels.operationsFor('mail', operations, 'move')), ['read', 'messages', 'attachments', 'flags', 'move'], 'moving never includes drafts')
 	assert.deepEqual(plain(Levels.operationsFor('mail', operations, 'draft')), ['read', 'messages', 'attachments', 'flags', 'move', 'draft'], 'drafts never includes sending')
 	assert.deepEqual(plain(Levels.operationsFor('mail', operations, 'send')), ['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'])
-	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: false, attachments: false, flags: false, move: false, draft: false, send: false }), 'folders')
-	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: true, attachments: false, flags: false, move: false, draft: false, send: false }), 'messages')
-	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: true, attachments: true, flags: false, move: false, draft: false, send: false }), 'attachments')
-	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: true, attachments: true, flags: true, move: false, draft: false, send: false }), 'flags')
-	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: true, attachments: true, flags: true, move: true, draft: false, send: false }), 'move')
-	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: false, attachments: true, flags: false, move: false, draft: false, send: false }), 'custom', 'attachments alone is a granular choice')
-	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: false, attachments: false, flags: true, move: false, draft: false, send: false }), 'custom', 'flags alone is a granular choice')
-	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: false, attachments: false, flags: false, move: true, draft: false, send: false }), 'custom', 'moving alone is a granular choice')
-	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: true, attachments: true, flags: true, move: true, draft: true, send: false }), 'draft')
-	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: false, attachments: false, flags: false, move: false, draft: true, send: false }), 'custom', 'drafts alone is a granular choice')
-	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: true, attachments: true, flags: true, move: true, draft: true, send: true }), 'send')
-	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: false, attachments: false, flags: false, move: false, draft: false, send: true }), 'custom', 'sending alone is a granular choice')
+	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: false, attachments: false, flags: false, move: false, draft: false, send: false, save: false }), 'folders')
+	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: true, attachments: false, flags: false, move: false, draft: false, send: false, save: false }), 'messages')
+	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: true, attachments: true, flags: false, move: false, draft: false, send: false, save: false }), 'attachments')
+	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: true, attachments: true, flags: true, move: false, draft: false, send: false, save: false }), 'flags')
+	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: true, attachments: true, flags: true, move: true, draft: false, send: false, save: false }), 'move')
+	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: false, attachments: true, flags: false, move: false, draft: false, send: false, save: false }), 'custom', 'attachments alone is a granular choice')
+	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: false, attachments: false, flags: true, move: false, draft: false, send: false, save: false }), 'custom', 'flags alone is a granular choice')
+	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: false, attachments: false, flags: false, move: true, draft: false, send: false, save: false }), 'custom', 'moving alone is a granular choice')
+	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: true, attachments: true, flags: true, move: true, draft: true, send: false, save: false }), 'draft')
+	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: false, attachments: false, flags: false, move: false, draft: true, send: false, save: false }), 'custom', 'drafts alone is a granular choice')
+	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: true, attachments: true, flags: true, move: true, draft: true, send: true, save: false }), 'send')
+	assert.equal(Levels.levelOf('mail', operations, { read: true, messages: false, attachments: false, flags: false, move: false, draft: false, send: true, save: false }), 'custom', 'sending alone is a granular choice')
 	assert.throws(() => Levels.operationsFor('mail', operations, 'full'), /Unknown level/)
 })
 
 test('a Mail policy stored before the attachments grant keeps its level without attachments', () => {
 	const Levels = load(['admin-levels.js']).McpAdminLevels
 	// The attachments, flags, move, draft and send values of an old policy are the default, denied, so its level is unchanged.
-	assert.equal(Levels.levelOf('mail', mailOperations(), { read: true, messages: true, attachments: false, flags: false, move: false, draft: false, send: false }), 'messages')
-	assert.equal(Levels.levelOf('mail', mailOperations(), { read: true, messages: false, attachments: false, flags: false, move: false, draft: false, send: false }), 'folders')
-	assert.equal(Levels.levelOf('mail', mailOperations(), { read: true, messages: true, attachments: true, flags: false, move: false, draft: false, send: false }), 'attachments')
-	assert.equal(Levels.levelOf('mail', mailOperations(), { read: true, messages: true, attachments: true, flags: true, move: false, draft: false, send: false }), 'flags', 'a policy from before moving keeps its flags level')
-	assert.equal(Levels.levelOf('mail', mailOperations(), { read: true, messages: true, attachments: true, flags: true, move: true, draft: false, send: false }), 'move', 'a policy from before drafts keeps its moving level')
-	assert.equal(Levels.levelOf('mail', mailOperations(), { read: true, messages: true, attachments: true, flags: true, move: true, draft: true, send: false }), 'draft', 'a policy from before sending keeps its drafts level')
+	assert.equal(Levels.levelOf('mail', mailOperations(), { read: true, messages: true, attachments: false, flags: false, move: false, draft: false, send: false, save: false }), 'messages')
+	assert.equal(Levels.levelOf('mail', mailOperations(), { read: true, messages: false, attachments: false, flags: false, move: false, draft: false, send: false, save: false }), 'folders')
+	assert.equal(Levels.levelOf('mail', mailOperations(), { read: true, messages: true, attachments: true, flags: false, move: false, draft: false, send: false, save: false }), 'attachments')
+	assert.equal(Levels.levelOf('mail', mailOperations(), { read: true, messages: true, attachments: true, flags: true, move: false, draft: false, send: false, save: false }), 'flags', 'a policy from before moving keeps its flags level')
+	assert.equal(Levels.levelOf('mail', mailOperations(), { read: true, messages: true, attachments: true, flags: true, move: true, draft: false, send: false, save: false }), 'move', 'a policy from before drafts keeps its moving level')
+	assert.equal(Levels.levelOf('mail', mailOperations(), { read: true, messages: true, attachments: true, flags: true, move: true, draft: true, send: false, save: false }), 'draft', 'a policy from before sending keeps its drafts level')
 })
 
 test('the Mail names apply only to the Mail tier count, and other modules keep the general names', () => {
 	const Levels = load(['admin-levels.js']).McpAdminLevels
-	assert.deepEqual(plain(Levels.tierNames('mail', 7)), ['folders', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'])
+	assert.deepEqual(plain(Levels.tierNames('mail', 8)), ['folders', 'messages', 'attachments', 'flags', 'move', 'draft', 'send', 'save'])
 	assert.equal(Levels.tierNames('mail', 3), null, 'a count that does not match falls back')
 	assert.equal(Levels.tierNames('files', 3), null)
 	assert.deepEqual(plain(Levels.levels('files', ['read', 'edit', 'share'])), ['none', 'read', 'edit', 'full'])
@@ -111,7 +111,7 @@ test('the Mail tooltips describe the seven operations and nothing else', () => {
 	assert.match(grants, /send: t\('mcp', 'Messages, attachments, flags, moving, drafts and sending'\)/)
 	assert.match(grants, /send: t\('mcp', 'send'\)/)
 	for (const file of ['admin-groups.js', 'admin-inspector.js']) {
-		assert.match(require('./AdminManifest.cjs').script(file), /attachments: t\('mcp', 'attachments'\), flags: t\('mcp', 'flags'\), draft: t\('mcp', 'draft'\), send: t\('mcp', 'send'\)/, file)
+		assert.match(require('./AdminManifest.cjs').script(file), /attachments: t\('mcp', 'attachments'\), flags: t\('mcp', 'flags'\), draft: t\('mcp', 'draft'\), (?:save: t\('mcp', 'save attachment'\), )?send: t\('mcp', 'send'\)/, file)
 	}
 	const template = require('./AdminTemplates.cjs').read(path.join(root, 'templates/admin.php'), 'utf8')
 	assert.equal(template.indexOf("'admin-level-names'"), -1, 'the level names live in the access levels (issue #21)')
@@ -124,7 +124,7 @@ test('granting a Mail write asks first, and only a Mail write does', () => {
 	const context = { t: (app, text) => text, confirm: (text) => { asked.push(text); return false } }
 	vm.runInNewContext(require('./AdminManifest.cjs').script('admin-levels.js'), context)
 	const Grants = context.McpAdminMailGrants
-	assert.deepEqual(plain(Grants.WRITE_OPERATIONS), ['flags', 'move', 'draft', 'send'])
+	assert.deepEqual(plain(Grants.WRITE_OPERATIONS), ['flags', 'move', 'draft', 'send', 'save'])
 	assert.equal(Grants.writeWarning([{ module: 'mail', operation: 'messages' }, { module: 'files', operation: 'edit' }]), null)
 	assert.match(Grants.writeWarning([{ module: 'mail', operation: 'flags' }]), /hidden instructions/)
 	assert.match(Grants.writeWarning([{ module: 'mail', operation: 'move' }]), /move them to other folders/)
@@ -146,4 +146,15 @@ test('every way of granting asks before a Mail write: matrix cell, bulk, popover
 	assert.match(read('admin-grants.js'), /mailGrants\.writeWarning\(plan\.changes\.filter/, 'bulk change')
 	assert.match(read('admin-level-popover.js'), /mailGrants\.confirmWrites\(commands\.filter\(\(command\) => command\.state === 'allow'\)\)/, 'popover')
 	assert.match(read('admin-groups.js'), /action === 'save' && window\.OCA\.Mcp\.Admin\.mailGrants && !window\.OCA\.Mcp\.Admin\.mailGrants\.confirmWrites\(/, 'group policy')
+})
+
+test('save has its own last tier and warning without widening any old Mail tier', () => {
+	const ctx = load(['admin-levels.js'])
+	const ops = mailOperations()
+	for (const level of ['folders', 'messages', 'attachments', 'flags', 'move', 'draft', 'send']) {
+		assert.equal(plain(ctx.McpAdminLevels.operationsFor('mail', ops, level)).includes('save'), false, level)
+	}
+	assert.equal(plain(ctx.McpAdminLevels.operationsFor('mail', ops, 'save')).includes('save'), true)
+	assert.match(ctx.McpAdminMailGrants.writeWarning([{ module: 'mail', operation: 'save' }]), /attachment bytes into Files/)
+	assert.match(ctx.McpAdminMailGrants.operationHint('mail', 'save'), /starts off/)
 })

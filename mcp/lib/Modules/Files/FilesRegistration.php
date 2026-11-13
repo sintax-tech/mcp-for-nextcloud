@@ -16,6 +16,7 @@ use Psr\Container\ContainerInterface;
 final class FilesRegistration implements ModuleRegistration {
 	/** @param IRegistrationContext $context app registration context @return void */
 	public function register(IRegistrationContext $context): void {
+		$context->registerService(\OCA\Mcp\Platform\FileAccess\NewFileDestination::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\FileAccess\NewFileDestination => $c->get(Creation\ProtectedFileDestination::class));
 		$context->registerService(FileTextResource::class, static fn (ContainerInterface $c): FileTextResource => $c->get(Extraction\ExtractedFileText::class));
 		$context->registerService(MetadataServer::class, static fn (): MetadataServer => new Integration\EmbeddedMetadataDavServer());
 	}

@@ -35,6 +35,7 @@ final class CatalogContractTest extends ArchitectureCase {
 		$position = array_search('mail_set_flags', $names, true);
 		self::assertNotFalse($position);
 		array_splice($names, $position, 0, ['mail_read_attachment']);
+		array_splice($names, array_search('mail_send_message', $names, true) + 1, 0, ['mail_save_attachment']);
 		$attachment = array_values(array_filter($definitions, static fn (array $row): bool => $row['name'] === 'mail_read_attachment'));
 		self::assertCount(1, $attachment);
 		self::assertSame(['mail.attachments'], $attachment[0]['requires']);

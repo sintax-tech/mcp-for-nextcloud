@@ -23,6 +23,7 @@
 			move: t('mcp', 'Messages, attachments, flags and moving'),
 			draft: t('mcp', 'Messages, attachments, flags, moving and drafts'),
 			send: t('mcp', 'Messages, attachments, flags, moving, drafts and sending'),
+			save: t('mcp', 'Messages, attachments, mailbox changes and saving attachments to Files'),
 			custom: t('mcp', 'Custom'),
 			unknown: t('mcp', 'Unknown'),
 		}

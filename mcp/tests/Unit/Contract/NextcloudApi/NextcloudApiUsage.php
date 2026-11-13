@@ -464,8 +464,9 @@ final class NextcloudApiUsage {
 		'Horde_Imap_Client_Data_Fetch' => ['methods' => ['getSize' => [], 'getEnvelope' => [], 'getStructure' => [], 'getFlags' => []]],
 		'Horde_Imap_Client_Data_Envelope' => ['properties' => ['message_id']],
 		'Horde_Mime_Part' => [
-			'methods' => ['getType' => [], 'getPrimaryType' => [], 'getName' => [], 'getCharset' => [], 'isAttachment' => [], 'getPart' => ['id']],
+			'methods' => ['getType' => [], 'getPrimaryType' => [], 'getName' => [], 'getCharset' => [], 'isAttachment' => [], 'getPart' => ['id'], 'getBytes' => [], 'getParts' => []],
 			'trailing' => [
+				'approx' => 'getBytes(): false, use the native BODYSTRUCTURE size once; add one for the base64 truncation',
 				'charset' => 'getType(): false, the bare MIME type without its charset parameter',
 				'default' => 'getName(): false, no default name; a part without one has none',
 			],

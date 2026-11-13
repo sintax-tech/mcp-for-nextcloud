@@ -44,7 +44,7 @@ final class MailModuleTest extends TestCase {
 			$this->assertSame('mail', $definition['module']);
 			$this->assertSame('mail', $definition['app']);
 			$this->assertFalse($definition['inputSchema']['additionalProperties']);
-			$write = ['mail_set_flags' => 'flags', 'mail_move_message' => 'move', 'mail_create_draft' => 'draft', 'mail_send_message' => 'send'][$definition['name']] ?? null;
+			$write = ['mail_set_flags' => 'flags', 'mail_move_message' => 'move', 'mail_create_draft' => 'draft', 'mail_send_message' => 'send', 'mail_save_attachment' => 'save'][$definition['name']] ?? null;
 			if ($write !== null) {
 				$this->assertSame($write, $definition['operation']);
 				$this->assertTrue(WriteGate::isWrite($definition));
@@ -67,7 +67,7 @@ final class MailModuleTest extends TestCase {
 	 * @return void
 	 */
 	public function testTheCatalogOffersReadingMailAndItsWrites(): void {
-		$this->assertSame(['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'], GrantCatalog::CATALOG['mail']);
+		$this->assertSame(['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send', 'save'], GrantCatalog::CATALOG['mail']);
 		$this->assertNotContains('mail', GrantPolicy::DENIED_READS);
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
 		$this->assertTrue($policy->granted('alice', 'mail', 'read'));

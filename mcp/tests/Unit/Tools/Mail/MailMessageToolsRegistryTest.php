@@ -74,10 +74,10 @@ final class MailMessageToolsRegistryTest extends TestCase {
 	 */
 	public function testTheMessageToolsAreReadToolsOfTheMessagesGrant(): void {
 		$definitions = self::module($this, new FakeMailMessageApp())->definitions();
-		$this->assertSame([...self::FOLDER_TOOLS, ...self::MESSAGE_TOOLS, 'mail_read_attachment', 'mail_set_flags', 'mail_move_message', 'mail_create_draft', 'mail_send_message'], array_column($definitions, 'name'));
+		$this->assertSame([...self::FOLDER_TOOLS, ...self::MESSAGE_TOOLS, 'mail_read_attachment', 'mail_set_flags', 'mail_move_message', 'mail_create_draft', 'mail_send_message', 'mail_save_attachment'], array_column($definitions, 'name'));
 		// The module's writes are covered by MailFlagToolsRegistryTest, MailMoveToolsRegistryTest, MailDraftToolsRegistryTest
 		// and MailSendToolsRegistryTest.
-		$definitions = array_values(array_filter($definitions, static fn (array $definition): bool => !in_array($definition['name'], ['mail_set_flags', 'mail_move_message', 'mail_create_draft', 'mail_send_message'], true)));
+		$definitions = array_values(array_filter($definitions, static fn (array $definition): bool => !in_array($definition['name'], ['mail_set_flags', 'mail_move_message', 'mail_create_draft', 'mail_send_message', 'mail_save_attachment'], true)));
 		foreach ($definitions as $definition) {
 			$this->assertSame('read', $definition['operation']);
 			$this->assertFalse(WriteGate::isWrite($definition), $definition['name']);

@@ -32,7 +32,7 @@ final class GrantCatalog {
 		// themselves; 'attachments' reads the text of one attachment; 'flags' marks a message read/unread and
 		// flagged, 'move' moves it to another folder of its account, 'draft' saves a new draft, never sent, and 'send'
 		// sends a new message, four writes. All but 'read' start denied, as every operation but 'read' does.
-		'mail' => ['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'],
+		'mail' => ['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send', 'save'],
 		// Nextcloud Tables: 'read' lists the tables, views, columns and rows the user can open; 'create' adds one row and
 		// 'edit' changes cells of one row. 'schema' manages structure and 'share' manages access; these four writes start denied.
 		'tables' => ['read', 'create', 'edit', 'schema', 'share'],

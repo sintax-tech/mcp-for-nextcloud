@@ -136,7 +136,7 @@ final class MailHordeSurfaceContractTest extends TestCase {
 		}
 		$names = array_keys($users);
 		sort($names);
-		$this->assertSame(['MailAttachmentPreflight', 'MailBodyPreflight', 'MailFlagStore', 'MailMoveStore'], array_map(static fn (string $name): string => pathinfo($name, PATHINFO_FILENAME), $names));
+		$this->assertSame(['MailAttachmentPreflight', 'MailBodyPreflight', 'MailFlagStore', 'MailMoveStore', 'MailSavePreflight'], array_map(static fn (string $name): string => pathinfo($name, PATHINFO_FILENAME), $names));
 	}
 
 	/**

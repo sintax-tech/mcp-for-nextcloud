@@ -19,13 +19,14 @@ use PHPUnit\Framework\TestCase;
 final class RoutineGrantCatalogTest extends TestCase {
 	/** @var array<string,list<string>> Exact approved pairs; Mail saving belongs to MA-2. */
 	private const NEW_GRANTS = [
+		'mail' => ['save'],
 		'files' => ['tags', 'comments'], 'calendar' => ['availability'],
 		'activity' => ['read'], 'notifications' => ['read', 'dismiss'],
 		'availability' => ['read', 'absence'], 'status' => ['read', 'edit'],
 		'routines' => ['prepare', 'meeting', 'mailtask'],
 	];
 
-	/** @return void A clean installation denies every new pair, without adding Mail saving or new tool modules. */
+	/** @return void A clean installation denies every new pair, including Mail saving, without adding new tool modules. */
 	public function testNewDefaultsAndExactPairs(): void {
 		$data = new InMemoryConfig();
 		$policy = InMemoryConfig::policy($data->mock($this), new InMemoryOAuthStore());
@@ -36,7 +37,7 @@ final class RoutineGrantCatalogTest extends TestCase {
 				self::assertFalse($policy->granted('alice', $module, $operation));
 			}
 		}
-		self::assertFalse(GrantPolicy::inCatalog('mail', 'save'));
+		self::assertTrue(GrantPolicy::inCatalog('mail', 'save'));
 		self::assertFalse(GrantPolicy::inCatalog('status', 'write'));
 		self::assertFalse(GrantPolicy::inCatalog('absence', 'write'));
 		self::assertSame([], $data->user);

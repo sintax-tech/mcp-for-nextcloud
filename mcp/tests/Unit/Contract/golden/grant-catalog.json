@@ -67,7 +67,8 @@
             "flags",
             "move",
             "draft",
-            "send"
+            "send",
+            "save"
         ],
         "tables": [
             "read",

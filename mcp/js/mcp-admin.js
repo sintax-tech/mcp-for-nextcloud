@@ -613,6 +613,7 @@
 			move: t('mcp', 'Messages, attachments, flags and moving'),
 			draft: t('mcp', 'Messages, attachments, flags, moving and drafts'),
 			send: t('mcp', 'Messages, attachments, flags, moving, drafts and sending'),
+			save: t('mcp', 'Messages, attachments, mailbox changes and saving attachments to Files'),
 			custom: t('mcp', 'Custom'),
 			unknown: t('mcp', 'Unknown'),
 		}
@@ -850,7 +851,7 @@
 	'use strict'
 
 	/** The Mail operations that change a mailbox. */
-	const WRITE_OPERATIONS = ['flags', 'move', 'draft', 'send']
+	const WRITE_OPERATIONS = ['flags', 'move', 'draft', 'send', 'save']
 
 	/**
 	 * The tooltip of a Mail operation.
@@ -867,6 +868,7 @@
 		if (operation === 'flags') return t('mcp', 'Mark messages read or unread and flag them, on the mail server, after a plan the user confirms; starts off')
 		if (operation === 'move') return t('mcp', 'Move messages to another folder of the same account, on the mail server, after a plan the user confirms; starts off')
 		if (operation === 'draft') return t('mcp', 'Create new drafts in the Drafts folder, never sent, after a plan the user confirms; starts off')
+		if (operation === 'save') return t('mcp', 'Save one unchanged mail attachment to a new file in Files after a confirmed plan; requires Mail 5.10.11 or later; starts off')
 		if (operation === 'send') return t('mcp', 'Send new messages through the mail account, which cannot be undone, after a plan the user confirms; starts off')
 		return null
 	}
@@ -879,7 +881,10 @@
 	 */
 	function writeWarning(granted) {
 		if (!granted.some((grant) => grant.module === 'mail' && WRITE_OPERATIONS.includes(grant.operation))) return null
-		return t('mcp', 'This lets the AI change mailboxes on the mail server: mark messages read or unread, flag them, move them to other folders, save new drafts or send messages, which cannot be undone. A message can carry hidden instructions that ask the AI to do so; every change still shows a plan the user has to confirm. Grant it only to people who want the AI to act on their mail.')
+		const save = granted.some((grant) => grant.module === 'mail' && grant.operation === 'save')
+		const saveWarning = save ? t('mcp', 'This lets the AI save mail attachment bytes into Files, where people with access to the destination folder may read them. Hidden instructions in mail can request this; each save still requires a confirmed plan.') : ''
+		if (!granted.some((grant) => grant.module === 'mail' && ['flags', 'move', 'draft', 'send'].includes(grant.operation))) return saveWarning
+		return (saveWarning ? saveWarning + '\n\n' : '') + t('mcp', 'This lets the AI change mailboxes on the mail server: mark messages read or unread, flag them, move them to other folders, save new drafts or send messages, which cannot be undone. A message can carry hidden instructions that ask the AI to do so; every change still shows a plan the user has to confirm. Grant it only to people who want the AI to act on their mail.')
 	}
 
 	/**
@@ -899,8 +904,8 @@
 	 * none of its levels is called Full. src/admin/matrix/labels.js translates the names.
 	 */
 	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
-	catalog.tiers.mail = [['read'], ['messages'], ['attachments'], ['flags'], ['move'], ['draft'], ['send']]
-	catalog.tierNames.mail = ['folders', 'messages', 'attachments', 'flags', 'move', 'draft', 'send']
+	catalog.tiers.mail = [['read'], ['messages'], ['attachments'], ['flags'], ['move'], ['draft'], ['send'], ['save']]
+	catalog.tierNames.mail = ['folders', 'messages', 'attachments', 'flags', 'move', 'draft', 'send', 'save']
 
 	root.OCA.Mcp.Admin.mailGrants = { WRITE_OPERATIONS, operationHint, writeWarning, confirmWrites }
 })(typeof window !== 'undefined' ? window : globalThis)
@@ -1372,6 +1377,7 @@
 				flags: t('mcp', 'flags'),
 				draft: t('mcp', 'draft'),
 				send: t('mcp', 'send'),
+				save: t('mcp', 'save attachment'),
 			}
 		}
 
@@ -6693,7 +6699,7 @@
 		 * @return {string}
 		 */
 		function operationName(operation) {
-			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), ...window.OCA.Mcp.Admin.routineGrants?.operationLabels(), schema: t('mcp', 'schema'), 'collective.create': t('mcp', 'create collectives'), members: t('mcp', 'manage members'), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
+			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), ...window.OCA.Mcp.Admin.routineGrants?.operationLabels(), schema: t('mcp', 'schema'), 'collective.create': t('mcp', 'create collectives'), members: t('mcp', 'manage members'), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), save: t('mcp', 'save attachment'), send: t('mcp', 'send') }[operation] || operation
 		}
 
 		/** Flatten and sort granted module and operation pairs for stable draft comparison.
@@ -8570,7 +8576,7 @@
 		 * @return {string}
 		 */
 		function operationName(operation) {
-			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), ...window.OCA.Mcp.Admin.routineGrants?.operationLabels(), schema: t('mcp', 'schema'), 'collective.create': t('mcp', 'create collectives'), members: t('mcp', 'manage members'), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
+			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), ...window.OCA.Mcp.Admin.routineGrants?.operationLabels(), schema: t('mcp', 'schema'), 'collective.create': t('mcp', 'create collectives'), members: t('mcp', 'manage members'), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), save: t('mcp', 'save attachment'), send: t('mcp', 'send') }[operation] || operation
 		}
 
 		/** The first check that blocks, by the code of the effective access (EffectiveResult::blockingGate).

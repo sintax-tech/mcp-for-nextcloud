@@ -102,7 +102,7 @@ class MailAttachmentPreflight {
 	 * @return MailAttachmentPart the declared description of the part
 	 * @throws ToolFailure when the id names no attachment the fetcher lists, or an embedded message
 	 */
-	private function attachment(object $structure, string $id): MailAttachmentPart {
+	public function attachment(object $structure, string $id): MailAttachmentPart {
 		$segments = explode('.', $id);
 		for ($depth = 1; $depth < count($segments); $depth++) {
 			$ancestor = $structure->getPart(implode('.', array_slice($segments, 0, $depth)));

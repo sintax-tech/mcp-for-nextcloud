@@ -15,6 +15,7 @@ final class MailPlanRenderer {
 	 */
 	public function render(string $tool, array $plan): ?string {
 		return match (true) {
+			$tool === 'mail_save_attachment' => (new MailSavePlanRenderer())->render($plan),
 			$tool === \OCA\Mcp\Modules\Mail\Editing\SetFlagsHandler::TOOL => (new MailFlagPlanRenderer())->render($plan),
 			$tool === \OCA\Mcp\Modules\Mail\Moving\MoveMessageHandler::TOOL => (new MailMovePlanRenderer())->render($plan),
 			$tool === \OCA\Mcp\Modules\Mail\Creation\CreateDraftHandler::TOOL => (new MailDraftPlanRenderer())->render($plan),

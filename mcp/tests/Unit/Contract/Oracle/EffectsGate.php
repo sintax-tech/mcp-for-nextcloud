@@ -109,11 +109,12 @@ final class EffectsGate {
 	 * checks another tool's gate inside its sink (the meeting ports). It reads the current grants and Guests state on
 	 * every call, so a step that revokes a grant or narrows Guests is seen by it as by the registry.
 	 *
+	 * @param CapabilityRegistry|null $capabilities installation capabilities the ports check, none by default
 	 * @return ToolAccess the access decision of the gate
 	 */
-	public function access(): ToolAccess {
+	public function access(?CapabilityRegistry $capabilities = null): ToolAccess {
 		[$apps, $users, $guests] = $this->accessDoubles();
-		return new ToolAccess($this->policy, $apps, $users, $guests, new CapabilityRegistry([], $this->mock(LoggerInterface::class)));
+		return new ToolAccess($this->policy, $apps, $users, $guests, $capabilities ?? new CapabilityRegistry([], $this->mock(LoggerInterface::class)));
 	}
 
 	/** @return array{IAppManager, IUserManager, GuestRestrictions} every app enabled, alice, and Guests as a step set it */

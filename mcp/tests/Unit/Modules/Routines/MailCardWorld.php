@@ -83,7 +83,7 @@ abstract class MailCardWorld extends FilesToolsTestCase {
 	}
 
 	/** @return void the routine over the three ports and the registry gate of each original tool */
-	private function wire(): void {
+	protected function wire(): void {
 		$apps = $this->createMock(\OCP\App\IAppManager::class);
 		$apps->method('getAppVersion')->willReturnCallback(static fn (string $app): string => $app === 'deck' ? '1.17.5' : '5.10.11');
 		$apps->method('isEnabledForUser')->willReturnCallback(fn (string $app): bool => $this->enabled[$app] ?? false);
@@ -91,7 +91,7 @@ abstract class MailCardWorld extends FilesToolsTestCase {
 		$users->method('get')->willReturn($this->createMock(\OCP\IUser::class));
 		$guests = $this->createMock(\OCA\Mcp\Access\Guests\GuestRestrictions::class);
 		$guests->method('allowsApp')->willReturnCallback(fn (string $uid, string $app): bool => $this->guestApps === null || $app === '' || in_array($app, $this->guestApps, true));
-		$access = new ToolAccess($this->sharePolicy, $apps, $users, $guests, MailTestModule::capabilities($apps));
+		$access = $this->access($apps, $users, $guests);
 		$config = $this->createStub(\OCP\IConfig::class);
 		$config->method('getUserValue')->willReturn('UTC');
 		$config->method('getSystemValueString')->willReturn('instance-secret');
@@ -107,8 +107,23 @@ abstract class MailCardWorld extends FilesToolsTestCase {
 		$this->tool = new CreateMailCard(new CreateMailCardHandler($plans, $preview, $files, $cards, new NullLogger()), $preview);
 		$container = $this->createMock(\Psr\Container\ContainerInterface::class);
 		$container->method('get')->willReturnCallback(fn (string $id): object => $id === CreateMailCard::class ? $this->tool : throw new \LogicException('Unexpected service ' . $id));
-		$this->registry = new \OCA\Mcp\Mcp\Tools\ToolRegistry([new \OCA\Mcp\Modules\Routines\RoutinesModule($container)], $this->sharePolicy, $apps, $users,
+		$this->registry = new \OCA\Mcp\Mcp\Tools\ToolRegistry([new \OCA\Mcp\Modules\Routines\RoutinesModule($container)], $this->grants(), $apps, $users,
 			new NullLogger(), $guests, MailTestModule::capabilities($apps));
+	}
+
+	/** @return \OCA\Mcp\Access\Grants\GrantPolicy the grants every port and the registry read */
+	protected function grants(): \OCA\Mcp\Access\Grants\GrantPolicy {
+		return $this->sharePolicy;
+	}
+
+	/**
+	 * @param \OCP\App\IAppManager $apps the installed and enabled apps
+	 * @param \OCP\IUserManager $users the accounts
+	 * @param \OCA\Mcp\Access\Guests\GuestRestrictions $guests Guests as {@see self::$guestApps} sets it
+	 * @return ToolAccess the registry's own decision on grant, Guests, apps and the attachment capability
+	 */
+	protected function access(\OCP\App\IAppManager $apps, \OCP\IUserManager $users, \OCA\Mcp\Access\Guests\GuestRestrictions $guests): ToolAccess {
+		return new ToolAccess($this->grants(), $apps, $users, $guests, MailTestModule::capabilities($apps));
 	}
 
 	/**
@@ -148,7 +163,7 @@ abstract class MailCardWorld extends FilesToolsTestCase {
 		$creation = new FileCreation($access, new SharedWriteGuard($access), $wiring->named('checkout'), $this->filenames, $visibility, $this->creationLogger,
 			$wiring->named('locks'), (new FileTypePolicyFixture())->guard($this), new BackupLocation($this->createMock(\OCA\Mcp\Platform\Backups\BackupSettingsDocument::class)));
 		$files = new ProtectedFileDestination(new ActorRoot($root, $session), $creation, new SharedWriteGuard($access), $access, $visibility, $this->createMock(\Psr\Log\LoggerInterface::class));
-		return new MailSaveContext($this->sharePolicy, $this->mail, $apps, new MailMessageLocator(new MailGateway($this->mail), new MailMessageGateway($this->mail)),
+		return new MailSaveContext($this->grants(), $this->mail, $apps, new MailMessageLocator(new MailGateway($this->mail), new MailMessageGateway($this->mail)),
 			new MailSaveReader($this->mail, new MailSavePreflight()), new MailSaveBudget($this->config->mock($this)), $files, new MailReplacementFixture());
 	}
 

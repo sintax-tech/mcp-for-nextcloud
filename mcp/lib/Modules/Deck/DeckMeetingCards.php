@@ -16,7 +16,7 @@ use OCA\Mcp\Modules\Deck\Reading\ReadCardHandler;
 use OCA\Mcp\Modules\Deck\Tools\ListCardFiles;
 use OCA\Mcp\Modules\Deck\Tools\ReadCard;
 use OCA\Mcp\Platform\Meetings\MeetingDeckRead;
-use OCA\Mcp\Platform\Meetings\MeetingMessages;
+use OCA\Mcp\Platform\Workflows\WorkflowMessages;
 
 /**
  * The Deck reads of a meeting dossier, through deck_read_card and deck_list_card_files.
@@ -57,7 +57,7 @@ final class DeckMeetingCards implements MeetingDeckRead {
 	 */
 	private function read(\OCA\Mcp\Mcp\Tools\ToolDefinition $definition, string $name, string $userId, array $arguments): array {
 		if (!$this->access->allowed($definition->toArray(), $userId)) {
-			throw new ToolFailure(MeetingMessages::notAllowed($definition->name));
+			throw new ToolFailure(WorkflowMessages::notAllowed($definition->name));
 		}
 		return $this->deck->execute($name, ArgumentValidator::validate($definition->inputSchema, $arguments), $userId);
 	}

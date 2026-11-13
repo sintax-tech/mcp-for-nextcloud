@@ -13,7 +13,7 @@ use OCA\Mcp\Modules\Mail\Presentation\MailAttachmentMessages;
 use OCA\Mcp\Modules\Mail\Reading\MailAttachmentPreflight;
 use OCA\Mcp\Modules\Mail\Reading\MailMessageReading;
 use OCA\Mcp\Modules\Mail\Tools\ReadMessage;
-use OCA\Mcp\Platform\MailCards\MailCardMessages;
+use OCA\Mcp\Platform\Workflows\WorkflowMessages;
 use OCA\Mcp\Platform\MailCards\MailCardSource;
 
 /**
@@ -39,7 +39,7 @@ final class MailCardSourceSteps implements MailCardSource {
 	public function read(string $userId, int $messageId, string $attachmentId, int $excerptChars): array {
 		$definition = ReadMessage::definition();
 		if (!$this->access->allowed($definition->toArray(), $userId)) {
-			throw new ToolFailure(MailCardMessages::notAllowed($definition->name));
+			throw new ToolFailure(WorkflowMessages::notAllowed($definition->name));
 		}
 		$arguments = ArgumentValidator::validate($definition->inputSchema, ['message_id' => $messageId, 'max_chars' => $excerptChars]);
 		if (!MailAttachmentPreflight::validId($attachmentId)) {

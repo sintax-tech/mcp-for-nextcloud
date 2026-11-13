@@ -14,7 +14,7 @@ use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
 use OCA\Mcp\Modules\Calendar\Reading\CalendarEventListing;
 use OCA\Mcp\Modules\Calendar\Tools\ListEvents;
 use OCA\Mcp\Platform\Meetings\MeetingEventRead;
-use OCA\Mcp\Platform\Meetings\MeetingMessages;
+use OCA\Mcp\Platform\Workflows\WorkflowMessages;
 
 /**
  * The calendar read of a meeting dossier, through the work class of calendar_list_events.
@@ -36,7 +36,7 @@ final class CalendarMeetingEvents implements MeetingEventRead {
 	/** {@inheritDoc} */
 	public function events(string $userId, array $arguments): array {
 		if (!$this->allowed($userId)) {
-			throw new ToolFailure(MeetingMessages::notAllowed(ListEvents::definition()->name));
+			throw new ToolFailure(WorkflowMessages::notAllowed(ListEvents::definition()->name));
 		}
 		return $this->events->handle($userId, ArgumentValidator::validate(ListEvents::definition()->inputSchema, $arguments));
 	}

@@ -16,7 +16,7 @@ use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Deck\Creation\CreateCardPreview;
 use OCA\Mcp\Modules\Deck\DeckCardCreateSteps;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
-use OCA\Mcp\Platform\MailCards\MailCardStep;
+use OCA\Mcp\Platform\Workflows\WorkflowStep;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestHelpers;
@@ -95,7 +95,7 @@ final class DeckCardCreateStepsTest extends TestCase {
 
 		$step = $this->steps->createCard('alice', self::CARD);
 
-		self::assertSame(MailCardStep::APPLIED, $step->status, (string)$step->message);
+		self::assertSame(WorkflowStep::APPLIED, $step->status, (string)$step->message);
 		self::assertSame(9, $step->ids['cardId']);
 		self::assertSame('Arquivo: /Documentos/pedido.pdf', $step->result['description']);
 	}
@@ -128,7 +128,7 @@ final class DeckCardCreateStepsTest extends TestCase {
 		$this->gateway->expects(self::never())->method('stackOwnership');
 
 		$step = $this->steps->createCard('alice', self::CARD);
-		self::assertSame(MailCardStep::FAILED, $step->status);
+		self::assertSame(WorkflowStep::FAILED, $step->status);
 		self::assertStringContainsString('deck_create_card', (string)$step->message);
 		$this->expectException(ToolFailure::class);
 		$this->steps->planCard('alice', self::CARD);
@@ -140,8 +140,8 @@ final class DeckCardCreateStepsTest extends TestCase {
 		$gateway->expects(self::once())->method('createCard')->willReturn($this->card(['id' => 9]));
 		DeckTestModule::setGateway($this->module, $gateway);
 
-		self::assertSame(MailCardStep::FAILED, $this->steps->createCard('alice', self::CARD)->status);
-		self::assertSame(MailCardStep::APPLIED, $this->steps->createCard('alice', self::CARD + ['confirm_shared' => true])->status);
+		self::assertSame(WorkflowStep::FAILED, $this->steps->createCard('alice', self::CARD)->status);
+		self::assertSame(WorkflowStep::APPLIED, $this->steps->createCard('alice', self::CARD + ['confirm_shared' => true])->status);
 	}
 
 	/** A stack the board ACL hides is refused with no card. @return void */
@@ -151,7 +151,7 @@ final class DeckCardCreateStepsTest extends TestCase {
 		$gateway->expects(self::never())->method('createCard');
 		DeckTestModule::setGateway($this->module, $gateway);
 
-		self::assertSame(MailCardStep::FAILED, $this->steps->createCard('alice', self::CARD)->status);
+		self::assertSame(WorkflowStep::FAILED, $this->steps->createCard('alice', self::CARD)->status);
 		$this->expectException(ToolFailure::class);
 		$this->steps->planCard('alice', self::CARD);
 	}
@@ -172,7 +172,7 @@ final class DeckCardCreateStepsTest extends TestCase {
 
 		$step = $this->steps->createCard('alice', self::CARD + ['assignees' => ['pedro']]);
 
-		self::assertSame(MailCardStep::PARTIAL, $step->status);
+		self::assertSame(WorkflowStep::PARTIAL, $step->status);
 		self::assertSame(9, $step->ids['cardId']);
 		self::assertNotEmpty($step->message);
 	}
@@ -187,7 +187,7 @@ final class DeckCardCreateStepsTest extends TestCase {
 
 		$step = $this->steps->createCard('alice', self::CARD);
 
-		self::assertSame(MailCardStep::UNCERTAIN, $step->status);
+		self::assertSame(WorkflowStep::UNCERTAIN, $step->status);
 		self::assertSame(['cardId' => 9], $step->ids);
 	}
 }

@@ -18,10 +18,10 @@ use OCA\Mcp\Modules\Calendar\Creation\CreateEventPreview;
 use OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages;
 use OCA\Mcp\Modules\Calendar\Tools\CreateEvent;
 use OCA\Mcp\Platform\Meetings\MeetingCalendar;
-use OCA\Mcp\Platform\Meetings\MeetingMessages;
-use OCA\Mcp\Platform\Meetings\MeetingStep;
+use OCA\Mcp\Platform\Workflows\WorkflowStep;
 use Psr\Log\LoggerInterface;
 use Throwable;
+use OCA\Mcp\Platform\Workflows\WorkflowMessages;
 
 /**
  * The Calendar step of a meeting, through the very work classes of calendar_create_event.
@@ -50,25 +50,25 @@ final class CalendarMeetingSteps implements MeetingCalendar {
 	/** {@inheritDoc} */
 	public function planEvent(string $userId, array $event): array {
 		if (!$this->allowed($userId)) {
-			throw new ToolFailure(MeetingMessages::notAllowed(CreateEvent::definition()->name));
+			throw new ToolFailure(WorkflowMessages::notAllowed(CreateEvent::definition()->name));
 		}
 		return $this->plans->plan($userId, ArgumentValidator::validate(CreateEvent::definition()->inputSchema, $event));
 	}
 
 	/** {@inheritDoc} */
-	public function createEvent(string $userId, array $event): MeetingStep {
+	public function createEvent(string $userId, array $event): WorkflowStep {
 		if (!$this->allowed($userId)) {
-			return MeetingStep::failed(MeetingMessages::notAllowed(CreateEvent::definition()->name));
+			return WorkflowStep::failed(WorkflowMessages::notAllowed(CreateEvent::definition()->name));
 		}
 		$arguments = ArgumentValidator::validate(CreateEvent::definition()->inputSchema, $event);
 		try {
 			$plan = $this->plans->plan($userId, $arguments);
 		} catch (ToolFailure $refused) {
-			return MeetingStep::failed($refused->getMessage());
+			return WorkflowStep::failed($refused->getMessage());
 		}
 		// The handler refuses this too; checked here only so the refusal reads as failed and not as uncertain.
 		if (($plan['shared'] ?? []) !== [] && ($arguments['confirm_shared'] ?? false) !== true) {
-			return MeetingStep::failed(CalendarMessages::approvalShared());
+			return WorkflowStep::failed(CalendarMessages::approvalShared());
 		}
 		try {
 			$result = $this->creates->handle($userId, $arguments);
@@ -76,16 +76,16 @@ final class CalendarMeetingSteps implements MeetingCalendar {
 			throw $e;
 		} catch (Throwable $e) {
 			$this->logger->error('MCP meeting event failed: {exception_detail}', ['app' => 'mcp', 'exception_detail' => ToolRegistry::loggable($e)]);
-			return MeetingStep::uncertain(MeetingMessages::uncertain());
+			return WorkflowStep::uncertain(WorkflowMessages::uncertain());
 		}
 		$created = json_decode($result['content'][0]['text'] ?? '', true);
 		$uid = is_array($created) && is_string($created['uid'] ?? null) ? $created['uid'] : null;
 		if (($result['isError'] ?? false) === true || $uid === null || !isset($created['etag'])) {
 			// The plan passed a moment ago: a failure now may come after the pipeline stored the event.
-			$message = is_array($created) ? MeetingMessages::uncertain() : (string)($result['content'][0]['text'] ?? MeetingMessages::uncertain());
-			return MeetingStep::uncertain($message, $uid === null ? [] : ['uid' => $uid]);
+			$message = is_array($created) ? WorkflowMessages::uncertain() : (string)($result['content'][0]['text'] ?? WorkflowMessages::uncertain());
+			return WorkflowStep::uncertain($message, $uid === null ? [] : ['uid' => $uid]);
 		}
-		return MeetingStep::applied(['uid' => $uid], $created);
+		return WorkflowStep::applied(['uid' => $uid], $created);
 	}
 
 	/**

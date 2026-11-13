@@ -19,7 +19,7 @@ use OCA\Mcp\Modules\Mail\Presentation\MailSaveMessages;
 use OCA\Mcp\Modules\Mail\Writing\{MailSaveContext, MailSaveBudget, MailSavePreflight, SaveAttachmentHandler, SaveAttachmentPreview};
 use OCA\Mcp\Platform\Backups\BackupLocation;
 use OCA\Mcp\Platform\FileAccess\{ActorRoot, SharedWriteGuard};
-use OCA\Mcp\Platform\MailCards\MailCardStep;
+use OCA\Mcp\Platform\Workflows\WorkflowStep;
 use OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture;
 use OCA\Mcp\Tests\Unit\Access\ResourceScope\FilesScopes;
 use OCA\Mcp\Tests\Unit\Tools\Files\{FilesToolsTestCase, FilesCatalogWiring};
@@ -38,6 +38,8 @@ final class MailAttachmentSaveStepsTest extends FilesToolsTestCase {
 	private const TARGET = '/alice/files/Documentos/saved.pdf';
 	private FakeMailMessageApp $mail;
 	private MailAttachmentSaveSteps $steps;
+	/** The effect of mail_save_attachment itself, over the same wiring, to compare its answer with the step's. */
+	private SaveAttachmentHandler $original;
 	/** Whether the Mail app is enabled for the actor. */
 	private bool $appEnabled = true;
 	/** @var list<string>|null selected Files scope folder ids, null for unrestricted */
@@ -63,7 +65,8 @@ final class MailAttachmentSaveStepsTest extends FilesToolsTestCase {
 		$save = $this->context($apps);
 		$urls = $this->createMock(IURLGenerator::class);
 		$urls->method('linkToRouteAbsolute')->willReturnCallback(static fn (string $route, array $parameters): string => 'https://cloud.example/' . $route . '/' . $parameters['fileid']);
-		$this->steps = new MailAttachmentSaveSteps($access, new SaveAttachmentPreview($save), new SaveAttachmentHandler($save), $urls, new NullLogger());
+		$this->original = new SaveAttachmentHandler($save);
+		$this->steps = new MailAttachmentSaveSteps($access, new SaveAttachmentPreview($save), $this->original, $urls, new NullLogger());
 	}
 
 	/**
@@ -95,11 +98,11 @@ final class MailAttachmentSaveStepsTest extends FilesToolsTestCase {
 	/**
 	 * Asserts that a refused step wrote nothing and never fetched the attachment content.
 	 *
-	 * @param MailCardStep $step the step answered
+	 * @param WorkflowStep $step the step answered
 	 * @return string the refusal, written for the user
 	 */
-	private function failedWithoutWriting(MailCardStep $step): string {
-		self::assertSame(MailCardStep::FAILED, $step->status);
+	private function failedWithoutWriting(WorkflowStep $step): string {
+		self::assertSame(WorkflowStep::FAILED, $step->status);
 		self::assertSame([], $step->ids);
 		self::assertNotContains('imap:attachment:2', $this->mail->imapCommands());
 		self::assertSame([], $this->tree->ops);
@@ -121,7 +124,7 @@ final class MailAttachmentSaveStepsTest extends FilesToolsTestCase {
 	public function testTheConfirmedStepSavesANewFileAndReadsItBack(): void {
 		$step = $this->steps->save('alice', 7, '2', '/Documentos/saved.pdf', false);
 
-		self::assertSame(MailCardStep::APPLIED, $step->status, (string)$step->message);
+		self::assertSame(WorkflowStep::APPLIED, $step->status, (string)$step->message);
 		self::assertSame(self::BYTES, $this->tree->nodes[self::TARGET]['content']);
 		self::assertSame(['path' => '/Documentos/saved.pdf', 'fileId' => $this->tree->nodes[self::TARGET]['id']], $step->ids);
 		self::assertSame('https://cloud.example/files.View.showFile/' . $step->ids['fileId'], $step->result['url']);
@@ -169,7 +172,7 @@ final class MailAttachmentSaveStepsTest extends FilesToolsTestCase {
 		$this->items = [(string)$this->tree->nodes['/alice/files/Outros']['id']];
 
 		$this->failedWithoutWriting($this->steps->save('alice', 7, '2', '/Documentos/saved.pdf', false));
-		self::assertSame(MailCardStep::APPLIED, $this->steps->save('alice', 7, '2', '/Outros/saved.pdf', false)->status);
+		self::assertSame(WorkflowStep::APPLIED, $this->steps->save('alice', 7, '2', '/Outros/saved.pdf', false)->status);
 	}
 
 	/** A folder the native ACL does not let the actor add to is refused with nothing written. @return void */
@@ -195,9 +198,46 @@ final class MailAttachmentSaveStepsTest extends FilesToolsTestCase {
 
 		$step = $this->steps->save('alice', 7, '2', '/Documentos/saved.pdf', false);
 
-		self::assertSame(MailCardStep::UNCERTAIN, $step->status);
+		self::assertSame(WorkflowStep::UNCERTAIN, $step->status);
 		self::assertSame('/Documentos/saved.pdf', $step->ids['path']);
 		self::assertStringNotContainsString('delete', implode(' ', $this->tree->ops));
 		self::assertSame(1, count(array_filter($this->mail->imapCommands(), static fn (string $c): bool => $c === 'imap:attachment:2')));
+	}
+
+	/** @return array<string, array{\Closure(self): void, string}> failures before any write and at the sink, with the classification mail_save_attachment gives them */
+	public static function classifiedLikeTheOriginalTool(): array {
+		return [
+			'occupied name, before any write' => [static function (self $test): void { $test->tree->addFile(self::TARGET, 'old content', 'application/pdf'); }, WorkflowStep::FAILED],
+			'quota at the sink, answered as an error' => [static function (self $test): void { $test->tree->writeFailure = new \OCP\Files\NotEnoughSpaceException('quota'); }, WorkflowStep::FAILED],
+			'lock at the sink, answered as an error' => [static function (self $test): void { $test->tree->writeFailure = new \OCP\Lock\LockedException('saved.pdf'); }, WorkflowStep::FAILED],
+			'storage failure at the sink, answered as uncertain' => [static function (self $test): void { $test->tree->writeFailure = new \RuntimeException('native sink failure'); }, WorkflowStep::UNCERTAIN],
+		];
+	}
+
+	/**
+	 * The step classifies a failure as mail_save_attachment answers it to the user, with the same sentence: an error
+	 * of the tool is failed and an uncertain receipt is uncertain, before any write as at the sink.
+	 *
+	 * @param \Closure(self): void $arrange the failure to provoke
+	 * @param string $expected the classification of the step
+	 * @return void
+	 */
+	#[\PHPUnit\Framework\Attributes\DataProvider('classifiedLikeTheOriginalTool')]
+	public function testAFailureIsClassifiedAsTheOriginalToolAnswersIt(\Closure $arrange, string $expected): void {
+		$arrange($this);
+		try {
+			$receipt = json_decode($this->original->handle(['message_id' => 7, 'attachment_id' => '2', 'path' => '/Documentos/saved.pdf', 'confirm' => true], 'alice')['content'][0]['text'], true);
+			[$status, $message] = [$receipt['outcome'] === 'uncertain' ? WorkflowStep::UNCERTAIN : WorkflowStep::APPLIED, $receipt['message']];
+		} catch (ToolFailure $e) {
+			[$status, $message] = [WorkflowStep::FAILED, $e->getMessage()];
+		}
+		$this->setUp();
+		$arrange($this);
+
+		$step = $this->steps->save('alice', 7, '2', '/Documentos/saved.pdf', false);
+
+		self::assertSame($expected, $status, 'mail_save_attachment itself');
+		self::assertSame([$status, $message], [$step->status, $step->message]);
+		self::assertStringNotContainsString('delete', implode(' ', $this->tree->ops));
 	}
 }

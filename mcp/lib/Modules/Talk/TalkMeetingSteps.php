@@ -20,11 +20,12 @@ use OCA\Mcp\Modules\Talk\Tools\CreateGroup;
 use OCA\Mcp\Modules\Talk\Tools\Reply;
 use OCA\Mcp\Modules\Talk\Writing\ConversationWriter;
 use OCA\Mcp\Platform\Meetings\MeetingMessages;
-use OCA\Mcp\Platform\Meetings\MeetingStep;
+use OCA\Mcp\Platform\Workflows\WorkflowStep;
 use OCA\Mcp\Platform\Meetings\MeetingTalk;
 use OCP\IURLGenerator;
 use Psr\Log\LoggerInterface;
 use Throwable;
+use OCA\Mcp\Platform\Workflows\WorkflowMessages;
 
 /**
  * The Talk steps of a meeting, through the very work classes of talk_create_group and talk_reply.
@@ -65,19 +66,19 @@ final class TalkMeetingSteps implements MeetingTalk {
 	}
 
 	/** {@inheritDoc} */
-	public function createRoom(string $userId, string $name, array $participants): MeetingStep {
+	public function createRoom(string $userId, string $name, array $participants): WorkflowStep {
 		if (!$this->allowed(CreateGroup::definition(), $userId)) {
-			return MeetingStep::failed(MeetingMessages::notAllowed(CreateGroup::definition()->name));
+			return WorkflowStep::failed(WorkflowMessages::notAllowed(CreateGroup::definition()->name));
 		}
 		$result = $this->rooms->handle(self::validated(CreateGroup::definition(), ['name' => $name, 'participants' => $participants]), $userId);
 		if (($result['isError'] ?? false) === true) {
 			// GroupCreator resolves every guest and service first and reports a room that exists as a result, so an
 			// error here means no room was created.
-			return MeetingStep::failed(self::text($result));
+			return WorkflowStep::failed(self::text($result));
 		}
 		$room = self::payload($result);
 		if (!is_string($room['conversation_token'] ?? null)) {
-			return MeetingStep::uncertain(MeetingMessages::uncertain());
+			return WorkflowStep::uncertain(WorkflowMessages::uncertain());
 		}
 		$token = $room['conversation_token'];
 		$ids = ['conversation_token' => $token];
@@ -85,9 +86,9 @@ final class TalkMeetingSteps implements MeetingTalk {
 		// The room exists from here on: nothing below may lose its token or invite a second createRoom.
 		$note = $room['url'] === null ? MeetingMessages::roomLinkMissing() : null;
 		if (($room['invitations_failed'] ?? []) !== []) {
-			return MeetingStep::partial($ids, $room, $note === null ? Messages::invitationFailed() : Messages::invitationFailed() . ' ' . $note);
+			return WorkflowStep::partial($ids, $room, $note === null ? Messages::invitationFailed() : Messages::invitationFailed() . ' ' . $note);
 		}
-		return MeetingStep::applied($ids, $room, $note);
+		return WorkflowStep::applied($ids, $room, $note);
 	}
 
 	/** {@inheritDoc} */
@@ -103,26 +104,26 @@ final class TalkMeetingSteps implements MeetingTalk {
 	}
 
 	/** {@inheritDoc} */
-	public function postAgenda(string $userId, string $token, string $message): MeetingStep {
+	public function postAgenda(string $userId, string $token, string $message): WorkflowStep {
 		if (!$this->allowed(Reply::definition(), $userId)) {
-			return MeetingStep::failed(MeetingMessages::notAllowed(Reply::definition()->name));
+			return WorkflowStep::failed(WorkflowMessages::notAllowed(Reply::definition()->name));
 		}
 		$arguments = self::validated(Reply::definition(), ['conversation_token' => $token, 'message' => $message]);
 		try {
 			$this->agendaPlans->plan($arguments, $userId);
 		} catch (ToolFailure $refused) {
-			return MeetingStep::failed($refused->getMessage());
+			return WorkflowStep::failed($refused->getMessage());
 		}
 		$result = $this->agendas->handle($arguments, $userId);
 		if (($result['isError'] ?? false) === true) {
 			// The plan passed a moment ago: a failure now may come after Talk stored the message.
-			return MeetingStep::uncertain(self::text($result), ['conversation_token' => $token]);
+			return WorkflowStep::uncertain(self::text($result), ['conversation_token' => $token]);
 		}
 		$sent = self::payload($result);
 		if (!is_int($sent['messageId'] ?? null)) {
-			return MeetingStep::uncertain(MeetingMessages::uncertain(), ['conversation_token' => $token]);
+			return WorkflowStep::uncertain(WorkflowMessages::uncertain(), ['conversation_token' => $token]);
 		}
-		return MeetingStep::applied(['conversation_token' => $token, 'messageId' => $sent['messageId']], $sent);
+		return WorkflowStep::applied(['conversation_token' => $token, 'messageId' => $sent['messageId']], $sent);
 	}
 
 	/**
@@ -156,7 +157,7 @@ final class TalkMeetingSteps implements MeetingTalk {
 	 */
 	private function assertAllowed(ToolDefinition $definition, string $userId): void {
 		if (!$this->allowed($definition, $userId)) {
-			throw new ToolFailure(MeetingMessages::notAllowed($definition->name));
+			throw new ToolFailure(WorkflowMessages::notAllowed($definition->name));
 		}
 	}
 

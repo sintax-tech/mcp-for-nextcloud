@@ -12,11 +12,11 @@ use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCA\Mcp\Modules\Routines\Presentation\RoutinesMessages;
-use OCA\Mcp\Platform\Meetings\MeetingStep;
+use OCA\Mcp\Platform\Workflows\WorkflowStep;
 use OCA\Mcp\Platform\Meetings\MeetingCalendar;
-use OCA\Mcp\Platform\Meetings\MeetingMessages;
 use OCA\Mcp\Platform\Meetings\MeetingTalk;
 use Psr\Log\LoggerInterface;
+use OCA\Mcp\Platform\Workflows\WorkflowMessages;
 
 /**
  * The confirmed routines_create_meeting: room, agenda and event, once each, in this order (D4).
@@ -57,11 +57,11 @@ final class CreateMeetingHandler {
 		$receipt = new MeetingReceipt();
 		$room = $this->talk->createRoom($userId, MeetingRequest::title($arguments), MeetingRequest::participants($arguments));
 		if (!$receipt->record('room', $room)) {
-			return self::result($receipt->build(), $room->status !== MeetingStep::FAILED);
+			return self::result($receipt->build(), $room->status !== WorkflowStep::FAILED);
 		}
 		$token = (string)$room->ids['conversation_token'];
 		$ids = ['conversation_token' => $token];
-		if (!$receipt->record('agenda', $this->guarded($ids, fn (): MeetingStep => $this->talk->postAgenda($userId, $token, MeetingRequest::agenda($arguments))))) {
+		if (!$receipt->record('agenda', $this->guarded($ids, fn (): WorkflowStep => $this->talk->postAgenda($userId, $token, MeetingRequest::agenda($arguments))))) {
 			return self::result($receipt->build(), true);
 		}
 		$link = $room->result['url'] ?? null;
@@ -69,7 +69,7 @@ final class CreateMeetingHandler {
 			$receipt->skip('event', RoutinesMessages::eventWithoutLink());
 			return self::result($receipt->build(), true);
 		}
-		$receipt->record('event', $this->guarded([], fn (): MeetingStep => $this->calendar->createEvent($userId, MeetingRequest::event($arguments, $link))));
+		$receipt->record('event', $this->guarded([], fn (): WorkflowStep => $this->calendar->createEvent($userId, MeetingRequest::event($arguments, $link))));
 		return self::result($receipt->build(), true);
 	}
 
@@ -81,19 +81,19 @@ final class CreateMeetingHandler {
 	 * and code of the exception are logged.
 	 *
 	 * @param array<string, string|int> $ids identifiers already known for this step
-	 * @param \Closure(): MeetingStep $run the step
-	 * @return MeetingStep what the port observed, or the outcome of its exception
+	 * @param \Closure(): WorkflowStep $run the step
+	 * @return WorkflowStep what the port observed, or the outcome of its exception
 	 */
-	private function guarded(array $ids, \Closure $run): MeetingStep {
+	private function guarded(array $ids, \Closure $run): WorkflowStep {
 		try {
 			return $run();
 		} catch (\Throwable $e) {
 			$this->logger->warning('MCP meeting step failed: {exception_detail}', ['app' => 'mcp', 'exception_detail' => ToolRegistry::loggable($e)]);
 			return match (true) {
-				$e instanceof ToolFailure => MeetingStep::failed($e->getMessage()),
-				$e instanceof PolicyUnavailable && !$e->uncertain => MeetingStep::failed(RoutinesMessages::stepPolicyUnavailable()),
-				$e instanceof \InvalidArgumentException => MeetingStep::failed(RoutinesMessages::stepRefused()),
-				default => MeetingStep::uncertain(MeetingMessages::uncertain(), $ids),
+				$e instanceof ToolFailure => WorkflowStep::failed($e->getMessage()),
+				$e instanceof PolicyUnavailable && !$e->uncertain => WorkflowStep::failed(RoutinesMessages::stepPolicyUnavailable()),
+				$e instanceof \InvalidArgumentException => WorkflowStep::failed(RoutinesMessages::stepRefused()),
+				default => WorkflowStep::uncertain(WorkflowMessages::uncertain(), $ids),
 			};
 		}
 	}

@@ -16,10 +16,12 @@ use OCA\Mcp\Modules\Mail\Presentation\MailSaveMessages;
 use OCA\Mcp\Modules\Mail\Tools\SaveAttachment;
 use OCA\Mcp\Modules\Mail\Writing\SaveAttachmentHandler;
 use OCA\Mcp\Modules\Mail\Writing\SaveAttachmentPreview;
+use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\MailCards\MailAttachmentSave;
-use OCA\Mcp\Platform\MailCards\MailCardMessages;
-use OCA\Mcp\Platform\MailCards\MailCardStep;
+use OCA\Mcp\Platform\Workflows\WorkflowMessages;
+use OCA\Mcp\Platform\Workflows\WorkflowStep;
 use OCP\IURLGenerator;
+use OCP\Lock\LockedException;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
@@ -41,7 +43,7 @@ final class MailAttachmentSaveSteps implements MailAttachmentSave {
 	 * @param SaveAttachmentPreview $plans the plan of mail_save_attachment
 	 * @param SaveAttachmentHandler $saves the effect of mail_save_attachment
 	 * @param IURLGenerator $urls the canonical link of the saved file on this instance
-	 * @param LoggerInterface $logger the class and code of a save that ended in doubt, never its message
+	 * @param LoggerInterface $logger the class and code of a file link that could not be built, never its message
 	 */
 	public function __construct(
 		private ToolAccess $access,
@@ -55,39 +57,38 @@ final class MailAttachmentSaveSteps implements MailAttachmentSave {
 	/** {@inheritDoc} */
 	public function planSave(string $userId, int $messageId, string $attachmentId, string $path, bool $confirmShared): array {
 		if (!$this->allowed($userId)) {
-			throw new ToolFailure(MailCardMessages::notAllowed(SaveAttachment::definition()->name));
+			throw new ToolFailure(WorkflowMessages::notAllowed(SaveAttachment::definition()->name));
 		}
 		return $this->plans->plan(self::arguments($messageId, $attachmentId, $path, $confirmShared), $userId);
 	}
 
 	/** {@inheritDoc} */
-	public function save(string $userId, int $messageId, string $attachmentId, string $path, bool $confirmShared): MailCardStep {
+	public function save(string $userId, int $messageId, string $attachmentId, string $path, bool $confirmShared): WorkflowStep {
 		if (!$this->allowed($userId)) {
-			return MailCardStep::failed(MailCardMessages::notAllowed(SaveAttachment::definition()->name));
+			return WorkflowStep::failed(WorkflowMessages::notAllowed(SaveAttachment::definition()->name));
 		}
 		$arguments = self::arguments($messageId, $attachmentId, $path, $confirmShared);
+		// The step classifies as mail_save_attachment answers, never more hopefully or more gravely: what the tool
+		// answers as an error (ToolFailure, a lock) is failed with its own sentence, what its receipt answers as
+		// uncertain is uncertain. Any other exception reaches the caller unchanged, as it reaches the registry.
 		try {
 			$result = $this->saves->handle($arguments + ['confirm' => true], $userId);
 		} catch (ToolFailure $refused) {
-			// The original tool refuses with a ToolFailure before its write, an occupied name included.
-			return MailCardStep::failed($refused->getMessage());
-		} catch (InvalidArgumentException|PolicyUnavailable $e) {
-			throw $e;
-		} catch (Throwable $e) {
-			$this->logger->error('MCP mail card save failed: {exception_detail}', ['app' => 'mcp', 'exception_detail' => ToolRegistry::loggable($e)]);
-			return MailCardStep::uncertain(MailSaveMessages::uncertain(), ['path' => $arguments['path']]);
+			return WorkflowStep::failed($refused->getMessage());
+		} catch (LockedException $locked) {
+			return WorkflowStep::failed(NodeAccess::lockFailure($locked)->getMessage());
 		}
 		$receipt = json_decode($result['content'][0]['text'], true, 512, JSON_THROW_ON_ERROR);
 		if (($receipt['requiresConfirmation'] ?? false) === true) {
 			// A folder of somebody else without confirm_shared: answered before anything is read or written.
-			return MailCardStep::failed((string)$receipt['message']);
+			return WorkflowStep::failed((string)$receipt['message']);
 		}
 		$fileId = is_int($receipt['fileId'] ?? null) ? $receipt['fileId'] : null;
 		$ids = ['path' => (string)$receipt['path']] + ($fileId === null ? [] : ['fileId' => $fileId]);
 		if (($receipt['outcome'] ?? null) !== 'saved' || ($receipt['verified'] ?? false) !== true || $fileId === null) {
-			return MailCardStep::uncertain((string)($receipt['message'] ?? MailSaveMessages::uncertain()), $ids, $receipt);
+			return WorkflowStep::uncertain((string)($receipt['message'] ?? MailSaveMessages::uncertain()), $ids, $receipt);
 		}
-		return MailCardStep::applied($ids, $receipt + ['url' => $this->fileUrl($fileId)]);
+		return WorkflowStep::applied($ids, $receipt + ['url' => $this->fileUrl($fileId)]);
 	}
 
 	/**

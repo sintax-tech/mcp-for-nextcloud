@@ -15,7 +15,7 @@ use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Modules\Calendar\CalendarMeetingSteps;
 use OCA\Mcp\Modules\Calendar\Creation\CreateEventHandler;
 use OCA\Mcp\Modules\Calendar\Creation\CreateEventPreview;
-use OCA\Mcp\Platform\Meetings\MeetingStep;
+use OCA\Mcp\Platform\Workflows\WorkflowStep;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\CalendarTestCase;
 use OCP\App\IAppManager;
 use OCP\IUser;
@@ -72,7 +72,7 @@ final class CalendarMeetingStepsTest extends CalendarTestCase {
 	public function testTheConfirmedStepMakesTheSinglePutOfCalendarCreateEvent(): void {
 		$step = $this->steps->createEvent('alice', self::event());
 
-		$this->assertSame(MeetingStep::APPLIED, $step->status, (string)$step->message);
+		$this->assertSame(WorkflowStep::APPLIED, $step->status, (string)$step->message);
 		$this->assertCount(1, $this->dav->calls);
 		[$operation, [$calendar, $object]] = $this->dav->calls[0];
 		$this->assertSame(['put', 'personal', $step->ids['uid'] . '.ics'], [$operation, $calendar, $object]);
@@ -93,7 +93,7 @@ final class CalendarMeetingStepsTest extends CalendarTestCase {
 		$deny($this);
 
 		$step = $this->steps->createEvent('alice', self::event());
-		$this->assertSame(MeetingStep::FAILED, $step->status);
+		$this->assertSame(WorkflowStep::FAILED, $step->status);
 		$this->assertStringContainsString('calendar_create_event', (string)$step->message);
 		$this->expectException(ToolFailure::class);
 		try {
@@ -106,17 +106,17 @@ final class CalendarMeetingStepsTest extends CalendarTestCase {
 	public function testAReadOnlyCalendarIsRefusedByItsOwnAclWithNothingWritten(): void {
 		$step = $this->steps->createEvent('alice', self::event(['calendar' => self::READONLY]));
 
-		$this->assertSame(MeetingStep::FAILED, $step->status);
+		$this->assertSame(WorkflowStep::FAILED, $step->status);
 		$this->assertSame([], $this->dav->calls);
 	}
 
 	public function testACalendarOfSomebodyElseNeedsConfirmShared(): void {
 		$refused = $this->steps->createEvent('alice', self::event(['calendar' => self::TEAM]));
-		$this->assertSame(MeetingStep::FAILED, $refused->status);
+		$this->assertSame(WorkflowStep::FAILED, $refused->status);
 		$this->assertSame([], $this->dav->calls);
 
 		$created = $this->steps->createEvent('alice', self::event(['calendar' => self::TEAM, 'confirm_shared' => true]));
-		$this->assertSame(MeetingStep::APPLIED, $created->status, (string)$created->message);
+		$this->assertSame(WorkflowStep::APPLIED, $created->status, (string)$created->message);
 		$this->assertCount(1, $this->dav->calls);
 	}
 
@@ -134,7 +134,7 @@ final class CalendarMeetingStepsTest extends CalendarTestCase {
 
 		$step = $this->steps->createEvent('alice', self::event());
 
-		$this->assertSame(MeetingStep::UNCERTAIN, $step->status);
+		$this->assertSame(WorkflowStep::UNCERTAIN, $step->status);
 		$this->assertCount(1, $this->dav->calls);
 	}
 }

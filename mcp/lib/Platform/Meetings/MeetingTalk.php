@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Platform\Meetings;
 
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Platform\Workflows\WorkflowStep;
 
 /**
  * The Talk steps of a meeting: a new private group room and its agenda. Implemented by the Talk module through the
@@ -36,10 +37,10 @@ interface MeetingTalk {
 	 * @param string $userId the actor, owner of the new room
 	 * @param string $name the room name
 	 * @param list<string> $participants local accounts to invite besides the actor
-	 * @return MeetingStep applied, partial (invitations failed, the room exists) or failed (no room)
+	 * @return WorkflowStep applied, partial (invitations failed, the room exists) or failed (no room)
 	 * @throws \InvalidArgumentException on arguments talk_create_group refuses
 	 */
-	public function createRoom(string $userId, string $name, array $participants): MeetingStep;
+	public function createRoom(string $userId, string $name, array $participants): WorkflowStep;
 
 	/**
 	 * The agenda as it will be posted, before the room exists: the text talk_reply would store.
@@ -58,8 +59,8 @@ interface MeetingTalk {
 	 * @param string $userId the actor, author of the agenda
 	 * @param string $token the room the agenda goes to
 	 * @param string $message the agenda text
-	 * @return MeetingStep applied, failed (refused before sending) or uncertain (the message may exist)
+	 * @return WorkflowStep applied, failed (refused before sending) or uncertain (the message may exist)
 	 * @throws \InvalidArgumentException on arguments talk_reply refuses
 	 */
-	public function postAgenda(string $userId, string $token, string $message): MeetingStep;
+	public function postAgenda(string $userId, string $token, string $message): WorkflowStep;
 }

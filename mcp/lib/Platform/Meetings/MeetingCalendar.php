@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Platform\Meetings;
 
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Platform\Workflows\WorkflowStep;
 
 /**
  * The Calendar step of a meeting: the event, created last. Implemented by the Calendar module through the work
@@ -35,8 +36,8 @@ interface MeetingCalendar {
 	 *
 	 * @param string $userId the actor
 	 * @param array<string, mixed> $event the arguments of calendar_create_event, without confirm
-	 * @return MeetingStep applied, failed (refused before the write) or uncertain (the event may exist)
+	 * @return WorkflowStep applied, failed (refused before the write) or uncertain (the event may exist)
 	 * @throws \InvalidArgumentException on arguments calendar_create_event refuses
 	 */
-	public function createEvent(string $userId, array $event): MeetingStep;
+	public function createEvent(string $userId, array $event): WorkflowStep;
 }

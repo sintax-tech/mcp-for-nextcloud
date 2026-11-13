@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Platform\MailCards;
 
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Platform\Workflows\WorkflowStep;
 
 /**
  * The attachment step of a mail card: one attachment saved in the actor's Files under a free name. Implemented by the
@@ -43,8 +44,11 @@ interface MailAttachmentSave {
 	 * @param string $attachmentId the attachment, as mail_save_attachment takes it
 	 * @param string $path the final path of the new file in the actor's Files
 	 * @param bool $confirmShared whether the actor confirmed a folder owned by somebody else
-	 * @return MailCardStep applied (saved and read back), failed (refused before the write) or uncertain (the file may exist)
+	 * @return WorkflowStep classified as mail_save_attachment answers the user: applied (saved and read back), failed
+	 *     (what the tool answers as an error, with its own sentence) or uncertain (what its receipt answers as uncertain;
+	 *     the file may exist)
 	 * @throws \InvalidArgumentException on arguments mail_save_attachment refuses
+	 * @throws \Throwable any other failure, unchanged, as it reaches the registry for mail_save_attachment
 	 */
-	public function save(string $userId, int $messageId, string $attachmentId, string $path, bool $confirmShared): MailCardStep;
+	public function save(string $userId, int $messageId, string $attachmentId, string $path, bool $confirmShared): WorkflowStep;
 }

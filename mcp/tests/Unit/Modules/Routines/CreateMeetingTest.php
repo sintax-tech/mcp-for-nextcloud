@@ -14,7 +14,7 @@ use OCA\Mcp\Modules\Routines\Meetings\CreateMeetingPreview;
 use OCA\Mcp\Modules\Routines\Meetings\MeetingPlans;
 use OCA\Mcp\Modules\Routines\Tools\CreateMeeting;
 use OCA\Mcp\Platform\Meetings\MeetingCalendar;
-use OCA\Mcp\Platform\Meetings\MeetingStep;
+use OCA\Mcp\Platform\Workflows\WorkflowStep;
 use OCA\Mcp\Platform\Meetings\MeetingTalk;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -125,13 +125,13 @@ final class CreateMeetingTest extends TestCase {
 	/** @return array<string, array{string, string, list<string>, bool}> step, status, expected writes, error result */
 	public static function stops(): array {
 		return [
-			'room failed: nothing exists' => ['room', MeetingStep::FAILED, ['write:room'], true],
-			'room uncertain: it may exist' => ['room', MeetingStep::UNCERTAIN, ['write:room'], false],
-			'room partial: invitations missing' => ['room', MeetingStep::PARTIAL, ['write:room'], false],
-			'agenda failed after the room' => ['agenda', MeetingStep::FAILED, ['write:room', 'write:agenda'], false],
-			'agenda uncertain' => ['agenda', MeetingStep::UNCERTAIN, ['write:room', 'write:agenda'], false],
-			'event refused by its sink after the preflight' => ['event', MeetingStep::FAILED, ['write:room', 'write:agenda', 'write:event'], false],
-			'event uncertain' => ['event', MeetingStep::UNCERTAIN, ['write:room', 'write:agenda', 'write:event'], false],
+			'room failed: nothing exists' => ['room', WorkflowStep::FAILED, ['write:room'], true],
+			'room uncertain: it may exist' => ['room', WorkflowStep::UNCERTAIN, ['write:room'], false],
+			'room partial: invitations missing' => ['room', WorkflowStep::PARTIAL, ['write:room'], false],
+			'agenda failed after the room' => ['agenda', WorkflowStep::FAILED, ['write:room', 'write:agenda'], false],
+			'agenda uncertain' => ['agenda', WorkflowStep::UNCERTAIN, ['write:room', 'write:agenda'], false],
+			'event refused by its sink after the preflight' => ['event', WorkflowStep::FAILED, ['write:room', 'write:agenda', 'write:event'], false],
+			'event uncertain' => ['event', WorkflowStep::UNCERTAIN, ['write:room', 'write:agenda', 'write:event'], false],
 		];
 	}
 
@@ -163,14 +163,14 @@ final class CreateMeetingTest extends TestCase {
 	/** @return array<string, array{string, \Throwable, string}> step that throws, exception, its outcome */
 	public static function throwingSteps(): array {
 		return [
-			'agenda: unexpected' => ['agenda', new \RuntimeException('broke'), MeetingStep::UNCERTAIN],
-			'agenda: policy unreadable' => ['agenda', new \OCA\Mcp\Access\Policy\PolicyUnavailable(), MeetingStep::FAILED],
-			'agenda: policy write in doubt' => ['agenda', new \OCA\Mcp\Access\Policy\PolicyUnavailable('x', true), MeetingStep::UNCERTAIN],
-			'agenda: argument' => ['agenda', new \InvalidArgumentException('bad'), MeetingStep::FAILED],
-			'agenda: refusal' => ['agenda', new ToolFailure('refused'), MeetingStep::FAILED],
-			'event: unexpected' => ['event', new \RuntimeException('broke'), MeetingStep::UNCERTAIN],
-			'event: policy unreadable' => ['event', new \OCA\Mcp\Access\Policy\PolicyUnavailable(), MeetingStep::FAILED],
-			'event: argument' => ['event', new \InvalidArgumentException('bad'), MeetingStep::FAILED],
+			'agenda: unexpected' => ['agenda', new \RuntimeException('broke'), WorkflowStep::UNCERTAIN],
+			'agenda: policy unreadable' => ['agenda', new \OCA\Mcp\Access\Policy\PolicyUnavailable(), WorkflowStep::FAILED],
+			'agenda: policy write in doubt' => ['agenda', new \OCA\Mcp\Access\Policy\PolicyUnavailable('x', true), WorkflowStep::UNCERTAIN],
+			'agenda: argument' => ['agenda', new \InvalidArgumentException('bad'), WorkflowStep::FAILED],
+			'agenda: refusal' => ['agenda', new ToolFailure('refused'), WorkflowStep::FAILED],
+			'event: unexpected' => ['event', new \RuntimeException('broke'), WorkflowStep::UNCERTAIN],
+			'event: policy unreadable' => ['event', new \OCA\Mcp\Access\Policy\PolicyUnavailable(), WorkflowStep::FAILED],
+			'event: argument' => ['event', new \InvalidArgumentException('bad'), WorkflowStep::FAILED],
 		];
 	}
 
@@ -245,17 +245,17 @@ final class MeetingPorts implements MeetingTalk, MeetingCalendar {
 		return ['requiresConfirmation' => true, 'action' => 'talk_create_group', 'draft' => ['name' => $name, 'participants' => $participants], 'message' => 'confirm group'];
 	}
 
-	public function createRoom(string $userId, string $name, array $participants): MeetingStep {
+	public function createRoom(string $userId, string $name, array $participants): WorkflowStep {
 		$this->log[] = 'write:room';
 		if (isset($this->throws['room'])) {
 			throw $this->throws['room'];
 		}
 		$result = ['conversation_token' => 'room1234', 'url' => $this->link, 'invitations_failed' => []];
-		return match ($this->outcome['room'] ?? MeetingStep::APPLIED) {
-			MeetingStep::FAILED => MeetingStep::failed('no room'),
-			MeetingStep::UNCERTAIN => MeetingStep::uncertain('maybe a room'),
-			MeetingStep::PARTIAL => MeetingStep::partial(['conversation_token' => 'room1234'], $result, 'invitation failed'),
-			default => MeetingStep::applied(['conversation_token' => 'room1234'], $result, $this->link === null ? 'no link' : null),
+		return match ($this->outcome['room'] ?? WorkflowStep::APPLIED) {
+			WorkflowStep::FAILED => WorkflowStep::failed('no room'),
+			WorkflowStep::UNCERTAIN => WorkflowStep::uncertain('maybe a room'),
+			WorkflowStep::PARTIAL => WorkflowStep::partial(['conversation_token' => 'room1234'], $result, 'invitation failed'),
+			default => WorkflowStep::applied(['conversation_token' => 'room1234'], $result, $this->link === null ? 'no link' : null),
 		};
 	}
 
@@ -264,7 +264,7 @@ final class MeetingPorts implements MeetingTalk, MeetingCalendar {
 		return ['action' => 'talk_reply', 'conversation' => null, 'draft' => ['message' => $message]];
 	}
 
-	public function postAgenda(string $userId, string $token, string $message): MeetingStep {
+	public function postAgenda(string $userId, string $token, string $message): WorkflowStep {
 		$this->log[] = 'write:agenda';
 		if (isset($this->throws['agenda'])) {
 			throw $this->throws['agenda'];
@@ -280,7 +280,7 @@ final class MeetingPorts implements MeetingTalk, MeetingCalendar {
 			'after' => ['start' => $event['start'], 'end' => $event['end']], 'shared' => $this->shared ? [['owner' => 'bob']] : []];
 	}
 
-	public function createEvent(string $userId, array $event): MeetingStep {
+	public function createEvent(string $userId, array $event): WorkflowStep {
 		$this->log[] = 'write:event';
 		if (isset($this->throws['event'])) {
 			throw $this->throws['event'];
@@ -298,11 +298,11 @@ final class MeetingPorts implements MeetingTalk, MeetingCalendar {
 	}
 
 	/** @param array<string, string|int> $ids */
-	private function outcome(string $step, array $ids): MeetingStep {
-		return match ($this->outcome[$step] ?? MeetingStep::APPLIED) {
-			MeetingStep::FAILED => MeetingStep::failed($step . ' refused'),
-			MeetingStep::UNCERTAIN => MeetingStep::uncertain($step . ' unknown', $ids),
-			default => MeetingStep::applied($ids, $ids),
+	private function outcome(string $step, array $ids): WorkflowStep {
+		return match ($this->outcome[$step] ?? WorkflowStep::APPLIED) {
+			WorkflowStep::FAILED => WorkflowStep::failed($step . ' refused'),
+			WorkflowStep::UNCERTAIN => WorkflowStep::uncertain($step . ' unknown', $ids),
+			default => WorkflowStep::applied($ids, $ids),
 		};
 	}
 }

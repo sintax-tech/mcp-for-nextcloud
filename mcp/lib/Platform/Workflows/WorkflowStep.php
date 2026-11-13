@@ -5,29 +5,29 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Platform\MailCards;
+namespace OCA\Mcp\Platform\Workflows;
 
 /**
- * The receipt of one confirmed step of a mail card (the attachment saved in Files, then the Deck card), as observed by
- * the module that owns the sink.
+ * The receipt of one confirmed step of a routine that combines tools of several modules, as observed by the module
+ * that owns the sink.
  *
  * A step never retries and never undoes: `failed` means the step was refused before its effect and nothing was
  * written; `uncertain` means the effect was attempted and may have been persisted, so the caller stops and reports the
- * identifiers it has instead of repeating the step. A saved file is never deleted because a later step failed.
+ * identifiers it has instead of repeating the step.
  */
-final class MailCardStep {
+final class WorkflowStep {
 	/** The effect was written and read back. */
 	public const APPLIED = 'applied';
-	/** The card exists, but some of its assignees could not be assigned. */
+	/** The main effect exists, but some of its secondary effects failed (invitations, assignees). */
 	public const PARTIAL = 'partial';
-	/** Refused before the effect: grant, Guests, app, arguments, ACL, scope or an occupied name; nothing was written. */
+	/** Refused before the effect: grant, Guests, app, arguments, ACL or scope; nothing was written. */
 	public const FAILED = 'failed';
 	/** The effect was attempted and its outcome is unknown; it may have been persisted. */
 	public const UNCERTAIN = 'uncertain';
 
 	/**
 	 * @param string $status one of the constants of this class
-	 * @param array<string, string|int> $ids identifiers the step observed (file id and path, card id)
+	 * @param array<string, string|int> $ids identifiers the step observed (room token, message id, event UID, file id, card id)
 	 * @param array<string, mixed> $result the result of the original tool, as that tool answers it; empty on a refusal
 	 * @param string|null $message a sentence written for the user: always for partial, failed and uncertain, and for applied only when there is a note
 	 */
@@ -42,7 +42,7 @@ final class MailCardStep {
 	/**
 	 * @param array<string, string|int> $ids identifiers of what was written
 	 * @param array<string, mixed> $result the result of the original tool
-	 * @param string|null $message a note the user has to read although the effect exists
+	 * @param string|null $message a note the user has to read although the effect exists, e.g. a missing room link
 	 * @return self an applied step
 	 */
 	public static function applied(array $ids, array $result, ?string $message = null): self {

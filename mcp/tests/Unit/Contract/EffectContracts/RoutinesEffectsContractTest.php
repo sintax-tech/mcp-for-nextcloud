@@ -14,7 +14,7 @@ use OCA\Mcp\Modules\Routines\Meetings\MeetingPlans;
 use OCA\Mcp\Modules\Routines\RoutinesModule;
 use OCA\Mcp\Modules\Routines\Tools\CreateMeeting;
 use OCA\Mcp\Platform\Meetings\MeetingCalendar;
-use OCA\Mcp\Platform\Meetings\MeetingStep;
+use OCA\Mcp\Platform\Workflows\WorkflowStep;
 use OCA\Mcp\Platform\Meetings\MeetingTalk;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\CriticalFlow;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\EffectsGate;
@@ -187,7 +187,7 @@ final class ThrowingMeetingTalk implements MeetingTalk {
 		return $this->real->planRoom($userId, $name, $participants);
 	}
 
-	public function createRoom(string $userId, string $name, array $participants): MeetingStep {
+	public function createRoom(string $userId, string $name, array $participants): WorkflowStep {
 		return $this->real->createRoom($userId, $name, $participants);
 	}
 
@@ -195,7 +195,7 @@ final class ThrowingMeetingTalk implements MeetingTalk {
 		return $this->real->planAgenda($userId, $message);
 	}
 
-	public function postAgenda(string $userId, string $token, string $message): MeetingStep {
+	public function postAgenda(string $userId, string $token, string $message): WorkflowStep {
 		if ($this->afterWrite) {
 			$this->real->postAgenda($userId, $token, $message);
 		}
@@ -212,7 +212,7 @@ final class ThrowingMeetingCalendar implements MeetingCalendar {
 		return $this->real->planEvent($userId, $event);
 	}
 
-	public function createEvent(string $userId, array $event): MeetingStep {
+	public function createEvent(string $userId, array $event): WorkflowStep {
 		if ($this->afterWrite) {
 			$this->real->createEvent($userId, $event);
 		}

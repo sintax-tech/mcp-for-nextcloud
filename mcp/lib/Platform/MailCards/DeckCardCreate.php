@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Platform\MailCards;
 
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Platform\Workflows\WorkflowStep;
 
 /**
  * The card step of a mail card: one Deck card whose description carries the reference to the saved file and to the
@@ -36,8 +37,8 @@ interface DeckCardCreate {
 	 *
 	 * @param string $userId the actor, owner of the new card
 	 * @param array<string, mixed> $card the arguments of deck_create_card, without confirm
-	 * @return MailCardStep applied, partial (assignees failed, the card exists), failed (no card) or uncertain (the card may exist)
+	 * @return WorkflowStep applied, partial (assignees failed, the card exists), failed (no card) or uncertain (the card may exist)
 	 * @throws \InvalidArgumentException on arguments deck_create_card refuses
 	 */
-	public function createCard(string $userId, array $card): MailCardStep;
+	public function createCard(string $userId, array $card): WorkflowStep;
 }

@@ -5,18 +5,18 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Platform\MailCards;
+namespace OCA\Mcp\Platform\Workflows;
 
 use OCA\Mcp\L10n\Translator;
 
-/** The sentences a mail card step answers with when the original tool has none of its own. */
-final class MailCardMessages {
+/** The sentences a routine step answers with when the original tool has none of its own. */
+final class WorkflowMessages {
 	/** Static messages only; never instantiated. */
 	private function __construct() {
 	}
 
 	/**
-	 * @param string $tool the published name of the tool whose step was refused, e.g. mail_save_attachment
+	 * @param string $tool the published name of the tool whose step was refused, e.g. talk_create_group
 	 * @return string the refusal of a step the actor may not run through MCP
 	 */
 	public static function notAllowed(string $tool): string {

@@ -14,7 +14,7 @@ use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
 use OCA\Mcp\Modules\Mail\Reading\MailSearchListing;
 use OCA\Mcp\Modules\Mail\Tools\SearchMessages;
 use OCA\Mcp\Platform\Meetings\MeetingMailRead;
-use OCA\Mcp\Platform\Meetings\MeetingMessages;
+use OCA\Mcp\Platform\Workflows\WorkflowMessages;
 
 /**
  * The mail read of a meeting dossier, through the search of mail_search_messages and nothing else.
@@ -36,7 +36,7 @@ final class MailMeetingSearch implements MeetingMailRead {
 	/** {@inheritDoc} */
 	public function search(string $userId, array $arguments): array {
 		if (!$this->allowed($userId)) {
-			throw new ToolFailure(MeetingMessages::notAllowed(SearchMessages::definition()->name));
+			throw new ToolFailure(WorkflowMessages::notAllowed(SearchMessages::definition()->name));
 		}
 		return $this->search->searchMessages(ArgumentValidator::validate(SearchMessages::definition()->inputSchema, $arguments), $userId);
 	}

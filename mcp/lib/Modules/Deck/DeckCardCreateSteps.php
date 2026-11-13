@@ -15,8 +15,8 @@ use OCA\Mcp\Modules\Deck\Creation\CreateCardPreview;
 use OCA\Mcp\Modules\Deck\Presentation\DeckWriteMessages;
 use OCA\Mcp\Modules\Deck\Tools\CreateCard;
 use OCA\Mcp\Platform\MailCards\DeckCardCreate;
-use OCA\Mcp\Platform\MailCards\MailCardMessages;
-use OCA\Mcp\Platform\MailCards\MailCardStep;
+use OCA\Mcp\Platform\Workflows\WorkflowMessages;
+use OCA\Mcp\Platform\Workflows\WorkflowStep;
 
 /**
  * The card step of a mail card, through the very work classes of deck_create_card.
@@ -43,15 +43,15 @@ final class DeckCardCreateSteps implements DeckCardCreate {
 	/** {@inheritDoc} */
 	public function planCard(string $userId, array $card): array {
 		if (!$this->allowed($userId)) {
-			throw new ToolFailure(MailCardMessages::notAllowed(CreateCard::definition()->name));
+			throw new ToolFailure(WorkflowMessages::notAllowed(CreateCard::definition()->name));
 		}
 		return $this->plans->plan(ArgumentValidator::validate(CreateCard::definition()->inputSchema, $card), $userId);
 	}
 
 	/** {@inheritDoc} */
-	public function createCard(string $userId, array $card): MailCardStep {
+	public function createCard(string $userId, array $card): WorkflowStep {
 		if (!$this->allowed($userId)) {
-			return MailCardStep::failed(MailCardMessages::notAllowed(CreateCard::definition()->name));
+			return WorkflowStep::failed(WorkflowMessages::notAllowed(CreateCard::definition()->name));
 		}
 		$arguments = ArgumentValidator::validate(CreateCard::definition()->inputSchema, $card);
 		$result = $this->execution->execute(CreateCardHandler::TOOL, $arguments, $userId);
@@ -59,27 +59,27 @@ final class DeckCardCreateSteps implements DeckCardCreate {
 		if (($result['isError'] ?? false) === true) {
 			// AbstractHandler answers an error only for a refusal before the write or a write whose read-back found no
 			// card; a card that may exist is answered as `confirmed: false` or `probable`, never as an error.
-			return MailCardStep::failed($text);
+			return WorkflowStep::failed($text);
 		}
 		$created = json_decode($text, true);
 		if (!is_array($created)) {
-			return MailCardStep::uncertain(MailCardMessages::uncertain());
+			return WorkflowStep::uncertain(WorkflowMessages::uncertain());
 		}
 		if (($created['requiresConfirmation'] ?? false) === true) {
 			// A board of somebody else without confirm_shared: answered before anything is written.
-			return MailCardStep::failed((string)$created['message']);
+			return WorkflowStep::failed((string)$created['message']);
 		}
 		$id = is_int($created['id'] ?? null) ? $created['id'] : null;
 		if (($created['confirmed'] ?? true) !== true || $id === null) {
 			$message = is_string($created['message'] ?? null) ? $created['message'] : DeckWriteMessages::probablyCreated();
-			return MailCardStep::uncertain($message, $id === null ? [] : ['cardId' => $id], $created);
+			return WorkflowStep::uncertain($message, $id === null ? [] : ['cardId' => $id], $created);
 		}
 		$ids = ['cardId' => $id] + (is_int($created['boardId'] ?? null) ? ['boardId' => $created['boardId']] : []);
 		$warnings = implode(' ', array_filter($created['warnings'] ?? [], 'is_string'));
 		if (count($created['assignedUsers'] ?? []) < count(array_unique($arguments['assignees'] ?? []))) {
-			return MailCardStep::partial($ids, $created, $warnings);
+			return WorkflowStep::partial($ids, $created, $warnings);
 		}
-		return MailCardStep::applied($ids, $created, $warnings === '' ? null : $warnings);
+		return WorkflowStep::applied($ids, $created, $warnings === '' ? null : $warnings);
 	}
 
 	/**

@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Routines\Meetings;
 
 use OCA\Mcp\Modules\Routines\Presentation\RoutinesMessages;
-use OCA\Mcp\Platform\Meetings\MeetingStep;
+use OCA\Mcp\Platform\Workflows\WorkflowStep;
 
 /**
  * The receipt of one confirmed meeting: one item per step, in order, with what each step observed and why a step did
@@ -25,15 +25,15 @@ final class MeetingReceipt {
 
 	/**
 	 * @param string $step one of {@see self::STEPS}
-	 * @param MeetingStep $outcome what the port observed
+	 * @param WorkflowStep $outcome what the port observed
 	 * @return bool whether the meeting continues after this step
 	 */
-	public function record(string $step, MeetingStep $outcome): bool {
+	public function record(string $step, WorkflowStep $outcome): bool {
 		$this->steps[$step] = ['step' => $step, 'status' => $outcome->status, 'ids' => (object)$outcome->ids]
 			+ ($step === 'room' && array_key_exists('url', $outcome->result) ? ['url' => $outcome->result['url']] : [])
 			+ ($outcome->message === null ? [] : ['message' => $outcome->message])
 			+ ($outcome->result === [] ? [] : ['result' => $outcome->result]);
-		return $outcome->status === MeetingStep::APPLIED;
+		return $outcome->status === WorkflowStep::APPLIED;
 	}
 
 	/**
@@ -72,7 +72,7 @@ final class MeetingReceipt {
 		}
 		$stopped = null;
 		foreach (self::STEPS as $name) {
-			if ($this->steps[$name]['status'] !== MeetingStep::APPLIED) {
+			if ($this->steps[$name]['status'] !== WorkflowStep::APPLIED) {
 				$stopped = $name;
 				break;
 			}
@@ -85,7 +85,7 @@ final class MeetingReceipt {
 	/** @return array{steps: list<array<string, mixed>>, not_done: list<string>} every step in order, and those without effect */
 	private function items(): array {
 		$items = array_map(fn (string $name): array => $this->steps[$name], self::STEPS);
-		$notDone = array_values(array_filter(self::STEPS, fn (string $name): bool => in_array($this->steps[$name]['status'], [self::NOT_STARTED, MeetingStep::FAILED], true)));
+		$notDone = array_values(array_filter(self::STEPS, fn (string $name): bool => in_array($this->steps[$name]['status'], [self::NOT_STARTED, WorkflowStep::FAILED], true)));
 		return ['steps' => $items, 'not_done' => $notDone];
 	}
 }

@@ -34,7 +34,7 @@ use OCA\Mcp\Modules\Talk\TalkArguments;
 use OCA\Mcp\Modules\Talk\TalkMeetingSteps;
 use OCA\Mcp\Modules\Talk\Writing\ConversationWriter;
 use OCA\Mcp\Modules\Talk\Writing\WritePreview;
-use OCA\Mcp\Platform\Meetings\MeetingStep;
+use OCA\Mcp\Platform\Workflows\WorkflowStep;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Comments\IComment;
@@ -157,7 +157,7 @@ final class TalkMeetingStepsTest extends TestCase {
 
 		$step = $this->steps->createRoom('alice', 'Reunião', ['bob', 'carla']);
 
-		$this->assertSame(MeetingStep::APPLIED, $step->status);
+		$this->assertSame(WorkflowStep::APPLIED, $step->status);
 		$this->assertSame(['conversation_token' => 'novasala1'], $step->ids);
 		$this->assertSame('https://cloud.example/spreed.Page.showCall/novasala1', $step->result['url']);
 		$this->assertNull($step->message);
@@ -170,7 +170,7 @@ final class TalkMeetingStepsTest extends TestCase {
 
 		$step = $this->steps->createRoom('alice', 'Reunião', ['bob', 'carla']);
 
-		$this->assertSame(MeetingStep::PARTIAL, $step->status);
+		$this->assertSame(WorkflowStep::PARTIAL, $step->status);
 		$this->assertSame('novasala1', $step->ids['conversation_token']);
 		$this->assertSame(['carla'], array_column($step->result['invitations_failed'], 'id'));
 	}
@@ -182,7 +182,7 @@ final class TalkMeetingStepsTest extends TestCase {
 
 		$step = $this->steps->createRoom('alice', 'Reunião', ['bob']);
 
-		$this->assertSame(MeetingStep::APPLIED, $step->status);
+		$this->assertSame(WorkflowStep::APPLIED, $step->status);
 		$this->assertSame(['conversation_token' => 'novasala1'], $step->ids);
 		$this->assertNull($step->result['url']);
 		$this->assertStringContainsString('do not create it again', (string)$step->message);
@@ -195,7 +195,7 @@ final class TalkMeetingStepsTest extends TestCase {
 
 		$step = $this->steps->createRoom('alice', 'Reunião', ['bob']);
 
-		$this->assertSame(MeetingStep::PARTIAL, $step->status);
+		$this->assertSame(WorkflowStep::PARTIAL, $step->status);
 		$this->assertSame(['conversation_token' => 'novasala1'], $step->ids);
 		$this->assertNull($step->result['url']);
 		$this->assertStringContainsString('invitation', (string)$step->message);
@@ -205,7 +205,7 @@ final class TalkMeetingStepsTest extends TestCase {
 	public function testAnUnreachableGuestRefusesTheRoomBeforeItExists(): void {
 		$this->bobReachable = false;
 
-		$this->assertSame(MeetingStep::FAILED, $this->steps->createRoom('alice', 'Reunião', ['bob'])->status);
+		$this->assertSame(WorkflowStep::FAILED, $this->steps->createRoom('alice', 'Reunião', ['bob'])->status);
 		$this->expectException(ToolFailure::class);
 		$this->steps->planRoom('alice', 'Reunião', ['bob']);
 	}
@@ -228,7 +228,7 @@ final class TalkMeetingStepsTest extends TestCase {
 		$deny($this);
 
 		$result = $step === 'room' ? $this->steps->createRoom('alice', 'Reunião', ['bob']) : $this->steps->postAgenda('alice', 'grupo1234', 'Pauta');
-		$this->assertSame(MeetingStep::FAILED, $result->status);
+		$this->assertSame(WorkflowStep::FAILED, $result->status);
 		$this->assertStringContainsString($step === 'room' ? 'talk_create_group' : 'talk_reply', (string)$result->message);
 		$this->expectException(ToolFailure::class);
 		$step === 'room' ? $this->steps->planRoom('alice', 'Reunião', ['bob']) : $this->steps->planAgenda('alice', 'Pauta');
@@ -251,7 +251,7 @@ final class TalkMeetingStepsTest extends TestCase {
 
 		$step = $this->steps->postAgenda('alice', 'grupo1234', 'Pauta');
 
-		$this->assertSame(MeetingStep::APPLIED, $step->status);
+		$this->assertSame(WorkflowStep::APPLIED, $step->status);
 		$this->assertSame(['conversation_token' => 'grupo1234', 'messageId' => 42], $step->ids);
 		$this->assertSame(['Pauta'], $this->chat->sent);
 	}
@@ -259,7 +259,7 @@ final class TalkMeetingStepsTest extends TestCase {
 	public function testAReadOnlyRoomIsRefusedBeforeAnyTalkWrite(): void {
 		$step = $this->steps->postAgenda('alice', 'leitura12', 'Pauta');
 
-		$this->assertSame(MeetingStep::FAILED, $step->status);
+		$this->assertSame(WorkflowStep::FAILED, $step->status);
 		$this->assertSame([], $this->chat->sent);
 	}
 
@@ -269,7 +269,7 @@ final class TalkMeetingStepsTest extends TestCase {
 
 		$step = $this->steps->postAgenda('alice', 'grupo1234', 'Pauta');
 
-		$this->assertSame(MeetingStep::UNCERTAIN, $step->status);
+		$this->assertSame(WorkflowStep::UNCERTAIN, $step->status);
 		$this->assertSame(['conversation_token' => 'grupo1234'], $step->ids);
 	}
 

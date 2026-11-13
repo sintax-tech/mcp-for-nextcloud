@@ -13,7 +13,7 @@ use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
 use OCA\Mcp\Modules\Files\Tools\ReadFile;
 use OCA\Mcp\Platform\Meetings\MeetingFileRead;
-use OCA\Mcp\Platform\Meetings\MeetingMessages;
+use OCA\Mcp\Platform\Workflows\WorkflowMessages;
 
 /**
  * The file read of a meeting dossier, through the work class of files_read.
@@ -36,7 +36,7 @@ final class FilesMeetingRead implements MeetingFileRead {
 	/** {@inheritDoc} */
 	public function read(string $userId, array $arguments): array {
 		if (!$this->allowed($userId)) {
-			throw new ToolFailure(MeetingMessages::notAllowed(ReadFile::definition()->name));
+			throw new ToolFailure(WorkflowMessages::notAllowed(ReadFile::definition()->name));
 		}
 		return $this->files->handle(ArgumentValidator::validate(ReadFile::definition()->inputSchema, $arguments), $userId);
 	}

@@ -14,7 +14,7 @@ use Throwable;
 
 /** Lazy inspection of the status-menu write. Nothing native is constructed. */
 final class StatusWriteSurface {
-	/** Native service the controller uses for a manual type change. */
+	/** Native service the controller uses for a manual type or message change. */
 	public const SERVICE = 'OCA\\UserStatus\\Service\\StatusService';
 
 	/** @param string $service service class; a test may pass a stand-in */

@@ -2116,6 +2116,8 @@
     "Change your own status type from %s to %s." : "Mude o seu próprio tipo de status de %s para %s.",
     "Set own status message" : "Definir minha mensagem de status",
     "This changes only your own status message. A temporary backup of your status is removed, as in the status menu. No new emoji or icon is stored; a stored custom icon is cleared." : "Isto muda só a sua própria mensagem de status. Um backup temporário do seu status é removido, como no menu de status. Nenhum emoji ou ícone novo é gravado; um ícone personalizado gravado é apagado.",
+    "This changes only your own status message to a predefined one. A temporary backup of your status is removed, as in the status menu. Nextcloud shows that message's standard icon, and a stored custom icon is cleared." : "Isto muda só a sua própria mensagem de status para uma predefinida. Um backup temporário do seu status é removido, como no menu de status. O Nextcloud mostra o ícone padrão desta mensagem, e um ícone personalizado gravado é apagado.",
+    "The status icon is not supported." : "O ícone de status não é aceito.",
     "This removes only your own status message and its icon. The temporary backup of your status stays, as when the status menu clears the message." : "Isto remove só a sua própria mensagem de status e o ícone dela. O backup temporário do seu status permanece, como quando o menu de status limpa a mensagem.",
     "The status message is empty. Removing it needs clear set to true." : "A mensagem de status está vazia. Para removê-la, clear precisa ser true.",
     "The status message is not supported." : "A mensagem de status não é aceita.",

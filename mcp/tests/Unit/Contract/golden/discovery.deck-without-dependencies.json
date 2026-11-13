@@ -8505,7 +8505,7 @@
                     {
                         "name": "status_set_message",
                         "title": "Set own status message",
-                        "description": "Changes the authenticated user's own status message and nothing else. Pass exactly one of message (custom text, at most 80 characters), message_id (meeting, commuting, sick-leave, vacationing, out-of-office, be-right-back, remote-work, call, availability or busy-tentative), or clear=true. An empty message does not remove it. clear_at is an optional unix time in the future and is rejected together with clear. No emoji, icon, or customIcon argument is accepted. Without confirm=true the call returns a plan and writes nothing. With confirm=true a custom message calls setCustomMessage with a null icon, a predefined id calls setPredefinedMessage, and clear calls clearMessage. setCustomMessage and setPredefinedMessage then remove the temporary backup status, as the status menu does; clearMessage does not. Either write clears a stored custom icon and leaves the status type as it is. The result is a fresh read of the configured snapshot, not live presence, and it includes no emoji or icon. Another person's id is not accepted.",
+                        "description": "Changes the authenticated user's own status message and nothing else. Pass exactly one of message (custom text, at most 80 characters), message_id (meeting, commuting, sick-leave, vacationing, out-of-office, be-right-back, remote-work or call), or clear=true. An empty message does not remove it. clear_at is an optional unix time in the future and is rejected together with clear. No emoji, icon, or customIcon argument is accepted. Without confirm=true the call returns a plan and writes nothing. With confirm=true a custom message calls setCustomMessage with a null icon, a predefined id calls setPredefinedMessage, and clear calls clearMessage. Nextcloud shows a predefined message with that message's standard icon. setCustomMessage and setPredefinedMessage then remove the temporary backup status, as the status menu does; clearMessage does not. Either write clears a stored custom icon and leaves the status type as it is. The result is a fresh read of the configured snapshot, not live presence, and it includes no emoji or icon. Another person's id is not accepted.",
                         "inputSchema": {
                             "type": "object",
                             "additionalProperties": false,
@@ -8523,9 +8523,7 @@
                                         "out-of-office",
                                         "be-right-back",
                                         "remote-work",
-                                        "call",
-                                        "availability",
-                                        "busy-tentative"
+                                        "call"
                                     ]
                                 },
                                 "clear": {

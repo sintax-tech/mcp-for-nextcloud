@@ -21,8 +21,8 @@ final class StatusMessageRequest {
 	/** Explicit removal, the path of clearMessage. An empty message is not this. */
 	public const MODE_CLEAR = 'clear';
 	/**
-	 * Ids the native predefined-message check accepts on NC 34 and 35.
-	 * Duplicate constants (meeting, vacationing, call, out-of-office) are listed once.
+	 * Predefined ids that have a translated label on NC 34 and 35.
+	 * Automation ids without a label are refused, so the plan and the receipt name the same text.
 	 *
 	 * @var list<string>
 	 */
@@ -35,8 +35,6 @@ final class StatusMessageRequest {
 		'be-right-back',
 		'remote-work',
 		'call',
-		'availability',
-		'busy-tentative',
 	];
 
 	/** @param string $mode custom, predefined, or clear */

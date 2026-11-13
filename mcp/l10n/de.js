@@ -2117,6 +2117,8 @@ OC.L10N.register(
     "Change your own status type from %s to %s." : "Ändern Sie Ihren eigenen Statustyp von %s zu %s.",
     "Set own status message" : "Eigene Statusnachricht festlegen",
     "This changes only your own status message. A temporary backup of your status is removed, as in the status menu. No new emoji or icon is stored; a stored custom icon is cleared." : "Dies ändert nur Ihre eigene Statusnachricht. Ein temporäres Backup Ihres Status wird entfernt, wie im Statusmenü. Es wird kein neues Emoji und kein neues Symbol gespeichert; ein gespeichertes eigenes Symbol wird gelöscht.",
+    "This changes only your own status message to a predefined one. A temporary backup of your status is removed, as in the status menu. Nextcloud shows that message's standard icon, and a stored custom icon is cleared." : "Dies ändert nur Ihre eigene Statusnachricht in eine vordefinierte. Ein temporäres Backup Ihres Status wird entfernt, wie im Statusmenü. Nextcloud zeigt das Standardsymbol dieser Nachricht, und ein gespeichertes eigenes Symbol wird gelöscht.",
+    "The status icon is not supported." : "Das Statussymbol wird nicht unterstützt.",
     "This removes only your own status message and its icon. The temporary backup of your status stays, as when the status menu clears the message." : "Dies entfernt nur Ihre eigene Statusnachricht und ihr Symbol. Das temporäre Backup Ihres Status bleibt, wie wenn das Statusmenü die Nachricht löscht.",
     "The status message is empty. Removing it needs clear set to true." : "Die Statusnachricht ist leer. Zum Entfernen muss clear true sein.",
     "The status message is not supported." : "Die Statusnachricht wird nicht unterstützt.",

@@ -32,7 +32,6 @@ final class SetOwnStatusMessagePreview {
 	public function plan(string $actor, array $arguments): array {
 		$request = StatusMessageRequest::parse($arguments, $this->time->getTime());
 		$row = $this->native->find($actor);
-		$clears = $request->mode === StatusMessageRequest::MODE_CLEAR;
 		return [
 			'requiresConfirmation' => true,
 			'action' => 'status_set_message',
@@ -40,10 +39,12 @@ final class SetOwnStatusMessagePreview {
 			'before' => StatusMessages::accessible($row?->customMessage, $row?->messageId),
 			'after' => $request->after(),
 			'clear_at' => $request->clearAt,
-			'removes_backup' => !$clears,
-			'message' => $clears
-				? Translator::t('This removes only your own status message and its icon. The temporary backup of your status stays, as when the status menu clears the message.')
-				: Translator::t('This changes only your own status message. A temporary backup of your status is removed, as in the status menu. No new emoji or icon is stored; a stored custom icon is cleared.'),
+			'removes_backup' => $request->mode !== StatusMessageRequest::MODE_CLEAR,
+			'message' => match ($request->mode) {
+				StatusMessageRequest::MODE_CLEAR => Translator::t('This removes only your own status message and its icon. The temporary backup of your status stays, as when the status menu clears the message.'),
+				StatusMessageRequest::MODE_PREDEFINED => Translator::t('This changes only your own status message to a predefined one. A temporary backup of your status is removed, as in the status menu. Nextcloud shows that message\'s standard icon, and a stored custom icon is cleared.'),
+				default => Translator::t('This changes only your own status message. A temporary backup of your status is removed, as in the status menu. No new emoji or icon is stored; a stored custom icon is cleared.'),
+			},
 		];
 	}
 }

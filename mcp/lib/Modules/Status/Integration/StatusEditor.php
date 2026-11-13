@@ -18,7 +18,7 @@ use OCA\UserStatus\Exception\InvalidStatusTypeException;
 use OCA\UserStatus\Exception\StatusMessageTooLongException;
 use Psr\Container\ContainerInterface;
 
-/** The status menu's type change: setStatus then removeBackupUserStatus, for the actor only. */
+/** The status menu's own type and message changes, for the actor only. */
 final class StatusEditor {
 	/**
 	 * @param ContainerInterface $container lazy native service
@@ -73,8 +73,10 @@ final class StatusEditor {
 			throw new \InvalidArgumentException(Translator::t('The status message expiration must be a unix time in the future.'));
 		} catch (InvalidMessageIdException) {
 			throw new \InvalidArgumentException(Translator::t('The status message is not supported.'));
-		} catch (StatusMessageTooLongException | InvalidStatusIconException) {
+		} catch (StatusMessageTooLongException) {
 			throw new \InvalidArgumentException(Translator::t('The status message can have at most %d characters.', [StatusMessageRequest::MAX]));
+		} catch (InvalidStatusIconException) {
+			throw new \InvalidArgumentException(Translator::t('The status icon is not supported.'));
 		}
 		return $service->removeBackupUserStatus($actor) === true;
 	}

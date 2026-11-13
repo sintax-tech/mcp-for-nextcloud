@@ -129,6 +129,18 @@ final class StatusSetMessageTest extends TestCase {
 		self::assertSame([], $scene->serviceCalls);
 	}
 
+	/** @return void a predefined id warns that Nextcloud shows its standard icon and writes nothing */
+	public function testPredefinedPreviewNamesTheStandardIcon(): void {
+		$scene = new MessageScene(message: 'At the desk');
+		$plan = $this->tool($scene)->preview(['message_id' => 'meeting'], new ToolContext('alice'));
+		self::assertSame('predefined', $plan['mode']);
+		self::assertSame('In a meeting', $plan['after']);
+		self::assertTrue($plan['removes_backup']);
+		self::assertStringContainsString('standard icon', $plan['message']);
+		self::assertStringNotContainsString('No new emoji', $plan['message']);
+		self::assertSame([], $scene->serviceCalls);
+	}
+
 	/** @return void confirm stores the text with a null icon, removes the backup, and reads the actor back */
 	public function testConfirmSetsTheCustomMessageRemovesTheBackupAndReadsBack(): void {
 		$scene = new MessageScene(message: 'Old', backup: true);
@@ -191,6 +203,8 @@ final class StatusSetMessageTest extends TestCase {
 			[[], 'Pass one status message change: a message, a predefined message id, or clear.'],
 			[['clear' => false], 'Pass one status message change: a message, a predefined message id, or clear.'],
 			[['message_id' => 'vacation'], 'The status message is not supported.'],
+			[['message_id' => 'availability'], 'The status message is not supported.'],
+			[['message_id' => 'busy-tentative'], 'The status message is not supported.'],
 			[['message' => str_repeat('a', 81)], 'The status message can have at most 80 characters.'],
 			[['message' => 'At the desk', 'clear_at' => self::NOW - 1], 'The status message expiration must be a unix time in the future.'],
 			[['message' => 'At the desk', 'clear_at' => '1700000200'], 'The status message expiration must be a unix time in the future.'],
@@ -219,6 +233,19 @@ final class StatusSetMessageTest extends TestCase {
 			self::assertSame('The status message is not supported.', $exception->getMessage());
 		}
 		self::assertSame([['setPredefinedMessage', 'alice', 'meeting', null]], $scene->serviceCalls);
+	}
+
+	/** @return void an icon rejection names the icon and does not remove the backup */
+	public function testARejectedIconDoesNotRemoveTheBackup(): void {
+		$scene = new MessageScene(message: 'At the desk', reject: 'icon');
+		$editor = new StatusEditor(new MessageContainer($scene), new StatusWriteSurface(MessageService::class));
+		try {
+			$editor->setOwnMessage('alice', StatusMessageRequest::parse(['message' => 'At the desk'], self::NOW));
+			self::fail('a rejected icon was stored');
+		} catch (\InvalidArgumentException $exception) {
+			self::assertSame('The status icon is not supported.', $exception->getMessage());
+		}
+		self::assertSame([['setCustomMessage', 'alice', null, 'At the desk', null]], $scene->serviceCalls);
 	}
 
 	/** @return void no actor and no menu signature both refuse before any call */
@@ -326,6 +353,9 @@ final class MessageService {
 	private function reject(): void {
 		if ($this->scene->reject === 'id') {
 			throw new \OCA\UserStatus\Exception\InvalidMessageIdException('rejected');
+		}
+		if ($this->scene->reject === 'icon') {
+			throw new \OCA\UserStatus\Exception\InvalidStatusIconException('rejected');
 		}
 	}
 }

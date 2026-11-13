@@ -1,0 +1,64 @@
+{
+  "versions": {
+    "34": {
+      "Handler.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/notifications/v34.0.0/lib/Handler.php",
+        "sha256": "125375845afc7699a8b67604c72372b23853fa9182cbfd5443e014a48133d533"
+      },
+      "EndpointController.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/notifications/v34.0.0/lib/Controller/EndpointController.php",
+        "sha256": "48d8f442b010497e3ffd0751a0b940ccc9258933818026801aa81d7378f4fd2a"
+      },
+      "info.xml": {
+        "url": "https://raw.githubusercontent.com/nextcloud/notifications/v34.0.0/appinfo/info.xml",
+        "sha256": "09eb2645bfc17baab8b767e6bf39a68882bc0437133f9af36a0e981f9f5f4fe4"
+      },
+      "Manager.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/server/v34.0.0/lib/private/Notification/Manager.php",
+        "sha256": "8a2c3769b3c24ca22226395c05f999c4ce72451861e563dc299062fc2cc769ec"
+      },
+      "Notification.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/server/v34.0.0/lib/private/Notification/Notification.php",
+        "sha256": "239a5b0ce765dc41a6299c8f0780e072258a1c645167b18c68362d80be57156e"
+      },
+      "INotification.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/server/v34.0.0/lib/public/Notification/INotification.php",
+        "sha256": "5e87a143c5a2fd146461a7dda0a975bfc86757f0fb093935a8b6bf353beab877"
+      },
+      "Action.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/server/v34.0.0/lib/private/Notification/Action.php",
+        "sha256": "9605fd1e7e544510fda88331c2eaf6b501d74942414207906cc6b5b882570ff5"
+      }
+    },
+    "35": {
+      "Handler.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/notifications/v35.0.0/lib/Handler.php",
+        "sha256": "125375845afc7699a8b67604c72372b23853fa9182cbfd5443e014a48133d533"
+      },
+      "EndpointController.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/notifications/v35.0.0/lib/Controller/EndpointController.php",
+        "sha256": "48d8f442b010497e3ffd0751a0b940ccc9258933818026801aa81d7378f4fd2a"
+      },
+      "info.xml": {
+        "url": "https://raw.githubusercontent.com/nextcloud/notifications/v35.0.0/appinfo/info.xml",
+        "sha256": "ef6506577e4bbb81917dd7771100063ace0f75e7d9be670d7f9bdf3b9468f53c"
+      },
+      "Manager.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/server/v35.0.0/lib/private/Notification/Manager.php",
+        "sha256": "2004df899d1c5673e27161b619fb15cb9c4f731aa04e98e75b02c97cb323b25d"
+      },
+      "Notification.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/server/v35.0.0/lib/private/Notification/Notification.php",
+        "sha256": "f62dc41078e15be622d05a86fbab0a622ccadd0d7e81112a287464b417d97a1e"
+      },
+      "INotification.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/server/v35.0.0/lib/public/Notification/INotification.php",
+        "sha256": "4668d3ff1251361c79e4fe94b57e84007a1941af69fee925fd81e0abf198566d"
+      },
+      "Action.php": {
+        "url": "https://raw.githubusercontent.com/nextcloud/server/v35.0.0/lib/private/Notification/Action.php",
+        "sha256": "837a6546cb0c9280cd6d8b0ac7b841f15ec7040f00321db9689ad9e8ef810ff8"
+      }
+    }
+  }
+}

@@ -27,5 +27,6 @@
 	"OCP\\IRequest",
 	"OCP\\Security\\Bruteforce\\IThrottler",
 	"OCP\\Files\\Lock\\ILockManager",
-	"OCP\\L10N\\IFactory"
+	"OCP\\L10N\\IFactory",
+	"OCP\\Notification\\IManager"
 ]

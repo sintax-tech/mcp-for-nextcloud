@@ -1,4 +1,7 @@
 { "translations": {
+    "List own notifications" : "Listar notificaciones propias",
+    "Provide a notification limit between 1 and 200." : "Indique un límite de notificaciones entre 1 y 200.",
+    "The notification inbox is unavailable." : "La bandeja de notificaciones no está disponible.",
     "Suggest meeting times" : "Sugerir horarios de reunión",
     "The suggestion horizon must be positive and at most seven local days." : "El horizonte de sugerencias debe ser positivo y de como máximo siete días locales.",
     "Use a duration of 15–240 minutes and a step of 15 or 30 minutes." : "Use una duración de 15 a 240 minutos y un paso de 15 o 30 minutos.",

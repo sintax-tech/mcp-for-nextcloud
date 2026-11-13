@@ -21,6 +21,7 @@ final class SourceParser {
 		'OC\\' => 'lib/private/',
 		'OCA\\DAV\\' => 'apps/dav/lib/',
 		'OCA\\Activity\\' => 'apps/activity/lib/',
+		'OCA\\Notifications\\' => 'apps/notifications/lib/',
 		'OCA\\Deck\\' => 'apps/deck/lib/',
 		'OCA\\Circles\\' => 'apps/circles/lib/',
 		'OCA\\Talk\\' => 'apps/spreed/lib/',

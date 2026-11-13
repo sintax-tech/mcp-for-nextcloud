@@ -55,6 +55,7 @@ class Application extends App implements IBootstrap {
 		\OCA\Mcp\Modules\Polls\PollsModule::class,
 		\OCA\Mcp\Modules\Collectives\CollectivesModule::class,
 		\OCA\Mcp\Modules\Activity\ActivityModule::class,
+		\OCA\Mcp\Modules\Notifications\NotificationsModule::class,
 	];
 
 	public function __construct() {

@@ -199,6 +199,7 @@ final class ToolTitles {
 			'tables_unshare_node' => Translator::t('Revoke table or view share'),
 			// Activity
 			'activity_list_events' => Translator::t('List own activity'),
+			'notifications_list' => Translator::t('List own notifications'),
 			default => ToolPresentation::humanized($name),
 		};
 	}

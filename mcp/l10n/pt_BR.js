@@ -1,6 +1,9 @@
 OC.L10N.register(
     "mcp",
     {
+    "List own notifications" : "Listar notificações próprias",
+    "Provide a notification limit between 1 and 200." : "Informe um limite de notificações entre 1 e 200.",
+    "The notification inbox is unavailable." : "A caixa de notificações está indisponível.",
     "Suggest meeting times" : "Sugerir horários de reunião",
     "The suggestion horizon must be positive and at most seven local days." : "O horizonte de sugestões deve ser positivo e de no máximo sete dias locais.",
     "Use a duration of 15–240 minutes and a step of 15 or 30 minutes." : "Use duração de 15 a 240 minutos e passo de 15 ou 30 minutos.",

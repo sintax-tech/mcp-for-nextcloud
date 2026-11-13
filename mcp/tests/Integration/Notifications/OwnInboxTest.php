@@ -89,6 +89,9 @@ final class OwnInboxTest extends IntegrationTestCase {
 		$own = $this->notificationId($handler, $manager, $actor);
 		$foreign = $this->notificationId($handler, $manager, $other);
 		$client = new McpClient(LoginFactory::basic($actor));
+		// The first authenticated request is Nextcloud's first login: it writes lastLogin, firstLogin and app setup
+		// preferences of its own. Taken before the baseline, so the baseline holds only what the tool may change.
+		self::assertSame(200, $client->listStatus());
 		$before = $this->snapshot($actor);
 		$otherBefore = $this->snapshot($other);
 		$ownedPlan = $client->tool('notifications_dismiss', ['id' => $own]);

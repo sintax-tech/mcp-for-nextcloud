@@ -47,6 +47,7 @@ final class ToolPresentationTest extends TestCase {
 		'calendar_suggest_times' => ['Suggest meeting times', 'Sugerir horários de reunião'],
 		'activity_list_events' => ['List own activity', 'Listar minha atividade'],
 		'availability_read_absence' => ['Read own absence', 'Ler minha ausência'],
+		'status_read_own' => ['Read own status', 'Ler meu status'],
 		'calendar_create_event' => ['Create event', 'Criar evento'],
 		'calendar_update_event' => ['Edit event', 'Editar evento'],
 		'calendar_move_event' => ['Move event to another calendar', 'Mover evento para outro calendário'],

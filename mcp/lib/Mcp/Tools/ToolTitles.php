@@ -202,6 +202,8 @@ final class ToolTitles {
 			'notifications_list' => Translator::t('List own notifications'),
 			// Availability
 			'availability_read_absence' => Translator::t('Read own absence'),
+			// Status
+			'status_read_own' => Translator::t('Read own status'),
 			default => ToolPresentation::humanized($name),
 		};
 	}

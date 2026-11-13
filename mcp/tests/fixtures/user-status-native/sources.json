@@ -1,0 +1,65 @@
+{
+  "purpose": "Verbatim user_status and calendar-status sources for NC 34.0.4 and 35.0.1; no network access in tests.",
+  "versions": {
+    "34": {
+      "UserStatusMapper.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/user_status/lib/Db/UserStatusMapper.php",
+        "sha256": "5567d66511c12bb74ccea23c17387015f681b6df462382d061156026703db0bd"
+      },
+      "UserStatus.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/user_status/lib/Db/UserStatus.php",
+        "sha256": "6e278e4ad7a4dcccb3eb5f43a1504405f8ff5962c50dd216ba5bdeb8c09381bd"
+      },
+      "StatusService.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/user_status/lib/Service/StatusService.php",
+        "sha256": "2fc17fe2452a8c92842992c649d7bb60d876e4813a668385d25b8f5fd8bd390f"
+      },
+      "UserStatusController.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/user_status/lib/Controller/UserStatusController.php",
+        "sha256": "641ae7d94fa0ef90b0b9dda76068550a5af0e35c2ae79fb6698001bea8b1d68b"
+      },
+      "HeartbeatController.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/user_status/lib/Controller/HeartbeatController.php",
+        "sha256": "9b9d134cb199c797431b9838ec7d840b90034cdfe8134d3f81c1715ec65d285c"
+      },
+      "PredefinedStatusService.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/user_status/lib/Service/PredefinedStatusService.php",
+        "sha256": "6a14df77664de039606fe857bb9e482b68861820f36b589fd7608726c3076f20"
+      },
+      "DavStatusService.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/CalDAV/Status/StatusService.php",
+        "sha256": "6070f2ba858433c45866d151eee68c661c74db7ec9832aef9f9d82fb5b28af93"
+      }
+    },
+    "35": {
+      "UserStatusMapper.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/user_status/lib/Db/UserStatusMapper.php",
+        "sha256": "cc82b0b8a7a8be1fbbc98a0e08d7bc95aff067e4f27d38c80f414fbd195d72ab"
+      },
+      "UserStatus.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/user_status/lib/Db/UserStatus.php",
+        "sha256": "9b0f198835e0af3fb417a63d5710e75ef89cfb38a2411cf3a9b1d2491349dfa8"
+      },
+      "StatusService.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/user_status/lib/Service/StatusService.php",
+        "sha256": "0c2296d74b20b51c3314b2ee5ad6fe29048752482829798473a6eb29eb901313"
+      },
+      "UserStatusController.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/user_status/lib/Controller/UserStatusController.php",
+        "sha256": "845d663655e25577c5936218ff990764e894e94e8bc96ea64a01dfb8f5b03884"
+      },
+      "HeartbeatController.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/user_status/lib/Controller/HeartbeatController.php",
+        "sha256": "9e4b9285f6806c5b07047d856efe16ee726c0bbfa670f029f1b58208bf71b6d1"
+      },
+      "PredefinedStatusService.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/user_status/lib/Service/PredefinedStatusService.php",
+        "sha256": "1e36c92c905bfebd3609a52192ccfc4ab07123cbce0faaabfe8e69ce6bcfe2a9"
+      },
+      "DavStatusService.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/CalDAV/Status/StatusService.php",
+        "sha256": "d20d2f7fa0c2c57ee8e540eb8997883009edc3288329a0b29674161a05ecc6d1"
+      }
+    }
+  }
+}

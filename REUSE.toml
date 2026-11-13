@@ -298,3 +298,8 @@ SPDX-License-Identifier = "AGPL-3.0-only"
 path = ["mcp/tests/fixtures/absence-native/sources.json"]
 SPDX-FileCopyrightText = "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["mcp/tests/fixtures/user-status-native/sources.json"]
+SPDX-FileCopyrightText = "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"

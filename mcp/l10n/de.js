@@ -2079,6 +2079,17 @@ OC.L10N.register(
     "The message this read continued from is no longer in the conversation. Call again without cursor to start from the read marker." : "Die Nachricht, an der diese Lesung fortgesetzt wurde, ist nicht mehr in der Unterhaltung. Rufe erneut ohne Cursor auf, um bei der Lesemarke zu beginnen.",
     "Read own absence" : "Eigene Abwesenheit lesen",
     "Absence settings are turned off on this Nextcloud server." : "Die Abwesenheitseinstellungen sind auf diesem Nextcloud-Server ausgeschaltet.",
-    "Your absence settings are unavailable." : "Ihre Abwesenheitseinstellungen sind nicht verfügbar."
+    "Your absence settings are unavailable." : "Ihre Abwesenheitseinstellungen sind nicht verfügbar.",
+    "Read own status" : "Eigenen Status lesen",
+    "No status is configured." : "Es ist kein Status konfiguriert.",
+    "The status snapshot is unavailable." : "Der Status-Schnappschuss ist nicht verfügbar.",
+    "In a meeting" : "In einer Besprechung",
+    "Commuting" : "Unterwegs",
+    "Out sick" : "Krank",
+    "Vacationing" : "Im Urlaub",
+    "Out of office" : "Außer Haus",
+    "Working remotely" : "Arbeitet aus der Ferne",
+    "In a call" : "In einem Anruf",
+    "Be right back" : "Bin gleich zurück"
     },
 "nplurals=2; plural=(n != 1);");

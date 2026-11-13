@@ -82,7 +82,7 @@ final class DiscoveryHarness {
 			(new ModuleBuilder($test))->build(\OCA\Mcp\Modules\Tables\Integration\TablesWriteCapabilities::class), (new ModuleBuilder($test))->build(\OCA\Mcp\Modules\Forms\Integration\StructureCapabilities::class), \OCA\Mcp\Tests\Unit\Modules\Polls\PollsDiscoveryProbe::build($test), $builder->build(\OCA\Mcp\Modules\Collectives\Integration\CollectivesCapabilities::class),
 			$builder->build(\OCA\Mcp\Modules\Collectives\Integration\FoundingCapabilities::class),
 			$builder->build(\OCA\Mcp\Modules\Collectives\Integration\TeamsCapabilities::class), $builder->build(\OCA\Mcp\Modules\Activity\Integration\ActivityCapabilities::class), $builder->build(\OCA\Mcp\Modules\Notifications\Integration\NotificationsCapabilities::class),
-			$builder->build(\OCA\Mcp\Modules\Availability\Integration\AbsenceCapabilities::class)], $logger));
+			$builder->build(\OCA\Mcp\Modules\Availability\Integration\AbsenceCapabilities::class), $builder->build(\OCA\Mcp\Modules\Status\Integration\StatusCapabilities::class)], $logger));
 		$resources = new ResourceRegistry($registry, $policy, $apps, $users, $this->mock(IRootFolder::class), $this->mock(VisibilityGuard::class),
 			new \OCA\Mcp\Modules\Files\Extraction\ExtractedFileText($this->mock(TextExtractor::class)), $this->mock(NoteResource::class), $registry->guide(), $this->mock(FilesAccessGuard::class), $guests);
 		$installed = $this->mock(IAppManager::class);

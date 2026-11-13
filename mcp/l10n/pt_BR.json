@@ -2078,6 +2078,17 @@
     "The message this read continued from is no longer in the conversation. Call again without cursor to start from the read marker." : "A mensagem de onde esta leitura continuava não está mais na conversa. Chame de novo sem cursor para começar do marcador de leitura.",
     "Read own absence" : "Ler minha ausência",
     "Absence settings are turned off on this Nextcloud server." : "As configurações de ausência estão desativadas neste servidor Nextcloud.",
-    "Your absence settings are unavailable." : "Suas configurações de ausência estão indisponíveis."
+    "Your absence settings are unavailable." : "Suas configurações de ausência estão indisponíveis.",
+    "Read own status" : "Ler meu status",
+    "No status is configured." : "Nenhum status está configurado.",
+    "The status snapshot is unavailable." : "O snapshot de status está indisponível.",
+    "In a meeting" : "Em uma reunião",
+    "Commuting" : "Em deslocamento",
+    "Out sick" : "Ausente por doença",
+    "Vacationing" : "De férias",
+    "Out of office" : "Fora do escritório",
+    "Working remotely" : "Trabalhando remotamente",
+    "In a call" : "Em uma chamada",
+    "Be right back" : "Volto já"
 },"pluralForm" : "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

@@ -15,7 +15,7 @@
             },
             {
                 "name": "talk_read_messages",
-                "description": "Reads the latest messages of a conversation, without marking anything as read, without touching notifications and without recording activity. Use the id returned in reply_to to answer and attachmentId to cite an attachment.",
+                "description": "Reads the latest messages of a conversation, without marking anything as read, without touching notifications and without recording activity. A lobby whose timer has already passed is treated as open for this answer only: it does not open the lobby and does not rename the conversation. Use the id returned in reply_to to answer and attachmentId to cite an attachment.",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
@@ -1704,7 +1704,7 @@
             },
             {
                 "name": "talk_read_messages",
-                "description": "Reads the latest messages of a conversation, without marking anything as read, without touching notifications and without recording activity. Use the id returned in reply_to to answer and attachmentId to cite an attachment.",
+                "description": "Reads the latest messages of a conversation, without marking anything as read, without touching notifications and without recording activity. A lobby whose timer has already passed is treated as open for this answer only: it does not open the lobby and does not rename the conversation. Use the id returned in reply_to to answer and attachmentId to cite an attachment.",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
@@ -3393,7 +3393,7 @@
             },
             {
                 "name": "talk_read_messages",
-                "description": "Reads the latest messages of a conversation, without marking anything as read, without touching notifications and without recording activity. Use the id returned in reply_to to answer and attachmentId to cite an attachment.",
+                "description": "Reads the latest messages of a conversation, without marking anything as read, without touching notifications and without recording activity. A lobby whose timer has already passed is treated as open for this answer only: it does not open the lobby and does not rename the conversation. Use the id returned in reply_to to answer and attachmentId to cite an attachment.",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
@@ -5082,7 +5082,7 @@
             },
             {
                 "name": "talk_read_messages",
-                "description": "Reads the latest messages of a conversation, without marking anything as read, without touching notifications and without recording activity. Use the id returned in reply_to to answer and attachmentId to cite an attachment.",
+                "description": "Reads the latest messages of a conversation, without marking anything as read, without touching notifications and without recording activity. A lobby whose timer has already passed is treated as open for this answer only: it does not open the lobby and does not rename the conversation. Use the id returned in reply_to to answer and attachmentId to cite an attachment.",
                 "inputSchema": {
                     "type": "object",
                     "properties": {

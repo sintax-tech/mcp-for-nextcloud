@@ -6,7 +6,7 @@
 declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Talk\Locating;
-use OCA\Mcp\Modules\Talk\{Failures\ConversationAccessException, Presentation\Messages, Integration\TalkServices, Failures\TalkUnavailableException};
+use OCA\Mcp\Modules\Talk\{Failures\ConversationAccessException, Presentation\Messages, Integration\TalkServices, Integration\UnreadRoomView, Failures\TalkUnavailableException};
 use InvalidArgumentException;
 use OCP\IUserManager;
 use OCP\Share\IManager as IShareManager;
@@ -34,11 +34,13 @@ class UserConversationResolver {
 	 * @param TalkServices $talkServices lazy native Talk services and per-user enablement
 	 * @param IUserManager $userManager native account lookup
 	 * @param IShareManager $shareManager native share lookup and creation
+	 * @param UnreadRoomView $names room name read from what Talk stored, never written back
 	 */
 	public function __construct(
 		private TalkServices $talkServices,
 		private IUserManager $userManager,
 		private IShareManager $shareManager,
+		private UnreadRoomView $names,
 	) {}
 
 	/**
@@ -144,7 +146,8 @@ class UserConversationResolver {
 			throw new ConversationAccessException(Messages::userNotReachable(), $e);
 		}
 
-		$conversation = new Conversation($room, $participant);
+		$changelog = $this->talkServices->conversationConstants($userId)['changelogType'];
+		$conversation = new Conversation($room, $participant, $this->names->displayName($room, $userId, $changelog, $participantService));
 		$this->assertWritable($userId, $conversation);
 
 		return $conversation;

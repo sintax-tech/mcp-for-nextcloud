@@ -209,7 +209,7 @@ final class ToolErrorsLanguagesTest extends TestCase {
 	private function talkModule(): TalkModule {
 		$services = $this->createMock(TalkServices::class);
 		$services->method('manager')->willThrowException(new \RuntimeException('spreed is unreachable'));
-		$resolver = new ConversationResolver($services);
+		$resolver = new ConversationResolver($services, new UnreadRoomView($this->createMock(IUserManager::class), 1));
 		$reader = new ConversationReader($services, $resolver, $this->createMock(ActorNames::class), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this), new UnreadCounter($this->createMock(IUserManager::class)), new UnreadRoomView($this->createMock(IUserManager::class), 1));
 		return \OCA\Mcp\Tests\Unit\Tools\Talk\TalkTestModule::build(
 			$services,

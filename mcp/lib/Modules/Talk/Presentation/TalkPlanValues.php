@@ -18,13 +18,14 @@ final class TalkPlanValues {
 	}
 
 	/**
-	 * The conversation the plan writes into, by the name the user knows it by.
+	 * The conversation the plan writes into, by the name the user knows it by, or by its token when that name
+	 * could not be read without writing.
 	 *
 	 * @param array<string, mixed> $plan Plan of a tool that lands in an existing conversation
-	 * @return string|null The display name, or null when the plan does not carry one
+	 * @return string|null The display name or the token, or null when the plan carries neither
 	 */
 	public static function conversationName(array $plan): ?string {
-		return self::stringAt($plan, 'conversation', 'displayName');
+		return self::stringAt($plan, 'conversation', 'displayName') ?? self::stringAt($plan, 'conversation', 'token');
 	}
 
 	/**

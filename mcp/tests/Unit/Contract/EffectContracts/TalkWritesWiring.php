@@ -104,7 +104,7 @@ final class TalkWritesWiring {
 		$attachments = new AttachmentAccess($this->shareManager, $visibility, $references);
 		$writer = new ConversationWriter($talk, $time, new AttachmentMessage(), $attachments);
 		$sharer = new FileSharer($this->shareManager, new UserFileResolver($this->files->root(), $visibility, $references), $writer, new AttachedFile($this->files->root()));
-		$resolver = new ConversationResolver($talk);
+		$resolver = new ConversationResolver($talk, new UnreadRoomView($this->users, 1));
 		$names = new ActorNames($this->users);
 		$logger = $this->mock(LoggerInterface::class);
 		foreach (['error', 'warning'] as $level) {
@@ -112,7 +112,7 @@ final class TalkWritesWiring {
 				$this->logged[] = ['level' => $level, 'message' => (string)$message, 'context' => $context];
 			});
 		}
-		$userConversations = new UserConversationResolver($talk, $this->users, $this->shareManager);
+		$userConversations = new UserConversationResolver($talk, $this->users, $this->shareManager, new UnreadRoomView($this->users, 1));
 		$store = $this->mock(CalendarStore::class);
 		$classification = new Classification();
 		$linker = \OCA\Mcp\Tests\Unit\Tools\Talk\ReferenceLinkers::build($this->mock(DeckGatewayInterface::class),

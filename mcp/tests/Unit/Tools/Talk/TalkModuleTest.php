@@ -829,7 +829,7 @@ class TalkModuleTest extends TestCase {
 	}
 
 	private function givenConversation(string $token = 'abcd'): Conversation {
-		return new Conversation(new ModuleRoomStub($token), new ModuleParticipantStub());
+		return new Conversation(new ModuleRoomStub($token), new ModuleParticipantStub(), 'Comercial');
 	}
 
 	/**
@@ -850,9 +850,6 @@ final class ModuleRoomStub {
 		return $this->token;
 	}
 
-	public function getDisplayName(string $userId): string {
-		return 'Comercial';
-	}
 }
 
 final class ModuleParticipantStub {

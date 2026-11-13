@@ -35,7 +35,6 @@ class ConversationReaderTest extends TestCase {
 		ReaderWriteSpy::$calls = 0;
 		$this->talkServices = $this->createMock(TalkServices::class);
 		$this->resolver = $this->createMock(ConversationResolver::class);
-		$this->resolver->expects($this->never())->method('keepsOutOfLobby');
 		$this->userManager = $this->createMock(IUserManager::class);
 		// The real ActorNames over the mocked accounts: the reader still owns the reading, not the naming rule.
 		$this->reader = new ConversationReader($this->talkServices, $this->resolver, new ActorNames($this->userManager), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this), new UnreadCounter($this->userManager), new UnreadRoomView($this->userManager, 1));

@@ -102,10 +102,10 @@ final class TalkEffectsContractTest extends TestCase {
 		$attachments = new AttachmentAccess($this->shareManager, $visibility, $references);
 		$writer = new ConversationWriter($talk, $time, new AttachmentMessage(), $attachments);
 		$sharer = new FileSharer($this->shareManager, new UserFileResolver($this->files->root(), $visibility, $references), $writer, new AttachedFile($this->files->root()));
-		$resolver = new ConversationResolver($talk);
+		$resolver = new ConversationResolver($talk, new UnreadRoomView($this->users, 1));
 		$names = new ActorNames($this->users);
 		$logger = $this->createMock(LoggerInterface::class);
-		$userConversations = new UserConversationResolver($talk, $this->users, $this->shareManager);
+		$userConversations = new UserConversationResolver($talk, $this->users, $this->shareManager, new UnreadRoomView($this->users, 1));
 		$store = $this->createMock(CalendarStore::class);
 		$classification = new Classification();
 		$linker = \OCA\Mcp\Tests\Unit\Tools\Talk\ReferenceLinkers::build($this->createMock(DeckGatewayInterface::class),

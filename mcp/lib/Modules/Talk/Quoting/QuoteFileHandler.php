@@ -42,6 +42,7 @@ final class QuoteFileHandler {
 			$attachmentId = $this->arguments->attachmentId($arguments);
 			$caption = $this->arguments->optionalMessage($arguments);
 			$conversation = $this->resolver->resolveForWriting($userId, $this->arguments->token($arguments));
+			$this->resolver->openElapsedLobby($userId, $conversation);
 
 			return ToolResult::success($this->writer->quoteAttachment($conversation, $userId, $attachmentId, $caption));
 		});

@@ -45,7 +45,7 @@ final class SendBatchHandler {
 			// The shape of the list is a client mistake, so it is checked before any conversation is looked up.
 			$items = $this->arguments->batchItems($arguments);
 			$conversation = $this->resolver->resolveForWriting($userId, $this->arguments->token($arguments));
-
+			$this->resolver->openElapsedLobby($userId, $conversation);
 
 			$result = $this->writer->replyMany($conversation, $userId, $items);
 

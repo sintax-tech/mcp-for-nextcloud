@@ -67,7 +67,7 @@ class WritePreview {
 			];
 		}
 
-		return $this->payload('talk_reply', $conversation, $userId, $draft);
+		return $this->payload('talk_reply', $conversation, $draft);
 	}
 
 	/**
@@ -102,7 +102,7 @@ class WritePreview {
 			$draft[] = $shown;
 		}
 
-		return $this->payload('talk_send_batch', $conversation, $userId, ['messages' => $draft]);
+		return $this->payload('talk_send_batch', $conversation, ['messages' => $draft]);
 	}
 
 	/**
@@ -119,7 +119,7 @@ class WritePreview {
 		// The caption is sent as a message of its own, so it follows the rule a message follows.
 		$text = $caption === null ? null : ConversationWriter::normalizeMessage($caption);
 
-		return $this->payload('talk_attach_file', $conversation, $userId, [
+		return $this->payload('talk_attach_file', $conversation, [
 			'message' => $text,
 			'file' => $file,
 		]);
@@ -139,7 +139,7 @@ class WritePreview {
 		$file = $this->attachmentAccess->describe($this->attachmentAccess->requireRoomShareOf($conversation, $userId, $attachmentId));
 		$text = AttachmentMessage::normalizeCaption($caption);
 
-		return $this->payload('talk_quote_file', $conversation, $userId, [
+		return $this->payload('talk_quote_file', $conversation, [
 			'message' => $text,
 			'file' => $file,
 		]);
@@ -224,13 +224,12 @@ class WritePreview {
 	 * Wraps a plan in the answer the agent shows.
 	 *
 	 * @param string $action Tool the plan belongs to
-	 * @param Conversation $conversation Conversation the write would land in
-	 * @param string $userId Authenticated user, who sees the conversation name
+	 * @param Conversation $conversation Conversation the write would land in, named as the caller knows it
 	 * @param array<string, mixed> $draft What the confirmed call would publish
 	 * @return array{requiresConfirmation:true, action:string, conversation:array{token:string, displayName:string}, draft:array<string, mixed>, message:string}
 	 */
-	private function payload(string $action, Conversation $conversation, string $userId, array $draft): array {
-		$displayName = $conversation->displayName($userId);
+	private function payload(string $action, Conversation $conversation, array $draft): array {
+		$displayName = $conversation->displayName();
 
 		return [
 			'requiresConfirmation' => true,
@@ -240,7 +239,8 @@ class WritePreview {
 				'displayName' => $displayName,
 			],
 			'draft' => $draft,
-			'message' => \OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::confirmationInstruction($displayName),
+			// A room whose name cannot be read without writing is named by its token, the identifier the user sees.
+			'message' => \OCA\Mcp\Modules\Talk\Presentation\TalkPlanMessages::confirmationInstruction($displayName !== '' ? $displayName : $conversation->token()),
 		];
 	}
 

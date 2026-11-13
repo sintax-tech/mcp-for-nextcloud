@@ -11,6 +11,7 @@ use InvalidArgumentException;
 use OCA\Mcp\Modules\Talk\Failures\ConversationAccessException;
 use OCA\Mcp\Modules\Talk\Presentation\Messages;
 use OCA\Mcp\Modules\Talk\Integration\TalkServices;
+use OCA\Mcp\Modules\Talk\Integration\UnreadRoomView;
 use OCA\Mcp\Modules\Talk\Failures\TalkUnavailableException;
 use OCA\Mcp\Modules\Talk\Locating\UserConversationResolver;
 use OCP\IUser;
@@ -32,7 +33,7 @@ class UserConversationResolverTest extends TestCase {
 		$this->talkServices = $this->createMock(TalkServices::class);
 		$this->userManager = $this->createMock(IUserManager::class);
 		$this->shareManager = $this->createMock(IShareManager::class);
-		$this->resolver = new UserConversationResolver($this->talkServices, $this->userManager, $this->shareManager);
+		$this->resolver = new UserConversationResolver($this->talkServices, $this->userManager, $this->shareManager, new UnreadRoomView($this->userManager, 1));
 	}
 
 	private function givenAccount(string $uid, string $displayName): IUser&MockObject {
@@ -171,14 +172,14 @@ class UserConversationResolverTest extends TestCase {
 	public function testTheConversationComesFromTheProductWithBothAccountsAsCallers(): void {
 		$this->givenReachableTarget();
 		$this->givenConstants();
-		$roomService = new DirectRoomService(new DirectRoom('abcd', 'Bob Souza'));
+		$roomService = new DirectRoomService(new DirectRoom('abcd'));
 		$this->givenRoomService($roomService);
 		$this->givenParticipant(128);
 
 		$conversation = $this->resolver->conversation('alice', 'bob');
 
 		$this->assertSame('abcd', $conversation->token());
-		$this->assertSame('Bob Souza', $conversation->displayName('alice'));
+		$this->assertSame('Bob Souza', $conversation->displayName());
 		$this->assertSame(1, $roomService->calls);
 		$this->assertSame(['alice', 'bob'], $roomService->arguments());
 	}
@@ -186,7 +187,7 @@ class UserConversationResolverTest extends TestCase {
 	public function testTheConversationIsTheOneTheProductReusesOnASecondCall(): void {
 		$this->givenReachableTarget();
 		$this->givenConstants();
-		$roomService = new DirectRoomService(new DirectRoom('abcd', 'Bob Souza'));
+		$roomService = new DirectRoomService(new DirectRoom('abcd'));
 		$this->givenRoomService($roomService);
 		$this->givenParticipant(128);
 
@@ -218,7 +219,7 @@ class UserConversationResolverTest extends TestCase {
 	public function testARoomThatIsReadOnlyIsRefusedEvenThoughItExists(): void {
 		$this->givenReachableTarget();
 		$this->givenConstants();
-		$this->givenRoomService(new DirectRoomService(new DirectRoom('abcd', 'Bob Souza', readOnly: 1)));
+		$this->givenRoomService(new DirectRoomService(new DirectRoom('abcd', readOnly: 1)));
 		$this->givenParticipant(128);
 
 		$this->expectException(ConversationAccessException::class);
@@ -229,7 +230,7 @@ class UserConversationResolverTest extends TestCase {
 	public function testARoomWhereTheCallerLacksTheChatPermissionIsRefused(): void {
 		$this->givenReachableTarget();
 		$this->givenConstants();
-		$this->givenRoomService(new DirectRoomService(new DirectRoom('abcd', 'Bob Souza')));
+		$this->givenRoomService(new DirectRoomService(new DirectRoom('abcd')));
 		$this->givenParticipant(0);
 
 		$this->expectException(ConversationAccessException::class);
@@ -248,7 +249,7 @@ class UserConversationResolverTest extends TestCase {
 	public function testTheAccessRuleIsAskedAgainBeforeTheRoomIsCreated(): void {
 		$this->givenReachableTarget();
 		$this->givenConstants();
-		$this->givenRoomService(new DirectRoomService(new DirectRoom('abcd', 'Bob Souza')));
+		$this->givenRoomService(new DirectRoomService(new DirectRoom('abcd')));
 		$this->givenParticipant(128);
 		$asked = 0;
 		$this->shareManager = $this->createMock(IShareManager::class);
@@ -258,7 +259,7 @@ class UserConversationResolverTest extends TestCase {
 				return true;
 			},
 		);
-		$this->resolver = new UserConversationResolver($this->talkServices, $this->userManager, $this->shareManager);
+		$this->resolver = new UserConversationResolver($this->talkServices, $this->userManager, $this->shareManager, new UnreadRoomView($this->userManager, 1));
 
 		$this->resolver->conversation('alice', 'bob');
 
@@ -267,10 +268,11 @@ class UserConversationResolverTest extends TestCase {
 	}
 }
 
+/** A one to one as Talk stores it: the name column holds the JSON pair, and getName/getDisplayName are absent. */
 final class DirectRoom {
 	public function __construct(
 		private string $token,
-		private string $displayName,
+		private string $name = '["alice","bob"]',
 		private int $readOnly = 0,
 		private int $type = 1,
 	) {}
@@ -279,8 +281,8 @@ final class DirectRoom {
 		return $this->token;
 	}
 
-	public function getDisplayName(string $userId): string {
-		return $this->displayName;
+	public function getObjectType(): string {
+		return '';
 	}
 
 	public function isFederatedConversation(): bool {

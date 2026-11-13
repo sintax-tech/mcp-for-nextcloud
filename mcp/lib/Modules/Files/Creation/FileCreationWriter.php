@@ -21,6 +21,7 @@ use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\InvalidPathException;
+use OCP\Files\NotFoundException;
 use OCP\Files\NotEnoughSpaceException;
 use OCP\Lock\LockedException;
 use Psr\Log\LoggerInterface;
@@ -70,38 +71,65 @@ final class FileCreationWriter {
 		}
 		// A file the visibility rules hide answers as missing, never named: it is left in place, as it always was.
 		$this->visibilityGuard->assertVisible($file);
-		if ((int)$file->getSize() > 0) {
+		// From here on the file exists: a failure leaves it, empty or incomplete, and names it (never deleted, never
+		// retried). Only another client's file at the name (FileExists), a vanished one and an unreadable policy are
+		// answered as before.
+		try {
+			$size = (int)$file->getSize();
+			$created = [(int)$file->getId(), (string)$file->getEtag()];
+			$found = $content === '' ? $file : $folder->get($name);
+			$now = $found instanceof File ? [(int)$found->getId(), (string)$found->getEtag(), (int)$found->getSize()] : null;
+		} catch (PolicyUnavailable|NotFoundException $e) {
+			throw $e;
+		} catch (Throwable $e) {
+			throw $this->failedAfterCreation($folder, $name, $file, $userId, $e);
+		}
+		if ($size > 0) {
 			throw new FileExists(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::fileExists());
 		}
 		if ($content === '') {
 			return $file;
 		}
-		$created = [(int)$file->getId(), (string)$file->getEtag()];
-		$current = NodeAccess::requireFile($folder->get($name));
-		if ([(int)$current->getId(), (string)$current->getEtag()] !== $created || (int)$current->getSize() > 0) {
+		$current = NodeAccess::requireFile($found);
+		if ($now !== [...$created, 0]) {
 			throw new FileExists(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::fileExists());
 		}
-		// From here on the file exists: a failure leaves it, empty or incomplete, and names it (never deleted, never
-		// retried). The lock check is told so, and never says that nothing changed.
+		// The lock check is told the call already created the file, so it never says that nothing changed.
 		try {
 			FileWriteBoundary::check($this->fileTypes, $current->getName());
 			$put = static fn () => $current->putContent($content);
 			NodeAccess::mutate(fn () => $userId === null ? $put() : $this->locks->run($put, $current, $userId, null, $asUser, false), $this->visibilityGuard);
 		} catch (PolicyUnavailable $e) {
 			throw $e;
-		} catch (ToolFailure $e) {
-			// Already a readable refusal: the type policy, a lock found by the check, or one the storage raised, explained.
-			throw $this->leftBehind($folder, $name, $current, $userId, $e);
-		} catch (LockedException $e) {
-			throw $this->leftBehind($folder, $name, $current, $userId, NodeAccess::lockFailure($e));
-		} catch (NotEnoughSpaceException) {
-			throw $this->leftBehind($folder, $name, $current, $userId, new ToolFailure(CommonMessages::insufficientQuota()));
 		} catch (Throwable $e) {
-			// Only the class: the message of a storage exception may carry the path.
-			$this->logger->error('MCP new file write failed: {exception_class} (code {exception_code})', ['app' => 'mcp', 'exception_class' => $e::class, 'exception_code' => ExceptionDetails::code($e)]);
-			throw $this->leftBehind($folder, $name, $current, $userId, null);
+			throw $this->failedAfterCreation($folder, $name, $current, $userId, $e);
 		}
 		return $current;
+	}
+
+	/**
+	 * The failure of a step that ran after Nextcloud created the file, with the reason it keeps.
+	 *
+	 * @param Folder $folder the destination folder
+	 * @param string $name the basename of the new file
+	 * @param File $file the file Nextcloud created
+	 * @param string|null $userId the actor
+	 * @param Throwable $e what stopped the write: a readable refusal (type policy, lock check, storage), a native lock or
+	 *                     full quota, or an unexplained failure, which is logged by class only
+	 * @return FileCreationFailure the reason and the file left behind
+	 */
+	private function failedAfterCreation(Folder $folder, string $name, File $file, ?string $userId, Throwable $e): FileCreationFailure {
+		$reason = match (true) {
+			$e instanceof ToolFailure => $e,
+			$e instanceof LockedException => NodeAccess::lockFailure($e),
+			$e instanceof NotEnoughSpaceException => new ToolFailure(CommonMessages::insufficientQuota()),
+			default => null,
+		};
+		if ($reason === null) {
+			// Only the class: the message of a storage exception may carry the path.
+			$this->logger->error('MCP new file write failed: {exception_class} (code {exception_code})', ['app' => 'mcp', 'exception_class' => $e::class, 'exception_code' => ExceptionDetails::code($e)]);
+		}
+		return $this->leftBehind($folder, $name, $file, $userId, $reason);
 	}
 
 	/**

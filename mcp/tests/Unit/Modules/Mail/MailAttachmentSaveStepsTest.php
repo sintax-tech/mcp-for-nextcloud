@@ -204,12 +204,31 @@ final class MailAttachmentSaveStepsTest extends FilesToolsTestCase {
 		self::assertSame(1, count(array_filter($this->mail->imapCommands(), static fn (string $c): bool => $c === 'imap:attachment:2')));
 	}
 
+	/**
+	 * Makes the first read-back of the new file, after Nextcloud created it and before its content, raise once.
+	 *
+	 * @param \Throwable $failure what the read-back raises
+	 * @return void
+	 */
+	private function failReadBack(\Throwable $failure): void {
+		$this->tree->afterCreate = function () use ($failure): void {
+			$this->tree->beforeGet = function (string $path) use ($failure): void {
+				if ($path === self::TARGET) {
+					$this->tree->beforeGet = null;
+					throw $failure;
+				}
+			};
+		};
+	}
+
 	/** @return array<string, array{\Closure(self): void, string}> failures before any write and at the sink, with the classification mail_save_attachment gives them */
 	public static function classifiedLikeTheOriginalTool(): array {
 		return [
 			'occupied name, before any write' => [static function (self $test): void { $test->tree->addFile(self::TARGET, 'old content', 'application/pdf'); }, WorkflowStep::FAILED],
 			'quota at the sink, after the file exists' => [static function (self $test): void { $test->tree->writeFailure = new \OCP\Files\NotEnoughSpaceException('quota'); }, WorkflowStep::UNCERTAIN],
 			'lock at the sink, after the file exists' => [static function (self $test): void { $test->tree->writeFailure = new \OCP\Lock\LockedException('saved.pdf'); }, WorkflowStep::UNCERTAIN],
+			'lock at the read-back, after the file exists' => [static function (self $test): void { $test->failReadBack(new \OCP\Lock\LockedException(self::TARGET)); }, WorkflowStep::UNCERTAIN],
+			'quota at the read-back, after the file exists' => [static function (self $test): void { $test->failReadBack(new \OCP\Files\NotEnoughSpaceException(self::TARGET)); }, WorkflowStep::UNCERTAIN],
 			'storage failure at the sink, after the file exists' => [static function (self $test): void { $test->tree->writeFailure = new \RuntimeException('native sink failure'); }, WorkflowStep::UNCERTAIN],
 		];
 	}

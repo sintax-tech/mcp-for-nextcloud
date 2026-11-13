@@ -910,6 +910,32 @@
                         }
                     },
                     {
+                        "name": "files_list_tags",
+                        "title": "List file tags",
+                        "description": "List the collaborative (system) tags of one file or folder the user can see, read through the native Nextcloud tag relation. Only tags the user may see are returned, each with its id, name and the native flags user_visible, user_assignable and can_assign. Tags the administrator uses to hide files from MCP are never listed. A hidden, missing or unreadable path is answered as not found. Read-only.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "path": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "path"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "List file tags",
+                            "readOnlyHint": true,
+                            "destructiveHint": false,
+                            "idempotentHint": true,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
                         "name": "talk_list_conversations",
                         "title": "List Talk conversations",
                         "description": "Lists the Talk conversations the authenticated user takes part in, with the number of unread messages Talk shows in its own list. When that count cannot be read, the conversation is still listed and unreadMessages is null. A conversation the lobby bars is still listed and unreadMessages is 0. A lobby whose timer has already passed is treated as open for this answer only, and a lobby that cannot be read counts as closed. The display name is the name Talk already stored: a direct conversation names the other participant from the stored pair of account ids, or from the participants already in the room when the stored name is empty or still the legacy account id, and the name is empty when that read fails or the other participant cannot be identified, a group with no stored name is empty, and the release notes conversation and a password request use the names Talk gives them. It changes no state: it does not mark anything as read, does not open a lobby, does not rename a conversation, does not touch notifications and does not touch activity.",

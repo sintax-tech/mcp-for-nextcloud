@@ -79,6 +79,7 @@ final class VisibilityContractTest extends TestCase {
 		'files_unshare' => 'unshare',
 		'files_upload' => 'upload',
 		'files_create' => 'create',
+		'files_list_tags' => 'list_tags',
 		'notes_list' => 'notes_list',
 		'notes_search' => 'notes_search',
 		'notes_read' => 'notes_read',
@@ -398,6 +399,14 @@ final class VisibilityContractTest extends TestCase {
 		// 5. files_versions_list
 		foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt'] as $p) {
 			$res = $registry->call('files_versions_list', ['path' => $p], 'alice');
+			$this->assertTrue($res['isError'] ?? false);
+			$this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+			$assertNoLeak($res['content'][0]['text']);
+		}
+
+		// 5b. files_list_tags
+		foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt', '/SecretFolder'] as $p) {
+			$res = $registry->call('files_list_tags', ['path' => $p], 'alice');
 			$this->assertTrue($res['isError'] ?? false);
 			$this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
 			$assertNoLeak($res['content'][0]['text']);
@@ -922,6 +931,8 @@ final class VisibilityContractTest extends TestCase {
 			['files_image_view', ['path' => '/private.jpg']],
 			['files_images_view', ['paths' => ['/private.jpg']]],
 			['files_versions_list', ['path' => '/private.jpg']],
+			['files_list_tags', ['path' => '/private.jpg']],
+			['files_list_tags', ['path' => '/private']],
 			['files_version_read', ['path' => '/private.jpg', 'version' => '1']],
 			['files_version_restore', ['path' => '/private.jpg', 'version' => '1']],
 			['files_edit', ['path' => '/private.jpg', 'content' => 'x']],

@@ -910,6 +910,32 @@
                         }
                     },
                     {
+                        "name": "files_list_tags",
+                        "title": "List file tags",
+                        "description": "List the collaborative (system) tags of one file or folder the user can see, read through the native Nextcloud tag relation. Only tags the user may see are returned, each with its id, name and the native flags user_visible, user_assignable and can_assign. Tags the administrator uses to hide files from MCP are never listed. A hidden, missing or unreadable path is answered as not found. Read-only.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "path": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "path"
+                            ]
+                        },
+                        "annotations": {
+                            "title": "List file tags",
+                            "readOnlyHint": true,
+                            "destructiveHint": false,
+                            "idempotentHint": true,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
                         "name": "users_search",
                         "title": "Search people",
                         "description": "Searches the accounts of this Nextcloud by name, account ID or e-mail and returns their account IDs (uid), display names and, when available, e-mail; every row carries a type, \"user\" for an account. Use it whenever you are not sure of someone's account ID. Groups are not searched by default: to also match groups, pass include_groups: true, and the group rows come back with the type \"group\" and the group ID, which is what a share takes as group:<id>.",

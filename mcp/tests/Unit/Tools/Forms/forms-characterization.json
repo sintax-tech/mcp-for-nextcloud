@@ -1008,6 +1008,32 @@
             }
         },
         {
+            "name": "files_list_tags",
+            "title": "List file tags",
+            "description": "List the collaborative (system) tags of one file or folder the user can see, read through the native Nextcloud tag relation. Only tags the user may see are returned, each with its id, name and the native flags user_visible, user_assignable and can_assign. Tags the administrator uses to hide files from MCP are never listed. A hidden, missing or unreadable path is answered as not found. Read-only.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "path"
+                ]
+            },
+            "annotations": {
+                "title": "List file tags",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+            }
+        },
+        {
             "name": "notes_list",
             "title": "List notes",
             "description": "Lists the notes (Notes app) of the user.",

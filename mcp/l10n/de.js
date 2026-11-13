@@ -2114,6 +2114,7 @@ OC.L10N.register(
     "Replacement: none" : "Vertretung: keine",
     "Currently: %s to %s, status %s." : "Derzeit: %s bis %s, Status %s.",
     "Set own absence" : "Eigene Abwesenheit festlegen",
-    "Your absence or its replacement changed since the plan. Review this new plan before confirming again." : "Ihre Abwesenheit oder deren Vertretung hat sich seit dem Plan geändert. Prüfen Sie diesen neuen Plan, bevor Sie erneut bestätigen."
+    "Your absence or its replacement changed since the plan. Review this new plan before confirming again." : "Ihre Abwesenheit oder deren Vertretung hat sich seit dem Plan geändert. Prüfen Sie diesen neuen Plan, bevor Sie erneut bestätigen.",
+    "List file tags" : "Datei-Schlagwörter auflisten"
     },
 "nplurals=2; plural=(n != 1);");

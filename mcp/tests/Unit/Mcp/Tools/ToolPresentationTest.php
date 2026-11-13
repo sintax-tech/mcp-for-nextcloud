@@ -34,6 +34,7 @@ final class ToolPresentationTest extends TestCase {
 		'files_versions_list' => ['List file versions', 'Listar versões do arquivo'],
 		'files_version_read' => ['Read file version', 'Ler versão do arquivo'],
 		'files_version_restore' => ['Restore file version', 'Restaurar versão do arquivo'],
+		'files_list_tags' => ['List file tags', 'Listar etiquetas do arquivo'],
 		'notes_list' => ['List notes', 'Listar notas'],
 		'notes_search' => ['Search notes', 'Buscar notas'],
 		'notes_read' => ['Read note', 'Ler nota'],

@@ -2180,6 +2180,8 @@ OC.L10N.register(
     "A new private Talk room with %s." : "Una nueva sala privada de Talk con %s.",
     "The agenda, posted as the first message of the room: %s" : "El orden del día, publicado como primer mensaje de la sala: %s",
     "An event in the calendar %s from %s to %s (%s), with the participants as guests and the room link as its location." : "Un evento en el calendario %s de %s a %s (%s), con los participantes como invitados y el enlace de la sala como ubicación.",
-    "Create meeting" : "Crear reunión"
+    "Create meeting" : "Crear reunión",
+    "The permissions of this step could not be read just now; nothing was done in this step." : "No se pudieron leer los permisos de este paso en este momento; no se hizo nada en este paso.",
+    "This step was refused before it ran; nothing was done in this step." : "Este paso se rechazó antes de ejecutarse; no se hizo nada en este paso."
     },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

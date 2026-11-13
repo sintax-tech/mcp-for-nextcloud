@@ -71,6 +71,16 @@ final class RoutinesMessages {
 		return Translator::t('Not started: the link of the room could not be built, and the event would have no room to point to.');
 	}
 
+	/** @return string why a step after the room wrote nothing: its permissions could not be read */
+	public static function stepPolicyUnavailable(): string {
+		return Translator::t('The permissions of this step could not be read just now; nothing was done in this step.');
+	}
+
+	/** @return string why a step after the room wrote nothing: its own checks refused it */
+	public static function stepRefused(): string {
+		return Translator::t('This step was refused before it ran; nothing was done in this step.');
+	}
+
 	/**
 	 * @param string $step one of room, agenda or event
 	 * @return string its name in the account language

@@ -31,7 +31,7 @@ final class CreateMeetingTest extends TestCase {
 	protected function setUp(): void {
 		$this->ports = new MeetingPorts();
 		$plans = new MeetingPlans($this->ports, $this->ports);
-		$this->tool = new CreateMeeting(new CreateMeetingHandler($plans, $this->ports, $this->ports), new CreateMeetingPreview($plans));
+		$this->tool = new CreateMeeting(new CreateMeetingHandler($plans, $this->ports, $this->ports, new \Psr\Log\NullLogger()), new CreateMeetingPreview($plans));
 	}
 
 	/** @return array<string, mixed> arguments of a meeting, as the schema validated them */
@@ -160,6 +160,55 @@ final class CreateMeetingTest extends TestCase {
 		}
 	}
 
+	/** @return array<string, array{string, \Throwable, string}> step that throws, exception, its outcome */
+	public static function throwingSteps(): array {
+		return [
+			'agenda: unexpected' => ['agenda', new \RuntimeException('broke'), MeetingStep::UNCERTAIN],
+			'agenda: policy unreadable' => ['agenda', new \OCA\Mcp\Access\Policy\PolicyUnavailable(), MeetingStep::FAILED],
+			'agenda: policy write in doubt' => ['agenda', new \OCA\Mcp\Access\Policy\PolicyUnavailable('x', true), MeetingStep::UNCERTAIN],
+			'agenda: argument' => ['agenda', new \InvalidArgumentException('bad'), MeetingStep::FAILED],
+			'agenda: refusal' => ['agenda', new ToolFailure('refused'), MeetingStep::FAILED],
+			'event: unexpected' => ['event', new \RuntimeException('broke'), MeetingStep::UNCERTAIN],
+			'event: policy unreadable' => ['event', new \OCA\Mcp\Access\Policy\PolicyUnavailable(), MeetingStep::FAILED],
+			'event: argument' => ['event', new \InvalidArgumentException('bad'), MeetingStep::FAILED],
+		];
+	}
+
+	/**
+	 * An exception of a step after the room exists is that step's outcome: the receipt keeps the room (and the agenda),
+	 * is never an error a client would answer by calling again, and nothing runs after the step.
+	 */
+	#[DataProvider('throwingSteps')]
+	public function testAnExceptionAfterTheRoomKeepsTheReceipt(string $step, \Throwable $error, string $status): void {
+		$this->ports->throws[$step] = $error;
+
+		$result = $this->tool->execute(self::arguments(), new ToolContext('alice'));
+
+		$this->assertArrayNotHasKey('isError', $result);
+		$receipt = json_decode($result['content'][0]['text'], true);
+		$this->assertSame('stopped', $receipt['status']);
+		$this->assertSame($step, $receipt['stopped_at']);
+		$this->assertSame(['conversation_token' => 'room1234'], $receipt['steps'][0]['ids']);
+		$this->assertSame('https://cloud.example/call/room1234', $receipt['steps'][0]['url']);
+		$statuses = array_column($receipt['steps'], 'status', 'step');
+		$this->assertSame($status, $statuses[$step]);
+		$expected = $step === 'agenda' ? ['write:room', 'write:agenda'] : ['write:room', 'write:agenda', 'write:event'];
+		$this->assertSame($expected, array_values(array_filter($this->ports->log, static fn (string $call): bool => str_starts_with($call, 'write:'))));
+		if ($step === 'agenda') {
+			$this->assertSame('not_started', $statuses['event']);
+		} else {
+			$this->assertSame(['conversation_token' => 'room1234', 'messageId' => 7], $receipt['steps'][1]['ids']);
+		}
+	}
+
+	/** Before any effect an exception leaves as it always did: the registry answers it, and no room exists. */
+	public function testAnExceptionOfTheRoomStepIsNotHidden(): void {
+		$this->ports->throws['room'] = new \OCA\Mcp\Access\Policy\PolicyUnavailable();
+
+		$this->expectException(\OCA\Mcp\Access\Policy\PolicyUnavailable::class);
+		$this->tool->execute(self::arguments(), new ToolContext('alice'));
+	}
+
 	public function testARoomWithoutLinkKeepsItsAgendaAndNeverCreatesTheEvent(): void {
 		$this->ports->link = null;
 
@@ -188,6 +237,8 @@ final class MeetingPorts implements MeetingTalk, MeetingCalendar {
 	public array $outcome = [];
 	public ?string $link = 'https://cloud.example/call/room1234';
 	public ?string $agendaToken = null;
+	/** @var array<string, \Throwable> step => exception its write throws, after logging the call */
+	public array $throws = [];
 
 	public function planRoom(string $userId, string $name, array $participants): array {
 		$this->plan('room');
@@ -196,6 +247,9 @@ final class MeetingPorts implements MeetingTalk, MeetingCalendar {
 
 	public function createRoom(string $userId, string $name, array $participants): MeetingStep {
 		$this->log[] = 'write:room';
+		if (isset($this->throws['room'])) {
+			throw $this->throws['room'];
+		}
 		$result = ['conversation_token' => 'room1234', 'url' => $this->link, 'invitations_failed' => []];
 		return match ($this->outcome['room'] ?? MeetingStep::APPLIED) {
 			MeetingStep::FAILED => MeetingStep::failed('no room'),
@@ -212,6 +266,9 @@ final class MeetingPorts implements MeetingTalk, MeetingCalendar {
 
 	public function postAgenda(string $userId, string $token, string $message): MeetingStep {
 		$this->log[] = 'write:agenda';
+		if (isset($this->throws['agenda'])) {
+			throw $this->throws['agenda'];
+		}
 		$this->agendaToken = $token;
 		return $this->outcome('agenda', ['conversation_token' => $token, 'messageId' => 7]);
 	}
@@ -225,6 +282,9 @@ final class MeetingPorts implements MeetingTalk, MeetingCalendar {
 
 	public function createEvent(string $userId, array $event): MeetingStep {
 		$this->log[] = 'write:event';
+		if (isset($this->throws['event'])) {
+			throw $this->throws['event'];
+		}
 		$this->events[] = $event;
 		return $this->outcome('event', ['uid' => 'event-uid']);
 	}

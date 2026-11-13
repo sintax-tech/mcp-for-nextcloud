@@ -24,7 +24,13 @@ final class ProtectedFileDestination implements NewFileDestination {
 	 * @param NodeAccessInfo $access Access metadata.
 	 * @param FilesAccessGuard $visibility Current scope and visibility.
 	 */
-	public function __construct(private ActorRoot $roots, private FileCreation $creation, private SharedWriteGuard $shared, private NodeAccessInfo $access, private FilesAccessGuard $visibility) {
+	public function __construct(
+		private ActorRoot $roots,
+		private FileCreation $creation,
+		private SharedWriteGuard $shared,
+		private NodeAccessInfo $access,
+		private FilesAccessGuard $visibility,
+	) {
 	}
 
 	/** {@inheritDoc} */
@@ -34,7 +40,13 @@ final class ProtectedFileDestination implements NewFileDestination {
 		$target = $this->creation->target($this->roots->get($userId), $path);
 		FileCreation::assertCreatable($target['folder']);
 		$shared = $this->shared->guard($target['folder'], $userId, $target['path'], false);
-		return ['path' => $target['path'], 'folderId' => (int)$target['folder']->getId(), 'access' => $this->access->describe($target['folder'], $userId), 'shared' => $shared === null ? [] : [$shared], 'requiresSharedConfirmation' => $shared !== null];
+		return [
+			'path' => $target['path'],
+			'folderId' => (int)$target['folder']->getId(),
+			'access' => $this->access->describe($target['folder'], $userId),
+			'shared' => $shared === null ? [] : [$shared],
+			'requiresSharedConfirmation' => $shared !== null,
+		];
 	}
 
 	/** {@inheritDoc} */
@@ -59,6 +71,8 @@ final class ProtectedFileDestination implements NewFileDestination {
 			throw $e;
 		} catch (LockedException|NotEnoughSpaceException $e) {
 			NodeAccess::run(static fn () => throw $e);
+		} catch (Throwable) {
+			return ['path' => $target['path'], 'outcome' => 'uncertain', 'verified' => false];
 		}
 		try {
 			$writtenId = (int)$written->getId();
@@ -86,7 +100,14 @@ final class ProtectedFileDestination implements NewFileDestination {
 			}
 			$after = NodeAccess::requireFile($target['folder']->get($target['name']));
 			$this->visibility->assertVisible($after);
-			$verified = (int)$after->getId() === $receipt['fileId'] && (int)$after->getSize() === $receipt['size'] && (string)$after->getEtag() === $receipt['etag'] && $writtenId === $receipt['fileId'] && $receipt['size'] === strlen($content) && $receipt['etag'] !== '' && hash_equals($expected, $actual) && (string)$file->getEtag() === $receipt['etag'];
+			$verified = (int)$after->getId() === $receipt['fileId']
+				&& (int)$after->getSize() === $receipt['size']
+				&& (string)$after->getEtag() === $receipt['etag']
+				&& $writtenId === $receipt['fileId']
+				&& $receipt['size'] === strlen($content)
+				&& $receipt['etag'] !== ''
+				&& hash_equals($expected, $actual)
+				&& (string)$file->getEtag() === $receipt['etag'];
 			return $receipt + ['outcome' => $verified ? 'saved' : 'uncertain', 'verified' => $verified, 'sha256' => $actual];
 		} catch (Throwable) {
 			return ['path' => $target['path'], 'outcome' => 'uncertain', 'verified' => false];

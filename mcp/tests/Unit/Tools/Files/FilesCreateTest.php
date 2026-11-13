@@ -377,6 +377,41 @@ final class FilesCreateTest extends FilesToolsTestCase {
 			['app' => 'mcp', 'exception_class' => \RuntimeException::class, 'exception_code' => 0]);
 		$this->assertSame(CreationMessages::createFailed(), $this->failure('files_create', ['path' => '/falha.md', 'content' => 'x']));
 	}
+	/** A failed native creation retains the registry response and safe diagnostics. */
+	public function testUnexpectedNativeCreationFailureKeepsTheRegistryMessageAndLogs(): void {
+		$this->tree->beforeCreate = static fn () => throw new \RuntimeException('private filename', 17);
+		$this->creationLogger->expects($this->once())->method('error')->with(
+			'MCP new file write failed: {exception_class} (code {exception_code})',
+			['app' => 'mcp', 'exception_class' => \RuntimeException::class, 'exception_code' => 17],
+		);
+		$logger = $this->createMock(LoggerInterface::class);
+		$logger->expects($this->once())->method('error')->with(
+			'MCP tool failed: {tool}: {exception_detail}',
+			['app' => 'mcp', 'tool' => 'files_create', 'exception_class' => \RuntimeException::class,
+				'exception_detail' => 'RuntimeException (code 17)'],
+		);
+		$policy = InMemoryConfig::policy($this->config->mock($this), new InMemoryOAuthStore());
+		$policy->setGrant('alice', 'files', 'create', true);
+		$registry = new ToolRegistry([$this->module], $policy, $this->apps, $this->users, $logger);
+		$out = $registry->call('files_create', ['path' => '/new.md', 'content' => 'x', 'confirm' => true], 'alice');
+		$this->assertTrue($out['isError']);
+		$this->assertSame('Unexpected error while accessing Nextcloud.', $out['content'][0]['text']);
+		$this->assertArrayNotHasKey('/alice/files/new.md', $this->tree->nodes);
+	}
+
+	/** Native admission refusals stay actionable and do not log an unexpected error. */
+	public function testNativeCreationPermissionAndMissingFolderRefusals(): void {
+		$this->creationLogger->expects($this->never())->method('error');
+		foreach ([
+			[new \OCP\Files\NotPermittedException('private filename'), CommonMessages::forbidden()],
+			[new \OCP\Files\NotFoundException('private filename'), CommonMessages::notFound()],
+		] as [$failure, $message]) {
+			$this->tree->beforeCreate = static fn () => throw $failure;
+			$this->assertSame($message, $this->failure('files_create', ['path' => '/new.md', 'content' => 'x']));
+			$this->assertArrayNotHasKey('/alice/files/new.md', $this->tree->nodes);
+		}
+	}
+
 	public function testCreateDoesNotPublishNewlyHiddenReceipt(): void {
 		$hidden = [];
 		$mapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);

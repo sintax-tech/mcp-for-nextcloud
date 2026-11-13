@@ -204,6 +204,15 @@ final class MailSaveAttachmentTest extends FilesToolsTestCase {
 			unset($this->tree->nodes['/alice/files/Documentos/saved.pdf']);
 		}
 	}
+	/** A native creation can fail after a hook changed storage: retain the Mail uncertainty receipt. */
+	public function testUnexpectedNativeCreationFailureRemainsUncertain(): void {
+		$this->tree->beforeCreate = static fn () => throw new \RuntimeException('private filename');
+		$out = $this->saveFile();
+		self::assertSame('uncertain', $out['outcome']);
+		self::assertFalse($out['verified']);
+		self::assertArrayNotHasKey('/alice/files/Documentos/saved.pdf', $this->tree->nodes);
+	}
+
 	/** The prepared limit already reserves the decoded allocation; the sink must not count it twice. */
 	public function testSinkUsesTheBudgetCapturedBeforeTheFetch(): void {
 		$prepared = $this->save->prepare(self::ARGS, 'alice', true);

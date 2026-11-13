@@ -26,7 +26,11 @@ final class MailSaveReader {
 	 * @param MailBodyPreflight $generation reads the UIDVALIDITY of a folder on the server
 	 * @return void
 	 */
-	public function __construct(private MailServices $services, private MailSavePreflight $preflight, private MailBodyPreflight $generation = new MailBodyPreflight()) {
+	public function __construct(
+		private MailServices $services,
+		private MailSavePreflight $preflight,
+		private MailBodyPreflight $generation = new MailBodyPreflight(),
+	) {
 	}
 
 	/**

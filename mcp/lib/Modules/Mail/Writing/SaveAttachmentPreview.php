@@ -22,6 +22,18 @@ final class SaveAttachmentPreview {
 	public function plan(array $arguments, string $userId): array {
 		$prepared = $this->context->prepare($arguments, $userId, false);
 		$part = $prepared['read']['part'];
-		return ['action' => 'mail_save_attachment', 'messageId' => (int)$arguments['message_id'], 'attachmentId' => $part->id, 'name' => $part->name === null ? null : MailRows::text($part->name), 'declaredMimeType' => MailRows::text($part->type), 'declaredUpperBytes' => $prepared['read']['declaredUpperBytes'], 'effectiveMaxBytes' => $prepared['limit'], 'budget' => MailSaveMessages::budget($prepared['limit']), 'consequence' => MailSaveMessages::consequence(), 'untrustedMailData' => true, 'notice' => MailMessages::UNTRUSTED_NOTICE] + $prepared['destination'];
+		return [
+			'action' => 'mail_save_attachment',
+			'messageId' => (int)$arguments['message_id'],
+			'attachmentId' => $part->id,
+			'name' => $part->name === null ? null : MailRows::text($part->name),
+			'declaredMimeType' => MailRows::text($part->type),
+			'declaredUpperBytes' => $prepared['read']['declaredUpperBytes'],
+			'effectiveMaxBytes' => $prepared['limit'],
+			'budget' => MailSaveMessages::budget($prepared['limit']),
+			'consequence' => MailSaveMessages::consequence(),
+			'untrustedMailData' => true,
+			'notice' => MailMessages::UNTRUSTED_NOTICE,
+		] + $prepared['destination'];
 	}
 }

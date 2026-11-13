@@ -26,7 +26,15 @@ final class MailSaveContext {
 	 * @param MailSaveBudget $budget Memory budget.
 	 * @param NewFileDestination $files Protected Files port.
 	 */
-	public function __construct(private GrantPolicy $grants, private MailServices $services, private IAppManager $apps, private MailMessageLocator $locator, private MailSaveReader $reader, private MailSaveBudget $budget, private NewFileDestination $files) {
+	public function __construct(
+		private GrantPolicy $grants,
+		private MailServices $services,
+		private IAppManager $apps,
+		private MailMessageLocator $locator,
+		private MailSaveReader $reader,
+		private MailSaveBudget $budget,
+		private NewFileDestination $files,
+	) {
 	}
 
 	/**
@@ -35,7 +43,9 @@ final class MailSaveContext {
 	 * @throws ToolFailure If save permission or Mail support is gone.
 	 */
 	public function authorize(string $userId): void {
-		if (!$this->grants->granted($userId, 'mail', 'save') || !$this->services->isEnabledFor($userId) || !MailAttachmentSupport::available($this->apps)) {
+		if (!$this->grants->granted($userId, 'mail', 'save')
+			|| !$this->services->isEnabledFor($userId)
+			|| !MailAttachmentSupport::available($this->apps)) {
 			throw new ToolFailure(CommonMessages::forbidden());
 		}
 	}
@@ -75,6 +85,15 @@ final class MailSaveContext {
 		if (strlen($content) > $limit) {
 			throw new ToolFailure(MailSaveMessages::limit($limit));
 		}
-		return $this->files->create($userId, $prepared['destination']['path'], $content, ($arguments['confirm_shared'] ?? false) === true, $prepared['destination']['folderId']) + ['effectiveMaxBytes' => $limit, 'budget' => MailSaveMessages::budget($limit)];
+		return $this->files->create(
+			$userId,
+			$prepared['destination']['path'],
+			$content,
+			($arguments['confirm_shared'] ?? false) === true,
+			$prepared['destination']['folderId'],
+		) + [
+			'effectiveMaxBytes' => $limit,
+			'budget' => MailSaveMessages::budget($limit),
+		];
 	}
 }

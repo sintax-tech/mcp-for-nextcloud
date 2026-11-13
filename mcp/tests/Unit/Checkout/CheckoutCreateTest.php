@@ -86,8 +86,10 @@ final class CheckoutCreateTest extends TestCase {
 	private int $tempFiles = 0;
 	private bool $aliceEnabled = true;
 	private StagedCreateController $controller;
+	private LoggerInterface $logger;
 
 	protected function setUp(): void {
+		$this->logger = $this->createMock(LoggerInterface::class);
 		$this->tree = new FakeTree($this);
 		$this->tree->addFolder('/alice/files/Documentos');
 		$this->store = new InMemoryCheckoutTokenStore();
@@ -135,7 +137,7 @@ final class CheckoutCreateTest extends TestCase {
 		$guard = $this->guard ?? new \OCA\Mcp\Access\ResourceScope\FilesAccessGuard($config, $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class));
 		$this->controller = new StagedCreateController('mcp', $request, CheckoutFlowFixture::build($root, $this->session, $temp, $time, $this->policy,
 			$this->store, $this->hasher, $checkout, new FileBackup($apps, $users, $time, $config),
-			new SharedWriteGuard($access), $access, $this->createMock(LoggerInterface::class), null, $users, $this->guard,
+			new SharedWriteGuard($access), $access, $this->logger, null, $users, $this->guard,
 			new FileCreation($access, new SharedWriteGuard($access), $checkout, $this->filenames, $guard, $this->createMock(LoggerInterface::class), $this->locks->service($this), fileTypes: \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this), backupLocation: new \OCA\Mcp\Platform\Backups\BackupLocation($this->createMock(\OCA\Mcp\Platform\Backups\BackupSettingsDocument::class))),
 			$this->locks->service($this), fileTypes: \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this)));
 		$this->controller->route = ['token' => self::TOKEN];
@@ -557,6 +559,20 @@ final class CheckoutCreateTest extends TestCase {
 		$this->assertSame(409, $response->getStatus());
 		$this->assertSame('do outro', $this->tree->nodes[self::FILE]['content']);
 		$this->assertNotContains('write ' . self::FILE, $this->tree->ops);
+	}
+
+	/** Unexpected newFile failures still reach the checkout diagnostic and safe 500 response. */
+	public function testUnexpectedNativeCreationFailureKeepsTheCheckoutLog(): void {
+		$this->tree->beforeCreate = static fn () => throw new \RuntimeException('private filename', 17);
+		$this->logger->expects($this->once())->method('error')->with(
+			'MCP create upload failed: {exception_class} (code {exception_code})',
+			['app' => 'mcp', 'exception_class' => \RuntimeException::class, 'exception_code' => 17],
+		);
+		$this->issue();
+		$response = $this->controller->upload();
+		$this->assertSame(500, $response->getStatus());
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createFailed(), $this->text($response));
+		$this->assertArrayNotHasKey(self::FILE, $this->tree->nodes);
 	}
 
 	/** B2: a lock or a full quota at write time keeps its own message and status, and the log has the class only. */

@@ -58,7 +58,13 @@ final class FileCreationWriter {
 		} catch (ToolFailure $e) {
 			throw $e;
 		} catch (Throwable $e) {
-			throw new FileCreationFailure(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createFailed(), 0, $e);
+			// Preserve the original exception for the tool registry and checkout diagnostics.
+			$this->logger->error('MCP new file write failed: {exception_class} (code {exception_code})', [
+				'app' => 'mcp',
+				'exception_class' => $e::class,
+				'exception_code' => ExceptionDetails::code($e),
+			]);
+			throw $e;
 		}
 		$this->visibilityGuard->assertVisible($file);
 		if ((int)$file->getSize() > 0) {

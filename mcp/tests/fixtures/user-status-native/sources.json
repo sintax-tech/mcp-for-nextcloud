@@ -41,6 +41,22 @@
       "InvalidStatusTypeException.php": {
         "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/user_status/lib/Exception/InvalidStatusTypeException.php",
         "sha256": "dc517a9719af23fc0d062c2cb5d06f6130a404f3ffe5056cb10c3996479d0269"
+      },
+      "InvalidClearAtException.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/user_status/lib/Exception/InvalidClearAtException.php",
+        "sha256": "20fbd2710bdb49a3c307819d1c550e669635da4cf616ab9151899d652480b51e"
+      },
+      "InvalidMessageIdException.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/user_status/lib/Exception/InvalidMessageIdException.php",
+        "sha256": "bef318d112679b83f98080278f14b6d086319efc31bad5698ca06eeaa90a172d"
+      },
+      "InvalidStatusIconException.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/user_status/lib/Exception/InvalidStatusIconException.php",
+        "sha256": "424e2fefce61be83618054a547789645896a3a040edfdf1c06b5392624ce61e4"
+      },
+      "StatusMessageTooLongException.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/user_status/lib/Exception/StatusMessageTooLongException.php",
+        "sha256": "77c290e2fe95e730d299cb06d33c9a205a3aed3f50db2a66fc17c60ccef0af1a"
       }
     },
     "35": {
@@ -83,6 +99,22 @@
       "InvalidStatusTypeException.php": {
         "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/user_status/lib/Exception/InvalidStatusTypeException.php",
         "sha256": "a87319e24dc609ea8f58d99db406dafce12dcfea71bacda6b6e1e00c29724b52"
+      },
+      "InvalidClearAtException.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/user_status/lib/Exception/InvalidClearAtException.php",
+        "sha256": "8d3683361c968ab2f701f0c9317f1425a026faea726aceb0b77fefe5091533b1"
+      },
+      "InvalidMessageIdException.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/user_status/lib/Exception/InvalidMessageIdException.php",
+        "sha256": "7957c2dafb65be11c9cebd02f3a6a2e8ae4b357a966181ce1095960d80aed5fc"
+      },
+      "InvalidStatusIconException.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/user_status/lib/Exception/InvalidStatusIconException.php",
+        "sha256": "b30e074c87a3e238852fd6834bd0ff2127f76dde5357f7699a6f32fe839b02cc"
+      },
+      "StatusMessageTooLongException.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/user_status/lib/Exception/StatusMessageTooLongException.php",
+        "sha256": "72cba34c62d34818c253e0733be82e8572161c71b7e333eb0219f0fca289cfba"
       }
     }
   }

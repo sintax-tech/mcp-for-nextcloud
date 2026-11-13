@@ -51,6 +51,7 @@ final class ToolPresentationTest extends TestCase {
 		'availability_read_absence' => ['Read own absence', 'Ler minha ausência'],
 		'status_read_own' => ['Read own status', 'Ler meu status'],
 		'status_set_type' => ['Set own status type', 'Definir meu tipo de status'],
+		'status_set_message' => ['Set own status message', 'Definir minha mensagem de status'],
 		'routines_create_meeting' => ['Create meeting', 'Criar reunião'],
 		'availability_set_absence' => ['Set own absence', 'Definir minha ausência'],
 		'calendar_create_event' => ['Create event', 'Criar evento'],

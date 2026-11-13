@@ -16,6 +16,7 @@ final class StatusNativeTest extends TestCase {
 	/** Maintenance the read must not perform, checked against the pinned sources below. */
 	private const FORBIDDEN = [
 		'->processStatus', 'processCalendarStatus(', '->heartbeat', '->setStatus(', '->setCustomMessage(',
+		'->setPredefinedMessage(', '->clearMessage(', '->setUserStatus(',
 		'->createBackupStatus', '->restoreBackupStatuses', '->revertUserStatus', 'clearOlderThanClearAt(',
 		'clearStatusesOlderThan(', 'deleteCurrentStatus', '->cleanStatus', 'PredefinedStatusService',
 		'->insert(', '->update(',
@@ -47,6 +48,15 @@ final class StatusNativeTest extends TestCase {
 				60 => '$userStatus = $this->service->findByUserId($this->userId);',
 				81 => '$this->service->setStatus($this->userId, $statusType, null, true)',
 				83 => '$this->service->removeBackupUserStatus($this->userId)',
+				103 => 'function setPredefinedMessage(string $messageId,',
+				106 => '$this->service->setPredefinedMessage($this->userId, $messageId, $clearAt)',
+				107 => '$this->service->removeBackupUserStatus($this->userId)',
+				132 => 'function setCustomMessage(?string $statusIcon,',
+				137 => '$this->service->setCustomMessage($this->userId, $statusIcon, $message, $clearAt)',
+				139 => '$this->service->clearMessage($this->userId)',
+				142 => '$this->service->removeBackupUserStatus($this->userId)',
+				167 => 'function clearMessage(): DataResponse',
+				168 => '$this->service->clearMessage($this->userId)',
 			],
 			'HeartbeatController.php' => [55 => 'function heartbeat(string $status)'],
 			'DavStatusService.php' => [42 => 'function processCalendarStatus(string $userId)'],
@@ -71,6 +81,15 @@ final class StatusNativeTest extends TestCase {
 				61 => '$userStatus = $this->service->findByUserId($this->userId);',
 				82 => '$this->service->setStatus($this->userId, $statusType, null, true)',
 				84 => '$this->service->removeBackupUserStatus($this->userId)',
+				104 => 'function setPredefinedMessage(string $messageId,',
+				107 => '$this->service->setPredefinedMessage($this->userId, $messageId, $clearAt)',
+				108 => '$this->service->removeBackupUserStatus($this->userId)',
+				133 => 'function setCustomMessage(?string $statusIcon,',
+				138 => '$this->service->setCustomMessage($this->userId, $statusIcon, $message, $clearAt)',
+				140 => '$this->service->clearMessage($this->userId)',
+				143 => '$this->service->removeBackupUserStatus($this->userId)',
+				168 => 'function clearMessage(): DataResponse',
+				169 => '$this->service->clearMessage($this->userId)',
 			],
 			'HeartbeatController.php' => [56 => 'function heartbeat(string $status)'],
 			'DavStatusService.php' => [43 => 'function processCalendarStatus(string $userId)'],
@@ -124,10 +143,13 @@ final class StatusNativeTest extends TestCase {
 		foreach (self::FORBIDDEN as $token) {
 			self::assertStringNotContainsString($token, $joined, $token);
 		}
-		foreach (array_diff(self::FORBIDDEN, ['->setStatus(']) as $token) {
+		foreach (array_diff(self::FORBIDDEN, ['->setStatus(', '->setCustomMessage(', '->setPredefinedMessage(', '->clearMessage(']) as $token) {
 			self::assertStringNotContainsString($token, $editorBody, $token);
 		}
 		self::assertStringContainsString('->setStatus($actor, $type, null, true)', $editorBody);
+		self::assertStringContainsString('->setCustomMessage($actor, null, $request->message, $request->clearAt)', $editorBody);
+		self::assertStringContainsString('->setPredefinedMessage($actor, $request->messageId, $request->clearAt)', $editorBody);
+		self::assertStringContainsString('->clearMessage($actor)', $editorBody);
 		self::assertStringContainsString('->removeBackupUserStatus($actor)', $editorBody);
 		self::assertStringContainsString('findByUserId($actor, false)', $joined);
 	}

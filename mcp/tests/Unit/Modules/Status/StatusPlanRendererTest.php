@@ -30,6 +30,16 @@ final class StatusPlanRendererTest extends TestCase {
 				'removes_backup' => true,
 				'message' => 'This changes only your own status type. The stored message stays. A temporary backup of your status is removed, as in the status menu.',
 			],
+			'status_set_message' => [
+				'requiresConfirmation' => true,
+				'action' => 'status_set_message',
+				'mode' => 'custom',
+				'before' => 'At the desk',
+				'after' => 'In a meeting',
+				'clear_at' => 1_700_000_200,
+				'removes_backup' => true,
+				'message' => 'This changes only your own status message. A temporary backup of your status is removed, as in the status menu. No new emoji or icon is stored; a stored custom icon is cleared.',
+			],
 		]);
 	}
 

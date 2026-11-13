@@ -210,6 +210,7 @@ final class ToolTitles {
 			// Status
 			'status_read_own' => Translator::t('Read own status'),
 			'status_set_type' => Translator::t('Set own status type'),
+			'status_set_message' => Translator::t('Set own status message'),
 			'availability_set_absence' => Translator::t('Set own absence'),
 			// Routines
 			'routines_create_meeting' => Translator::t('Create meeting'),

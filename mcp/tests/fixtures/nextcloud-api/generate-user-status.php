@@ -28,6 +28,10 @@ $placed = [
 	'UserStatusMapper.php' => 'apps/user_status/lib/Db/UserStatusMapper.php',
 	'StatusService.php' => 'apps/user_status/lib/Service/StatusService.php',
 	'InvalidStatusTypeException.php' => 'apps/user_status/lib/Exception/InvalidStatusTypeException.php',
+	'InvalidClearAtException.php' => 'apps/user_status/lib/Exception/InvalidClearAtException.php',
+	'InvalidMessageIdException.php' => 'apps/user_status/lib/Exception/InvalidMessageIdException.php',
+	'InvalidStatusIconException.php' => 'apps/user_status/lib/Exception/InvalidStatusIconException.php',
+	'StatusMessageTooLongException.php' => 'apps/user_status/lib/Exception/StatusMessageTooLongException.php',
 	'MultipleObjectsReturnedException.php' => 'lib/public/AppFramework/Db/MultipleObjectsReturnedException.php',
 	'IMapperException.php' => 'lib/public/AppFramework/Db/IMapperException.php',
 ];
@@ -36,6 +40,10 @@ $classes = [
 	'OCA\\UserStatus\\Db\\UserStatusMapper',
 	'OCA\\UserStatus\\Service\\StatusService',
 	'OCA\\UserStatus\\Exception\\InvalidStatusTypeException',
+	'OCA\\UserStatus\\Exception\\InvalidClearAtException',
+	'OCA\\UserStatus\\Exception\\InvalidMessageIdException',
+	'OCA\\UserStatus\\Exception\\InvalidStatusIconException',
+	'OCA\\UserStatus\\Exception\\StatusMessageTooLongException',
 	'OCP\\AppFramework\\Db\\MultipleObjectsReturnedException',
 ];
 $tree = sys_get_temp_dir() . '/mcp-user-status-api-' . bin2hex(random_bytes(6));

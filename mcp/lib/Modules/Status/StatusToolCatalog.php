@@ -9,12 +9,13 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Status;
 
 use OCA\Mcp\Modules\Status\Tools\ReadOwnStatus;
+use OCA\Mcp\Modules\Status\Tools\SetOwnStatusMessage;
 use OCA\Mcp\Modules\Status\Tools\SetOwnStatusType;
 
 /** Published status tools, in discovery order. */
 final class StatusToolCatalog {
 	/** Ordered tools; new tools append here. */
-	public const TOOLS = [ReadOwnStatus::class, SetOwnStatusType::class];
+	public const TOOLS = [ReadOwnStatus::class, SetOwnStatusType::class, SetOwnStatusMessage::class];
 
 	/** Static catalog only. */
 	private function __construct() {

@@ -129,7 +129,7 @@ final class ToolRegistryTest extends TestCase {
 				$definitions = array_map(static function (array $definition): array { unset($definition['requires']); return $definition; }, $definitions);
 			}
 			if ($instance instanceof \OCA\Mcp\Modules\Status\StatusModule) {
-				// status_set_type requires status.native; this fixture admits it the same way discovery does when the app is on.
+				// Status writes require status.native; this fixture admits them the same way discovery does when the app is on.
 				$definitions = array_map(static function (array $definition): array { unset($definition['requires']); return $definition; }, $definitions);
 			}
 			if ($instance instanceof \OCA\Mcp\Modules\Notifications\NotificationsModule) {

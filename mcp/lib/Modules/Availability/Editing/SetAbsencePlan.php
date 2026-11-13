@@ -65,7 +65,7 @@ final class SetAbsencePlan {
 			'after' => ['first_day' => $write['first_day'], 'last_day' => $write['last_day'], 'timezone' => $zone,
 				'starts_at' => $start->format(DATE_ATOM), 'ends_at' => $end->format(DATE_ATOM), 'status' => $write['status'], 'message' => $write['message'],
 				'replacement' => $replacementId === null ? null : ['user_id' => $replacementId, 'display_name' => $replacementName]],
-			'recoverable' => true, 'notices' => $notices, 'message' => AvailabilityMessages::planNotice()];
+			'recoverable' => false, 'notices' => $notices, 'message' => AvailabilityMessages::planNotice()];
 		$shown = ['write' => $write, 'zone' => $zone, 'stored' => $stored === null ? null : array_diff_key($stored, ['in_effect' => 0, 'now' => 0])];
 		return ['plan' => $plan + [PlanState::ARGUMENT => $this->states->of(self::TOOL, $uid, $shown)], 'write' => $write, 'mode' => $mode];
 	}

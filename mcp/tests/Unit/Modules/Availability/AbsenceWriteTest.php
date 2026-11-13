@@ -92,6 +92,27 @@ final class AbsenceWriteTest extends TestCase {
 		}
 	}
 
+	/** @return void a new first day already past leaves the earlier start job at its old time, and the plan says so */
+	public function testANewFirstDayInThePastKeepsTheEarlierStartJobAndWarns(): void {
+		$rig = new AbsenceNativeRig($this);
+		$aId = $rig->seed('alice', '2027-01-20', '2027-01-22');
+		$oldStart = strtotime('2027-01-20T00:00:00-03:00');
+		self::assertSame($oldStart, $rig->jobsOf($aId)[0]['time']);
+		self::assertGreaterThan($rig->now, $oldStart, 'the stored start is still ahead');
+		$values = ['first_day' => '2027-01-10'] + self::VALUES;
+		self::assertLessThan($rig->now, strtotime('2027-01-10T00:00:00-03:00'), 'the new start is already past');
+		$plan = $rig->set->preview($values, new ToolContext('alice'));
+		self::assertContains('A start or end job already scheduled for the previous days may still run at its earlier time; Nextcloud only reschedules times that are still ahead.', $plan['notices']);
+		self::assertFalse($plan['recoverable']);
+		$rig->set->execute($values + ['confirm' => true, 'plan_state' => $plan['plan_state']], new ToolContext('alice'));
+		$jobs = $rig->jobsOf($aId);
+		self::assertSame([['id' => $aId, 'event' => 'start'], ['id' => $aId, 'event' => 'end']], array_column($jobs, 'argument'));
+		self::assertSame($oldStart, $jobs[0]['time'], 'the native write does not reschedule a start that is already past');
+		self::assertSame(strtotime('2027-02-03T23:59:00-03:00'), $jobs[1]['time'], 'the end, still ahead, is rescheduled');
+		$future = $rig->set->preview(self::VALUES, new ToolContext('alice'));
+		self::assertNotContains('A start or end job already scheduled for the previous days may still run at its earlier time; Nextcloud only reschedules times that are still ahead.', $future['notices']);
+	}
+
 	/** @return void a stored absence that changed since the plan answers the new plan and writes nothing */
 	public function testAChangedAbsenceAnswersTheNewPlan(): void {
 		$rig = new AbsenceNativeRig($this);

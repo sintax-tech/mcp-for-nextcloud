@@ -55,7 +55,7 @@
                                     "display_name": "Carol"
                                 }
                             },
-                            "recoverable": true,
+                            "recoverable": false,
                             "notices": [
                                 "Nextcloud updates the out-of-office event of this absence in your personal calendar.",
                                 "Nextcloud background jobs start the absence on the first day and end it after the last day; apps such as your user status react then.",
@@ -267,7 +267,7 @@
                                     "display_name": "Carol"
                                 }
                             },
-                            "recoverable": true,
+                            "recoverable": false,
                             "notices": [
                                 "Nextcloud updates the out-of-office event of this absence in your personal calendar.",
                                 "Nextcloud background jobs start the absence on the first day and end it after the last day; apps such as your user status react then.",
@@ -395,7 +395,7 @@
                                     "display_name": "Carol"
                                 }
                             },
-                            "recoverable": true,
+                            "recoverable": false,
                             "notices": [
                                 "Nextcloud updates the out-of-office event of this absence in your personal calendar.",
                                 "Nextcloud background jobs start the absence on the first day and end it after the last day; apps such as your user status react then.",
@@ -537,7 +537,7 @@
                                     "display_name": "Carol"
                                 }
                             },
-                            "recoverable": true,
+                            "recoverable": false,
                             "notices": [
                                 "Nextcloud updates the out-of-office event of this absence in your personal calendar.",
                                 "Nextcloud background jobs start the absence on the first day and end it after the last day; apps such as your user status react then.",

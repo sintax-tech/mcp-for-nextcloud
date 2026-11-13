@@ -63,8 +63,10 @@ final class MetadataDavTest extends IntegrationTestCase {
 			$comments->save($comment);
 			$this->commented[] = (string)$id;
 		}
-		$marker = new DateTime('-1 day');
-		$comments->setReadMark('files', $own, $marker, $alice);
+		$comments->setReadMark('files', $own, new DateTime('-1 day'), $alice);
+		// The marker as stored (whole seconds), read back before the reader runs.
+		$marker = $comments->getReadMark('files', $own, $alice);
+		self::assertInstanceOf(\DateTimeInterface::class, $marker);
 		$tags = Server::get(ISystemTagManager::class);
 		$suffix = bin2hex(random_bytes(4));
 		$this->tags[] = $visible = $tags->createTag('mcp-it-visible-' . $suffix, true, true);
@@ -82,7 +84,9 @@ final class MetadataDavTest extends IntegrationTestCase {
 		self::assertSame(207, $read['files'][$own]['tags']['status']);
 		self::assertStringContainsString('mcp-it-visible-' . $suffix, $read['files'][$own]['tags']['body']);
 		self::assertStringNotContainsString('mcp-it-invisible-' . $suffix, $read['files'][$own]['tags']['body']);
-		self::assertEquals($marker, $comments->getReadMark('files', $own, $alice), 'reading did not move the read marker');
+		$after = $comments->getReadMark('files', $own, $alice);
+		self::assertInstanceOf(\DateTimeInterface::class, $after);
+		self::assertSame($marker->getTimestamp(), $after->getTimestamp(), 'reading did not move the read marker');
 		foreach ([$foreign, (string)PHP_INT_MAX] as $id) {
 			foreach (['comments', 'tags'] as $kind) {
 				self::assertSame(['refused' => CommonMessages::notFound()], $read['files'][$id][$kind], $kind . ' of ' . $id);

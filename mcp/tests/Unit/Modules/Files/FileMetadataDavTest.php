@@ -148,6 +148,33 @@ final class FileMetadataDavTest extends TestCase {
 		$dispatch->send($server, 'alice', new Request('REPORT', '/remote.php/dav/comments/files/' . self::FILE));
 	}
 
+	/** @return iterable<string,array{string,?string}> both pins, with the session switched to another user or lost */
+	public static function switchedSessions(): iterable {
+		foreach (self::pins() as $name => [$major]) {
+			yield $name . ', switched' => [$major, 'bob'];
+			yield $name . ', lost' => [$major, null];
+		}
+	}
+
+	#[DataProvider('switchedSessions')]
+	public function testSessionChangedDuringTheDispatchIsRefused(string $major, ?string $next): void {
+		$this->boot($major);
+		$this->native->afterMethod = function () use ($next): void { $this->sessionUid = $next; };
+		foreach (['comments', 'tags'] as $read) {
+			$this->sessionUid = 'alice';
+			try {
+				$read === 'comments' ? $this->dav->comments('alice', self::FILE, 20, 0) : $this->dav->tags('alice', self::FILE);
+				self::fail('A read whose session changed during the dispatch returned');
+			} catch (ToolFailure $error) {
+				self::fail('Refused as a missing file instead of a session mismatch: ' . $error->getMessage());
+			} catch (RuntimeException $error) {
+				self::assertSame('DAV session mismatch', $error->getMessage());
+			}
+		}
+		self::assertSame(2, count($this->native->built), 'both reads reached DAV and finished the native method');
+		self::assertSame(0, $this->native->backendCalls);
+	}
+
 	#[DataProvider('pins')]
 	public function testWithoutThePinTheNativeBackendsWouldRun(string $major): void {
 		$this->boot($major);

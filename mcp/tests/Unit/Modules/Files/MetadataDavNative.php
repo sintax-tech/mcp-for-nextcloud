@@ -55,6 +55,8 @@ final class MetadataDavNative implements MetadataServer {
 	public int $backendCalls = 0;
 	/** @var Server|null last server built */
 	public ?Server $last = null;
+	/** @var (\Closure(): void)|null run once the native method has been handled, before the dispatch returns */
+	public ?\Closure $afterMethod = null;
 
 	/**
 	 * @param ICommentsManager $comments native comments manager double
@@ -101,6 +103,11 @@ final class MetadataDavNative implements MetadataServer {
 		$server->addPlugin($auth);
 		$server->addPlugin(new \OCA\DAV\SystemTag\SystemTagPlugin($this->tags, $this->groups, $this->session, $this->roots, $this->mapper));
 		$server->addPlugin(new \OCA\DAV\Comments\CommentsPlugin($this->comments, $this->session));
+		$server->on('afterMethod:*', function (): void {
+			if ($this->afterMethod !== null) {
+				($this->afterMethod)();
+			}
+		});
 		$this->built[] = $path;
 		return $this->last = $server;
 	}

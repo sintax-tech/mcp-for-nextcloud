@@ -51,6 +51,7 @@ final class ModuleBuilder {
 		}
 		if ($class === \OCA\Mcp\Modules\Activity\Integration\ActivityCapabilities::class) return new \OCA\Mcp\Tests\Unit\Modules\Activity\ActivityDiscoveryProbe();
 		if ($class === \OCA\Mcp\Modules\Notifications\Integration\NotificationsCapabilities::class) return new \OCA\Mcp\Tests\Unit\Modules\Notifications\NotificationsDiscoveryProbe();
+		if ($class === \OCA\Mcp\Modules\Availability\Integration\AbsenceCapabilities::class) return new \OCA\Mcp\Tests\Unit\Modules\Availability\AvailabilityDiscoveryProbe();
 		if ($class === DeckCapabilities::class) {
 			$apps = $this->mock(IAppManager::class);
 			$apps->method('getAppVersion')->willReturn('1.19.0');

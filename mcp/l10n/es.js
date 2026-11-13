@@ -2076,6 +2076,9 @@ OC.L10N.register(
     "Read unread Talk messages" : "Leer mensajes no leídos de Talk",
     "This conversation is hosted on another server: its unread messages cannot be read here." : "Esta conversación está alojada en otro servidor: sus mensajes no leídos no se pueden leer aquí.",
     "The read marker of this conversation could not be read." : "No se pudo leer el marcador de lectura de esta conversación.",
-    "The message this read continued from is no longer in the conversation. Call again without cursor to start from the read marker." : "El mensaje desde el que continuaba esta lectura ya no está en la conversación. Vuelve a llamar sin cursor para empezar desde el marcador de lectura."
+    "The message this read continued from is no longer in the conversation. Call again without cursor to start from the read marker." : "El mensaje desde el que continuaba esta lectura ya no está en la conversación. Vuelve a llamar sin cursor para empezar desde el marcador de lectura.",
+    "Read own absence" : "Leer mi ausencia",
+    "Absence settings are turned off on this Nextcloud server." : "Los ajustes de ausencia están desactivados en este servidor Nextcloud.",
+    "Your absence settings are unavailable." : "Sus ajustes de ausencia no están disponibles."
     },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

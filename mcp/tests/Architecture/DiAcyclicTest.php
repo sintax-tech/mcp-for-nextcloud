@@ -36,7 +36,7 @@ final class DiAcyclicTest extends TestCase {
 		// A catalog resolves its tools lazily: building them here proves every work class is autowired or registered.
 		$resolver->resolveAll([...Application::MODULES, ...$tools]);
 		self::assertNotEmpty($tools);
-		self::assertCount(16, Application::MODULES);
+		self::assertCount(17, Application::MODULES);
 		$captured = array_keys($resolver->factories); $invoked = array_keys($resolver->invoked); sort($captured); sort($invoked);
 		self::assertSame($captured, $invoked);
 		self::assertNotEmpty($resolver->edges);

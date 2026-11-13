@@ -8215,6 +8215,23 @@
                             "idempotentHint": true,
                             "openWorldHint": false
                         }
+                    },
+                    {
+                        "name": "availability_read_absence",
+                        "title": "Read own absence",
+                        "description": "Reads the authenticated user's own out-of-office absence as stored by Nextcloud; there is no user argument and no other account can be read. Returns configured=false when none is stored. Otherwise returns state (in_effect, upcoming or ended at read time), inclusive first_day/last_day (YYYY-MM-DD), timezone, starts_at/ends_at (ISO 8601, last day until 23:59), the short status, the message and the replacement user, if any. An ended absence is reported as stored; nothing is cleared. Refused when the administrator turned absence settings off. The read never creates, changes or clears an absence, schedules or removes background jobs, sends events or refreshes the absence cache.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "additionalProperties": false
+                        },
+                        "annotations": {
+                            "title": "Read own absence",
+                            "readOnlyHint": true,
+                            "destructiveHint": false,
+                            "idempotentHint": true,
+                            "openWorldHint": false
+                        }
                     }
                 ]
             }

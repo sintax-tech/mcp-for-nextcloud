@@ -97,7 +97,9 @@
             "OCA\\Mcp\\Modules\\Forms\\FormsModule",
             "OCA\\Mcp\\Modules\\Polls\\PollsModule",
             "OCA\\Mcp\\Modules\\Collectives\\CollectivesModule",
-            "OCA\\Mcp\\Modules\\Activity\\ActivityModule"
+            "OCA\\Mcp\\Modules\\Activity\\ActivityModule",
+            "OCA\\Mcp\\Modules\\Notifications\\NotificationsModule",
+            "OCA\\Mcp\\Modules\\Availability\\AvailabilityModule"
         ]
     }
 }

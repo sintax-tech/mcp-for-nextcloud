@@ -15,10 +15,10 @@ use OCA\Mcp\Modules\Status\Presentation\StatusTypes;
 use OCA\Mcp\Modules\Status\Reading\StatusSnapshot;
 use OCP\AppFramework\Utility\ITimeFactory;
 
-/** Plans a type change without writing, and applies it only on the confirmed call. */
+/** Applies a confirmed type change and reads the stored row back. */
 final class SetOwnStatusTypeHandler {
 	/**
-	 * @param StatusGateway $native select used for the plan and the read-back
+	 * @param StatusGateway $native select used for the read-back
 	 * @param ITimeFactory $time clock for the projected expired flag
 	 * @param StatusSnapshot $snapshot read-back shape
 	 * @param StatusEditor $editor confirmed native write
@@ -29,26 +29,6 @@ final class SetOwnStatusTypeHandler {
 		private StatusSnapshot $snapshot,
 		private StatusEditor $editor,
 	) {
-	}
-
-	/**
-	 * @param string $actor authenticated owner
-	 * @param string $status requested native type
-	 * @return array<string, mixed> plan; nothing is written
-	 * @throws \InvalidArgumentException when the type is not native
-	 */
-	public function plan(string $actor, string $status): array {
-		$this->known($status);
-		$row = $this->native->find($actor);
-		return [
-			'requiresConfirmation' => true,
-			'action' => 'status_set_type',
-			'before' => $row?->status,
-			'after' => $status,
-			'message_kept' => true,
-			'removes_backup' => true,
-			'message' => Translator::t('This changes only your own status type. The stored message stays. A temporary backup of your status is removed, as in the status menu.'),
-		];
 	}
 
 	/**

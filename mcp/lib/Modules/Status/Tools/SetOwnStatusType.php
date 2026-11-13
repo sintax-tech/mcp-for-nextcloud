@@ -13,12 +13,16 @@ use OCA\Mcp\Mcp\Tools\ToolContext;
 use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\WriteTool;
 use OCA\Mcp\Modules\Status\Editing\SetOwnStatusTypeHandler;
+use OCA\Mcp\Modules\Status\Editing\SetOwnStatusTypePreview;
 use OCA\Mcp\Modules\Status\Presentation\StatusTypeSchema;
 
 /** Publishes status_set_type. Arguments cannot name another user. */
 final class SetOwnStatusType implements WriteTool {
-	/** @param SetOwnStatusTypeHandler $status plan and confirmed write */
-	public function __construct(private SetOwnStatusTypeHandler $status) {
+	/**
+	 * @param SetOwnStatusTypeHandler $effect confirmed write
+	 * @param SetOwnStatusTypePreview $plans effect-free plan
+	 */
+	public function __construct(private SetOwnStatusTypeHandler $effect, private SetOwnStatusTypePreview $plans) {
 	}
 
 	/** @return ToolDefinition confirmed edit of the actor's own type */
@@ -32,7 +36,7 @@ final class SetOwnStatusType implements WriteTool {
 	 * @return array<string, mixed> MCP result of the read-back
 	 */
 	public function execute(array $arguments, ToolContext $context): array {
-		return ToolResult::json($this->status->apply($context->userId, (string)$arguments['status']));
+		return ToolResult::json($this->effect->apply($context->userId, (string)$arguments['status']));
 	}
 
 	/**
@@ -41,6 +45,6 @@ final class SetOwnStatusType implements WriteTool {
 	 * @return array<string, mixed> plan, with nothing written
 	 */
 	public function preview(array $arguments, ToolContext $context): array {
-		return $this->status->plan($context->userId, (string)$arguments['status']);
+		return $this->plans->plan($context->userId, (string)$arguments['status']);
 	}
 }

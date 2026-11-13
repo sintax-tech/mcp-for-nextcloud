@@ -27,6 +27,7 @@ namespace OCA\Mcp\Tests\Unit\Modules\Status;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Mcp\Tools\ToolContext;
 use OCA\Mcp\Modules\Status\Editing\SetOwnStatusTypeHandler;
+use OCA\Mcp\Modules\Status\Editing\SetOwnStatusTypePreview;
 use OCA\Mcp\Modules\Status\Integration\StatusEditor;
 use OCA\Mcp\Modules\Status\Integration\StatusGateway;
 use OCA\Mcp\Modules\Status\Integration\StatusSurface;
@@ -173,12 +174,16 @@ final class StatusSetTypeTest extends TestCase {
 		$time = $this->createMock(ITimeFactory::class);
 		$time->method('getTime')->willReturn(1_700_000_100);
 		$container = new SetTypeContainer($scene);
-		return new SetOwnStatusType(new SetOwnStatusTypeHandler(
-			new StatusGateway($container, new StatusSurface(SetTypeMapper::class)),
-			$time,
-			new StatusSnapshot(),
-			new StatusEditor($container, new StatusWriteSurface(SetTypeService::class)),
-		));
+		$gateway = new StatusGateway($container, new StatusSurface(SetTypeMapper::class));
+		return new SetOwnStatusType(
+			new SetOwnStatusTypeHandler(
+				$gateway,
+				$time,
+				new StatusSnapshot(),
+				new StatusEditor($container, new StatusWriteSurface(SetTypeService::class)),
+			),
+			new SetOwnStatusTypePreview($gateway),
+		);
 	}
 }
 

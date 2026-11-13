@@ -18,7 +18,7 @@ use OCP\AppFramework\Utility\ITimeFactory;
 use OCA\Mcp\Platform\Time\UserTimezone;
 use OCP\IConfig;
 
-/** Registers the unchanged lazy Deck gateway, Talk card port and native dependency probe. */
+/** Registers the unchanged lazy Deck gateway, Talk card port, the Deck reader of a meeting preparation, the card step of a mail card and native dependency probe. */
 final class DeckRegistration implements ModuleRegistration {
 	/**
 	 * {@inheritDoc}
@@ -41,6 +41,7 @@ final class DeckRegistration implements ModuleRegistration {
 			$c->get(\OCA\Mcp\Mcp\Tools\Discovery\ToolAccess::class),
 			$c->get(DeckExecutionContext::class),
 		));
+		$context->registerService(\OCA\Mcp\Platform\MailCards\DeckCardCreate::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\MailCards\DeckCardCreate => $c->get(DeckCardCreateSteps::class));
 	}
 
 	/**

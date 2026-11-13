@@ -23,6 +23,9 @@ final class DiAcyclicTest extends TestCase {
 		\OCA\Mcp\Platform\Meetings\MeetingCalendar::class,
 		\OCA\Mcp\Platform\Meetings\MeetingTalk::class,
 		\OCA\Mcp\Platform\Meetings\MeetingEventRead::class,
+		\OCA\Mcp\Platform\MailCards\MailCardSource::class,
+		\OCA\Mcp\Platform\MailCards\MailAttachmentSave::class,
+		\OCA\Mcp\Platform\MailCards\DeckCardCreate::class,
 	];
 
 	private function resolver(?array $factories = null): ServiceResolver {

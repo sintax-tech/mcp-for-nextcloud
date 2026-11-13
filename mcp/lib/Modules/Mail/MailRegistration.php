@@ -14,7 +14,10 @@ use OCA\Mcp\Platform\Meetings\MeetingMailRead;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use Psr\Container\ContainerInterface;
 
-/** Registers the optional attachment capability; all Mail work autowires without factories. */
+/**
+ * Registers the optional attachment capability and binds the Mail reader of a meeting preparation and the Mail steps
+ * of a mail card (its source and the attachment save); all Mail work autowires without factories.
+ */
 final class MailRegistration implements ModuleRegistration {
 	/** {@inheritDoc} */
 	public function register(IRegistrationContext $context): void {
@@ -24,6 +27,8 @@ final class MailRegistration implements ModuleRegistration {
 			$c->get(ToolAccess::class),
 			$c->get(MailMessageReading::class),
 		));
+		$context->registerService(\OCA\Mcp\Platform\MailCards\MailCardSource::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\MailCards\MailCardSource => $c->get(MailCardSourceSteps::class));
+		$context->registerService(\OCA\Mcp\Platform\MailCards\MailAttachmentSave::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\MailCards\MailAttachmentSave => $c->get(MailAttachmentSaveSteps::class));
 	}
 
 	/** {@inheritDoc} */

@@ -4,22 +4,20 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 declare(strict_types=1);
-
 namespace OCA\Mcp\Modules\Mail\Integration;
 
 use OCA\Mcp\Modules\Mail\Presentation\MailAttachmentMessages;
+use OCA\Mcp\Modules\Mail\Presentation\MailSaveMessages;
 use OCA\Mcp\Modules\Mail\Extraction\MailAttachmentPart;
 use OCA\Mcp\Modules\Mail\Writing\MailSavePreflight;
 use OCA\Mcp\Modules\Mail\Reading\MailBodyPreflight;
 use OCA\Mcp\Modules\Mail\Locating\MailCacheGeneration;
 use OCA\Mcp\Modules\Mail\Presentation\MailMessages;
 use OCA\Mcp\Modules\Mail\MailUnavailableException;
-
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /** Reads metadata or one binary attachment on the native Mail connection, preserving the existing UIDVALIDITY sequence. */
 final class MailSaveReader {
-
 	/**
 	 * Receives the Mail classes and the two preflights.
 	 *
@@ -28,11 +26,7 @@ final class MailSaveReader {
 	 * @param MailBodyPreflight $generation reads the UIDVALIDITY of a folder on the server
 	 * @return void
 	 */
-	public function __construct(
-		private MailServices $services,
-		private MailSavePreflight $preflight,
-		private MailBodyPreflight $generation = new MailBodyPreflight(),
-	) {
+	public function __construct(private MailServices $services, private MailSavePreflight $preflight, private MailBodyPreflight $generation = new MailBodyPreflight()) {
 	}
 
 	/**
@@ -70,14 +64,18 @@ final class MailSaveReader {
 			if ($this->uidValidity($client, $name) !== $cached) {
 				throw new ToolFailure(MailMessages::messageChanged());
 			}
-			if (!$fetchContent) { return $part; }
+			if (!$fetchContent) {
+				return $part;
+			}
 			$content = $mapper->getAttachment($client, $name, $uid, $attachmentId, $userId)->getContent();
-			if ($this->uidValidity($client, $name) !== $cached) { throw new ToolFailure(MailMessages::messageChanged()); }
+			if ($this->uidValidity($client, $name) !== $cached) {
+				throw new ToolFailure(MailMessages::messageChanged());
+			}
 			if (!is_string($content)) {
 				throw new ToolFailure(MailAttachmentMessages::unavailable());
 			}
 			if (strlen($content) > $limit) {
-				throw new ToolFailure(\OCA\Mcp\Modules\Mail\Presentation\MailSaveMessages::limit($limit));
+				throw new ToolFailure(MailSaveMessages::limit($limit));
 			}
 			return $part + ['content' => $content];
 		} catch (ToolFailure $e) {

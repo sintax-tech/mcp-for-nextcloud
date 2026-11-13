@@ -17,6 +17,7 @@ use OCA\Mcp\Modules\Mail\Tools\SetFlags;
 use OCA\Mcp\Modules\Mail\Tools\MoveMessage;
 use OCA\Mcp\Modules\Mail\Tools\CreateDraft;
 use OCA\Mcp\Modules\Mail\Tools\SendMessage;
+use OCA\Mcp\Modules\Mail\Tools\SaveAttachment;
 
 /** The twelve Mail tools in their published order, including the conditional attachment read. */
 final class MailToolCatalog {
@@ -33,7 +34,7 @@ final class MailToolCatalog {
 		MoveMessage::class,
 		CreateDraft::class,
 		SendMessage::class,
-		\OCA\Mcp\Modules\Mail\Tools\SaveAttachment::class,
+		SaveAttachment::class,
 	];
 
 	/** Static ordered catalog only. */

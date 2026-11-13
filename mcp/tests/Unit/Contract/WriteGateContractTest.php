@@ -27,6 +27,11 @@ use Psr\Log\LoggerInterface;
 final class WriteGateContractTest extends TestCase {
 	/** Builds a concrete app class with real app collaborators and mocks for everything else. */
 	private function build(string $class): object {
+		if ($class === \OCA\Mcp\Modules\Mail\Integration\MailAttachmentProbe::class) {
+			$apps = $this->createMock(IAppManager::class);
+			$apps->method('getAppVersion')->willReturn('5.10.11');
+			return new \OCA\Mcp\Modules\Mail\Integration\MailAttachmentProbe($apps);
+		}
 		if ($class === \OCA\Mcp\Modules\Tables\Integration\TablesWriteCapabilities::class) return \OCA\Mcp\Tests\Unit\Modules\Tables\SchemaCapabilityFixture::of($this->createMock(IAppManager::class));
 		if ($class === \OCA\Mcp\Modules\Deck\Integration\DeckCapabilities::class) {
 			$apps = $this->createMock(\OCP\App\IAppManager::class);
@@ -94,6 +99,7 @@ final class WriteGateContractTest extends TestCase {
 
 		$logger = $this->createMock(LoggerInterface::class);
 		return new ToolRegistry($modules, $policy, $apps, $users, $logger, capabilities: new \OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry([
+			$this->build(\OCA\Mcp\Modules\Mail\Integration\MailAttachmentProbe::class),
 			$this->build(\OCA\Mcp\Modules\Deck\Integration\DeckCapabilities::class),
 			$this->build(\OCA\Mcp\Modules\Forms\Integration\StructureCapabilities::class),
 			\OCA\Mcp\Tests\Unit\Modules\Polls\PollsDiscoveryProbe::build($this),

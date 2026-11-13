@@ -13,6 +13,7 @@
 		{"path":"lib/Modules/Notifications/Reading/NotificationsInput.php","fqcn":"OCA\\Mcp\\Modules\\Notifications\\Reading\\NotificationsInput","target":"stays","owner":"Modules\\Notifications","ticket":null},
 		{"path":"lib/Modules/Notifications/Reading/ListNotificationsHandler.php","fqcn":"OCA\\Mcp\\Modules\\Notifications\\Reading\\ListNotificationsHandler","target":"stays","owner":"Modules\\Notifications","ticket":null},
 		{"path":"lib/Modules/Notifications/Tools/ListNotifications.php","fqcn":"OCA\\Mcp\\Modules\\Notifications\\Tools\\ListNotifications","target":"stays","owner":"Modules\\Notifications","ticket":null},
+		{"path":"lib/Modules/Files/Creation/FileCreationFailure.php","fqcn":"OCA\\Mcp\\Modules\\Files\\Creation\\FileCreationFailure","target":"stays","owner":"Modules\\Files","ticket":null},
 		{"path":"lib/Modules/Files/Creation/ProtectedFileDestination.php","fqcn":"OCA\\Mcp\\Modules\\Files\\Creation\\ProtectedFileDestination","target":"stays","owner":"Modules\\Files","ticket":null},
 		{"path":"lib/Modules/Mail/Integration/MailSaveReader.php","fqcn":"OCA\\Mcp\\Modules\\Mail\\Integration\\MailSaveReader","target":"stays","owner":"Modules\\Mail","ticket":null},
 		{"path":"lib/Modules/Mail/Presentation/MailSaveMessages.php","fqcn":"OCA\\Mcp\\Modules\\Mail\\Presentation\\MailSaveMessages","target":"stays","owner":"Modules\\Mail","ticket":null},

@@ -39,6 +39,7 @@
             "OCA\\Mcp\\Platform\\FileAccess\\ActorRoot",
             "OCA\\Mcp\\Access\\ResourceScope\\ScopeReader",
             "OCA\\Mcp\\Access\\ResourceScope\\FileReferenceScope",
+            "OCA\\Mcp\\Platform\\FileAccess\\NewFileDestination",
             "OCA\\Mcp\\Mcp\\Resources\\FileTextResource",
             "OCA\\Mcp\\Platform\\Dav\\MetadataServer",
             "OCA\\Mcp\\Mcp\\Resources\\NoteResource",

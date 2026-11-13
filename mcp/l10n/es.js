@@ -4,6 +4,7 @@ OC.L10N.register(
     "List own notifications" : "Listar notificaciones propias",
     "Provide a notification limit between 1 and 200." : "Indique un límite de notificaciones entre 1 y 200.",
     "The notification inbox is unavailable." : "La bandeja de notificaciones no está disponible.",
+    "mail_save_attachment saves one unchanged attachment to a new file in Files with mail.save, a confirmed plan and confirm_shared for a foreign destination. It uses BODY.PEEK, refuses occupied names, applies the final-name file type policy and reports the effective byte limit and any uncertain write." : "mail_save_attachment guarda un adjunto intacto en un archivo nuevo en Archivos con mail.save, un plan confirmado y confirm_shared para un destino ajeno. Usa BODY.PEEK, rechaza nombres ocupados, aplica la política de tipos por el nombre final e informa del límite efectivo en bytes y de cualquier escritura incierta.",
     "Messages, attachments, mailbox changes and saving attachments to Files" : "Mensajes, adjuntos, cambios en el buzón y guardado de adjuntos en Archivos",
 
     "Save a mail attachment to Files" : "Guardar un adjunto de correo en Archivos",

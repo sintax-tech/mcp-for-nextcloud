@@ -2,6 +2,7 @@
     "List own notifications" : "Listar notificações próprias",
     "Provide a notification limit between 1 and 200." : "Informe um limite de notificações entre 1 e 200.",
     "The notification inbox is unavailable." : "A caixa de notificações está indisponível.",
+    "mail_save_attachment saves one unchanged attachment to a new file in Files with mail.save, a confirmed plan and confirm_shared for a foreign destination. It uses BODY.PEEK, refuses occupied names, applies the final-name file type policy and reports the effective byte limit and any uncertain write." : "mail_save_attachment salva um anexo intacto em um arquivo novo nos Arquivos com mail.save, plano confirmado e confirm_shared para destino de outro dono. Usa BODY.PEEK, recusa nomes ocupados, aplica a política de tipos pelo nome final e informa o limite efetivo em bytes e qualquer gravação incerta.",
     "Messages, attachments, mailbox changes and saving attachments to Files" : "Mensagens, anexos, alterações na caixa e gravação de anexos nos Arquivos",
 
     "Save a mail attachment to Files" : "Salvar um anexo de e-mail nos Arquivos",

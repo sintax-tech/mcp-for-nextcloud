@@ -151,7 +151,8 @@
                             "flags": false,
                             "move": false,
                             "draft": false,
-                            "send": false
+                            "send": false,
+                            "save": false
                         },
                         "tables": {
                             "read": true,
@@ -424,6 +425,10 @@
                                     "groupIds": []
                                 },
                                 "send": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "save": {
                                     "source": "default",
                                     "groupIds": []
                                 }
@@ -787,7 +792,8 @@
                             "flags": false,
                             "move": false,
                             "draft": false,
-                            "send": false
+                            "send": false,
+                            "save": false
                         },
                         "tables": {
                             "read": true,
@@ -1060,6 +1066,10 @@
                                     "groupIds": []
                                 },
                                 "send": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "save": {
                                     "source": "default",
                                     "groupIds": []
                                 }
@@ -2126,7 +2136,8 @@
                                         "flags": false,
                                         "move": false,
                                         "draft": false,
-                                        "send": false
+                                        "send": false,
+                                        "save": false
                                     },
                                     "tables": {
                                         "read": true,
@@ -2399,6 +2410,10 @@
                                                 "groupIds": []
                                             },
                                             "send": {
+                                                "source": "default",
+                                                "groupIds": []
+                                            },
+                                            "save": {
                                                 "source": "default",
                                                 "groupIds": []
                                             }
@@ -3064,7 +3079,8 @@
                             "flags": false,
                             "move": false,
                             "draft": false,
-                            "send": false
+                            "send": false,
+                            "save": false
                         },
                         "tables": {
                             "read": true,
@@ -3337,6 +3353,10 @@
                                     "groupIds": []
                                 },
                                 "send": {
+                                    "source": "default",
+                                    "groupIds": []
+                                },
+                                "save": {
                                     "source": "default",
                                     "groupIds": []
                                 }

@@ -13,14 +13,25 @@ use OCA\Mcp\Platform\FileAccess\CommonMessages;
 /** Executes one confirmed save and reports uncertainty without deleting partial results. */
 final class SaveAttachmentHandler {
 	/** @param MailSaveContext $context Fresh authorization, safe read and protected write. */
-	public function __construct(private MailSaveContext $context) {}
-	/** @param array<string,mixed> $arguments Validated arguments. @param string $userId Actor UID. @return array<string,mixed> MCP receipt. */
+	public function __construct(private MailSaveContext $context) {
+	}
+
+	/**
+	 * @param array<string,mixed> $arguments Validated arguments.
+	 * @param string $userId Actor UID.
+	 * @return array<string,mixed> MCP receipt.
+	 */
 	public function handle(array $arguments, string $userId): array {
-		if (($arguments['confirm'] ?? false) !== true) { throw new ToolFailure(CommonMessages::forbidden()); }
+		if (($arguments['confirm'] ?? false) !== true) {
+			throw new ToolFailure(CommonMessages::forbidden());
+		}
 		$prepared = $this->context->prepare($arguments, $userId, true);
+		if (isset($prepared['confirmation'])) {
+			return ToolResult::json($prepared['confirmation']);
+		}
 		$receipt = $this->context->save($prepared, $arguments, $userId);
 		if (!isset($receipt['requiresConfirmation'])) {
-			$receipt['message'] = ($receipt['verified'] ?? false) ? MailSaveMessages::saved() : MailSaveMessages::uncertain();
+			$receipt['message'] = $receipt['verified'] ?? false ? MailSaveMessages::saved() : MailSaveMessages::uncertain();
 		}
 		return ToolResult::json($receipt);
 	}

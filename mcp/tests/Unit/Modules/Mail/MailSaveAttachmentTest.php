@@ -111,7 +111,7 @@ final class MailSaveAttachmentTest extends FilesToolsTestCase {
 		self::assertSame([], $this->tree->ops); self::assertSame([], $this->mail->imapCommands());
 	}
 	public function testPartialWriteIsUncertainAndNeverDeleted(): void {
-		$this->tree->failWrite = true; $out = $this->saveFile();
+		$this->tree->writeFailure = new \RuntimeException('Unexpected native sink failure'); $out = $this->saveFile();
 		self::assertFalse($out['verified']); self::assertSame('uncertain', $out['outcome']);
 		self::assertArrayHasKey('/alice/files/Documentos/saved.pdf', $this->tree->nodes);
 		self::assertStringNotContainsString('delete', implode(' ', $this->tree->ops));
@@ -143,6 +143,7 @@ final class MailSaveAttachmentTest extends FilesToolsTestCase {
 		$plan = (new SaveAttachmentPreview($this->save))->plan(self::ARGS, 'alice');
 		self::assertTrue($plan['requiresSharedConfirmation']);
 		$out = $this->saveFile(); self::assertTrue($out['requiresConfirmation']); self::assertSame([], $this->tree->ops);
+		self::assertNotContains('imap:attachment:2', $this->mail->imapCommands());
 		$out = json_decode((new SaveAttachmentHandler($this->save))->handle(self::ARGS + ['confirm' => true, 'confirm_shared' => true], 'alice')['content'][0]['text'], true);
 		self::assertTrue($out['verified']);
 	}
@@ -171,6 +172,45 @@ final class MailSaveAttachmentTest extends FilesToolsTestCase {
 		$this->mail->withMessage(1, ['id' => 7, 'structure' => $structure]);
 		try { $this->saveFile(); self::fail(); } catch (ToolFailure) {}
 		self::assertSame([], $this->tree->ops);
+	}
+	/** A clean race refuses with FileExists and preserves the other creator's bytes. */
+	public function testNameTakenDuringCreationKeepsItsActionableRefusal(): void {
+		$this->tree->beforeCreate = function (string $path): void {
+			$this->tree->addFile($path, 'someone else');
+		};
+		try {
+			$this->saveFile();
+			self::fail('The collision must refuse');
+		} catch (\OCA\Mcp\Modules\Files\Creation\FileExists $e) {
+			self::assertSame(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::fileExists(), $e->getMessage());
+		}
+		self::assertSame('someone else', $this->tree->nodes['/alice/files/Documentos/saved.pdf']['content']);
+		self::assertNotContains('write /alice/files/Documentos/saved.pdf', $this->tree->ops);
+	}
+	/** Lock and quota refusals retain the same actionable message as files_create. */
+	public function testNativeLockAndQuotaRefusalsPropagate(): void {
+		foreach ([
+			[new \OCP\Lock\LockedException('/alice/files/Documentos/saved.pdf'), \OCA\Mcp\Platform\FileAccess\CommonMessages::locked()],
+			[new \OCP\Files\NotEnoughSpaceException('/alice/files/Documentos/saved.pdf'), \OCA\Mcp\Platform\FileAccess\CommonMessages::insufficientQuota()],
+		] as [$failure, $expected]) {
+			$this->tree->writeFailure = $failure;
+			try {
+				$this->saveFile();
+				self::fail('The native refusal must propagate');
+			} catch (ToolFailure $e) {
+				self::assertSame($expected, $e->getMessage());
+			}
+			// The empty node from the first failed attempt is a fixture, not an app rollback.
+			unset($this->tree->nodes['/alice/files/Documentos/saved.pdf']);
+		}
+	}
+	/** The prepared limit already reserves the decoded allocation; the sink must not count it twice. */
+	public function testSinkUsesTheBudgetCapturedBeforeTheFetch(): void {
+		$prepared = $this->save->prepare(self::ARGS, 'alice', true);
+		$this->config->app['mcp']['checkout_max_bytes'] = '1';
+		$out = $this->save->save($prepared, self::ARGS, 'alice');
+		self::assertTrue($out['verified']);
+		self::assertSame($prepared['limit'], $out['effectiveMaxBytes']);
 	}
 	public function testBudgetCoversEveryMeasuredPeak(): void {
 		$measurements = [[262144,4194304],[2097152,9191424],[2097152,11157504],[8388608,21987328],[8388608,29851648]];

@@ -52,9 +52,13 @@ final class FileCreationWriter {
 			throw new FileExists(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::fileExists());
 		}
 		try {
-			$file = NodeAccess::requireFile(NodeAccess::mutate(fn () => $folder->newFile($name), $this->visibilityGuard));
+			$file = NodeAccess::requireFile(NodeAccess::run(fn () => NodeAccess::mutate(fn () => $folder->newFile($name), $this->visibilityGuard)));
 		} catch (InvalidPathException) {
 			throw new ArgumentValidationException('Invalid argument: path', 'path', \OCA\Mcp\Modules\Files\Presentation\CreationMessages::newFileNameRule());
+		} catch (ToolFailure $e) {
+			throw $e;
+		} catch (Throwable $e) {
+			throw new FileCreationFailure(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createFailed(), 0, $e);
 		}
 		$this->visibilityGuard->assertVisible($file);
 		if ((int)$file->getSize() > 0) {
@@ -81,7 +85,7 @@ final class FileCreationWriter {
 		} catch (Throwable $e) {
 			// Only the class: the message of a storage exception may carry the path.
 			$this->logger->error('MCP new file write failed: {exception_class} (code {exception_code})', ['app' => 'mcp', 'exception_class' => $e::class, 'exception_code' => ExceptionDetails::code($e)]);
-			throw new ToolFailure(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createFailed());
+			throw new FileCreationFailure(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createFailed());
 		}
 		return $current;
 	}

@@ -70,8 +70,10 @@ final class ProtectedFileDestination implements NewFileDestination {
 		// Creation failures may leave an empty or partial node. Never delete it or retry the sink.
 		try {
 			$written = $this->creation->write($target['folder'], $target['name'], $content, $userId);
-		} catch (FileCreationFailure) {
-			return ['path' => $target['path'], 'outcome' => 'uncertain', 'verified' => false];
+		} catch (FileCreationFailure $e) {
+			// The file exists, empty or incomplete: the receipt names it, with the reason the write stopped.
+			return ['path' => $target['path']] + ($e->fileId === null ? [] : ['fileId' => $e->fileId])
+				+ ['outcome' => 'uncertain', 'verified' => false, 'message' => $e->getMessage()];
 		} catch (ToolFailure|ArgumentValidationException|PolicyUnavailable $e) {
 			throw $e;
 		} catch (LockedException|NotEnoughSpaceException $e) {

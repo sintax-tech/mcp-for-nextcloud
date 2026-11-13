@@ -30,7 +30,8 @@ final class SaveAttachmentHandler {
 			return ToolResult::json($prepared['confirmation']);
 		}
 		$receipt = $this->context->save($prepared, $arguments, $userId);
-		if (!isset($receipt['requiresConfirmation'])) {
+		// A receipt that already explains itself (the file a failed write left behind) keeps its own sentence.
+		if (!isset($receipt['requiresConfirmation']) && !isset($receipt['message'])) {
 			$verified = $receipt['verified'] ?? false;
 			$receipt['message'] = MailSaveContext::replacing($arguments)
 				? ($verified ? MailSaveMessages::replaced() : MailSaveMessages::replaceUncertain((string)($receipt['backup'] ?? '')))

@@ -73,32 +73,46 @@ final class CheckoutRefusals {
 	 *
 	 * @param Throwable $e what target() or write() raised
 	 * @return Response 409 for a taken name, 400 for a name or a path Nextcloud refuses, 403 for a denied folder,
-	 *         404 for a missing or hidden one, 423 for a lock, 507 for a full quota and 500 for a write that failed
+	 *         404 for a missing or hidden one, 423 for a lock, 507 for a full quota and 500 for a write that failed; after
+	 *         the file exists, the status of the reason with the message that names the file left
 	 */
 	public function createRefusal(Throwable $e): Response {
-		if ($e instanceof FileTypeDenied || $e instanceof FileWritePolicyUnavailable) {
-			return $this->refuse(Http::STATUS_FORBIDDEN, $e->getMessage());
-		}
-		if ($e instanceof FileExists) {
-			return $this->refuse(Http::STATUS_CONFLICT, $e->getMessage());
+		if ($e instanceof \OCA\Mcp\Modules\Files\Creation\FileCreationFailure) {
+			// The file exists: the status is the one of the reason the write stopped, the message names the file left.
+			$reason = $e->getPrevious();
+			return $this->refuse($reason instanceof ToolFailure ? $this->createStatus($reason) : Http::STATUS_INTERNAL_SERVER_ERROR, $e->getMessage());
 		}
 		if ($e instanceof ArgumentValidationException) {
 			return $this->refuse(Http::STATUS_BAD_REQUEST, $e->clientMessage());
-		}
-		if ($e instanceof LockWriteFailure) {
-			return $this->refuse(Http::STATUS_LOCKED, $e->getMessage());
 		}
 		if (!$e instanceof ToolFailure) {
 			$this->logger->error('MCP create upload failed: {exception_class} (code {exception_code})', ['app' => 'mcp', 'exception_class' => $e::class, 'exception_code' => ExceptionDetails::code($e)]);
 			return $this->refuse(Http::STATUS_INTERNAL_SERVER_ERROR, \OCA\Mcp\Modules\Files\Presentation\CreationMessages::createFailed());
 		}
+		return $this->refuse($this->createStatus($e), $e->getMessage());
+	}
+
+	/**
+	 * @param ToolFailure $e a refusal of target() or write()
+	 * @return int the HTTP status of that refusal, as listed by {@see self::createRefusal()}
+	 */
+	private function createStatus(ToolFailure $e): int {
+		if ($e instanceof FileTypeDenied || $e instanceof FileWritePolicyUnavailable) {
+			return Http::STATUS_FORBIDDEN;
+		}
+		if ($e instanceof FileExists) {
+			return Http::STATUS_CONFLICT;
+		}
+		if ($e instanceof LockWriteFailure) {
+			return Http::STATUS_LOCKED;
+		}
 		return match ($e->getMessage()) {
-			CommonMessages::forbidden() => $this->refuse(Http::STATUS_FORBIDDEN, $e->getMessage()),
-			\OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath() => $this->refuse(Http::STATUS_BAD_REQUEST, $e->getMessage()),
-			CommonMessages::locked() => $this->refuse(Http::STATUS_LOCKED, $e->getMessage()),
-			CommonMessages::insufficientQuota() => $this->refuse(Http::STATUS_INSUFFICIENT_STORAGE, $e->getMessage()),
-			\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createFailed() => $this->refuse(Http::STATUS_INTERNAL_SERVER_ERROR, $e->getMessage()),
-			default => $this->refuse(Http::STATUS_NOT_FOUND, $e->getMessage()),
+			CommonMessages::forbidden() => Http::STATUS_FORBIDDEN,
+			\OCA\Mcp\Modules\Files\Presentation\EditingMessages::backupPath() => Http::STATUS_BAD_REQUEST,
+			CommonMessages::locked() => Http::STATUS_LOCKED,
+			CommonMessages::insufficientQuota() => Http::STATUS_INSUFFICIENT_STORAGE,
+			\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createFailed() => Http::STATUS_INTERNAL_SERVER_ERROR,
+			default => Http::STATUS_NOT_FOUND,
 		};
 	}
 }

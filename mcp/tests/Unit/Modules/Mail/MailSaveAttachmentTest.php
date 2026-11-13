@@ -202,22 +202,42 @@ final class MailSaveAttachmentTest extends FilesToolsTestCase {
 		self::assertSame('someone else', $this->tree->nodes['/alice/files/Documentos/saved.pdf']['content']);
 		self::assertNotContains('write /alice/files/Documentos/saved.pdf', $this->tree->ops);
 	}
-	/** Lock and quota refusals retain the same actionable message as files_create. */
-	public function testNativeLockAndQuotaRefusalsPropagate(): void {
+	/**
+	 * A lock or a full quota after the file exists keeps the actionable message of files_create, names the empty file
+	 * left and answers an uncertain receipt with its id; the file is never deleted.
+	 *
+	 * @return void
+	 */
+	public function testNativeLockAndQuotaAfterTheFileExistsAreUncertainAndNameTheFile(): void {
 		foreach ([
 			[new \OCP\Lock\LockedException('/alice/files/Documentos/saved.pdf'), \OCA\Mcp\Platform\FileAccess\CommonMessages::locked()],
 			[new \OCP\Files\NotEnoughSpaceException('/alice/files/Documentos/saved.pdf'), \OCA\Mcp\Platform\FileAccess\CommonMessages::insufficientQuota()],
-		] as [$failure, $expected]) {
+		] as [$failure, $reason]) {
 			$this->tree->writeFailure = $failure;
-			try {
-				$this->saveFile();
-				self::fail('The native refusal must propagate');
-			} catch (ToolFailure $e) {
-				self::assertSame($expected, $e->getMessage());
-			}
+			$out = $this->saveFile();
+			self::assertSame(['uncertain', false], [$out['outcome'], $out['verified']]);
+			self::assertSame(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createLeftBehind($reason, '/Documentos/saved.pdf'), $out['message']);
+			self::assertSame($this->tree->nodes['/alice/files/Documentos/saved.pdf']['id'], $out['fileId']);
+			self::assertSame('', $this->tree->nodes['/alice/files/Documentos/saved.pdf']['content']);
+			self::assertStringNotContainsString('delete', implode(' ', $this->tree->ops));
 			// The empty node from the first failed attempt is a fixture, not an app rollback.
 			unset($this->tree->nodes['/alice/files/Documentos/saved.pdf']);
 		}
+	}
+	/**
+	 * A full quota before the file exists stays a clean refusal with the same message, and nothing is created.
+	 *
+	 * @return void
+	 */
+	public function testNativeQuotaBeforeTheFileExistsRefusesAndCreatesNothing(): void {
+		$this->tree->beforeCreate = static fn () => throw new \OCP\Files\NotEnoughSpaceException('/alice/files/Documentos/saved.pdf');
+		try {
+			$this->saveFile();
+			self::fail('The native refusal must propagate');
+		} catch (ToolFailure $e) {
+			self::assertSame(\OCA\Mcp\Platform\FileAccess\CommonMessages::insufficientQuota(), $e->getMessage());
+		}
+		self::assertArrayNotHasKey('/alice/files/Documentos/saved.pdf', $this->tree->nodes);
 	}
 	/** A native creation can fail after a hook changed storage: retain the Mail uncertainty receipt. */
 	public function testUnexpectedNativeCreationFailureRemainsUncertain(): void {

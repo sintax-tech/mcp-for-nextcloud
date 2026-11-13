@@ -108,6 +108,16 @@ final class CreationMessages {
 		return Translator::t('Failed to write file; an empty file with this name may have been left in place.');
 	}
 
+	/**
+	 * @param string|null $reason the refusal that stopped the content write (quota, lock), null for an unexplained failure
+	 * @param string $path the path of the new file as the actor sees it
+	 * @return string the reason, then the file the failed write left behind and what the next attempt has to do
+	 */
+	public static function createLeftBehind(?string $reason, string $path): string {
+		$left = Translator::t('The content of the new file could not be written completely: an empty or incomplete file was left at %s. Use another name or replace that file on the next attempt.', [$path]);
+		return $reason === null ? $left : $reason . ' ' . $left;
+	}
+
 	/** @return string the rule of a path that names no file Nextcloud accepts */
 	public static function newFileNameRule(): string {
 		return Translator::t('must end in a file name Nextcloud accepts: no reserved name, forbidden character or extension, at most 250 bytes');

@@ -208,9 +208,9 @@ final class MailAttachmentSaveStepsTest extends FilesToolsTestCase {
 	public static function classifiedLikeTheOriginalTool(): array {
 		return [
 			'occupied name, before any write' => [static function (self $test): void { $test->tree->addFile(self::TARGET, 'old content', 'application/pdf'); }, WorkflowStep::FAILED],
-			'quota at the sink, answered as an error' => [static function (self $test): void { $test->tree->writeFailure = new \OCP\Files\NotEnoughSpaceException('quota'); }, WorkflowStep::FAILED],
-			'lock at the sink, answered as an error' => [static function (self $test): void { $test->tree->writeFailure = new \OCP\Lock\LockedException('saved.pdf'); }, WorkflowStep::FAILED],
-			'storage failure at the sink, answered as uncertain' => [static function (self $test): void { $test->tree->writeFailure = new \RuntimeException('native sink failure'); }, WorkflowStep::UNCERTAIN],
+			'quota at the sink, after the file exists' => [static function (self $test): void { $test->tree->writeFailure = new \OCP\Files\NotEnoughSpaceException('quota'); }, WorkflowStep::UNCERTAIN],
+			'lock at the sink, after the file exists' => [static function (self $test): void { $test->tree->writeFailure = new \OCP\Lock\LockedException('saved.pdf'); }, WorkflowStep::UNCERTAIN],
+			'storage failure at the sink, after the file exists' => [static function (self $test): void { $test->tree->writeFailure = new \RuntimeException('native sink failure'); }, WorkflowStep::UNCERTAIN],
 		];
 	}
 
@@ -239,5 +239,10 @@ final class MailAttachmentSaveStepsTest extends FilesToolsTestCase {
 		self::assertSame($expected, $status, 'mail_save_attachment itself');
 		self::assertSame([$status, $message], [$step->status, $step->message]);
 		self::assertStringNotContainsString('delete', implode(' ', $this->tree->ops));
+		if ($expected === WorkflowStep::UNCERTAIN) {
+			// The file the failed write left is named, by path and id, and stays empty or incomplete in place.
+			self::assertSame(['path' => '/Documentos/saved.pdf', 'fileId' => $this->tree->nodes[self::TARGET]['id']], $step->ids);
+			self::assertStringContainsString('/Documentos/saved.pdf', (string)$step->message);
+		}
 	}
 }

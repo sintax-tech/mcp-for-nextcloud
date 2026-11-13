@@ -365,17 +365,35 @@ final class FilesCreateTest extends FilesToolsTestCase {
 		}
 	}
 
-	/** B2: a lock or a full quota keeps its own message; any other failure is the generic one, logged by class only. */
-	public function testAFailedWriteKeepsTheLockAndQuotaMessagesAndLogsTheClassOnly(): void {
+	/**
+	 * B2: a lock or a full quota after the file exists keeps its own message and names the empty file left, which is
+	 * never deleted; any other failure names it too and is logged by class only.
+	 *
+	 * @return void
+	 */
+	public function testAFailedWriteKeepsTheLockAndQuotaMessagesAndNamesTheFileLeft(): void {
 		foreach ([[new \OCP\Lock\LockedException('/alice/files/a.md'), CommonMessages::locked()],
 			[new \OCP\Files\NotEnoughSpaceException('/alice/files/b.md'), CommonMessages::insufficientQuota()]] as $i => [$failure, $message]) {
 			$this->tree->writeFailure = $failure;
-			$this->assertSame($message, $this->failure('files_create', ['path' => "/falha$i.md", 'content' => 'x']), $failure::class);
+			$this->assertSame(CreationMessages::createLeftBehind($message, "/falha$i.md"), $this->failure('files_create', ['path' => "/falha$i.md", 'content' => 'x']), $failure::class);
+			$this->assertSame('', $this->tree->nodes["/alice/files/falha$i.md"]['content']);
 		}
 		$this->tree->writeFailure = new \RuntimeException('disk /alice/files/segredo.md broke');
 		$this->creationLogger->expects($this->once())->method('error')->with('MCP new file write failed: {exception_class} (code {exception_code})',
 			['app' => 'mcp', 'exception_class' => \RuntimeException::class, 'exception_code' => 0]);
-		$this->assertSame(CreationMessages::createFailed(), $this->failure('files_create', ['path' => '/falha.md', 'content' => 'x']));
+		$this->assertSame(CreationMessages::createLeftBehind(null, '/falha.md'), $this->failure('files_create', ['path' => '/falha.md', 'content' => 'x']));
+		$this->assertStringNotContainsString('delete', implode(' ', $this->tree->ops));
+	}
+
+	/**
+	 * A refusal before the file exists stays a clean refusal: nothing is created and no file is named.
+	 *
+	 * @return void
+	 */
+	public function testAQuotaRefusalBeforeTheFileExistsCreatesNothing(): void {
+		$this->tree->beforeCreate = static fn () => throw new \OCP\Files\NotEnoughSpaceException('/alice/files/cheio.md');
+		$this->assertSame(CommonMessages::insufficientQuota(), $this->failure('files_create', ['path' => '/cheio.md', 'content' => 'x']));
+		$this->assertArrayNotHasKey('/alice/files/cheio.md', $this->tree->nodes);
 	}
 	/** A failed native creation retains the registry response and safe diagnostics. */
 	public function testUnexpectedNativeCreationFailureKeepsTheRegistryMessageAndLogs(): void {

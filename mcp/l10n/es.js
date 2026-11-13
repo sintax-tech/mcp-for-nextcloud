@@ -1309,6 +1309,7 @@ OC.L10N.register(
     "Create the new file %s with the content you send." : "Crear el archivo nuevo %s con el contenido que usted envíe.",
     "Create the text file %s." : "Crear el archivo de texto %s.",
     "Failed to write file; an empty file with this name may have been left in place." : "No se pudo escribir el archivo; puede haber quedado un archivo vacío con ese nombre.",
+    "The content of the new file could not be written completely: an empty or incomplete file was left at %s. Use another name or replace that file on the next attempt." : "No se pudo escribir todo el contenido del nuevo archivo: quedó un archivo vacío o incompleto en %s. En el próximo intento, usa otro nombre o reemplaza ese archivo.",
     "If the destination folder does not exist yet, create it first with files_mkdir." : "Si la carpeta de destino aún no existe, créela antes con files_mkdir.",
     "Nothing is overwritten: if a file with this name already exists, with content, nothing is written." : "Nada se sobrescribe: si ya existe un archivo con ese nombre, con contenido, no se escribe nada.",
     "Nothing was changed. After your approval a single-use upload link is issued that creates this new file; the file only appears once the bytes are sent to it." : "No se cambió nada. Tras su aprobación se emite un enlace de subida de un solo uso que crea este archivo nuevo; el archivo solo aparece cuando se le envían los bytes.",

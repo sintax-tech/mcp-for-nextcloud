@@ -155,7 +155,10 @@ final class FileWritePolicyBoundariesTest extends FilesToolsTestCase {
 		try {
 			$this->creation->write($this->tree->rootFolder()->get('Documentos'), 'empty.txt', 'bytes', 'alice');
 			self::fail('Content sink bypassed policy');
-		} catch (FileTypeDenied) {
+		} catch (\OCA\Mcp\Modules\Files\Creation\FileCreationFailure $e) {
+			// The file exists by then: the refusal keeps its reason and names the empty file it left.
+			self::assertInstanceOf(FileTypeDenied::class, $e->getPrevious());
+			self::assertSame('/Documentos/empty.txt', $e->path);
 			self::assertSame('', $this->tree->rootFolder()->get('Documentos')->get('empty.txt')->getContent());
 		}
 	}

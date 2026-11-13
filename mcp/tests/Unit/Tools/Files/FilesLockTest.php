@@ -38,6 +38,24 @@ final class FilesLockTest extends FilesToolsTestCase {
 		$this->fail("$name was not refused");
 	}
 
+	/**
+	 * A files_create whose content write a lock stopped after the file was created.
+	 *
+	 * @param array<string, mixed> $arguments the arguments of files_create
+	 * @return \OCA\Mcp\Modules\Files\Creation\FileCreationFailure the failure, which keeps the lock refusal as its reason and names the empty file left
+	 */
+	private function leftBehind(array $arguments): \OCA\Mcp\Modules\Files\Creation\FileCreationFailure {
+		try {
+			$this->tool('files_create', $arguments);
+		} catch (\OCA\Mcp\Modules\Files\Creation\FileCreationFailure $e) {
+			$this->assertInstanceOf(LockWriteFailure::class, $e->getPrevious());
+			$this->assertSame($arguments['path'], $e->path);
+			$this->assertStringContainsString('an empty or incomplete file was left at ' . $arguments['path'], $e->getMessage());
+			return $e;
+		}
+		$this->fail('files_create was not stopped by the lock');
+	}
+
 	private function assertUntouched(): void {
 		$this->assertSame([], $this->tree->ops, 'no backup, folder or write happens');
 		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
@@ -148,7 +166,7 @@ final class FilesLockTest extends FilesToolsTestCase {
 		$this->tree->beforeCreate = function (string $path): void {
 			$this->tree->writeFailure = new \OCP\Lock\ManuallyLockedException($path, null, 'files_lock/x', 'text', -1);
 		};
-		$e = $this->refused('files_create', ['path' => '/Documentos/novo.md', 'content' => 'texto']);
+		$e = $this->leftBehind(['path' => '/Documentos/novo.md', 'content' => 'texto']);
 		$this->assertStringContainsString('locked', $e->getMessage());
 	}
 
@@ -230,8 +248,10 @@ final class FilesLockTest extends FilesToolsTestCase {
 		$this->tree->afterCreate = function (string $path): void {
 			$this->lockBy(ILock::TYPE_TOKEN, 'pedro', $path);
 		};
-		$e = $this->refused('files_create', ['path' => '/Documentos/novo.md', 'content' => 'texto']);
+		$e = $this->leftBehind(['path' => '/Documentos/novo.md', 'content' => 'texto']);
 		$this->assertStringContainsString('It was locked through a WebDAV client', $e->getMessage());
+		// The empty file exists by then: the refusal never says that nothing changed.
+		$this->assertStringNotContainsString(\OCA\Mcp\Platform\FileAccess\LockMessages::nothingChanged(), $e->getMessage());
 		$this->assertSame('', $this->tree->nodes['/alice/files/Documentos/novo.md']['content']);
 	}
 

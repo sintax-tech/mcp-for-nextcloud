@@ -436,13 +436,14 @@ final class CheckoutCreateTest extends TestCase {
 		$this->assertSame([], $this->tree->ops);
 	}
 
-	/** A write that fails after the empty file appeared says so: nothing is deleted to hide it. */
-	public function testAFailedWriteSaysAnEmptyFileMayRemain(): void {
+	/** A write that fails after the empty file appeared names it: nothing is deleted to hide it. @return void */
+	public function testAFailedWriteNamesTheEmptyFileLeft(): void {
 		$this->issue();
 		$this->tree->failWrite = true;
 		$response = $this->controller->upload();
 		$this->assertSame(500, $response->getStatus());
-		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createFailed(), $this->text($response));
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createLeftBehind(null, '/Documentos/Relatório.docx'), $this->text($response));
+		$this->assertSame('', $this->tree->nodes[self::FILE]['content']);
 		$this->assertNotContains('delete ' . self::FILE, $this->tree->ops);
 	}
 
@@ -575,7 +576,7 @@ final class CheckoutCreateTest extends TestCase {
 		$this->assertArrayNotHasKey(self::FILE, $this->tree->nodes);
 	}
 
-	/** B2: a lock or a full quota at write time keeps its own message and status, and the log has the class only. */
+	/** B2: a lock or a full quota at write time keeps its own message and status, and names the empty file left. @return void */
 	public function testALockOrAFullQuotaKeepsItsMessage(): void {
 		foreach ([[new \OCP\Lock\LockedException(self::FILE), 423, CommonMessages::locked()],
 			[new \OCP\Files\NotEnoughSpaceException(self::FILE), 507, CommonMessages::insufficientQuota()]] as [$failure, $status, $message]) {
@@ -585,7 +586,8 @@ final class CheckoutCreateTest extends TestCase {
 			$this->tree->writeFailure = $failure;
 			$response = $this->controller->upload();
 			$this->assertSame($status, $response->getStatus(), $failure::class);
-			$this->assertSame($message, $this->text($response), $failure::class);
+			$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createLeftBehind($message, '/Documentos/Relatório.docx'), $this->text($response), $failure::class);
+			$this->assertSame('', $this->tree->nodes[self::FILE]['content'], $failure::class);
 		}
 	}
 
@@ -607,7 +609,7 @@ final class CheckoutCreateTest extends TestCase {
 		$this->tree->writeFailure = new \OCP\Lock\ManuallyLockedException(self::FILE, null, 'files_lock/x', 'text', -1);
 		$response = $this->controller->upload();
 		$this->assertSame(423, $response->getStatus());
-		$this->assertSame('The file “/Documentos/Relatório.docx” is locked, and Nextcloud does not say by whom. '
-			. 'Close it in any editor where it is open, or ask whoever locked it to unlock it, and then try again.', $this->text($response));
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createLeftBehind('The file “/Documentos/Relatório.docx” is locked, and Nextcloud does not say by whom. '
+			. 'Close it in any editor where it is open, or ask whoever locked it to unlock it, and then try again.', '/Documentos/Relatório.docx'), $this->text($response));
 	}
 }

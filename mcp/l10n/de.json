@@ -1173,6 +1173,7 @@
     "Create the new file %s with the content you send." : "Die neue Datei %s mit dem übermittelten Inhalt erstellen.",
     "Create the text file %s." : "Textdatei %s erstellen.",
     "Failed to write file; an empty file with this name may have been left in place." : "Datei konnte nicht geschrieben werden. Möglicherweise ist eine leere Datei mit diesem Namen zurückgeblieben.",
+    "The content of the new file could not be written completely: an empty or incomplete file was left at %s. Use another name or replace that file on the next attempt." : "Der Inhalt der neuen Datei konnte nicht vollständig geschrieben werden: Unter %s ist eine leere oder unvollständige Datei zurückgeblieben. Verwende beim nächsten Versuch einen anderen Namen oder ersetze diese Datei.",
     "If the destination folder does not exist yet, create it first with files_mkdir." : "Falls der Zielordner noch nicht existiert, erstelle ihn zuerst mit files_mkdir.",
     "Nothing is overwritten: if a file with this name already exists, with content, nothing is written." : "Es wird nichts überschrieben: Falls unter diesem Namen bereits eine Datei mit Inhalt existiert, wird nichts geschrieben.",
     "Nothing was changed. After your approval a single-use upload link is issued that creates this new file; the file only appears once the bytes are sent to it." : "Es wurde nichts geändert. Nach deiner Freigabe wird ein einmaliger Upload-Link zur Erstellung dieser Datei ausgegeben. Sie erscheint erst, nachdem die Bytes an den Link gesendet wurden.",

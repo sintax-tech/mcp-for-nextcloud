@@ -16,6 +16,7 @@ use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCP\Files\Folder;
+use OCP\Files\ForbiddenException;
 use OCP\Files\NotFoundException;
 use OCP\Files\NotPermittedException;
 
@@ -56,12 +57,12 @@ final class ListTagsHandler {
 	 * @param Folder $root the actor's root
 	 * @param string $path normalized user-relative path
 	 * @return int ID of the visible, readable node at that path
-	 * @throws ToolFailure the not-found refusal for a hidden, missing or unreadable path
+	 * @throws ToolFailure the not-found refusal for a hidden, missing, unreadable or forbidden path
 	 */
 	private function fileId(Folder $root, string $path): int {
 		try {
 			return (int)NodeAccess::get($root, $path, $this->guard)->getId();
-		} catch (ToolFailure|NotFoundException|NotPermittedException) {
+		} catch (ToolFailure|NotFoundException|NotPermittedException|ForbiddenException) {
 			throw new ToolFailure(CommonMessages::notFound());
 		}
 	}

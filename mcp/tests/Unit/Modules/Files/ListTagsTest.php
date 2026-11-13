@@ -22,8 +22,10 @@ use OCP\Comments\ICommentsManager;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Files\File;
 use OCP\Files\Folder;
+use OCP\Files\ForbiddenException;
 use OCP\Files\IRootFolder;
 use OCP\Files\NotFoundException;
+use OCP\Files\NotPermittedException;
 use OCP\IGroupManager;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -114,6 +116,24 @@ final class ListTagsTest extends TestCase {
 	}
 
 	#[DataProvider('pins')]
+	public function testNodeApiRefusalsAnswerExactlyLikeAMissingPathWithoutDav(string $major): void {
+		$this->boot($major);
+		$refusals = [];
+		foreach (['/missing.txt', '/forbidden.txt', '/denied.txt'] as $path) {
+			try {
+				$this->handler->handle(['path' => $path], 'alice');
+				self::fail('Refused path ' . $path . ' listed');
+			} catch (ToolFailure $error) {
+				$refusals[$path] = [$error::class, $error->getMessage(), $error->getCode()];
+			}
+		}
+		self::assertSame([ToolFailure::class, CommonMessages::notFound(), 0], $refusals['/missing.txt']);
+		self::assertSame($refusals['/missing.txt'], $refusals['/forbidden.txt'], 'ForbiddenException answers like a missing path');
+		self::assertSame($refusals['/missing.txt'], $refusals['/denied.txt'], 'NotPermittedException answers like a missing path');
+		self::assertSame([], $this->native->built, 'nothing reached DAV');
+	}
+
+	#[DataProvider('pins')]
 	public function testDanglingTagFailsWithoutNamingAnyTag(string $major): void {
 		$this->boot($major);
 		try {
@@ -187,6 +207,11 @@ final class ListTagsTest extends TestCase {
 		$folder->method('getPath')->willReturn('/alice/files');
 		$folder->method('getRelativePath')->willReturnCallback(static fn (string $path): ?string => str_starts_with($path, '/alice/files/') ? substr($path, 12) : null);
 		$folder->method('get')->willReturnCallback(static function (string $path) use ($known, $file): File {
+			match ($path) {
+				'forbidden.txt' => throw new ForbiddenException('forbidden by a storage wrapper', false),
+				'denied.txt' => throw new NotPermittedException('denied'),
+				default => null,
+			};
 			$id = preg_match('/^f(\d+)\.txt$/', $path, $m) === 1 ? (int)$m[1] : 0;
 			return in_array($id, $known, true) ? $file($id) : throw new NotFoundException();
 		});

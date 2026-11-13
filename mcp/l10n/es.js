@@ -1724,6 +1724,7 @@ OC.L10N.register(
     "Subject: %s" : "Asunto: %s",
     "Create a mail draft" : "Crear un borrador de correo",
     "draft" : "borrador",
+    "save" : "guardar adjuntos",
     "Messages, attachments, flags, moving and drafts" : "Mensajes, adjuntos, marcas, mover y borradores",
     "Create new drafts in the Drafts folder, never sent, after a plan the user confirms; starts off" : "Crear borradores nuevos en la carpeta de Borradores, nunca enviados, tras un plan que el usuario confirma; empieza desactivado",
     "Messages, attachments, flags and moving" : "Mensajes, adjuntos, marcas y mover",

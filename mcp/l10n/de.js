@@ -1724,6 +1724,7 @@ OC.L10N.register(
     "Subject: %s" : "Betreff: %s",
     "Create a mail draft" : "Einen Mail-Entwurf erstellen",
     "draft" : "Entwurf",
+    "save" : "Anhänge speichern",
     "Messages, attachments, flags, moving and drafts" : "Nachrichten, Anhänge, Markierungen, Verschieben und Entwürfe",
     "Create new drafts in the Drafts folder, never sent, after a plan the user confirms; starts off" : "Neue Entwürfe im Entwürfe-Ordner erstellen, nie gesendet, nach einem Plan, den der Benutzer bestätigt; standardmäßig aus",
     "Messages, attachments, flags and moving" : "Nachrichten, Anhänge, Markierungen und Verschieben",

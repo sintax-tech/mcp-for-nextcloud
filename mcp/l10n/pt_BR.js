@@ -1724,6 +1724,7 @@ OC.L10N.register(
     "Subject: %s" : "Assunto: %s",
     "Create a mail draft" : "Criar um rascunho de e-mail",
     "draft" : "rascunho",
+    "save" : "salvar anexos",
     "Messages, attachments, flags, moving and drafts" : "Mensagens, anexos, sinalizações, mover e rascunhos",
     "Create new drafts in the Drafts folder, never sent, after a plan the user confirms; starts off" : "Criar novos rascunhos na pasta de Rascunhos, nunca enviados, após um plano que o usuário confirma; começa desligado",
     "Messages, attachments, flags and moving" : "Mensagens, anexos, sinalizações e mover",

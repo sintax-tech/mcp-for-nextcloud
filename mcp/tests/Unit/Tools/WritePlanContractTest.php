@@ -35,7 +35,6 @@ final class WritePlanContractTest extends TestCase {
 		\OCA\Mcp\Modules\People\PeopleModule::class,
 		\OCA\Mcp\Modules\Logs\LogsModule::class,
 		\OCA\Mcp\Modules\Activity\ActivityModule::class,
-		\OCA\Mcp\Modules\Availability\AvailabilityModule::class,
 	];
 
 	/** @return array<class-string, class-string> test class of each writing module, which runs the contract with that module's fakes */
@@ -55,6 +54,7 @@ final class WritePlanContractTest extends TestCase {
 			\OCA\Mcp\Modules\Collectives\CollectivesModule::class => \OCA\Mcp\Tests\Unit\Modules\Collectives\CollectivesPlanRendererTest::class,
 			\OCA\Mcp\Modules\Notifications\NotificationsModule::class => \OCA\Mcp\Tests\Unit\Modules\Notifications\NotificationsPlanRendererTest::class,
 			\OCA\Mcp\Modules\Status\StatusModule::class => \OCA\Mcp\Tests\Unit\Modules\Status\StatusPlanRendererTest::class,
+			\OCA\Mcp\Modules\Availability\AvailabilityModule::class => \OCA\Mcp\Tests\Unit\Modules\Availability\AvailabilityPlanRendererTest::class,
 		];
 	}
 

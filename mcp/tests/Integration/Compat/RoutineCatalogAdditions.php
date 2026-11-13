@@ -9,13 +9,15 @@ namespace OCA\Mcp\Tests\Integration\Compat;
 
 /** Only the approved 1.4.0 opt-in additions may extend the released upgrade snapshot. */
 final class RoutineCatalogAdditions {
-	/** @var array<string,list<string>> Exact 1.4.0 additions, all denied; Mail saving remains outside G-1. */
+	/** @var array<string,list<string>> Exact 1.4.0 additions, all denied: G-1, Deck labels (DK-L) and Mail saving (MA-2). */
 	public const PAIRS = [
-		'files' => ['tags', 'comments'], 'calendar' => ['availability'],
+		'files' => ['tags', 'comments'], 'deck' => ['labels'], 'calendar' => ['availability'], 'mail' => ['save'],
 		'activity' => ['read'], 'notifications' => ['read', 'dismiss'],
 		'availability' => ['read', 'absence'], 'status' => ['read', 'edit'],
 		'routines' => ['prepare', 'meeting', 'mailtask'],
 	];
+	/** @var list<string> Modules that 1.4.0 introduces; every other module of PAIRS keeps its released operations. */
+	private const NEW_MODULES = ['activity', 'notifications', 'availability', 'status', 'routines'];
 
 	/**
 	 * @param array<string,list<string>> $catalog Exact approved catalog through 1.3.0.
@@ -52,8 +54,11 @@ final class RoutineCatalogAdditions {
 				}
 				unset($grants[$module][$operation]);
 			}
-			if (!in_array($module, ['files', 'calendar'], true)) {
+			if (in_array($module, self::NEW_MODULES, true)) {
 				if ($grants[$module] !== []) throw new \UnexpectedValueException("Unexpected $module operations in the 1.4.0 legacy matrix");
+				unset($grants[$module]);
+			} elseif ($grants[$module] === []) {
+				// A fixture without this released module: only the 1.4.0 operation was there, so nothing legacy is dropped.
 				unset($grants[$module]);
 			}
 		}

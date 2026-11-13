@@ -12,7 +12,7 @@ use PHPUnit\Framework\Assert;
 use OCA\Mcp\Access\Grants\GrantCatalog;
 use UnexpectedValueException;
 
-/** Keeps the unit upgrade guards aligned with only the reviewed 1.2.2 and approved 1.3.0 F00 and Collectives C01–C04 and denied 1.4.0 catalog/default additions. */
+/** Keeps the unit upgrade guards aligned with only the reviewed 1.2.2 and approved 1.3.0 F00 and Collectives C01–C04 and denied 1.4.0 opt-in catalog/default additions. */
 final class LegacyCatalogAssertions {
 	/** @var array<string, list<string>> Explicit operations added after the released baseline. */
 	private const MODULES = [

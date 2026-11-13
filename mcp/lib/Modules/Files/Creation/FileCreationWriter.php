@@ -133,7 +133,7 @@ final class FileCreationWriter {
 			// The name cannot be read again: whatever is there is never named.
 		}
 		if ((new NewFileVisibility($this->visibilityGuard))->of($folder, $name) !== NewFileVisibility::VISIBLE) {
-			return new FileCreationFailure(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createUnconfirmed($reason?->getMessage()), null, null, $reason);
+			return new FileCreationFailure(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createUnconfirmed(self::opaqueReason($e)), null, null, $reason);
 		}
 		$path = $this->visiblePath($folder, $name, $userId);
 		return new FileCreationFailure(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createMayExist($reason?->getMessage(), $path), $path, null, $reason);
@@ -161,7 +161,7 @@ final class FileCreationWriter {
 			// Only the class: the message of a storage exception may carry the path.
 			$this->logger->error('MCP new file write failed: {exception_class} (code {exception_code})', ['app' => 'mcp', 'exception_class' => $e::class, 'exception_code' => ExceptionDetails::code($e)]);
 		}
-		return $this->leftBehind($folder, $name, $file, $userId, $reason);
+		return $this->leftBehind($folder, $name, $file, $userId, $reason, $e);
 	}
 
 	/**
@@ -173,12 +173,13 @@ final class FileCreationWriter {
 	 * @param File $file the file Nextcloud created
 	 * @param string|null $userId the actor, whose own view gives the path; null names the file by its basename only
 	 * @param ToolFailure|null $reason the refusal that stopped the content write; null for an unexplained failure
+	 * @param Throwable $cause what stopped the write, whose class alone gives the reason of an opaque answer
 	 * @return FileCreationFailure the reason, kept as the previous exception, and the file left behind
 	 */
-	private function leftBehind(Folder $folder, string $name, File $file, ?string $userId, ?ToolFailure $reason): FileCreationFailure {
+	private function leftBehind(Folder $folder, string $name, File $file, ?string $userId, ?ToolFailure $reason, Throwable $cause): FileCreationFailure {
 		if ((new NewFileVisibility($this->visibilityGuard))->of($folder, $name) === NewFileVisibility::HIDDEN) {
-			// Hidden since it was written: the failure says a file may exist and names nothing.
-			return new FileCreationFailure(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createUnconfirmed($reason?->getMessage()), null, null, $reason);
+			// Hidden since it was written: the failure says a file may exist and names nothing, not even in its reason.
+			return new FileCreationFailure(\OCA\Mcp\Modules\Files\Presentation\CreationMessages::createUnconfirmed(self::opaqueReason($cause)), null, null, $reason);
 		}
 		$path = $this->visiblePath($folder, $name, $userId);
 		$fileId = null;
@@ -207,5 +208,22 @@ final class FileCreationWriter {
 			// The basename is all that is known.
 		}
 		return $name;
+	}
+
+	/**
+	 * The reason of an answer that names nothing, from the kind of the failure alone: the text of the failure may name
+	 * the file (a lock explained with its path, a refusal that quotes it), so it is never published here; the failure
+	 * stays the previous exception for its HTTP status.
+	 *
+	 * @param Throwable $cause what stopped the write
+	 * @return string|null a fixed reason for a lock or a full quota; null when the kind tells nothing the user can act on
+	 */
+	private static function opaqueReason(Throwable $cause): ?string {
+		$message = $cause instanceof ToolFailure ? $cause->getMessage() : null;
+		return match (true) {
+			$cause instanceof \OCA\Mcp\Platform\FileAccess\LockWriteFailure, $cause instanceof LockedException, $message === CommonMessages::locked() => CommonMessages::locked(),
+			$cause instanceof NotEnoughSpaceException, $message === CommonMessages::insufficientQuota() => CommonMessages::insufficientQuota(),
+			default => null,
+		};
 	}
 }

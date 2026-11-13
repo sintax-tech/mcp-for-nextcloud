@@ -28,6 +28,10 @@ final class MailAttachmentSaveOpacityTest extends MailAttachmentSaveStepsTestCas
 				$test->tree->afterCreate = null; $once($test); }; }],
 			'putContent' => [static function (self $test) use ($hide): void { $test->tree->afterWrite = static function () use ($test, $hide): void {
 				$test->tree->afterWrite = null; $hide($test); throw new \RuntimeException('post-write hook'); }; }],
+			'putContent locked, the lock naming the file' => [static function (self $test) use ($hide): void { $test->tree->afterWrite = static function () use ($test, $hide): void {
+				$test->tree->afterWrite = null; $hide($test); throw new \OCP\Lock\ManuallyLockedException('/alice/files/Documentos/saved.pdf', null, 'files_lock/x', 'text', -1); }; }],
+			'putContent refused, the refusal naming the file' => [static function (self $test) use ($hide): void { $test->tree->afterWrite = static function () use ($test, $hide): void {
+				$test->tree->afterWrite = null; $hide($test); throw new \OCA\Mcp\Mcp\Tools\Results\ToolFailure('The file /alice/files/Documentos/saved.pdf was refused.'); }; }],
 			'read-back of the destination' => [static function (self $test) use ($once): void { $test->tree->afterWrite = static function () use ($test, $once): void {
 				$test->tree->afterWrite = null; $once($test); }; }],
 		];

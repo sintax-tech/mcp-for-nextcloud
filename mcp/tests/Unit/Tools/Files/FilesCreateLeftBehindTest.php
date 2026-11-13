@@ -153,6 +153,10 @@ final class FilesCreateLeftBehindTest extends FilesToolsTestCase {
 				$test->tree->afterCreate = null; $once($test); }; }],
 			'putContent' => [static function (self $test) use ($hide): void { $test->tree->afterWrite = static function () use ($test, $hide): void {
 				$test->tree->afterWrite = null; $hide($test); throw new \RuntimeException('post-write hook'); }; }],
+			'putContent locked, the lock naming the file' => [static function (self $test) use ($hide): void { $test->tree->afterWrite = static function () use ($test, $hide): void {
+				$test->tree->afterWrite = null; $hide($test); throw new \OCP\Lock\ManuallyLockedException('/alice/files/Documentos/novo.md', null, 'files_lock/x', 'text', -1); }; }],
+			'putContent refused, the refusal naming the file' => [static function (self $test) use ($hide): void { $test->tree->afterWrite = static function () use ($test, $hide): void {
+				$test->tree->afterWrite = null; $hide($test); throw new \OCA\Mcp\Mcp\Tools\Results\ToolFailure('The file /alice/files/Documentos/novo.md was refused.'); }; }],
 			'read-back of the receipt' => [static function (self $test) use ($once): void { $test->tree->afterWrite = static function () use ($test, $once): void {
 				$test->tree->afterWrite = null; $once($test); }; }],
 		];
@@ -177,6 +181,31 @@ final class FilesCreateLeftBehindTest extends FilesToolsTestCase {
 		}
 
 		$this->assertStringNotContainsString('novo.md', $answer);
+		$this->assertArrayHasKey(self::FILE, $this->tree->nodes, 'nothing is deleted');
+	}
+
+	/**
+	 * The upload link writes through the same creation and answers through CheckoutRefusals: in every phase that hides
+	 * the new file and throws, its status keeps the kind of the failure and its text names nothing of the file.
+	 *
+	 * @param \Closure(self): void $arrange the phase that hides the file and throws
+	 * @return void
+	 */
+	#[DataProvider('hideAndThrow')]
+	public function testTheUploadLinkNeverNamesAFileHiddenInAnyPhase(\Closure $arrange): void {
+		$this->withHiddenTag();
+		$arrange($this);
+		$creation = FilesCatalogWiring::of($this->module)->named('creation');
+
+		try {
+			$creation->write($this->tree->rootFolder()->get('Documentos'), 'novo.md', 'texto', 'alice', false);
+			self::fail('The write must not succeed');
+		} catch (\Throwable $e) {
+			$response = (new \OCA\Mcp\Modules\Files\Checkout\CheckoutRefusals($this->createMock(\Psr\Log\LoggerInterface::class)))->createRefusal($e);
+		}
+
+		$this->assertStringNotContainsString('novo.md', $response->render());
+		$this->assertGreaterThanOrEqual(400, $response->getStatus());
 		$this->assertArrayHasKey(self::FILE, $this->tree->nodes, 'nothing is deleted');
 	}
 }

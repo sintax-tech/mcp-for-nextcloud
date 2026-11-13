@@ -19,7 +19,8 @@ use OCA\Mcp\Platform\Meetings\PreparationSources;
  * Each field is a separate search, because the mail reader treats different fields as AND. The fragment is the
  * address itself; a hit whose address is only a longer fragment is dropped. No body search and no other mailbox.
  * At most {@see DossierBudget::MAX_FOLDERS} folders are searched, the inbox first and then the reader's order.
- * Folders beyond that are partial coverage. They are not a reader failure.
+ * Folders beyond that are partial coverage. They are not a reader failure. A folder the reader cannot search is
+ * skipped, the source stays consulted, and truncation is set. The other folders are kept.
  */
 final class MailCandidates {
 	/** Fields searched one at a time so a match in any of them counts. */
@@ -77,15 +78,19 @@ final class MailCandidates {
 		$folderIds = array_slice($folderIds, 0, DossierBudget::MAX_FOLDERS);
 		$kept = [];
 		$seen = [];
+		$failed = [];
 		$truncated = $foldersCut;
-		try {
-			foreach ($emails as $email) {
-				foreach (self::FIELDS as $field) {
-					foreach ($folderIds as $mailboxId) {
-						if (count($kept) >= DossierBudget::MAX_MESSAGES) {
-							$truncated = true;
-							break 3;
-						}
+		foreach ($emails as $email) {
+			foreach (self::FIELDS as $field) {
+				foreach ($folderIds as $mailboxId) {
+					if (isset($failed[$mailboxId])) {
+						continue;
+					}
+					if (count($kept) >= DossierBudget::MAX_MESSAGES) {
+						$truncated = true;
+						break 3;
+					}
+					try {
 						$page = ResultJson::object($mail->search($userId, [
 							'mailbox_id' => $mailboxId,
 							$field => [$email],
@@ -93,29 +98,31 @@ final class MailCandidates {
 							'until' => $window['until'],
 							'limit' => DossierBudget::MAX_MESSAGES,
 						]));
-						foreach ((array)($page['messages'] ?? []) as $message) {
-							if (!is_array($message) || (int)($message['mailboxId'] ?? 0) !== $mailboxId) {
-								continue;
-							}
-							$row = $this->exact($message, $email, $field);
-							if ($row === null || isset($seen[$row['id']])) {
-								continue;
-							}
-							if (count($kept) >= DossierBudget::MAX_MESSAGES) {
-								$truncated = true;
-								break 4;
-							}
-							$seen[$row['id']] = true;
-							$kept[] = $row;
+					} catch (ToolFailure) {
+						$failed[$mailboxId] = true;
+						$truncated = true;
+						continue;
+					}
+					foreach ((array)($page['messages'] ?? []) as $message) {
+						if (!is_array($message) || (int)($message['mailboxId'] ?? 0) !== $mailboxId) {
+							continue;
 						}
-						if (($page['hasMore'] ?? false) === true) {
+						$row = $this->exact($message, $email, $field);
+						if ($row === null || isset($seen[$row['id']])) {
+							continue;
+						}
+						if (count($kept) >= DossierBudget::MAX_MESSAGES) {
 							$truncated = true;
+							break 4;
 						}
+						$seen[$row['id']] = true;
+						$kept[] = $row;
+					}
+					if (($page['hasMore'] ?? false) === true) {
+						$truncated = true;
 					}
 				}
 			}
-		} catch (ToolFailure) {
-			return $this->closed('unavailable', 'reader');
 		}
 		return ['status' => 'consulted', 'reason' => $foldersCut ? 'folder_budget' : 'exact_address', 'truncated' => $truncated, 'candidates' => $kept];
 	}

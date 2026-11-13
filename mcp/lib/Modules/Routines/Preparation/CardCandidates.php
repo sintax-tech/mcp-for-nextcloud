@@ -22,6 +22,14 @@ use OCA\Mcp\Platform\Meetings\PreparationSources;
  */
 final class CardCandidates {
 	/**
+	 * Fixed notice when the assignment search ran.
+	 *
+	 * It does not vary with the rows, and it is not truncation: the mapper's order is undefined and the dossier
+	 * does not say whether more rows exist.
+	 */
+	public const ASSIGNMENT_SCOPE = 'first_20_rows_per_participant_unordered';
+
+	/**
 	 * @param PreparationSources $sources the read ports
 	 * @param GrantPolicy $grants the actor's grants
 	 * @param LocalInstanceLink $local which absolute hosts belong to this instance
@@ -47,11 +55,11 @@ final class CardCandidates {
 		if (!$this->grants->granted($userId, 'deck', 'read')) {
 			return $this->emptyReport('not_consulted', 'grant');
 		}
-		[$ids, $reasons] = $this->ids($deck, $userId, $event, $participants);
+		[$ids, $reasons, $assignmentSearched] = $this->ids($deck, $userId, $event, $participants);
 		if ($ids === []) {
-			return $this->emptyReport('consulted', 'no_card');
+			return $this->emptyReport('consulted', 'no_card', $assignmentSearched);
 		}
-		return $this->read($deck, $userId, $ids, $reasons);
+		return $this->read($deck, $userId, $ids, $reasons, $assignmentSearched);
 	}
 
 	/**
@@ -59,9 +67,10 @@ final class CardCandidates {
 	 * @param string $userId the actor
 	 * @param list<int> $ids positive card ids
 	 * @param array<int, string> $reasons card id => event_card or assigned
+	 * @param bool $assignmentSearched whether assigned() was called for at least one account
 	 * @return array{report: array<string, mixed>, paths: list<string>, references: list<string>} the Deck source and the linked files
 	 */
-	private function read(MeetingDeckRead $deck, string $userId, array $ids, array $reasons): array {
+	private function read(MeetingDeckRead $deck, string $userId, array $ids, array $reasons, bool $assignmentSearched): array {
 		$kept = [];
 		$paths = [];
 		$references = [];
@@ -93,7 +102,7 @@ final class CardCandidates {
 		}
 		$reason = $kept === [] ? 'event_card' : (in_array('event_card', $reasons, true) ? 'event_card' : 'assigned');
 		return [
-			'report' => ['status' => 'consulted', 'reason' => $reason, 'truncated' => $truncated, 'candidates' => $kept],
+			'report' => $this->scoped(['status' => 'consulted', 'reason' => $reason, 'truncated' => $truncated, 'candidates' => $kept], $assignmentSearched),
 			'paths' => $paths,
 			'references' => $references,
 		];
@@ -162,7 +171,7 @@ final class CardCandidates {
 	 * @param string $userId the actor
 	 * @param array<string, mixed> $event the chosen occurrence
 	 * @param list<array<string, mixed>> $participants resolved accounts
-	 * @return array{0: list<int>, 1: array<int, string>} card ids and the reason of each
+	 * @return array{0: list<int>, 1: array<int, string>, 2: bool} card ids, the reason of each, and whether assignment search ran
 	 */
 	private function ids(MeetingDeckRead $deck, string $userId, array $event, array $participants): array {
 		$ids = [];
@@ -175,11 +184,13 @@ final class CardCandidates {
 				$this->add($ids, $reasons, $id, 'event_card');
 			}
 		}
+		$assignmentSearched = false;
 		foreach ($participants as $row) {
 			$uid = is_array($row) ? ($row['uid'] ?? null) : null;
 			if (!is_string($uid) || $uid === '') {
 				continue;
 			}
+			$assignmentSearched = true;
 			try {
 				foreach ($deck->assigned($userId, $uid) as $id) {
 					$this->add($ids, $reasons, $id, 'assigned');
@@ -188,7 +199,7 @@ final class CardCandidates {
 				continue;
 			}
 		}
-		return [$ids, $reasons];
+		return [$ids, $reasons, $assignmentSearched];
 	}
 
 	/**
@@ -229,9 +240,22 @@ final class CardCandidates {
 	/**
 	 * @param string $status consulted, not_consulted or unavailable
 	 * @param string $reason why, with no count of hidden objects
+	 * @param bool $assignmentSearched whether assigned() was called for at least one account
 	 * @return array{report: array<string, mixed>, paths: list<string>, references: list<string>} an empty Deck source
 	 */
-	private function emptyReport(string $status, string $reason): array {
-		return ['report' => $this->closed($status, $reason), 'paths' => [], 'references' => []];
+	private function emptyReport(string $status, string $reason, bool $assignmentSearched = false): array {
+		return ['report' => $this->scoped($this->closed($status, $reason), $assignmentSearched), 'paths' => [], 'references' => []];
+	}
+
+	/**
+	 * @param array<string, mixed> $report the Deck source
+	 * @param bool $assignmentSearched whether assigned() was called for at least one account
+	 * @return array<string, mixed> the same report, with the fixed assignment notice when the search ran
+	 */
+	private function scoped(array $report, bool $assignmentSearched): array {
+		if ($assignmentSearched) {
+			$report['assignmentScope'] = self::ASSIGNMENT_SCOPE;
+		}
+		return $report;
 	}
 }

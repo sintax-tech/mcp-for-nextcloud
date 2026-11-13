@@ -13,6 +13,7 @@ use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
 use OCA\Mcp\Modules\Mail\Integration\MailGateway;
 use OCA\Mcp\Modules\Mail\Integration\MailMessageGateway;
+use OCA\Mcp\Modules\Mail\Locating\MailMessageScope;
 use OCA\Mcp\Modules\Mail\Presentation\MailRows;
 use OCA\Mcp\Modules\Mail\Reading\MailSearchListing;
 use OCA\Mcp\Modules\Mail\Tools\SearchMessages;
@@ -64,7 +65,7 @@ final class MailMeetingSearch implements MeetingMailRead {
 			}
 			$shaped = [];
 			foreach ($this->messages->mailboxes($userId, $owned) as $mailbox) {
-				if (!$this->readable($mailbox, $now)) {
+				if (MailMessageScope::unreadable($mailbox, $now) !== null) {
 					continue;
 				}
 				$shaped[] = $this->rows->mailbox([
@@ -82,21 +83,6 @@ final class MailMeetingSearch implements MeetingMailRead {
 			}
 		}
 		return $ids;
-	}
-
-	/**
-	 * The same reasons {@see \OCA\Mcp\Modules\Mail\Locating\MailMessageScope} skips a folder for.
-	 *
-	 * @param object $mailbox a cached folder of an account the actor owns
-	 * @param int $now the current Unix time, for a synchronization lock
-	 * @return bool whether a search of this one folder would be able to read it
-	 */
-	private function readable(object $mailbox, int $now): bool {
-		$selectable = $mailbox->getSelectable();
-		if ($selectable !== null && !$selectable) {
-			return false;
-		}
-		return $mailbox->isCached() && !$mailbox->hasLocks($now);
 	}
 
 	/**

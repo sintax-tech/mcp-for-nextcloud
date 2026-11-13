@@ -199,7 +199,7 @@ final class PrepareMeetingSourcesTest extends TestCase {
 	}
 
 	/**
-	 * A reader failure that carries a count becomes unavailable and the count is not repeated.
+	 * A search that fails for the only folder is skipped. The count in that failure is not repeated.
 	 *
 	 * @return void
 	 */
@@ -209,8 +209,10 @@ final class PrepareMeetingSourcesTest extends TestCase {
 				throw new ToolFailure('too many folders: 101');
 			});
 		$dossier = $this->dossier($this->tool($ports, self::ON), self::window());
-		self::assertSame('unavailable', $dossier['sources']['mail']['status']);
-		self::assertSame('reader', $dossier['sources']['mail']['reason']);
+		self::assertSame('consulted', $dossier['sources']['mail']['status']);
+		self::assertSame('exact_address', $dossier['sources']['mail']['reason']);
+		self::assertTrue($dossier['sources']['mail']['truncated']);
+		self::assertSame([], $dossier['sources']['mail']['candidates']);
 		self::assertStringNotContainsString('101', json_encode($dossier, JSON_THROW_ON_ERROR));
 	}
 

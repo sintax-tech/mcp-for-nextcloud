@@ -36,6 +36,7 @@ final class PrepareMeetingResolutionTest extends TestCase {
 		self::assertNull($dossier['participants'][0]['uid']);
 		self::assertSame('not_consulted', $dossier['participants'][0]['account']);
 		self::assertNotContains('assigned', array_column($ports->calls, 0));
+		self::assertArrayNotHasKey('assignmentScope', $dossier['sources']['deck']);
 	}
 
 	/**
@@ -77,6 +78,7 @@ final class PrepareMeetingResolutionTest extends TestCase {
 		self::assertStringNotContainsString('board refused', $encoded);
 		self::assertStringNotContainsString('"omitted"', $encoded);
 		self::assertArrayNotHasKey('count', $dossier['sources']['deck']);
+		self::assertArrayNotHasKey('assignmentScope', $dossier['sources']['deck']);
 	}
 
 	/**
@@ -100,7 +102,33 @@ final class PrepareMeetingResolutionTest extends TestCase {
 		$dossier = $this->dossier($ports, ['calendar.read', 'people.read', 'deck.read'], $search);
 		self::assertSame([], $dossier['sources']['deck']['candidates']);
 		self::assertFalse($dossier['sources']['deck']['truncated']);
+		self::assertSame(CardCandidates::ASSIGNMENT_SCOPE, $dossier['sources']['deck']['assignmentScope']);
 		self::assertStringNotContainsString('cardId', json_encode($dossier, JSON_THROW_ON_ERROR));
+	}
+
+	/**
+	 * The assignment notice is present when the mapper returns no row. It is not truncation.
+	 *
+	 * @return void
+	 */
+	public function testTheAssignmentNoticeStaysWhenTheMapperReturnsNothing(): void {
+		$search = $this->createMock(ISearch::class);
+		$search->method('search')->willReturn([['exact' => ['users' => [
+			['value' => ['shareWith' => 'pedro'], 'subline' => 'ada@example.com'],
+		]]], false]);
+		$ports = new PreparationDouble(
+			PreparationDouble::json([self::event()]),
+			null,
+			null,
+			null,
+			null,
+			static fn (string $userId, string $participantUid): array => [],
+		);
+		$dossier = $this->dossier($ports, ['calendar.read', 'people.read', 'deck.read'], $search);
+		self::assertSame([], $dossier['sources']['deck']['candidates']);
+		self::assertFalse($dossier['sources']['deck']['truncated']);
+		self::assertSame('no_card', $dossier['sources']['deck']['reason']);
+		self::assertSame(CardCandidates::ASSIGNMENT_SCOPE, $dossier['sources']['deck']['assignmentScope']);
 	}
 
 	/**
@@ -126,6 +154,7 @@ final class PrepareMeetingResolutionTest extends TestCase {
 		$dossier = $this->dossier($ports, ['calendar.read', 'people.read', 'deck.read'], $search);
 		self::assertSame(range(1, 20), array_column($dossier['sources']['deck']['candidates'], 'cardId'));
 		self::assertTrue($dossier['sources']['deck']['truncated']);
+		self::assertSame(CardCandidates::ASSIGNMENT_SCOPE, $dossier['sources']['deck']['assignmentScope']);
 		self::assertSame(1710000000, $dossier['sources']['deck']['candidates'][0]['lastModified']);
 		self::assertStringNotContainsString('"cardId": 21', json_encode($dossier, JSON_THROW_ON_ERROR));
 	}

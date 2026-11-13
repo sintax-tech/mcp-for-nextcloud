@@ -22,14 +22,13 @@ final class ReferenceTexts {
 	 * @return list<int> card ids named by a Deck card URL of this instance, once each
 	 */
 	public static function deckCardIds(string $text, LocalInstanceLink $local): array {
-		if (preg_match_all('~(?:https?://[^\s<>"\']+)?/apps/deck/(?:#/)?board/\d+/card/(\d+)~', $text, $matches, PREG_SET_ORDER) === false) {
-			return [];
-		}
 		$ids = [];
-		foreach ($matches as $match) {
-			$value = (int)$match[1];
-			if ($value > 0 && $local->accepts($match[0]) && !in_array($value, $ids, true)) {
-				$ids[] = $value;
+		foreach (self::absoluteUrls($text) as $url) {
+			self::addCard($url, $local, $ids);
+		}
+		if (preg_match_all('~(?:^|[\s"\'])(/apps/deck/(?:#/)?board/\d+/card/(\d+))~', $text, $paths, PREG_SET_ORDER) !== false) {
+			foreach ($paths as $match) {
+				self::addCard($match[1], $local, $ids);
 			}
 		}
 		return $ids;
@@ -42,17 +41,55 @@ final class ReferenceTexts {
 	 */
 	public static function fileReferences(string $text, LocalInstanceLink $local): array {
 		$found = [];
-		if (preg_match_all('#https?://[^\s<>"\']+#i', $text, $urls) !== false) {
-			foreach ($urls[0] as $url) {
-				self::keep($url, $found, $local);
-			}
+		foreach (self::absoluteUrls($text) as $url) {
+			self::keep($url, $found, $local);
 		}
-		if (preg_match_all('#(?<![A-Za-z0-9])(/(?:f/\d+|apps/files/[^\s<>"\']+|remote\.php/(?:dav/files|webdav)[^\s<>"\']*))#', $text, $paths) !== false) {
+		if (preg_match_all('#(?:^|[\s"\'])(/(?:f/\d+|apps/files/[^\s<>"\']+|remote\.php/(?:dav/files|webdav)[^\s<>"\']*))#', $text, $paths) !== false) {
 			foreach ($paths[1] as $path) {
 				self::keep($path, $found, $local);
 			}
 		}
 		return $found;
+	}
+
+	/**
+	 * Whole absolute URLs, including a scheme-relative form that starts a token.
+	 *
+	 * A relative path is not taken from inside one of these. The caller decides by the host.
+	 *
+	 * @param string $text a link or a description
+	 * @return list<string> each absolute URL once, in order
+	 */
+	private static function absoluteUrls(string $text): array {
+		$found = [];
+		if (preg_match_all('#[a-z][a-z0-9+.-]*://[^\s<>"\']+#i', $text, $urls) !== false) {
+			foreach ($urls[0] as $url) {
+				$found[] = $url;
+			}
+		}
+		if (preg_match_all('#(?:^|[\s"\'])(//[^\s<>"\']+)#', $text, $relative) !== false) {
+			foreach ($relative[1] as $url) {
+				if (!in_array($url, $found, true)) {
+					$found[] = $url;
+				}
+			}
+		}
+		return $found;
+	}
+
+	/**
+	 * @param string $url one absolute URL or one relative Deck path
+	 * @param LocalInstanceLink $local which absolute hosts belong to this instance
+	 * @param list<int> $ids card ids kept so far
+	 */
+	private static function addCard(string $url, LocalInstanceLink $local, array &$ids): void {
+		if (preg_match('~/apps/deck/(?:#/)?board/\d+/card/(\d+)~', $url, $match) !== 1) {
+			return;
+		}
+		$value = (int)$match[1];
+		if ($value > 0 && $local->accepts($url) && !in_array($value, $ids, true)) {
+			$ids[] = $value;
+		}
 	}
 
 	/**

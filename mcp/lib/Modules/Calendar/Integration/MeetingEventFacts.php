@@ -137,7 +137,7 @@ final class MeetingEventFacts {
 				$this->keep($url, $found);
 			}
 		}
-		if (preg_match_all('#(?<![A-Za-z0-9])(/(?:f/\d+|apps/(?:files|deck)/[^\s<>"\']+))#', $text, $paths) !== false) {
+		if (preg_match_all('#(?:^|[\s"\'])(/(?:f/\d+|apps/(?:files|deck)/[^\s<>"\']+))#', $text, $paths) !== false) {
 			foreach ($paths[1] as $path) {
 				$this->keep($path, $found);
 			}
@@ -150,9 +150,24 @@ final class MeetingEventFacts {
 	 */
 	private function keep(string $raw, array &$found): void {
 		$link = rtrim(trim($raw), ".,);]>'\" ");
-		if ($link === '' || str_starts_with(strtolower($link), 'data:') || in_array($link, $found, true)) {
+		if ($link === '' || in_array($link, $found, true) || !$this->acceptableLink($link)) {
 			return;
 		}
 		$found[] = $link;
+	}
+
+	/**
+	 * A URL property, an attachment URI, or a link copied from text.
+	 *
+	 * Only http(s) or a path that starts with one slash. A scheme-relative URL, another scheme and a data URI are not links.
+	 *
+	 * @param string $link one trimmed value
+	 * @return bool whether the dossier may carry it
+	 */
+	private function acceptableLink(string $link): bool {
+		if (str_starts_with(strtolower($link), 'http://') || str_starts_with(strtolower($link), 'https://')) {
+			return true;
+		}
+		return str_starts_with($link, '/') && !str_starts_with($link, '//');
 	}
 }

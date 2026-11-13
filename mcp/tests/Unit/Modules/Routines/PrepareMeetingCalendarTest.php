@@ -100,6 +100,7 @@ final class PrepareMeetingCalendarTest extends TestCase {
 		self::assertStringNotContainsString('evil.example', $encoded);
 		self::assertStringNotContainsString('/secret/', $encoded);
 		self::assertSame(1710000000, $dossier['sources']['deck']['candidates'][0]['lastModified']);
+		self::assertSame(CardCandidates::ASSIGNMENT_SCOPE, $dossier['sources']['deck']['assignmentScope']);
 		self::assertSame('https://cloud.example/f/15', $dossier['sources']['files']['candidates'][0]['url']);
 		foreach ($ports->calls as [$name, $arguments]) {
 			self::assertArrayNotHasKey('body', $arguments);
@@ -122,6 +123,7 @@ final class PrepareMeetingCalendarTest extends TestCase {
 		self::assertSame([], $dossier['participants']);
 		self::assertSame('no_address', $dossier['sources']['mail']['reason']);
 		self::assertSame('no_card', $dossier['sources']['deck']['reason']);
+		self::assertArrayNotHasKey('assignmentScope', $dossier['sources']['deck']);
 		self::assertSame('no_path', $dossier['sources']['files']['reason']);
 		self::assertSame([], $dossier['sources']['deck']['candidates']);
 		self::assertSame([], $dossier['sources']['files']['candidates']);

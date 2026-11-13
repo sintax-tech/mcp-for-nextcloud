@@ -35,7 +35,7 @@ final class LocalInstanceLink {
 	 */
 	public function accepts(string $reference): bool {
 		$reference = trim($reference);
-		if ($reference === '' || str_starts_with(strtolower($reference), 'data:')) {
+		if ($reference === '' || str_starts_with(strtolower($reference), 'data:') || $this->authorityHasBackslash($reference)) {
 			return false;
 		}
 		if (str_starts_with($reference, '//')) {
@@ -54,6 +54,30 @@ final class LocalInstanceLink {
 			return false;
 		}
 		return $this->isLocal((string)($parts['host'] ?? ''), isset($parts['port']) ? (int)$parts['port'] : null);
+	}
+
+	/**
+	 * A backslash in the authority is a different host under the WHATWG URL parser than under parse_url.
+	 *
+	 * @param string $reference a path or a URL
+	 * @return bool whether the authority, when there is one, contains a backslash
+	 */
+	private function authorityHasBackslash(string $reference): bool {
+		if (preg_match('#^[a-z][a-z0-9+.-]*://#i', $reference, $scheme) === 1) {
+			$authority = substr($reference, strlen($scheme[0]));
+		} elseif (str_starts_with($reference, '//')) {
+			$authority = substr($reference, 2);
+		} else {
+			return false;
+		}
+		$end = strlen($authority);
+		foreach (['/', '?', '#'] as $stop) {
+			$at = strpos($authority, $stop);
+			if ($at !== false && $at < $end) {
+				$end = $at;
+			}
+		}
+		return str_contains(substr($authority, 0, $end), '\\');
 	}
 
 	/**

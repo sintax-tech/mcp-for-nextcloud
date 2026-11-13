@@ -9,7 +9,9 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Modules\Routines;
 
 use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\ToolContext;
+use OCA\Mcp\Modules\Calendar\Integration\MeetingEventFacts;
 use OCA\Mcp\Modules\Routines\Preparation\AccountEmailMatch;
 use OCA\Mcp\Modules\Routines\Preparation\CardCandidates;
 use OCA\Mcp\Modules\Routines\Preparation\DossierBudget;
@@ -18,10 +20,12 @@ use OCA\Mcp\Modules\Routines\Preparation\MailCandidates;
 use OCA\Mcp\Modules\Routines\Preparation\ParticipantRoster;
 use OCA\Mcp\Modules\Routines\Preparation\PrepareMeetingHandler;
 use OCA\Mcp\Modules\Routines\Preparation\ReferenceTexts;
+use OCA\Mcp\Modules\Routines\Presentation\RoutinesSchema;
 use OCA\Mcp\Modules\Routines\Tools\PrepareMeeting;
 use OCA\Mcp\Platform\Meetings\PreparationSources;
 use OCP\Collaboration\Collaborators\ISearch;
 use PHPUnit\Framework\TestCase;
+use Sabre\VObject\Reader;
 
 /** Hosts that are not this instance, and the ceiling on file lookups. */
 final class PrepareMeetingBoundsTest extends TestCase {
@@ -44,6 +48,84 @@ final class PrepareMeetingBoundsTest extends TestCase {
 		self::assertFalse(ReferenceTexts::isFile('https://evil.example/apps/files/?fileid=9', $local));
 		self::assertTrue(ReferenceTexts::isFile('https://cloud.example/f/15', $local));
 		self::assertTrue(ReferenceTexts::isFile('/Notes/a.md', $local));
+		$backslash = 'https://evil.com\@cloud.example.org/f/1';
+		self::assertFalse($local->accepts($backslash));
+		self::assertSame([], ReferenceTexts::fileReferences($backslash, $local));
+		foreach ([
+			'https://evil.com//f/123',
+			'https://evil.com/share/-/f/123',
+			'https://evil.com/?x=/f/9',
+			'https://evil.com/x//apps/files/?fileid=5',
+		] as $foreign) {
+			self::assertSame([], ReferenceTexts::fileReferences($foreign, $local), $foreign);
+		}
+		self::assertSame([], ReferenceTexts::deckCardIds('//evil.com/apps/deck/board/1/card/3', $local));
+		self::assertSame([], ReferenceTexts::deckCardIds('ftp://evil.com/apps/deck/board/1/card/3', $local));
+		self::assertSame([], ReferenceTexts::deckCardIds('partner.cloud/apps/deck/#/board/1/card/2', $local));
+		self::assertSame([8], ReferenceTexts::deckCardIds('//cloud.example/apps/deck/board/4/card/8', $local));
+		self::assertSame([8], ReferenceTexts::deckCardIds(' /apps/deck/board/4/card/8', $local));
+		self::assertSame(['https://cloud.example/f/15'], ReferenceTexts::fileReferences('https://cloud.example/f/15', $local));
+		self::assertSame(['/f/15'], ReferenceTexts::fileReferences(' /f/15', $local));
+		self::assertSame(['/f/15'], ReferenceTexts::fileReferences('"/f/15"', $local));
+		self::assertStringContainsString(
+			'Deck assignments of a local account are the first 20 rows the mapper returns for that account, in an undefined order',
+			RoutinesSchema::PREPARE_NOTE,
+		);
+	}
+
+	/**
+	 * A URL or an attachment is http(s) or a single-slash path. A foreign URL is not sliced into a relative path.
+	 *
+	 * @return void
+	 */
+	public function testEventTextKeepsAnAbsoluteUrlWhole(): void {
+		$calendar = Reader::read("BEGIN:VCALENDAR\r\nVERSION:2.0\r\nBEGIN:VEVENT\r\n"
+			. "UID:meet\r\nSUMMARY:Planning\r\nDTSTART:20260409T100000Z\r\nDTEND:20260409T110000Z\r\n"
+			. "URL:ftp://evil.com/apps/deck/board/1/card/3\r\n"
+			. "ATTACH:https://evil.com/share/-/f/123\r\n"
+			. "DESCRIPTION:https://evil.com//f/123 https://evil.com/?x=/f/9 https://evil.com/x//apps/files/?fileid=5 //evil.com/apps/deck/board/1/card/3 partner.cloud/apps/deck/#/board/1/card/2 /f/15\r\n"
+			. "END:VEVENT\r\nEND:VCALENDAR\r\n");
+		$facts = (new MeetingEventFacts())->of($calendar->VEVENT);
+		self::assertContains('https://evil.com//f/123', $facts['links']);
+		self::assertContains('https://evil.com/?x=/f/9', $facts['links']);
+		self::assertContains('https://evil.com/x//apps/files/?fileid=5', $facts['links']);
+		self::assertContains('https://evil.com/share/-/f/123', $facts['links']);
+		self::assertContains('/f/15', $facts['links']);
+		self::assertNotContains('/f/123', $facts['links']);
+		self::assertNotContains('/f/9', $facts['links']);
+		self::assertNotContains('ftp://evil.com/apps/deck/board/1/card/3', $facts['links']);
+		self::assertNotContains('//evil.com/apps/deck/board/1/card/3', $facts['links']);
+		self::assertNotContains('/apps/deck/board/1/card/3', $facts['links']);
+		self::assertNotContains('/apps/deck/#/board/1/card/2', $facts['links']);
+	}
+
+	/**
+	 * One folder the reader cannot search is skipped. Messages from the other folder stay, and the failure text does not.
+	 *
+	 * @return void
+	 */
+	public function testAFolderThatCannotBeReadDoesNotDropTheOtherFolders(): void {
+		$ports = new PreparationDouble(
+			PreparationDouble::json([self::event(['attendees' => ['ada@example.com']])]),
+			static function (string $userId, array $arguments): array {
+				if ((int)$arguments['mailbox_id'] === 3) {
+					throw new ToolFailure('mailbox unreadable: synchronizing');
+				}
+				return PreparationDouble::json(['messages' => [[
+					'id' => 7, 'subject' => 'Agenda', 'date' => '2026-04-01', 'url' => 'https://cloud.example/mail/7', 'mailboxId' => 4,
+					'from' => ['count' => 1, 'addresses' => [['name' => 'Ada', 'email' => 'ada@example.com']]],
+				]]]);
+			},
+		);
+		$ports->folders = [3, 4];
+		$dossier = $this->dossier($this->tool($ports, self::ON), self::window());
+		self::assertSame('consulted', $dossier['sources']['mail']['status']);
+		self::assertSame('exact_address', $dossier['sources']['mail']['reason']);
+		self::assertTrue($dossier['sources']['mail']['truncated']);
+		self::assertSame([7], array_column($dossier['sources']['mail']['candidates'], 'id'));
+		$encoded = json_encode($dossier, JSON_THROW_ON_ERROR);
+		self::assertStringNotContainsString('synchronizing', $encoded);
+		self::assertStringNotContainsString('unreadable', $encoded);
 	}
 
 	/**

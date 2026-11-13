@@ -14,8 +14,10 @@ use OCA\Deck\Db\AssignmentMapper;
 /**
  * The card ids `AssignmentMapper::findByParticipant` returns for one user assignment.
  *
- * The mapper does not apply the board ACL. A later card read drops a card the actor cannot open, and that drop
- * is not a truncation. At most the dossier card budget is returned; further rows are not consumed.
+ * The mapper does not apply the board ACL and does not limit the query: it loads every row, and their order is
+ * not defined. This class then keeps card ids from the first {@see self::MAX_IDS} rows it examines. A duplicate
+ * or a non-positive id still counts toward that inspection. A later card read drops a card the actor cannot open,
+ * and that drop is not a truncation.
  */
 final class AssignedCards implements AssignedCardLookup {
 	/** Card ids kept for one participant: the dossier budget, and no more. */

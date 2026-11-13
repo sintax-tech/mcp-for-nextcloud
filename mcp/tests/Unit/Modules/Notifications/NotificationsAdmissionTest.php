@@ -37,7 +37,7 @@ final class NotificationsAdmissionTest extends TestCase {
 		}
 		self::assertSame('read',ListNotifications::definition()->operation);
 		self::assertFalse(ListNotifications::definition()->inputSchema['additionalProperties']);
-		self::assertSame([NotificationsSchema::NOTE],(new NotificationsModule($container))->guideNotes());
+		self::assertSame([NotificationsSchema::NOTE, NotificationsSchema::DISMISS],(new NotificationsModule($container))->guideNotes());
 	}
 	/** @return void unavailable shape refuses even on direct work-class invocation */
 	public function testMissingNativeShapeRefusesBeforeFactory(): void {
@@ -50,13 +50,17 @@ final class NotificationsAdmissionTest extends TestCase {
 	public function testRegistryAdmissionIsOptInAndLazy(): void {
 		foreach ([[false,true,true,true],[true,false,true,true],[true,true,false,true],[true,true,true,false],[true,true,true,true]] as [$grant,$enabled,$capable,$guestAllowed]) {
 			$container=$this->createMock(ContainerInterface::class); $container->expects(self::never())->method('get');
-			$policy=$this->createMock(GrantPolicy::class); $policy->method('grantedAny')->with('alice','notifications',['read'])->willReturn($grant);
+			$policy=$this->createMock(GrantPolicy::class);
+			$policy->method('grantedAny')->willReturnCallback(static function (string $uid, string $module, array $operations) use ($grant): bool {
+				return $grant && $uid === 'alice' && $module === 'notifications' && in_array($operations, [['read'], ['dismiss']], true);
+			});
 			$apps=$this->createMock(IAppManager::class); $apps->method('isEnabledForUser')->willReturn($enabled);
 			$users=$this->createMock(IUserManager::class); $users->method('get')->willReturn($this->createMock(IUser::class));
 			$guests=$this->createMock(GuestRestrictions::class); $guests->method('allowsApp')->willReturn($guestAllowed);
 			$registry=new ToolRegistry([new NotificationsModule($container)],$policy,$apps,$users,new NullLogger(),$guests,new CapabilityRegistry([new NotificationsDiscoveryProbe($capable)],new NullLogger()));
 			$allowed=$grant && $enabled && $capable && $guestAllowed;
 			self::assertCount($allowed?1:0,array_filter($registry->list('alice'),static fn($t)=>$t['name']==='notifications_list'));
+			self::assertCount($allowed?1:0,array_filter($registry->list('alice'),static fn($t)=>$t['name']==='notifications_dismiss'));
 			if (!$allowed) {
 				try { $registry->call('notifications_list',[],'alice'); self::fail('Unavailable tool admitted'); }
 				catch (\InvalidArgumentException) { self::assertTrue(true); }

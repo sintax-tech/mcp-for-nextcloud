@@ -203,6 +203,7 @@ final class ToolTitles {
 			// Activity
 			'activity_list_events' => Translator::t('List own activity'),
 			'notifications_list' => Translator::t('List own notifications'),
+			'notifications_dismiss' => Translator::t('Dismiss own notification'),
 			// Availability
 			'availability_read_absence' => Translator::t('Read own absence'),
 			// Status

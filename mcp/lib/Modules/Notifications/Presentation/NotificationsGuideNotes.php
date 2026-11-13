@@ -12,5 +12,5 @@ final class NotificationsGuideNotes {
 	/** Static guide only. */
 	private function __construct() {}
 	/** @return list<string> privacy and coverage limits */
-	public static function notes(): array { return [NotificationsSchema::NOTE]; }
+	public static function notes(): array { return [NotificationsSchema::NOTE, NotificationsSchema::DISMISS]; }
 }

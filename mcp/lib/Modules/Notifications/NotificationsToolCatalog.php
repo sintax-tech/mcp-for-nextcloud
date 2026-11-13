@@ -7,12 +7,13 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Notifications;
 
+use OCA\Mcp\Modules\Notifications\Tools\DismissNotification;
 use OCA\Mcp\Modules\Notifications\Tools\ListNotifications;
 
 /** Ordered notifications catalog; new tools append here. */
 final class NotificationsToolCatalog {
-	/** Published own-notification read only. */
-	public const TOOLS = [ListNotifications::class];
+	/** Own-notification read, then the one-id dismiss. */
+	public const TOOLS = [ListNotifications::class, DismissNotification::class];
 	/** Static catalog only. */
 	private function __construct() {}
 }

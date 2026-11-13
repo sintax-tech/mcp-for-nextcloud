@@ -26,6 +26,12 @@
 		{"path":"lib/Modules/Mail/Writing/SaveAttachmentPreview.php","fqcn":"OCA\\Mcp\\Modules\\Mail\\Writing\\SaveAttachmentPreview","target":"stays","owner":"Modules\\Mail","ticket":null},
 		{"path":"lib/Platform/FileAccess/NewFileDestination.php","fqcn":"OCA\\Mcp\\Platform\\FileAccess\\NewFileDestination","target":"stays","owner":"Platform","ticket":null},
 
+		{"path":"lib/Modules/Notifications/Tools/DismissNotification.php","fqcn":"OCA\\Mcp\\Modules\\Notifications\\Tools\\DismissNotification","target":"stays","owner":"Modules\\Notifications","ticket":null},
+		{"path":"lib/Modules/Notifications/Dismissal/DismissNotificationInput.php","fqcn":"OCA\\Mcp\\Modules\\Notifications\\Dismissal\\DismissNotificationInput","target":"stays","owner":"Modules\\Notifications","ticket":null},
+		{"path":"lib/Modules/Notifications/Dismissal/DismissNotificationPreview.php","fqcn":"OCA\\Mcp\\Modules\\Notifications\\Dismissal\\DismissNotificationPreview","target":"stays","owner":"Modules\\Notifications","ticket":null},
+		{"path":"lib/Modules/Notifications/Dismissal/DismissNotificationEffect.php","fqcn":"OCA\\Mcp\\Modules\\Notifications\\Dismissal\\DismissNotificationEffect","target":"stays","owner":"Modules\\Notifications","ticket":null},
+		{"path":"lib/Modules/Notifications/Integration/NotificationsDismissal.php","fqcn":"OCA\\Mcp\\Modules\\Notifications\\Integration\\NotificationsDismissal","target":"stays","owner":"Modules\\Notifications","ticket":null},
+		{"path":"lib/Modules/Notifications/Presentation/NotificationsPlanRenderer.php","fqcn":"OCA\\Mcp\\Modules\\Notifications\\Presentation\\NotificationsPlanRenderer","target":"stays","owner":"Modules\\Notifications","ticket":null},
 		{"path":"lib/Modules/Activity/ActivityReferenceUnavailable.php","fqcn":"OCA\\Mcp\\Modules\\Activity\\ActivityReferenceUnavailable","target":"stays","owner":"Modules\\Activity","ticket":null},
 		{"path":"lib/Modules/Activity/Reading/ActivityCalendarReferences.php","fqcn":"OCA\\Mcp\\Modules\\Activity\\Reading\\ActivityCalendarReferences","target":"stays","owner":"Modules\\Activity","ticket":null},
 		{"path":"lib/Modules/Activity/Reading/ActivityFileReferences.php","fqcn":"OCA\\Mcp\\Modules\\Activity\\Reading\\ActivityFileReferences","target":"stays","owner":"Modules\\Activity","ticket":null},

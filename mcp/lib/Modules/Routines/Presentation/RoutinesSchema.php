@@ -54,6 +54,6 @@ final class RoutinesSchema {
 				'confirm_shared' => ['type' => 'boolean', 'default' => false, 'description' => 'Must be true when calendar belongs to somebody else.'],
 			],
 			'required' => ['title', 'participants', 'agenda', 'calendar', 'start', 'end'],
-		], app: 'spreed', destructiveHint: true);
+		], destructiveHint: true, apps: ['spreed', 'calendar']);
 	}
 }

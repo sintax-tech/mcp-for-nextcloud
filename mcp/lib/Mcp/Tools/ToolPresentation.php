@@ -88,6 +88,20 @@ final class ToolPresentation {
 	}
 
 	/**
+	 * The guide's sentence about the apps a tool needs, unchanged for a tool that needs one.
+	 *
+	 * @param list<string> $apps every app the tool needs enabled for the user ({@see ToolDefinition::requiredApps()})
+	 * @return string ' Needs the `x` app enabled.', ' Needs the `x` and `y` apps enabled.', or '' for none
+	 */
+	public static function appsNeeded(array $apps): string {
+		return match (count($apps)) {
+			0 => '',
+			1 => ' Needs the `' . $apps[0] . '` app enabled.',
+			default => ' Needs the `' . implode('` and `', $apps) . '` apps enabled.',
+		};
+	}
+
+	/**
 	 * Title of a grant module, in the language of the current user, for the guide and for the admin matrix.
 	 *
 	 * @param string $module grant module a tool declares (files, notes, calendar, contacts, tasks, deck, talk, people, logs, mail, tables)

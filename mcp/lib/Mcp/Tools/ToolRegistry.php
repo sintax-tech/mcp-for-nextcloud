@@ -248,7 +248,7 @@ class ToolRegistry {
 	 * guide both describe the `confirm` argument of every write.
 	 *
 	 * @param array<string, mixed> $definition a tool definition of a module, or of the guide itself
-	 * @return array{name:string, title:string, description:string, inputSchema:array<string, mixed>, annotations:array<string, bool|string>, module:string, operation:string, app?:string, grantAnyOf?:list<string>}
+	 * @return array{name:string, title:string, description:string, inputSchema:array<string, mixed>, annotations:array<string, bool|string>, module:string, operation:string, app?:string, apps?:list<string>, grantAnyOf?:list<string>}
 	 */
 	private function present(array $definition): array {
 		$definition = WriteGate::publish($definition);
@@ -261,6 +261,7 @@ class ToolRegistry {
 			'module' => $definition['module'],
 			'operation' => $definition['operation'],
 		] + (isset($definition['app']) ? ['app' => $definition['app']] : [])
+			+ (isset($definition['apps']) ? ['apps' => $definition['apps']] : [])
 			+ (isset($definition['grantAnyOf']) ? ['grantAnyOf' => $definition['grantAnyOf']] : []);
 	}
 

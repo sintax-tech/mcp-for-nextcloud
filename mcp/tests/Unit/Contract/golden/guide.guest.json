@@ -7,7 +7,7 @@
             "content": [
                 {
                     "type": "text",
-                    "text": "This guide is in English: relay it to the user in their own language.\n\nWrite confirmation plans arrive as readable text in the user’s language, with the complete plan in structuredContent. Show that text to the user exactly as received.\n\n# Tool guide\n\nGrants and disabled apps are already applied: what is missing from this list you cannot call. The modules available to you are files, talk, people, logs, routines.\n\n- **Files** (`files`): 25 tools — List files, Search files, View folder tree, Create folder, Copy file, Move file, Move files in bulk, Undo bulk operation, Read file, Edit file, Replace part of a file, Download file for local editing, View image, View several images, Search images, List shares, Share file or folder, Stop sharing file or folder, Upload new file, Create text file, Delete file or folder, List file tags, Read file comments, Add or remove a file tag, Add file comment.\n- **Talk** (`talk`): 10 tools — List Talk conversations, Read Talk messages, Reply in Talk, Attach file in Talk, Quote file in Talk, Direct message in Talk, Send batch in Talk, Create group in Talk, List unread Talk conversations, Read unread Talk messages.\n- **People** (`people`): 1 tools — Search people.\n- **Server log** (`logs`): 2 tools — Read server log, Analyze server log.\n- **Routines** (`routines`): 1 tools — Create meeting.\n\nCall this tool again with `module` set to one of those names to get every parameter and every behaviour note of that module, or with `tool` to detail a single tool."
+                    "text": "This guide is in English: relay it to the user in their own language.\n\nWrite confirmation plans arrive as readable text in the user’s language, with the complete plan in structuredContent. Show that text to the user exactly as received.\n\n# Tool guide\n\nGrants and disabled apps are already applied: what is missing from this list you cannot call. The modules available to you are files, talk, people, logs.\n\n- **Files** (`files`): 25 tools — List files, Search files, View folder tree, Create folder, Copy file, Move file, Move files in bulk, Undo bulk operation, Read file, Edit file, Replace part of a file, Download file for local editing, View image, View several images, Search images, List shares, Share file or folder, Stop sharing file or folder, Upload new file, Create text file, Delete file or folder, List file tags, Read file comments, Add or remove a file tag, Add file comment.\n- **Talk** (`talk`): 10 tools — List Talk conversations, Read Talk messages, Reply in Talk, Attach file in Talk, Quote file in Talk, Direct message in Talk, Send batch in Talk, Create group in Talk, List unread Talk conversations, Read unread Talk messages.\n- **People** (`people`): 1 tools — Search people.\n- **Server log** (`logs`): 2 tools — Read server log, Analyze server log.\n\nCall this tool again with `module` set to one of those names to get every parameter and every behaviour note of that module, or with `tool` to detail a single tool."
                 }
             ],
             "structuredContent": {
@@ -428,27 +428,6 @@
                                 "read_only": true,
                                 "destructive": false,
                                 "confirmation": []
-                            }
-                        ]
-                    },
-                    {
-                        "module": "routines",
-                        "title": "Routines",
-                        "count": 1,
-                        "notes": [
-                            "Creates a meeting in three steps after one confirmation, only when the user explicitly asks for a room: first a new private Talk group room named title with the local participants, then the agenda posted as the first message of that room, and last an event in calendar with the same title, the participants as guests and the link of the new room as its location. Without confirm: true the answer is the plan of all three steps and nothing is created; the room link is only known after the room exists. The confirmed call runs the steps in order and stops at the first one that fails, is uncertain or leaves invitations missing; whatever was created stays and the receipt lists it (room token and link, message id, event UID) with what was not done. Nothing is retried, deleted or undone, so calling again creates another room: after a stopped receipt, ask the user and plan only the missing steps with the Talk and Calendar tools. send_invitations is false by default; with true Nextcloud scheduling may email the guests and delivery is not confirmed. A calendar of somebody else needs confirm_shared: true. Besides this permission, each step needs its own: talk.create, talk.reply and calendar.create."
-                        ],
-                        "tools": [
-                            {
-                                "name": "routines_create_meeting",
-                                "title": "Create meeting",
-                                "description": "Creates a meeting in three steps after one confirmation, only when the user explicitly asks for a room: first a new private Talk group room named title with the local participants, then the agenda posted as the first message of that room, and last an event in calendar with the same title, the participants as guests and the link of the new room as its location. Without confirm: true the answer is the plan of all three steps and nothing is created; the room link is only known after the room exists. The confirmed call runs the steps in order and stops at the first one that fails, is uncertain or leaves invitations missing; whatever was created stays and the receipt lists it (room token and link, message id, event UID) with what was not done. Nothing is retried, deleted or undone, so calling again creates another room: after a stopped receipt, ask the user and plan only the missing steps with the Talk and Calendar tools. send_invitations is false by default; with true Nextcloud scheduling may email the guests and delivery is not confirmed. A calendar of somebody else needs confirm_shared: true. Besides this permission, each step needs its own: talk.create, talk.reply and calendar.create.",
-                                "read_only": false,
-                                "destructive": true,
-                                "confirmation": [
-                                    "confirm",
-                                    "confirm_shared"
-                                ]
                             }
                         ]
                     }

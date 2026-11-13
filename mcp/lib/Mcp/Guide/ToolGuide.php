@@ -162,7 +162,7 @@ final class ToolGuide {
 			$module = (string)$definition['module'];
 			$lines = ['# ' . $definition['title'] . ' (`' . $name . '`)', ''];
 			$lines[] = 'Module: ' . ToolPresentation::moduleTitle($module) . ' (`' . $module . '`). Grant operation: `'
-				. implode('` or `', $definition['grantAnyOf'] ?? [$definition['operation']]) . '`.' . (isset($definition['app']) ? ' Needs the `' . $definition['app'] . '` app enabled.' : '');
+				. implode('` or `', $definition['grantAnyOf'] ?? [$definition['operation']]) . '`.' . ToolPresentation::appsNeeded(\OCA\Mcp\Mcp\Tools\ToolDefinition::requiredApps($definition));
 			$lines = array_merge($lines, [''], $this->body($definition), [''], $this->notesSection($module));
 			return $this->render(rtrim(implode("\n", $lines), "\n"), [
 				'module' => $module,

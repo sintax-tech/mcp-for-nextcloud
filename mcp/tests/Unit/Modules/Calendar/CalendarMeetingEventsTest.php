@@ -33,6 +33,11 @@ final class CalendarMeetingEventsTest extends TestCase {
 	/** @var list<array{string, string}> */
 	private array $guestApps = [];
 
+	/**
+	 * A missing calendar.read grant refuses the port before the reader runs.
+	 *
+	 * @return void
+	 */
 	public function testADeniedGrantNeverReachesTheReader(): void {
 		$this->granted = false;
 		$reader = new CountingEventListing();
@@ -48,6 +53,11 @@ final class CalendarMeetingEventsTest extends TestCase {
 		self::assertSame([['alice', 'calendar', ['read']]], $this->asked);
 	}
 
+	/**
+	 * A Calendar app that is off for the actor refuses the port before the reader runs.
+	 *
+	 * @return void
+	 */
 	public function testADisabledAppNeverReachesTheReader(): void {
 		$this->appEnabled = false;
 		$reader = new CountingEventListing();
@@ -62,6 +72,11 @@ final class CalendarMeetingEventsTest extends TestCase {
 		self::assertSame(0, $reader->calls);
 	}
 
+	/**
+	 * A guest whom Guests keeps out of Calendar never reaches the reader.
+	 *
+	 * @return void
+	 */
 	public function testAGuestTheAppForbidsNeverReachesTheReader(): void {
 		$this->guestAllowed = false;
 		$reader = new CountingEventListing();
@@ -76,6 +91,11 @@ final class CalendarMeetingEventsTest extends TestCase {
 		self::assertContains(['alice', 'calendar'], $this->guestApps);
 	}
 
+	/**
+	 * An allowed call validates the published schema and asks the reader once.
+	 *
+	 * @return void
+	 */
 	public function testAnAllowedCallValidatesThenAsksTheReaderOnce(): void {
 		$reader = new CountingEventListing();
 		$events = new CalendarMeetingEvents($this->access(), $reader);
@@ -90,6 +110,11 @@ final class CalendarMeetingEventsTest extends TestCase {
 		self::assertContains(['alice', 'calendar'], $this->guestApps);
 	}
 
+	/**
+	 * An argument calendar_list_events does not publish is refused before the reader.
+	 *
+	 * @return void
+	 */
 	public function testAnUnknownKeyIsRefusedBeforeTheReader(): void {
 		$reader = new CountingEventListing();
 		$events = new CalendarMeetingEvents($this->access(), $reader);
@@ -102,6 +127,11 @@ final class CalendarMeetingEventsTest extends TestCase {
 		}
 	}
 
+	/**
+	 * A grant that cannot be read propagates and the reader is not called.
+	 *
+	 * @return void
+	 */
 	public function testAnUnreadableGrantPropagatesAndSkipsTheReader(): void {
 		$this->unavailable = true;
 		$reader = new CountingEventListing();
@@ -115,6 +145,11 @@ final class CalendarMeetingEventsTest extends TestCase {
 		}
 	}
 
+	/**
+	 * The registry gate of calendar_list_events, with the grant, app and guest answers of this test.
+	 *
+	 * @return ToolAccess the real registry decision
+	 */
 	private function access(): ToolAccess {
 		$policy = $this->createMock(GrantPolicy::class);
 		$policy->method('grantedAny')->willReturnCallback(function (string $uid, string $module, array $operations): bool {
@@ -144,6 +179,7 @@ final class CountingEventListing implements CalendarEventListing {
 	/** @var array<string, mixed> */
 	public array $arguments = [];
 
+	/** {@inheritDoc} */
 	public function handle(string $userId, array $arguments): array {
 		$this->calls++;
 		$this->userId = $userId;

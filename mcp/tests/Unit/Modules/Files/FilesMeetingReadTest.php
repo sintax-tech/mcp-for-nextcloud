@@ -32,6 +32,11 @@ final class FilesMeetingReadTest extends TestCase {
 	/** @var list<array{string, string}> */
 	private array $guestApps = [];
 
+	/**
+	 * A missing files.read grant refuses the port before the reader runs.
+	 *
+	 * @return void
+	 */
 	public function testADeniedGrantNeverReachesTheReader(): void {
 		$this->granted = false;
 		$files = new CountingFileRead();
@@ -47,6 +52,11 @@ final class FilesMeetingReadTest extends TestCase {
 		self::assertSame([['alice', 'files', ['read']]], $this->asked);
 	}
 
+	/**
+	 * A guest whom Guests keeps out of Files never reaches the reader.
+	 *
+	 * @return void
+	 */
 	public function testAGuestTheAppForbidsNeverReachesTheReader(): void {
 		$this->guestAllowed = false;
 		$files = new CountingFileRead();
@@ -61,6 +71,11 @@ final class FilesMeetingReadTest extends TestCase {
 		self::assertContains(['alice', 'files'], $this->guestApps);
 	}
 
+	/**
+	 * An allowed call validates the path and reads it once.
+	 *
+	 * @return void
+	 */
 	public function testAnAllowedCallValidatesThenReadsThePathOnce(): void {
 		$files = new CountingFileRead();
 		$read = new FilesMeetingRead($this->access(), $files);
@@ -75,6 +90,11 @@ final class FilesMeetingReadTest extends TestCase {
 		self::assertContains(['alice', 'files'], $this->guestApps);
 	}
 
+	/**
+	 * A call without a path is refused before the reader.
+	 *
+	 * @return void
+	 */
 	public function testAMissingPathIsRefusedBeforeTheReader(): void {
 		$files = new CountingFileRead();
 		$read = new FilesMeetingRead($this->access(), $files);
@@ -87,6 +107,11 @@ final class FilesMeetingReadTest extends TestCase {
 		}
 	}
 
+	/**
+	 * A grant that cannot be read propagates and the reader is not called.
+	 *
+	 * @return void
+	 */
 	public function testAnUnreadableGrantPropagatesAndSkipsTheReader(): void {
 		$this->unavailable = true;
 		$files = new CountingFileRead();
@@ -100,6 +125,11 @@ final class FilesMeetingReadTest extends TestCase {
 		}
 	}
 
+	/**
+	 * The registry gate of files_read, with the grant and guest answers of this test.
+	 *
+	 * @return ToolAccess the real registry decision
+	 */
 	private function access(): ToolAccess {
 		$policy = $this->createMock(GrantPolicy::class);
 		$policy->method('grantedAny')->willReturnCallback(function (string $uid, string $module, array $operations): bool {
@@ -129,6 +159,7 @@ final class CountingFileRead implements FileTextListing {
 	/** @var array<string, mixed> */
 	public array $arguments = [];
 
+	/** {@inheritDoc} */
 	public function handle(array $arguments, string $userId): array {
 		$this->calls++;
 		$this->arguments = $arguments;

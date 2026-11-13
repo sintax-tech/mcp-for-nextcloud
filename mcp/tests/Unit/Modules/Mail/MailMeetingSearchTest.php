@@ -34,6 +34,11 @@ final class MailMeetingSearchTest extends TestCase {
 	/** @var list<array{string, string}> */
 	private array $guestApps = [];
 
+	/**
+	 * A missing mail grant refuses the port before the search runs.
+	 *
+	 * @return void
+	 */
 	public function testADeniedGrantNeverReachesTheSearch(): void {
 		$this->granted = false;
 		$search = new CountingMailSearch();
@@ -49,6 +54,11 @@ final class MailMeetingSearchTest extends TestCase {
 		self::assertSame([['alice', 'mail', ['messages']]], $this->asked);
 	}
 
+	/**
+	 * A Mail app that is off for the actor refuses the port before the search runs.
+	 *
+	 * @return void
+	 */
 	public function testADisabledAppNeverReachesTheSearch(): void {
 		$this->appEnabled = false;
 		$search = new CountingMailSearch();
@@ -63,6 +73,11 @@ final class MailMeetingSearchTest extends TestCase {
 		self::assertSame(0, $search->calls);
 	}
 
+	/**
+	 * A guest whom Guests keeps out of Mail never reaches the search.
+	 *
+	 * @return void
+	 */
 	public function testAGuestTheAppForbidsNeverReachesTheSearch(): void {
 		$this->guestAllowed = false;
 		$search = new CountingMailSearch();
@@ -77,6 +92,11 @@ final class MailMeetingSearchTest extends TestCase {
 		self::assertContains(['alice', 'mail'], $this->guestApps);
 	}
 
+	/**
+	 * An empty call applies the published limit and searches once.
+	 *
+	 * @return void
+	 */
 	public function testAnEmptyCallAppliesThePublishedLimitAndSearchesOnce(): void {
 		$search = new CountingMailSearch();
 		$mail = new MailMeetingSearch($this->access(), $search);
@@ -91,6 +111,11 @@ final class MailMeetingSearchTest extends TestCase {
 		self::assertContains(['alice', 'mail'], $this->guestApps);
 	}
 
+	/**
+	 * An argument mail_search_messages does not publish is refused before the search.
+	 *
+	 * @return void
+	 */
 	public function testAnUnknownKeyIsRefusedBeforeTheSearch(): void {
 		$search = new CountingMailSearch();
 		$mail = new MailMeetingSearch($this->access(), $search);
@@ -103,6 +128,11 @@ final class MailMeetingSearchTest extends TestCase {
 		}
 	}
 
+	/**
+	 * A grant that cannot be read propagates and the search is not called.
+	 *
+	 * @return void
+	 */
 	public function testAnUnreadableGrantPropagatesAndSkipsTheSearch(): void {
 		$this->unavailable = true;
 		$search = new CountingMailSearch();
@@ -116,6 +146,11 @@ final class MailMeetingSearchTest extends TestCase {
 		}
 	}
 
+	/**
+	 * The registry gate of mail_search_messages, with the grant, app and guest answers of this test.
+	 *
+	 * @return ToolAccess the real registry decision
+	 */
 	private function access(): ToolAccess {
 		$policy = $this->createMock(GrantPolicy::class);
 		$policy->method('grantedAny')->willReturnCallback(function (string $uid, string $module, array $operations): bool {
@@ -145,6 +180,7 @@ final class CountingMailSearch implements MailSearchListing {
 	/** @var array<string, mixed> */
 	public array $arguments = [];
 
+	/** {@inheritDoc} */
 	public function searchMessages(array $arguments, string $userId): array {
 		$this->calls++;
 		$this->arguments = $arguments;

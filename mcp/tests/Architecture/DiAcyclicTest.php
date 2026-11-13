@@ -79,6 +79,11 @@ final class DiAcyclicTest extends TestCase {
 
 	public static function wrongFactory(): object { return new \stdClass(); }
 
+	/**
+	 * Mail, Deck and files may be unbound: the container still starts and the dossier lists only calendar.
+	 *
+	 * @return void
+	 */
 	public function testUnboundOptionalPreparationSourcesDoNotFailInitialize(): void {
 		$factories = Registrations::capture($this);
 		unset(

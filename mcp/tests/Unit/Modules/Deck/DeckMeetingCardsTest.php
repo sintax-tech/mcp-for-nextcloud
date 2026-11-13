@@ -35,6 +35,11 @@ final class DeckMeetingCardsTest extends TestCase {
 	/** @var list<array{string, string}> */
 	private array $guestApps = [];
 
+	/**
+	 * A missing deck.read grant refuses the card read before the dispatch runs.
+	 *
+	 * @return void
+	 */
 	public function testADeniedCardGrantNeverReachesTheDispatch(): void {
 		$this->granted = false;
 		$deck = new CountingDeckDispatch();
@@ -51,6 +56,11 @@ final class DeckMeetingCardsTest extends TestCase {
 		self::assertSame([['alice', 'deck', ['read']]], $this->asked);
 	}
 
+	/**
+	 * A Deck app that is off for the actor refuses the link read before the dispatch runs.
+	 *
+	 * @return void
+	 */
 	public function testADisabledAppNeverReachesTheDispatch(): void {
 		$this->appEnabled = false;
 		$deck = new CountingDeckDispatch();
@@ -66,6 +76,11 @@ final class DeckMeetingCardsTest extends TestCase {
 		self::assertSame(0, $deck->writes);
 	}
 
+	/**
+	 * A guest whom Guests keeps out of Deck never reaches the dispatch.
+	 *
+	 * @return void
+	 */
 	public function testAGuestTheAppForbidsNeverReachesTheDispatch(): void {
 		$this->guestAllowed = false;
 		$deck = new CountingDeckDispatch();
@@ -81,6 +96,11 @@ final class DeckMeetingCardsTest extends TestCase {
 		self::assertContains(['alice', 'deck'], $this->guestApps);
 	}
 
+	/**
+	 * The card and its links dispatch only deck_read_card and deck_list_card_files.
+	 *
+	 * @return void
+	 */
 	public function testCardAndLinksDispatchOnlyTheTwoReadTools(): void {
 		$deck = new CountingDeckDispatch();
 		$cards = new DeckMeetingCards($this->access(), $deck);
@@ -99,6 +119,11 @@ final class DeckMeetingCardsTest extends TestCase {
 		self::assertContains(['alice', 'deck'], $this->guestApps);
 	}
 
+	/**
+	 * A card id of the wrong type is refused before the dispatch.
+	 *
+	 * @return void
+	 */
 	public function testAMistypedCardIdIsRefusedBeforeTheDispatch(): void {
 		$deck = new CountingDeckDispatch();
 		$cards = new DeckMeetingCards($this->access(), $deck);
@@ -112,6 +137,11 @@ final class DeckMeetingCardsTest extends TestCase {
 		}
 	}
 
+	/**
+	 * A grant that cannot be read propagates and the dispatch is not called.
+	 *
+	 * @return void
+	 */
 	public function testAnUnreadableGrantPropagatesAndSkipsTheDispatch(): void {
 		$this->unavailable = true;
 		$deck = new CountingDeckDispatch();
@@ -126,6 +156,11 @@ final class DeckMeetingCardsTest extends TestCase {
 		}
 	}
 
+	/**
+	 * The registry gate of the two Deck reads, with the grant, app and guest answers of this test.
+	 *
+	 * @return ToolAccess the real registry decision
+	 */
 	private function access(): ToolAccess {
 		$policy = $this->createMock(GrantPolicy::class);
 		$policy->method('grantedAny')->willReturnCallback(function (string $uid, string $module, array $operations): bool {
@@ -154,6 +189,7 @@ final class CountingDeckDispatch implements DeckReadDispatch {
 	/** @var list<string> */
 	public array $names = [];
 
+	/** {@inheritDoc} */
 	public function execute(string $name, array $arguments, string $userId): array {
 		$this->names[] = $name;
 		if ($name !== ReadCardHandler::TOOL && $name !== ListCardFilesHandler::TOOL) {

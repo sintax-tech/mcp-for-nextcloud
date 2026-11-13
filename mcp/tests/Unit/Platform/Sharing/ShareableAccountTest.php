@@ -14,6 +14,11 @@ use PHPUnit\Framework\TestCase;
 
 /** Only an exact people-search hit of the very account ID names an account; everything else reads as not found. */
 final class ShareableAccountTest extends TestCase {
+	/**
+	 * Only an exact hit whose share target is the very account ID names the account, with the people search call.
+	 *
+	 * @return void
+	 */
 	public function testOnlyTheExactHitOfTheVeryIdCounts(): void {
 		$search = $this->createMock(ISearch::class);
 		$search->expects(self::exactly(4))->method('search')
@@ -34,6 +39,11 @@ final class ShareableAccountTest extends TestCase {
 		self::assertNull($accounts->displayName(''), 'an empty ID is never searched');
 	}
 
+	/**
+	 * A failed search names no account.
+	 *
+	 * @return void
+	 */
 	public function testAFailedSearchNamesNoAccount(): void {
 		$search = $this->createMock(ISearch::class);
 		$search->method('search')->willThrowException(new \RuntimeException('search backend down'));

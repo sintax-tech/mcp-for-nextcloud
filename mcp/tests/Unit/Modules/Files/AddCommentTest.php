@@ -36,6 +36,12 @@ final class AddCommentTest extends TestCase {
 		yield 'NC35 server v35.0.1' => ['35'];
 	}
 
+	/**
+	 * The plan shows the trimmed text, who is notified and the marker, and writes nothing.
+	 *
+	 * @param string $major source pin
+	 * @return void
+	 */
 	#[DataProvider('pins')]
 	public function testPlanShowsTheStoredTextTheMentionsAndTheMarkerWithoutWriting(string $major): void {
 		$this->world = new CommentWorld($this, $major);
@@ -50,6 +56,12 @@ final class AddCommentTest extends TestCase {
 		self::assertSame(array_keys(CommentWorld::samplePlan()), array_keys($plan), 'the renderer contract sample keeps the real keys');
 	}
 
+	/**
+	 * The confirmed call is one native POST by alice: her marker moves and only the planned mention is notified.
+	 *
+	 * @param string $major source pin
+	 * @return void
+	 */
 	#[DataProvider('pins')]
 	public function testConfirmedCommentIsOneNativePostByTheActor(string $major): void {
 		$this->world = new CommentWorld($this, $major);
@@ -68,6 +80,12 @@ final class AddCommentTest extends TestCase {
 		self::assertSame(0, $this->world->native->backendCalls);
 	}
 
+	/**
+	 * Hidden, missing, natively refused and forbidden paths get the very refusal of a missing file.
+	 *
+	 * @param string $major source pin
+	 * @return void
+	 */
 	#[DataProvider('pins')]
 	public function testUnreachableItemsAreRefusedLikeAMissingOne(string $major): void {
 		$this->world = new CommentWorld($this, $major);
@@ -80,6 +98,12 @@ final class AddCommentTest extends TestCase {
 		self::assertSame([[], []], [$this->world->saves, $this->world->markerWrites]);
 	}
 
+	/**
+	 * Mentions of anything but one findable account, and empty or too long texts, are refused before any DAV request.
+	 *
+	 * @param string $major source pin
+	 * @return void
+	 */
 	#[DataProvider('pins')]
 	public function testMentionsOfAnythingButOneAccountAreRefusedBeforeDav(string $major): void {
 		$this->world = new CommentWorld($this, $major);
@@ -99,6 +123,12 @@ final class AddCommentTest extends TestCase {
 		self::assertSame([], $this->world->notified);
 	}
 
+	/**
+	 * An account the people search hides and one that does not exist read alike; a visible one is accepted.
+	 *
+	 * @param string $major source pin
+	 * @return void
+	 */
 	#[DataProvider('pins')]
 	public function testAHiddenAccountAndAMissingOneAreRefusedAlikeAndAVisibleOneIsAccepted(string $major): void {
 		$this->world = new CommentWorld($this, $major);
@@ -110,6 +140,12 @@ final class AddCommentTest extends TestCase {
 		self::assertSame([[], []], [$this->world->saves, $this->world->notified]);
 	}
 
+	/**
+	 * An account that leaves the people search between the confirmed plan and the POST is refused without a write.
+	 *
+	 * @param string $major source pin
+	 * @return void
+	 */
 	#[DataProvider('pins')]
 	public function testAnAccountHiddenRightBeforeThePostIsRefused(string $major): void {
 		$this->world = new CommentWorld($this, $major);
@@ -123,6 +159,12 @@ final class AddCommentTest extends TestCase {
 		self::assertSame([[], [], []], [$this->world->saves, $this->world->markerWrites, $this->world->notified]);
 	}
 
+	/**
+	 * The receipt names the comment this POST created, not a newer twin with the same text.
+	 *
+	 * @param string $major source pin
+	 * @return void
+	 */
 	#[DataProvider('pins')]
 	public function testTheReceiptIsTheCommentOfThisCallOnly(string $major): void {
 		$this->world = new CommentWorld($this, $major);
@@ -139,6 +181,12 @@ final class AddCommentTest extends TestCase {
 		self::assertSame('Same words', $receipt['comment']['text']);
 	}
 
+	/**
+	 * A failed POST names no comment, even when an older one has the same text.
+	 *
+	 * @param string $major source pin
+	 * @return void
+	 */
 	#[DataProvider('pins')]
 	public function testAFailedPostNamesNoComment(string $major): void {
 		$this->world = new CommentWorld($this, $major);
@@ -160,6 +208,13 @@ final class AddCommentTest extends TestCase {
 		}
 	}
 
+	/**
+	 * An app DAV plugin that vetoes the POST, on each way apps add plugins, leaves no comment, marker or notification.
+	 *
+	 * @param string $major source pin
+	 * @param string $property world property that carries the plugin
+	 * @return void
+	 */
 	#[DataProvider('vetoRoutes')]
 	public function testAnAppPluginThatVetoesThePostLeavesNoComment(string $major, string $property): void {
 		$this->world = new CommentWorld($this, $major);
@@ -176,6 +231,12 @@ final class AddCommentTest extends TestCase {
 		self::assertSame([[], [], []], [$this->world->saves, $this->world->markerWrites, $this->world->notified]);
 	}
 
+	/**
+	 * The mention scan returns exactly what the native comment of the pin returns.
+	 *
+	 * @param string $major source pin
+	 * @return void
+	 */
 	#[DataProvider('pins')]
 	public function testMentionScanIsTheNativeOne(string $major): void {
 		CommentWorld::loadNative($major);
@@ -188,6 +249,12 @@ final class AddCommentTest extends TestCase {
 		}
 	}
 
+	/**
+	 * A changed plan, a revoked grant and a missing plan_state write nothing.
+	 *
+	 * @param string $major source pin
+	 * @return void
+	 */
 	#[DataProvider('pins')]
 	public function testAChangedPlanARevokedGrantAndAMissingStateWriteNothing(string $major): void {
 		$this->world = new CommentWorld($this, $major);
@@ -209,6 +276,12 @@ final class AddCommentTest extends TestCase {
 		self::assertSame([[], [], []], [$this->world->saves, $this->world->markerWrites, $this->world->notified]);
 	}
 
+	/**
+	 * A file of someone else needs confirm_shared before the comment is added.
+	 *
+	 * @param string $major source pin
+	 * @return void
+	 */
 	#[DataProvider('pins')]
 	public function testASharedFileNeedsConfirmShared(string $major): void {
 		$this->world = new CommentWorld($this, $major);
@@ -223,6 +296,12 @@ final class AddCommentTest extends TestCase {
 		self::assertSame([['43', 'alice', 'Looks good']], $this->world->saves);
 	}
 
+	/**
+	 * A file hidden between the plan and the POST is refused without a write.
+	 *
+	 * @param string $major source pin
+	 * @return void
+	 */
 	#[DataProvider('pins')]
 	public function testAFileHiddenRightBeforeThePostIsRefused(string $major): void {
 		$this->world = new CommentWorld($this, $major);
@@ -239,6 +318,11 @@ final class AddCommentTest extends TestCase {
 		self::assertSame([[], []], [$this->world->saves, $this->world->markerWrites]);
 	}
 
+	/**
+	 * The definition is a files.comments write, published as destructive, with the native text limit.
+	 *
+	 * @return void
+	 */
 	public function testDefinitionIsADefaultDeniedCommentsWrite(): void {
 		$definition = AddComment::definition();
 		self::assertSame(['files_add_comment', 'files', 'comments'], [$definition->name, $definition->module, $definition->operation]);

@@ -34,6 +34,11 @@ final class AddCommentTest extends IntegrationTestCase {
 	private array $commented = [];
 	private ?string $service = null;
 
+	/**
+	 * Removes the comments, the disposable accounts and restores the MCP service switch.
+	 *
+	 * @return void
+	 */
 	protected function tearDown(): void {
 		foreach ($this->commented as $id) {
 			Server::get(ICommentsManager::class)->deleteCommentsAtObject('files', $id);
@@ -48,6 +53,11 @@ final class AddCommentTest extends IntegrationTestCase {
 		parent::tearDown();
 	}
 
+	/**
+	 * Through an app password and the OAuth service: denied until granted, a plan that writes nothing, one comment by the caller with only the caller's marker moved and the mention notified; an unknown mention and a foreign file write nothing.
+	 *
+	 * @return void
+	 */
 	public function testOneCommentByTheCallerWithItsOwnMarkerAndNotification(): void {
 		$author = $this->user('mcp-it-cmw-a-');
 		$other = $this->user('mcp-it-cmw-b-');

@@ -41,6 +41,7 @@ Minor release on top of 1.3.5. It adds routine reads and writes around the calen
 ### Fixed
 
 - **Talk reads without writes:** `talk_list_conversations` and `talk_read_messages` treat a lobby whose timer has passed as open for the answer only, without opening it. `talk_list_conversations` shows a legacy one-to-one name without storing it, counts unread messages as Talk shows them in its own list, reports 0 for a conversation the lobby bars and null when the count cannot be read.
+- **Guests for an account without an email address:** `calendar_create_event`, `calendar_update_event` and `routines_create_meeting` now tell the user that their account has no email address, so the event cannot have attendees, instead of a bare "Invalid arguments" (since 1.2.5). The refusal still writes nothing and names nothing of the guests.
 
 ### Validation and limits
 

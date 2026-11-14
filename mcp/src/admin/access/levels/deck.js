@@ -10,5 +10,5 @@
 	'use strict'
 
 	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
-	catalog.tiers.deck = [['read'], ['create', 'edit', 'move'], ['delete']]
+	catalog.tiers.deck = [['read'], ['create', 'edit', 'move'], ['delete', 'labels']]
 })(typeof window !== 'undefined' ? window : globalThis)

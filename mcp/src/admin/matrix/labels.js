@@ -19,6 +19,7 @@
 		 * @return {Object<string, string>} module labels */
 		function moduleLabels() {
 			return {
+				...window.OCA.Mcp.Admin.routineGrants?.moduleLabels(),
 				files: t('mcp', 'Files'),
 				notes: t('mcp', 'Notes'),
 				deck: t('mcp', 'Deck'),
@@ -39,6 +40,7 @@
 		function operationLabels() {
 			return {
 				...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(),
+				...window.OCA.Mcp.Admin.routineGrants?.operationLabels(),
 				read: t('mcp', 'read'),
 				schema: t('mcp', 'schema'), results: t('mcp', 'results'),
 				'collective.create': t('mcp', 'create collectives'),
@@ -59,6 +61,7 @@
 				flags: t('mcp', 'flags'),
 				draft: t('mcp', 'draft'),
 				send: t('mcp', 'send'),
+				save: t('mcp', 'save attachment'),
 			}
 		}
 
@@ -69,6 +72,8 @@
 		 * @return {string} description
 		 */
 		function operationHint(module, operation) {
+			const routineHint = window.OCA.Mcp.Admin.routineGrants?.operationHint(module, operation)
+			if (routineHint) return routineHint
 			if (module === 'talk' && operation === 'create') {
 				return t('mcp', 'Open new conversations, which invites people')
 			}
@@ -112,23 +117,7 @@
 		/** Names of the access levels of src/admin/admin-levels.js.
 		 * @return {Object<string, string>} names of the access levels of src/admin/admin-levels.js */
 		function levelLabels() {
-			return {
-				...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(),
-				none: t('mcp', 'None'),
-				read: t('mcp', 'Read'),
-				edit: t('mcp', 'Edit'),
-				full: t('mcp', 'Full'),
-				forms_write: t('mcp', 'Read and write forms'),
-				forms_write_results: t('mcp', 'Read and write forms and read responses'),
-				folders: t('mcp', 'Accounts and folders'),
-				messages: t('mcp', 'Messages'),
-				attachments: t('mcp', 'Messages and attachments'),
-				flags: t('mcp', 'Messages, attachments and flags'),
-				move: t('mcp', 'Messages, attachments, flags and moving'),
-				draft: t('mcp', 'Messages, attachments, flags, moving and drafts'),
-				send: t('mcp', 'Messages, attachments, flags, moving, drafts and sending'),
-				custom: t('mcp', 'Custom'),
-			}
+			return window.OCA.Mcp.Admin.levelLabels()
 		}
 
 		Object.assign(context, { levelLabels, moduleLabels, operationHint, operationLabels })

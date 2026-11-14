@@ -22,7 +22,7 @@ final class PollsMutationFixture {
 	public static function run(string $scratch): void {
 		$pins = json_decode(file_get_contents(__DIR__ . '/polls-sources.json'), true, 512, JSON_THROW_ON_ERROR);
 		$out = [];
-		foreach ([32, 33, 34, 35] as $major) {
+		foreach ([34, 35] as $major) {
 			$p = $pins[$major]['polls'];
 			$v = $p['version'];
 			if (hash_file('sha256', $scratch . '/v' . $v . '.tar.gz') !== $p['sha256']) {
@@ -36,7 +36,7 @@ final class PollsMutationFixture {
 			}
 			$root = $scratch . '/tree-' . $major;
 			$parser = new SourceParser($root);
-			$classes = array_keys(PollsMutationSurface::methods($major !== 32));
+			$classes = array_keys(PollsMutationSurface::methods(true));
 			$classes[] = PollsMutationSurface::USER_MAPPER;
 			$classes[] = PollsSurface::OPTION;
 			$classes[] = PollsMutationSurface::SHARE;
@@ -67,9 +67,7 @@ final class PollsMutationFixture {
 				'Db/UserMapper',
 				'Model/Settings/AppSettings',
 			] as $path) {
-				if ($major === 32 && in_array($path, ['Model/DateTimeImmutable', 'Model/DateInterval'], true)) {
-					continue;
-				}
+
 				$record['shapeSources'][$path] = file_get_contents($root . '/apps/polls/lib/' . $path . '.php');
 				if ($record['shapeSources'][$path] !== ($archived[$path . '.php'] ?? null)) {
 					throw new \RuntimeException('Extracted source mismatch');
@@ -84,16 +82,16 @@ final class PollsMutationFixture {
 					throw new \RuntimeException('Extracted source mismatch');
 				}
 				$record['files'][$path] = hash('sha256', $source);
-				$names = array_keys(PollsMutationSurface::methods($major !== 32)[$class] ?? []);
+				$names = array_keys(PollsMutationSurface::methods(true)[$class] ?? []);
 				$names = [
 					...$names,
 					...match ($class) {
 						PollsMutationSurface::SHARES => ['sendInvitation', 'createNewShare'],
-						PollsMutationSurface::USER_MAPPER => [$major === 32 ? 'getUserObject' : 'createUserObject'],
+						PollsMutationSurface::USER_MAPPER => ['createUserObject'],
 						'OCA\Polls\Model\Settings\AppSettings' => ['getBooleanSetting', 'getPublicSharesAllowed'],
 						PollsSurface::POLL => ['deserializeArray', 'setAnonymousSafe'],
 						PollsSurface::OPTION => ['getOrder'],
-						PollsMutationSurface::SHARE => $major === 32 ? ['getType'] : ['getType', 'setFromUserObject'],
+						PollsMutationSurface::SHARE => ['getType', 'setFromUserObject'],
 						default => [],
 					},
 				];

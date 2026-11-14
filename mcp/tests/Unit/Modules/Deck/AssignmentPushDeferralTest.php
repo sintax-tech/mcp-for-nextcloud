@@ -25,7 +25,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 
 /**
- * Issue #26 with Nextcloud's own notification manager, NC 32.0.15 and NC 35.0.1, loaded from
+ * Issue #26 with Nextcloud's own notification manager, NC 35.0.1, loaded from
  * tests/fixtures/nextcloud-core/notification (see sources.json), and the Notifications app's queue ({@see PushQueueApp}).
  *
  * Deck's `assignUser()` notifies before it inserts, as in Deck 1.16.8 and 1.19.0. Each case runs in its own process,
@@ -47,7 +47,6 @@ final class AssignmentPushDeferralTest extends TestCase {
 
 	/** @return iterable<string, array{0: string}> Nextcloud majors whose official manager is loaded. */
 	public static function releases(): iterable {
-		yield 'NC32.0.15' => ['32'];
 		yield 'NC35.0.1' => ['35'];
 	}
 

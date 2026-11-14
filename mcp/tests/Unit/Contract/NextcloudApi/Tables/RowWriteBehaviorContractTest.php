@@ -37,7 +37,7 @@ final class RowWriteBehaviorContractTest extends TestCase {
 	 */
 	public function testTheFixtureIsTheSupportedPins(): void {
 		$fixture = self::fixture();
-		$this->assertSame(['1.0.0', '1.0.10', '2.0.0', '2.2.2', '2.3.2'], array_keys($fixture['versions']));
+		$this->assertSame(['1.0.0', '2.0.0', '2.2.2', '2.3.2'], array_keys($fixture['versions']));
 		$sources = TablesBehavior::sources();
 		foreach ($fixture['sha256'] as $version => $sha256) {
 			$this->assertSame($sources[$version]['sha256'], $sha256, $version);

@@ -216,7 +216,7 @@ final class RowReaderTest extends TestCase {
 		$app->withTableSort(1, '[{"columnId":12,"mode":"DESC"}]');
 		$this->page($app, 'alice', ['table_id' => 1]);
 		$this->assertSame([['columnId' => 12, 'mode' => 'DESC'], ['columnId' => -1, 'mode' => 'ASC']], $app->callsOf('Row2Mapper', 'findAll')[0][5]);
-		$old = RowsScene::app('1.0.10');
+		$old = RowsScene::app('2.0.0');
 		$old->withTableSort(1, '[{"columnId":12,"mode":"DESC"}]');
 		$this->page($old, 'alice', ['table_id' => 1]);
 		$this->assertSame([['columnId' => -1, 'mode' => 'ASC']], $old->callsOf('Row2Mapper', 'findAll')[0][5]);

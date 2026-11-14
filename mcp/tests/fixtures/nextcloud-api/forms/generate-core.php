@@ -16,7 +16,7 @@ foreach ($pins as $major => $files) {
 	$tree = $root . '/v' . $major . '.0.0';
 	foreach ($files as $path => $record) {
 		if (($record['status'] ?? 200) === 404) {
-			if ($major != 31 || $path !== 'lib/public/Mail/IEmailValidator.php' || is_file($tree . '/' . $path)) { throw new RuntimeException('Unexpected missing core source'); }
+			throw new RuntimeException('Unexpected missing core source');
 		} elseif (hash_file('sha256', $tree . '/' . $path) !== $record['sha256']) { throw new RuntimeException('Core source SHA mismatch'); }
 	}
 	$parser = new SourceParser($tree); $file = dirname(__DIR__) . '/' . $major . '.php'; $fixture = require $file;

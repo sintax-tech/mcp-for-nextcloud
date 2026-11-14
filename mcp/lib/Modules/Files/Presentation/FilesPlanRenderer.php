@@ -34,6 +34,8 @@ final class FilesPlanRenderer {
 				'files_unshare' => SharingPlanText::unshare($plan),
 				'files_upload' => CreationPlanText::upload($plan),
 				'files_create' => CreationPlanText::create($plan),
+				'files_set_tag' => TaggingPlanText::set($plan),
+				'files_add_comment' => CommentingPlanText::add($plan),
 				default => null,
 			};
 		} catch (\Throwable) {

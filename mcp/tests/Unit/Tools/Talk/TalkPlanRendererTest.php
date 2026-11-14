@@ -267,7 +267,7 @@ final class TalkPlanRendererTest extends TestCase {
 			'draft' => ['message' => 42],
 		]));
 		$this->assertNull(TalkPlanRenderer::render('talk_reply', [
-			'conversation' => ['token' => 'abcd'],
+			'conversation' => ['displayName' => ''],
 			'draft' => ['message' => 'oi'],
 		]));
 		$this->assertNull(TalkPlanRenderer::render('talk_message_user', [
@@ -281,6 +281,17 @@ final class TalkPlanRendererTest extends TestCase {
 		$this->assertNull(TalkPlanRenderer::render('talk_create_group', [
 			'draft' => ['participants' => []],
 		]));
+	}
+
+	/** A room whose name cannot be read without writing it is named by its token, which the user also sees. */
+	public function testAConversationWithoutAReadableNameIsNamedByItsToken(): void {
+		$body = TalkPlanRenderer::render('talk_reply', [
+			'conversation' => ['token' => 'abcd', 'displayName' => ''],
+			'draft' => ['message' => 'oi'],
+		]);
+
+		$this->assertIsString($body);
+		$this->assertStringContainsString('**abcd**', $body);
 	}
 
 	/** A render failure is never shown to the user: the generic body has to be able to take over. */
@@ -413,10 +424,10 @@ final class TalkPlanRendererTest extends TestCase {
 	 */
 	private function module(): \OCA\Mcp\Modules\Talk\TalkModule {
 		$services = $this->createMock(\OCA\Mcp\Modules\Talk\Integration\TalkServices::class);
-		$resolver = new \OCA\Mcp\Modules\Talk\Locating\ConversationResolver($services);
+		$resolver = new \OCA\Mcp\Modules\Talk\Locating\ConversationResolver($services, new \OCA\Mcp\Modules\Talk\Integration\UnreadRoomView($this->createMock(IUserManager::class), 1));
 		return \OCA\Mcp\Tests\Unit\Tools\Talk\TalkTestModule::build(
 			$services,
-			new \OCA\Mcp\Modules\Talk\Reading\ConversationReader($services, $resolver, $this->createMock(ActorNames::class), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this)),
+			new \OCA\Mcp\Modules\Talk\Reading\ConversationReader($services, $resolver, $this->createMock(ActorNames::class), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this), new \OCA\Mcp\Modules\Talk\Integration\UnreadCounter($this->createMock(IUserManager::class)), new \OCA\Mcp\Modules\Talk\Integration\UnreadRoomView($this->createMock(IUserManager::class), 1)),
 			$resolver,
 			$this->writer,
 			$this->sharer,
@@ -549,7 +560,7 @@ final class TalkPlanRendererTest extends TestCase {
 	}
 
 	private function givenConversation(string $token = 'abcd'): Conversation {
-		return new Conversation(new RenderRoomStub($token, 'Comercial'), new RenderParticipantStub());
+		return new Conversation(new RenderRoomStub($token), new RenderParticipantStub(), 'Comercial');
 	}
 
 	private function givenShare(): IShare&MockObject {
@@ -560,18 +571,14 @@ final class TalkPlanRendererTest extends TestCase {
 	}
 }
 
+/** A room reduced to its token: the name reaches the plan already read, so a call to Room::getDisplayName fails. */
 final class RenderRoomStub {
 	public function __construct(
 		private string $token,
-		private string $displayName,
 	) {}
 
 	public function getToken(): string {
 		return $this->token;
-	}
-
-	public function getDisplayName(string $userId): string {
-		return $this->displayName;
 	}
 }
 

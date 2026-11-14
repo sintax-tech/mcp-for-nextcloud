@@ -34,6 +34,12 @@ final class AdminUnitBodiesTest extends TestCase {
 			$pattern = '/^\t\tfunction ' . preg_quote($name, '/') . '\([^\n]*\n.*?^\t\t}/ms';
 			$this->assertSame(1, preg_match($pattern, $source, $match), $name);
 			$body = preg_replace('/^\t/m', '', $match[0]);
+			// G-1 adds only the approved module-label delegation; preserve every preexisting label byte.
+			if ($name === 'moduleLabels') {
+				$line = "\t\t\t...window.OCA.Mcp.Admin.routineGrants?.moduleLabels(),\n";
+				$this->assertSame(1, substr_count($body, $line));
+				$body = str_replace($line, '', $body);
+			}
 			$this->assertSame($expected, hash('sha256', $body), $name);
 		}
 	}

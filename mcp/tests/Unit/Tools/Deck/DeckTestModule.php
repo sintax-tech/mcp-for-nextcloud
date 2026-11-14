@@ -63,6 +63,9 @@ final class DeckTestModule {
 		$container->tools[\OCA\Mcp\Modules\Deck\Tools\RemoveCardDependency::class] = new \OCA\Mcp\Modules\Deck\Tools\RemoveCardDependency($context, new \OCA\Mcp\Modules\Deck\Dependencies\RemoveCardDependencyPreview($context));
 		$container->tools[\OCA\Mcp\Modules\Deck\Tools\SetCardDone::class] = new \OCA\Mcp\Modules\Deck\Tools\SetCardDone($context, new \OCA\Mcp\Modules\Deck\Editing\SetCardDonePreview($context));
 		$container->tools[\OCA\Mcp\Modules\Deck\Tools\SetCardArchived::class] = new \OCA\Mcp\Modules\Deck\Tools\SetCardArchived($context, new \OCA\Mcp\Modules\Deck\Editing\SetCardArchivedPreview($context));
+		$container->tools[\OCA\Mcp\Modules\Deck\Tools\CreateLabel::class] = new \OCA\Mcp\Modules\Deck\Tools\CreateLabel($context, new \OCA\Mcp\Modules\Deck\Labels\CreateLabelPreview($context));
+		$container->tools[\OCA\Mcp\Modules\Deck\Tools\UpdateLabel::class] = new \OCA\Mcp\Modules\Deck\Tools\UpdateLabel($context, new \OCA\Mcp\Modules\Deck\Labels\LabelChangePreview($context));
+		$container->tools[\OCA\Mcp\Modules\Deck\Tools\DeleteLabel::class] = new \OCA\Mcp\Modules\Deck\Tools\DeleteLabel($context, new \OCA\Mcp\Modules\Deck\Labels\LabelChangePreview($context));
 		$module = new DeckModule($container, new DeckGuideNotes($capabilities));
 		self::$contexts ??= new \WeakMap();
 		self::$contexts[$module] = $context;

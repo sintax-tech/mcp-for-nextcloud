@@ -9,6 +9,7 @@ namespace OCA\Mcp\Modules\Talk\Replying;
 use InvalidArgumentException;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Modules\Talk\Failures\TalkErrors;
+use OCA\Mcp\Modules\Talk\Locating\ConversationResolver;
 use OCA\Mcp\Modules\Talk\Presentation\ToolResult;
 use OCA\Mcp\Modules\Talk\Writing\ConversationWriter;
 
@@ -17,11 +18,13 @@ final class ReplyHandler {
 	/**
 	 * @param ReplyDraft $draft shared final reply resolution
 	 * @param ConversationWriter $writer existing native message write
+	 * @param ConversationResolver $resolver opens an elapsed lobby only once the write is about to happen
 	 * @param TalkErrors $errors unchanged refusal and logging boundary
 	 */
 	public function __construct(
 		private ReplyDraft $draft,
 		private ConversationWriter $writer,
+		private ConversationResolver $resolver,
 		private TalkErrors $errors,
 	) {
 	}
@@ -36,6 +39,7 @@ final class ReplyHandler {
 	public function handle(array $arguments, string $userId): array {
 		return $this->errors->call('talk_reply', function () use ($arguments, $userId): array {
 			$resolved = $this->draft->resolve($userId, $arguments);
+			$this->resolver->openElapsedLobby($userId, $resolved['conversation']);
 
 			return ToolResult::success($this->writer->reply($resolved['conversation'], $userId, $resolved['message'], $resolved['replyTo']));
 		});

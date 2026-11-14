@@ -22,7 +22,7 @@ final class ProvisioningTest extends ExclusionTestCase {
 
 	public function testTheAppsTheScenariosNeedAreEnabled(): void {
 		$apps = Server::get(IAppManager::class);
-		foreach (['groupfolders', 'files_external', 'spreed', 'notes', 'files_sharing', 'files_versions'] as $app) {
+		foreach (['groupfolders', 'files_external', 'spreed', 'notes', 'files_sharing', 'files_versions', 'activity'] as $app) {
 			$this->assertTrue($apps->isEnabledForAnyone($app), "$app must be enabled in this cell");
 		}
 	}

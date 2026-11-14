@@ -86,6 +86,8 @@ class TalkModuleTest extends TestCase {
 				'talk_message_user' => 'reply',
 				'talk_send_batch' => 'reply',
 				'talk_create_group' => 'create',
+				'talk_list_unread' => 'read',
+				'talk_read_unread' => 'read',
 			],
 			array_column($this->module->definitions(), 'operation', 'name'),
 		);
@@ -116,6 +118,18 @@ class TalkModuleTest extends TestCase {
 		$this->assertSame(['conversation_token', 'attachment_id'], $schemas['talk_quote_file']['required']);
 		$this->assertSame(['user', 'message'], $schemas['talk_message_user']['required']);
 		$this->assertSame(['name'], $schemas['talk_create_group']['required']);
+		$this->assertArrayNotHasKey('required', $schemas['talk_list_unread']);
+		$this->assertSame(1, $schemas['talk_list_unread']['properties']['limit']['minimum']);
+		$this->assertSame(50, $schemas['talk_list_unread']['properties']['limit']['maximum']);
+		$this->assertSame(50, $schemas['talk_list_unread']['properties']['limit']['default']);
+		$this->assertSame(512, $schemas['talk_list_unread']['properties']['cursor']['maxLength']);
+		$this->assertStringContainsString('not frozen', $schemas['talk_list_unread']['properties']['cursor']['description']);
+		$this->assertArrayNotHasKey('confirm', $schemas['talk_list_unread']['properties']);
+		$this->assertSame(['conversation_token'], $schemas['talk_read_unread']['required']);
+		$this->assertSame(200, $schemas['talk_read_unread']['properties']['limit']['maximum']);
+		$this->assertSame(50, $schemas['talk_read_unread']['properties']['limit']['default']);
+		$this->assertSame(512, $schemas['talk_read_unread']['properties']['cursor']['maxLength']);
+		$this->assertArrayNotHasKey('confirm', $schemas['talk_read_unread']['properties']);
 		$this->assertSame(GroupCreator::MAX_PARTICIPANTS, $schemas['talk_create_group']['properties']['participants']['maxItems']);
 		// The account id goes through the same bound as a token, and the text through the same bound as a message.
 		$this->assertSame(64, $schemas['talk_message_user']['properties']['user']['maxLength']);
@@ -280,7 +294,7 @@ class TalkModuleTest extends TestCase {
 			$this->assertStringNotContainsString('approval_id', $descriptions[$name], $name);
 		}
 
-		foreach (['talk_list_conversations', 'talk_read_messages'] as $name) {
+		foreach (['talk_list_conversations', 'talk_read_messages', 'talk_list_unread', 'talk_read_unread'] as $name) {
 			$this->assertStringNotContainsString('confirm: true', $descriptions[$name], $name);
 		}
 	}
@@ -821,7 +835,7 @@ class TalkModuleTest extends TestCase {
 	}
 
 	private function givenConversation(string $token = 'abcd'): Conversation {
-		return new Conversation(new ModuleRoomStub($token), new ModuleParticipantStub());
+		return new Conversation(new ModuleRoomStub($token), new ModuleParticipantStub(), 'Comercial');
 	}
 
 	/**
@@ -842,9 +856,6 @@ final class ModuleRoomStub {
 		return $this->token;
 	}
 
-	public function getDisplayName(string $userId): string {
-		return 'Comercial';
-	}
 }
 
 final class ModuleParticipantStub {

@@ -115,17 +115,25 @@ final class ToolRegistryTest extends TestCase {
 			$instance = (new \ReflectionClass($class))->newInstanceWithoutConstructor();
 			$definitions = $instance->definitions();
 			if ($instance instanceof \OCA\Mcp\Modules\Deck\DeckModule) {
-				$probe = new \OCA\Mcp\Modules\Deck\Integration\DeckCapabilities($this->nativeDeckApps(), $dependencies ? 35 : 32, static fn (): bool => true);
+				$probe = new \OCA\Mcp\Modules\Deck\Integration\DeckCapabilities($this->nativeDeckApps(), $dependencies ? 35 : 34, static fn (): bool => true);
 				$definitions = array_values(array_filter($definitions, static fn (array $definition): bool => ($definition['requires'] ?? []) === [] || $probe->supports('deck.dependencies')));
 				// This fixture wraps each admitted definition in a legacy module; discovery owns requires.
 				$definitions = array_map(static function (array $definition): array { unset($definition['requires']); return $definition; }, $definitions);
 			}
-			if ($instance instanceof \OCA\Mcp\Modules\Forms\FormsModule) {
-				// The Forms structure tools are admitted by their probe in discovery; this envelope check covers them unconditionally.
+			if ($instance instanceof \OCA\Mcp\Modules\Mail\MailModule || $instance instanceof \OCA\Mcp\Modules\Forms\FormsModule || $instance instanceof \OCA\Mcp\Modules\Routines\RoutinesModule) {
+				// Mail attachments, the mail card routine and Forms structure tools are admitted by their probes in discovery; this envelope check covers them unconditionally.
 				$definitions = array_map(static function (array $definition): array { unset($definition['requires']); return $definition; }, $definitions);
 			}
-			if ($instance instanceof \OCA\Mcp\Modules\Collectives\CollectivesModule) {
-				// Every Collectives tool requires collectives.native; this fixture admits them as a supporting installation.
+			if ($instance instanceof \OCA\Mcp\Modules\Collectives\CollectivesModule || $instance instanceof \OCA\Mcp\Modules\Availability\AvailabilityModule) {
+				// Every Collectives tool requires collectives.native, the absence write availability.*; this fixture admits them as a supporting installation.
+				$definitions = array_map(static function (array $definition): array { unset($definition['requires']); return $definition; }, $definitions);
+			}
+			if ($instance instanceof \OCA\Mcp\Modules\Status\StatusModule) {
+				// Status writes require status.native; this fixture admits them the same way discovery does when the app is on.
+				$definitions = array_map(static function (array $definition): array { unset($definition['requires']); return $definition; }, $definitions);
+			}
+			if ($instance instanceof \OCA\Mcp\Modules\Notifications\NotificationsModule) {
+				// notifications_dismiss requires notifications.dismiss; this fixture admits it as a supporting installation.
 				$definitions = array_map(static function (array $definition): array { unset($definition['requires']); return $definition; }, $definitions);
 			}
 			$module = new class($definitions) implements ToolModule {

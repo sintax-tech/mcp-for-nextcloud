@@ -7,8 +7,7 @@ set -eu
 NC=${MCP_IT_NC_NAME:-mcp-it-nextcloud}
 WORK="${RUNNER_TEMP:?}/mcp-it"
 case "$MCP_IT_NC" in
- 32) VERSION=5.3.7; SHA=7da964e5c60353b21e0d438d60ceb123f39e5fcf3c16386c1fc93994021ffcbc ;;
- 33|35) VERSION=5.4.1; SHA=9cfc3776721fce1b284f57ec4a9e165c75927adbb5f06d5b5bfddd14a8f0b42e ;;
+ 35) VERSION=5.4.1; SHA=9cfc3776721fce1b284f57ec4a9e165c75927adbb5f06d5b5bfddd14a8f0b42e ;;
  34) VERSION=5.4.2; SHA=c12cc4e05dd9c41cfee8df75a8cc0f759e9a95169fefabd617713a934da7943a ;;
  *) echo 'No Forms cell pinned for this server'; exit 2 ;;
 esac

@@ -281,19 +281,19 @@ final class DeckCutPresentationTest extends TestCase {
 	}
 
 	/**
-	 * A proved Nextcloud 35 installation, or a Nextcloud 33 installation without the API.
+	 * A proved Nextcloud 35 installation, or a Nextcloud 34 installation without the API.
 	 *
 	 * @param bool $present Whether the native dependency API is exposed.
 	 * @return DeckCapabilities Gate used by the module under test.
 	 */
 	private function capabilities(bool $present): DeckCapabilities {
 		$apps = $this->createMock(IAppManager::class);
-		$apps->method('getAppVersion')->willReturn($present ? '1.19.0' : '1.17.7');
+		$apps->method('getAppVersion')->willReturn($present ? '1.19.0' : '1.18.5');
 		if (method_exists(IAppManager::class, 'isEnabledForAnyone')) {
 			$apps->method('isEnabledForAnyone')->willReturn(true);
 		}
 		$apps->method('isInstalled')->willReturn(true);
-		return new DeckCapabilities($apps, $present ? 35 : 33, static fn (string $class, string $member): bool => $present);
+		return new DeckCapabilities($apps, $present ? 35 : 34, static fn (string $class, string $member): bool => $present);
 	}
 
 	/**

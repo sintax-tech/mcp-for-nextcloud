@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Compat;
 
-/** Keeps the complete legacy operation matrix, explicitly allowing only the documented 1.2.2 and approved 1.3.0 F00 and Collectives C01–C04 additions. */
+/** Keeps the complete legacy operation matrix, explicitly allowing only the documented 1.2.2 and approved 1.3.0 F00 and Collectives C01–C04 and denied 1.4.0 opt-in additions. */
 final class LegacyCatalogContract {
 	/**
 	 * @param array<string, list<string>> $baseline catalog actually read from the released 1.0.8 code
@@ -26,9 +26,10 @@ final class LegacyCatalogContract {
 			// C01–C04: each reviewed operation is explicit and every write starts denied.
 			'collectives' => ['read', 'create', 'edit', 'move', 'collective.create', 'members'],
 		];
-		if (array_intersect(['mail', 'tables', 'forms', 'polls', 'collectives'], array_keys($baseline)) !== []
+		$expected = RoutineCatalogAdditions::catalog($expected);
+		if (RoutineCatalogAdditions::overlaps($baseline) || array_intersect(['mail', 'tables', 'forms', 'polls', 'collectives'], array_keys($baseline)) !== []
 			|| in_array('delete', $baseline['files'], true) || $current !== $expected) {
-			throw new \UnexpectedValueException('Legacy catalog changed beyond the documented 1.2.2 and approved 1.3.0 F00 and Collectives C01–C04 additions');
+			throw new \UnexpectedValueException('Legacy catalog changed beyond the documented 1.2.2 and approved 1.3.0 F00, Collectives C01–C04 and denied 1.4.0 opt-in additions');
 		}
 		return $baseline;
 	}
@@ -41,6 +42,7 @@ final class LegacyCatalogContract {
 	public static function answers(array $answers): array {
 		foreach ($answers as &$state) {
 			foreach ($state['matrix'] as &$row) {
+				$row['grants'] = RoutineCatalogAdditions::previous($row['grants']);
 				if (($row['grants']['files']['delete'] ?? null) !== false) {
 					throw new \UnexpectedValueException('Unexpected files.delete default in the legacy matrix');
 				}

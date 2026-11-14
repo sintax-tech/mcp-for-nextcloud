@@ -61,7 +61,7 @@ final class ListCardsHandler extends \OCA\Mcp\Modules\Deck\AbstractHandler {
 			));
 
 			return [
-				'cards' => array_map(fn (object $card) => $this->formatter->card($card, $page['boardId']), $cards),
+				'cards' => array_map(fn (object $card) => $this->formatter->cardWithLabels($card, $page['boardId']), $cards),
 				'limit' => $limit,
 				'offset' => $offset,
 				// Deck skips deleted and archived cards in the query itself, so the offset counts listed cards:

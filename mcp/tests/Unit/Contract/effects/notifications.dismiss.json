@@ -1,0 +1,292 @@
+{
+    "tool": "notifications_dismiss",
+    "grant": "notifications.dismiss",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "id": 8
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Dismiss own notification**\n\nDismissing this notification is permanent. It cannot be restored, and devices are told to drop it.\nThis cannot be undone.\nNotification `8` from files\\_sharing, dated 2027-01-15T08:00:00+00:00.\n\nNothing was changed. Confirm to execute.\n\n*Dismissing this notification is permanent. It cannot be restored, and devices are told to drop it.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "notifications_dismiss",
+                            "title": "Dismiss own notification",
+                            "id": 8,
+                            "found": true,
+                            "app": "files_sharing",
+                            "datetime": "2027-01-15T08:00:00+00:00",
+                            "message": "Dismissing this notification is permanent. It cannot be restored, and devices are told to drop it.",
+                            "warning": "This cannot be undone."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "present": true,
+                "deletes": 0,
+                "pushes": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "id": 8,
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "present": true,
+                "deletes": 0,
+                "pushes": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "id": 8,
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Dismiss own notification**\n\nDismissing this notification is permanent. It cannot be restored, and devices are told to drop it.\nThis cannot be undone.\nNotification `8` from files\\_sharing, dated 2027-01-15T08:00:00+00:00.\n\nNothing was changed. Confirm to execute.\n\n*Dismissing this notification is permanent. It cannot be restored, and devices are told to drop it.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "notifications_dismiss",
+                            "title": "Dismiss own notification",
+                            "id": 8,
+                            "found": true,
+                            "app": "files_sharing",
+                            "datetime": "2027-01-15T08:00:00+00:00",
+                            "message": "Dismissing this notification is permanent. It cannot be restored, and devices are told to drop it.",
+                            "warning": "This cannot be undone."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "present": true,
+                "deletes": 0,
+                "pushes": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "notifications_dismiss carries no plan_state: the confirmed call re-reads the row, and a missing id is answered the same way as an id owned by somebody else."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "id": 8
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Dismiss own notification**\n\nDismissing this notification is permanent. It cannot be restored, and devices are told to drop it.\nThis cannot be undone.\nNotification `8` from files\\_sharing, dated 2027-01-15T08:00:00+00:00.\n\nNothing was changed. Confirm to execute.\n\n*Dismissing this notification is permanent. It cannot be restored, and devices are told to drop it.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "notifications_dismiss",
+                            "title": "Dismiss own notification",
+                            "id": 8,
+                            "found": true,
+                            "app": "files_sharing",
+                            "datetime": "2027-01-15T08:00:00+00:00",
+                            "message": "Dismissing this notification is permanent. It cannot be restored, and devices are told to drop it.",
+                            "warning": "This cannot be undone."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "present": true,
+                "deletes": 0,
+                "pushes": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "id": 8,
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"id\": 8,\n    \"outcome\": \"dismissed\",\n    \"still_present\": false,\n    \"push\": \"sent\",\n    \"partial\": false,\n    \"app\": \"files_sharing\",\n    \"datetime\": \"2027-01-15T08:00:00+00:00\",\n    \"message\": \"The notification was dismissed. A later read shows it is gone.\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "present": false,
+                "deletes": 1,
+                "pushes": [
+                    [
+                        "alice",
+                        [
+                            8
+                        ],
+                        "files_sharing"
+                    ]
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "id": 8,
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "present": false,
+                "deletes": 1,
+                "pushes": [
+                    [
+                        "alice",
+                        [
+                            8
+                        ],
+                        "files_sharing"
+                    ]
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "id": 8
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "present": false,
+                "deletes": 1,
+                "pushes": [
+                    [
+                        "alice",
+                        [
+                            8
+                        ],
+                        "files_sharing"
+                    ]
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "id": 8,
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "present": false,
+                "deletes": 1,
+                "pushes": [
+                    [
+                        "alice",
+                        [
+                            8
+                        ],
+                        "files_sharing"
+                    ]
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "A notification is an inbox row, not a file: no system tag or excluded folder can hide it from MCP."
+        }
+    ]
+}

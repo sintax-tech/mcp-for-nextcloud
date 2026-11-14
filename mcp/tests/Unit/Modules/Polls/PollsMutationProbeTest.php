@@ -14,6 +14,7 @@ use OCP\App\IAppManager;
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use OCA\Mcp\Tests\Unit\Contract\NextcloudApi\TestedNextcloud;
 
 /** Installation boundaries never fall back to trying a native mutation. */
 final class PollsMutationProbeTest extends TestCase {
@@ -22,7 +23,7 @@ final class PollsMutationProbeTest extends TestCase {
 	 * @throws \Throwable If validation or a called collaborator fails.
 	 */
 	public static function versions(): iterable {
-		foreach (PollsMutationProbe::VERSIONS as $major => [$min, $ceiling]) {
+		foreach (array_intersect_key(PollsMutationProbe::VERSIONS, array_flip(TestedNextcloud::MAJORS)) as $major => [$min, $ceiling]) {
 			yield $major . ' minimum' => [$major, $min, true, true];
 			yield $major . ' below' => [$major, '8.0.0', true, false];
 			yield $major . ' ceiling' => [$major, $ceiling, true, false];

@@ -25,7 +25,7 @@ final class CreateCardPreview {
 	}
 
 	/**
-	 * @param array{stackId: int, title: string, description?: string, duedate?: string|null, assignees?: list<string>} $arguments
+	 * @param array{stackId: int, title: string, description?: string, duedate?: string|null, assignees?: list<string>, labels?: list<string|int>} $arguments
 	 * @param string $userId UID of the authenticated caller, also the owner of the card to be created.
 	 * @return array<string, mixed>
 	 */
@@ -34,19 +34,25 @@ final class CreateCardPreview {
 		$assignees = array_key_exists('assignees', $arguments)
 			? $this->context->gateway()->validateAssignees($userId, (int)$arguments['stackId'], \OCA\Mcp\Modules\Deck\Editing\CardInput::assignees($arguments['assignees']))
 			: null;
+		$labels = \OCA\Mcp\Modules\Deck\Labels\CardLabelPlan::prepare($this->context->gateway(), $arguments, $userId,
+			fn (): bool => $this->context->labelsGranted($userId));
 
-		return [
+		$plan = [
 			'action' => CreateCardHandler::TOOL,
 			'card' => [
 				'title' => \OCA\Mcp\Modules\Deck\Editing\CardInput::requireTitle((string)$arguments['title']),
 				'description' => \OCA\Mcp\Modules\Deck\Editing\CardInput::requireDescription((string)($arguments['description'] ?? '')),
 				'dueDate' => \OCA\Mcp\Modules\Deck\Editing\CardInput::duedate($arguments['duedate'] ?? null, $this->context->formatter($userId)->timezone()),
 				'owner' => $userId,
-			] + ($assignees === null ? [] : ['assignees' => $assignees]),
-			'destination' => $place,
+			] + ($assignees === null ? [] : ['assignees' => $assignees])
+				+ ($labels === null ? [] : ['labels' => \OCA\Mcp\Modules\Deck\Labels\CardLabelPlan::shown($labels)]),
+			'destination' => ($labels === null ? [] : ['boardId' => $labels['boardId']]) + $place,
 			'shared' => $place['shared'] ? [$place] : [],
 			'recoverable' => true,
 			'message' => \OCA\Mcp\Modules\Deck\Presentation\DeckPlanMessages::planCreate(),
 		];
+		return array_key_exists('labels', $arguments)
+			? (new \OCA\Mcp\Modules\Deck\Labels\LabelCreationPlan($this->context->planState()))->sign(CreateCardHandler::TOOL, $userId, $plan)
+			: $plan;
 	}
 }

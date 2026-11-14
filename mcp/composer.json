@@ -8,7 +8,7 @@
     },
     "require-dev": {
         "phpunit/phpunit": "^10.5",
-        "nextcloud/ocp": "dev-stable33",
+        "nextcloud/ocp": "dev-stable34",
         "doctrine/dbal": "^4.0",
         "sabre/vobject": "4.5.6",
         "sabre/dav": "4.7.0",

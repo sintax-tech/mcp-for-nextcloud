@@ -70,7 +70,7 @@ final class GrantPolicyTest extends TestCase {
 	public function testReadStartsAllowedAndWriteStartsDenied(): void {
 		foreach (GrantCatalog::CATALOG as $module => $operations) {
 			foreach ($operations as $operation) {
-				$expected = $operation === 'read' && $module !== 'logs';
+				$expected = $operation === 'read' && !in_array($module, ['logs', 'activity', 'notifications', 'availability', 'status'], true);
 				$this->assertSame($expected, $this->policy->granted('alice', $module, $operation), "$module.$operation");
 				$this->assertSame($expected, GrantPolicy::defaultGranted($module, $operation), "$module.$operation");
 			}
@@ -78,7 +78,7 @@ final class GrantPolicyTest extends TestCase {
 	}
 
 	/**
-	 * The server log shows the file names of every user, so reading it is the one read that starts denied: nobody
+	 * The server log shows the file names of every user, so its read starts denied: nobody
 	 * gets it by omission, and an administrator who turns it on for one user turns it on for that user only.
 	 */
 	public function testLogsReadStartsDeniedAndIsGrantedPerUser(): void {
@@ -94,8 +94,8 @@ final class GrantPolicyTest extends TestCase {
 	}
 
 	public function testCatalogMatchesContractAndUnknownOperationsAreRefused(): void {
-		$this->assertSame(['read', 'edit', 'create', 'move', 'restore', 'share', 'link', 'delete'], GrantCatalog::CATALOG['files']);
-		$this->assertSame(['read', 'create', 'edit', 'move', 'delete', 'transfer'], GrantCatalog::CATALOG['calendar']);
+		$this->assertSame(['read', 'edit', 'create', 'move', 'restore', 'share', 'link', 'delete', 'tags', 'comments'], GrantCatalog::CATALOG['files']);
+		$this->assertSame(['read', 'create', 'edit', 'move', 'delete', 'transfer', 'availability'], GrantCatalog::CATALOG['calendar']);
 		$this->assertSame(['read', 'reply', 'attach', 'quote', 'create'], GrantCatalog::CATALOG['talk']);
 		$this->expectException(InvalidArgumentException::class);
 		$this->policy->setGrant('alice', 'files', 'destroy', true);
@@ -156,7 +156,7 @@ final class GrantPolicyTest extends TestCase {
 		$this->assertTrue($state['alice']['eligible']);
 		$this->assertFalse($state['alice']['grants']['files']['read']);
 		$this->assertTrue($state['bob']['grants']['notes']['delete']);
-		$this->assertSame(['read' => true, 'edit' => false, 'create' => false, 'move' => false, 'restore' => false, 'share' => false, 'link' => false, 'delete' => false], $state['carol']['grants']['files']);
+		$this->assertSame(['read' => true, 'edit' => false, 'create' => false, 'move' => false, 'restore' => false, 'share' => false, 'link' => false, 'delete' => false, 'tags' => false, 'comments' => false], $state['carol']['grants']['files']);
 		foreach (['alice', 'bob', 'carol'] as $uid) {
 			foreach (GrantCatalog::CATALOG as $module => $operations) {
 				foreach ($operations as $operation) {

@@ -15,7 +15,7 @@ use OCA\Mcp\Modules\Files\FilesCallContext;
 use OCA\Mcp\Modules\Files\Images\OcrSupport;
 
 /** Runs the operation that reads visible file text with metadata and optional OCR inside the actor view. */
-final class ReadFileHandler {
+final class ReadFileHandler implements FileTextListing {
 	/**
 	 * @param FilesCallContext $context actor-root admission and node-access mapping
 	 * @param ReadableFile $readable visible file resolver

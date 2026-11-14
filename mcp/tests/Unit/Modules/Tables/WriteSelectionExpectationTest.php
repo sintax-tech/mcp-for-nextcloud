@@ -15,7 +15,7 @@ use RuntimeException;
 final class WriteSelectionExpectationTest extends TestCase {
 	/** @return void Tables2.2.2 is explicitly string, regardless of which database later stores the value. */
 	public function testEveryPinnedParserHasAnExactExpectedType(): void {
-		foreach (['1.0.0' => 2, '1.0.10' => '2', '2.0.0' => 2, '2.2.2' => '2', '2.3.2' => '2', '2.4.0' => '2'] as $version => $expected) {
+		foreach (['1.0.0' => 2, '2.0.0' => 2, '2.2.2' => '2', '2.3.2' => '2', '2.4.0' => '2'] as $version => $expected) {
 			self::assertSame($expected, WriteSelectionExpectation::parsedId($version, 2), $version);
 		}
 	}

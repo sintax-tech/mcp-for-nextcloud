@@ -18,12 +18,36 @@ final class LicensingTest extends TestCase {
 			if (!$file->isFile()) {
 				continue;
 			}
-			$source = (string)file_get_contents($file->getPathname());
-			// The tag names are split so the REUSE tool does not read this pattern as a header.
-			if (!preg_match('~\A<\?php\s*/\*\s*\* ' . 'SPDX-' . 'FileCopyrightText: 2026 Sintax \(Jhonatan Jaworski\) <contato@sintax\.tech>\s*\* ' . 'SPDX-' . 'License-Identifier: AGPL-3\.0-or-later\s*\*/~', $source)) {
+			if (!self::hasHeader((string)file_get_contents($file->getPathname()))) {
 				$missing[] = $file->getPathname();
 			}
 		}
 		$this->assertSame([], $missing, 'Library sources without the SPDX header');
+	}
+
+	/** A contributor keeps their own copyright line after ours; ours and the project license stay mandatory. */
+	public function testHeaderAcceptsContributorCopyrightOnlyBesidesOursAndTheProjectLicense(): void {
+		$ours = ' * ' . 'SPDX-' . 'FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>';
+		$theirs = ' * ' . 'SPDX-' . 'FileCopyrightText: 2026 Jane Doe <jane@example.invalid>';
+		$license = ' * ' . 'SPDX-' . 'License-Identifier: AGPL-3.0-or-later';
+		$header = static fn (string ...$lines): string => "<?php\n/*\n" . implode("\n", $lines) . "\n */\ndeclare(strict_types=1);\n";
+		$this->assertTrue(self::hasHeader($header($ours, $license)));
+		$this->assertTrue(self::hasHeader($header($ours, $theirs, $license)));
+		$this->assertFalse(self::hasHeader($header($theirs, $license)), 'our copyright comes first');
+		$this->assertFalse(self::hasHeader($header($theirs, $ours, $license)), 'our copyright comes first');
+		$this->assertFalse(self::hasHeader($header($ours, $theirs)), 'the license is mandatory');
+		$this->assertFalse(self::hasHeader($header($ours, $theirs, ' * ' . 'SPDX-' . 'License-Identifier: MIT')), 'only the project license');
+		$this->assertFalse(self::hasHeader($header($ours, ' * contributed by Jane', $license)), 'only SPDX copyright lines in between');
+	}
+
+	/**
+	 * @param string $source a PHP source
+	 * @return bool whether it opens with our copyright, any further SPDX copyright lines and the project license
+	 */
+	private static function hasHeader(string $source): bool {
+		// The tag names are split so the REUSE tool does not read this pattern as a header.
+		return preg_match('~\A<\?php\s*/\*\s*\* ' . 'SPDX-' . 'FileCopyrightText: 2026 Sintax \(Jhonatan Jaworski\) <contato@sintax\.tech>'
+			. '(?:\s*\* ' . 'SPDX-' . 'FileCopyrightText: \d{4}(?:-\d{4})? [^\r\n]+)*'
+			. '\s*\* ' . 'SPDX-' . 'License-Identifier: AGPL-3\.0-or-later\s*\*/~', $source) === 1;
 	}
 }

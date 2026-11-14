@@ -171,21 +171,6 @@ SPDX-FileCopyrightText = [
 SPDX-License-Identifier = "AGPL-3.0-or-later"
 
 [[annotations]]
-path = ["mcp/tests/fixtures/nextcloud-api/forms/5.3.7.json"]
-precedence = "override"
-SPDX-FileCopyrightText = [
-  "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>",
-  "2017 Nextcloud GmbH and Nextcloud contributors",
-  "2019 Nextcloud GmbH and Nextcloud contributors",
-  "2020 Nextcloud GmbH and Nextcloud contributors",
-  "2021 Nextcloud GmbH and Nextcloud contributors",
-  "2022 Nextcloud GmbH and Nextcloud contributors",
-  "2024 Nextcloud GmbH and Nextcloud contributors",
-  "2026 Nextcloud GmbH and Nextcloud contributors",
-]
-SPDX-License-Identifier = "AGPL-3.0-or-later"
-
-[[annotations]]
 path = ["mcp/tests/fixtures/nextcloud-api/forms/5.4.0.json"]
 precedence = "override"
 SPDX-FileCopyrightText = [
@@ -292,4 +277,34 @@ SPDX-FileCopyrightText = [
   "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>",
   "2023 Nextcloud GmbH and Nextcloud contributors",
 ]
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["mcp/tests/fixtures/activity-native/sources.json"]
+SPDX-FileCopyrightText = "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["mcp/tests/fixtures/dav-metadata-native/sources.json"]
+SPDX-FileCopyrightText = "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["mcp/tests/fixtures/notifications-native/sources.json"]
+SPDX-FileCopyrightText = "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["mcp/tests/fixtures/notifications-native/*/info.xml"]
+SPDX-FileCopyrightText = "Nextcloud GmbH and Nextcloud contributors"
+SPDX-License-Identifier = "AGPL-3.0-only"
+
+[[annotations]]
+path = ["mcp/tests/fixtures/absence-native/sources.json"]
+SPDX-FileCopyrightText = "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["mcp/tests/fixtures/user-status-native/sources.json"]
+SPDX-FileCopyrightText = "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>"
 SPDX-License-Identifier = "AGPL-3.0-or-later"

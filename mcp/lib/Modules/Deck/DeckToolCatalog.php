@@ -34,6 +34,9 @@ final class DeckToolCatalog {
 		\OCA\Mcp\Modules\Deck\Tools\RemoveCardDependency::class,
 		\OCA\Mcp\Modules\Deck\Tools\SetCardDone::class,
 		\OCA\Mcp\Modules\Deck\Tools\SetCardArchived::class,
+		\OCA\Mcp\Modules\Deck\Tools\CreateLabel::class,
+		\OCA\Mcp\Modules\Deck\Tools\UpdateLabel::class,
+		\OCA\Mcp\Modules\Deck\Tools\DeleteLabel::class,
 	];
 
 	/** Constant holder. */

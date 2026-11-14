@@ -13,6 +13,6 @@ final class MailGuideNotes {
 
 	/** @return list<string> the unchanged Mail behavior notes */
 	public static function notes(): array {
-		return [...MailMessages::GUIDE_NOTES, ...MailAttachmentMessages::GUIDE_NOTES, ...MailFlagMessages::GUIDE_NOTES, ...MailMoveMessages::GUIDE_NOTES, ...MailDraftMessages::GUIDE_NOTES, ...MailSendMessages::GUIDE_NOTES];
+		return [...MailMessages::GUIDE_NOTES, ...MailAttachmentMessages::GUIDE_NOTES, ...MailFlagMessages::GUIDE_NOTES, ...MailMoveMessages::GUIDE_NOTES, ...MailDraftMessages::GUIDE_NOTES, ...MailSendMessages::GUIDE_NOTES, ...MailSaveMessages::guideNotes()];
 	}
 }

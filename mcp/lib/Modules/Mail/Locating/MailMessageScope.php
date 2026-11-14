@@ -133,7 +133,7 @@ final class MailMessageScope {
 	 * @param int $now current Unix time
 	 * @return string|null not_selectable, not_synchronized or synchronizing; null when the folder can be read
 	 */
-	private static function unreadable(object $mailbox, int $now): ?string {
+	public static function unreadable(object $mailbox, int $now): ?string {
 		if ($mailbox->getSelectable() !== null && !$mailbox->getSelectable()) {
 			return 'not_selectable';
 		}

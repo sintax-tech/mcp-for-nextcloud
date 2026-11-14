@@ -12,20 +12,21 @@ use UnexpectedValueException;
 /** Ensures the compatibility allowance cannot hide unrelated catalog or default changes. */
 final class LegacyCatalogContractTest extends TestCase {
 	/** @var array<string, list<string>> Small legacy catalog with both read and write cells. */
-	private const BASELINE = ['files' => ['read', 'edit'], 'notes' => ['read', 'create']];
+	private const BASELINE = ['files' => ['read', 'edit'], 'notes' => ['read', 'create'], 'calendar' => ['read']];
 
 	/** @return array<string, list<string>> Explicitly documented additions to the legacy fixture. */
 	private function current(): array {
-		return [
+		return RoutineCatalogAdditions::catalog([
 			'files' => ['read', 'edit', 'delete'],
 			'notes' => ['read', 'create'],
+			'calendar' => ['read'],
 			'mail' => ['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'],
 			'tables' => ['read', 'create', 'edit', 'schema', 'share'],
 			'forms' => ['read', 'results', 'create', 'edit'],
 			'polls' => ['read', 'results', 'links', 'create', 'configure', 'options', 'options.remove', 'share', 'invite'],
 			// C01–C04: each reviewed operation is explicit and every write starts denied.
 			'collectives' => ['read', 'create', 'edit', 'move', 'collective.create', 'members'],
-		];
+		]);
 	}
 
 	/** @return void Only the reviewed additions are removed from the legacy comparison. */
@@ -33,7 +34,7 @@ final class LegacyCatalogContractTest extends TestCase {
 		self::assertSame(self::BASELINE, LegacyCatalogContract::baseline(self::BASELINE, $this->current()));
 		$answers = $this->answers();
 		$expected = ['on' => ['matrix' => ['actor' => ['grants' => [
-			'files' => ['read' => false, 'edit' => true], 'notes' => ['read' => true, 'create' => false],
+			'files' => ['read' => false, 'edit' => true], 'notes' => ['read' => true, 'create' => false], 'calendar' => ['read' => true],
 		]]]]];
 		self::assertSame($expected, LegacyCatalogContract::answers($answers));
 	}
@@ -51,7 +52,7 @@ final class LegacyCatalogContractTest extends TestCase {
 			$cases[] = $changed;
 			$changed = $current;
 			$changed[$module] = array_reverse($changed[$module]);
-			$cases[] = $changed;
+			if (count($current[$module]) > 1) $cases[] = $changed;
 		}
 		$cases[] = $current + ['unreviewed' => ['read']];
 		// Operations beyond the reviewed C04 grants still fail closed.
@@ -92,11 +93,14 @@ final class LegacyCatalogContractTest extends TestCase {
 
 	/** @return array<string, array<string, mixed>> A legacy matrix row with distinct existing grant values. */
 	private function answers(): array {
-		$grants = ['files' => ['read' => false, 'edit' => true, 'delete' => false], 'notes' => ['read' => true, 'create' => false]];
+		$grants = ['files' => ['read' => false, 'edit' => true, 'delete' => false], 'notes' => ['read' => true, 'create' => false], 'calendar' => ['read' => true]];
 		foreach (array_slice($this->current(), 2) as $module => $operations) {
 			foreach ($operations as $operation) {
-				$grants[$module][$operation] = $operation === 'read';
+				$grants[$module][$operation] = $operation === 'read' && !in_array($operation, RoutineCatalogAdditions::PAIRS[$module] ?? [], true);
 			}
+		}
+		foreach (RoutineCatalogAdditions::PAIRS as $module => $operations) {
+			foreach ($operations as $operation) $grants[$module][$operation] = false;
 		}
 		return ['on' => ['matrix' => ['actor' => ['grants' => $grants]]]];
 	}

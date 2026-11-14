@@ -12,24 +12,14 @@ declare(strict_types=1);
  * so the entities and mappers the module type-hints are declared here. Base signatures mirror Deck
  * `v1.17.5`, the tag whose `appinfo/info.xml` declares `nextcloud min-version="33" max-version="33"`.
  *
- * The conditional dependentCards field mirrors Deck v1.18+; real NC32/33 absence is tested in containers.
+ * The conditional dependentCards field mirrors Deck v1.18+; the current containers cover NC34/35; absent shapes use synthetic doubles.
  * The entities take an array of fields instead of the Deck constructor, which only makes the doubles
  * easier to build in a test; the getters return what a hydrated Deck entity would return.
  */
 
 namespace OCA\Deck\Db;
 
-/** Permission levels used by the ACL tables; values taken from Deck `lib/Db/Acl.php:25-28`. */
-class Acl {
-	public const PERMISSION_READ = 0;
-	public const PERMISSION_EDIT = 1;
-	public const PERMISSION_SHARE = 2;
-	public const PERMISSION_MANAGE = 3;
-
-	public const PERMISSION_TYPE_USER = 0;
-	public const PERMISSION_TYPE_GROUP = 1;
-	public const PERMISSION_TYPE_CIRCLE = 7;
-}
+// Acl lives in deck_acl.php, with the getters of a hydrated Deck ACL entry.
 
 /** Marker interface the Deck permission service accepts as a mapper, see Deck `lib/Db/IPermissionMapper.php`. */
 interface IPermissionMapper {
@@ -121,6 +111,8 @@ class Stack {
 /** Card entity double. */
 class Card {
 	public function getLabels(): array { return $this->fields['labels'] ?? []; }
+	/** @param Label[] $labels Labels of the card, as `CardService::enrichCards()` attaches them. */
+	public function setLabels(array $labels): void { $this->fields['labels'] = $labels; }
 	protected ?array $dependentCards = null;
 	public function getDependentCards(): ?array { return $this->fields['dependentCards'] ?? null; }
 	public function setDependentCards(array $ids): void { $this->fields['dependentCards'] = $ids; }
@@ -363,6 +355,9 @@ class Assignment {
 	public function getType(): int {
 		return (int)($this->fields['type'] ?? 0);
 	}
+
+	/** A user assignment. Deck v1.17.5 stores this as 0; {@see \OCA\Mcp\Modules\Deck\Integration\CardFormatter::assignmentOf()}. */
+	public const TYPE_USER = 0;
 }
 
 /** Assignment mapper double; signatures mirror Deck `v1.17.5` `lib/Db/AssignmentMapper.php`. */
@@ -374,6 +369,17 @@ class AssignmentMapper {
 	public function findIn(array $cardIds): array {
 		return [];
 	}
+
+	/**
+	 * Assignments of one participant. The real mapper does not apply the board ACL.
+	 *
+	 * @param string $participant the account id
+	 * @param int $type assignment type, {@see Assignment::TYPE_USER} by default
+	 * @return Assignment[] the rows Deck stores for that participant
+	 */
+	public function findByParticipant(string $participant, int $type = Assignment::TYPE_USER): array {
+		return [];
+	}
 }
 
 /** Label APIs verified against Deck v1.16.8–v1.19.0. */
@@ -381,11 +387,29 @@ class Label {
 	public function __construct(private array $fields = []) {}
 	public function getId(): int { return $this->fields['id'] ?? 0; }
 	public function getBoardId(): int { return $this->fields['boardId'] ?? 0; }
+	/** @return int Native association card identity. */
+	public function getCardId(): int { return $this->fields['cardId'] ?? 0; }
 	public function getTitle(): string { return $this->fields['title'] ?? ''; }
 	public function getColor(): string { return $this->fields['color'] ?? ''; }
 }
 class LabelMapper {
 	public function findAll(int $boardId, ?int $limit = null, int $offset = 0): array {
+		throw new \LogicException('Stub: expected a PHPUnit mock.');
+	}
+	/** One Label per card association of the board, as Deck v1.19.0 returns it. */
+	public function findAssignedLabelsForBoard(int $boardId, ?int $limit = null, int $offset = 0): array {
+		throw new \LogicException('Stub: expected a PHPUnit mock.');
+	}
+	/**
+	 * One full Label per card association, `l.*` plus `card_id`, ordered by label id (Deck v1.18.5–v1.19.0).
+	 *
+	 * @param list<int> $cardIds Cards whose labels are read.
+	 */
+	public function findAssignedLabelsForCards(array $cardIds, ?int $limit = null, int $offset = 0): array {
+		throw new \LogicException('Stub: expected a PHPUnit mock.');
+	}
+	/** @param int $id Label identity. @return int|null Native parent board. */
+	public function findBoardId(int $id): ?int {
 		throw new \LogicException('Stub: expected a PHPUnit mock.');
 	}
 }

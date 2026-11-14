@@ -27,13 +27,14 @@ use Psr\Log\LoggerInterface;
  * The DI of the Calendar module. Its tools and work classes are built by the container from their constructors; what
  * needs a binding is the calendar enumeration Access declares, the two ports the module writes and reads CalDAV
  * through, the dispatcher that builds one embedded CalDAV server per operation, and the reader of the optional
- * selftest. The module has no capability probe.
+ * selftest, and the event step of a meeting. The module has no capability probe.
  */
 final class CalendarRegistration implements ModuleRegistration {
 	/**
 	 * {@inheritDoc}
 	 */
 	public function register(IRegistrationContext $context): void {
+		$context->registerService(\OCA\Mcp\Modules\Calendar\Integration\CalendarAvailability::class, static fn (ContainerInterface $c): \OCA\Mcp\Modules\Calendar\Integration\CalendarAvailability => new \OCA\Mcp\Modules\Calendar\Integration\CalendarAvailability($c));
 		$context->registerService(NativeCalendars::class, static fn (ContainerInterface $c): NativeCalendars => $c->get(NativeCalendarsAdapter::class));
 		$context->registerService(CalendarSelftestReader::class, static fn (ContainerInterface $c): CalendarSelftestReader => new DavCalendarSelftestReader($c));
 		$context->registerService(CalendarDav::class, static fn (ContainerInterface $c): CalendarDav => $c->get(EmbeddedDavDispatcher::class));
@@ -53,6 +54,12 @@ final class CalendarRegistration implements ModuleRegistration {
 		$context->registerService(\OCA\Mcp\Platform\Dav\CalDavWrite::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\Dav\CalDavWrite => $c->get(CalendarDav::class));
 		$context->registerService(\OCA\Mcp\Access\ResourceScope\ScopedCalendarLookup::class, static fn (ContainerInterface $c): \OCA\Mcp\Access\ResourceScope\ScopedCalendarLookup => $c->get(\OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess::class));
 		$context->registerService(\OCA\Mcp\Access\References\ReadableCalendarEvent::class, static fn (ContainerInterface $c): \OCA\Mcp\Access\References\ReadableCalendarEvent => $c->get(CalendarEventReference::class));
+		$context->registerService(\OCA\Mcp\Platform\Meetings\MeetingCalendar::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\Meetings\MeetingCalendar => $c->get(CalendarMeetingSteps::class));
+		$context->registerService(\OCA\Mcp\Platform\Meetings\MeetingEventRead::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\Meetings\MeetingEventRead => new CalendarMeetingEvents(
+			$c->get(\OCA\Mcp\Mcp\Tools\Discovery\ToolAccess::class),
+			$c->get(\OCA\Mcp\Modules\Calendar\Reading\ListEventsHandler::class),
+			$c->get(\OCA\Mcp\Modules\Calendar\Integration\MeetingEventSupplement::class),
+		));
 	}
 
 	/**

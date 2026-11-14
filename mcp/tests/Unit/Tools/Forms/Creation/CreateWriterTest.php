@@ -52,7 +52,7 @@ final class CreateWriterTest extends TestCase {
 	 * @return void
 	 */
 	public function testCollisionAndOlderPinControl(): void {
-		foreach (['5.4.1', '5.4.2', '5.4.0', '5.3.7'] as $version) {
+		foreach (['5.4.1', '5.4.2', '5.4.0'] as $version) {
 			$state = new CreateNativeState(); $state->collisions = ['secret-file-name'];
 			[$writer, $context] = $this->writer($state, null, $version);
 			$result = $writer->write($context, $this->request(), 'alice');

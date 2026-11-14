@@ -1,587 +1,244 @@
 {
-    "31": {
-        "mail": "5.0.0",
-        "packages": {
-            "bytestream/horde-imap-client": "v2.33.5",
-            "bytestream/horde-mime": "v2.13.2"
-        },
-        "classes": {
-            "Horde_Imap_Client": {
-                "methods": [],
-                "constants": [
-                    "STATUS_UIDVALIDITY",
-                    "OPEN_READWRITE"
-                ],
-                "properties": []
-            },
-            "Horde_Imap_Client_Socket": {
-                "methods": {
-                    "logout": [],
-                    "openMailbox": [
-                        "mailbox",
-                        "mode?"
-                    ],
-                    "status": [
-                        "mailbox",
-                        "flags?",
-                        "opts?"
-                    ],
-                    "fetch": [
-                        "mailbox",
-                        "query",
-                        "options?"
-                    ]
-                },
-                "constants": [],
-                "properties": [
-                    "capability"
-                ]
-            },
-            "Horde_Imap_Client_Data_Capability": {
-                "methods": {
-                    "query": [
-                        "capability",
-                        "parameter?"
-                    ]
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Fetch_Query": {
-                "methods": {
-                    "structure": [],
-                    "envelope": [],
-                    "flags": [],
-                    "size": []
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Ids": {
-                "methods": {
-                    "__construct": [
-                        "ids?",
-                        "sequence?"
-                    ]
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Fetch_Results": {
-                "methods": {
-                    "first": []
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Data_Fetch": {
-                "methods": {
-                    "getStructure": [],
-                    "getEnvelope": [],
-                    "getFlags": [],
-                    "getSize": []
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Data_Envelope": {
-                "methods": [],
-                "constants": [],
-                "properties": [
-                    "message_id"
-                ]
-            },
-            "Horde_Mime_Part": {
-                "methods": {
-                    "getName": [
-                        "default?"
-                    ],
-                    "getType": [
-                        "charset?"
-                    ],
-                    "getPrimaryType": [],
-                    "getCharset": [],
-                    "isAttachment": [],
-                    "getPart": [
-                        "id"
-                    ]
-                },
-                "constants": [],
-                "properties": []
-            }
-        },
-        "syncToken": {
-            "uidvalidityKey": "V",
-            "joinedByComma": true,
-            "syncChecksUidvalidity": true
-        }
-    },
-    "32": {
-        "mail": "5.0.0",
-        "packages": {
-            "bytestream/horde-imap-client": "v2.33.5",
-            "bytestream/horde-mime": "v2.13.2"
-        },
-        "classes": {
-            "Horde_Imap_Client": {
-                "methods": [],
-                "constants": [
-                    "STATUS_UIDVALIDITY",
-                    "OPEN_READWRITE"
-                ],
-                "properties": []
-            },
-            "Horde_Imap_Client_Socket": {
-                "methods": {
-                    "logout": [],
-                    "openMailbox": [
-                        "mailbox",
-                        "mode?"
-                    ],
-                    "status": [
-                        "mailbox",
-                        "flags?",
-                        "opts?"
-                    ],
-                    "fetch": [
-                        "mailbox",
-                        "query",
-                        "options?"
-                    ]
-                },
-                "constants": [],
-                "properties": [
-                    "capability"
-                ]
-            },
-            "Horde_Imap_Client_Data_Capability": {
-                "methods": {
-                    "query": [
-                        "capability",
-                        "parameter?"
-                    ]
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Fetch_Query": {
-                "methods": {
-                    "structure": [],
-                    "envelope": [],
-                    "flags": [],
-                    "size": []
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Ids": {
-                "methods": {
-                    "__construct": [
-                        "ids?",
-                        "sequence?"
-                    ]
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Fetch_Results": {
-                "methods": {
-                    "first": []
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Data_Fetch": {
-                "methods": {
-                    "getStructure": [],
-                    "getEnvelope": [],
-                    "getFlags": [],
-                    "getSize": []
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Data_Envelope": {
-                "methods": [],
-                "constants": [],
-                "properties": [
-                    "message_id"
-                ]
-            },
-            "Horde_Mime_Part": {
-                "methods": {
-                    "getName": [
-                        "default?"
-                    ],
-                    "getType": [
-                        "charset?"
-                    ],
-                    "getPrimaryType": [],
-                    "getCharset": [],
-                    "isAttachment": [],
-                    "getPart": [
-                        "id"
-                    ]
-                },
-                "constants": [],
-                "properties": []
-            }
-        },
-        "syncToken": {
-            "uidvalidityKey": "V",
-            "joinedByComma": true,
-            "syncChecksUidvalidity": true
-        }
-    },
-    "33": {
-        "mail": "5.5.0",
-        "packages": {
-            "bytestream/horde-imap-client": "v2.33.6",
-            "bytestream/horde-mime": "v2.13.2"
-        },
-        "classes": {
-            "Horde_Imap_Client": {
-                "methods": [],
-                "constants": [
-                    "STATUS_UIDVALIDITY",
-                    "OPEN_READWRITE"
-                ],
-                "properties": []
-            },
-            "Horde_Imap_Client_Socket": {
-                "methods": {
-                    "logout": [],
-                    "openMailbox": [
-                        "mailbox",
-                        "mode?"
-                    ],
-                    "status": [
-                        "mailbox",
-                        "flags?",
-                        "opts?"
-                    ],
-                    "fetch": [
-                        "mailbox",
-                        "query",
-                        "options?"
-                    ]
-                },
-                "constants": [],
-                "properties": [
-                    "capability"
-                ]
-            },
-            "Horde_Imap_Client_Data_Capability": {
-                "methods": {
-                    "query": [
-                        "capability",
-                        "parameter?"
-                    ]
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Fetch_Query": {
-                "methods": {
-                    "structure": [],
-                    "envelope": [],
-                    "flags": [],
-                    "size": []
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Ids": {
-                "methods": {
-                    "__construct": [
-                        "ids?",
-                        "sequence?"
-                    ]
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Fetch_Results": {
-                "methods": {
-                    "first": []
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Data_Fetch": {
-                "methods": {
-                    "getStructure": [],
-                    "getEnvelope": [],
-                    "getFlags": [],
-                    "getSize": []
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Data_Envelope": {
-                "methods": [],
-                "constants": [],
-                "properties": [
-                    "message_id"
-                ]
-            },
-            "Horde_Mime_Part": {
-                "methods": {
-                    "getName": [
-                        "default?"
-                    ],
-                    "getType": [
-                        "charset?"
-                    ],
-                    "getPrimaryType": [],
-                    "getCharset": [],
-                    "isAttachment": [],
-                    "getPart": [
-                        "id"
-                    ]
-                },
-                "constants": [],
-                "properties": []
-            }
-        },
-        "syncToken": {
-            "uidvalidityKey": "V",
-            "joinedByComma": true,
-            "syncChecksUidvalidity": true
-        }
-    },
-    "34": {
-        "mail": "5.7.0",
-        "packages": {
-            "bytestream/horde-imap-client": "v2.33.6",
-            "bytestream/horde-mime": "v2.13.2"
-        },
-        "classes": {
-            "Horde_Imap_Client": {
-                "methods": [],
-                "constants": [
-                    "STATUS_UIDVALIDITY",
-                    "OPEN_READWRITE"
-                ],
-                "properties": []
-            },
-            "Horde_Imap_Client_Socket": {
-                "methods": {
-                    "logout": [],
-                    "openMailbox": [
-                        "mailbox",
-                        "mode?"
-                    ],
-                    "status": [
-                        "mailbox",
-                        "flags?",
-                        "opts?"
-                    ],
-                    "fetch": [
-                        "mailbox",
-                        "query",
-                        "options?"
-                    ]
-                },
-                "constants": [],
-                "properties": [
-                    "capability"
-                ]
-            },
-            "Horde_Imap_Client_Data_Capability": {
-                "methods": {
-                    "query": [
-                        "capability",
-                        "parameter?"
-                    ]
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Fetch_Query": {
-                "methods": {
-                    "structure": [],
-                    "envelope": [],
-                    "flags": [],
-                    "size": []
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Ids": {
-                "methods": {
-                    "__construct": [
-                        "ids?",
-                        "sequence?"
-                    ]
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Fetch_Results": {
-                "methods": {
-                    "first": []
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Data_Fetch": {
-                "methods": {
-                    "getStructure": [],
-                    "getEnvelope": [],
-                    "getFlags": [],
-                    "getSize": []
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Data_Envelope": {
-                "methods": [],
-                "constants": [],
-                "properties": [
-                    "message_id"
-                ]
-            },
-            "Horde_Mime_Part": {
-                "methods": {
-                    "getName": [
-                        "default?"
-                    ],
-                    "getType": [
-                        "charset?"
-                    ],
-                    "getPrimaryType": [],
-                    "getCharset": [],
-                    "isAttachment": [],
-                    "getPart": [
-                        "id"
-                    ]
-                },
-                "constants": [],
-                "properties": []
-            }
-        },
-        "syncToken": {
-            "uidvalidityKey": "V",
-            "joinedByComma": true,
-            "syncChecksUidvalidity": true
-        }
-    },
-    "35": {
-        "mail": "5.9.0",
-        "packages": {
-            "bytestream/horde-imap-client": "v2.34.1",
-            "bytestream/horde-mime": "v2.14.1"
-        },
-        "classes": {
-            "Horde_Imap_Client": {
-                "methods": [],
-                "constants": [
-                    "STATUS_UIDVALIDITY",
-                    "OPEN_READWRITE"
-                ],
-                "properties": []
-            },
-            "Horde_Imap_Client_Socket": {
-                "methods": {
-                    "logout": [],
-                    "openMailbox": [
-                        "mailbox",
-                        "mode?"
-                    ],
-                    "status": [
-                        "mailbox",
-                        "flags?",
-                        "opts?"
-                    ],
-                    "fetch": [
-                        "mailbox",
-                        "query",
-                        "options?"
-                    ]
-                },
-                "constants": [],
-                "properties": [
-                    "capability"
-                ]
-            },
-            "Horde_Imap_Client_Data_Capability": {
-                "methods": {
-                    "query": [
-                        "capability",
-                        "parameter?"
-                    ]
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Fetch_Query": {
-                "methods": {
-                    "structure": [],
-                    "envelope": [],
-                    "flags": [],
-                    "size": []
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Ids": {
-                "methods": {
-                    "__construct": [
-                        "ids?",
-                        "sequence?"
-                    ]
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Fetch_Results": {
-                "methods": {
-                    "first": []
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Data_Fetch": {
-                "methods": {
-                    "getStructure": [],
-                    "getEnvelope": [],
-                    "getFlags": [],
-                    "getSize": []
-                },
-                "constants": [],
-                "properties": []
-            },
-            "Horde_Imap_Client_Data_Envelope": {
-                "methods": [],
-                "constants": [],
-                "properties": [
-                    "message_id"
-                ]
-            },
-            "Horde_Mime_Part": {
-                "methods": {
-                    "getName": [
-                        "default?"
-                    ],
-                    "getType": [
-                        "charset?"
-                    ],
-                    "getPrimaryType": [],
-                    "getCharset": [],
-                    "isAttachment": [],
-                    "getPart": [
-                        "id"
-                    ]
-                },
-                "constants": [],
-                "properties": []
-            }
-        },
-        "syncToken": {
-            "uidvalidityKey": "V",
-            "joinedByComma": true,
-            "syncChecksUidvalidity": true
-        }
-    }
+	"34": {
+		"mail": "5.7.0",
+		"packages": {
+			"bytestream/horde-imap-client": "v2.33.6",
+			"bytestream/horde-mime": "v2.13.2"
+		},
+		"classes": {
+			"Horde_Imap_Client": {
+				"methods": [],
+				"constants": [
+					"STATUS_UIDVALIDITY",
+					"OPEN_READWRITE"
+				],
+				"properties": []
+			},
+			"Horde_Imap_Client_Socket": {
+				"methods": {
+					"logout": [],
+					"openMailbox": [
+						"mailbox",
+						"mode?"
+					],
+					"status": [
+						"mailbox",
+						"flags?",
+						"opts?"
+					],
+					"fetch": [
+						"mailbox",
+						"query",
+						"options?"
+					]
+				},
+				"constants": [],
+				"properties": [
+					"capability"
+				]
+			},
+			"Horde_Imap_Client_Data_Capability": {
+				"methods": {
+					"query": [
+						"capability",
+						"parameter?"
+					]
+				},
+				"constants": [],
+				"properties": []
+			},
+			"Horde_Imap_Client_Fetch_Query": {
+				"methods": {
+					"structure": [],
+					"envelope": [],
+					"flags": [],
+					"size": []
+				},
+				"constants": [],
+				"properties": []
+			},
+			"Horde_Imap_Client_Ids": {
+				"methods": {
+					"__construct": [
+						"ids?",
+						"sequence?"
+					]
+				},
+				"constants": [],
+				"properties": []
+			},
+			"Horde_Imap_Client_Fetch_Results": {
+				"methods": {
+					"first": []
+				},
+				"constants": [],
+				"properties": []
+			},
+			"Horde_Imap_Client_Data_Fetch": {
+				"methods": {
+					"getStructure": [],
+					"getEnvelope": [],
+					"getFlags": [],
+					"getSize": []
+				},
+				"constants": [],
+				"properties": []
+			},
+			"Horde_Imap_Client_Data_Envelope": {
+				"methods": [],
+				"constants": [],
+				"properties": [
+					"message_id"
+				]
+			},
+			"Horde_Mime_Part": {
+				"methods": {
+					"getName": [
+						"default?"
+					],
+					"getType": [
+						"charset?"
+					],
+					"getPrimaryType": [],
+					"getCharset": [],
+					"getParts": [],
+					"getBytes": [
+						"approx?"
+					],
+					"isAttachment": [],
+					"getPart": [
+						"id"
+					]
+				},
+				"constants": [],
+				"properties": []
+			}
+		},
+		"syncToken": {
+			"uidvalidityKey": "V",
+			"joinedByComma": true,
+			"syncChecksUidvalidity": true
+		}
+	},
+	"35": {
+		"mail": "5.9.0",
+		"packages": {
+			"bytestream/horde-imap-client": "v2.34.1",
+			"bytestream/horde-mime": "v2.14.1"
+		},
+		"classes": {
+			"Horde_Imap_Client": {
+				"methods": [],
+				"constants": [
+					"STATUS_UIDVALIDITY",
+					"OPEN_READWRITE"
+				],
+				"properties": []
+			},
+			"Horde_Imap_Client_Socket": {
+				"methods": {
+					"logout": [],
+					"openMailbox": [
+						"mailbox",
+						"mode?"
+					],
+					"status": [
+						"mailbox",
+						"flags?",
+						"opts?"
+					],
+					"fetch": [
+						"mailbox",
+						"query",
+						"options?"
+					]
+				},
+				"constants": [],
+				"properties": [
+					"capability"
+				]
+			},
+			"Horde_Imap_Client_Data_Capability": {
+				"methods": {
+					"query": [
+						"capability",
+						"parameter?"
+					]
+				},
+				"constants": [],
+				"properties": []
+			},
+			"Horde_Imap_Client_Fetch_Query": {
+				"methods": {
+					"structure": [],
+					"envelope": [],
+					"flags": [],
+					"size": []
+				},
+				"constants": [],
+				"properties": []
+			},
+			"Horde_Imap_Client_Ids": {
+				"methods": {
+					"__construct": [
+						"ids?",
+						"sequence?"
+					]
+				},
+				"constants": [],
+				"properties": []
+			},
+			"Horde_Imap_Client_Fetch_Results": {
+				"methods": {
+					"first": []
+				},
+				"constants": [],
+				"properties": []
+			},
+			"Horde_Imap_Client_Data_Fetch": {
+				"methods": {
+					"getStructure": [],
+					"getEnvelope": [],
+					"getFlags": [],
+					"getSize": []
+				},
+				"constants": [],
+				"properties": []
+			},
+			"Horde_Imap_Client_Data_Envelope": {
+				"methods": [],
+				"constants": [],
+				"properties": [
+					"message_id"
+				]
+			},
+			"Horde_Mime_Part": {
+				"methods": {
+					"getName": [
+						"default?"
+					],
+					"getType": [
+						"charset?"
+					],
+					"getPrimaryType": [],
+					"getCharset": [],
+					"getParts": [],
+					"getBytes": [
+						"approx?"
+					],
+					"isAttachment": [],
+					"getPart": [
+						"id"
+					]
+				},
+				"constants": [],
+				"properties": []
+			}
+		},
+		"syncToken": {
+			"uidvalidityKey": "V",
+			"joinedByComma": true,
+			"syncChecksUidvalidity": true
+		}
+	}
 }

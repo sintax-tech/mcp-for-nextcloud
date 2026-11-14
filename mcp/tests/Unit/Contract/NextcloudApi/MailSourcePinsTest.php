@@ -44,10 +44,10 @@ final class MailSourcePinsTest extends TestCase {
 	 * @return void
 	 */
 	public function testTheMatchingReleaseYieldsThePin(): void {
-		$tree = $this->tree(['mail' => '5.0.0']);
+		$tree = $this->tree(['mail' => '5.7.0']);
 
-		$this->assertSame(MailSourcePins::pin('32'), MailSourcePins::verified($tree, '32'));
-		$this->assertSame('5.0.0', MailSourcePins::verified($tree, '32')['mail']['version']);
+		$this->assertSame(MailSourcePins::pin('34'), MailSourcePins::verified($tree, '34'));
+		$this->assertSame('5.7.0', MailSourcePins::verified($tree, '34')['mail']['version']);
 	}
 
 	/**
@@ -59,8 +59,8 @@ final class MailSourcePinsTest extends TestCase {
 		$tree = $this->tree(['mail' => '5.12.5']);
 
 		$this->expectException(RuntimeException::class);
-		$this->expectExceptionMessage('Mail source version 5.12.5 does not match mail-sources.json (5.0.0 for Nextcloud 32)');
-		MailSourcePins::verified($tree, '32');
+		$this->expectExceptionMessage('Mail source version 5.12.5 does not match mail-sources.json (5.7.0 for Nextcloud 34)');
+		MailSourcePins::verified($tree, '34');
 	}
 
 	/**
@@ -87,18 +87,18 @@ final class MailSourcePinsTest extends TestCase {
 	}
 
 	/**
-	 * generate.php, given a tree whose server, Deck, Talk and Circles match the NC32 row but whose Mail is 5.12.5,
+	 * generate.php, given a tree whose server, Deck, Talk and Circles match the NC34 row but whose Mail is 5.12.5,
 	 * stops with the Mail mismatch and leaves the fixture untouched.
 	 *
 	 * @return void
 	 */
 	public function testTheGeneratorStopsOnAMismatchedMailBeforeWriting(): void {
-		$tree = $this->tree(['deck' => '1.16.0', 'spreed' => '22.0.0', 'circles' => '32.0.0', 'mail' => '5.12.5']);
-		file_put_contents($tree . '/version.php', "<?php\n\$OC_VersionString = '32.0.0';\n");
-		$fixture = self::FIXTURES . '/32.php';
+		$tree = $this->tree(['deck' => '1.18.0', 'spreed' => '24.0.0', 'circles' => '34.0.0', 'mail' => '5.12.5']);
+		file_put_contents($tree . '/version.php', "<?php\n\$OC_VersionString = '34.0.0';\n");
+		$fixture = self::FIXTURES . '/34.php';
 		$before = hash_file('sha256', $fixture);
 
-		$process = proc_open([PHP_BINARY, self::FIXTURES . '/generate.php', '32', $tree], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+		$process = proc_open([PHP_BINARY, self::FIXTURES . '/generate.php', '34', $tree], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
 		$this->assertIsResource($process);
 		$output = stream_get_contents($pipes[1]) . stream_get_contents($pipes[2]);
 		fclose($pipes[1]);
@@ -106,8 +106,8 @@ final class MailSourcePinsTest extends TestCase {
 		$status = proc_close($process);
 
 		$this->assertNotSame(0, $status, $output);
-		$this->assertStringContainsString('Mail source version 5.12.5 does not match mail-sources.json (5.0.0 for Nextcloud 32)', $output);
-		$this->assertStringNotContainsString('wrote 32.php', $output);
+		$this->assertStringContainsString('Mail source version 5.12.5 does not match mail-sources.json (5.7.0 for Nextcloud 34)', $output);
+		$this->assertStringNotContainsString('wrote 34.php', $output);
 		$this->assertSame($before, hash_file('sha256', $fixture), 'the fixture was rewritten');
 	}
 

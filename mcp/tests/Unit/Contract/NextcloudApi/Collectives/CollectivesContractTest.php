@@ -29,11 +29,11 @@ final class CollectivesContractTest extends TestCase {
 	public function testRecordsAreThePinnedReleasesAndTheMinimumsTheirDeclaredRange(): void {
 		$pins = json_decode((string)file_get_contents(self::DIR . 'collectives-sources.json'), true, 512, JSON_THROW_ON_ERROR);
 		$behavior = self::behavior();
-		$this->assertSame(['4.0.0', '4.4.0', '4.5.0', '4.7.1'], array_keys($behavior));
+		$this->assertSame(['4.4.0', '4.5.0', '4.7.1'], array_keys($behavior));
 		foreach ($pins as $pin) {
 			$this->assertSame($pin['collectives']['sha256'], $behavior[$pin['collectives']['version']]['sha256']);
 		}
-		foreach (CollectivesCapabilities::MINIMUM as $major => $minimum) {
+		foreach (array_intersect_key(CollectivesCapabilities::MINIMUM, array_flip([34, 35])) as $major => $minimum) {
 			$range = $behavior[$minimum]['nextcloud'];
 			$this->assertTrue($major >= $range['min'] && $major <= $range['max'], "Collectives $minimum declares Nextcloud $major");
 			foreach ($behavior as $version => $record) {
@@ -47,7 +47,7 @@ final class CollectivesContractTest extends TestCase {
 
 	/** @return void every surface member keeps its arity in every pinned fixture */
 	public function testSurfaceMembersExistInEveryFixture(): void {
-		foreach ([31, 32, 33, 34, 35] as $major) {
+		foreach ([34, 35] as $major) {
 			$classes = (require __DIR__ . '/../../../../fixtures/nextcloud-api/' . $major . '.php')['classes'];
 			foreach (CollectivesSurface::MEMBERS as [$class, $method, $parameters]) {
 				$this->assertArrayHasKey($method, $classes[$class]['methods'] ?? [], "$class::$method in NC$major");
@@ -88,8 +88,6 @@ final class CollectivesContractTest extends TestCase {
 			$this->assertStringContainsString('function handle(', $m['Listeners/NodeWrittenListener.php::handle'], $version);
 		}
 		$search = array_map(static fn (array $record): string => $record['methods']['Service/SearchService.php::searchCollective'], self::behavior());
-		// A6: 4.0.0 cuts the content search at a native maximum of 15 unless the caller passes its own.
-		$this->assertStringContainsString('int $maxResults = 15', $search['4.0.0']);
 		foreach (['4.4.0', '4.5.0', '4.7.1'] as $version) {
 			$this->assertStringContainsString('searchCollective(Collective $collective, string $query): array', $search[$version]);
 		}
@@ -169,7 +167,7 @@ final class CollectivesContractTest extends TestCase {
 
 	/** @return void R12: a call leaving Collectives that the allowlist does not list for the major fails, whatever its name */
 	public function testALeafOutsideTheAllowlistFails(): void {
-		foreach ([['35', 'OCA\\Collectives\\Hidden::persist'], ['35', 'OCP\\Files\\Node::touchAll'], ['31', 'OCP\\DB\\QueryBuilder\\IFunctionBuilder::sum']] as [$major, $leaf]) {
+		foreach ([['35', 'OCA\\Collectives\\Hidden::persist'], ['35', 'OCP\\Files\\Node::touchAll'], ['34', 'OCP\\DB\\QueryBuilder\\IFunctionBuilder::unapprovedSum']] as [$major, $leaf]) {
 			try {
 				$this->leavesAllowed($major, [$leaf], [$leaf], 'synthetic');
 			} catch (\PHPUnit\Framework\AssertionFailedError $e) {

@@ -57,7 +57,7 @@ final class MailCharacterizationTest extends TestCase {
 		$report['guide'] = $module->guideNotes();
 		// Observe the real registry too: the legacy version gate and the catalog probe both allow PEEK.
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
-		foreach (['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'] as $grant) { $policy->setGrant('alice', 'mail', $grant, true); }
+		foreach (['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send', 'save'] as $grant) { $policy->setGrant('alice', 'mail', $grant, true); }
 		$apps = $this->createStub(\OCP\App\IAppManager::class);
 		$apps->method('getAppVersion')->willReturn('5.12.5');
 		$apps->method('isEnabledForUser')->willReturn(true);
@@ -122,7 +122,7 @@ final class MailCharacterizationTest extends TestCase {
 		$app->withMessage(5, ['id' => 50, 'sentAt' => 1790000000, 'subject' => 'Résumé', 'body' => 'Olá mundo', 'structure' => $structure, 'attachmentContents' => ['2' => 'Olá attachment']])
 			->withMessage(5, ['id' => 51, 'sentAt' => 1790000000, 'subject' => 'Same date']);
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
-		foreach (['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'] as $grant) { $policy->setGrant('alice', 'mail', $grant, true); }
+		foreach (['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send', 'save'] as $grant) { $policy->setGrant('alice', 'mail', $grant, true); }
 		return [MailMessageToolsRegistryTest::module($this, $app, '5.12.5', $policy), $app];
 	}
 

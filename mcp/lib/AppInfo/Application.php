@@ -19,6 +19,7 @@ use OCA\Mcp\Modules\Deck\DeckModule;
 use OCA\Mcp\Modules\Talk\TalkModule;
 use OCA\Mcp\Modules\Files\FilesModule;
 use OCA\Mcp\Modules\Notes\NotesModule;
+use OCA\Mcp\Modules\Status\StatusModule;
 use OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry;
 use OCA\Mcp\Mcp\Tools\Discovery\ModuleRegistrations;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
@@ -54,6 +55,11 @@ class Application extends App implements IBootstrap {
 		\OCA\Mcp\Modules\Forms\FormsModule::class,
 		\OCA\Mcp\Modules\Polls\PollsModule::class,
 		\OCA\Mcp\Modules\Collectives\CollectivesModule::class,
+		\OCA\Mcp\Modules\Activity\ActivityModule::class,
+		\OCA\Mcp\Modules\Notifications\NotificationsModule::class,
+		\OCA\Mcp\Modules\Availability\AvailabilityModule::class,
+		StatusModule::class,
+		\OCA\Mcp\Modules\Routines\RoutinesModule::class,
 	];
 
 	public function __construct() {

@@ -31,7 +31,12 @@ final class MailTestModule {
 		$draftHtml = new Creation\MailDraftHtml(new Integration\MailDraftHtmlEngine());
 		$sendAccount = new Sending\MailSendAccount($accounts, $messages);
 		$sendPlan = new Sending\MailSendPlan($states, $grants, $apps);
+		$stub = \Closure::bind(static fn (string $type): object => \PHPUnit\Framework\TestCase::createStub($type), null, \PHPUnit\Framework\TestCase::class);
+		$save = new \OCA\Mcp\Modules\Mail\Writing\MailSaveContext($grants, $services, $apps, $locator,
+			new Integration\MailSaveReader($services, new \OCA\Mcp\Modules\Mail\Writing\MailSavePreflight()),
+			new \OCA\Mcp\Modules\Mail\Writing\MailSaveBudget($stub(\OCP\IConfig::class)), new MailSaveDestinationFixture(), new MailReplacementFixture());
 		$tools = [
+			Tools\SaveAttachment::class => new Tools\SaveAttachment(new \OCA\Mcp\Modules\Mail\Writing\SaveAttachmentHandler($save), new \OCA\Mcp\Modules\Mail\Writing\SaveAttachmentPreview($save)),
 			Tools\ListAccounts::class => new Tools\ListAccounts(new Reading\ListAccountsHandler($accounts)),
 			Tools\ListMailboxes::class => new Tools\ListMailboxes(new Reading\ListMailboxesHandler($accounts, $links)),
 			Tools\ListMessages::class => new Tools\ListMessages($reads),

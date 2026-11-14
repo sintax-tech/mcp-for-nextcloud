@@ -13,6 +13,8 @@ use OCA\Mcp\Modules\Talk\Failures\ConversationAccessException;
 use OCA\Mcp\Modules\Talk\Locating\ConversationResolver;
 use OCA\Mcp\Modules\Talk\Presentation\Messages;
 use OCA\Mcp\Modules\Talk\Integration\TalkServices;
+use OCA\Mcp\Modules\Talk\Integration\UnreadRoomView;
+use OCP\IUserManager;
 use OCA\Mcp\Modules\Talk\Failures\TalkUnavailableException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -25,7 +27,7 @@ class ConversationResolverTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 		$this->talkServices = $this->createMock(TalkServices::class);
-		$this->resolver = new ConversationResolver($this->talkServices);
+		$this->resolver = new ConversationResolver($this->talkServices, new UnreadRoomView($this->createMock(IUserManager::class), 1));
 	}
 
 	public function testMalformedTokenIsAnArgumentErrorBeforeAnyTalkCall(): void {
@@ -72,7 +74,7 @@ class ConversationResolverTest extends TestCase {
 		$services = $this->createMock(TalkServices::class);
 		$services->method('manager')->willReturn($this->givenManager($room));
 		$services->method('participantService')->willReturn($this->givenParticipantServiceThatThrows());
-		$notAMember = (new FailingConversationResolver($services))->captureForTest('abcd');
+		$notAMember = (new FailingConversationResolver($services, new UnreadRoomView($this->createMock(IUserManager::class), 1)))->captureForTest('abcd');
 
 		// The caller must not be able to tell "no such conversation" from "you are not in it".
 		$this->assertSame(Messages::conversationNotFound(), $notThere);
@@ -173,60 +175,31 @@ class ConversationResolverTest extends TestCase {
 	}
 
 	/**
-	 * Talk 24 (Nextcloud 34) no longer lets Room::getLobbyState() open a lobby whose timer has passed: its own
-	 * controllers call RoomService::validateLobbyTimer() first. Without that call a webinar past its start time would
-	 * stay closed to the module.
+	 * A lobby whose timer has passed is open for this answer only. Resolving, which every plan does, never calls the
+	 * maintenance that would persist that opening.
 	 */
-	public function testWritingOpensALobbyWhoseTimerHasPassedOnTalk24(): void {
-		$room = $this->givenLobbyRoom(lobby: 2);
-		$roomService = new class {
-			/** @var list<object> */
-			public array $validated = [];
-
-			public function validateLobbyTimer(object $room): void {
-				$this->validated[] = $room;
-				$room->setLobbyState(0);
-			}
-		};
-		$this->talkServices->method('roomService')->willReturn($roomService);
+	public function testResolvingForWritingTreatsAnElapsedLobbyAsOpenWithoutPersistingIt(): void {
+		$room = $this->givenLobbyRoom(lobby: 2, timer: new \DateTimeImmutable('-1 minute'));
+		$this->talkServices->expects($this->never())->method('roomService');
 
 		$conversation = $this->resolver->resolveForWriting('alice', 'abcd');
 
 		$this->assertSame($room, $conversation->room);
-		$this->assertSame([$room], $roomService->validated);
+		$this->assertSame(2, $room->getLobbyState());
 	}
 
-	public function testWritingKeepsRefusingALobbyWhoseTimerHasNotPassedOnTalk24(): void {
-		$this->givenLobbyRoom(lobby: 2);
-		$this->talkServices->method('roomService')->willReturn(new class {
-			public function validateLobbyTimer(object $room): void {
-			}
-		});
+	public function testWritingKeepsRefusingALobbyWhoseTimerHasNotPassed(): void {
+		$this->givenLobbyRoom(lobby: 2, timer: new \DateTimeImmutable('+1 hour'));
+		$this->talkServices->expects($this->never())->method('roomService');
 
 		$this->expectException(ConversationAccessException::class);
 		$this->expectExceptionMessage(Messages::conversationNotWritable());
 		$this->resolver->resolveForWriting('alice', 'abcd');
 	}
 
-	/** Before Talk 24 getLobbyState() expires the timer itself, and RoomService has no validateLobbyTimer(). */
-	public function testWritingReliesOnGetLobbyStateWhereRoomServiceCannotValidateTheTimer(): void {
+	public function testWritingRefusesALobbyWithoutTimer(): void {
 		$this->givenLobbyRoom(lobby: 2);
-		$this->talkServices->method('roomService')->willReturn(new class {
-		});
-
-		$this->expectException(ConversationAccessException::class);
-		$this->expectExceptionMessage(Messages::conversationNotWritable());
-		$this->resolver->resolveForWriting('alice', 'abcd');
-	}
-
-	/** A failing timer check leaves the lobby as Talk reports it: closed, never opened by accident. */
-	public function testAFailingLobbyTimerCheckKeepsTheLobbyClosed(): void {
-		$this->givenLobbyRoom(lobby: 2);
-		$this->talkServices->method('roomService')->willReturn(new class {
-			public function validateLobbyTimer(object $room): void {
-				throw new RuntimeException('database gone');
-			}
-		});
+		$this->talkServices->expects($this->never())->method('roomService');
 
 		$this->expectException(ConversationAccessException::class);
 		$this->expectExceptionMessage(Messages::conversationNotWritable());
@@ -260,40 +233,85 @@ class ConversationResolverTest extends TestCase {
 		$this->assertSame('abcd', $this->resolver->resolveForReading('alice', 'abcd')->room->getToken());
 	}
 
-	public function testReadingOpensALobbyWhoseTimerHasPassedOnTalk24(): void {
-		$room = $this->givenLobbyRoom(lobby: 2);
-		$this->talkServices->method('roomService')->willReturn(new class {
-			public function validateLobbyTimer(object $room): void {
-				$room->setLobbyState(0);
-			}
-		});
+	public function testReadingTreatsAnElapsedLobbyAsOpenWithoutPersistingIt(): void {
+		$room = $this->givenLobbyRoom(lobby: 2, timer: new \DateTimeImmutable('-1 minute'));
+		$this->talkServices->expects($this->never())->method('roomService');
 
 		$this->assertSame($room, $this->resolver->resolveForReading('alice', 'abcd')->room);
+		$this->assertSame(2, $room->getLobbyState());
 	}
 
-	public function testReadingWithAFailingLobbyTimerCheckKeepsTheLobbyClosed(): void {
-		$this->givenLobbyRoom(lobby: 2);
+	/** The name comes from the stored column; the room double has no getDisplayName, which writes in Talk. */
+	public function testTheResolvedConversationCarriesTheStoredNameRead(): void {
+		$this->givenLobbyRoom(lobby: 0);
+
+		$this->assertSame('Sala', $this->resolver->resolveForWriting('alice', 'abcd')->displayName());
+	}
+
+	/** The confirmed write opens the elapsed lobby through Talk's own maintenance, as the Talk controller would. */
+	public function testTheConfirmedWriteOpensAnElapsedLobbyThroughTalk(): void {
+		$room = $this->givenLobbyRoom(lobby: 2, timer: new \DateTimeImmutable('-1 minute'));
+		$roomService = $this->givenLobbyMaintenance();
+		$conversation = $this->resolver->resolveForWriting('alice', 'abcd');
+
+		$this->resolver->openElapsedLobby('alice', $conversation);
+
+		$this->assertSame([$room], $roomService->validated);
+		$this->assertSame(0, $room->getLobbyState());
+	}
+
+	public function testTheConfirmedWriteWithoutLobbyDoesNotAskTalk(): void {
+		$this->givenLobbyRoom(lobby: 0);
+		$this->talkServices->expects($this->never())->method('roomService');
+
+		$this->resolver->openElapsedLobby('alice', $this->resolver->resolveForWriting('alice', 'abcd'));
+	}
+
+	public function testTheConfirmedWriteWithTheBypassDoesNotAskTalk(): void {
+		$this->givenLobbyRoom(lobby: 2, permissions: 128 | 8);
+		$this->talkServices->expects($this->never())->method('roomService');
+
+		$this->resolver->openElapsedLobby('alice', $this->resolver->resolveForWriting('alice', 'abcd'));
+	}
+
+	/** Talk's maintenance failing is a refusal, never a write into a lobby that may still be closed. */
+	public function testAFailingLobbyMaintenanceRefusesTheConfirmedWrite(): void {
+		$this->givenLobbyRoom(lobby: 2, timer: new \DateTimeImmutable('-1 minute'));
 		$this->talkServices->method('roomService')->willReturn(new class {
 			public function validateLobbyTimer(object $room): void {
 				throw new RuntimeException('database gone');
 			}
 		});
+		$conversation = $this->resolver->resolveForWriting('alice', 'abcd');
 
 		$this->expectException(ConversationAccessException::class);
-		$this->expectExceptionMessage(Messages::conversationNotFound());
-		$this->resolver->resolveForReading('alice', 'abcd');
+		$this->expectExceptionMessage(Messages::conversationNotWritable());
+		$this->resolver->openElapsedLobby('alice', $conversation);
 	}
 
-	/** The listing asks the same question for every room it shows, with the room and participant it already holds. */
-	public function testTheLobbyRuleAnswersForAConversationAlreadyResolved(): void {
-		$room = $this->givenLobbyRoom(lobby: 2);
-		$participant = $this->createMock(ResolverParticipantGateway::class);
-		$participant->method('getPermissions')->willReturn(128);
-		$bypass = $this->createMock(ResolverParticipantGateway::class);
-		$bypass->method('getPermissions')->willReturn(128 | 8);
+	/** As Talk's checkLobbyState: after the maintenance the stored state decides, not the in-memory timer. */
+	public function testALobbyTalkLeavesClosedRefusesTheConfirmedWrite(): void {
+		$this->givenLobbyRoom(lobby: 2, timer: new \DateTimeImmutable('-1 minute'));
+		$this->talkServices->method('roomService')->willReturn(new class {
+			public function validateLobbyTimer(object $room): void {
+			}
+		});
+		$conversation = $this->resolver->resolveForWriting('alice', 'abcd');
 
-		$this->assertTrue($this->resolver->keepsOutOfLobby('alice', new Conversation($room, $participant)));
-		$this->assertFalse($this->resolver->keepsOutOfLobby('alice', new Conversation($room, $bypass)));
+		$this->expectException(ConversationAccessException::class);
+		$this->expectExceptionMessage(Messages::conversationNotWritable());
+		$this->resolver->openElapsedLobby('alice', $conversation);
+	}
+
+	/** Before Talk 24 getLobbyState() expires the timer itself, and RoomService has no validateLobbyTimer(). */
+	public function testWithoutValidateLobbyTimerTheStoredStateStillDecides(): void {
+		$this->givenLobbyRoom(lobby: 2, timer: new \DateTimeImmutable('-1 minute'));
+		$this->talkServices->method('roomService')->willReturn(new class {
+		});
+		$conversation = $this->resolver->resolveForWriting('alice', 'abcd');
+
+		$this->expectException(ConversationAccessException::class);
+		$this->resolver->openElapsedLobby('alice', $conversation);
 	}
 
 	public function testUnavailableTalkStaysUnavailableThroughTheResolver(): void {
@@ -367,9 +385,19 @@ class ConversationResolverTest extends TestCase {
 	 * @param int $lobby Initial lobby state, where 0 means none
 	 * @param int $permissions Participant permission bits, the chat permission without the lobby bypass by default
 	 */
-	private function givenLobbyRoom(int $lobby, int $permissions = 128): ResolverRoomGateway {
-		$room = new class ($lobby) implements ResolverRoomGateway {
-			public function __construct(private int $lobby) {}
+	private function givenLobbyRoom(int $lobby, int $permissions = 128, ?\DateTimeInterface $timer = null): ResolverRoomGateway {
+		$room = new class ($lobby, $timer) implements ResolverRoomGateway {
+			public function __construct(private int $lobby, private ?\DateTimeInterface $timer) {}
+
+			public function getLobbyTimer(): ?\DateTimeInterface {
+				return $this->timer;
+			}
+
+			public function getObjectType(): string {
+				return '';
+			}
+
+			public string $name = 'Sala';
 
 			public function getToken(): string {
 				return 'abcd';
@@ -412,6 +440,22 @@ class ConversationResolverTest extends TestCase {
 		return $room;
 	}
 
+	/** Talk 24's RoomService::validateLobbyTimer(), which opens the lobby and remembers each room it opened. */
+	private function givenLobbyMaintenance(): object {
+		$roomService = new class {
+			/** @var list<object> */
+			public array $validated = [];
+
+			public function validateLobbyTimer(object $room): void {
+				$this->validated[] = $room;
+				$room->setLobbyState(0);
+			}
+		};
+		$this->talkServices->method('roomService')->willReturn($roomService);
+
+		return $roomService;
+	}
+
 	private function givenManager(object $room): object {
 		return new class ($room) {
 			public function __construct(private object $room) {}
@@ -449,7 +493,7 @@ class ConversationResolverTest extends TestCase {
 		});
 		$services->method('participantService')->willReturn($this->givenParticipantServiceThatThrows());
 
-		return new FailingConversationResolver($services);
+		return new FailingConversationResolver($services, new UnreadRoomView($this->createMock(IUserManager::class), 1));
 	}
 }
 

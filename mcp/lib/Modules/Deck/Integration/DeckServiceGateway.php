@@ -56,6 +56,8 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 	private DeckUndo $undo;
 	/** Board labels and card-label associations. */
 	private DeckLabelGateway $labels;
+	/** The label catalog of a board. */
+	private DeckBoardLabels $boardLabels;
 	/** Native file shares attached to a card. */
 	private DeckCardFileGateway $files;
 	/** Dependency edges of a card. */
@@ -89,6 +91,7 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 		$this->changes = new DeckCardChanges($this->services, $this->references, $this->zones);
 		$this->undo = new DeckUndo($this->services, $this->counts, $this->ownership, $this->boards, $this->stacks);
 		$this->labels = new DeckLabelGateway($this->services, $this->references);
+		$this->boardLabels = new DeckBoardLabels($this->services);
 		$this->files = new DeckCardFileGateway($this->services, $this->references);
 		$this->dependencies = new DeckDependencyGateway($this->services, $this->references);
 	}
@@ -101,6 +104,11 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 	/** {@inheritDoc} */
 	public function listLabels(string $userId, int $boardId, int $limit, int $offset): array {
 		return $this->labels->listLabels($userId, $boardId, $limit, $offset);
+	}
+
+	/** {@inheritDoc} */
+	public function boardLabels(): DeckLabelCatalog {
+		return $this->boardLabels;
 	}
 
 	/** {@inheritDoc} */

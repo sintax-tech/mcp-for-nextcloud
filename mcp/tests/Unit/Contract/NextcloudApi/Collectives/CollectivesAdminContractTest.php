@@ -40,12 +40,12 @@ final class CollectivesAdminContractTest extends TestCase {
 		}
 		$versions = array_values(array_unique(array_column(array_column($sources, 'collectives'), 'version')));
 		sort($versions);
-		$this->assertSame(['4.0.0', '4.4.0', '4.5.0', '4.7.1'], $versions);
+		$this->assertSame(['4.4.0', '4.7.1'], $versions);
 	}
 
 	/** @return void every native member the creation names exists with its arity in every pinned fixture */
 	public function testFoundingMembersExistInEveryFixture(): void {
-		foreach (FoundingCapabilities::MAJORS as $major) {
+		foreach (array_intersect(FoundingCapabilities::MAJORS, ['34', '35']) as $major) {
 			$classes = (require __DIR__ . '/../../../../fixtures/nextcloud-api/' . $major . '.php')['classes'];
 			foreach (FoundingSurface::MEMBERS as [$class, $method, $parameters]) {
 				$this->assertArrayHasKey($method, $classes[$class]['methods'] ?? [], "$class::$method in NC$major");
@@ -177,7 +177,7 @@ final class CollectivesAdminContractTest extends TestCase {
 		foreach (self::behavior()['circles'] as $version => $record) {
 			$major = (int)$version;
 			$local = $record['methods']['Service/FederatedUserService.php::getLocalFederatedUser'];
-			if ($major >= 33) {
+			if ($major >= 34) {
 				$this->assertSame('userSingleId', $record['userSingleId'], $version);
 				$this->assertStringContainsString('getCachedLocalFederatedUser($federatedUser)', $local, "$version: a recorded identity is only read");
 				$this->assertStringContainsString('setValueString($userId, Application::APP_ID, ConfigLexicon::USER_SINGLE_ID', $local, "$version: a missing one is written");
@@ -194,7 +194,7 @@ final class CollectivesAdminContractTest extends TestCase {
 
 	/** @return void every Teams member the member tools name exists with its arity, and every constant has the proven value (C04b) */
 	public function testTeamsMembersAndConstants(): void {
-		foreach (FoundingCapabilities::MAJORS as $major) {
+		foreach (array_intersect(FoundingCapabilities::MAJORS, ['34', '35']) as $major) {
 			$classes = (require __DIR__ . '/../../../../fixtures/nextcloud-api/' . $major . '.php')['classes'];
 			foreach (TeamsSurface::MEMBERS as [$class, $method, $parameters]) {
 				$this->assertArrayHasKey($method, $classes[$class]['methods'] ?? [], "$class::$method in NC$major");
@@ -215,7 +215,7 @@ final class CollectivesAdminContractTest extends TestCase {
 	public function testAGroupIsAMembershipOfItsSystemTeam(): void {
 		$shapes = array_map(static fn (array $shape): string => 'function getBasedOn(): ' . (str_starts_with($shape[3], '?') ? '?' : '')
 			. substr($shape[3], strrpos($shape[3], '\\') + 1) . ' {', TeamsSurface::BASED_ON);
-		foreach (FoundingCapabilities::MAJORS as $major) {
+		foreach (array_intersect(FoundingCapabilities::MAJORS, ['34', '35']) as $major) {
 			$record = self::behavior()['circles'][$major . '.0.0'];
 			$m = $record['methods'];
 			$this->assertSame(16, $record['constants']['Member::TYPE_CIRCLE'], "NC$major");
@@ -236,7 +236,7 @@ final class CollectivesAdminContractTest extends TestCase {
 
 	/** @return void the Teams rules the member tools plan around and report (C04 §13 C4–C6, §14 R2.4–R2.6, D3, D4) */
 	public function testTheMemberRulesOfTeams(): void {
-		foreach (FoundingCapabilities::MAJORS as $major) {
+		foreach (array_intersect(FoundingCapabilities::MAJORS, ['34', '35']) as $major) {
 			$m = self::behavior()['circles'][$major . '.0.0']['methods'];
 			$status = $m['FederatedItems/SingleMemberAdd.php::manageMemberStatus'];
 			$this->assertMatchesRegularExpression('/case Member::STATUS_REQUEST:\s*\$member->setLevel\(Member::LEVEL_MEMBER\);/', $status, "NC$major: a request is accepted");

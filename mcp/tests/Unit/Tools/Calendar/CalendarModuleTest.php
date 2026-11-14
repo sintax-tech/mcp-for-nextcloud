@@ -32,6 +32,8 @@ final class CalendarModuleTest extends CalendarTestCase {
 			'calendar_move_event' => 'move',
 			'calendar_delete_event' => 'delete',
 			'calendar_transfer_event' => 'transfer',
+			'calendar_check_availability' => 'read',
+			'calendar_suggest_times' => 'read',
 		], $operations);
 	}
 

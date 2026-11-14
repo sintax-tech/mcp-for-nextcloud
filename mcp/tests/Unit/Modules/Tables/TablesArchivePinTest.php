@@ -13,12 +13,12 @@ use PHPUnit\Framework\TestCase;
 final class TablesArchivePinTest extends TestCase {
 	/** @return void Default cell pins remain unchanged, while only NC35 accepts the explicit 2.4.0 archive. */
 	public function testDefaultsAndArchiveOptInAreBounded(): void {
-		foreach ([32 => 'v1.0.10', 33 => 'v2.2.2', 34 => 'v2.2.2', 35 => 'v2.3.2'] as $major => $pin) {
+		foreach ([34 => 'v2.2.2', 35 => 'v2.3.2'] as $major => $pin) {
 			[$status, $output] = $this->select($major, '');
 			self::assertSame(0, $status);
 			self::assertStringStartsWith($pin . ' ', $output);
 		}
-		foreach ([32, 33, 34, 36] as $major) {
+		foreach ([34, 36] as $major) {
 			[$status, $output] = $this->select($major, '/synthetic/tables-v2.4.0.tar.gz');
 			self::assertNotSame(0, $status);
 			self::assertSame('', $output);

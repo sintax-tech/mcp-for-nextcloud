@@ -1,0 +1,18 @@
+{
+    "tool": "status_set_message",
+    "grant": "status.edit",
+    "set_custom_message": [
+        "alice",
+        null,
+        "At the desk",
+        1700000200
+    ],
+    "remove_backup": "alice",
+    "readback": [
+        "alice",
+        false
+    ],
+    "removed_backup": true,
+    "message": "At the desk",
+    "message_id": null
+}

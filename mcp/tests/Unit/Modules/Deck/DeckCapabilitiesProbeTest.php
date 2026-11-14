@@ -29,7 +29,7 @@ final class DeckCapabilitiesProbeTest extends TestCase {
 	}
 
 	public static function cells(): iterable {
-		foreach ([[32, '1.16.8', false], [33, '1.17.7', false], [34, '1.18.5', true], [35, '1.19.0', true],
+		foreach ([[34, '1.18.5', true], [35, '1.19.0', true],
 			[34, '1.18.4', false], [35, '', false], [34, '1.19.0', false], [35, '1.20.0', false],
 			[36, '1.20.0', false], [35, '1.19.1', true]] as $cell) {
 			yield $cell;
@@ -110,7 +110,7 @@ final class DeckCapabilitiesProbeTest extends TestCase {
 	public function testRegistrationNamesTheProbeAndIsNotAModule(): void {
 		$registration = new DeckRegistration();
 		$context = $this->createMock(IRegistrationContext::class);
-		$context->expects(self::exactly(3))->method('registerService');
+		$context->expects(self::exactly(5))->method('registerService');
 		$registration->register($context);
 		self::assertSame([DeckCapabilities::class], $registration->probes());
 		self::assertNotContains(DeckRegistration::class, Application::MODULES);

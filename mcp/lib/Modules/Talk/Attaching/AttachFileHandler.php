@@ -45,6 +45,7 @@ final class AttachFileHandler {
 			$path = $this->arguments->path($arguments);
 			$caption = $this->arguments->optionalMessage($arguments);
 			$conversation = $this->resolver->resolveForWriting($userId, $this->arguments->token($arguments));
+			$this->resolver->openElapsedLobby($userId, $conversation);
 
 			$attached = $this->sharer->attach($conversation, $userId, $path, $caption);
 			if (($attached['captionSent'] ?? null) === false) {

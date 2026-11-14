@@ -10,6 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Mcp\Tools;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Mcp\Tools\ToolPresentation;
+use OCA\Mcp\Mcp\Tools\ToolTitles;
 use PHPUnit\Framework\TestCase;
 
 final class ToolPresentationTest extends TestCase {
@@ -33,6 +34,8 @@ final class ToolPresentationTest extends TestCase {
 		'files_versions_list' => ['List file versions', 'Listar versões do arquivo'],
 		'files_version_read' => ['Read file version', 'Ler versão do arquivo'],
 		'files_version_restore' => ['Restore file version', 'Restaurar versão do arquivo'],
+		'files_list_tags' => ['List file tags', 'Listar etiquetas do arquivo'],
+		'files_set_tag' => ['Add or remove a file tag', 'Adicionar ou remover etiqueta do arquivo'],
 		'notes_list' => ['List notes', 'Listar notas'],
 		'notes_search' => ['Search notes', 'Buscar notas'],
 		'notes_read' => ['Read note', 'Ler nota'],
@@ -42,6 +45,17 @@ final class ToolPresentationTest extends TestCase {
 		'notes_delete' => ['Delete note', 'Excluir nota'],
 		'calendar_list_calendars' => ['List calendars', 'Listar calendários'],
 		'calendar_list_events' => ['List events', 'Listar eventos'],
+		'calendar_check_availability' => ['Check availability', 'Consultar disponibilidade'],
+		'calendar_suggest_times' => ['Suggest meeting times', 'Sugerir horários de reunião'],
+		'activity_list_events' => ['List own activity', 'Listar minha atividade'],
+		'availability_read_absence' => ['Read own absence', 'Ler minha ausência'],
+		'status_read_own' => ['Read own status', 'Ler meu status'],
+		'status_set_type' => ['Set own status type', 'Definir meu tipo de status'],
+		'status_set_message' => ['Set own status message', 'Definir minha mensagem de status'],
+		'routines_create_meeting' => ['Create meeting', 'Criar reunião'],
+		'routines_create_mail_card' => ['Create card from email', 'Criar cartão a partir de e-mail'],
+		'routines_prepare_meeting' => ['Prepare meeting', 'Preparar reunião'],
+		'availability_set_absence' => ['Set own absence', 'Definir minha ausência'],
 		'calendar_create_event' => ['Create event', 'Criar evento'],
 		'calendar_update_event' => ['Edit event', 'Editar evento'],
 		'calendar_move_event' => ['Move event to another calendar', 'Mover evento para outro calendário'],
@@ -57,7 +71,9 @@ final class ToolPresentationTest extends TestCase {
 		'deck_delete_card' => ['Delete Deck card', 'Excluir cartão do Deck'],
 		'deck_followup_cards' => ['Follow up on Deck tasks', 'Acompanhar tarefas do Deck'],
 		'talk_list_conversations' => ['List Talk conversations', 'Listar conversas do Talk'],
+		'talk_list_unread' => ['List unread Talk conversations', 'Listar conversas não lidas do Talk'],
 		'talk_read_messages' => ['Read Talk messages', 'Ler mensagens do Talk'],
+		'talk_read_unread' => ['Read unread Talk messages', 'Ler mensagens não lidas do Talk'],
 		'talk_reply' => ['Reply in Talk', 'Responder no Talk'],
 		'talk_attach_file' => ['Attach file in Talk', 'Anexar arquivo no Talk'],
 		'talk_quote_file' => ['Quote file in Talk', 'Citar arquivo no Talk'],
@@ -103,6 +119,16 @@ final class ToolPresentationTest extends TestCase {
 
 	public function testUnknownToolFallsBackToTheHumanizedName(): void {
 		$this->assertSame('Frobnicate', ToolPresentation::title('x_frobnicate'));
+	}
+
+	public function testToolPresentationTitleMatchesToolTitles(): void {
+		foreach (['mcp_status', 'files_list', 'calendar_transfer_event', 'tables_unshare_node', 'x_frobnicate'] as $tool) {
+			$this->assertSame(ToolTitles::title($tool), ToolPresentation::title($tool), $tool);
+		}
+		Translator::use(new JsonL10n('pt_BR'));
+		foreach (['files_list', 'calendar_check_availability', 'x_frobnicate'] as $tool) {
+			$this->assertSame(ToolTitles::title($tool), ToolPresentation::title($tool), $tool);
+		}
 	}
 
 	public function testInstructionsAreEnglishAndAskForTheUserLanguageAndTheTitles(): void {

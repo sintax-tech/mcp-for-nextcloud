@@ -24,14 +24,17 @@ final class TablesSchemaSurfaceGenerator {
 			static fn (string $class): bool => str_starts_with($class, 'OCA\\Tables\\') && !array_key_exists($class, $baseline['classes'])));
 		sort($classes);
 		$result = ['classes' => $classes, 'pins' => []];
-		foreach (['1.0.10' => '32', '2.2.2' => '35', '2.3.1' => '35', '2.3.2' => '35'] as $pin => $major) {
+		foreach (['2.2.2' => '35', '2.3.1' => '35', '2.3.2' => '35', '2.4.0' => '35'] as $pin => $major) {
 			$archive = $archives . '/v' . $pin . '.tar.gz';
 			$expected = $manifest['sources'][$pin]['archiveSha256'];
 			if (hash_file('sha256', $archive) !== $expected) throw new RuntimeException('Archive SHA mismatch');
 			$tree = sys_get_temp_dir() . '/tables-schema-surfaces-' . bin2hex(random_bytes(8));
 			mkdir($tree . '/apps/tables/lib', 0700, true);
 			try {
-				foreach (new RecursiveIteratorIterator(new PharData($archive)) as $file) {
+				// Native DTO/model surfaces do not consume bundled third-party libraries.
+				$native = new RecursiveCallbackFilterIterator(new PharData($archive),
+					static fn (PharFileInfo $file): bool => strtolower($file->getFilename()) !== 'vendor');
+				foreach (new RecursiveIteratorIterator($native) as $file) {
 					$path = $file->getPathname();
 					$start = strpos($path, '/lib/');
 					if (!$file->isFile() || $start === false || !str_ends_with($path, '.php')) continue;

@@ -11,7 +11,7 @@ final class TablesSchemaPatternSources {
 	public static function run(string $archives): void {
 		$manifest = json_decode(file_get_contents(__DIR__ . '/schema-api.json'), true, 512, JSON_THROW_ON_ERROR);
 		$result = [];
-		foreach (['1.0.10', '2.2.2', '2.3.1', '2.3.2'] as $pin) {
+		foreach (['2.2.2', '2.3.1', '2.3.2'] as $pin) {
 			$file = $archives . '/v' . $pin . '.tar.gz';
 			$hash = $manifest['sources'][$pin]['archiveSha256'];
 			if (hash_file('sha256', $file) !== $hash) throw new RuntimeException('Archive hash mismatch');

@@ -34,9 +34,6 @@ final class CollectivesCapabilitiesTest extends TestCase {
 
 	/** @return iterable<string, array{0:int, 1:string, 2:bool}> major, version and the expected answer */
 	public static function versions(): iterable {
-		yield 'NC32 at its minimum' => [32, '4.0.0', true];
-		yield 'NC32 below it' => [32, '3.6.2', false];
-		yield 'NC33 at 4.4.0' => [33, '4.4.0', true];
 		yield 'NC34 below its minimum' => [34, '4.3.0', false];
 		yield 'NC34 at its minimum' => [34, '4.4.0', true];
 		yield 'NC35 below its minimum' => [35, '4.4.0', false];

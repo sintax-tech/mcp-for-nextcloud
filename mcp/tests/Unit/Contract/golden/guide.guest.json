@@ -7,7 +7,7 @@
             "content": [
                 {
                     "type": "text",
-                    "text": "This guide is in English: relay it to the user in their own language.\n\nWrite confirmation plans arrive as readable text in the user’s language, with the complete plan in structuredContent. Show that text to the user exactly as received.\n\n# Tool guide\n\nGrants and disabled apps are already applied: what is missing from this list you cannot call. The modules available to you are files, talk, people, logs.\n\n- **Files** (`files`): 21 tools — List files, Search files, View folder tree, Create folder, Copy file, Move file, Move files in bulk, Undo bulk operation, Read file, Edit file, Replace part of a file, Download file for local editing, View image, View several images, Search images, List shares, Share file or folder, Stop sharing file or folder, Upload new file, Create text file, Delete file or folder.\n- **Talk** (`talk`): 8 tools — List Talk conversations, Read Talk messages, Reply in Talk, Attach file in Talk, Quote file in Talk, Direct message in Talk, Send batch in Talk, Create group in Talk.\n- **People** (`people`): 1 tools — Search people.\n- **Server log** (`logs`): 2 tools — Read server log, Analyze server log.\n\nCall this tool again with `module` set to one of those names to get every parameter and every behaviour note of that module, or with `tool` to detail a single tool."
+                    "text": "This guide is in English: relay it to the user in their own language.\n\nWrite confirmation plans arrive as readable text in the user’s language, with the complete plan in structuredContent. Show that text to the user exactly as received.\n\n# Tool guide\n\nGrants and disabled apps are already applied: what is missing from this list you cannot call. The modules available to you are files, talk, people, logs.\n\n- **Files** (`files`): 25 tools — List files, Search files, View folder tree, Create folder, Copy file, Move file, Move files in bulk, Undo bulk operation, Read file, Edit file, Replace part of a file, Download file for local editing, View image, View several images, Search images, List shares, Share file or folder, Stop sharing file or folder, Upload new file, Create text file, Delete file or folder, List file tags, Read file comments, Add or remove a file tag, Add file comment.\n- **Talk** (`talk`): 10 tools — List Talk conversations, Read Talk messages, Reply in Talk, Attach file in Talk, Quote file in Talk, Direct message in Talk, Send batch in Talk, Create group in Talk, List unread Talk conversations, Read unread Talk messages.\n- **People** (`people`): 1 tools — Search people.\n- **Server log** (`logs`): 2 tools — Read server log, Analyze server log.\n\nCall this tool again with `module` set to one of those names to get every parameter and every behaviour note of that module, or with `tool` to detail a single tool."
                 }
             ],
             "structuredContent": {
@@ -16,7 +16,7 @@
                     {
                         "module": "files",
                         "title": "Files",
-                        "count": 21,
+                        "count": 25,
                         "notes": [
                             "Paths are absolute inside the folder of the user calling and start at \"/\"; they are never relative and never leave the storage Nextcloud already lets that user reach.",
                             "To find something, use files_search for full-text content search when available (or by file name), files_tree for the shape of a folder (depth 5, 2000 entries) and files_list for a single folder. The `access` field of every entry says who owns it and what it allows.",
@@ -237,19 +237,57 @@
                                     "confirm",
                                     "confirm_shared"
                                 ]
+                            },
+                            {
+                                "name": "files_list_tags",
+                                "title": "List file tags",
+                                "description": "List the collaborative (system) tags of one file or folder the user can see, read through the native Nextcloud tag relation. Only tags the user may see are returned, each with its id, name and the native flags user_visible, user_assignable and can_assign. Tags the administrator uses to hide files from MCP are never listed. A hidden, missing or unreadable path is answered as not found. Read-only.",
+                                "read_only": true,
+                                "destructive": false,
+                                "confirmation": []
+                            },
+                            {
+                                "name": "files_read_comments",
+                                "title": "Read file comments",
+                                "description": "Read the comments of a file or folder, newest first, as Nextcloud's own comments service shows them. Reading never marks comments as read. Page with offset; comments added between calls shift later pages.",
+                                "read_only": true,
+                                "destructive": false,
+                                "confirmation": []
+                            },
+                            {
+                                "name": "files_set_tag",
+                                "title": "Add or remove a file tag",
+                                "description": "Assign one existing collaborative (system) tag to one file or folder, or remove it, through the native Nextcloud tag relation. Name the tag by tag_id (from files_list_tags) or by its exact name, never both. Nextcloud decides as in the web interface: the tag must be one the user may see and assign, and the user must be allowed to change the file. Tags the administrator uses to hide files from MCP can never be assigned or removed here. A hidden, missing or unchangeable file and an unknown or unusable tag get the same not-found answer. Tags are seen by everyone who sees the file and may start automated rules. No file content changes and nothing is deleted. Requires the files.tags permission, a plan, confirm: true with its plan_state, and confirm_shared for a file of someone else.",
+                                "read_only": false,
+                                "destructive": true,
+                                "confirmation": [
+                                    "confirm",
+                                    "confirm_shared"
+                                ]
+                            },
+                            {
+                                "name": "files_add_comment",
+                                "title": "Add file comment",
+                                "description": "Add a comment to a file or folder, as you, through Nextcloud's own comments service. Without confirm: true it only shows the plan. Mentions of existing accounts notify them; any other mention is refused. Adding a comment marks the file's comments as read for you. Comments are never edited or deleted.",
+                                "read_only": false,
+                                "destructive": true,
+                                "confirmation": [
+                                    "confirm",
+                                    "confirm_shared"
+                                ]
                             }
                         ]
                     },
                     {
                         "module": "talk",
                         "title": "Talk",
-                        "count": 8,
+                        "count": 10,
                         "notes": [],
                         "tools": [
                             {
                                 "name": "talk_list_conversations",
                                 "title": "List Talk conversations",
-                                "description": "Lists the Talk conversations the authenticated user takes part in, with the number of unread messages. It changes no state: it does not mark anything as read, does not touch notifications and does not touch activity.",
+                                "description": "Lists the Talk conversations the authenticated user takes part in, with the number of unread messages Talk shows in its own list. When that count cannot be read, the conversation is still listed and unreadMessages is null. A conversation the lobby bars is still listed and unreadMessages is 0. A lobby whose timer has already passed is treated as open for this answer only, and a lobby that cannot be read counts as closed. The display name is the name Talk already stored: a direct conversation names the other participant from the stored pair of account ids, or from the participants already in the room when the stored name is empty or still the legacy account id, and the name is empty when that read fails or the other participant cannot be identified, a group with no stored name is empty, and the release notes conversation and a password request use the names Talk gives them. It changes no state: it does not mark anything as read, does not open a lobby, does not rename a conversation, does not touch notifications and does not touch activity.",
                                 "read_only": true,
                                 "destructive": false,
                                 "confirmation": []
@@ -257,7 +295,7 @@
                             {
                                 "name": "talk_read_messages",
                                 "title": "Read Talk messages",
-                                "description": "Reads the latest messages of a conversation, without marking anything as read, without touching notifications and without recording activity. Use the id returned in reply_to to answer and attachmentId to cite an attachment.",
+                                "description": "Reads the latest messages of a conversation, without marking anything as read, without touching notifications and without recording activity. A lobby whose timer has already passed is treated as open for this answer only: it does not open the lobby and does not rename the conversation. Use the id returned in reply_to to answer and attachmentId to cite an attachment.",
                                 "read_only": true,
                                 "destructive": false,
                                 "confirmation": []
@@ -321,6 +359,22 @@
                                 "confirmation": [
                                     "confirm"
                                 ]
+                            },
+                            {
+                                "name": "talk_list_unread",
+                                "title": "List unread Talk conversations",
+                                "description": "Lists only the Talk conversations of the authenticated user that have unread messages, up to 50 per page. A conversation the lobby bars is omitted and its unread count is not returned. A lobby whose timer has already passed is treated as open for this answer only and is not written back. The list is not frozen: a conversation that receives a message between pages can change position, and nextCursor only continues after the last conversation of this page. To see everything again, call the tool once more without a cursor. It changes no state: it does not mark anything as read, does not change lastReadMessage, lastPing, the session or notifications, and it does not open a lobby or rename a conversation.",
+                                "read_only": true,
+                                "destructive": false,
+                                "confirmation": []
+                            },
+                            {
+                                "name": "talk_read_unread",
+                                "title": "Read unread Talk messages",
+                                "description": "Reads the messages of a conversation that come after the read marker of the authenticated user, oldest first, up to 200 per page. lastReadMessage is the marker the read started from; 0 means no read is known, so the read starts at the oldest message Talk still keeps. nextCursor continues after the last message returned, so a marker moved meanwhile by another client neither skips nor repeats messages; it is null when no message remained at the time of the read. If the last message returned is removed before the next page, the cursor is refused: call again without it to start from the read marker. The pages are not a frozen mailbox: messages that arrive while paging show up in later pages, and a message deleted or expired by retention leaves no entry. A conversation hosted on another server is refused. It changes no state: it does not mark anything as read, does not change lastReadMessage, the session, the status, notifications or the lobby.",
+                                "read_only": true,
+                                "destructive": false,
+                                "confirmation": []
                             }
                         ]
                     },

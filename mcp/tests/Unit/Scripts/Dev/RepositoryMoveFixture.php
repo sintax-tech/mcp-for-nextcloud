@@ -15,6 +15,9 @@ use OCA\Mcp\Scripts\Dev\SourceTrees;
 
 /** Real-tree fixtures that enumerate every filename reader; preparation exists only in the in-memory baseline. */
 final class RepositoryMoveFixture {
+	/** Verbatim, hash-pinned Nextcloud sources: written for the PHP of that Nextcloud, not for the runtime of this suite. */
+	private const PINNED_UPSTREAM = '~^tests/fixtures/[a-z0-9-]+-native/~';
+
 	/** @var array<string,string>|null original tree */
 	private static ?array $tree = null;
 
@@ -45,9 +48,9 @@ final class RepositoryMoveFixture {
 		$newNamespace = substr($newClass, 0, (int)strrpos($newClass, '\\'));
 		$imports = [];
 		foreach ($before as $path => &$content) {
-			if (str_starts_with($path, 'tests/') && str_ends_with($path, '.php') && $prepared) {
+			if (str_starts_with($path, 'tests/') && str_ends_with($path, '.php') && $prepared && !self::pinnedUpstream($path)) {
 				$content = MoveReaderPreparation::code($content, $path);
-				token_get_all($content, TOKEN_PARSE);
+				self::parse($path, $content);
 				if ($evasion && str_contains($content, "\$folder = \$base . '/Tools/Mail';")) {
 					$content = str_replace("\$folder = \$base . '/Tools/Mail';\n\t\tmkdir(\$folder, 0700, true);\n\t\t\$file = \$folder . '/EvasionProbe.php';", "\$file = \$base . '/" . $relative . "';\n\t\t\$folder = dirname(\$file);\n\t\tmkdir(\$folder, 0700, true);", $content);
 				}
@@ -65,6 +68,11 @@ final class RepositoryMoveFixture {
 		unset($content);
 		$after = [];
 		foreach ($before as $path => $content) {
+			if (self::pinnedUpstream($path)) {
+				// A move never rewrites a pinned upstream source: its sha256 is the evidence that it is the original.
+				$after[$path] = $content;
+				continue;
+			}
 			if (!str_ends_with($path, '.php')) {
 				// A move commit updates the paths and the class names a non-PHP test holds (the DI golden names modules).
 				$after[$path] = str_starts_with($path, 'tests/') ? PathRewrites::text(ClassRewrites::text($content, [$oldClass => $newClass]), [$old => $new]) : $content;
@@ -104,12 +112,34 @@ final class RepositoryMoveFixture {
 					$changed = str_replace("namespace $namespace;", "namespace $namespace;\nuse $newClass;", $changed);
 				}
 			}
-			token_get_all($changed, TOKEN_PARSE);
+			self::parse($path, $changed);
 			$after[$path === $old ? $new : $path] = $changed;
 		}
 		$after[\OCA\Mcp\Scripts\Dev\BoundaryMoves::PATH] = \OCA\Mcp\Scripts\Dev\BoundaryMoves::retarget($before, $after, [$old => $new], [$oldClass => $newClass], $map);
 		return [$before, $after, $map, $old, $new];
 	}
+	/**
+	 * @param string $path app-relative path
+	 * @return bool whether the path is a verbatim Nextcloud source pinned by its sources.json, never an app reader
+	 */
+	public static function pinnedUpstream(string $path): bool {
+		return preg_match(self::PINNED_UPSTREAM, $path) === 1;
+	}
+
+	/**
+	 * Parses app code strictly in the runtime of the suite; a pinned upstream source may need a newer PHP and is skipped.
+	 *
+	 * @param string $path app-relative path
+	 * @param string $code PHP source
+	 * @return void
+	 * @throws \ParseError when app code does not parse
+	 */
+	public static function parse(string $path, string $code): void {
+		if (!self::pinnedUpstream($path)) {
+			token_get_all($code, TOKEN_PARSE);
+		}
+	}
+
 	/**
 	 * Changes only path literals, keeping FQCN/import updates and preparation intact in a forgotten-reader probe.
 	 *
@@ -135,12 +165,12 @@ final class RepositoryMoveFixture {
 	 *
 	 * @param array<string,string> $tree source tree before the simulated move
 	 * @param string $old moved app-relative path
-	 * @return list<string> reader paths; script fixtures are not application readers
+	 * @return list<string> reader paths; script fixtures and pinned upstream sources are not application readers
 	 */
 	public static function readers(array $tree, string $old): array {
 		return array_keys(array_filter($tree, static fn (string $code, string $path): bool =>
 			(str_starts_with($path, 'tests/') || str_starts_with($path, 'js/'))
-			&& !str_contains($path, '/Scripts/') && str_contains($code, basename($old)), ARRAY_FILTER_USE_BOTH));
+			&& !str_contains($path, '/Scripts/') && !self::pinnedUpstream($path) && str_contains($code, basename($old)), ARRAY_FILTER_USE_BOTH));
 	}
 
 	/**

@@ -1,0 +1,37 @@
+{
+  "purpose": "Verbatim Activity 7/8 source contracts for NC34/35; no network access in tests.",
+  "versions": {
+    "34": {
+      "Data.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/activity/v34.0.0/lib/Data.php",
+        "sha256": "70cdc345790ef70267d875fd6613061deeba9c4ee7cadd5ffaa8c9ed664f6895"
+      },
+      "GroupHelper.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/activity/v34.0.0/lib/GroupHelper.php",
+        "sha256": "8fdf78b2a2e0e424928ce4e8cac43d0a91d4c2a6e8447a3d7dbbb0e13f86ea21"
+      },
+      "UserSettings.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/activity/v34.0.0/lib/UserSettings.php",
+        "sha256": "312d8d4621b820677e561cb3b6bba92f277f075a281a96d043e0c0412a80d0c8"
+      }
+    },
+    "35": {
+      "Data.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/activity/v35.0.0/lib/Data.php",
+        "sha256": "d68b79f04f6a0e27786c667d2a66b96ae45980d0c2816acfcb8e68f1e5b22f89"
+      },
+      "GroupHelper.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/activity/v35.0.0/lib/GroupHelper.php",
+        "sha256": "191a959aec91ffaa6c0e4befed5c40fa60acf0aedb78f5d7973a4af3df9ced9e"
+      },
+      "UserSettings.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/activity/v35.0.0/lib/UserSettings.php",
+        "sha256": "4ea1fdcd3355b302f6314ae9a84019e75b87388ed78b7ee82b3af15c4281e639"
+      },
+      "SearchCriteria.php": {
+        "source": "https://raw.githubusercontent.com/nextcloud/activity/v35.0.0/lib/SearchCriteria.php",
+        "sha256": "3be84f3a48b7d4523c6a9b78b943e371673bafe04643426f0819cb7464d00657"
+      }
+    }
+  }
+}

@@ -13,9 +13,9 @@ use OCP\IUserManager;
 use Psr\Container\ContainerInterface;
 
 /**
- * Single place that knows the optional Nextcloud Talk classes by name, so the module compiles and the suite
- * passes with the spreed app absent. Nothing else in this module may reference an OCA\Talk class: handlers
- * receive plain objects and are tested with doubles.
+ * Names the optional Nextcloud Talk classes, so the module compiles and the suite passes with the spreed app
+ * absent. Native Talk class names stay in this Integration directory. Handlers receive plain objects and are
+ * tested with doubles.
  */
 class TalkServices {
 	public const APP_ID = 'spreed';
@@ -124,6 +124,23 @@ class TalkServices {
 			'lobbyNone' => (int)constant(self::WEBINARY_CLASS . '::LOBBY_NONE'),
 			'actorUsers' => (string)constant(self::ATTENDEE_CLASS . '::ACTOR_USERS'),
 			'groupType' => (int)constant(self::ROOM_CLASS . '::TYPE_GROUP'),
+		];
+	}
+
+	/**
+	 * Talk's special read markers, read from the loaded chat manager class like the other constants.
+	 *
+	 * @param string $userId authenticated caller
+	 * @return array{unreadMigration:int, unreadFirstMessage:int}
+	 * @throws TalkUnavailableException When spreed is disabled for the user or the class is not loaded
+	 */
+	public function unreadMarkers(string $userId): array {
+		if (!$this->isEnabledFor($userId) || !class_exists(self::CHAT_MANAGER_CLASS)) {
+			throw new TalkUnavailableException();
+		}
+		return [
+			'unreadMigration' => (int)constant(self::CHAT_MANAGER_CLASS . '::UNREAD_MIGRATION'),
+			'unreadFirstMessage' => (int)constant(self::CHAT_MANAGER_CLASS . '::UNREAD_FIRST_MESSAGE'),
 		];
 	}
 

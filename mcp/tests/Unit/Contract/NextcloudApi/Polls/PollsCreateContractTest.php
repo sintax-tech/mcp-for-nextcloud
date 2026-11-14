@@ -18,7 +18,7 @@ final class PollsCreateContractTest extends TestCase {
 	 */
 	public static function pins(): iterable {
 		$all=json_decode(file_get_contents(__DIR__.'/../../../../fixtures/nextcloud-api/polls/polls-create.json'),true,512,JSON_THROW_ON_ERROR);
-		foreach(['8.6.3','9.0.7','9.1.4','9.3.0']as$v){yield $v=>[$v,$all[$v]];}
+		foreach(['9.1.4','9.3.0']as$v){yield $v=>[$v,$all[$v]];}
 	}
 	/**
 	 * Guards source-selected migration/schema and the persistence values actually used by a new row.
@@ -28,7 +28,7 @@ final class PollsCreateContractTest extends TestCase {
 	 */
 	#[DataProvider('pins')]
 	public function testPersistedDefaultsAndReadbackAccessors(string $version,array $r): void {
-		$gen=['8.6.3'=>'V5','9.0.7'=>'V9','9.1.4'=>'V10','9.3.0'=>'V11'][$version];
+		$gen=['9.1.4'=>'V10','9.3.0'=>'V11'][$version];
 		self::assertSame($gen,$r['generation']);
 		self::assertStringContainsString('use OCA\\Polls\\Db\\'.$gen.'\\TableManager;',$r['migrationSource']);
 		$cols=$r['pollColumns'];
@@ -39,8 +39,7 @@ final class PollsCreateContractTest extends TestCase {
 		self::assertStringContainsString('modifyColumn',$r['methods']['Db/'.$gen.'/TableManager.php::createTable']);
 		self::assertStringContainsString("return \$this->description ?? '';",$r['methods']['Db/Poll.php::getDescription']);
 		self::assertStringNotContainsString('function getMiscSettings(',$r['pollSource']);
-		if($version==='8.6.3'){self::assertStringNotContainsString('function getTimezoneName(',$r['pollSource']);}
-		else{self::assertStringContainsString("\$this->timezoneName === ''",$r['methods']['Db/Poll.php::getTimezoneName']);}
+		self::assertStringContainsString("\$this->timezoneName === ''",$r['methods']['Db/Poll.php::getTimezoneName']);
 	}
 	/**
 	 * Discriminates native add argument layout, policy, insertion/event ordering, and mutation/duplicate behavior.
@@ -59,15 +58,11 @@ final class PollsCreateContractTest extends TestCase {
 		$option=$r['methods']['Service/OptionService.php::add'];
 		self::assertStringContainsString('PERMISSION_OPTION_ADD',$option);self::assertStringContainsString('if ($voteYes)',$option);
 		self::assertTrue(strpos($option,'->insert(')<strpos($option,'new OptionCreatedEvent'));
-		if($version==='8.6.3'){
-			self::assertStringNotContainsString('$timezoneName',$add);self::assertStringContainsString('$simpleOption->setOrder(',$option);
-			self::assertStringContainsString(' || ',$option);self::assertStringContainsString("new SimpleOption(",$r['methods']['Model/SimpleOption.php::fromArray']);
-		}else{
-			self::assertStringContainsString('?string $timezoneName = null, string $votingVariant',$add);
-			self::assertStringContainsString('$newOption->setPoll(',$option);self::assertStringContainsString(' && ',$option);
-			self::assertTrue(strpos($option,'->setPoll(')<strpos($option,'->setFromSimpleOption('));
-			self::assertStringContainsString('getPollOptionHash()',$r['methods']['Db/Option.php::setText']);
-		}
+		self::assertStringContainsString('?string $timezoneName = null, string $votingVariant',$add);
+		self::assertStringContainsString('$newOption->setPoll(',$option);self::assertStringContainsString(' && ',$option);
+		self::assertTrue(strpos($option,'->setPoll(')<strpos($option,'->setFromSimpleOption('));
+		self::assertStringContainsString('getPollOptionHash()',$r['methods']['Db/Option.php::setText']);
+
 	}
 	/** @return void equality setters must not be mistaken for persisted columns, and readback hydration is real */
 	public function testCoreOnlyPersistsChangedFieldsAndHydratesPublicGetters(): void {

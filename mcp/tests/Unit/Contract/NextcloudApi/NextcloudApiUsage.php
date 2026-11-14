@@ -18,13 +18,10 @@ namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi;
  */
 final class NextcloudApiUsage {
 	/**
-	 * Releases each fixture of tests/fixtures/nextcloud-api is generated from: the oldest release of every declared
+	 * Releases each fixture of tests/fixtures/nextcloud-api is generated from: the oldest release of every tested
 	 * Nextcloud major, with the oldest Deck and Talk MCP supports on it ({@see \OCA\Mcp\Platform\Compat\AppEnablement}).
 	 */
 	public const SOURCES = [
-		'31' => ['server' => '31.0.0', 'deck' => '1.15.0', 'spreed' => '21.1.4'],
-		'32' => ['server' => '32.0.0', 'deck' => '1.16.0', 'spreed' => '22.0.0'],
-		'33' => ['server' => '33.0.0', 'deck' => '1.17.0', 'spreed' => '23.0.0'],
 		'34' => ['server' => '34.0.0', 'deck' => '1.18.0', 'spreed' => '24.0.0'],
 		'35' => ['server' => '35.0.0', 'deck' => '1.19.0', 'spreed' => '25.0.0'],
 	];
@@ -90,6 +87,11 @@ final class NextcloudApiUsage {
 	public const POSITIONAL = [
 		'OCP\\IGroup::count' => [],
 		// BoardRecipientResolver authorizes the source before DeckRecipientDirectory reads complete native ACLs/readers.
+		'OCA\\Deck\\Db\\LabelMapper::findAssignedLabelsForBoard' => ['boardId'],
+		'OCA\\Deck\\Db\\LabelMapper::findBoardId' => ['id'],
+		'OCA\\Deck\\Service\\LabelService::create' => ['title', 'color', 'boardId'],
+		'OCA\\Deck\\Service\\LabelService::update' => ['id', 'title', 'color'],
+		'OCA\\Deck\\Service\\LabelService::delete' => ['id'],
 		'OCA\\Deck\\Db\\AclMapper::findAll' => ['boardId'],
 		'OCA\\Deck\\Service\\CirclesService::getCircle' => ['circleId'],
 		'OCA\\Circles\\Model\\Circle::getInheritedMembers' => ['detailed'],
@@ -113,7 +115,11 @@ final class NextcloudApiUsage {
 		'OCA\\Talk\\Chat\\ChatManager::sendMessage' => ['chat', 'participant', 'actorType', 'actorId', 'message', 'creationDateTime', 'replyTo'],
 		'OCA\\Talk\\Chat\\ChatManager::addSystemMessage' => ['chat', 'participant', 'actorType', 'actorId', 'message', 'creationDateTime', 'sendNotifications'],
 		'OCA\\Talk\\Chat\\ChatManager::getParentComment' => ['chat', 'parentId'],
+		'OCA\\Talk\\Chat\\ChatManager::getComment' => ['chat', 'messageId'],
 		'OCA\\Talk\\Chat\\ChatManager::getHistory' => ['chat', 'offset', 'limit', 'includeLastKnown'],
+		'OCA\\Talk\\Chat\\ChatManager::waitForNewMessages' => ['chat', 'offset', 'limit', 'timeout', 'user', 'includeLastKnown', 'markNotificationsAsRead', 'threadId'],
+		'OCA\\Talk\\Chat\\ChatManager::getUnreadCount' => ['chat', 'lastReadMessage'],
+		'OCA\\Talk\\Chat\\ChatManager::getLastReadMessageFromLegacy' => ['chat', 'user'],
 		'OCA\\Talk\\Service\\RoomService::createConversation' => ['type', 'name', 'owner'],
 		'OCA\\Talk\\Service\\RoomService::createOneToOneConversation' => ['actor', 'targetUser'],
 		'OCA\\Talk\\Room::getDisplayName' => ['userId', 'forceName'],
@@ -121,12 +127,16 @@ final class NextcloudApiUsage {
 		'OCA\\Talk\\Room::getType' => [],
 		'OCA\\Talk\\Room::getReadOnly' => [],
 		'OCA\\Talk\\Room::getLobbyState' => [],
+		'OCA\\Talk\\Room::getLobbyTimer' => [],
 		'OCA\\Talk\\Room::getLastActivity' => [],
 		'OCA\\Talk\\Room::isFederatedConversation' => [],
+		'OCA\\Talk\\Room::getLastMessageId' => [],
+		'OCA\\Talk\\Room::getObjectType' => [],
 		'OCA\\Talk\\Participant::getPermissions' => [],
 		'OCA\\Talk\\Participant::getAttendee' => [],
 		'OCA\\Talk\\Model\\Attendee::getParticipantType' => [],
 		'OCA\\Talk\\Model\\Attendee::getUnreadMessages' => [],
+		'OCA\\Talk\\Model\\Attendee::getLastReadMessage' => [],
 		'OCA\\Talk\\Model\\Attendee::isArchived' => [],
 		// Deck, resolved by class name in the Deck area classes.
 		'OCA\\Deck\\Service\\AssignmentService::assignUser' => ['cardId', 'userId'],
@@ -163,6 +173,7 @@ final class NextcloudApiUsage {
 		'OCA\\Deck\\Db\\CardMapper::findBoardId' => ['id'],
 		'OCA\\Deck\\Db\\BoardMapper::findAllByOwner' => ['userId'],
 		'OCA\\Deck\\Db\\AssignmentMapper::findIn' => ['cardIds'],
+		'OCA\\Deck\\Db\\AssignmentMapper::findByParticipant' => ['participant', 'type'],
 		// Mail, resolved by class name in OCA\Mcp\Modules\Mail\Integration\MailServices and held untyped by MailGateway.
 		'OCA\\Mail\\Service\\AccountService::findByUserId' => ['currentUserId'],
 		'OCA\\Mail\\Service\\AccountService::find' => ['userId', 'id'],
@@ -284,6 +295,10 @@ final class NextcloudApiUsage {
 	 * @var array<string, array<string, string>> "Class::method" => parameter => why its default is right
 	 */
 	public const REVIEWED_TRAILING = [
+		'OCA\\Deck\\Db\\LabelMapper::findAssignedLabelsForBoard' => [
+			'limit' => 'null: complete deletion impact, including archived and deleted cards',
+			'offset' => '0: every association from the first row',
+		],
 		'OCP\\IGroup::count' => ['search' => '"": estimate the entire group; false/zero/subcounts do not replace post-load limits'],
 		'OCA\\Deck\\Db\\AclMapper::findAll' => [
 			'limit' => 'null: complete authorized board ACLs, bounded after loading',
@@ -345,9 +360,6 @@ final class NextcloudApiUsage {
 			'avatarColor' => 'null: no avatar colour',
 			'attributes' => 'RoomAttributes::NONE (Talk 24+): a plain room',
 			'allowInternalTypes' => 'true: Talk\'s default; the module only asks for the group type',
-		],
-		'OCA\\Talk\\Room::getLobbyState' => [
-			'validateTime' => 'true (up to Talk 23): the expired timer opens the lobby, what Talk 24 does in RoomService::validateLobbyTimer()',
 		],
 		'OCA\\Deck\\Service\\AssignmentService::assignUser' => [
 			'type' => 'TYPE_USER: the module assigns users only',
@@ -462,8 +474,9 @@ final class NextcloudApiUsage {
 		'Horde_Imap_Client_Data_Fetch' => ['methods' => ['getSize' => [], 'getEnvelope' => [], 'getStructure' => [], 'getFlags' => []]],
 		'Horde_Imap_Client_Data_Envelope' => ['properties' => ['message_id']],
 		'Horde_Mime_Part' => [
-			'methods' => ['getType' => [], 'getPrimaryType' => [], 'getName' => [], 'getCharset' => [], 'isAttachment' => [], 'getPart' => ['id']],
+			'methods' => ['getType' => [], 'getPrimaryType' => [], 'getName' => [], 'getCharset' => [], 'isAttachment' => [], 'getPart' => ['id'], 'getBytes' => [], 'getParts' => []],
 			'trailing' => [
+				'approx' => 'getBytes(): false, use the native BODYSTRUCTURE size once; add one for the base64 truncation',
 				'charset' => 'getType(): false, the bare MIME type without its charset parameter',
 				'default' => 'getName(): false, no default name; a part without one has none',
 			],
@@ -568,6 +581,7 @@ final class NextcloudApiUsage {
 			'elsewhere' => [
 				'Modules/Deck/Integration/CardFormatter.php' => 'OCA\\Deck\\Db\\Board::getColor',
 				'Modules/Deck/Reading/ListLabelsHandler.php' => 'OCA\\Deck\\Db\\Label::getColor',
+				'Modules/Deck/Integration/DeckBoardLabels.php' => 'OCA\\Deck\\Db\\Label::getColor',
 				'Modules/Deck/Integration/DeckLabelGateway.php' => 'OCA\\Deck\\Db\\Label::getColor',
 			],
 		],

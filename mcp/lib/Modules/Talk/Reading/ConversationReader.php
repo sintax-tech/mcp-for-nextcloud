@@ -6,9 +6,10 @@
 declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Talk\Reading;
-use OCA\Mcp\Modules\Talk\{Presentation\ActorNames, Locating\Conversation, Failures\ConversationAccessException, Locating\ConversationResolver, Presentation\Messages, Integration\TalkServices, Failures\TalkUnavailableException};
+use OCA\Mcp\Modules\Talk\{Presentation\ActorNames, Failures\ConversationAccessException, Locating\ConversationResolver, Presentation\Messages, Integration\TalkServices, Integration\UnreadCounter, Integration\UnreadRoomView, Failures\TalkUnavailableException};
 use DateTimeInterface;
 use InvalidArgumentException;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
 use OCP\Comments\IComment;
 use Throwable;
@@ -16,7 +17,8 @@ use Throwable;
 /**
  * Read-only view of the conversations of the authenticated user, normalized into plain arrays.
  *
- * Nothing here marks anything as read: reading must not change unread counters, notifications or room activity.
+ * Nothing here marks anything as read, opens a lobby or renames a conversation. Reading must not change unread
+ * counters, notifications, room activity or the name Talk stored.
  */
 class ConversationReader {
 	public const MAX_MESSAGES = 200;
@@ -39,24 +41,37 @@ class ConversationReader {
 	 * @param ConversationResolver $resolver existing conversation access checks
 	 * @param ActorNames $actorNames caller-visible participant names
 	 * @param OutputReferenceFilter $references existing resource reference policy
+	 * @param UnreadCounter $counter unread count Talk shows in its own list, shared with the unread listing
+	 * @param UnreadRoomView $rooms lobby and display name, both read from values Talk already stored
 	 */
 	public function __construct(
 		private TalkServices $talkServices,
 		private ConversationResolver $resolver,
 		private ActorNames $actorNames,
 		private OutputReferenceFilter $references,
+		private UnreadCounter $counter,
+		private UnreadRoomView $rooms,
 	) {}
 
 	/**
 	 * The conversations the user takes part in, most recently active first.
 	 *
 	 * @param string $userId Authenticated user
-	 * @return list<array{token:string, displayName:string, type:int, participantType:int, unreadMessages:int, archived:bool, lastActivity:int|null}>
+	 * @return list<array{token:string, displayName:string, type:int, participantType:int, unreadMessages:int|null, archived:bool, lastActivity:int|null}>
 	 * @throws TalkUnavailableException When spreed is unavailable
 	 */
 	public function listConversations(string $userId): array {
 		$manager = $this->talkServices->manager($userId);
 		$participantService = $this->talkServices->participantService($userId);
+		$chatManager = $this->talkServices->chatManager($userId);
+		$markers = $this->talkServices->unreadMarkers($userId);
+		$constants = $this->talkServices->conversationConstants($userId);
+		$lobbyNone = $constants['lobbyNone'] ?? null;
+		$ignore = $constants['lobbyIgnorePermission'] ?? null;
+		$changelog = $constants['changelogType'] ?? null;
+		if (!is_int($lobbyNone) || !is_int($ignore) || !is_int($changelog)) {
+			throw new TalkUnavailableException();
+		}
 
 		$conversations = [];
 		foreach ($manager->getRoomsForUser($userId) as $room) {
@@ -70,12 +85,16 @@ class ConversationReader {
 
 			$attendee = $participant->getAttendee();
 			$lastActivity = $room->getLastActivity();
-			// Talk's RoomFormatter reports no unread messages to a participant the lobby keeps out: the count would
-			// tell what the history refuses to show.
-			$unread = $this->resolver->keepsOutOfLobby($userId, new Conversation($room, $participant)) ? 0 : $attendee->getUnreadMessages();
+			// The lobby answer is the one the unread listing already uses: decided in memory, never by opening the
+			// lobby. A participant the lobby keeps out gets no count, because the number would tell what the history
+			// refuses to show. The conversation stays listed. An unreadable count stays null: a missing number is
+			// not the same as zero.
+			$unread = $this->rooms->barred($room, $participant, $lobbyNone, $ignore)
+				? 0
+				: $this->unreadCount($room, $attendee, $chatManager, $userId, $markers);
 			$conversations[] = [
 				'token' => $room->getToken(),
-				'displayName' => $room->getDisplayName($userId, false),
+				'displayName' => $this->rooms->displayName($room, $userId, $changelog, $participantService),
 				'type' => $room->getType(),
 				'participantType' => $attendee->getParticipantType(),
 				'unreadMessages' => $unread,
@@ -93,6 +112,24 @@ class ConversationReader {
 	}
 
 	/**
+	 * The unread count Talk would show, or null when that count cannot be read.
+	 *
+	 * The conversation stays in the list either way. The counter is the one shared with the unread listing: a local
+	 * room is counted from the chat, a federated room from the attendee column, and nothing is written.
+	 *
+	 * @param object $room OCA\Talk\Room
+	 * @param object $attendee OCA\Talk\Model\Attendee of the reader
+	 * @param object $chatManager OCA\Talk\Chat\ChatManager
+	 * @param string $userId authenticated reader
+	 * @param array{unreadMigration: int, unreadFirstMessage: int} $markers Talk's special read markers
+	 * @return int|null null when the counter cannot answer
+	 */
+	private function unreadCount(object $room, object $attendee, object $chatManager, string $userId, array $markers): ?int {
+		$counted = $this->counter->count($room, $attendee, $chatManager, $userId, $markers);
+		return $counted === null ? null : $counted['unread'];
+	}
+
+	/**
 	 * The last messages of a conversation, oldest first, in the shape the module documents.
 	 *
 	 * @param string $userId Authenticated user
@@ -107,18 +144,42 @@ class ConversationReader {
 		if ($limit < 1 || $limit > self::MAX_MESSAGES) {
 			throw new InvalidArgumentException(Messages::invalidLimit());
 		}
-		// Messages can carry attachments: an unreadable Files scope is the same 503 before the conversation is
-		// looked up, whatever it holds.
-		$this->references->assertAvailable($userId);
+		$this->assertReferencesAvailable($userId);
 
 		$conversation = $this->resolver->resolveForReading($userId, $token);
 		$chatManager = $this->talkServices->chatManager($userId);
 
+		return $this->project($userId, $conversation->token(), $chatManager->getHistory($conversation->room, -$limit, $limit, false));
+	}
+
+	/**
+	 * Refuses before any conversation is looked up when the Files scope of the reader cannot be resolved.
+	 *
+	 * Messages can carry attachments, so every read of messages asks this first: an unreadable scope is the same
+	 * answer whatever the conversation holds.
+	 *
+	 * @param string $userId Authenticated user
+	 * @return void
+	 * @throws PolicyUnavailable When the Files scope is unreadable
+	 */
+	public function assertReferencesAvailable(string $userId): void {
+		$this->references->assertAvailable($userId);
+	}
+
+	/**
+	 * Chat comments already read from Talk, as module messages in the order given.
+	 *
+	 * @param string $userId Authenticated user
+	 * @param string $token Conversation the comments belong to
+	 * @param iterable<IComment> $comments Chat comments as Talk returned them
+	 * @return list<array{id:string, type:string, text:?string, actorType:string, actorId:string, actorDisplayName:string, timestamp:int, parentId:?string, attachmentId:?int}>
+	 */
+	public function project(string $userId, string $token, iterable $comments): array {
 		$messages = [];
-		foreach ($chatManager->getHistory($conversation->room, -$limit, $limit, false) as $comment) {
+		foreach ($comments as $comment) {
 			$message = $this->normalizeMessage($comment);
 			// The card stays, with its type; only the id of a file the user may not reach is withheld.
-			$message['attachmentId'] = $this->references->attachmentId($userId, $conversation->token(), $message['attachmentId']);
+			$message['attachmentId'] = $this->references->attachmentId($userId, $token, $message['attachmentId']);
 			$messages[] = $message;
 		}
 

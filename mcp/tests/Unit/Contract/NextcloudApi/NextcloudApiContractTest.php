@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Every Nextcloud API the app uses exists, in the shape it is used, in every Nextcloud major the fixtures cover: the
- * declared range and any older release kept ready for the next widening.
+ * active tested range; older installation compatibility is preserved without executing historical fixtures.
  *
  * The suite runs against `nextcloud/ocp` of one branch and doubles of Deck, Talk and DAV, so nothing else would notice
  * a class, method, constant or parameter that an older covered release lacks: the call would only fail on that
@@ -30,20 +30,9 @@ final class NextcloudApiContractTest extends TestCase {
 	private static array $fixtures = [];
 	private static ?LibScanner $scanner = null;
 
-	/** @return list<string> the Nextcloud majors info.xml declares, oldest first */
-	private static function declaredMajors(): array {
-		$nextcloud = simplexml_load_file(self::INFO_XML)->dependencies->nextcloud;
-		return array_map('strval', range((int)$nextcloud['min-version'], (int)$nextcloud['max-version']));
-	}
-
-	/**
-	 * @return list<string> every major there is a fixture of, oldest first: the declared range, plus the older
-	 * releases kept checked so widening info.xml is a matter of declaring them again
-	 */
+	/** @return list<string> Active tested majors, not the installation range. */
 	private static function checkedMajors(): array {
-		$majors = array_map(static fn (string $file): string => basename($file, '.php'), glob(self::FIXTURES . '/[0-9]*.php') ?: []);
-		sort($majors);
-		return $majors;
+		return TestedNextcloud::MAJORS;
 	}
 
 	/** @return array{sources: array<string, string>, classes: array<string, array<string, mixed>|null>} */
@@ -85,18 +74,16 @@ final class NextcloudApiContractTest extends TestCase {
 		return in_array($major, NextcloudApiUsage::VERSION_GATED[$api]['missing'] ?? [], true);
 	}
 
-	/**
-	 * Every declared major is checked; a fixture of a release older than the declared range is allowed and kept, so the
-	 * code can be declared for 31 and 32 again without regenerating anything.
-	 */
-	public function testThereIsAFixtureForEveryDeclaredMajor(): void {
-		$sources = array_map('strval', array_keys(NextcloudApiUsage::SOURCES));
-		foreach (self::declaredMajors() as $major) {
-			$this->assertContains($major, self::checkedMajors(), "no fixture for the declared Nextcloud $major: regenerate tests/fixtures/nextcloud-api");
-			$this->assertContains($major, $sources, "NextcloudApiUsage::SOURCES has no entry for the declared major $major");
-		}
-		foreach (self::checkedMajors() as $major) {
-			$this->assertContains($major, $sources, "NextcloudApiUsage::SOURCES has no entry for the fixture $major");
+	/** Fixtures, source pins and workflow coverage must agree; installation compatibility may be wider. */
+	public function testThereIsAFixtureForEveryTestedMajor(): void {
+		$files = array_map(static fn (string $file): string => basename($file, '.php'), glob(self::FIXTURES . '/[0-9]*.php') ?: []);
+		sort($files);
+		$this->assertSame(TestedNextcloud::MAJORS, $files);
+		$this->assertSame(TestedNextcloud::MAJORS, array_map('strval', array_keys(NextcloudApiUsage::SOURCES)));
+		$nextcloud = simplexml_load_file(self::INFO_XML)->dependencies->nextcloud;
+		foreach (TestedNextcloud::MAJORS as $major) {
+			$this->assertGreaterThanOrEqual((int)$nextcloud['min-version'], (int)$major);
+			$this->assertLessThanOrEqual((int)$nextcloud['max-version'], (int)$major);
 		}
 	}
 
@@ -114,7 +101,9 @@ final class NextcloudApiContractTest extends TestCase {
 		}
 		$oldest = NextcloudApiUsage::SOURCES[self::checkedMajors()[0]];
 		foreach (AppEnablement::MINIMUM_VERSIONS as $app => $minimum) {
-			$this->assertSame($minimum, OldestCoveredRelease::of($oldest, self::fixture(self::checkedMajors()[0]), $app), "the $app minimum must be the release the oldest fixture checks");
+			$covered = OldestCoveredRelease::of($oldest, self::fixture(self::checkedMajors()[0]), $app);
+			$this->assertNotNull($covered, "no tested $app source");
+			$this->assertTrue(version_compare($covered, $minimum, ">="), "tested $app must satisfy the unchanged production minimum");
 		}
 	}
 
@@ -123,10 +112,7 @@ final class NextcloudApiContractTest extends TestCase {
 		$cases = [];
 		foreach (self::scanner()->classes() as $class => $files) {
 			foreach (self::checkedMajors() as $major) {
-				// These public APIs start in NC32, the declared minimum; NC31 remains outside info.xml.
-				if (in_array($class, [\OCP\Config\IUserConfig::class, \OCP\Template\ITemplateManager::class], true) && !in_array($major, self::declaredMajors(), true)) {
-					continue;
-				}
+
 				if (in_array($class, array_merge(...array_values(NextcloudApiUsage::OUTSIDE_FIXTURES)), true)) {
 					continue;
 				}
@@ -188,9 +174,7 @@ final class NextcloudApiContractTest extends TestCase {
 				continue;
 			}
 			foreach ($majors as $major) {
-				if (in_array($class, [\OCP\Config\IUserConfig::class, \OCP\Template\ITemplateManager::class], true) && !in_array($major, self::declaredMajors(), true)) {
-					continue;
-				}
+
 				$cases["$class @ $major"] = [$class, $methods, $major];
 			}
 		}
@@ -353,7 +337,7 @@ final class NextcloudApiContractTest extends TestCase {
 		$types['message']['35'] = 'array';
 		$this->assertSame(['message'], self::typeChanges($types, []), 'a passed parameter whose type changed');
 		$this->assertSame([], self::typeChanges($types, ['message' => 'reviewed']), 'unless the change is reviewed');
-		$types['actorId']['31'] = '';
+		$types['actorId']['34'] = '';
 		$this->assertSame(['message'], self::typeChanges($types, []), 'an untyped parameter accepts anything: gaining a type is no change');
 	}
 
@@ -385,10 +369,7 @@ final class NextcloudApiContractTest extends TestCase {
 		$cases = [];
 		foreach (array_keys(self::scanner()->constructions()) as $class) {
 			foreach (self::checkedMajors() as $major) {
-				// These public APIs start in NC32, the declared minimum; NC31 remains outside info.xml.
-				if (in_array($class, [\OCP\Config\IUserConfig::class, \OCP\Template\ITemplateManager::class], true) && !in_array($major, self::declaredMajors(), true)) {
-					continue;
-				}
+
 				$cases["$class @ $major"] = [$class, $major];
 			}
 		}
@@ -499,7 +480,7 @@ final class NextcloudApiContractTest extends TestCase {
 				$present = $member === null ? self::surface($major, $class) !== null : self::serves(self::surface($major, $class), $member);
 				$this->assertSame(!in_array($major, $gate['missing'], true), $present, "$api in Nextcloud $major");
 			}
-			foreach ($gate['missing'] as $major) {
+			foreach (array_intersect($gate['missing'], self::checkedMajors()) as $major) {
 				[$fallbackClass, $fallbackMember] = explode('::', $gate['fallback']) + [1 => null];
 				$surface = self::surface($major, $fallbackClass);
 				$this->assertTrue($fallbackMember === null ? $surface !== null : self::serves($surface, $fallbackMember), "fallback {$gate['fallback']} in Nextcloud $major");

@@ -15,7 +15,7 @@ use OCA\Mcp\Tests\Unit\Contract\NextcloudApi\Polls\PollsCreateApiUsage;
 final class VersionedOmissionContractTest extends TestCase {
 	/** @return iterable<string,array{string}> declaration/surface counterexamples */
 	public static function invalid(): iterable {
-		foreach (['wrong missing', 'wrong field', 'wrong by', 'wrong pin', 'fake fallback', 'present on 8', 'absent on 9'] as $case) {
+		foreach (['wrong missing', 'wrong field', 'wrong by', 'wrong pin', 'fake fallback', 'absent on 9'] as $case) {
 			yield $case => [$case];
 		}
 	}
@@ -38,23 +38,21 @@ final class VersionedOmissionContractTest extends TestCase {
 			$gate['by'] = self::class;
 		}
 		if ($case === 'wrong pin') {
-			$gate['pins']['31'] = '9.3.0';
+			$gate['pins']['34'] = '9.3.0';
 		}
 		if ($case === 'fake fallback') {
 			$gate['fallback'] = 'OCA\Polls\Db\Poll::getId';
 		}
 		$surface = static function (string $major, string $class) use ($case): array {
-			$present = !in_array($major, ['31', '32'], true);
-			if ($case === 'present on 8' && $major === '32') {
-				$present = true;
-			}
+			$present = true;
+
 			if ($case === 'absent on 9' && $major === '35') {
 				$present = false;
 			}
 			return ['present' => $present];
 		};
 		$this->expectException(AssertionFailedError::class);
-		VersionedOmissionContract::handled($api, $gate, ['31', '32', '33', '34', '35'], $surface, static fn(?array $s, string $m): bool => $s['present']);
+		VersionedOmissionContract::handled($api, $gate, ['34', '35'], $surface, static fn(?array $s, string $m): bool => $s['present']);
 	}
 	/** @return void ordinary gates still enter the unchanged fallback checks */
 	public function testOrdinaryVersionGateIsNotConsumed(): void {

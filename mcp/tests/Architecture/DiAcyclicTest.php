@@ -18,6 +18,16 @@ use LogicException;
 
 /** Real internal construction, all factories and module roots, plus controls for every DI failure mode. */
 final class DiAcyclicTest extends TestCase {
+	/** Ports a composition resolves directly, before any tool consumes them: roots of the construction like the modules. */
+	private const COMPOSITION_PORTS = [
+		\OCA\Mcp\Platform\Meetings\MeetingCalendar::class,
+		\OCA\Mcp\Platform\Meetings\MeetingTalk::class,
+		\OCA\Mcp\Platform\Meetings\MeetingEventRead::class,
+		\OCA\Mcp\Platform\MailCards\MailCardSource::class,
+		\OCA\Mcp\Platform\MailCards\MailAttachmentSave::class,
+		\OCA\Mcp\Platform\MailCards\DeckCardCreate::class,
+	];
+
 	private function resolver(?array $factories = null): ServiceResolver {
 		return new ServiceResolver($factories ?? Registrations::capture($this), function (string $class): object {
 			self::assertFalse(str_starts_with($class, 'OCA\\Mcp\\'), 'Internal services must never be doubled');
@@ -34,9 +44,11 @@ final class DiAcyclicTest extends TestCase {
 			$tools = [...$tools, ...$module::catalog()];
 		}
 		// A catalog resolves its tools lazily: building them here proves every work class is autowired or registered.
-		$resolver->resolveAll([...Application::MODULES, ...$tools]);
+		$resolver->resolveAll([...Application::MODULES, ...$tools, ...self::COMPOSITION_PORTS, \OCA\Mcp\Platform\Meetings\PreparationSources::class]);
+		$sources = $resolver->get(\OCA\Mcp\Platform\Meetings\PreparationSources::class);
+		self::assertSame(['calendar', 'mail', 'deck', 'files'], $sources->available());
 		self::assertNotEmpty($tools);
-		self::assertCount(14, Application::MODULES);
+		self::assertCount(19, Application::MODULES);
 		$captured = array_keys($resolver->factories); $invoked = array_keys($resolver->invoked); sort($captured); sort($invoked);
 		self::assertSame($captured, $invoked);
 		self::assertNotEmpty($resolver->edges);
@@ -70,8 +82,34 @@ final class DiAcyclicTest extends TestCase {
 
 	public static function wrongFactory(): object { return new \stdClass(); }
 
+	/**
+	 * Mail, Deck and files may be unbound: the container still starts and the dossier lists only calendar.
+	 *
+	 * @return void
+	 */
+	public function testUnboundOptionalPreparationSourcesDoNotFailInitialize(): void {
+		$factories = Registrations::capture($this);
+		unset(
+			$factories[\OCA\Mcp\Platform\Meetings\MeetingMailRead::class],
+			$factories[\OCA\Mcp\Platform\Meetings\MeetingDeckRead::class],
+			$factories[\OCA\Mcp\Platform\Meetings\MeetingFileRead::class],
+		);
+		$resolver = $this->resolver($factories);
+		$tools = [];
+		foreach (Application::MODULES as $module) {
+			$tools = [...$tools, ...$module::catalog()];
+		}
+		$resolver->resolveAll([...Application::MODULES, ...$tools, ...self::COMPOSITION_PORTS, \OCA\Mcp\Platform\Meetings\PreparationSources::class]);
+		$sources = $resolver->get(\OCA\Mcp\Platform\Meetings\PreparationSources::class);
+		self::assertSame(['calendar'], $sources->available());
+		self::assertInstanceOf(\OCA\Mcp\Platform\Meetings\MeetingEventRead::class, $sources->events());
+		self::assertNull($sources->mail());
+		self::assertNull($sources->deck());
+		self::assertNull($sources->files());
+	}
+
 	public function testMissingPortsFailWithoutGenericInternalDoubles(): void {
-		foreach ([\OCA\Mcp\Mcp\Resources\FileTextResource::class, WriteVisibility::class, NativeCalendars::class, \OCA\Mcp\Access\Guests\NativeGuests::class, \OCA\Mcp\Mcp\Resources\NoteResource::class, \OCA\Mcp\Platform\Dav\CalDavObjects::class, \OCA\Mcp\Platform\Dav\CalDavWrite::class, \OCA\Mcp\Access\ResourceScope\ScopedCalendarLookup::class, \OCA\Mcp\Access\References\ReadableDeckCard::class, \OCA\Mcp\Access\References\ReadableCalendarEvent::class] as $port) {
+		foreach ([\OCA\Mcp\Platform\FileAccess\NewFileDestination::class, \OCA\Mcp\Platform\FileAccess\FileReplacement::class, \OCA\Mcp\Mcp\Resources\FileTextResource::class, WriteVisibility::class, NativeCalendars::class, \OCA\Mcp\Access\Guests\NativeGuests::class, \OCA\Mcp\Mcp\Resources\NoteResource::class, \OCA\Mcp\Platform\Dav\CalDavObjects::class, \OCA\Mcp\Platform\Dav\CalDavWrite::class, \OCA\Mcp\Platform\Dav\MetadataServer::class, \OCA\Mcp\Access\ResourceScope\ScopedCalendarLookup::class, \OCA\Mcp\Access\References\ReadableDeckCard::class, \OCA\Mcp\Access\References\ReadableCalendarEvent::class, ...self::COMPOSITION_PORTS] as $port) {
 			$factories = Registrations::capture($this); unset($factories[$port]);
 			try { $this->resolver($factories)->get($port); self::fail('Missing port resolved'); }
 			catch (LogicException $error) { self::assertStringContainsString('Missing internal binding', $error->getMessage()); }

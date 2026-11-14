@@ -1,0 +1,54 @@
+<?php
+
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+declare(strict_types=1);
+
+namespace OCA\Mcp\Modules\Deck\Integration;
+
+use OCA\Deck\Db\Assignment;
+use OCA\Deck\Db\AssignmentMapper;
+
+/**
+ * The card ids `AssignmentMapper::findByParticipant` returns for one user assignment.
+ *
+ * The mapper does not apply the board ACL and does not limit the query: it loads every row, and their order is
+ * not defined. This class then keeps card ids from the first {@see self::MAX_IDS} rows it examines. A duplicate
+ * or a non-positive id still counts toward that inspection. A later card read drops a card the actor cannot open,
+ * and that drop is not a truncation.
+ */
+final class AssignedCards implements AssignedCardLookup {
+	/** Card ids kept for one participant: the dossier budget, and no more. */
+	public const MAX_IDS = 20;
+
+	/**
+	 * @param DeckServiceContext $services lazily resolved Deck services
+	 */
+	public function __construct(private DeckServiceContext $services) {
+	}
+
+	/** {@inheritDoc} */
+	public function ids(string $userId, string $participantUid): array {
+		if ($participantUid === '') {
+			return [];
+		}
+		$this->services->bindUser($userId);
+		/** @var AssignmentMapper $mapper */
+		$mapper = $this->services->get(AssignmentMapper::class);
+		$ids = [];
+		$examined = 0;
+		foreach ($mapper->findByParticipant($participantUid, Assignment::TYPE_USER) as $assignment) {
+			if ($examined >= self::MAX_IDS) {
+				break;
+			}
+			$examined++;
+			$id = (int)$assignment->getCardId();
+			if ($id > 0 && !in_array($id, $ids, true)) {
+				$ids[] = $id;
+			}
+		}
+		return $ids;
+	}
+}

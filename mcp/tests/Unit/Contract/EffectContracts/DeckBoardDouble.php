@@ -11,6 +11,8 @@ use OCA\Deck\Db\Card;
 use OCA\Mcp\Modules\Deck\Editing\CardLabelChanges;
 use OCA\Mcp\Modules\Deck\Failures\DeckConflictException;
 use OCA\Mcp\Modules\Deck\Integration\DeckGatewayInterface;
+use OCA\Mcp\Modules\Deck\Integration\DeckLabelCatalog;
+use OCA\Mcp\Modules\Deck\Labels\LabelSnapshot;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 
@@ -41,6 +43,8 @@ final class DeckBoardDouble {
 	];
 	/** @var list<string> label writes, in order: "<card> +<label>" or "<card> -<label>" */
 	public array $writes = [];
+	/** @var string Mutable native board title for creation plan conflicts. */
+	public string $name = 'Comercial';
 
 	/** @param TestCase $test the running test, owner of the gateway mock */
 	public function __construct(private TestCase $test) {
@@ -64,7 +68,67 @@ final class DeckBoardDouble {
 			$this->writes[] = $cardId . ' ' . ($assign ? '+' : '-') . $labelId;
 		});
 		$gateway->method('cardFileContext')->willReturnCallback(fn (string $uid, int $cardId, bool $edit): array => $this->context($cardId));
+		$gateway->method('boardLabels')->willReturn($this->catalogDouble());
 		return $gateway;
+	}
+
+	/**
+	 * The label catalog of the board, with the same rechecks as the real one: a label write refuses with
+	 * {@see DeckConflictException} before writing when the label no longer matches the approved snapshot.
+	 *
+	 * @return DeckLabelCatalog double over {@see self::$catalog} that records "label +<title>", "label ~<id>" and "label -<id>"
+	 */
+	private function catalogDouble(): DeckLabelCatalog {
+		$labels = (new ReflectionMethod($this->test, 'createMock'))->invoke($this->test, DeckLabelCatalog::class);
+		$labels->method('boardLabelState')->willReturnCallback(fn (): array => $this->boardState());
+		$labels->method('labelState')->willReturnCallback(function (string $uid, int $labelId): array {
+			$state = $this->boardState();
+			return $state + ['label' => $this->catalog[$labelId] ?? throw new \OCA\Deck\NoPermissionException('Permission denied'),
+				'cards' => $state['usage'][$labelId] ?? 0, 'cardIds' => array_keys(array_filter($this->cards, static fn (array $card): bool => in_array($labelId, $card['labels'], true)))];
+		});
+		$labels->method('createLabel')->willReturnCallback(function (string $uid, int $boardId, string $title, string $color): array {
+			$id = max(array_keys($this->catalog)) + 1;
+			$this->catalog[$id] = ['id' => $id, 'boardId' => $boardId, 'title' => $title, 'color' => $color];
+			$this->writes[] = 'label +' . $title;
+			return $this->catalog[$id];
+		});
+		$labels->method('updateLabel')->willReturnCallback(function (string $uid, int $labelId, string $title, string $color, array $expected) use ($labels): array {
+			if (LabelSnapshot::of($labels->labelState($uid, $labelId), false) !== $expected) {
+				throw new DeckConflictException();
+			}
+			$this->catalog[$labelId] = array_merge($this->catalog[$labelId], ['title' => $title, 'color' => $color]);
+			$this->writes[] = 'label ~' . $labelId;
+			return $this->catalog[$labelId];
+		});
+		$labels->method('deleteLabel')->willReturnCallback(function (string $uid, int $labelId, array $expected) use ($labels): void {
+			if (LabelSnapshot::of($labels->labelState($uid, $labelId), true) !== $expected) {
+				throw new DeckConflictException();
+			}
+			unset($this->catalog[$labelId]);
+			foreach ($this->cards as $id => $card) {
+				$this->cards[$id]['labels'] = array_values(array_diff($card['labels'], [$labelId]));
+			}
+			$this->writes[] = 'label -' . $labelId;
+		});
+		return $labels;
+	}
+
+	/** @return array<string, mixed> the managed board state the real catalog returns */
+	private function boardState(): array {
+		$usage = [];
+		foreach ($this->cards as $card) {
+			foreach ($card['labels'] as $id) {
+				$usage[$id] = ($usage[$id] ?? 0) + 1;
+			}
+		}
+		ksort($usage);
+		return ['boardId' => self::BOARD, 'board' => ['owner' => 'alice', 'ownerDisplayName' => 'Alice', 'name' => $this->name],
+			'labels' => array_values($this->catalog), 'usage' => $usage];
+	}
+
+	/** @return list<array{id:int, boardId:int, title:string, color:string}> the catalog, the observable effect of a label tool */
+	public function catalog(): array {
+		return array_values($this->catalog);
 	}
 
 	/** @return array<int, list<int>> label ids of every card, the observable effect of a label write */

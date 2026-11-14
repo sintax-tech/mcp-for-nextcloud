@@ -1,4 +1,5 @@
 [
+	"OCP\\Files\\IFilenameValidator",
 	"OCP\\IConfig",
 	"OCP\\SystemTag\\ISystemTagObjectMapper",
 	"OCP\\IUserSession",
@@ -27,5 +28,6 @@
 	"OCP\\IRequest",
 	"OCP\\Security\\Bruteforce\\IThrottler",
 	"OCP\\Files\\Lock\\ILockManager",
-	"OCP\\L10N\\IFactory"
+	"OCP\\L10N\\IFactory",
+	"OCP\\Notification\\IManager"
 ]

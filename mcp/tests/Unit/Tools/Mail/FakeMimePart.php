@@ -13,6 +13,12 @@ namespace OCA\Mcp\Tests\Unit\Tools\Mail;
  * of a multipart root are "1", "2", …, nested ones "2.1", and a single-part message is part "1".
  */
 final class FakeMimePart {
+	/** Declared native byte upper bound used only by binary save tests. */
+	public int $bytes = 100;
+	/** @return int Native declared bytes. */
+	public function getBytes(): int { return $this->bytes; }
+	/** @return list<FakeMimePart> Child parts. */
+	public function getParts(): array { return $this->children; }
 	/** @var list<FakeMimePart> child parts */
 	private array $children = [];
 

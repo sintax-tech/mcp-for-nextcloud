@@ -35,6 +35,10 @@ final class FilesToolCatalog {
 		Tools\UploadFile::class,
 		Tools\CreateFile::class,
 		Tools\DeleteFile::class,
+		Tools\ListTags::class,
+		Tools\ReadComments::class,
+		Tools\SetTag::class,
+		Tools\AddComment::class,
 	];
 	/** Static catalog only. */
 	private function __construct() {

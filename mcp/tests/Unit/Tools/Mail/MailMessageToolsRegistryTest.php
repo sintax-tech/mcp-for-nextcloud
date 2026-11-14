@@ -74,10 +74,10 @@ final class MailMessageToolsRegistryTest extends TestCase {
 	 */
 	public function testTheMessageToolsAreReadToolsOfTheMessagesGrant(): void {
 		$definitions = self::module($this, new FakeMailMessageApp())->definitions();
-		$this->assertSame([...self::FOLDER_TOOLS, ...self::MESSAGE_TOOLS, 'mail_read_attachment', 'mail_set_flags', 'mail_move_message', 'mail_create_draft', 'mail_send_message'], array_column($definitions, 'name'));
+		$this->assertSame([...self::FOLDER_TOOLS, ...self::MESSAGE_TOOLS, 'mail_read_attachment', 'mail_set_flags', 'mail_move_message', 'mail_create_draft', 'mail_send_message', 'mail_save_attachment'], array_column($definitions, 'name'));
 		// The module's writes are covered by MailFlagToolsRegistryTest, MailMoveToolsRegistryTest, MailDraftToolsRegistryTest
 		// and MailSendToolsRegistryTest.
-		$definitions = array_values(array_filter($definitions, static fn (array $definition): bool => !in_array($definition['name'], ['mail_set_flags', 'mail_move_message', 'mail_create_draft', 'mail_send_message'], true)));
+		$definitions = array_values(array_filter($definitions, static fn (array $definition): bool => !in_array($definition['name'], ['mail_set_flags', 'mail_move_message', 'mail_create_draft', 'mail_send_message', 'mail_save_attachment'], true)));
 		foreach ($definitions as $definition) {
 			$this->assertSame('read', $definition['operation']);
 			$this->assertFalse(WriteGate::isWrite($definition), $definition['name']);
@@ -94,7 +94,8 @@ final class MailMessageToolsRegistryTest extends TestCase {
 	 */
 	public function testTheMessagesGrantStartsDenied(): void {
 		$this->assertFalse(GrantPolicy::defaultGranted('mail', 'messages'));
-		$this->assertSame(['logs'], GrantPolicy::DENIED_READS);
+		$this->assertSame(['logs', 'activity', 'notifications', 'availability', 'status'], GrantPolicy::DENIED_READS);
+		$this->assertNotContains('mail', GrantPolicy::DENIED_READS);
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
 		$this->assertTrue($policy->granted('alice', 'mail', 'read'));
 		$this->assertFalse($policy->granted('alice', 'mail', 'messages'));

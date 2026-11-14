@@ -7,11 +7,13 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Calendar;
 
+use OCA\Mcp\Modules\Calendar\Tools\CheckAvailability;
 use OCA\Mcp\Modules\Calendar\Tools\CreateEvent;
 use OCA\Mcp\Modules\Calendar\Tools\DeleteEvent;
 use OCA\Mcp\Modules\Calendar\Tools\ListCalendars;
 use OCA\Mcp\Modules\Calendar\Tools\ListEvents;
 use OCA\Mcp\Modules\Calendar\Tools\MoveEvent;
+use OCA\Mcp\Modules\Calendar\Tools\SuggestTimes;
 use OCA\Mcp\Modules\Calendar\Tools\TransferEvent;
 use OCA\Mcp\Modules\Calendar\Tools\UpdateEvent;
 
@@ -26,6 +28,8 @@ final class CalendarToolCatalog {
 		MoveEvent::class,
 		DeleteEvent::class,
 		TransferEvent::class,
+		CheckAvailability::class,
+		SuggestTimes::class,
 	];
 
 	/** Constant holder only; never instantiated. */

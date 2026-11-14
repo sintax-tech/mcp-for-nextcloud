@@ -12,6 +12,7 @@ use OCA\Deck\Db\Acl;
 use OCA\Deck\Db\AssignmentMapper;
 use OCA\Deck\Db\Card;
 use OCA\Deck\Db\CardMapper;
+use OCA\Deck\Db\LabelMapper;
 use OCA\Deck\Db\StackMapper;
 use OCA\Deck\Service\CardService;
 use OCA\Deck\Service\PermissionService;
@@ -70,6 +71,7 @@ final class DeckCardQuery {
 		// Deck embeds the assignments of a card only on the detail read, so the listing loads them
 		// in one query for the whole page instead of one query per card.
 		$this->attachAssignments($items);
+		$this->attachLabels($items);
 		$referenceView = [];
 
 		return [
@@ -232,6 +234,29 @@ final class DeckCardQuery {
 
 		foreach ($cards as $card) {
 			$card->setAssignedUsers($byCardId[$card->getId()] ?? []);
+		}
+	}
+
+	/**
+	 * Embeds the labels of a page of cards in one query, the one `CardService::find()` runs for a single card.
+	 *
+	 * @param list<Card> $cards Cards of one page, mutated in place.
+	 */
+	private function attachLabels(array $cards): void {
+		if ($cards === []) {
+			return;
+		}
+
+		/** @var LabelMapper $labelMapper */
+		$labelMapper = $this->services->get(LabelMapper::class);
+
+		$byCardId = [];
+		foreach ($labelMapper->findAssignedLabelsForCards(array_map(static fn (Card $card): int => $card->getId(), $cards)) as $label) {
+			$byCardId[(int)$label->getCardId()][] = $label;
+		}
+
+		foreach ($cards as $card) {
+			$card->setLabels($byCardId[$card->getId()] ?? []);
 		}
 	}
 }

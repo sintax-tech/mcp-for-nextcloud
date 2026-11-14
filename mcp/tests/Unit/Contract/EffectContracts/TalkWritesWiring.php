@@ -29,7 +29,18 @@ use OCA\Mcp\Modules\Talk\Attachments\AttachedFile;
 use OCA\Mcp\Modules\Talk\Groups\GroupCreator;
 use OCA\Mcp\Modules\Talk\ReferenceLinker;
 use OCA\Mcp\Modules\Talk\TalkModule;
+use OCA\Mcp\Modules\Talk\TalkArguments;
+use OCA\Mcp\Modules\Talk\TalkMeetingSteps;
+use OCA\Mcp\Modules\Talk\Failures\TalkErrors;
+use OCA\Mcp\Modules\Talk\Groups\CreateGroupHandler;
+use OCA\Mcp\Modules\Talk\Groups\CreateGroupPreview;
+use OCA\Mcp\Modules\Talk\Replying\ReplyDraft;
+use OCA\Mcp\Modules\Talk\Replying\ReplyHandler;
+use OCA\Mcp\Modules\Talk\Replying\ReplyPreview;
+use OCA\Mcp\Mcp\Tools\Discovery\ToolAccess;
 use OCA\Mcp\Modules\Talk\Integration\TalkServices;
+use OCA\Mcp\Modules\Talk\Integration\UnreadCounter;
+use OCA\Mcp\Modules\Talk\Integration\UnreadRoomView;
 use OCA\Mcp\Modules\Talk\Locating\UserConversationResolver;
 use OCA\Mcp\Modules\Talk\Locating\UserFileResolver;
 use OCA\Mcp\Modules\Talk\Writing\WritePreview;
@@ -84,6 +95,35 @@ final class TalkWritesWiring {
 
 	/** @return TalkModule the module of one request, built as the container autowires it */
 	public function module(): TalkModule {
+		$parts = $this->parts();
+		return \OCA\Mcp\Tests\Unit\Tools\Talk\TalkTestModule::build($parts['talk'], new ConversationReader($parts['talk'], $parts['resolver'], $parts['names'], $parts['references'], new UnreadCounter($this->users), new UnreadRoomView($this->users, 1)), $parts['resolver'], $parts['writer'], $parts['sharer'],
+			$parts['preview'], $parts['userConversations'], $parts['groups'], $parts['linker'], $parts['logger']);
+	}
+
+	/**
+	 * The Talk steps of a meeting over the same native doubles, through the work classes of talk_create_group and
+	 * talk_reply, as the container autowires TalkMeetingSteps.
+	 *
+	 * @param ToolAccess $access the gate's own grant, Guests and app decision
+	 * @return TalkMeetingSteps the Talk port of one request
+	 */
+	public function meetingSteps(ToolAccess $access): TalkMeetingSteps {
+		$parts = $this->parts();
+		$arguments = new TalkArguments();
+		$errors = new TalkErrors($parts['logger']);
+		$draft = new ReplyDraft($arguments, $parts['resolver'], $parts['linker']);
+		$urls = $this->mock(IURLGenerator::class);
+		$urls->method('linkToRouteAbsolute')->willReturnCallback(static fn (string $route, array $parameters): string => 'https://cloud.example/index.php/call/' . $parameters['token']);
+		return new TalkMeetingSteps($access,
+			new CreateGroupPreview($arguments, $parts['userConversations'], $parts['preview'], $errors),
+			new CreateGroupHandler($arguments, $parts['groups'], $errors),
+			new ReplyPreview($draft, $parts['preview'], $errors),
+			new ReplyHandler($draft, $parts['writer'], $parts['resolver'], $errors),
+			$urls, $parts['logger']);
+	}
+
+	/** @return array<string, object> the collaborators of one request, shared by the module and the meeting port */
+	private function parts(): array {
 		$apps = $this->mock(IAppManager::class);
 		$apps->method('isEnabledForUser')->willReturn(true);
 		$services = $this->chat->services();
@@ -102,7 +142,7 @@ final class TalkWritesWiring {
 		$attachments = new AttachmentAccess($this->shareManager, $visibility, $references);
 		$writer = new ConversationWriter($talk, $time, new AttachmentMessage(), $attachments);
 		$sharer = new FileSharer($this->shareManager, new UserFileResolver($this->files->root(), $visibility, $references), $writer, new AttachedFile($this->files->root()));
-		$resolver = new ConversationResolver($talk);
+		$resolver = new ConversationResolver($talk, new UnreadRoomView($this->users, 1));
 		$names = new ActorNames($this->users);
 		$logger = $this->mock(LoggerInterface::class);
 		foreach (['error', 'warning'] as $level) {
@@ -110,15 +150,15 @@ final class TalkWritesWiring {
 				$this->logged[] = ['level' => $level, 'message' => (string)$message, 'context' => $context];
 			});
 		}
-		$userConversations = new UserConversationResolver($talk, $this->users, $this->shareManager);
+		$userConversations = new UserConversationResolver($talk, $this->users, $this->shareManager, new UnreadRoomView($this->users, 1));
 		$store = $this->mock(CalendarStore::class);
 		$classification = new Classification();
 		$linker = \OCA\Mcp\Tests\Unit\Tools\Talk\ReferenceLinkers::build($this->mock(DeckGatewayInterface::class),
 			new ScopedCalendarAccess($this->mock(CalendarAccess::class), $this->gate->policy()), $store,
 			new EventRepository($store, $classification), $classification, $apps, $this->users, $this->gate->policy(), $urls);
-		return \OCA\Mcp\Tests\Unit\Tools\Talk\TalkTestModule::build($talk, new ConversationReader($talk, $resolver, $names, $references), $resolver, $writer, $sharer,
-			new WritePreview($writer, $sharer, $attachments, $names), $userConversations,
-			new GroupCreator($talk, $this->users, $userConversations, $logger), $linker, $logger);
+		return ['talk' => $talk, 'resolver' => $resolver, 'writer' => $writer, 'sharer' => $sharer, 'names' => $names, 'references' => $references,
+			'preview' => new WritePreview($writer, $sharer, $attachments, $names), 'userConversations' => $userConversations,
+			'groups' => new GroupCreator($talk, $this->users, $userConversations, $logger), 'linker' => $linker, 'logger' => $logger];
 	}
 
 	/** @return void an attachment already in the room, so quoting creates only messages */

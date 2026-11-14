@@ -43,7 +43,7 @@ final class PollsTestRig {
 	/** @var bool app enablement */
 	public bool $enabled = true;
 	/** @var string installed release */
-	public string $version = '8.6.3';
+	public string $version = '9.1.4';
 	/** @var list<array<string,mixed>> sanitized diagnostic contexts */
 	public array $logs = [];
 	/** @var list<string> Final interpolated diagnostic messages. */

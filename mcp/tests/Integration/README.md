@@ -4,8 +4,9 @@
 -->
 # Integration suite
 
-Runs on GitHub Actions (`.github/workflows/integration.yml`) or, one cell at a time, on a Mac through `ci/run-local.sh`
-(below): `ci/harness.sh` starts a disposable official Nextcloud container and database, pinned by digest, installs or
+The complete suite runs on [GitHub Actions](../../../.github/workflows/integration.yml) during release validation. Local runs through `ci/run-local.sh` are only for explicitly scoped, filtered diagnostics (below); do not run unfiltered cells or the full matrix locally. See the [contribution guide](../../../CONTRIBUTING.md) and [validation policy](../../../docs/en/testing.md#validation-policy). The active 1.4.0 matrix covers NC34/MariaDB and NC35/MariaDB, PostgreSQL and SQLite, each fresh and upgrade (eight cells). Existing production support paths and the declared installation range are not new test coverage.
+
+For either execution path, `ci/harness.sh` starts a disposable official Nextcloud container and database, pinned by digest, installs or
 upgrades the app through the server and runs this suite inside the container with `phpunit.xml` here. Nothing is ever
 installed on the host outside a container; `vendor/bin/phpunit` in `mcp/` runs the unit suite only, which excludes this
 folder.
@@ -14,7 +15,9 @@ folder.
 
 Needs `brew install colima docker` (Colima, not Docker Desktop), plus the PHP and Composer the packaging script uses.
 
-    mcp/tests/Integration/ci/run-local.sh <nc 32|33|34|35> <mariadb|pgsql|sqlite> <fresh|upgrade> [--prune-images]
+    MCP_IT_PHPUNIT_ARGS='--filter SomeTest' sh mcp/tests/Integration/ci/run-local.sh <nc 34|35> <mariadb|pgsql|sqlite> <fresh|upgrade> [--prune-images]
+
+Replace `SomeTest` with the relevant test class or method. The placeholders describe the entrypoint syntax; choose a supported cell from the workflow. The filter is required by the local validation policy, even though the harness can technically run an unfiltered cell.
 
 It runs the same steps as the workflow (packages, tools, start-db, start-nextcloud, install-app, fixtures, provision,
 report, test, collect) for that one cell, with the image digests, the cell and the baseline tag read from
@@ -295,7 +298,7 @@ across users (S4) and V9 phase 2 are covered by the B8 proof below.
 
 ## Real resource scope proof (issue #4, B8)
 
-Run locally with `ci/run-local.sh 35 pgsql fresh` and `ci/run-local.sh 32 mariadb upgrade`; no Actions run is required.
+This proof is included in the existing NC34/35 integration cells on GitHub Actions. A focused local diagnostic can use `MCP_IT_PHPUNIT_ARGS='--filter ScopeRealProofTest' sh mcp/tests/Integration/ci/run-local.sh 35 pgsql fresh`; it does not replace CI. The earlier NC32 proof is historical, not an active 1.4.0 cell.
 `Policy/ScopeRealProofTest.php` adds only the real scenarios missing from the existing Files, Calendar and panel tests:
 
 | Scenario | Real proof |
@@ -375,7 +378,7 @@ controls; `Unit/Contract/EXCLUSION-MATRIX.md` holds the verdict and the limits.
 ## Native Deck fixtures (DK-6a)
 
 Normal provisioning also installs Deck, without bypassing any other optional app. `pin_releases` pins
-NC32/33/34/35 to Deck1.16.8/1.17.7/1.18.5/1.19.0 and the SHA-256 of each release archive. Before enabling it,
+NC34/35 to Deck1.18.5/1.19.0 and the SHA-256 of each release archive. Before enabling it,
 `ci/check-deck-manifest.php` checks the app id, version and exact Nextcloud major bounds. `runtime.md` records
 the installed version, expected pin and checksum. A missing/failed app fails the `deck` group, never skips it.
 
@@ -386,7 +389,7 @@ bound to a previous UID. Its four dedicated accounts (owner, reader, editor, out
 passwords. Boards/cards in different ACL domains, files, a group and a native circle are disposable fixtures.
 `Deck/NativeDeckTest` asserts the native label delta, foreign-label rejection, native dependency availability and
 semantics, and file share/detach preservation. It deliberately records the native acceptance of cycles and self
-relations: the MCP refusal is a later ticket. On NC32/33 API absence is asserted while labels/files still run.
+relations separately from the MCP-layer refusals. The earlier NC32/33 API-absence checks are historical; active 1.4.0 coverage uses NC34/35.
 These tests call native services; they do not implement or promise new MCP tools.
 
 Local runs cache only the Deck archive under `.mcp-it-runs/deck-downloads/` at the repository root, keyed by tag and SHA, verifying its
@@ -401,15 +404,9 @@ For comparable whole-cell timing, run the same existing tests with Deck enabled/
 `deck` group with it fails, which also exercises log collection and cleanup after failure. Normal runs default to
 Deck enabled. Do not substitute the old interactive spike mode or fixed passwords.
 
-For the full PHP unit suite in a separate PHP process inside the same disposable container, install the locked
-development dependencies with `composer install --working-dir=mcp`, then set `MCP_IT_RUN_UNIT=1`. The unit
-bootstrap must not share the integration bootstrap's real Nextcloud classes; its JUnit report is `unit.xml`.
-The normal integration suite still runs afterwards (or the explicit `MCP_IT_PHPUNIT_ARGS` selection):
+The harness retains the historical `MCP_IT_RUN_UNIT` switch, but it runs the complete unit suite and is not part of the current local validation policy. Do not use it for local patch verification. The full unit suite runs in the existing GitHub CI partitions; unit and integration bootstraps must remain separate.
 
-    MCP_IT_RUN_UNIT=1 sh mcp/tests/Integration/ci/run-local.sh 35 mariadb fresh
-
-Frontend unit tests need no Nextcloud service: `node --test mcp/tests/Frontend/*.test.cjs`. Both suites keep their
-existing entry points. Fresh/upgrade and database selection are unchanged. `ci/run-local.sh --shutdown` cleans interrupted runs recorded by this checkout and preserves live runs.
+Existing frontend checks need no Nextcloud service: `node --test mcp/tests/Frontend/*.test.cjs` is optional verification, not a required build or test prerequisite. The PHP asset builder and PHPUnit entrypoints remain authoritative. Fresh/upgrade and database selection are unchanged. `ci/run-local.sh --shutdown` cleans interrupted runs recorded by this checkout and preserves live runs.
 The default Colima profile is shared and is always left running. Artifacts and cached downloads stay outside
 `mcp/`, so recursive unit-test source readers cannot ingest run output; cached archives/images are files, not running services.
 
@@ -419,7 +416,7 @@ The default Colima profile is shared and is always left running. Artifacts and c
 
 `AssignmentPushTest` registers a push device for the recipient through the Notifications app's own OCS routes: a proxy device pointing at a throwaway `php -S` proxy inside the container (`push-proxy.php`) that answers 200 or 500, a proxy device pointing at a closed port, and, where the Notifications app has it, an activated web push subscription with an unreachable https endpoint. `allow_local_remote_servers` and the Notifications `webpush_enabled` switch are turned on only inside the test container and restored on close. For each case it assigns through Deck's own `assignUser()` in a fresh process with no MCP code (`push-actor.php`, the 1.2.5 path), through the Deck web route and through `deck_edit_card`. The probe app's notifier can fail while Deck notifications are prepared, which makes the real Notifications push code raise inside `assignUser()` for a recipient with a device and not for one without, the pattern reported in issue #26. Network and HTTP errors of the push service are handled by the Notifications app and never reach Deck. A batch case assigns, in one call, a recipient whose push fails to prepare and then a healthy one, each device on its own proxy path: both must be assigned, the healthy path must receive a push and the failing recipient must keep a single notification. `AssignmentLifecycleTest` expects the MCP route to try the direct call first and then retry under `defer()`/`flush()`.
 
-`CardStatusPersistenceTest` verifies both status setters, confirmation, stale fingerprints, native completion-column behavior, no-op and UTC persistence. The oracle is the container’s UTC clock and the raw done column read in a new process; account timezones only verify serialization. NC32/MariaDB and NC35/PostgreSQL run serially through run-local.sh; preserve short evidence, use owned --shutdown and verify cleanup.
+`CardStatusPersistenceTest` verifies both status setters, confirmation, stale fingerprints, native completion-column behavior, no-op and UTC persistence. The oracle is the container’s UTC clock and the raw done column read in a new process; account timezones only verify serialization. The earlier NC32/MariaDB proof is historical. Active 1.4.0 coverage runs in the NC34/35 CI matrix; any local diagnostic must select this test with `MCP_IT_PHPUNIT_ARGS` and preserve its limited evidence and owned-resource cleanup.
 
 The issue #26 automation control is a real local Database account whose random creation password is discarded, absent from the browser-login fixture. It is assigned/unassigned as a recipient and also writes through an OAuth Bearer credential only; no interactive login is performed. The test records its actual backend and checks last-login zero before issuing the credential. This models credential-only automation usage, not a specialized service-account backend or the reporter’s unspecified account provisioning. That backend distinction remains outside the proof.
 
@@ -430,7 +427,7 @@ CardStatusPersistenceTest also rereads the persisted native activity stream in a
 The default Tables pins stay unchanged. To exercise the independently supported 2.4.0 profile, download the official `tables-v2.4.0.tar.gz` release and run a separate NC35 cell (after obtaining the shared engine slot):
 
 ```sh
-MCP_IT_WITH_TABLES=1 MCP_IT_TABLES_ARCHIVE=/absolute/path/tables-v2.4.0.tar.gz   sh mcp/tests/Integration/ci/run-local.sh 35 mariadb fresh
+MCP_IT_WITH_TABLES=1 MCP_IT_TABLES_ARCHIVE=/absolute/path/tables-v2.4.0.tar.gz MCP_IT_PHPUNIT_ARGS='--filter McpTables' sh mcp/tests/Integration/ci/run-local.sh 35 mariadb fresh
 ```
 
-The archive is copied to the disposable harness tools directory and must match SHA256 `47847b64ee65a58afd2a8ac3f943c53128a927a1b321ed94c4a322daa6b5eb99` before extraction. NC32/33/34 refuse this opt-in; the app profile itself is supported on NC33–35, while this additional runtime proof deliberately uses NC35. `test-env` reports 2.4.0, so the same discovery/read/row/schema/share scenarios run with the correct independent parser expectation. The schema HTTP scenario additionally configures gallery/card sources through native Tables, refuses source-removing MCP column patches without any database change, and confirms an allowed rename while preserving layout/cards in native readback. No user-instance data is used.
+The archive is copied to the disposable harness tools directory and must match SHA256 `47847b64ee65a58afd2a8ac3f943c53128a927a1b321ed94c4a322daa6b5eb99` before extraction. In the active NC34/35 harness, NC34 refuses this opt-in and the additional runtime proof deliberately uses NC35. The existing app profile for NC33–35 is unchanged; that does not reintroduce NC33 test coverage. `test-env` reports 2.4.0, so the same discovery/read/row/schema/share scenarios run with the correct independent parser expectation. The schema HTTP scenario additionally configures gallery/card sources through native Tables, refuses source-removing MCP column patches without any database change, and confirms an allowed rename while preserving layout/cards in native readback. No user-instance data is used.

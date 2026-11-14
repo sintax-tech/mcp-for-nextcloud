@@ -1,0 +1,73 @@
+{
+  "purpose": "Verbatim nextcloud/server absence sources, byte-identical in v34.0.4 and v35.0.1; no network access in tests.",
+  "tags": [
+    "34.0.4",
+    "35.0.1"
+  ],
+  "files": {
+    "AbsenceService.php": {
+      "path": "apps/dav/lib/Service/AbsenceService.php",
+      "sources": [
+        "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/Service/AbsenceService.php",
+        "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/Service/AbsenceService.php"
+      ],
+      "sha256": "d30e63bace5ad5f79b8179f69cf4ee50f3cb4ed99c41a22377f86ee53cefc556"
+    },
+    "AbsenceMapper.php": {
+      "path": "apps/dav/lib/Db/AbsenceMapper.php",
+      "sources": [
+        "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/Db/AbsenceMapper.php",
+        "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/Db/AbsenceMapper.php"
+      ],
+      "sha256": "9dbb0c8b0eec91070ad7f6c34ee9bf3b66369745923d0054a444029590fda55d"
+    },
+    "Absence.php": {
+      "path": "apps/dav/lib/Db/Absence.php",
+      "sources": [
+        "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/Db/Absence.php",
+        "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/Db/Absence.php"
+      ],
+      "sha256": "e06c9e472e52fd7f7604e54a8cec83ec5ab6677b9246986b3c1cc66eb668f0be"
+    },
+    "OutOfOfficeEventDispatcherJob.php": {
+      "path": "apps/dav/lib/BackgroundJob/OutOfOfficeEventDispatcherJob.php",
+      "sources": [
+        "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/BackgroundJob/OutOfOfficeEventDispatcherJob.php",
+        "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/BackgroundJob/OutOfOfficeEventDispatcherJob.php"
+      ],
+      "sha256": "f0d0702f094d8f0e2e4d27cf563c06edc1b1963b7c8a19dc79fa6c653f5290d0"
+    },
+    "TimezoneService.php": {
+      "path": "apps/dav/lib/CalDAV/TimezoneService.php",
+      "sources": [
+        "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/apps/dav/lib/CalDAV/TimezoneService.php",
+        "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/apps/dav/lib/CalDAV/TimezoneService.php"
+      ],
+      "sha256": "d60da92df6c7ded748818f739894e3f432a10597db302dc695e4128234368d1f"
+    },
+    "OutOfOfficeData.php": {
+      "path": "lib/private/User/OutOfOfficeData.php",
+      "sources": [
+        "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/lib/private/User/OutOfOfficeData.php",
+        "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/lib/private/User/OutOfOfficeData.php"
+      ],
+      "sha256": "46e49f7bcfc94e1b490d5c84b259a6a9c156ba49c84313141e521b13dfed8ccb"
+    },
+    "IAvailabilityCoordinator.php": {
+      "path": "lib/public/User/IAvailabilityCoordinator.php",
+      "sources": [
+        "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/lib/public/User/IAvailabilityCoordinator.php",
+        "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/lib/public/User/IAvailabilityCoordinator.php"
+      ],
+      "sha256": "1a8cdcd2e0f8dd161ea25ecdefcc1d9cfdbc89c2d9a96f3f0e2c3dacf3f66dd0"
+    },
+    "IOutOfOfficeData.php": {
+      "path": "lib/public/User/IOutOfOfficeData.php",
+      "sources": [
+        "https://raw.githubusercontent.com/nextcloud/server/v34.0.4/lib/public/User/IOutOfOfficeData.php",
+        "https://raw.githubusercontent.com/nextcloud/server/v35.0.1/lib/public/User/IOutOfOfficeData.php"
+      ],
+      "sha256": "dcc5981542c1a391000fe6cc38ef13d8b3ac692342d47beed18b09a59d6b64c5"
+    }
+  }
+}

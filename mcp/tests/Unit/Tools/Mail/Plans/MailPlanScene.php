@@ -29,6 +29,7 @@ final class MailPlanScene {
 		'mail_move_message' => ['message_id' => 7, 'mailbox_id' => 2],
 		'mail_create_draft' => ['account_id' => 11, 'to' => ['bob@example.com'], 'subject' => 'Budget review', 'body' => "Hello Bob,\n\nthe numbers.\n"],
 		'mail_send_message' => ['account_id' => 11, 'to' => ['bob@example.com'], 'subject' => 'Budget review', 'body' => "Hello Bob,\n\nthe numbers.\n"],
+		'mail_save_attachment' => ['message_id' => 7, 'attachment_id' => '2', 'path' => '/saved.bin'],
 	];
 
 	/**
@@ -52,9 +53,10 @@ final class MailPlanScene {
 		foreach ([1 => 'INBOX', 2 => 'Archive', 3 => 'Trash', 4 => 'Junk', 5 => 'Drafts', 6 => 'Sent'] as $id => $name) {
 			$app->withFolder(11, ['id' => $id, 'name' => $name]);
 		}
-		$app->withMessage(1, ['id' => 7, 'subject' => $subject]);
+		$app->withMessage(1, ['id' => 7, 'subject' => $subject, 'structure' => \OCA\Mcp\Tests\Unit\Tools\Mail\FakeMimePart::multipart('multipart/mixed', [new \OCA\Mcp\Tests\Unit\Tools\Mail\FakeMimePart('text/plain'), new \OCA\Mcp\Tests\Unit\Tools\Mail\FakeMimePart('application/octet-stream', $subject, 'attachment')])]);
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($test), new InMemoryOAuthStore());
 		$policy->setGrant('alice', 'mail', 'messages', true);
+		$policy->setGrant('alice', 'mail', 'save', true);
 		return MailMessageToolsRegistryTest::module($test, $app, '5.12.5', $policy);
 	}
 

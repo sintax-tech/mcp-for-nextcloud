@@ -390,3 +390,49 @@ test('Forms presets render their explicit names in the inspector consumer', asyn
 		assert.ok(!module.textContent.includes('forms_write'), 'no internal level identifier reaches the user')
 	}
 })
+
+// Exercise the real wording and rendering units for every selectable tier, including translated preparation.
+test('every catalog level is named in groups, the popover and the inspector', () => {
+	const { execFileSync } = require('node:child_process')
+	const catalog = JSON.parse(execFileSync('php', ['-r', "require 'tests/bootstrap.php'; echo json_encode(OCA\\Mcp\\Access\\Grants\\GrantCatalog::CATALOG);"], { cwd: path.join(__dirname, '../..'), encoding: 'utf8' }))
+	const context = { t: (_, text, params = {}) => 'translated:' + text.replace(/\{(\w+)\}/g, (match, key) => params[key] ?? match) }
+	context.window = context
+	vm.createContext(context)
+	const manifest = require('./AdminManifest.cjs')
+	vm.runInContext(manifest.levelsSource(), context)
+	for (const fragment of ['groups/drafts', 'level-popover/wording', 'inspector/rendering']) {
+		vm.runInContext(manifest.fragment('admin/' + fragment + '.js'), context)
+	}
+	const admin = context.OCA.Mcp.Admin
+	const drafts = {}
+	const popover = {}
+	const inspector = {
+		generalBlock: () => null,
+		moduleName: (module) => module,
+		el: (tag, properties, children = []) => Object.assign(new Element(tag), properties, { children }),
+	}
+	admin.modules.groups.drafts(drafts)
+	admin.modules.levelPopover.wording(popover)
+	admin.modules.inspector.rendering(inspector)
+	for (const [module, operations] of Object.entries(catalog)) {
+		for (const level of admin.levels.levels(module, operations)) {
+			const groupLabel = drafts.levelName(level)
+			const popoverLabel = popover.levelName(module, level)
+			assert.match(groupLabel, /^translated:/, module + '/' + level + ': group label')
+			assert.match(popoverLabel, /^translated:/, module + '/' + level + ': popover label')
+			if (level !== 'none') assert.equal(groupLabel, popoverLabel, module + '/' + level)
+			const granted = admin.levels.operationsFor(module, operations, level)
+			const rows = operations.map((operation) => ({ module, operation, allowed: granted.includes(operation), blockingGate: null, grant: { allowed: granted.includes(operation), source: 'default', groupIds: [] } }))
+			const rendered = inspector.renderModules(rows)
+			assert.equal(rendered.all('span').find((element) => element.className === 'mcp-inspector-level').textContent, popoverLabel, module + '/' + level + ': inspector label')
+		}
+	}
+	assert.equal(popover.levelName('routines', 'prepare'), 'translated:Prepare meetings')
+	assert.equal(drafts.levelName('prepare'), 'translated:Prepare meetings')
+	Object.assign(popover, {
+		current: { module: 'routines', inherited: Object.fromEntries(catalog.routines.map((operation) => [operation, { allowed: operation === 'prepare', source: 'default' }])) },
+		levels: admin.levels,
+		operationsOf: (module) => catalog[module],
+	})
+	assert.equal(popover.inheritedLine(), 'translated:Inherits: translated:Prepare meetings (translated:Default)')
+})

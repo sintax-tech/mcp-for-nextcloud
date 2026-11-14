@@ -24,7 +24,7 @@ final class HarnessEnvironmentTest extends IntegrationTestCase {
 	public function testRunsAgainstTheNextcloudVersionAndDatabaseOfTheCell(): void {
 		$major = Server::get(ServerVersion::class)->getMajorVersion();
 		$this->assertSame((int)getenv('MCP_IT_NC'), $major);
-		$this->assertGreaterThanOrEqual(32, $major);
+		$this->assertContains($major, [34, 35]);
 		$this->assertLessThanOrEqual(35, $major);
 
 		$dbType = Server::get(IConfig::class)->getSystemValueString('dbtype');

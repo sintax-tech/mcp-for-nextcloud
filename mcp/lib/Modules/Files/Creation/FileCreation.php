@@ -232,7 +232,7 @@ final class FileCreation {
 	 * What stays possible: an EMPTY file with the same name that another client created in the instant before ours
 	 * is taken over, and a client writing that very name between the second read and our write overwrites us or is
 	 * overwritten as with any other write, its content kept as a version. A write that fails after the empty file
-	 * appeared leaves it in place; nothing is deleted. A lock taken on the new file before its content arrives
+	 * appeared leaves it in place and names it; nothing is deleted. A lock taken on the new file before its content arrives
 	 * (files_lock, also a WebDAV token lock the storage would not refuse) is checked right before the content.
 	 *
 	 * @param Folder $folder destination folder, already checked
@@ -243,7 +243,7 @@ final class FileCreation {
 	 * @return File the new file
 	 * @throws FileExists when the name is taken before the creation, or the file changed before the write
 	 * @throws ArgumentValidationException when the storage refuses the name
-	 * @throws ToolFailure with the message of a lock ({@see \OCA\Mcp\Platform\FileAccess\LockWriteFailure}) or a full quota, or {@see \OCA\Mcp\Modules\Files\Presentation\CreationMessages::createFailed()}
+	 * @throws ToolFailure for a lock ({@see \OCA\Mcp\Platform\FileAccess\LockWriteFailure}) or a full quota before the file exists; after it, a {@see FileCreationFailure} with the reason and the file left
 	 */
 	public function write(Folder $folder, string $name, mixed $content, ?string $userId = null, bool $asUser = true): File {
 		return (new FileCreationWriter($this->visibilityGuard, $this->logger, $this->locks, $this->fileTypes))->write($folder, $name, $content, $userId, $asUser);

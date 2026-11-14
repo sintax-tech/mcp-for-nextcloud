@@ -29,7 +29,7 @@
 				if (!byModule.has(row.module)) byModule.set(row.module, [])
 				byModule.get(row.module).push(row)
 			}
-			const levelName = { ...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), none: t('mcp', 'None'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom'), unknown: t('mcp', 'Unknown') }
+			const levelName = window.OCA.Mcp.Admin.levelLabels()
 			const items = [...byModule.entries()].map(([module, rows]) => {
 				const operationList = rows.map((row) => row.operation)
 				const values = Object.fromEntries(rows.map((row) => [row.operation, row.grant ? row.grant.allowed : row.allowed]))

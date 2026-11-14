@@ -4,6 +4,10 @@
 
 Dieser Verlauf beginnt mit 1.2, der ersten Version mit deutschem README. Ältere Versionen (1.1 und 1.0) sind im [englischen](HISTORY.md) und im [portugiesischen Verlauf](HISTORY.pt-BR.md) beschrieben.
 
+## Neu in 1.3.5
+
+- Forms 5.4.2 unterstützt jetzt das Erstellen privater Formulare und Strukturänderungen an Fragen/Optionen ([#35](https://github.com/sintax-tech/mcp-for-nextcloud/issues/35)), mit der bestehenden Vorschau, Bestätigung und Berechtigungsprüfung. Fragetypwechsel in Forms 5.4.2 werden vor jedem nativen Aufruf und jeder Bearbeitungssperre abgelehnt. Ordnerprüfungen und Warnungen gelten für 5.4.1 und 5.4.2; Ablehnungsmeldungen unterscheiden die installierte Version von der Erstellungsberechtigung. Keine Datenbank- oder Berechtigungsänderung; das Update von 1.3.4 erfordert keinen zusätzlichen Schritt.
+
 ## Neu in 1.3.4
 
 - Die Administration kann das Dateileselimit festlegen (standardmäßig 20 MiB, darüber mit einer PHP-Speicherobergrenze; [PR #33](https://github.com/sintax-tech/mcp-for-nextcloud/pull/33), danke an @johkoenig). Das Paket enthält das Changelog für die App-Verwaltung ([#32](https://github.com/sintax-tech/mcp-for-nextcloud/issues/32)). Die leere Antwort von `notes_read` wurde nicht reproduziert; Regressionstests prüfen jetzt Notes und Notizen, ohne eine Fehlerbehebung zu behaupten ([#34](https://github.com/sintax-tech/mcp-for-nextcloud/issues/34)).

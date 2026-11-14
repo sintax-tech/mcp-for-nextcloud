@@ -123,6 +123,11 @@ final class TalkFakeRoom {
 	public function getLobbyState(): int {
 		return TalkFakeWebinary::LOBBY_NONE;
 	}
+
+	/** @return string object type, empty for an ordinary group */
+	public function getObjectType(): string {
+		return '';
+	}
 }
 
 /** alice as a participant of a room, with the chat permission. */

@@ -127,6 +127,21 @@ final class CardFormatter {
 	}
 
 	/**
+	 * The card as {@see self::card()} serializes it, plus the labels Deck attached to it.
+	 *
+	 * @param Card $card Card read with its labels: `CardService::find()`, or a listing page that attached them.
+	 * @param int|null $boardId Board the card belongs to, resolved once by the gateway for listings.
+	 * @return array<string, mixed> The card fields and `labels`, a list of `{id, title, color}` in Deck's order.
+	 */
+	public function cardWithLabels(Card $card, ?int $boardId = null): array {
+		return $this->card($card, $boardId) + ['labels' => array_map(static fn (object $label): array => [
+			'id' => (int)$label->getId(),
+			'title' => (string)$label->getTitle(),
+			'color' => (string)$label->getColor(),
+		], array_values($card->getLabels() ?? []))];
+	}
+
+	/**
 	 * Share the account timezone with the bound handler's input validation and read-back comparison.
 	 *
 	 * @return \DateTimeZone Account timezone already used to serialize this handler's cards.

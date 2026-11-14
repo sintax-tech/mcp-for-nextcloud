@@ -39,6 +39,6 @@ final class MailAttachmentSupport {
 	 */
 	public static function available(IAppManager $apps): bool {
 		$version = (string)$apps->getAppVersion(MailServices::APP_ID);
-		return $version !== '' && version_compare($version, self::MINIMUM_VERSION, '>=');
+		return preg_match('/^[0-9]+\.[0-9]+\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$/D', $version) === 1 && version_compare($version, self::MINIMUM_VERSION, '>=');
 	}
 }

@@ -18,10 +18,12 @@ final class Conversation {
 	 * Keeps the native room and participant already resolved for the caller.
 	 * @param object $room native room already resolved for the caller
 	 * @param object $participant native participant already resolved for the caller
+	 * @param string $displayName name the caller knows the room by, read without writing, or '' when it cannot be
 	 */
 	public function __construct(
 		public readonly object $room,
 		public readonly object $participant,
+		private string $displayName = '',
 	) {}
 
 	/**
@@ -33,14 +35,16 @@ final class Conversation {
 	}
 
 	/**
-	 * Name the user knows this conversation by: Talk resolves the display name per participant, so a one to one
-	 * shows the contact name and a group its own name. A draft has to name the same conversation the message
-	 * will land in, otherwise approval means nothing.
+	 * Name the user knows this conversation by, read from what Talk already stored.
 	 *
-	 * @param string $userId Authenticated participant
-	 * @return string native room name shown to this participant
+	 * A one to one names the other account and a group keeps its stored name. The name is empty when that read
+	 * cannot tell the other account apart, or when a group has no stored name: Talk would build that name and
+	 * save it, and neither a plan nor a result may do so. A draft and the confirmed call share this answer, so
+	 * the name the user approves is the name the result reports.
+	 *
+	 * @return string room name shown to the caller, or '' when it cannot be read without writing
 	 */
-	public function displayName(string $userId): string {
-		return (string)$this->room->getDisplayName($userId);
+	public function displayName(): string {
+		return $this->displayName;
 	}
 }

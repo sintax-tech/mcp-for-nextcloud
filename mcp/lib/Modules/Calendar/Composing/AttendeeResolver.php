@@ -51,7 +51,7 @@ final class AttendeeResolver {
 			throw new CalendarArgumentException(CalendarMessages::attendeesInvalid());
 		}
 		if ($uids !== [] && $this->email($organizerUid) === null) {
-			throw new CalendarArgumentException(CalendarMessages::organizerWithoutEmail());
+			throw self::organizerWithoutEmail();
 		}
 		$resolved = [];
 		foreach ($uids as $uid) {
@@ -73,10 +73,20 @@ final class AttendeeResolver {
 	public function organizer(string $uid): array {
 		$email = $this->email($uid);
 		if ($email === null) {
-			throw new CalendarArgumentException(CalendarMessages::organizerWithoutEmail());
+			throw self::organizerWithoutEmail();
 		}
 		$user = $this->users->get($uid);
 		return ['email' => $email, 'displayName' => $user?->getDisplayName() ?: $uid];
+	}
+
+	/**
+	 * The refusal carries its fixed text as the rule, so the client learns why instead of a bare "Invalid arguments". It
+	 * names no argument (the cause is the caller's own account) and nothing of any other account.
+	 *
+	 * @return CalendarArgumentException the refusal of guests for an organizer without an e-mail
+	 */
+	private static function organizerWithoutEmail(): CalendarArgumentException {
+		return new CalendarArgumentException(CalendarMessages::organizerWithoutEmail(), '', CalendarMessages::organizerWithoutEmail());
 	}
 
 	/**

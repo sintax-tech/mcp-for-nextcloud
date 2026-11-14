@@ -17,6 +17,8 @@ use OCA\Mcp\Tests\Unit\InstalledApp;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Mcp\Tools\ToolModule;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry;
+use OCA\Mcp\Mcp\Tools\Discovery\ToolAccess;
 use OCP\App\IAppManager;
 use OCP\IConfig;
 use OCP\IUser;
@@ -91,6 +93,32 @@ final class EffectsGate {
 		if ($this->modules === null) {
 			throw new \LogicException('serve() the modules first');
 		}
+		[$apps, $users, $guests] = $this->accessDoubles();
+		$logger = $this->mock(LoggerInterface::class);
+		$logger->method('error')->willReturnCallback(function (string|\Stringable $message, array $context = []): void {
+			$this->logged[] = ['message' => (string)$message, 'context' => $context];
+		});
+		$registry = new ToolRegistry(($this->modules)(), $this->policy, $apps, $users, $logger, $guests, $this->capabilities === null ? null : ($this->capabilities)());
+		$installed = $this->mock(IAppManager::class);
+		InstalledApp::mock($installed);
+		return new McpProtocol($registry, new PromptCatalog(), $this->policy, $logger, $installed);
+	}
+
+	/**
+	 * The registry's own decision on grant, Guests and app over the gate's policy and Guests double, for a module that
+	 * checks another tool's gate inside its sink (the meeting ports). It reads the current grants and Guests state on
+	 * every call, so a step that revokes a grant or narrows Guests is seen by it as by the registry.
+	 *
+	 * @param CapabilityRegistry|null $capabilities installation capabilities the ports check, none by default
+	 * @return ToolAccess the access decision of the gate
+	 */
+	public function access(?CapabilityRegistry $capabilities = null): ToolAccess {
+		[$apps, $users, $guests] = $this->accessDoubles();
+		return new ToolAccess($this->policy, $apps, $users, $guests, $capabilities ?? new CapabilityRegistry([], $this->mock(LoggerInterface::class)));
+	}
+
+	/** @return array{IAppManager, IUserManager, GuestRestrictions} every app enabled, alice, and Guests as a step set it */
+	private function accessDoubles(): array {
 		$apps = $this->mock(IAppManager::class);
 		$apps->method('isEnabledForUser')->willReturn(true);
 		$users = $this->mock(IUserManager::class);
@@ -100,14 +128,7 @@ final class EffectsGate {
 		$guests = $this->mock(GuestRestrictions::class);
 		$guests->method('allowsApp')->willReturnCallback(fn (string $uid, string $app): bool => $app === '' || $this->guestApps === null
 			|| in_array($app, $this->guestApps, true));
-		$logger = $this->mock(LoggerInterface::class);
-		$logger->method('error')->willReturnCallback(function (string|\Stringable $message, array $context = []): void {
-			$this->logged[] = ['message' => (string)$message, 'context' => $context];
-		});
-		$registry = new ToolRegistry(($this->modules)(), $this->policy, $apps, $users, $logger, $guests, $this->capabilities === null ? null : ($this->capabilities)());
-		$installed = $this->mock(IAppManager::class);
-		InstalledApp::mock($installed);
-		return new McpProtocol($registry, new PromptCatalog(), $this->policy, $logger, $installed);
+		return [$apps, $users, $guests];
 	}
 
 	/**

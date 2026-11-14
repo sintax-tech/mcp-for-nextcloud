@@ -745,3 +745,30 @@ test('G1: conflict and unreadable cleanup responses reload without replay or fal
 		assert.equal(ui.calls.filter((call) => call.url.includes('/detail?')).length, 2)
 	}
 })
+
+// The real group editor must describe the same default as the server for every catalog pair.
+test('group defaults match policy defaults for every module and operation', async () => {
+	const { execFileSync } = require('node:child_process')
+	const appRoot = path.join(__dirname, '../..')
+	const policy = JSON.parse(execFileSync('php', ['-r', `require 'tests/bootstrap.php';
+		$out = ['catalog' => OCA\\Mcp\\Access\\Grants\\GrantCatalog::CATALOG, 'defaults' => []];
+		foreach ($out['catalog'] as $module => $operations) foreach ($operations as $operation)
+			$out['defaults'][$module][$operation] = OCA\\Mcp\\Access\\Grants\\GrantPolicy::defaultGranted($module, $operation);
+		echo json_encode($out);`], { cwd: appRoot, encoding: 'utf8' }))
+	const context = { t: (_, text) => text }
+	context.window = context
+	vm.createContext(context)
+	const manifest = require('./AdminManifest.cjs')
+	vm.runInContext(manifest.levelsSource(), context)
+	vm.runInContext(manifest.fragment('admin/groups/drafts.js'), context)
+	const drafts = { current: { catalog: policy.catalog } }
+	context.OCA.Mcp.Admin.modules.groups.drafts(drafts)
+	for (const [module, operations] of Object.entries(policy.catalog)) {
+		const ui = context.OCA.Mcp.Admin.grantDefaults
+		for (const operation of operations) assert.equal(ui.granted(module, operation), policy.defaults[module][operation], module + '.' + operation)
+		assert.equal(drafts.defaultLevel(module), context.OCA.Mcp.Admin.levels.levelOf(module, operations, policy.defaults[module]), module)
+	}
+	for (const module of ['logs', 'activity', 'notifications', 'availability', 'status']) assert.equal(drafts.defaultLevel(module), 'none', module)
+	assert.deepEqual(Array.from(context.OCA.Mcp.Admin.levels.levels('routines', policy.catalog.routines)), ['none', 'prepare', 'full'])
+	assert.equal(drafts.levelName('prepare'), 'Prepare meetings')
+})

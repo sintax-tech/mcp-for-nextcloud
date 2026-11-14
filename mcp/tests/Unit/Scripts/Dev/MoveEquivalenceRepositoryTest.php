@@ -196,6 +196,8 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 		foreach ($tree as $path => $content) {
 			// Historical certificates are opaque evidence, never rewritten by a simulated move.
 			if (in_array($path, $certificates, true)) { $moved[$path] = $content; continue; }
+			// Pinned upstream sources are opaque too: copied byte for byte, never parsed in this runtime.
+			if (RepositoryMoveFixture::pinnedUpstream($path)) { $moved[$path] = $content; continue; }
 			$moved[$path] = str_replace([$fqcn($class, '\\'), $fqcn($class, '\\\\')], [$fqcn($target, '\\'), $fqcn($target, '\\\\')], $content);
 			$pairs = [self::lib($class) => self::lib($target), self::path('tests/Unit', $test) => self::path('tests/Unit', $targetTest)];
 			$moved[$path] = str_ends_with($path, '.php')

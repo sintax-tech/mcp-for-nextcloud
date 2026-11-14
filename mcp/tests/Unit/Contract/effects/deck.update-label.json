@@ -1,0 +1,562 @@
+{
+    "tool": "deck_update_label",
+    "grant": "deck.labels",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "labelId": 1,
+                "title": "Crítico",
+                "color": "cc0000"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Change Deck label**\n\nChange label **Urgente** on *Comercial*.\n- Before: Urgente (\\#ff0000)\n- After: Crítico (\\#cc0000)\n- Carried by 1 card, which shows the change.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the label below changes on the board and on every card that carries it.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_update_label",
+                            "title": "Change Deck label",
+                            "action": "deck_update_label",
+                            "label": {
+                                "id": 1,
+                                "title": "Urgente",
+                                "color": "ff0000"
+                            },
+                            "board": {
+                                "boardId": 20,
+                                "board": "Comercial",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "shared": false
+                            },
+                            "cards": 1,
+                            "after": {
+                                "title": "Crítico",
+                                "color": "cc0000"
+                            },
+                            "changed": true,
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Nothing was changed. After your approval the label below changes on the board and on every card that carries it.",
+                            "plan_state": "<plan_state#1>",
+                            "timezone": "UTC"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 1,
+                        "boardId": 20,
+                        "title": "Urgente",
+                        "color": "ff0000"
+                    },
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    }
+                ],
+                "writes": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "labelId": 1,
+                "title": "Crítico",
+                "color": "cc0000",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 1,
+                        "boardId": 20,
+                        "title": "Urgente",
+                        "color": "ff0000"
+                    },
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    }
+                ],
+                "writes": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "labelId": 1,
+                "title": "Crítico",
+                "color": "cc0000",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Change Deck label**\n\nChange label **Urgente** on *Comercial*.\n- Before: Urgente (\\#ff0000)\n- After: Crítico (\\#cc0000)\n- Carried by 1 card, which shows the change.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the label below changes on the board and on every card that carries it.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_update_label",
+                            "title": "Change Deck label",
+                            "action": "deck_update_label",
+                            "label": {
+                                "id": 1,
+                                "title": "Urgente",
+                                "color": "ff0000"
+                            },
+                            "board": {
+                                "boardId": 20,
+                                "board": "Comercial",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "shared": false
+                            },
+                            "cards": 1,
+                            "after": {
+                                "title": "Crítico",
+                                "color": "cc0000"
+                            },
+                            "changed": true,
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Nothing was changed. After your approval the label below changes on the board and on every card that carries it.",
+                            "plan_state": "<plan_state#1>",
+                            "timezone": "UTC"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 1,
+                        "boardId": 20,
+                        "title": "Urgente",
+                        "color": "ff0000"
+                    },
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    }
+                ],
+                "writes": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "arguments": {
+                "labelId": 1,
+                "title": "Crítico",
+                "color": "cc0000",
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Change Deck label**\n\nChange label **Urgente** on *Comercial*.\n- Before: Urgente (\\#00ff00)\n- After: Crítico (\\#cc0000)\n- Carried by 1 card, which shows the change.\n\n### Warnings\n\n- The label changed since the plan was shown. Review and approve the new plan before trying again.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the label below changes on the board and on every card that carries it.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_update_label",
+                            "title": "Change Deck label",
+                            "action": "deck_update_label",
+                            "label": {
+                                "id": 1,
+                                "title": "Urgente",
+                                "color": "00ff00"
+                            },
+                            "board": {
+                                "boardId": 20,
+                                "board": "Comercial",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "shared": false
+                            },
+                            "cards": 1,
+                            "after": {
+                                "title": "Crítico",
+                                "color": "cc0000"
+                            },
+                            "changed": true,
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Nothing was changed. After your approval the label below changes on the board and on every card that carries it.",
+                            "plan_state": "<plan_state#2>",
+                            "warnings": [
+                                {
+                                    "message": "The label changed since the plan was shown. Review and approve the new plan before trying again."
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 1,
+                        "boardId": 20,
+                        "title": "Urgente",
+                        "color": "00ff00"
+                    },
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    }
+                ],
+                "writes": []
+            }
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "labelId": 1,
+                "title": "Crítico",
+                "color": "cc0000"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Change Deck label**\n\nChange label **Urgente** on *Comercial*.\n- Before: Urgente (\\#00ff00)\n- After: Crítico (\\#cc0000)\n- Carried by 1 card, which shows the change.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the label below changes on the board and on every card that carries it.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_update_label",
+                            "title": "Change Deck label",
+                            "action": "deck_update_label",
+                            "label": {
+                                "id": 1,
+                                "title": "Urgente",
+                                "color": "00ff00"
+                            },
+                            "board": {
+                                "boardId": 20,
+                                "board": "Comercial",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "shared": false
+                            },
+                            "cards": 1,
+                            "after": {
+                                "title": "Crítico",
+                                "color": "cc0000"
+                            },
+                            "changed": true,
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Nothing was changed. After your approval the label below changes on the board and on every card that carries it.",
+                            "plan_state": "<plan_state#2>",
+                            "timezone": "UTC"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 1,
+                        "boardId": 20,
+                        "title": "Urgente",
+                        "color": "00ff00"
+                    },
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    }
+                ],
+                "writes": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "labelId": 1,
+                "title": "Crítico",
+                "color": "cc0000",
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"label\": {\n        \"id\": 1,\n        \"boardId\": 20,\n        \"title\": \"Crítico\",\n        \"color\": \"cc0000\"\n    },\n    \"changed\": true,\n    \"cards\": 1\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 1,
+                        "boardId": 20,
+                        "title": "Crítico",
+                        "color": "cc0000"
+                    },
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    }
+                ],
+                "writes": [
+                    "label ~1"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "labelId": 1,
+                "title": "Crítico",
+                "color": "cc0000",
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 1,
+                        "boardId": 20,
+                        "title": "Crítico",
+                        "color": "cc0000"
+                    },
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    }
+                ],
+                "writes": [
+                    "label ~1"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "labelId": 1,
+                "title": "Crítico",
+                "color": "cc0000"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 1,
+                        "boardId": 20,
+                        "title": "Crítico",
+                        "color": "cc0000"
+                    },
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    }
+                ],
+                "writes": [
+                    "label ~1"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "labelId": 1,
+                "title": "Crítico",
+                "color": "cc0000",
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "catalog": [
+                    {
+                        "id": 1,
+                        "boardId": 20,
+                        "title": "Crítico",
+                        "color": "cc0000"
+                    },
+                    {
+                        "id": 2,
+                        "boardId": 20,
+                        "title": "Revisão",
+                        "color": "0082c9"
+                    },
+                    {
+                        "id": 3,
+                        "boardId": 20,
+                        "title": "Cliente",
+                        "color": "00aa00"
+                    }
+                ],
+                "writes": [
+                    "label ~1"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "A Deck label has no exclusion of its own: the hidden system tag applies to Files nodes, and the board label tools touch no file; access to the board is the Deck ACL (MANAGE), read by the gateway."
+        }
+    ]
+}

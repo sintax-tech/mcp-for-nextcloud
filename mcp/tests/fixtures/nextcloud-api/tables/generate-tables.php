@@ -13,7 +13,7 @@ declare(strict_types=1);
  * Tables entities are in the surface. The sources are only tokenized, never executed. Run it after generate.php, which
  * rewrites the fixtures without the Tables surfaces.
  *
- * Usage: php -d memory_limit=1G tests/fixtures/nextcloud-api/tables/generate-tables.php <31..35> <archive directory>
+ * Usage: php -d memory_limit=1G tests/fixtures/nextcloud-api/tables/generate-tables.php <34|35> <archive directory>
  *
  * <archive directory> holds tables-<version>.tar.gz and server-<version>-<Entity|QBMapper>.php of that major, downloaded
  * from the URL of tables-sources.json and from raw.githubusercontent.com/nextcloud/server/v<version>/<path>; every file

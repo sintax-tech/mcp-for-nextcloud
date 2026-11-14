@@ -14,12 +14,13 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Access\Policy\GrantUnknown;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCP\App\IAppManager;
 use OCP\IUserManager;
 
 /**
  * Whether one user may see and call one tool now, for {@see \OCA\Mcp\Mcp\Tools\ToolRegistry}, in a fixed order:
- * the installation capabilities the tool requires, then the grant, Guests and the optional app.
+ * the installation capabilities the tool requires, then the grant, Guests and every optional app it names.
  *
  * A tool whose capabilities are missing does not exist on this installation: it is hidden and uncallable whatever
  * the grant says, before the policy is read, as a legacy module hides a tool by leaving it out of its definitions.
@@ -48,7 +49,7 @@ final class ToolAccess {
 	 * before planning and again before writing; the registry only lets the call in. With no alternative granted and
 	 * one unknown, the answer is unknown (PolicyUnavailable, 503), never a denial.
 	 *
-	 * @param array{module:string, operation:string, grantAnyOf?:list<string>, app?:string, requires?:list<string>} $definition tool definition
+	 * @param array{module:string, operation:string, grantAnyOf?:list<string>, app?:string, apps?:list<string>, requires?:list<string>} $definition tool definition
 	 * @param string $userId authenticated user
 	 * @return bool whether the user may see and call the tool
 	 * @throws GrantUnknown when the grant of the tool is unknown for this user
@@ -67,15 +68,27 @@ final class ToolAccess {
 		if (!$granted) {
 			return false;
 		}
-		// A guest reaches a module only when Guests allows the app behind it, and the tool's own app when it names one.
-		if ($this->guests !== null && (!$this->guests->allowsApp($userId, GrantMatrix::MODULE_APPS[$definition['module']] ?? '')
-			|| !$this->guests->allowsApp($userId, $definition['app'] ?? ''))) {
+		$apps = ToolDefinition::requiredApps($definition);
+		// A guest reaches a module only when Guests allows the app behind it, and every app the tool names.
+		if ($this->guests !== null) {
+			foreach ([GrantMatrix::MODULE_APPS[$definition['module']] ?? '', ...$apps] as $app) {
+				if (!$this->guests->allowsApp($userId, $app)) {
+					return false;
+				}
+			}
+		}
+		if ($apps === []) {
+			return true;
+		}
+		$user = $this->userManager->get($userId);
+		if ($user === null) {
 			return false;
 		}
-		if (isset($definition['app'])) {
-			$user = $this->userManager->get($userId);
+		foreach ($apps as $app) {
 			// An optional app in a version older than MCP supports counts as off (AppEnablement::MINIMUM_VERSIONS).
-			return $user !== null && AppEnablement::forUser($this->appManager, $definition['app'], $user);
+			if (!AppEnablement::forUser($this->appManager, $app, $user)) {
+				return false;
+			}
 		}
 		return true;
 	}

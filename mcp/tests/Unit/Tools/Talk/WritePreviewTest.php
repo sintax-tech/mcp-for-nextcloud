@@ -431,7 +431,7 @@ class WritePreviewTest extends TestCase {
 	}
 
 	private function givenConversation(string $token = 'abcd'): Conversation {
-		return new Conversation(new PreviewRoomStub($token, 'Comercial'), new PreviewParticipantStub());
+		return new Conversation(new PreviewRoomStub($token), new PreviewParticipantStub(), 'Comercial');
 	}
 
 	private function givenShare(): IShare&MockObject {
@@ -442,18 +442,14 @@ class WritePreviewTest extends TestCase {
 	}
 }
 
+/** A room reduced to its token: the name reaches the plan already read, so a call to Room::getDisplayName fails. */
 final class PreviewRoomStub {
 	public function __construct(
 		private string $token,
-		private string $displayName,
 	) {}
 
 	public function getToken(): string {
 		return $this->token;
-	}
-
-	public function getDisplayName(string $userId): string {
-		return $this->displayName;
 	}
 }
 

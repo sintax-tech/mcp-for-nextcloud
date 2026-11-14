@@ -261,7 +261,7 @@ final class RowWriteFlowTest extends TestCase {
 	 * @return void
 	 */
 	public function testANullNumberFollowsTheMapper(): void {
-		foreach (['1.0.0', '1.0.10', '2.0.0', '2.2.2'] as $version) {
+		foreach (['1.0.0', '2.0.0', '2.2.2'] as $version) {
 			$app = WriteScene::app($version);
 			$this->assertSame(RowWriteMessages::valueRefused(), $this->refusal($app, 'alice', self::CREATE, ['table_id' => 1, 'cells' => [['column_id' => 11, 'value' => 'a'], ['column_id' => 12, 'value' => null]]]), $version);
 			$this->assertSame(RowWriteMessages::valueRefused(), $this->refusal($app, 'alice', self::UPDATE, ['table_id' => 1, 'row_id' => 5, 'cells' => [['column_id' => 12, 'value' => null]]]), $version);

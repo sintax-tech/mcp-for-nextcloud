@@ -81,6 +81,10 @@ if (str_starts_with($action, 'guest-')) {
 	exit;
 }
 
+if (str_starts_with($action, 'board-label-')) {
+	echo json_encode(OCA\Mcp\Tests\Integration\Deck\BoardLabelFixture::run($uid, $action, $in), JSON_THROW_ON_ERROR);
+	exit;
+}
 switch ($action) {
 	case 'invalid-provisioning':
 		$commands = [

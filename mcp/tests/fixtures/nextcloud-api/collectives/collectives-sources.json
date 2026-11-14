@@ -1,239 +1,108 @@
 {
-  "31": {
-    "collectives": {
-      "version": "4.0.0",
-      "url": "https://github.com/nextcloud/collectives/archive/refs/tags/v4.0.0.tar.gz",
-      "sha256": "7aef9874743fc4a36b68c12a9b900e5fe4081d510bd88df8a8e74a138bb8147e"
-    },
-    "server": {
-      "version": "31.0.0",
-      "files": {
-        "lib/public/AppFramework/Db/Entity.php": "6526d3fedc72805a7d7691d0df3685136a2d4dafe8e2588f7fbd366a0d805bf8",
-        "lib/private/DB/QueryBuilder/QueryBuilder.php": "026496026b1796045a73d5bf2b623d14d696fdc65f4e553a218e6682469d8ace",
-        "lib/private/Files/Node/Root.php": "9a71b3be2669b8345549aed03af3fb0664cbfae8fde592c05c8219e54c90a3cb",
-        "lib/private/legacy/OC_Util.php": "1d600c83a117b1972247d0607ecb30a44f86d8edaaa66647b9aaf5b6061f95d9"
-      }
-    },
-    "ocp": {
-      "version": "31.0.0",
-      "url": "https://github.com/nextcloud-deps/ocp/archive/refs/tags/v31.0.0.tar.gz",
-      "sha256": "32a08d2d6be85ff06f4c125c3c2fecff1d38003b7624c58de3a890815b3c97b5"
-    },
-    "circles": {
-      "version": "31.0.0",
-      "url": "https://raw.githubusercontent.com/nextcloud/circles/v31.0.0/",
-      "files": {
-        "lib/CirclesManager.php": "bb9389b2e2c6cf220b3f0bf769e5ace3d85d90f25ee77337aa0d98a706fa5b3b",
-        "lib/Model/Circle.php": "7f4ff726948da55a804d09a73a554d6b51926bc93ebfe8cfd0c8791fb7094278",
-        "lib/Model/Member.php": "41283b64a607be73ca3e6e777ee21efa407782fa8980782ccd866d6d2394d795",
-        "lib/Service/CircleService.php": "1dbeb6df4fd195571b0208d205c3fd2756e93ab66fbaa8ccb3cf58278efed725",
-        "lib/Service/FederatedUserService.php": "7f6e9a9c525800dbc07dc53f04801a600eac0421f927ab8270855f6621880b8e"
-      },
-      "followed": {
-        "lib/Model/Probes/BasicProbe.php": "80dc2475c686d8102180a8faacaf542e204e5164c07e5936a9c172405472ed13",
-        "lib/Model/Probes/CircleProbe.php": "1276d9bb3f302aa4f488d98273b2dc0aa261e403bac34607281d397ecf39e531",
-        "lib/Model/Probes/DataProbe.php": "ca7a1bdc4feb6bd0d584dc0013a7bb1c7575955b148b93641bea1ab78467a0f8",
-        "lib/Model/Probes/MemberProbe.php": "5e0db631f33b7051c4397547398d796650b05286890839b18d9a074036a9a527"
-      }
-    },
-    "composerLockSha256": "94a889ba3b2d6798df6d2149bbacce99c6aef16570bef1a6b2707391f97f596e"
-  },
-  "32": {
-    "collectives": {
-      "version": "4.0.0",
-      "url": "https://github.com/nextcloud/collectives/archive/refs/tags/v4.0.0.tar.gz",
-      "sha256": "7aef9874743fc4a36b68c12a9b900e5fe4081d510bd88df8a8e74a138bb8147e"
-    },
-    "server": {
-      "version": "32.0.0",
-      "files": {
-        "lib/public/AppFramework/Db/Entity.php": "60bcf4e2a2d2439eab922ecd9a200e7f4b27228436896a1ded74e104a6288347",
-        "lib/private/DB/QueryBuilder/QueryBuilder.php": "7c3d91248609c077bf4f9402756e811c5993f5b543a3c7f44675a43c717f4116",
-        "lib/private/Files/Node/Root.php": "26b1c4fea4afaa4eb4b866f461bd7305ba8bc6e737aad0b7a7ba6b91a6345a97",
-        "lib/private/legacy/OC_Util.php": "03a1344e7d79632a559d19e9c7efbcf49a6bd723c935ecf02b84c901f4ae08d5"
-      }
-    },
-    "ocp": {
-      "version": "32.0.0",
-      "url": "https://github.com/nextcloud-deps/ocp/archive/refs/tags/v32.0.0.tar.gz",
-      "sha256": "c7d9a05f716134bbb77b517bd92631c33e70be48365a7f1e9c5d11763375ca89"
-    },
-    "circles": {
-      "version": "32.0.0",
-      "url": "https://raw.githubusercontent.com/nextcloud/circles/v32.0.0/",
-      "files": {
-        "lib/CirclesManager.php": "bb9389b2e2c6cf220b3f0bf769e5ace3d85d90f25ee77337aa0d98a706fa5b3b",
-        "lib/Model/Circle.php": "f34a877cbbe3874d85b657f100d0a85cafbadc54198008bb080f45942cf57785",
-        "lib/Model/Member.php": "6da993feac2f08a7ceb6491b83713613ecd87e1312f97f37c15c6b1f3e213b12",
-        "lib/Service/CircleService.php": "f073bf7073777135d5c1f99fd007761a000cc28399f7996b99cb882cc5325b91",
-        "lib/Service/FederatedUserService.php": "58a9e2175660c601d3fab395b98b7d92d4c42c0001c0dfbebe7af77b77e62f4e"
-      },
-      "followed": {
-        "lib/Model/Probes/BasicProbe.php": "80dc2475c686d8102180a8faacaf542e204e5164c07e5936a9c172405472ed13",
-        "lib/Model/Probes/CircleProbe.php": "1276d9bb3f302aa4f488d98273b2dc0aa261e403bac34607281d397ecf39e531",
-        "lib/Model/Probes/DataProbe.php": "ca7a1bdc4feb6bd0d584dc0013a7bb1c7575955b148b93641bea1ab78467a0f8",
-        "lib/Model/Probes/MemberProbe.php": "5e0db631f33b7051c4397547398d796650b05286890839b18d9a074036a9a527"
-      }
-    },
-    "composerLockSha256": "94a889ba3b2d6798df6d2149bbacce99c6aef16570bef1a6b2707391f97f596e"
-  },
-  "33": {
-    "collectives": {
-      "version": "4.5.0",
-      "url": "https://github.com/nextcloud/collectives/archive/refs/tags/v4.5.0.tar.gz",
-      "sha256": "6f778fd461ec08c415621c720d2e385b58487fb3ef323f516e286f018b7bbfa3"
-    },
-    "server": {
-      "version": "33.0.0",
-      "files": {
-        "lib/public/AppFramework/Db/Entity.php": "cbab8ff845340e44685457d8cdc48563767c3cd10fe283cb3001295e40177477",
-        "lib/private/DB/QueryBuilder/QueryBuilder.php": "6d1337bc641dcdbb04179c380fd702367f5f024139faec6c7d23888808df6121",
-        "lib/private/Files/Node/Root.php": "dafd0a82d5cc752905824b17f88b08db5095cab6daaba02c63954d9323278a61",
-        "lib/private/legacy/OC_Util.php": "469e9cf9c5b2560b5bb4c0e0be4a792f704d3f75435c995ea64d078596444f45"
-      }
-    },
-    "ocp": {
-      "version": "33.0.0",
-      "url": "https://github.com/nextcloud-deps/ocp/archive/refs/tags/v33.0.0.tar.gz",
-      "sha256": "4cac7d7c542d0c22a71d65e8f1bd1ac898aab52bfee3dd5e6989705dc17ab10d"
-    },
-    "circles": {
-      "version": "33.0.0",
-      "url": "https://raw.githubusercontent.com/nextcloud/circles/v33.0.0/",
-      "files": {
-        "lib/CirclesManager.php": "16e1cdc062c9b4caab3847d65e98aae96e40328d4238964a69e25a487be63adc",
-        "lib/Model/Circle.php": "d534f4af20200ab921232993020a3de10e09b10c38d1aedfc5569fc40bde2b10",
-        "lib/Model/Member.php": "6da993feac2f08a7ceb6491b83713613ecd87e1312f97f37c15c6b1f3e213b12",
-        "lib/Service/CircleService.php": "3b79acdae335376c7eb9ce6890cdad16ed45d215bc3113bad0162559e368c6ce",
-        "lib/Service/FederatedUserService.php": "0bda5f753f79e46a2f3f8858507a7470d1ef77cd9b7d0c491afddd28d432fd4d"
-      },
-      "followed": {
-        "lib/Model/Probes/BasicProbe.php": "80dc2475c686d8102180a8faacaf542e204e5164c07e5936a9c172405472ed13",
-        "lib/Model/Probes/CircleProbe.php": "1276d9bb3f302aa4f488d98273b2dc0aa261e403bac34607281d397ecf39e531",
-        "lib/Model/Probes/DataProbe.php": "ca7a1bdc4feb6bd0d584dc0013a7bb1c7575955b148b93641bea1ab78467a0f8",
-        "lib/Model/Probes/MemberProbe.php": "5e0db631f33b7051c4397547398d796650b05286890839b18d9a074036a9a527"
-      }
-    },
-    "vendor": {
-      "wamania/php-stemmer": {
-        "reference": "d96509294ea843b4b86e4900df27424a6ea0ace8",
-        "url": "https://github.com/wamania/php-stemmer/archive/d96509294ea843b4b86e4900df27424a6ea0ace8.tar.gz",
-        "sha256": "61a4e3636205c2bb7c0375493c343111fa0348b77bdfc11311e12d0369b5e2d5",
-        "version": "v4.0.0"
-      },
-      "joomla/string": {
-        "reference": "0b3d33564db389e27346f7e275c694897c939434",
-        "url": "https://github.com/joomla-framework/string/archive/0b3d33564db389e27346f7e275c694897c939434.tar.gz",
-        "sha256": "08e01ab678ae28bc9f2960ff42e9d298aea033853d97b6833f806d5153142e22",
-        "version": "3.0.4"
-      }
-    },
-    "composerLockSha256": "69d3d8aa613e217710695b3cb05508b01a7e8b745917f06a901ff54ba45b55e3"
-  },
-  "34": {
-    "collectives": {
-      "version": "4.4.0",
-      "url": "https://github.com/nextcloud/collectives/archive/refs/tags/v4.4.0.tar.gz",
-      "sha256": "71cb8dc77c8b4b3723e53d6ac43bf3d020d2036d7dff7590affbe83619aa18e8"
-    },
-    "server": {
-      "version": "34.0.0",
-      "files": {
-        "lib/public/AppFramework/Db/Entity.php": "cc8e4cf296405efe844ef21d1c7743eea3f8fcd166d5bc35bda6f73532aebe44",
-        "lib/private/DB/QueryBuilder/QueryBuilder.php": "73a3de66dd9a2d7d7d9fa3741848f2c5e3ccdea3936b2c7b5ace5cbc8216bb97",
-        "lib/private/Files/Node/Root.php": "aab77348fcffe8a04afbfc8831adcd2444cf23fa50c7ad966c8cbec7675378c5",
-        "lib/private/legacy/OC_Util.php": "f65649fb5787dbee4eb2b49e1bf8da13d1f72ed813a51776cab855bd036e6965"
-      }
-    },
-    "ocp": {
-      "version": "34.0.0",
-      "url": "https://github.com/nextcloud-deps/ocp/archive/refs/tags/v34.0.0.tar.gz",
-      "sha256": "0c2db00ac2cdab03bced73a9ea1840a3b0d928d452bbe5bf41ece269dd312573"
-    },
-    "circles": {
-      "version": "34.0.0",
-      "url": "https://raw.githubusercontent.com/nextcloud/circles/v34.0.0/",
-      "files": {
-        "lib/CirclesManager.php": "2c14c226319411341b7fba6027fbc820e76a33e9e918f09fb4420a6f3dfcba28",
-        "lib/Model/Circle.php": "d534f4af20200ab921232993020a3de10e09b10c38d1aedfc5569fc40bde2b10",
-        "lib/Model/Member.php": "6da993feac2f08a7ceb6491b83713613ecd87e1312f97f37c15c6b1f3e213b12",
-        "lib/Service/CircleService.php": "0a809c81a96b8fe73f9be32065cc844d3561b288c7f95414bee451180607c5c7",
-        "lib/Service/FederatedUserService.php": "0bda5f753f79e46a2f3f8858507a7470d1ef77cd9b7d0c491afddd28d432fd4d"
-      },
-      "followed": {
-        "lib/Model/Probes/BasicProbe.php": "80dc2475c686d8102180a8faacaf542e204e5164c07e5936a9c172405472ed13",
-        "lib/Model/Probes/CircleProbe.php": "1276d9bb3f302aa4f488d98273b2dc0aa261e403bac34607281d397ecf39e531",
-        "lib/Model/Probes/DataProbe.php": "ca7a1bdc4feb6bd0d584dc0013a7bb1c7575955b148b93641bea1ab78467a0f8",
-        "lib/Model/Probes/MemberProbe.php": "5e0db631f33b7051c4397547398d796650b05286890839b18d9a074036a9a527"
-      }
-    },
-    "vendor": {
-      "wamania/php-stemmer": {
-        "reference": "d96509294ea843b4b86e4900df27424a6ea0ace8",
-        "url": "https://github.com/wamania/php-stemmer/archive/d96509294ea843b4b86e4900df27424a6ea0ace8.tar.gz",
-        "sha256": "61a4e3636205c2bb7c0375493c343111fa0348b77bdfc11311e12d0369b5e2d5",
-        "version": "v4.0.0"
-      },
-      "joomla/string": {
-        "reference": "0b3d33564db389e27346f7e275c694897c939434",
-        "url": "https://github.com/joomla-framework/string/archive/0b3d33564db389e27346f7e275c694897c939434.tar.gz",
-        "sha256": "08e01ab678ae28bc9f2960ff42e9d298aea033853d97b6833f806d5153142e22",
-        "version": "3.0.4"
-      }
-    },
-    "composerLockSha256": "d3e7531d74bc069a7e2a7fabfa8d32639681f845efab5f2695eaaaf793f069e1"
-  },
-  "35": {
-    "collectives": {
-      "version": "4.7.1",
-      "url": "https://github.com/nextcloud/collectives/archive/refs/tags/v4.7.1.tar.gz",
-      "sha256": "7c1d96526284ad53d0ac1c6844377e1b189449ceb3baf00199462f520fbc6d62"
-    },
-    "server": {
-      "version": "35.0.0",
-      "files": {
-        "lib/public/AppFramework/Db/Entity.php": "658aef736eef71a230672c57941f89530229bfa1f449082506ba82a56110c735",
-        "lib/private/DB/QueryBuilder/QueryBuilder.php": "c23cd096c24fb3b475f43c5e6927aad438f49f14d36114bf735bc0d4978fdc3b",
-        "lib/private/Files/Node/Root.php": "cacf38494c5f66a586f12066991a1187373099ccc3f2841d1409ad505bf9a282",
-        "lib/private/legacy/OC_Util.php": "31fcc8eedd64c01d7b37a016f559029b724d571389039b49f6a8c3676a171e3c"
-      }
-    },
-    "ocp": {
-      "version": "35.0.0",
-      "url": "https://github.com/nextcloud-deps/ocp/archive/refs/tags/v35.0.0.tar.gz",
-      "sha256": "1d614c56f62086c7ef66b95ca7ec3bc7a3f83d2fd345fa53ef10145e8960439a"
-    },
-    "circles": {
-      "version": "35.0.0",
-      "url": "https://raw.githubusercontent.com/nextcloud/circles/v35.0.0/",
-      "files": {
-        "lib/CirclesManager.php": "bfd142e7968bda4464d032119358777af8dfd9f2848c5884d3d71db319f67c0a",
-        "lib/Model/Circle.php": "47cbdbac6aa6f3ca8d947f24f43e4770e21a7074dad08d42f9615200d125218f",
-        "lib/Model/Member.php": "4eda69248d7112b212d987f157641ff8ce50aaf220e4b266eb1177e0d5b015d8",
-        "lib/Service/CircleService.php": "1d8d7582aa79153fcc5c73cfc0fd58a787dc23ec111595151346d61b8a5c009f",
-        "lib/Service/FederatedUserService.php": "d3905a8114a4c424a4d5c59b9adbe9c808d1b0a51a748738e10732fcd91b547b"
-      },
-      "followed": {
-        "lib/Model/Probes/BasicProbe.php": "501291de6285e1389d0d155cea7632cf9a5bd490f4ab3023946db8013594ab99",
-        "lib/Model/Probes/CircleProbe.php": "ac51536cfb4e60dc620b10c84813fa1a37bb4e9f44eba4f3199a36a1d4adc617",
-        "lib/Model/Probes/DataProbe.php": "b80992592576bee42924ede4b2128fec23b730b0f9a5c842bba7eee9fd01bc4c",
-        "lib/Model/Probes/MemberProbe.php": "5e3f12dcf684cc181a43b6ba3fa0a0ae634c5437cf33e1bdf2001be6d2437a34"
-      }
-    },
-    "vendor": {
-      "wamania/php-stemmer": {
-        "reference": "d96509294ea843b4b86e4900df27424a6ea0ace8",
-        "url": "https://github.com/wamania/php-stemmer/archive/d96509294ea843b4b86e4900df27424a6ea0ace8.tar.gz",
-        "sha256": "61a4e3636205c2bb7c0375493c343111fa0348b77bdfc11311e12d0369b5e2d5",
-        "version": "v4.0.0"
-      },
-      "joomla/string": {
-        "reference": "0b3d33564db389e27346f7e275c694897c939434",
-        "url": "https://github.com/joomla-framework/string/archive/0b3d33564db389e27346f7e275c694897c939434.tar.gz",
-        "sha256": "08e01ab678ae28bc9f2960ff42e9d298aea033853d97b6833f806d5153142e22",
-        "version": "3.0.4"
-      }
-    },
-    "composerLockSha256": "69e209736db792fa2ff74aaac2b2abd66a7924d614f1747507076e93f7b22ea4"
-  }
+	"34": {
+		"collectives": {
+			"version": "4.4.0",
+			"url": "https://github.com/nextcloud/collectives/archive/refs/tags/v4.4.0.tar.gz",
+			"sha256": "71cb8dc77c8b4b3723e53d6ac43bf3d020d2036d7dff7590affbe83619aa18e8"
+		},
+		"server": {
+			"version": "34.0.0",
+			"files": {
+				"lib/public/AppFramework/Db/Entity.php": "cc8e4cf296405efe844ef21d1c7743eea3f8fcd166d5bc35bda6f73532aebe44",
+				"lib/private/DB/QueryBuilder/QueryBuilder.php": "73a3de66dd9a2d7d7d9fa3741848f2c5e3ccdea3936b2c7b5ace5cbc8216bb97",
+				"lib/private/Files/Node/Root.php": "aab77348fcffe8a04afbfc8831adcd2444cf23fa50c7ad966c8cbec7675378c5",
+				"lib/private/legacy/OC_Util.php": "f65649fb5787dbee4eb2b49e1bf8da13d1f72ed813a51776cab855bd036e6965"
+			}
+		},
+		"ocp": {
+			"version": "34.0.0",
+			"url": "https://github.com/nextcloud-deps/ocp/archive/refs/tags/v34.0.0.tar.gz",
+			"sha256": "0c2db00ac2cdab03bced73a9ea1840a3b0d928d452bbe5bf41ece269dd312573"
+		},
+		"circles": {
+			"version": "34.0.0",
+			"url": "https://raw.githubusercontent.com/nextcloud/circles/v34.0.0/",
+			"files": {
+				"lib/CirclesManager.php": "2c14c226319411341b7fba6027fbc820e76a33e9e918f09fb4420a6f3dfcba28",
+				"lib/Model/Circle.php": "d534f4af20200ab921232993020a3de10e09b10c38d1aedfc5569fc40bde2b10",
+				"lib/Model/Member.php": "6da993feac2f08a7ceb6491b83713613ecd87e1312f97f37c15c6b1f3e213b12",
+				"lib/Service/CircleService.php": "0a809c81a96b8fe73f9be32065cc844d3561b288c7f95414bee451180607c5c7",
+				"lib/Service/FederatedUserService.php": "0bda5f753f79e46a2f3f8858507a7470d1ef77cd9b7d0c491afddd28d432fd4d"
+			},
+			"followed": {
+				"lib/Model/Probes/BasicProbe.php": "80dc2475c686d8102180a8faacaf542e204e5164c07e5936a9c172405472ed13",
+				"lib/Model/Probes/CircleProbe.php": "1276d9bb3f302aa4f488d98273b2dc0aa261e403bac34607281d397ecf39e531",
+				"lib/Model/Probes/DataProbe.php": "ca7a1bdc4feb6bd0d584dc0013a7bb1c7575955b148b93641bea1ab78467a0f8",
+				"lib/Model/Probes/MemberProbe.php": "5e0db631f33b7051c4397547398d796650b05286890839b18d9a074036a9a527"
+			}
+		},
+		"vendor": {
+			"wamania/php-stemmer": {
+				"reference": "d96509294ea843b4b86e4900df27424a6ea0ace8",
+				"url": "https://github.com/wamania/php-stemmer/archive/d96509294ea843b4b86e4900df27424a6ea0ace8.tar.gz",
+				"sha256": "61a4e3636205c2bb7c0375493c343111fa0348b77bdfc11311e12d0369b5e2d5",
+				"version": "v4.0.0"
+			},
+			"joomla/string": {
+				"reference": "0b3d33564db389e27346f7e275c694897c939434",
+				"url": "https://github.com/joomla-framework/string/archive/0b3d33564db389e27346f7e275c694897c939434.tar.gz",
+				"sha256": "08e01ab678ae28bc9f2960ff42e9d298aea033853d97b6833f806d5153142e22",
+				"version": "3.0.4"
+			}
+		},
+		"composerLockSha256": "d3e7531d74bc069a7e2a7fabfa8d32639681f845efab5f2695eaaaf793f069e1"
+	},
+	"35": {
+		"collectives": {
+			"version": "4.7.1",
+			"url": "https://github.com/nextcloud/collectives/archive/refs/tags/v4.7.1.tar.gz",
+			"sha256": "7c1d96526284ad53d0ac1c6844377e1b189449ceb3baf00199462f520fbc6d62"
+		},
+		"server": {
+			"version": "35.0.0",
+			"files": {
+				"lib/public/AppFramework/Db/Entity.php": "658aef736eef71a230672c57941f89530229bfa1f449082506ba82a56110c735",
+				"lib/private/DB/QueryBuilder/QueryBuilder.php": "c23cd096c24fb3b475f43c5e6927aad438f49f14d36114bf735bc0d4978fdc3b",
+				"lib/private/Files/Node/Root.php": "cacf38494c5f66a586f12066991a1187373099ccc3f2841d1409ad505bf9a282",
+				"lib/private/legacy/OC_Util.php": "31fcc8eedd64c01d7b37a016f559029b724d571389039b49f6a8c3676a171e3c"
+			}
+		},
+		"ocp": {
+			"version": "35.0.0",
+			"url": "https://github.com/nextcloud-deps/ocp/archive/refs/tags/v35.0.0.tar.gz",
+			"sha256": "1d614c56f62086c7ef66b95ca7ec3bc7a3f83d2fd345fa53ef10145e8960439a"
+		},
+		"circles": {
+			"version": "35.0.0",
+			"url": "https://raw.githubusercontent.com/nextcloud/circles/v35.0.0/",
+			"files": {
+				"lib/CirclesManager.php": "bfd142e7968bda4464d032119358777af8dfd9f2848c5884d3d71db319f67c0a",
+				"lib/Model/Circle.php": "47cbdbac6aa6f3ca8d947f24f43e4770e21a7074dad08d42f9615200d125218f",
+				"lib/Model/Member.php": "4eda69248d7112b212d987f157641ff8ce50aaf220e4b266eb1177e0d5b015d8",
+				"lib/Service/CircleService.php": "1d8d7582aa79153fcc5c73cfc0fd58a787dc23ec111595151346d61b8a5c009f",
+				"lib/Service/FederatedUserService.php": "d3905a8114a4c424a4d5c59b9adbe9c808d1b0a51a748738e10732fcd91b547b"
+			},
+			"followed": {
+				"lib/Model/Probes/BasicProbe.php": "501291de6285e1389d0d155cea7632cf9a5bd490f4ab3023946db8013594ab99",
+				"lib/Model/Probes/CircleProbe.php": "ac51536cfb4e60dc620b10c84813fa1a37bb4e9f44eba4f3199a36a1d4adc617",
+				"lib/Model/Probes/DataProbe.php": "b80992592576bee42924ede4b2128fec23b730b0f9a5c842bba7eee9fd01bc4c",
+				"lib/Model/Probes/MemberProbe.php": "5e3f12dcf684cc181a43b6ba3fa0a0ae634c5437cf33e1bdf2001be6d2437a34"
+			}
+		},
+		"vendor": {
+			"wamania/php-stemmer": {
+				"reference": "d96509294ea843b4b86e4900df27424a6ea0ace8",
+				"url": "https://github.com/wamania/php-stemmer/archive/d96509294ea843b4b86e4900df27424a6ea0ace8.tar.gz",
+				"sha256": "61a4e3636205c2bb7c0375493c343111fa0348b77bdfc11311e12d0369b5e2d5",
+				"version": "v4.0.0"
+			},
+			"joomla/string": {
+				"reference": "0b3d33564db389e27346f7e275c694897c939434",
+				"url": "https://github.com/joomla-framework/string/archive/0b3d33564db389e27346f7e275c694897c939434.tar.gz",
+				"sha256": "08e01ab678ae28bc9f2960ff42e9d298aea033853d97b6833f806d5153142e22",
+				"version": "3.0.4"
+			}
+		},
+		"composerLockSha256": "69e209736db792fa2ff74aaac2b2abd66a7924d614f1747507076e93f7b22ea4"
+	}
 }

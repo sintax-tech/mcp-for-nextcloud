@@ -46,7 +46,7 @@ final class MessageUserHandler {
 			$conversation = $this->userConversations->conversation($userId, $targetId);
 			$result = $this->writer->reply($conversation, $userId, $message, null);
 
-			return ToolResult::success($result + ['user' => ['id' => $targetId, 'displayName' => $conversation->displayName($userId)]]);
+			return ToolResult::success($result + ['user' => ['id' => $targetId, 'displayName' => $conversation->displayName()]]);
 		});
 	}
 }

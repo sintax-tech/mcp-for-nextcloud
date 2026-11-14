@@ -7,7 +7,7 @@
             "content": [
                 {
                     "type": "text",
-                    "text": "This guide is in English: relay it to the user in their own language.\n\nWrite confirmation plans arrive as readable text in the user’s language, with the complete plan in structuredContent. Show that text to the user exactly as received.\n\n# Tool guide\n\nGrants and disabled apps are already applied: what is missing from this list you cannot call. The modules available to you are files, people, logs.\n\n- **Files** (`files`): 21 tools — List files, Search files, View folder tree, Create folder, Copy file, Move file, Move files in bulk, Undo bulk operation, Read file, Edit file, Replace part of a file, Download file for local editing, View image, View several images, Search images, List shares, Share file or folder, Stop sharing file or folder, Upload new file, Create text file, Delete file or folder.\n- **People** (`people`): 1 tools — Search people.\n- **Server log** (`logs`): 2 tools — Read server log, Analyze server log.\n\nCall this tool again with `module` set to one of those names to get every parameter and every behaviour note of that module, or with `tool` to detail a single tool."
+                    "text": "This guide is in English: relay it to the user in their own language.\n\nWrite confirmation plans arrive as readable text in the user’s language, with the complete plan in structuredContent. Show that text to the user exactly as received.\n\n# Tool guide\n\nGrants and disabled apps are already applied: what is missing from this list you cannot call. The modules available to you are files, people, logs.\n\n- **Files** (`files`): 25 tools — List files, Search files, View folder tree, Create folder, Copy file, Move file, Move files in bulk, Undo bulk operation, Read file, Edit file, Replace part of a file, Download file for local editing, View image, View several images, Search images, List shares, Share file or folder, Stop sharing file or folder, Upload new file, Create text file, Delete file or folder, List file tags, Read file comments, Add or remove a file tag, Add file comment.\n- **People** (`people`): 1 tools — Search people.\n- **Server log** (`logs`): 2 tools — Read server log, Analyze server log.\n\nCall this tool again with `module` set to one of those names to get every parameter and every behaviour note of that module, or with `tool` to detail a single tool."
                 }
             ],
             "structuredContent": {
@@ -16,7 +16,7 @@
                     {
                         "module": "files",
                         "title": "Files",
-                        "count": 21,
+                        "count": 25,
                         "notes": [
                             "Paths are absolute inside the folder of the user calling and start at \"/\"; they are never relative and never leave the storage Nextcloud already lets that user reach.",
                             "To find something, use files_search for full-text content search when available (or by file name), files_tree for the shape of a folder (depth 5, 2000 entries) and files_list for a single folder. The `access` field of every entry says who owns it and what it allows.",
@@ -231,6 +231,44 @@
                                 "name": "files_delete",
                                 "title": "Delete file or folder",
                                 "description": "Try the trash bin first: delete one own file or completely admitted folder after preventive checks, with a separate opt-in files.delete permission. Nextcloud tries to move the item to the trash bin and may permanently delete it if that fails. Only unencrypted Local home originals or descendants of local received shares are supported; DELETE, not UPDATE, is required. Shared content requires confirm_shared, including shared descendants in a folder. Received share roots are always refused. Folders are refused with configured exclusion tags or incomplete inspection (2,000 nodes, 1 GiB, 64 levels). Preview returns the exact source, inspected folder counts, ID, ETag and a permanent-deletion risk warning; echo id and etag when confirming. Recovery is not guaranteed, and no mandatory recovery copy is made. After a removal the receipt says whether the item was confirmed in your own trash bin at the time of the check; items inside shares you received go to the trash bin of the owner, which is never checked, so their destination is reported as not confirmed. Personal, mounted and selected scope roots, other backends and reserved backup names (including canonical owner origins behind aliases) are refused. Plans disclose shared impact without recipient names; native restoration destinations can differ by actor/owner.",
+                                "read_only": false,
+                                "destructive": true,
+                                "confirmation": [
+                                    "confirm",
+                                    "confirm_shared"
+                                ]
+                            },
+                            {
+                                "name": "files_list_tags",
+                                "title": "List file tags",
+                                "description": "List the collaborative (system) tags of one file or folder the user can see, read through the native Nextcloud tag relation. Only tags the user may see are returned, each with its id, name and the native flags user_visible, user_assignable and can_assign. Tags the administrator uses to hide files from MCP are never listed. A hidden, missing or unreadable path is answered as not found. Read-only.",
+                                "read_only": true,
+                                "destructive": false,
+                                "confirmation": []
+                            },
+                            {
+                                "name": "files_read_comments",
+                                "title": "Read file comments",
+                                "description": "Read the comments of a file or folder, newest first, as Nextcloud's own comments service shows them. Reading never marks comments as read. Page with offset; comments added between calls shift later pages.",
+                                "read_only": true,
+                                "destructive": false,
+                                "confirmation": []
+                            },
+                            {
+                                "name": "files_set_tag",
+                                "title": "Add or remove a file tag",
+                                "description": "Assign one existing collaborative (system) tag to one file or folder, or remove it, through the native Nextcloud tag relation. Name the tag by tag_id (from files_list_tags) or by its exact name, never both. Nextcloud decides as in the web interface: the tag must be one the user may see and assign, and the user must be allowed to change the file. Tags the administrator uses to hide files from MCP can never be assigned or removed here. A hidden, missing or unchangeable file and an unknown or unusable tag get the same not-found answer. Tags are seen by everyone who sees the file and may start automated rules. No file content changes and nothing is deleted. Requires the files.tags permission, a plan, confirm: true with its plan_state, and confirm_shared for a file of someone else.",
+                                "read_only": false,
+                                "destructive": true,
+                                "confirmation": [
+                                    "confirm",
+                                    "confirm_shared"
+                                ]
+                            },
+                            {
+                                "name": "files_add_comment",
+                                "title": "Add file comment",
+                                "description": "Add a comment to a file or folder, as you, through Nextcloud's own comments service. Without confirm: true it only shows the plan. Mentions of existing accounts notify them; any other mention is refused. Adding a comment marks the file's comments as read for you. Comments are never edited or deleted.",
                                 "read_only": false,
                                 "destructive": true,
                                 "confirmation": [

@@ -32,7 +32,7 @@
 			if (module === null) {
 				return level === 'read' ? t('mcp', 'Yes') : t('mcp', 'No')
 			}
-			return { ...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), none: t('mcp', 'None'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom'), unknown: t('mcp', 'Unknown') }[level] || level
+			return window.OCA.Mcp.Admin.levelLabels()[level] || level
 		}
 
 		/** Calculate a level from the module's catalog and effective operation values.

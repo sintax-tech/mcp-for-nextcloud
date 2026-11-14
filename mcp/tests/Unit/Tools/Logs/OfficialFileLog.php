@@ -8,8 +8,8 @@ namespace OCA\Mcp\Tests\Unit\Tools\Logs;
 use OCP\Log\IFileBased;
 use OCP\Log\IWriter;
 
-/** Offline oracle: getEntries copied from server v32.0.15/lib/private/Log/File.php, only WARN replaced by 2.
- * https://github.com/nextcloud/server/blob/v32.0.15/lib/private/Log/File.php
+/** Offline oracle: getEntries copied from server v34.0.4/lib/private/Log/File.php, only WARN replaced by 2.
+ * https://github.com/nextcloud/server/blob/v34.0.4/lib/private/Log/File.php
  */
 final class OfficialFileLog implements IWriter, IFileBased {
 	private object $config;
@@ -42,7 +42,7 @@ final class OfficialFileLog implements IWriter, IFileBased {
 				fseek($handle, $pos);
 				$ch = fgetc($handle);
 				if ($ch == "\n" || $pos == 0) {
-					if ($line != '') {
+					if ($line !== '') {
 						// Add the first character if at the start of the file,
 						// because it doesn't hit the else in the loop
 						if ($pos == 0) {

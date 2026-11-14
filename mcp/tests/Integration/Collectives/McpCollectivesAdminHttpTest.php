@@ -25,7 +25,7 @@ use PHPUnit\Framework\Attributes\Group;
  * Creating a collective and managing its members (C04, #22) over the real MCP endpoint, with an app password, against
  * the pinned Collectives and Teams of the cell. Every write is refused without its grant, its plan is shown to change
  * nothing by reading Collectives and Teams themselves in this process ({@see NativeTeamsProbe}), and the confirmed call
- * is read back the same way. Runs only on Nextcloud 33 to 35, where the C04 tools exist (decision D7). The member
+ * is read back the same way. Runs only on Nextcloud 34 to 35, where the C04 tools exist (decision D7). The member
  * tests work on a collective the test creates through `collectives_create_collective`, never on the shared "MCP Wiki",
  * so nothing they add existed before. Everything the test changes is captured first and put back exactly by
  * {@see CollectivesAdminHttpActors}, also when it fails. Nothing in the common setup skips: the catalog and the creation
@@ -43,11 +43,11 @@ final class McpCollectivesAdminHttpTest extends IntegrationTestCase {
 	/** @var CollectivesAdminHttpActors|null what the test changes in the cell, absent when the opt-in skips setup */
 	private ?CollectivesAdminHttpActors $actors = null;
 
-	/** @return void runs only in a cell provisioned with Collectives on Nextcloud 33 to 35 */
+	/** @return void runs only in a cell provisioned with Collectives on Nextcloud 34 to 35 */
 	protected function setUp(): void {
 		parent::setUp();
-		if (getenv('MCP_IT_WITH_COLLECTIVES') !== '1' || (int)\OCP\Util::getVersion()[0] < 33) {
-			$this->markTestSkipped('Collectives cell on Nextcloud 33 to 35 only (MCP_IT_WITH_COLLECTIVES=1)');
+		if (getenv('MCP_IT_WITH_COLLECTIVES') !== '1' || !in_array((int)\OCP\Util::getVersion()[0], [34, 35], true)) {
+			$this->markTestSkipped('Collectives cell on Nextcloud 34 to 35 only (MCP_IT_WITH_COLLECTIVES=1)');
 		}
 		$this->serviceSwitch = ServiceSwitchFixture::open();
 		$this->actors = new CollectivesAdminHttpActors(Server::get(GrantPolicy::class), Server::get(IConfig::class), Server::get(IGroupManager::class),

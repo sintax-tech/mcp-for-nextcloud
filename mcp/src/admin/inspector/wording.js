@@ -20,7 +20,7 @@
 		 * @return {string}
 		 */
 		function moduleName(module) {
-			return { files: t('mcp', 'Files'), notes: t('mcp', 'Notes'), deck: t('mcp', 'Deck'), calendar: t('mcp', 'Calendar'), contacts: t('mcp', 'Contacts'), tasks: t('mcp', 'Tasks'), talk: t('mcp', 'Talk'), people: t('mcp', 'People'), logs: t('mcp', 'Server log'), mail: t('mcp', 'Mail'), tables: t('mcp', 'Tables'), forms: t('mcp', 'Forms'), polls: t('mcp', 'Polls'), collectives: t('mcp', 'Collectives') }[module] || module
+			return { ...window.OCA.Mcp.Admin.routineGrants?.moduleLabels(), files: t('mcp', 'Files'), notes: t('mcp', 'Notes'), deck: t('mcp', 'Deck'), calendar: t('mcp', 'Calendar'), contacts: t('mcp', 'Contacts'), tasks: t('mcp', 'Tasks'), talk: t('mcp', 'Talk'), people: t('mcp', 'People'), logs: t('mcp', 'Server log'), mail: t('mcp', 'Mail'), tables: t('mcp', 'Tables'), forms: t('mcp', 'Forms'), polls: t('mcp', 'Polls'), collectives: t('mcp', 'Collectives') }[module] || module
 		}
 
 		/** Resolve the translated operation label, falling back to its catalog ID.
@@ -28,7 +28,7 @@
 		 * @return {string}
 		 */
 		function operationName(operation) {
-			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), schema: t('mcp', 'schema'), 'collective.create': t('mcp', 'create collectives'), members: t('mcp', 'manage members'), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
+			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), ...window.OCA.Mcp.Admin.routineGrants?.operationLabels(), schema: t('mcp', 'schema'), 'collective.create': t('mcp', 'create collectives'), members: t('mcp', 'manage members'), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), save: t('mcp', 'save attachment'), send: t('mcp', 'send') }[operation] || operation
 		}
 
 		/** The first check that blocks, by the code of the effective access (EffectiveResult::blockingGate).

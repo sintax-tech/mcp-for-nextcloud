@@ -14,6 +14,9 @@ use OCA\Mcp\Modules\Talk\Reading\ConversationReader;
 use OCA\Mcp\Modules\Talk\Locating\ConversationResolver;
 use OCA\Mcp\Modules\Talk\Presentation\Messages;
 use OCA\Mcp\Modules\Talk\Integration\TalkServices;
+use OCA\Mcp\Modules\Talk\Integration\UnreadCounter;
+use OCA\Mcp\Modules\Talk\Integration\UnreadRoomView;
+use OCA\Mcp\Modules\Talk\Presentation\RoomNames;
 use OCP\Comments\IComment;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -29,11 +32,17 @@ class ConversationReaderTest extends TestCase {
 
 	protected function setUp(): void {
 		parent::setUp();
+		ReaderWriteSpy::$calls = 0;
 		$this->talkServices = $this->createMock(TalkServices::class);
 		$this->resolver = $this->createMock(ConversationResolver::class);
 		$this->userManager = $this->createMock(IUserManager::class);
 		// The real ActorNames over the mocked accounts: the reader still owns the reading, not the naming rule.
-		$this->reader = new ConversationReader($this->talkServices, $this->resolver, new ActorNames($this->userManager), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this));
+		$this->reader = new ConversationReader($this->talkServices, $this->resolver, new ActorNames($this->userManager), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this), new UnreadCounter($this->userManager), new UnreadRoomView($this->userManager, 1));
+	}
+
+	protected function tearDown(): void {
+		$this->assertSame(0, ReaderWriteSpy::$calls);
+		parent::tearDown();
 	}
 
 	public function testLimitZeroIsAnArgumentErrorBeforeAnyTalkCall(): void {
@@ -299,9 +308,13 @@ class ConversationReaderTest extends TestCase {
 					default => $this->idle,
 				};
 			}
+
+			/** @return list<string> */
+			public function getParticipantUserIds(object $room): array {
+				return [];
+			}
 		};
-		$this->talkServices->method('manager')->willReturn($manager);
-		$this->talkServices->method('participantService')->willReturn($participantService);
+		$this->givenListing($manager, $participantService);
 
 		$conversations = $this->reader->listConversations('alice');
 
@@ -339,11 +352,9 @@ class ConversationReaderTest extends TestCase {
 				return $room->getToken() === 'lobby1' ? $this->webinar : $this->open;
 			}
 		};
-		$this->talkServices->method('manager')->willReturn($manager);
-		$this->talkServices->method('participantService')->willReturn($participantService);
-		$this->resolver->method('keepsOutOfLobby')->willReturnCallback(
-			static fn (string $userId, \OCA\Mcp\Modules\Talk\Locating\Conversation $conversation): bool => $conversation->room->getToken() === 'lobby1',
-		);
+		$webinar->lobbyState = 1;
+		$webinar->lobbyTimer = time() + 3600;
+		$this->givenListing($manager, $participantService);
 
 		$conversations = $this->reader->listConversations('alice');
 
@@ -370,12 +381,246 @@ class ConversationReaderTest extends TestCase {
 				return $this->readable;
 			}
 		};
-		$this->talkServices->method('manager')->willReturn($manager);
-		$this->talkServices->method('participantService')->willReturn($participantService);
+		$this->givenListing($manager, $participantService);
 
 		$conversations = $this->reader->listConversations('alice');
 
 		$this->assertSame(['good1'], array_column($conversations, 'token'));
+	}
+
+	/**
+	 * Talk stores the counter only for a federated conversation. A local room keeps the column at 0 and the list
+	 * shows the count Talk computes from the chat.
+	 */
+	public function testALocalConversationCountsTheChatWhileTheAttendeeColumnStaysZero(): void {
+		[$room, $participant] = $this->givenRoom('local1', 2, 0, 3, false, 1700, false, 40, 99);
+		$chat = new ReaderListingChat(['local1' => 6]);
+		$this->givenListing($this->managerOf([$room]), $this->participantsOf(['local1' => $participant]), $chat);
+
+		$conversations = $this->reader->listConversations('alice');
+
+		$this->assertSame(6, $conversations[0]['unreadMessages']);
+		$this->assertSame([['local1', 40]], $chat->counted);
+		$this->assertSame(0, $participant->getAttendee()->getUnreadMessages());
+	}
+
+	/** A federated conversation keeps the counter the host stored on the attendee, without counting the chat. */
+	public function testAFederatedConversationKeepsTheCounterStoredOnTheAttendee(): void {
+		[$room, $participant] = $this->givenRoom('fed1', 2, 4, 3, false, 1700, true, 12, 99);
+		$chat = new ReaderListingChat(['fed1' => 99]);
+		$this->givenListing($this->managerOf([$room]), $this->participantsOf(['fed1' => $participant]), $chat);
+
+		$conversations = $this->reader->listConversations('alice');
+
+		$this->assertSame(4, $conversations[0]['unreadMessages']);
+		$this->assertSame([], $chat->counted);
+		$this->assertSame([], $chat->converted);
+	}
+
+	/** Marked unread from the first message: Talk shows one unread message when the chat count is zero. */
+	public function testTheFirstMessageMarkerWithNothingCountedShowsOneUnread(): void {
+		[$room, $participant] = $this->givenRoom('marked', 2, 0, 3, false, 1700, false, -2, 99);
+		$chat = new ReaderListingChat(['marked' => 0]);
+		$this->givenListing($this->managerOf([$room]), $this->participantsOf(['marked' => $participant]), $chat);
+
+		$conversations = $this->reader->listConversations('alice');
+
+		$this->assertSame(1, $conversations[0]['unreadMessages']);
+		$this->assertSame([['marked', -2]], $chat->counted);
+	}
+
+	/** A legacy read marker is converted in memory. The stored marker stays at the migration value. */
+	public function testALegacyMarkerIsConvertedInMemoryAndNeverSaved(): void {
+		$alice = $this->createMock(IUser::class);
+		$this->userManager->method('get')->with('alice')->willReturn($alice);
+		[$room, $participant] = $this->givenRoom('legacy', 2, 0, 3, false, 1700, false, -1, 99);
+		$chat = new ReaderListingChat(['legacy' => 2], ['legacy' => 7]);
+		$this->givenListing($this->managerOf([$room]), $this->participantsOf(['legacy' => $participant]), $chat);
+
+		$conversations = $this->reader->listConversations('alice');
+
+		$this->assertSame(2, $conversations[0]['unreadMessages']);
+		$this->assertSame(['legacy'], $chat->converted);
+		$this->assertSame([['legacy', 7]], $chat->counted);
+		$this->assertSame(-1, $participant->getAttendee()->getLastReadMessage());
+	}
+
+	/** An unreadable count keeps the conversation in the list, with unreadMessages null. */
+	public function testAnUnreadableCountKeepsTheConversationWithoutANumber(): void {
+		[$room, $participant] = $this->givenRoom('broken', 2, 0, 3, false, 1700, false, 40, 99);
+		[$other, $otherParticipant] = $this->givenRoom('open1', 2, 4, 3, false, 1500, true, 12, 99);
+		$chat = new ReaderListingChat([], [], true);
+		$this->givenListing($this->managerOf([$room, $other]), $this->participantsOf([
+			'broken' => $participant,
+			'open1' => $otherParticipant,
+		]), $chat);
+
+		$conversations = $this->reader->listConversations('alice');
+
+		$this->assertSame(['broken', 'open1'], array_column($conversations, 'token'));
+		$this->assertNull($conversations[0]['unreadMessages']);
+		$this->assertArrayHasKey('unreadMessages', $conversations[0]);
+		$this->assertSame(4, $conversations[1]['unreadMessages']);
+	}
+
+	/**
+	 * The stored name is what the list shows. Resolving it through Talk, or opening the lobby, would write.
+	 */
+	public function testListingReadsTheStoredNameAndDoesNotOpenTheLobby(): void {
+		[$room, $participant] = $this->givenRoom('named', 2, 2, 3, false, 1700, true, 1, 0, 'Projeto');
+		$this->givenListing($this->managerOf([$room]), $this->participantsOf(['named' => $participant]));
+
+		$conversations = $this->reader->listConversations('alice');
+
+		$this->assertSame('Projeto', $conversations[0]['displayName']);
+		$this->assertSame(2, $conversations[0]['unreadMessages']);
+	}
+
+	/**
+	 * A group Talk has not named yet stays empty. Its fallback names people and then saves that name, so the participant
+	 * ids alone are not enough and this read does not ask for them.
+	 */
+	public function testAGroupWithNoStoredNameComesBackEmpty(): void {
+		[$room, $participant] = $this->givenRoom('blank', 2, 1, 3, false, 1700, true, 1, 0, '');
+		$participants = $this->participantsOf(['blank' => $participant], ['blank' => ['alice', 'bob']]);
+		$this->givenListing($this->managerOf([$room]), $participants);
+
+		$conversations = $this->reader->listConversations('alice');
+
+		$this->assertSame('', $conversations[0]['displayName']);
+		$this->assertSame('blank', $conversations[0]['token']);
+		$this->assertSame(0, $participants->userIdReads);
+	}
+
+	/** A stored JSON pair names the other account and does not read the participant list again. */
+	public function testADirectConversationUsesThePairTalkAlreadyStored(): void {
+		$this->userManager->method('getDisplayName')->with('bob')->willReturn('Bob da Silva');
+		[$room, $participant] = $this->givenRoom('direct', 1, 1, 3, false, 1700, true, 1, 0, '["alice","bob"]');
+		$participants = $this->participantsOf(['direct' => $participant], ['direct' => ['alice', 'bob']]);
+		$this->givenListing($this->managerOf([$room]), $participants);
+
+		$this->assertSame('Bob da Silva', $this->reader->listConversations('alice')[0]['displayName']);
+		$this->assertSame(0, $participants->userIdReads);
+		$this->assertSame($participant->getAttendee(), $participant->getAttendee());
+	}
+
+	/** A legacy direct name is the other account id. The pair is read, and the other id is resolved, without saving. */
+	public function testALegacyDirectNameUsesTheOtherParticipant(): void {
+		$this->userManager->method('getDisplayName')->with('bob')->willReturn('Bob da Silva');
+		[$room, $participant] = $this->givenRoom('direct', 1, 1, 3, false, 1700, true, 1, 0, 'bob');
+		$participants = $this->participantsOf(['direct' => $participant], ['direct' => ['alice', 'bob']]);
+		$this->givenListing($this->managerOf([$room]), $participants);
+
+		$this->assertSame('Bob da Silva', $this->reader->listConversations('alice')[0]['displayName']);
+		$this->assertSame(1, $participants->userIdReads);
+	}
+
+	/** An empty direct name uses the two accounts already in the room. */
+	public function testAnEmptyDirectNameUsesTheTwoParticipants(): void {
+		$this->userManager->method('getDisplayName')->with('bob')->willReturn('Bob da Silva');
+		[$room, $participant] = $this->givenRoom('direct', 1, 1, 3, false, 1700, true, 1, 0, '');
+		$participants = $this->participantsOf(['direct' => $participant], ['direct' => ['bob', 'alice']]);
+		$this->givenListing($this->managerOf([$room]), $participants);
+
+		$this->assertSame('Bob da Silva', $this->reader->listConversations('alice')[0]['displayName']);
+		$this->assertSame(1, $participants->userIdReads);
+	}
+
+	/** The other person left. Talk's complement keeps the legacy id, and that id is the one still shown. */
+	public function testARemovedParticipantIsNamedFromTheLegacyId(): void {
+		$this->userManager->method('getDisplayName')->with('bob')->willReturn('Bob da Silva');
+		[$room, $participant] = $this->givenRoom('direct', 1, 1, 3, false, 1700, true, 1, 0, 'bob');
+		$participants = $this->participantsOf(['direct' => $participant], ['direct' => ['alice']]);
+		$this->givenListing($this->managerOf([$room]), $participants);
+
+		$this->assertSame('Bob da Silva', $this->reader->listConversations('alice')[0]['displayName']);
+		$this->assertSame(1, $participants->userIdReads);
+	}
+
+	/** Both accounts remain, and the legacy text is the reader. The other account still comes from the room. */
+	public function testALegacyIdThatNamesTheReaderIsNotTheOtherParticipant(): void {
+		$this->userManager->method('getDisplayName')->with('bob')->willReturn('Bob da Silva');
+		[$room, $participant] = $this->givenRoom('direct', 1, 1, 3, false, 1700, true, 1, 0, 'alice');
+		$participants = $this->participantsOf(['direct' => $participant], ['direct' => ['alice', 'bob']]);
+		$this->givenListing($this->managerOf([$room]), $participants);
+
+		$this->assertSame('Bob da Silva', $this->reader->listConversations('alice')[0]['displayName']);
+		$this->assertSame(1, $participants->userIdReads);
+	}
+
+	/** The legacy text is the reader who remained. It is not taken as the other person, so the name stays empty. */
+	public function testALegacyIdThatIsTheRemainingActorStaysEmpty(): void {
+		$this->userManager->expects($this->never())->method('getDisplayName');
+		[$room, $participant] = $this->givenRoom('direct', 1, 1, 3, false, 1700, true, 1, 0, 'alice');
+		$participants = $this->participantsOf(['direct' => $participant], ['direct' => ['alice']]);
+		$this->givenListing($this->managerOf([$room]), $participants);
+
+		$this->assertSame('', $this->reader->listConversations('alice')[0]['displayName']);
+		$this->assertSame(1, $participants->userIdReads);
+	}
+
+	/** A participant list that cannot be read leaves the direct name empty. */
+	public function testAnUnreadableParticipantListLeavesTheDirectNameEmpty(): void {
+		$this->userManager->expects($this->never())->method('getDisplayName');
+		[$room, $participant] = $this->givenRoom('direct', 1, 1, 3, false, 1700, true, 1, 0, 'bob');
+		$participants = $this->participantsOf(['direct' => $participant], [], true);
+		$this->givenListing($this->managerOf([$room]), $participants);
+
+		$this->assertSame('', $this->reader->listConversations('alice')[0]['displayName']);
+		$this->assertSame(1, $participants->userIdReads);
+	}
+
+	public function testReleaseNotesAndPasswordRequestsUseTheNamesTalkGivesThem(): void {
+		[$changelog, $changelogParticipant] = $this->givenRoom('changelog', 4, 1, 3, false, 1700, true, 1, 0, 'alice');
+		[$password, $passwordParticipant] = $this->givenRoom('password', 3, 1, 3, false, 1600, true, 1, 0, 'report.pdf', 'share:password');
+		$this->givenListing($this->managerOf([$changelog, $password]), $this->participantsOf([
+			'changelog' => $changelogParticipant,
+			'password' => $passwordParticipant,
+		]));
+
+		$names = array_column($this->reader->listConversations('alice'), 'displayName', 'token');
+
+		$this->assertSame(RoomNames::changelog(), $names['changelog']);
+		$this->assertSame('Talk updates', $names['changelog']);
+		$this->assertSame(RoomNames::passwordRequest('report.pdf'), $names['password']);
+		$this->assertSame('Password request: report.pdf', $names['password']);
+	}
+
+	/** A lobby whose timer is already in the past counts as open, and the opening is not written back. */
+	public function testAnElapsedLobbyCountsAsOpenWithoutBeingWritten(): void {
+		[$room, $participant] = $this->givenRoom('webinar', 2, 0, 3, false, 1700, false, 40, 99);
+		$room->lobbyState = 1;
+		$room->lobbyTimer = time() - 60;
+		$chat = new ReaderListingChat(['webinar' => 6]);
+		$this->givenListing($this->managerOf([$room]), $this->participantsOf(['webinar' => $participant]), $chat);
+
+		$conversations = $this->reader->listConversations('alice');
+
+		$this->assertSame(6, $conversations[0]['unreadMessages']);
+		$this->assertSame('webinar', $conversations[0]['token']);
+	}
+
+	/** A lobby that cannot be read counts as closed. The conversation stays on the list with no unread number. */
+	public function testAnUnreadableLobbyCountsAsClosedAndStaysListed(): void {
+		[$room, $participant] = $this->givenRoom('closed', 2, 9, 3, false, 1700);
+		$room->lobbyUnreadable = true;
+		$this->givenListing($this->managerOf([$room]), $this->participantsOf(['closed' => $participant]));
+
+		$conversations = $this->reader->listConversations('alice');
+
+		$this->assertSame(['closed'], array_column($conversations, 'token'));
+		$this->assertSame(0, $conversations[0]['unreadMessages']);
+	}
+
+	/** The permission that lets a participant pass a lobby keeps the real count. */
+	public function testAParticipantWhoMayPassTheLobbyKeepsTheCount(): void {
+		[$room, $participant] = $this->givenRoom('mod', 2, 3, 2, false, 1700);
+		$room->lobbyState = 1;
+		$room->lobbyTimer = time() + 3600;
+		$participant->permissions = 4;
+		$this->givenListing($this->managerOf([$room]), $this->participantsOf(['mod' => $participant]));
+
+		$this->assertSame(3, $this->reader->listConversations('alice')[0]['unreadMessages']);
 	}
 
 	/**
@@ -397,14 +642,66 @@ class ConversationReaderTest extends TestCase {
 	/**
 	 * @param string $token Conversation token
 	 * @param int $type Room type
-	 * @param int $unread Unread messages
+	 * @param int $unread Unread messages stored on the attendee column
+	 * @param int $participantType Participant type
 	 * @param bool $archived Whether the user archived the conversation
-	 * @param bool $withActivity Whether the room reports a last activity
 	 * @param int|null $lastActivity Unix timestamp of the last activity
+	 * @param bool $federated Whether Talk stores the counter on the attendee
+	 * @param int $lastRead Stored read marker
+	 * @param int $lastMessageId Id of the last chat message
+	 * @param string $name Name Talk already stored
+	 * @param string $objectType Talk object type, empty for an ordinary room
 	 * @return array{ReaderRoomStub, ReaderParticipantStub} The room and the participant the reader must receive
 	 */
-	private function givenRoom(string $token, int $type, int $unread, int $participantType, bool $archived, ?int $lastActivity): array {
-		return [new ReaderRoomStub($token, $type, $lastActivity), new ReaderParticipantStub($unread, $participantType, $archived)];
+	private function givenRoom(string $token, int $type, int $unread, int $participantType, bool $archived, ?int $lastActivity, bool $federated = true, int $lastRead = 1, int $lastMessageId = 0, string $name = 'Sala nova', string $objectType = ''): array {
+		return [new ReaderRoomStub($token, $type, $lastActivity, $federated, $lastMessageId, $name, $objectType), new ReaderParticipantStub($unread, $participantType, $archived, $lastRead)];
+	}
+
+	/**
+	 * @param list<object> $rooms Rooms the manager returns
+	 * @return object Manager double
+	 */
+	private function managerOf(array $rooms): object {
+		return new class ($rooms) {
+			/** @param list<object> $rooms */
+			public function __construct(private array $rooms) {}
+
+			/** @return list<object> */
+			public function getRoomsForUser(string $userId, array $sessionIds = [], bool $includeLastMessage = false): array {
+				return $this->rooms;
+			}
+		};
+	}
+
+	/**
+	 * @param array<string, object> $participants Participants keyed by room token
+	 * @param array<string, list<string>> $userIds Account ids keyed by room token
+	 * @param bool $failUserIds Whether the account-id read fails closed
+	 */
+	private function participantsOf(array $participants, array $userIds = [], bool $failUserIds = false): ReaderListingParticipants {
+		return new ReaderListingParticipants($participants, $userIds, $failUserIds);
+	}
+
+	/**
+	 * @param object $manager Room manager double
+	 * @param object $participantService Participant service double
+	 * @param ReaderListingChat|null $chat Chat double; a fresh one when the test does not count
+	 */
+	private function givenListing(object $manager, object $participantService, ?ReaderListingChat $chat = null): void {
+		$this->talkServices->method('manager')->willReturn($manager);
+		$this->talkServices->method('participantService')->willReturn($participantService);
+		$this->talkServices->method('chatManager')->willReturn($chat ?? new ReaderListingChat());
+		$this->talkServices->method('unreadMarkers')->willReturn([
+			'unreadMigration' => -1,
+			'unreadFirstMessage' => -2,
+		]);
+		$this->talkServices->method('conversationConstants')->willReturn([
+			'lobbyNone' => 0,
+			'lobbyIgnorePermission' => 4,
+			'changelogType' => 4,
+		]);
+		// Called only if the listing tries to open a lobby. The method itself is the write.
+		$this->talkServices->method('roomService')->willReturn(new ReaderLobbyService());
 	}
 
 	/**
@@ -452,10 +749,18 @@ interface ReaderParticipantGateway {
 
 /** Room double with the values the reader normalizes. */
 final class ReaderRoomStub {
+	public int $lobbyState = 0;
+	public ?int $lobbyTimer = null;
+	public bool $lobbyUnreadable = false;
+
 	public function __construct(
 		private string $token,
 		private int $type = 2,
 		private ?int $lastActivity = 0,
+		private bool $federated = true,
+		private int $lastMessageId = 0,
+		public string $name = 'Sala nova',
+		public string $objectType = '',
 	) {}
 
 	public function getToken(): string {
@@ -466,29 +771,74 @@ final class ReaderRoomStub {
 		return $this->type;
 	}
 
+	public function getObjectType(): string {
+		return $this->objectType;
+	}
+
+	public function getLobbyState(): int {
+		if ($this->lobbyUnreadable) {
+			throw new RuntimeException('lobby');
+		}
+		return $this->lobbyState;
+	}
+
+	public function getLobbyTimer(): ?DateTimeImmutable {
+		return $this->lobbyTimer === null ? null : new DateTimeImmutable('@' . $this->lobbyTimer);
+	}
+
 	public function getDisplayName(string $userId, bool $withFallback = true): string {
-		return 'Sala nova';
+		ReaderWriteSpy::hit();
+		throw new RuntimeException('getDisplayName');
+	}
+
+	public function getName(): string {
+		ReaderWriteSpy::hit();
+		throw new RuntimeException('getName');
+	}
+
+	public function setName(string $name): void {
+		ReaderWriteSpy::hit();
+		throw new RuntimeException('setName');
+	}
+
+	public function setLobby(int $state, ?DateTimeImmutable $timer = null): void {
+		ReaderWriteSpy::hit();
+		throw new RuntimeException('setLobby');
 	}
 
 	public function getLastActivity(): ?DateTimeImmutable {
 		return $this->lastActivity === null ? null : new DateTimeImmutable('@' . $this->lastActivity);
 	}
+
+	public function isFederatedConversation(): bool {
+		return $this->federated;
+	}
+
+	public function getLastMessageId(): int {
+		return $this->lastMessageId;
+	}
 }
 
 /** Participant double whose attendee carries the counters the reader reports. */
 final class ReaderParticipantStub implements ReaderParticipantGateway {
+	public int $permissions = 0;
+	private object $attendee;
+
 	public function __construct(
 		private int $unread = 0,
 		private int $participantType = 3,
 		private bool $archived = false,
-	) {}
-
-	public function getAttendee(): object {
-		return new class ($this->unread, $this->participantType, $this->archived) {
-			public function __construct(private int $unread, private int $participantType, private bool $archived) {}
+		private int $lastRead = 1,
+	) {
+		$this->attendee = new class ($unread, $participantType, $archived, $lastRead) {
+			public function __construct(private int $unread, private int $participantType, private bool $archived, private int $lastRead) {}
 
 			public function getUnreadMessages(): int {
 				return $this->unread;
+			}
+
+			public function getLastReadMessage(): int {
+				return $this->lastRead;
 			}
 
 			public function getParticipantType(): int {
@@ -498,14 +848,123 @@ final class ReaderParticipantStub implements ReaderParticipantGateway {
 			public function isArchived(): bool {
 				return $this->archived;
 			}
+
+			public function setLastReadMessage(int $message): void {
+				ReaderWriteSpy::hit();
+				throw new RuntimeException('setLastReadMessage');
+			}
+
+			public function setUnreadMessages(int $count): void {
+				ReaderWriteSpy::hit();
+				throw new RuntimeException('setUnreadMessages');
+			}
 		};
 	}
 
+	public function getPermissions(): int {
+		return $this->permissions;
+	}
+
+	public function getAttendee(): object {
+		return $this->attendee;
+	}
+
 	public function markAsRead(): void {
+		ReaderWriteSpy::hit();
 		throw new RuntimeException('Reading must not mark anything as read.');
 	}
 
 	public function ensureOneToOneRoomIsFilled(object $room): void {
+		ReaderWriteSpy::hit();
 		throw new RuntimeException('Reading must not fill a one to one room.');
+	}
+
+	public function setLobby(int $state, ?DateTimeImmutable $timer = null): void {
+		ReaderWriteSpy::hit();
+		throw new RuntimeException('setLobby');
+	}
+}
+
+/** Participant service double for a listing. The account-id read is counted; it is the only read a legacy name needs. */
+final class ReaderListingParticipants {
+	public int $userIdReads = 0;
+
+	/**
+	 * @param array<string, object> $participants Participants keyed by room token
+	 * @param array<string, list<string>> $userIds Account ids keyed by room token
+	 */
+	public function __construct(
+		private array $participants,
+		private array $userIds = [],
+		private bool $failUserIds = false,
+	) {
+	}
+
+	public function getParticipant(object $room, string $userId, bool $lazy = false): object {
+		return $this->participants[$room->getToken()];
+	}
+
+	/** @return list<string> */
+	public function getParticipantUserIds(object $room): array {
+		$this->userIdReads++;
+		if ($this->failUserIds) {
+			throw new RuntimeException('getParticipantUserIds');
+		}
+		return $this->userIds[$room->getToken()] ?? [];
+	}
+}
+
+/** Counts a writing call even when the caller catches the failure that follows. */
+final class ReaderWriteSpy {
+	public static int $calls = 0;
+
+	public static function hit(): void {
+		self::$calls++;
+	}
+}
+
+/** Room service double: opening an elapsed lobby is a write the listing must not make. */
+final class ReaderLobbyService {
+	public function validateLobbyTimer(object $room): void {
+		ReaderWriteSpy::hit();
+		throw new RuntimeException('validateLobbyTimer');
+	}
+}
+
+/** Chat double for the listing: counts what the test stored and throws if a marker would be saved. */
+final class ReaderListingChat {
+	/** @var list<array{0: string, 1: int}> */
+	public array $counted = [];
+
+	/** @var list<string> */
+	public array $converted = [];
+
+	/**
+	 * @param array<string, int> $counts Unread counts keyed by room token
+	 * @param array<string, int> $legacy Legacy read markers keyed by room token
+	 * @param bool $failCount Whether getUnreadCount is unreadable
+	 */
+	public function __construct(
+		private array $counts = [],
+		private array $legacy = [],
+		private bool $failCount = false,
+	) {}
+
+	public function getUnreadCount(object $room, int $lastRead): int {
+		if ($this->failCount) {
+			throw new RuntimeException('unreadable count');
+		}
+		$this->counted[] = [$room->getToken(), $lastRead];
+		return $this->counts[$room->getToken()] ?? 0;
+	}
+
+	public function getLastReadMessageFromLegacy(object $room, object $user): int {
+		$this->converted[] = $room->getToken();
+		return $this->legacy[$room->getToken()] ?? 0;
+	}
+
+	public function updateLastReadMessage(object $room, int $lastRead): void {
+		ReaderWriteSpy::hit();
+		throw new RuntimeException('Reading must not move the read marker.');
 	}
 }

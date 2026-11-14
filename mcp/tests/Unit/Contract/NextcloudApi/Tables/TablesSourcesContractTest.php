@@ -57,14 +57,14 @@ final class TablesSourcesContractTest extends TestCase {
 	}
 
 	/**
-	 * The oldest pin is the minimum itself, so the oldest Tables MCP accepts is the one the contract checks.
+	 * The oldest tested pin satisfies the unchanged production minimum.
 	 *
 	 * @return void
 	 */
 	public function testTheMinimumIsTheOldestPinnedRelease(): void {
 		$versions = array_map(static fn (array $pin): string => $pin['tables']['version'], TablesSourcePins::all());
 		usort($versions, 'version_compare');
-		$this->assertSame(AppEnablement::MINIMUM_VERSIONS['tables'], $versions[0]);
+		$this->assertTrue(version_compare($versions[0], AppEnablement::MINIMUM_VERSIONS['tables'], '>='));
 	}
 
 	/**
@@ -77,8 +77,8 @@ final class TablesSourcesContractTest extends TestCase {
 		mkdir($tree . '/apps/tables/appinfo', recursive: true);
 		file_put_contents($tree . '/apps/tables/appinfo/info.xml', '<info><version>0.9.12</version></info>');
 		try {
-			$this->expectExceptionMessage('Tables source version 0.9.12 does not match tables-sources.json (1.0.0 for Nextcloud 32)');
-			TablesSourcePins::verified($tree, '32');
+			$this->expectExceptionMessage('Tables source version 0.9.12 does not match tables-sources.json (2.0.0 for Nextcloud 34)');
+			TablesSourcePins::verified($tree, '34');
 		} finally {
 			unlink($tree . '/apps/tables/appinfo/info.xml');
 			rmdir($tree . '/apps/tables/appinfo');

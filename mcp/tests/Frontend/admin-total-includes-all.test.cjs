@@ -16,6 +16,7 @@ const plain = (value) => JSON.parse(JSON.stringify(value))
 
 /** The catalog of GrantCatalog::CATALOG for both modules, and what the old Full allowed. */
 const MODULES = {
+	deck: { operations: ['read', 'create', 'edit', 'move', 'delete', 'labels'], oldFull: ['read', 'create', 'edit', 'move', 'delete'] },
 	tables: { operations: ['read', 'create', 'edit', 'schema', 'share'], oldFull: ['read', 'create', 'edit'] },
 	collectives: { operations: ['read', 'create', 'edit', 'move', 'collective.create', 'members'], oldFull: ['read', 'create', 'edit', 'move'] },
 }
@@ -42,7 +43,7 @@ test('Full is every operation of Tables and Collectives, and the popover lists t
 	vm.runInNewContext(manifest.levelsSource(), root)
 	root.window = root
 	vm.runInNewContext(manifest.fragment('admin/level-popover/wording.js'), root)
-	const names = { read: 'read', create: 'create', edit: 'edit', move: 'move', schema: 'schema', share: 'share', 'collective.create': 'create collectives', members: 'manage members' }
+	const names = { labels: 'manage board labels', delete: 'delete', read: 'read', create: 'create', edit: 'edit', move: 'move', schema: 'schema', share: 'share', 'collective.create': 'create collectives', members: 'manage members' }
 	for (const [module, { operations }] of Object.entries(MODULES)) {
 		assert.deepEqual(plain(Levels.operationsFor(module, operations, 'full')), operations, module)
 		assert.equal(Levels.levelOf(module, operations, values(operations, operations)), 'full', module)

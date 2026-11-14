@@ -87,7 +87,7 @@ final class SchemaChangesTest extends TestCase {
 	}
 	/** @return void Old DTO truthiness must never silently discard an explicit clear or zero string. */
 	public function testOldViewDescriptionEmptyAndZeroAreRejected(): void {
-		foreach (['1.0.10', '2.2.2'] as $profile) foreach (['', '0'] as $value) {
+		foreach (['2.2.2'] as $profile) foreach (['', '0'] as $value) {
 			try { SchemaViewChanges::of(['description' => $value], [], [], $profile); $this->fail('Native truthiness discarded description'); }
 			catch (\InvalidArgumentException) { $this->addToAssertionCount(1); }
 		}

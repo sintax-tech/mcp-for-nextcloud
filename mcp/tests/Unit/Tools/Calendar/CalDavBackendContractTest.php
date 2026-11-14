@@ -54,11 +54,7 @@ final class CalDavBackendContractTest extends TestCase {
 		return $calls;
 	}
 
-	/** @return list<string> the Nextcloud majors info.xml declares, oldest first */
-	private static function declaredMajors(): array {
-		$nextcloud = simplexml_load_file(dirname(__DIR__, 4) . '/appinfo/info.xml')->dependencies->nextcloud;
-		return array_map('strval', range((int)$nextcloud['min-version'], (int)$nextcloud['max-version']));
-	}
+
 
 	/**
 	 * @return list<string> every major there is a list of, oldest first: the declared range, plus the older releases
@@ -79,10 +75,11 @@ final class CalDavBackendContractTest extends TestCase {
 		return $lists[$major];
 	}
 
-	/** Every declared major is checked; a list for a release older than the declared range is allowed and kept. */
+	/** Only the active tested majors have backend lists; info.xml remains independent. */
 	public function testThereIsAListForEveryDeclaredMajor(): void {
+		self::assertSame(\OCA\Mcp\Tests\Unit\Contract\NextcloudApi\TestedNextcloud::MAJORS, self::checkedMajors());
 		self::assertSame(self::checkedMajors(), array_map('strval', array_keys(CalDavBackendMethods::CARDDAV)));
-		foreach (self::declaredMajors() as $major) {
+		foreach (\OCA\Mcp\Tests\Unit\Contract\NextcloudApi\TestedNextcloud::MAJORS as $major) {
 			self::assertArrayHasKey($major, CalDavBackendMethods::CALDAV, "CalDavBackendMethods::CALDAV has no list for the declared Nextcloud $major");
 			self::assertArrayHasKey($major, CalDavBackendMethods::CARDDAV, "CalDavBackendMethods::CARDDAV has no list for the declared Nextcloud $major");
 		}

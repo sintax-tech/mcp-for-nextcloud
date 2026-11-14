@@ -25,7 +25,7 @@ use OCA\Mcp\Mcp\Tools\Schema\SchemaBuilder;
 /**
  * calendar_list_events: occurrences overlapping a window of at most 366 days, capped at 2 000 items.
  */
-final class ListEventsHandler {
+final class ListEventsHandler implements CalendarEventListing {
 	/** Most items returned by one call; beyond it the list is cut and flagged. */
 	public const MAX_ITEMS = 2000;
 

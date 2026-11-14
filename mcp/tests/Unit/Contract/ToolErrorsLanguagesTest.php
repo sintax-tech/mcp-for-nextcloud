@@ -49,6 +49,8 @@ use OCA\Mcp\Modules\Talk\ReferenceLinker;
 use OCA\Mcp\Modules\Talk\TalkModule;
 use OCA\Mcp\Modules\Talk\Writing\WritePreview;
 use OCA\Mcp\Modules\Talk\Integration\TalkServices;
+use OCA\Mcp\Modules\Talk\Integration\UnreadCounter;
+use OCA\Mcp\Modules\Talk\Integration\UnreadRoomView;
 use OCA\Mcp\Modules\Talk\Locating\UserConversationResolver;
 use OCA\Mcp\Mcp\Tools\ToolModule;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
@@ -207,8 +209,8 @@ final class ToolErrorsLanguagesTest extends TestCase {
 	private function talkModule(): TalkModule {
 		$services = $this->createMock(TalkServices::class);
 		$services->method('manager')->willThrowException(new \RuntimeException('spreed is unreachable'));
-		$resolver = new ConversationResolver($services);
-		$reader = new ConversationReader($services, $resolver, $this->createMock(ActorNames::class), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this));
+		$resolver = new ConversationResolver($services, new UnreadRoomView($this->createMock(IUserManager::class), 1));
+		$reader = new ConversationReader($services, $resolver, $this->createMock(ActorNames::class), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this), new UnreadCounter($this->createMock(IUserManager::class)), new UnreadRoomView($this->createMock(IUserManager::class), 1));
 		return \OCA\Mcp\Tests\Unit\Tools\Talk\TalkTestModule::build(
 			$services,
 			$reader,

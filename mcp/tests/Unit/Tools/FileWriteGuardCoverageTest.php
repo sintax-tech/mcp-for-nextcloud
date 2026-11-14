@@ -58,6 +58,8 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Controller/CheckoutController.php#inputStream:fopen:1' => 'read: php input stream',
 			'Modules/Files/Presentation/FilesPlanRenderer.php#render:copy:1' => 'render: static plan text, no Files mutation',
 			'Modules/Files/Presentation/FilesPlanRenderer.php#render:move:1' => 'render: static plan text, no Files mutation',
+			'Modules/Files/Editing/ReplacementReceipt.php#hash:fopen:1' => 'read: read-back of the replaced file for the SHA-256 check, read-only mode; the write itself is ProtectedFileReplacement, classified below',
+			'Modules/Files/Creation/ProtectedFileDestination.php#create:fopen:1' => 'read: read-back of the just-created file for the SHA-256 check, read-only mode; the write itself is FileCreationWriter, classified above',
 			'Modules/Files/Images/ImageMetadata.php#originalDimensions:fopen:1' => 'read: original image bytes',
 			'Modules/Files/Backups/FileBackupCopy.php#copy:fopen:1' => 'read: original bytes for internal recovery',
 			'Modules/Files/Integration/VersionRestore.php#writeVersion:fopen:1' => 'temporary: php temp stream buffer, not a Files node',
@@ -83,6 +85,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Modules/Files/Reorganization/UndoBatchHandler.php#undoBatch:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testUndoRechecksEverySinkAndKeepsOnlyRemainingMoves',
 			'Modules/Files/Reorganization/ListedTreeCopy.php#native:copy:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\TreeBatchPolicyTest::testListedCopyExcludesLateChildrenAndReportsRenamedSource',
 			'Modules/Files/Reorganization/ListedTreeCopy.php#execute:newfolder:1' => 'directory: only entries of the wholly prevalidated listed tree, never a file',
+			'Modules/Files/Editing/ProtectedFileReplacement.php#write:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Modules\\Mail\\MailReplaceAttachmentGuardsTest::testTypePolicyChangedAfterTheCopyRefusesAtTheSinkAndKeepsTheCopy',
 			'Modules/Files/Writing/ContentCommit.php#commit:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\FileContentTypePolicyTest::testSinkDenialAfterBackupKeepsTheOriginalAndTheBackup',
 			'Modules/Files/Writing/ContentCommit.php#commit:putcontent:2' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\FileContentTypePolicyTest::testSinkDenialAfterBackupKeepsTheOriginalAndTheBackup',
 			'Modules/Files/Integration/VersionRestore.php#restore:rollback:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\FileContentTypePolicyTest::testSinkDenialAfterBackupOnRestoreKeepsTheOriginalAndTheBackup',
@@ -122,7 +125,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 		$calls = FileWriteSinkInventory::calls(FileWriteSinkInventory::sources(__DIR__ . '/../../../lib'));
 		$literals = array_values(array_filter($calls, static fn (string $call): bool => str_contains($call, ':literal-')));
 		self::assertCount(29, $literals);
-		self::assertCount(52, array_diff($calls, $literals));
+		self::assertCount(55, array_diff($calls, $literals));
 		foreach ($calls as $call) {
 			self::assertDoesNotMatchRegularExpression('/:(?:literal-)?(?:writestream|fputs):/', $call);
 		}

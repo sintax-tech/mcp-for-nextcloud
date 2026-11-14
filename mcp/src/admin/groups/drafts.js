@@ -31,20 +31,20 @@
 			const granted = operationsIn(grants, module)
 			return window.OCA.Mcp.Admin.levels.levelOf(module, operations, Object.fromEntries(operations.map((operation) => [operation, granted.includes(operation)])))
 		}
-		/** What a member gets without any grant: GrantPolicy::defaultGranted(), reading except the server log.
+		/** What a member gets without any grant: GrantPolicy::defaultGranted(), with sensitive reads explicitly denied.
 		 * @param {string} module catalog module ID
 		 * @return {string}
 		 */
 		function defaultLevel(module) {
 			const operations = context.current.catalog[module]
-			return window.OCA.Mcp.Admin.levels.levelOf(module, operations, Object.fromEntries(operations.map((operation) => [operation, operation === 'read' && module !== 'logs'])))
+			return window.OCA.Mcp.Admin.levels.levelOf(module, operations, Object.fromEntries(operations.map((operation) => [operation, window.OCA.Mcp.Admin.grantDefaults.granted(module, operation)])))
 		}
 		/** For a group the lowest level is "Not granted": the members keep what they have from elsewhere.
 		 * @param {string} level permission level ID
 		 * @return {string}
 		 */
 		function levelName(level) {
-			return { ...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), none: t('mcp', 'Not granted'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom') }[level] || level
+			return { ...window.OCA.Mcp.Admin.levelLabels(), none: t('mcp', 'Not granted') }[level] || level
 		}
 		/** A level in words, a custom one with its operations, since "Custom → Custom" would say nothing.
 		 * @param {Object<string, string[]>} grants granted operations indexed by module

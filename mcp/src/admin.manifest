@@ -4,6 +4,8 @@ admin/picker/list.js
 admin/picker/rendering.js
 admin/picker/saving.js
 admin/picker/start.js
+admin/access/grant-defaults.js
+admin/access/level-labels.js
 admin/access/levels/polls.js
 admin/access/levels/files.js
 admin/access/levels/notes.js
@@ -18,6 +20,12 @@ admin/access/levels/mail.js
 admin/access/levels/tables.js
 admin/access/levels/forms.js
 admin/access/levels/collectives.js
+admin/access/levels/activity.js
+admin/access/levels/notifications.js
+admin/access/levels/availability.js
+admin/access/levels/status.js
+admin/access/levels/routines.js
+admin/access/routine-grants.js
 admin/admin-levels.js
 admin/matrix/session.js
 admin/matrix/labels.js

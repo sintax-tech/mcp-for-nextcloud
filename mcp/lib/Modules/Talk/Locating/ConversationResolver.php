@@ -6,7 +6,7 @@
 declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Talk\Locating;
-use OCA\Mcp\Modules\Talk\{Failures\ConversationAccessException, Presentation\Messages, Integration\TalkServices, Failures\TalkUnavailableException};
+use OCA\Mcp\Modules\Talk\{Failures\ConversationAccessException, Presentation\Messages, Integration\TalkServices, Integration\UnreadRoomView, Failures\TalkUnavailableException};
 use InvalidArgumentException;
 use Throwable;
 
@@ -25,9 +25,11 @@ class ConversationResolver {
 	/**
 	 * Keeps the lazy native Talk boundary for conversation access checks.
 	 * @param TalkServices $talkServices lazy native Talk services and per-user enablement
+	 * @param UnreadRoomView $rooms lobby and display name decided from values already loaded, never written back
 	 */
 	public function __construct(
 		private TalkServices $talkServices,
+		private UnreadRoomView $rooms,
 	) {}
 
 	/**
@@ -45,7 +47,7 @@ class ConversationResolver {
 	public function resolveForReading(string $userId, string $token): Conversation {
 		$conversation = $this->resolve($userId, $token);
 		$constants = $this->talkServices->conversationConstants($userId);
-		if ($this->lobbyKeepsOut($userId, $conversation, $constants)) {
+		if ($this->lobbyKeepsOut($conversation, $constants)) {
 			throw new ConversationAccessException(Messages::conversationNotFound());
 		}
 
@@ -79,24 +81,11 @@ class ConversationResolver {
 		if (($permissions & $constants['chatPermission']) === 0) {
 			throw new ConversationAccessException(Messages::conversationNotWritable());
 		}
-		if ($this->lobbyKeepsOut($userId, $conversation, $constants)) {
+		if ($this->lobbyKeepsOut($conversation, $constants)) {
 			throw new ConversationAccessException(Messages::conversationNotWritable());
 		}
 
 		return $conversation;
-	}
-
-	/**
-	 * Whether the lobby keeps the caller out of a conversation already resolved, the question the listing asks for
-	 * every room it shows; see {@see self::lobbyKeepsOut()}.
-	 *
-	 * @param string $userId Authenticated user
-	 * @param Conversation $conversation Room and participant of the caller
-	 * @return bool whether the native lobby excludes this participant
-	 * @throws TalkUnavailableException When spreed is unavailable
-	 */
-	public function keepsOutOfLobby(string $userId, Conversation $conversation): bool {
-		return $this->lobbyKeepsOut($userId, $conversation, $this->talkServices->conversationConstants($userId));
 	}
 
 	/**
@@ -126,53 +115,70 @@ class ConversationResolver {
 		} catch (Throwable $e) {
 			throw new ConversationAccessException(Messages::conversationNotFound(), $e);
 		}
+		$changelog = $this->talkServices->conversationConstants($userId)['changelogType'];
 
-		return new Conversation($room, $participant);
+		return new Conversation($room, $participant, $this->rooms->displayName($room, $userId, $changelog, $participantService));
 	}
 
 	/**
-	 * Whether the lobby keeps the caller out, as Talk's `RequireModeratorOrNoLobby` decides: the lobby is on and the
-	 * participant lacks the bypass, which moderators always hold. A lobby whose timer has passed is opened first.
+	 * Whether the lobby keeps the caller out, decided in memory from the values already loaded on the room.
 	 *
-	 * @param string $userId Authenticated user
+	 * Talk's `RequireModeratorOrNoLobby` opens an elapsed lobby before it answers ({@see self::openElapsedLobby()}).
+	 * A read and a plan ask the same question and stop there: a timer that is already in the past counts as open
+	 * for this answer only, and nothing is written. A lobby that cannot be read counts as closed.
+	 *
 	 * @param Conversation $conversation Room and participant of the caller
 	 * @param array{lobbyNone:int, lobbyIgnorePermission:int} $constants Talk constants of {@see TalkServices::conversationConstants()}
 	 * @return bool whether the current lobby state excludes this participant
 	 */
-	private function lobbyKeepsOut(string $userId, Conversation $conversation, array $constants): bool {
-		$room = $conversation->room;
-		if ($room->getLobbyState() === $constants['lobbyNone']) {
-			return false;
-		}
-		if (((int)$conversation->participant->getPermissions() & $constants['lobbyIgnorePermission']) !== 0) {
-			return false;
-		}
-		$this->expireLobbyTimer($userId, $room);
-
-		return $room->getLobbyState() !== $constants['lobbyNone'];
+	private function lobbyKeepsOut(Conversation $conversation, array $constants): bool {
+		return $this->rooms->barred(
+			$conversation->room,
+			$conversation->participant,
+			$constants['lobbyNone'],
+			$constants['lobbyIgnorePermission'],
+		);
 	}
 
 	/**
-	 * Opens a lobby whose timer has passed, as Talk does before it reads the lobby state.
+	 * Opens a lobby whose timer has passed, and only on a confirmed write that is about to change the room.
 	 *
-	 * Up to Talk 23 Room::getLobbyState() does it by itself. Talk 24 (Nextcloud 34) moved it to
-	 * RoomService::validateLobbyTimer(), which its controllers call first; without the call a webinar past its start
-	 * time would stay closed here. The check fails closed: a missing method, a changed signature (a TypeError or
-	 * ArgumentCountError is caught like any other Throwable) or a database error leaves the lobby as Talk reports it,
-	 * closed, so the worst case is a refusal, never an opened lobby.
+	 * Talk 24 (Nextcloud 34) moved that maintenance out of `Room::getLobbyState()` into
+	 * `RoomService::validateLobbyTimer()`, and `InjectionMiddleware::checkLobbyState()` calls it before a controller
+	 * acts, then refuses while the stored state is not "no lobby". This does the same, in that order. A missing
+	 * method is the older Talk, whose own getter still opens the lobby. A failure or a lobby that stays closed
+	 * refuses the write: the worst case is no change.
 	 *
 	 * @param string $userId Authenticated user
-	 * @param object $room native Talk room
+	 * @param Conversation $conversation Room already accepted for writing
 	 * @return void
+	 * @throws ConversationAccessException When the lobby cannot be opened and still bars the caller
+	 * @throws TalkUnavailableException When spreed is unavailable
 	 */
-	private function expireLobbyTimer(string $userId, object $room): void {
+	public function openElapsedLobby(string $userId, Conversation $conversation): void {
+		$constants = $this->talkServices->conversationConstants($userId);
+		$room = $conversation->room;
+		if ($room->getLobbyState() === $constants['lobbyNone']) {
+			return;
+		}
+		if (((int)$conversation->participant->getPermissions() & $constants['lobbyIgnorePermission']) !== 0) {
+			return;
+		}
+
 		try {
 			$roomService = $this->talkServices->roomService($userId);
 			if (method_exists($roomService, 'validateLobbyTimer')) {
 				$roomService->validateLobbyTimer($room);
 			}
-		} catch (Throwable) {
-			// The lobby stays as getLobbyState() reports it.
+			$open = $room->getLobbyState() === $constants['lobbyNone'];
+		} catch (TalkUnavailableException $e) {
+			throw $e;
+		} catch (Throwable $e) {
+			throw new ConversationAccessException(Messages::conversationNotWritable(), $e);
+		}
+
+		if (!$open) {
+			throw new ConversationAccessException(Messages::conversationNotWritable());
 		}
 	}
 

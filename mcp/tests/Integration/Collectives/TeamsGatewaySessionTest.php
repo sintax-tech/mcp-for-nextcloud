@@ -16,7 +16,7 @@ use PHPUnit\Framework\Attributes\Group;
 use Psr\Container\ContainerInterface;
 
 /**
- * The member tools of C04b in the process of the cell's Nextcloud 33 to 35 with Collectives and Teams, inside one
+ * The member tools of C04b in the process of the cell's Nextcloud 34 to 35 with Collectives and Teams, inside one
  * request, like {@see CollectiveFoundingSessionTest}: the Teams manager the gateway uses is the one Collectives uses,
  * every native failure that happens after a Teams session was opened leaves no current user and no bypass behind, and
  * resolving a group seals the session for the rest of the request (`FederatedUserService::getGroupCircle` sets the
@@ -31,11 +31,11 @@ final class TeamsGatewaySessionTest extends IntegrationTestCase {
 	private TeamsSession $session;
 	private TeamsGateway $gateway;
 
-	/** @return void runs only in a cell provisioned with Collectives on Nextcloud 33 to 35 */
+	/** @return void runs only in a cell provisioned with Collectives on Nextcloud 34 to 35 */
 	protected function setUp(): void {
 		parent::setUp();
-		if (getenv('MCP_IT_WITH_COLLECTIVES') !== '1' || (int)\OCP\Util::getVersion()[0] < 33) {
-			$this->markTestSkipped('Collectives cell on Nextcloud 33 to 35 only (MCP_IT_WITH_COLLECTIVES=1)');
+		if (getenv('MCP_IT_WITH_COLLECTIVES') !== '1' || !in_array((int)\OCP\Util::getVersion()[0], [34, 35], true)) {
+			$this->markTestSkipped('Collectives cell on Nextcloud 34 to 35 only (MCP_IT_WITH_COLLECTIVES=1)');
 		}
 		$container = Server::get(ContainerInterface::class);
 		$this->session = new TeamsSession($container);

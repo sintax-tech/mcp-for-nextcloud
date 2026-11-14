@@ -180,7 +180,7 @@ Deck admite etiquetas, hora de vencimiento, dependencias nativas y vínculos nat
 
 ## Disponibilidad del calendario
 
-- `calendar_check_availability` comprueba una ventana de 15 a 240 minutos y `calendar_suggest_times` sugiere como máximo 5 ventanas, comprobando como máximo 32 candidatos por llamada en como máximo 7 días. Ambas usan los datos locales de libre/ocupado de hasta 20 ID exactos de cuentas locales y requieren `calendar.availability`, denegado por defecto.
+- `calendar_check_availability` comprueba una ventana de 15 a 240 minutos y `calendar_suggest_times` sugiere como máximo 5 ventanas, comprobando como máximo 32 candidatos por llamada en como máximo 7 días. Ambas usan los datos locales de libre/ocupado de hasta 20 ID exactos de cuentas locales y requieren `calendar.availability`, denegado por defecto. Solo cuentan los eventos del calendario: no se aplica el horario laboral configurado en Nextcloud, así que una ventana libre puede quedar fuera del horario laboral de una persona.
 - Los participantes ocupados, ausentes, externos o desconocidos nunca se informan como libres, y no se devuelven detalles de citas. Un ámbito de Calendario restringido a colecciones se rechaza, porque la API nativa de libre/ocupado no puede conservar esa restricción. Continuar una búsqueda es explícito y sin estado. No se reserva, escribe ni envía nada.
 
 ## Actividad, notificaciones, ausencia y estado

@@ -180,7 +180,7 @@ Schlagwörter, Fälligkeitszeit, native Abhängigkeiten und eine native Dateiver
 
 ## Kalenderverfügbarkeit
 
-- `calendar_check_availability` prüft ein Fenster von 15 bis 240 Minuten, und `calendar_suggest_times` schlägt höchstens 5 Fenster vor und prüft dabei höchstens 32 Kandidaten pro Aufruf über höchstens 7 Tage. Beide nutzen die lokalen Frei/Gebucht-Daten von bis zu 20 exakten lokalen Konto-IDs und brauchen `calendar.availability`, standardmäßig verweigert.
+- `calendar_check_availability` prüft ein Fenster von 15 bis 240 Minuten, und `calendar_suggest_times` schlägt höchstens 5 Fenster vor und prüft dabei höchstens 32 Kandidaten pro Aufruf über höchstens 7 Tage. Beide nutzen die lokalen Frei/Gebucht-Daten von bis zu 20 exakten lokalen Konto-IDs und brauchen `calendar.availability`, standardmäßig verweigert. Es zählen nur Kalendertermine: Die in Nextcloud eingestellten Arbeitszeiten werden nicht angewendet, ein freies Fenster kann also außerhalb der Arbeitszeit einer Person liegen.
 - Gebuchte, fehlende, externe oder unbekannte Teilnehmende werden nie als frei gemeldet, und es werden keine Termindetails zurückgegeben. Ein auf Sammlungen beschränkter Kalenderbereich wird abgelehnt, weil die native Frei/Gebucht-API diese Einschränkung nicht erhalten kann. Eine Suche wird ausdrücklich und zustandslos fortgesetzt. Nichts wird reserviert, geschrieben oder gesendet.
 
 ## Aktivitäten, Benachrichtigungen, Abwesenheit und Status

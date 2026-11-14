@@ -303,7 +303,7 @@ There is no approval_id, approval record, occ requirement, extra service or auxi
 
 ## Calendar availability
 
-- `calendar_check_availability` checks one 15 to 240 minute window and `calendar_suggest_times` suggests at most 5 windows, checking at most 32 candidates per call over at most 7 days. Both use the local free/busy data of up to 20 exact local account IDs and need `calendar.availability`, denied by default.
+- `calendar_check_availability` checks one 15 to 240 minute window and `calendar_suggest_times` suggests at most 5 windows, checking at most 32 candidates per call over at most 7 days. Both use the local free/busy data of up to 20 exact local account IDs and need `calendar.availability`, denied by default. Only calendar events count: the working hours configured in Nextcloud are not applied, so a free window can fall outside a person's working hours.
 - Busy, missing, external or unknown participants are never reported as free, and no appointment details are returned. A collection-restricted Calendar scope is refused, because the native free/busy API cannot keep that restriction. Continuing a search is explicit and stateless. Nothing is reserved, written or sent.
 
 ## Activity, notifications, absence and status

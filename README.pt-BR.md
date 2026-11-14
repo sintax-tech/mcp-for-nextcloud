@@ -180,7 +180,7 @@ Etiquetas, hora de vencimento, dependências nativas e o vínculo nativo de arqu
 
 ## Disponibilidade no calendário
 
-- `calendar_check_availability` confere uma janela de 15 a 240 minutos e `calendar_suggest_times` sugere no máximo 5 janelas, conferindo no máximo 32 candidatos por chamada em no máximo 7 dias. As duas usam o livre/ocupado local de até 20 IDs exatos de contas locais e exigem `calendar.availability`, negada por padrão.
+- `calendar_check_availability` confere uma janela de 15 a 240 minutos e `calendar_suggest_times` sugere no máximo 5 janelas, conferindo no máximo 32 candidatos por chamada em no máximo 7 dias. As duas usam o livre/ocupado local de até 20 IDs exatos de contas locais e exigem `calendar.availability`, negada por padrão. Só os eventos do calendário contam: o horário de trabalho configurado no Nextcloud não é aplicado, então uma janela livre pode cair fora do expediente da pessoa.
 - Participantes ocupados, ausentes, externos ou desconhecidos nunca aparecem como livres, e nenhum detalhe de compromisso é devolvido. Um escopo de Calendário restrito a coleções é recusado, porque a API nativa de livre/ocupado não preserva essa restrição. Continuar uma busca é explícito e sem estado. Nada é reservado, gravado ou enviado.
 
 ## Atividades, notificações, ausência e status

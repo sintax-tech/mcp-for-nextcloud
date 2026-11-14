@@ -188,15 +188,15 @@ Deck supports labels, due times, native dependencies and native file links. The 
 
 These tools read or change only the caller's own data. Every permission here is denied by default, the reads included.
 
-- **Activity** (`activity_list_events`, `activity.read`): the own feed, newest first, at most 50 events after examining at most 500 per call. Only current, authorized Files and simple Calendar references are returned; Deck, task and sharing activities are omitted. An empty page never proves there was no activity.
-- **Notifications** (`notifications_list` with `notifications.read`, `notifications_dismiss` with `notifications.dismiss`): id, app and time only, 50 by default and at most 200, without marking anything read. Dismissing one notification needs a confirmed plan; a partial or uncertain result is reported and not retried.
+- **Activity** (`activity_list_events` ([#38](https://github.com/sintax-tech/mcp-for-nextcloud/issues/38)), `activity.read`): the own feed, newest first, at most 50 events after examining at most 500 per call. Only current, authorized Files and simple Calendar references are returned; Deck, task and sharing activities are omitted. An empty page never proves there was no activity.
+- **Notifications** (`notifications_list` ([#42](https://github.com/sintax-tech/mcp-for-nextcloud/issues/42)) with `notifications.read`, `notifications_dismiss` with `notifications.dismiss`): id, app and time only, 50 by default and at most 200, without marking anything read. Dismissing one notification needs a confirmed plan; a partial or uncertain result is reported and not retried.
 - **Absence** (`availability_read_absence` with `availability.read`, `availability_set_absence` with `availability.absence`): read, create or change the own out-of-office absence the way the absence settings do. Clearing an absence is not offered: in Nextcloud 34 and 35, `AbsenceService::clearAbsence` removes the absence jobs without naming a user, so it can remove the scheduled absence jobs of every user. The native absence settings call the same method and have the same upstream limitation.
 - **User status** (`status_read_own` with `status.read`, `status_set_type` and `status_set_message` with `status.edit`): the stored status, not live presence. A message is custom text, a predefined message with a translated label, or cleared; no custom emoji or icon is accepted.
 
 ## File tags and comments
 
-- `files_list_tags` lists the collaborative tags of one file or folder with `files.read`; `files_set_tag` assigns or removes one existing tag with `files.tags`, denied by default. Both go through Nextcloud's own DAV server, with the same app plugins and checks as the web interface. Exclusion tags are never listed, assigned or removed, and are checked again at the write.
-- `files_read_comments` reads comments with `files.read` without marking them read; `files_add_comment` adds one comment with `files.comments`, denied by default, after a confirmed plan. A mention resolves only accounts the caller can find through people search, and a hidden or missing account gets the same refusal. Comments are never edited or deleted.
+- `files_list_tags` ([#39](https://github.com/sintax-tech/mcp-for-nextcloud/issues/39)) lists the collaborative tags of one file or folder with `files.read`; `files_set_tag` assigns or removes one existing tag with `files.tags`, denied by default. Both go through Nextcloud's own DAV server, with the same app plugins and checks as the web interface. Exclusion tags are never listed, assigned or removed, and are checked again at the write.
+- `files_read_comments` ([#40](https://github.com/sintax-tech/mcp-for-nextcloud/issues/40)) reads comments with `files.read` without marking them read; `files_add_comment` adds one comment with `files.comments`, denied by default, after a confirmed plan. A mention resolves only accounts the caller can find through people search, and a hidden or missing account gets the same refusal. Comments are never edited or deleted.
 
 ## Saving mail attachments to Files
 
@@ -482,7 +482,7 @@ The package includes Smalot PdfParser, Symfony Polyfill Mbstring and the Compose
 
 ## About Sintax
 
-Developed by [Sintax](https://sintax.tech) · sintax.tech.
+Built and maintained by [Sintax](https://sintax.tech).
 
 - Website: https://sintax.tech
 - GitHub: https://github.com/sintax-tech

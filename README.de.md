@@ -187,15 +187,15 @@ Schlagwörter, Fälligkeitszeit, native Abhängigkeiten und eine native Dateiver
 
 Diese Werkzeuge lesen oder ändern nur die eigenen Daten. Jede Berechtigung hier ist standardmäßig verweigert, auch die Lesezugriffe.
 
-- **Aktivitäten** (`activity_list_events`, `activity.read`): der eigene Feed, neueste zuerst, höchstens 50 Ereignisse, nachdem höchstens 500 pro Aufruf geprüft wurden. Nur aktuelle, berechtigte Verweise auf Dateien und einfache Kalendertermine werden zurückgegeben; Deck-, Aufgaben- und Freigabeaktivitäten werden ausgelassen. Eine leere Seite beweist nie, dass es keine Aktivität gab.
-- **Benachrichtigungen** (`notifications_list` mit `notifications.read`, `notifications_dismiss` mit `notifications.dismiss`): nur ID, App und Zeit, standardmäßig 50 und höchstens 200, ohne etwas als gelesen zu markieren. Das Verwerfen einer Benachrichtigung braucht einen bestätigten Plan; ein teilweises oder unsicheres Ergebnis wird gemeldet und nicht wiederholt.
+- **Aktivitäten** (`activity_list_events` ([#38](https://github.com/sintax-tech/mcp-for-nextcloud/issues/38)), `activity.read`): der eigene Feed, neueste zuerst, höchstens 50 Ereignisse, nachdem höchstens 500 pro Aufruf geprüft wurden. Nur aktuelle, berechtigte Verweise auf Dateien und einfache Kalendertermine werden zurückgegeben; Deck-, Aufgaben- und Freigabeaktivitäten werden ausgelassen. Eine leere Seite beweist nie, dass es keine Aktivität gab.
+- **Benachrichtigungen** (`notifications_list` ([#42](https://github.com/sintax-tech/mcp-for-nextcloud/issues/42)) mit `notifications.read`, `notifications_dismiss` mit `notifications.dismiss`): nur ID, App und Zeit, standardmäßig 50 und höchstens 200, ohne etwas als gelesen zu markieren. Das Verwerfen einer Benachrichtigung braucht einen bestätigten Plan; ein teilweises oder unsicheres Ergebnis wird gemeldet und nicht wiederholt.
 - **Abwesenheit** (`availability_read_absence` mit `availability.read`, `availability_set_absence` mit `availability.absence`): die eigene Abwesenheit lesen, anlegen oder ändern, so wie es die Abwesenheitseinstellungen tun. Das Löschen einer Abwesenheit wird nicht angeboten: In Nextcloud 34 und 35 entfernt `AbsenceService::clearAbsence` die Abwesenheits-Jobs, ohne einen Benutzer zu nennen, und kann so die geplanten Abwesenheits-Jobs aller Benutzer entfernen. Die nativen Abwesenheitseinstellungen rufen dieselbe Methode auf und haben dieselbe Einschränkung in Nextcloud.
 - **Benutzerstatus** (`status_read_own` mit `status.read`, `status_set_type` und `status_set_message` mit `status.edit`): der gespeicherte Status, keine Live-Präsenz. Eine Nachricht ist freier Text, eine vordefinierte Nachricht mit übersetzter Bezeichnung oder wird gelöscht; eigene Emojis oder Symbole werden nicht angenommen.
 
 ## Datei-Tags und -Kommentare
 
-- `files_list_tags` listet die kollaborativen Tags einer Datei oder eines Ordners mit `files.read`; `files_set_tag` weist ein vorhandenes Tag zu oder entfernt es mit `files.tags`, standardmäßig verweigert. Beide laufen über den DAV-Server von Nextcloud selbst, mit denselben App-Plugins und Prüfungen wie die Weboberfläche. Ausschluss-Tags werden nie aufgelistet, zugewiesen oder entfernt und beim Schreiben erneut geprüft.
-- `files_read_comments` liest Kommentare mit `files.read`, ohne sie als gelesen zu markieren; `files_add_comment` fügt nach einem bestätigten Plan einen Kommentar mit `files.comments` hinzu, standardmäßig verweigert. Eine Erwähnung löst nur Konten auf, die die Person über die Personensuche findet, und ein verborgenes oder fehlendes Konto erhält dieselbe Ablehnung. Kommentare werden nie bearbeitet oder gelöscht.
+- `files_list_tags` ([#39](https://github.com/sintax-tech/mcp-for-nextcloud/issues/39)) listet die kollaborativen Tags einer Datei oder eines Ordners mit `files.read`; `files_set_tag` weist ein vorhandenes Tag zu oder entfernt es mit `files.tags`, standardmäßig verweigert. Beide laufen über den DAV-Server von Nextcloud selbst, mit denselben App-Plugins und Prüfungen wie die Weboberfläche. Ausschluss-Tags werden nie aufgelistet, zugewiesen oder entfernt und beim Schreiben erneut geprüft.
+- `files_read_comments` ([#40](https://github.com/sintax-tech/mcp-for-nextcloud/issues/40)) liest Kommentare mit `files.read`, ohne sie als gelesen zu markieren; `files_add_comment` fügt nach einem bestätigten Plan einen Kommentar mit `files.comments` hinzu, standardmäßig verweigert. Eine Erwähnung löst nur Konten auf, die die Person über die Personensuche findet, und ein verborgenes oder fehlendes Konto erhält dieselbe Ablehnung. Kommentare werden nie bearbeitet oder gelöscht.
 
 ## E-Mail-Anhänge in Dateien speichern
 
@@ -481,7 +481,7 @@ Das Paket enthält Smalot PdfParser, Symfony Polyfill Mbstring und den Composer-
 
 ## Über Sintax
 
-Entwickelt von [Sintax](https://sintax.tech) · sintax.tech.
+Entwickelt und gepflegt von [Sintax](https://sintax.tech).
 
 - Website: https://sintax.tech
 - GitHub: https://github.com/sintax-tech

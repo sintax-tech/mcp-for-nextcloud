@@ -187,15 +187,15 @@ Etiquetas, hora de vencimento, dependências nativas e o vínculo nativo de arqu
 
 Essas ferramentas leem ou alteram só os dados da própria pessoa. Toda permissão daqui é negada por padrão, inclusive as leituras.
 
-- **Atividades** (`activity_list_events`, `activity.read`): o próprio feed, mais recentes primeiro, no máximo 50 eventos depois de examinar no máximo 500 por chamada. Só voltam referências atuais e autorizadas de Arquivos e eventos simples do Calendário; atividades do Deck, de tarefas e de compartilhamento são omitidas. Uma página vazia nunca prova que não houve atividade.
-- **Notificações** (`notifications_list` com `notifications.read`, `notifications_dismiss` com `notifications.dismiss`): só id, app e horário, 50 por padrão e no máximo 200, sem marcar nada como lido. Dispensar uma notificação exige plano confirmado; resultado parcial ou incerto é informado e não é repetido.
+- **Atividades** (`activity_list_events` ([#38](https://github.com/sintax-tech/mcp-for-nextcloud/issues/38)), `activity.read`): o próprio feed, mais recentes primeiro, no máximo 50 eventos depois de examinar no máximo 500 por chamada. Só voltam referências atuais e autorizadas de Arquivos e eventos simples do Calendário; atividades do Deck, de tarefas e de compartilhamento são omitidas. Uma página vazia nunca prova que não houve atividade.
+- **Notificações** (`notifications_list` ([#42](https://github.com/sintax-tech/mcp-for-nextcloud/issues/42)) com `notifications.read`, `notifications_dismiss` com `notifications.dismiss`): só id, app e horário, 50 por padrão e no máximo 200, sem marcar nada como lido. Dispensar uma notificação exige plano confirmado; resultado parcial ou incerto é informado e não é repetido.
 - **Ausência** (`availability_read_absence` com `availability.read`, `availability_set_absence` com `availability.absence`): ler, criar ou alterar a própria ausência do mesmo jeito que as configurações de ausência. Limpar uma ausência não é oferecido: no Nextcloud 34 e 35, `AbsenceService::clearAbsence` remove os jobs de ausência sem indicar o usuário, então pode remover os jobs de ausência agendados de todos os usuários. As configurações nativas de ausência chamam o mesmo método e têm a mesma limitação do Nextcloud.
 - **Status do usuário** (`status_read_own` com `status.read`, `status_set_type` e `status_set_message` com `status.edit`): o status gravado, não a presença ao vivo. A mensagem é texto livre, uma mensagem pré-definida com rótulo traduzido, ou limpa; emoji ou ícone personalizado não são aceitos.
 
 ## Etiquetas e comentários de arquivos
 
-- `files_list_tags` lista as etiquetas colaborativas de um arquivo ou pasta com `files.read`; `files_set_tag` atribui ou remove uma etiqueta existente com `files.tags`, negada por padrão. As duas passam pelo servidor DAV do próprio Nextcloud, com os mesmos plugins de apps e verificações da interface web. Etiquetas de exclusão nunca são listadas, atribuídas ou removidas, e são conferidas de novo na escrita.
-- `files_read_comments` lê comentários com `files.read` sem marcá-los como lidos; `files_add_comment` adiciona um comentário com `files.comments`, negada por padrão, depois de um plano confirmado. Uma menção só resolve contas que a pessoa encontra pela busca de pessoas, e conta oculta ou inexistente recebe a mesma recusa. Comentários nunca são editados nem excluídos.
+- `files_list_tags` ([#39](https://github.com/sintax-tech/mcp-for-nextcloud/issues/39)) lista as etiquetas colaborativas de um arquivo ou pasta com `files.read`; `files_set_tag` atribui ou remove uma etiqueta existente com `files.tags`, negada por padrão. As duas passam pelo servidor DAV do próprio Nextcloud, com os mesmos plugins de apps e verificações da interface web. Etiquetas de exclusão nunca são listadas, atribuídas ou removidas, e são conferidas de novo na escrita.
+- `files_read_comments` ([#40](https://github.com/sintax-tech/mcp-for-nextcloud/issues/40)) lê comentários com `files.read` sem marcá-los como lidos; `files_add_comment` adiciona um comentário com `files.comments`, negada por padrão, depois de um plano confirmado. Uma menção só resolve contas que a pessoa encontra pela busca de pessoas, e conta oculta ou inexistente recebe a mesma recusa. Comentários nunca são editados nem excluídos.
 
 ## Salvar anexos de e-mail no Arquivos
 
@@ -481,7 +481,7 @@ O pacote inclui Smalot PdfParser, Symfony Polyfill Mbstring e o autoloader do Co
 
 ## Sobre a Sintax
 
-Desenvolvido pela [Sintax](https://sintax.tech) · sintax.tech.
+Desenvolvido e mantido pela [Sintax](https://sintax.tech).
 
 - Site: https://sintax.tech
 - GitHub: https://github.com/sintax-tech

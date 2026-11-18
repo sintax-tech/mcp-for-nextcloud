@@ -16,8 +16,9 @@ use OCA\Mcp\Modules\Files\Reorganization\ReorganizationLimits;
  *
  * Both refuse an occupied destination, both check the source's ETag when one is given, and both take the
  * shared-write confirmation. They differ on purpose: a copy creates a new node with a new id and promises
- * nothing about shares, while a move must stay inside one storage and reports what it could verify about
- * the id, the versions and the shares afterwards.
+ * nothing about shares, while a move keeps the id inside one storage and reports what it could verify
+ * about the id, the versions and the shares afterwards; across storages (two team folders) the move runs
+ * and Nextcloud performs it as a copy plus a delete, so the id changes.
  */
 final class FilesCopyMoveTest extends FilesToolsTestCase {
 	private const SOURCE = '/alice/files/Documentos/ata.md';
@@ -197,15 +198,21 @@ final class FilesCopyMoveTest extends FilesToolsTestCase {
 		$this->assertSame([], $this->tree->ops);
 	}
 
-	/** A move between storages is a copy plus a delete in Nextcloud's terms, and it changes the id. */
-	public function testARefusesAMoveAcrossStoragesAndTheNodeStaysPut(): void {
+	/** A move between storages (two team folders) runs: in Nextcloud's terms it is a copy plus a delete. */
+	public function testAMoveAcrossStoragesRunsAndMovesTheNode(): void {
 		// A mount point is what puts a subtree on another storage, so the folder carries the id.
 		$this->tree->addFolder('/alice/files/Externo', ['storageId' => 'externo']);
 		$this->tree->addFile('/alice/files/Externo/plano.md', 'plano', 'text/markdown');
-		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::crossStorage(),
-			$this->failure('files_move', ['from' => '/Documentos/ata.md', 'to' => '/Externo/ata.md']));
-		$this->assertSame("# Ata\nolá", $this->tree->nodes[self::SOURCE]['content'], 'a origem tem que continuar onde estava');
-		$this->assertSame([], $this->tree->ops);
+		$plan = $this->plan('files_move', ['from' => '/Documentos/ata.md', 'to' => '/Externo/ata.md']);
+		$this->assertTrue($plan['crossStorage'], 'o plano avisa que origem e destino estão em storages diferentes');
+		$this->assertSame(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::planMoveAcrossStorages(), $plan['message']);
+		$this->assertSame([], $this->tree->ops, 'o plano não move nada');
+		$out = $this->json('files_move', ['from' => '/Documentos/ata.md', 'to' => '/Externo/ata.md']);
+		$this->assertSame('/Externo/ata.md', $out['to']);
+		$this->assertSame("# Ata\nolá", $this->tree->nodes['/alice/files/Externo/ata.md']['content']);
+		$this->assertFalse(array_key_exists(self::SOURCE, $this->tree->nodes), 'a origem sai do lugar');
+		$this->assertSame('move /alice/files/Documentos/ata.md /alice/files/Externo/ata.md',
+			$this->tree->ops[count($this->tree->ops) - 1]);
 	}
 
 	public function testARefusesAnOccupiedDestinationWithoutOverwriting(): void {

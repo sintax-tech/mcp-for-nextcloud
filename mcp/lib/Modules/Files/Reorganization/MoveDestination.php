@@ -55,7 +55,7 @@ final class MoveDestination {
 	/**
 	 * @param Folder $root the user's folder
 	 * @param string $path destination path, user-relative
-	 * @param list<string> $mkdirs planned folders whose existing ancestor supplies permissions and storage
+	 * @param list<string> $mkdirs planned folders whose existing ancestor supplies permissions
 	 * @return Folder the destination folder, or the existing ancestor of a planned folder
 	 * @throws ToolFailure when it does not exist or cannot take new entries
 	 */
@@ -74,7 +74,7 @@ final class MoveDestination {
 			}
 			if ($planned) {
 				// Only mkdirs and their implied parents exist in the plan. Check the real ancestor:
-				// a missing descendant must never bypass visibility, permissions or storage boundaries.
+				// a missing descendant must never bypass visibility or permissions.
 				do {
 					array_pop($segments);
 					$parentPath = '/' . implode('/', $segments);

@@ -117,9 +117,10 @@ of a mount root):
 - **A share moved by its recipient into a tagged folder of their own** is hidden: proven for a folder share
   (`SharedOriginTest`, run 79a413b, every cell); the same test for a file share only failed on the test's own share
   permissions (a file share cannot carry create or delete) and was corrected.
-- **A received folder moved into another received share** is refused without effect; in run 79a413b core answered first,
-  "Moving across different storages is not supported in this version". The D7 gate stands in front of it too
-  (unit-tested), and the test now accepts either answer and records which one came.
+- **A received folder moved into another received share** is refused without effect: the D7 gate stands in front of
+  it (unit-tested) and core also refuses to rename a share mount point across storages. The connector itself no longer
+  refuses cross-storage moves (`files_move`/`files_move_batch` allow them since the storage boundary was lifted, and the
+  receipt reports the changed id); the test accepts either refusing answer and records which one came.
 
 **Re-proven locally after the last edits (final status).** The GitHub Actions minutes ran out, so the whole suite was
 run with `mcp/tests/Integration/ci/run-local.sh` (Colima on an Apple-silicon Mac, native arm64 images with the same pinned

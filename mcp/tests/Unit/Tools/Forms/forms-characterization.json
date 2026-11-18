@@ -228,7 +228,7 @@
         {
             "name": "files_move",
             "title": "Move file",
-            "description": "Move or rename a file or folder within the same file area, without overwriting the destination. Reports id before and after, as well as version and share counts when corresponding apps are enabled. Does not move across different storages: there Nextcloud treats it as a copy and the id changes. If source or destination is outside your personal folder, ask the user first and retry with confirm_shared.",
+            "description": "Move or rename a file or folder, without overwriting the destination. Reports id before and after, as well as version and share counts when corresponding apps are enabled. Across different storages (for example between two team folders) Nextcloud performs the move as a copy plus a delete of the source: the id changes (idPreserved is false) and versions and shares are not carried over. If source or destination is outside your personal folder, ask the user first and retry with confirm_shared.",
             "inputSchema": {
                 "type": "object",
                 "properties": {

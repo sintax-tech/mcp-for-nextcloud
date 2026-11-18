@@ -7,6 +7,12 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## Unreleased
+
+### Fixed
+
+- **Files ([#45](https://github.com/sintax-tech/mcp-for-nextcloud/issues/45)):** `files_move` and `files_move_batch` no longer refuse to move a file or folder across storages, so moving between team folders works. Nextcloud performs such a move natively as a copy plus a delete of the source; the receipt reports the changed id (`idPreserved: false`) and the plan says so beforehand. No `files.delete` permission is involved: the delete happens inside Nextcloud's own move, not through `files_delete`.
+
 ## 1.4.0 — 2026-11-13
 
 Minor release on top of 1.3.5. It adds routine reads and writes around the calendar, Talk, notifications, absence, user status, file tags and comments, mail attachments and Deck labels, plus two write routines that combine apps after one confirmation and a read-only meeting preparation. Every new permission is denied by default: an upgrade grants no new access, saved policies, groups and levels keep their effective grants, and a permission missing from a saved policy counts as denied. No database migration; updating from 1.3.5 needs no extra step.

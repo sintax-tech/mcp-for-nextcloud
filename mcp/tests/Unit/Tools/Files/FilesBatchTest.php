@@ -252,16 +252,21 @@ final class FilesBatchTest extends FilesToolsTestCase {
 		$this->assertArrayNotHasKey('/alice/files/New', $this->tree->nodes);
 	}
 
-	/** A future folder inherits the storage boundary of its real parent. */
-	public function testMkdirsDoesNotBypassStorageBoundaries(): void {
+	/** A future folder inherits the storage of its real parent, and the move across storages is allowed. */
+	public function testMkdirsIntoAnotherStoragePlansAndRunsTheCrossStorageMove(): void {
 		$this->tree->addFolder('/alice/files/External', ['storageId' => 'external']);
-		$plan = $this->plan('files_move_batch', [
+		$args = [
 			'moves' => [['from' => '/Documentos/ata.md', 'to' => '/External/New/ata.md']],
 			'mkdirs' => ['/External/New'],
-		]);
-		$this->assertFalse($plan['ok']);
-		$this->assertCount(1, $plan['conflicts']);
-		$this->assertSame([], $this->tree->ops);
+		];
+		$plan = $this->plan('files_move_batch', $args);
+		$this->assertTrue($plan['ok'], 'um move entre storages (duas pastas de equipe) é permitido');
+		$this->assertSame([], $plan['conflicts']);
+		$this->assertSame([], $this->tree->ops, 'o plano não move nada');
+		$out = $this->json('files_move_batch', $args + ['confirm' => true]);
+		$this->assertSame('/External/New/ata.md', $out['moved'][0]['to']);
+		$this->assertArrayHasKey('/alice/files/External/New/ata.md', $this->tree->nodes);
+		$this->assertArrayNotHasKey('/alice/files/Documentos/ata.md', $this->tree->nodes);
 	}
 
 	/** Listing a deeper mkdir also creates the receiving parent, but cannot replace a real file. */

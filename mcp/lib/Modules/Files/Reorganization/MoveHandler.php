@@ -22,8 +22,9 @@ final class MoveHandler {
 	}
 
 	/**
-	 * Moves or renames a node inside the same storage, refusing before anything changes when the guards
-	 * say no, and reporting afterwards what could be measured.
+	 * Moves or renames a node, also across storages such as between team folders: there Nextcloud performs
+	 * the move itself as a copy plus a delete of the source, so the id changes and idPreserved says so.
+	 * Refuses before anything changes when the guards say no, and reports afterwards what could be measured.
 	 *
 	 * @param Folder $root the user's folder
 	 * @param string $userId authenticated user
@@ -34,7 +35,7 @@ final class MoveHandler {
 	 * @return array{from:string, to:string, idBefore:int, idAfter:int, idPreserved:bool, versionsBefore:int|null, versionsAfter:int|null, sharesBefore:int|null, sharesAfter:int|null, access:array<string, mixed>}|array<string, mixed>
 	 *   the report, or the shared-write confirmation instead of a report when one is still missing
 	 * @throws \InvalidArgumentException for a path with traversal or control characters
-	 * @throws ToolFailure for an occupied destination, a stale ETag, another storage, a folder into itself or a denied write
+	 * @throws ToolFailure for an occupied destination, a stale ETag, a folder into itself or a denied write
 	 */
 	public function handle(Folder $root, string $userId, string $from, string $to, ?string $etag, bool $confirmedShared): array {
 		$check = $this->context->reorganization->inspect($root, $from, $to, $etag);
@@ -77,14 +78,17 @@ final class MoveHandler {
 	 * @param string|null $etag ETag the caller read before, null to skip the check
 	 * @return array<string, mixed>
 	 * @throws \InvalidArgumentException for a path with traversal or control characters
-	 * @throws MoveConflict when the destination is taken, the folder would land inside itself, or the two ends are on different storages
+	 * @throws MoveConflict when the destination is taken or the folder would land inside itself
 	 * @throws ToolFailure when the source is missing, unreadable, not changeable, or the destination cannot receive
 	 */
 	public function planMove(Folder $root, string $userId, string $from, string $to, ?string $etag): array {
 		$check = $this->context->reorganization->inspect($root, $from, $to, $etag);
 		$this->context->policy()->assertProjected($check->source, $check->to);
 		FolderExposureGate::assertMove($root, $check->source, $check->to, $this->context->visibilityGuard);
-		return [
+		// Across storages Nextcloud copies and deletes instead of renaming, so the id, the versions and the
+		// shares do not carry over; the plan says so instead of promising what the receipt could not show.
+		$crossStorage = $check->source->getStorage()->getId() !== $check->destination->getStorage()->getId();
+		$plan = [
 			'action' => 'files_move',
 			'from' => $root->getRelativePath($check->source->getPath()) ?? '',
 			'to' => $check->to,
@@ -94,7 +98,11 @@ final class MoveHandler {
 			'access' => $this->context->access->describe($check->source, $userId),
 			'shared' => $this->context->sharedOf($userId, $check->source, $check->destination),
 			'recoverable' => true,
-			'message' => ReorganizationMessages::planMove(),
-		] + ($this->context->locks?->planNotice($check->source, $userId) ?? []);
+			'message' => $crossStorage ? ReorganizationMessages::planMoveAcrossStorages() : ReorganizationMessages::planMove(),
+		];
+		if ($crossStorage) {
+			$plan['crossStorage'] = true;
+		}
+		return $plan + ($this->context->locks?->planNotice($check->source, $userId) ?? []);
 	}
 }

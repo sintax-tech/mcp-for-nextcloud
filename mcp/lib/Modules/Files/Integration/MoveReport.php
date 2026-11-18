@@ -14,8 +14,8 @@ namespace OCA\Mcp\Modules\Files\Integration;
  * are counted through the apps that own them, and reported as null when the app is off — an absent app is
  * not the same as "zero versions", and saying zero would be a claim nobody checked.
  *
- * These are counts taken after the fact. They describe what happened; they do not guarantee it will keep
- * happening on a different storage, which is why files_move refuses to cross one.
+ * These are counts taken after the fact. They describe what happened; on a different storage a move is a
+ * copy plus a delete, so the id changes and idPreserved reports false instead of promising it kept.
  */
 final class MoveReport {
 	/** Nextcloud app that owns the versions, resolved lazily like every other files_versions call. */

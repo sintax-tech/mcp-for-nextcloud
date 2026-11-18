@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-/** Inspect move sources and storage boundaries in the established order. */
+/** Inspect move sources and destinations in the established order. */
 namespace OCA\Mcp\Modules\Files\Reorganization;
 
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
@@ -45,7 +45,7 @@ final class MoveInspection {
 	 * @param list<string> $mkdirs folders (including their parents) available only while planning
 	 * @return Inspection the node, the receiving folder or its existing ancestor, and the normalized destination
 	 * @throws \InvalidArgumentException for a path with traversal or control characters
-	 * @throws MoveConflict when the destination is taken, the folder would land inside itself, or the two ends are on different storages
+	 * @throws MoveConflict when the destination is taken or the folder would land inside itself
 	 * @throws ToolFailure when the source is missing, unreadable or not changeable, or the destination cannot receive
 	 */
 	public function inspect(Folder $root, string $from, string $to, ?string $etag = null, array $mkdirs = []): Inspection {
@@ -57,7 +57,6 @@ final class MoveInspection {
 		$this->assertNotIntoItself($root, $source, $to);
 		$this->moveDestination->assertFree($root, $to);
 		$destination = $this->moveDestination->destination($root, $to, $mkdirs);
-		$this->assertSameStorage($source, $destination);
 		return new Inspection($source, $destination, $to);
 	}
 
@@ -102,21 +101,6 @@ final class MoveInspection {
 		$source = $root->getRelativePath($from->getPath()) ?? '';
 		if ($from instanceof Folder && ($to === $source || str_starts_with($to, rtrim($source, '/') . '/'))) {
 			throw new MoveConflict(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::folderIntoItself());
-		}
-	}
-
-	/**
-	 * Nextcloud moves across storages by copying and deleting, which changes the id and re-versions the
-	 * file; the first scope of this sprint stays inside one storage so that the reported id is meaningful.
-	 *
-	 * @param Node $source the node being moved
-	 * @param Folder $destination the folder that would receive it
-	 * @throws MoveConflict when source and destination are on different storages
-	 * @return void
-	 */
-	private function assertSameStorage(Node $source, Folder $destination): void {
-		if ($source->getStorage()->getId() !== $destination->getStorage()->getId()) {
-			throw new MoveConflict(\OCA\Mcp\Modules\Files\Presentation\ReorganizationMessages::crossStorage());
 		}
 	}
 }

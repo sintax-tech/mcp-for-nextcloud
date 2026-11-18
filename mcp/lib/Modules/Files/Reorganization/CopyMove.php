@@ -46,8 +46,9 @@ final class CopyMove {
 	}
 
 	/**
-	 * Moves or renames a node inside the same storage, refusing before anything changes when the guards
-	 * say no, and reporting afterwards what could be measured.
+	 * Moves or renames a node, also across storages such as between team folders: there Nextcloud performs
+	 * the move itself as a copy plus a delete of the source, so the id changes and idPreserved says so.
+	 * Refuses before anything changes when the guards say no, and reports afterwards what could be measured.
 	 *
 	 * @param Folder $root the user's folder
 	 * @param string $userId authenticated user
@@ -58,7 +59,7 @@ final class CopyMove {
 	 * @return array{from:string, to:string, idBefore:int, idAfter:int, idPreserved:bool, versionsBefore:int|null, versionsAfter:int|null, sharesBefore:int|null, sharesAfter:int|null, access:array<string, mixed>}|array<string, mixed>
 	 *   the report, or the shared-write confirmation instead of a report when one is still missing
 	 * @throws \InvalidArgumentException for a path with traversal or control characters
-	 * @throws ToolFailure for an occupied destination, a stale ETag, another storage, a folder into itself or a denied write
+	 * @throws ToolFailure for an occupied destination, a stale ETag, a folder into itself or a denied write
 	 */
 	public function move(Folder $root, string $userId, string $from, string $to, ?string $etag, bool $confirmedShared): array {
 		return (new \OCA\Mcp\Modules\Files\Reorganization\MoveHandler($this->context))->handle($root, $userId, $from, $to, $etag, $confirmedShared);
@@ -90,7 +91,7 @@ final class CopyMove {
 	 * @param string|null $etag ETag the caller read before, null to skip the check
 	 * @return array<string, mixed>
 	 * @throws \InvalidArgumentException for a path with traversal or control characters
-	 * @throws MoveConflict when the destination is taken, the folder would land inside itself, or the two ends are on different storages
+	 * @throws MoveConflict when the destination is taken or the folder would land inside itself
 	 * @throws ToolFailure when the source is missing, unreadable, not changeable, or the destination cannot receive
 	 */
 	public function planMove(Folder $root, string $userId, string $from, string $to, ?string $etag): array {

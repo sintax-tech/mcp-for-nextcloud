@@ -78,11 +78,12 @@ final class ReorganizationMessages {
 
 	/** @return string description of files_move */
 	public static function moveTool(): string {
-		return 'Move or rename a file or folder within the same file area, without overwriting the '
-			. 'destination. Reports id before and after, as well as version and share counts when '
-			. 'corresponding apps are enabled. Does not move across different storages: there Nextcloud treats '
-			. 'it as a copy and the id changes. If source or destination is outside your personal folder, ask '
-			. 'the user first and retry with confirm_shared.';
+		return 'Move or rename a file or folder, without overwriting the destination. Reports id before and '
+			. 'after, as well as version and share counts when corresponding apps are enabled. Across different '
+			. 'storages (for example between two team folders) Nextcloud performs the move as a copy plus a '
+			. 'delete of the source: the id changes (idPreserved is false) and versions and shares are not '
+			. 'carried over. If source or destination is outside your personal folder, ask the user first and '
+			. 'retry with confirm_shared.';
 	}
 
 	/**
@@ -107,6 +108,13 @@ final class ReorganizationMessages {
 	}
 
 	/**
+	 * @return string the plan of files_move when source and destination are on different storages
+	 */
+	public static function planMoveAcrossStorages(): string {
+		return Translator::t('Nothing was changed. After your approval the item below moves to the destination. Source and destination are on different storages (for example two team folders), so Nextcloud performs the move as a copy plus a delete of the source: the id changes, and earlier versions and shares do not carry over.');
+	}
+
+	/**
 	 * @return string the plan of files_move_batch
 	 */
 	public static function planBatch(): string {
@@ -118,11 +126,6 @@ final class ReorganizationMessages {
 	 */
 	public static function planUndoBatch(): string {
 		return Translator::t('Nothing was changed. After your approval each item below goes back to where the batch took it from, and only the empty folders the batch created are removed.');
-	}
-
-	/** @return string something already sits where a folder would go */
-	public static function crossStorage(): string {
-		return Translator::t('Moving across different storages is not supported in this version; move within the same file area.');
 	}
 
 	/**

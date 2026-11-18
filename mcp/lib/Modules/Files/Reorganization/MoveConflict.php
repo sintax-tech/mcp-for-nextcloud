@@ -10,8 +10,8 @@ namespace OCA\Mcp\Modules\Files\Reorganization;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
- * A move that cannot happen because of where it wants to land: something is already there, the folder would
- * land inside itself, or the destination is on another storage.
+ * A move that cannot happen because of where it wants to land: something is already there, or the folder
+ * would land inside itself.
  *
  * It is a ToolFailure so a single move answers the same way it always did, and a subclass so a batch can tell
  * "fix the destination" from "you may not do this" and put the item in the right list of the plan.

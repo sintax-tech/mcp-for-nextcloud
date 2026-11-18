@@ -10145,8 +10145,8 @@ OCA\Mcp\Tests\Unit\Tools\Files\FilesBatchTest::testCreateFoldersChecksEveryFolde
 OCA\Mcp\Tests\Unit\Tools\Files\FilesBatchTest::testMkdirsDoesNotApproveAnUnplannedDestination
 OCA\Mcp\Tests\Unit\Tools\Files\FilesBatchTest::testMkdirsDoesNotBypassDestinationPermissions
 OCA\Mcp\Tests\Unit\Tools\Files\FilesBatchTest::testMkdirsDoesNotBypassDestinationVisibility
-OCA\Mcp\Tests\Unit\Tools\Files\FilesBatchTest::testMkdirsDoesNotBypassStorageBoundaries
 OCA\Mcp\Tests\Unit\Tools\Files\FilesBatchTest::testMkdirsIntoAFolderThatCannotTakeItIsRefusedBeforeAnythingIsCreated
+OCA\Mcp\Tests\Unit\Tools\Files\FilesBatchTest::testMkdirsIntoAnotherStoragePlansAndRunsTheCrossStorageMove
 OCA\Mcp\Tests\Unit\Tools\Files\FilesBatchTest::testMkdirsNeverCreatesAFolderInsideAHiddenOne
 OCA\Mcp\Tests\Unit\Tools\Files\FilesBatchTest::testMkdirsOverAFileIsRefusedBeforeAnyFolderIsCreated
 OCA\Mcp\Tests\Unit\Tools\Files\FilesBatchTest::testMkdirsSupportsImpliedParentsAndRefusesFileAncestors
@@ -10159,6 +10159,7 @@ OCA\Mcp\Tests\Unit\Tools\Files\FilesBatchTest::testThePlanSaysAFolderThatIsAlrea
 OCA\Mcp\Tests\Unit\Tools\Files\FilesBatchTest::testThePlanSaysAnItemOfSomebodyElseIsSharedInsteadOfAMoveThatWouldHappen
 OCA\Mcp\Tests\Unit\Tools\Files\FilesBatchTest::testThePlanSeesTheFoldersItWouldCreate
 OCA\Mcp\Tests\Unit\Tools\Files\FilesCopyMoveTest::testACopyToExistingHiddenTargetIsRefusedAsNotFound
+OCA\Mcp\Tests\Unit\Tools\Files\FilesCopyMoveTest::testAMoveAcrossStoragesRunsAndMovesTheNode
 OCA\Mcp\Tests\Unit\Tools\Files\FilesCopyMoveTest::testAMoveInsideTheSameShareNeedsConfirmationButIsAllowedWithIt
 OCA\Mcp\Tests\Unit\Tools\Files\FilesCopyMoveTest::testAMoveIntoASharedDestinationAsksForConfirmation
 OCA\Mcp\Tests\Unit\Tools\Files\FilesCopyMoveTest::testAMoveOfASharedFileAsksForConfirmationAndMovesNothing
@@ -10167,7 +10168,6 @@ OCA\Mcp\Tests\Unit\Tools\Files\FilesCopyMoveTest::testAMoveToAMissingFolderIsRef
 OCA\Mcp\Tests\Unit\Tools\Files\FilesCopyMoveTest::testAMoveToExistingHiddenTargetIsRefusedAsNotFound
 OCA\Mcp\Tests\Unit\Tools\Files\FilesCopyMoveTest::testARefusesAFolderIntoItsOwnSubfolder
 OCA\Mcp\Tests\Unit\Tools\Files\FilesCopyMoveTest::testARefusesAFolderIntoItself
-OCA\Mcp\Tests\Unit\Tools\Files\FilesCopyMoveTest::testARefusesAMoveAcrossStoragesAndTheNodeStaysPut
 OCA\Mcp\Tests\Unit\Tools\Files\FilesCopyMoveTest::testARefusesAMoveIntoAFolderThatCannotTakeIt
 OCA\Mcp\Tests\Unit\Tools\Files\FilesCopyMoveTest::testARefusesAMoveWithoutPermissionAndLeavesTheNodeWhereItWas
 OCA\Mcp\Tests\Unit\Tools\Files\FilesCopyMoveTest::testARefusesAnOccupiedDestinationWithoutOverwriting

@@ -10,7 +10,6 @@ namespace OCA\Mcp\Mcp\Protocol;
 use InvalidArgumentException;
 use OCA\Mcp\Mcp\{Prompts\PromptCatalog, Resources\ResourceRegistry, Tools\Results\ToolFailure, Tools\ToolPresentation, Tools\ToolRegistry, Tools\Validation\ArgumentValidationException};
 use OCA\Mcp\Access\Grants\GrantPolicy;
-use OCP\App\IAppManager;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -53,7 +52,7 @@ class McpProtocol {
 	 * @param PromptCatalog $prompts prompts this endpoint may return
 	 * @param GrantPolicy $policy grants that decide what a user may do
 	 * @param LoggerInterface $logger diagnostic log
-	 * @param IAppManager $apps installed app versions; the core caches info.xml
+	 * @param ServerIdentity $identity name, version and icons reported to clients
 	 * @param ResourceRegistry|null $resources resources this endpoint may read
 	 */
 	public function __construct(
@@ -61,20 +60,17 @@ class McpProtocol {
 		private PromptCatalog $prompts,
 		private GrantPolicy $policy,
 		private LoggerInterface $logger,
-		private IAppManager $apps,
+		private ServerIdentity $identity,
 		private ?ResourceRegistry $resources = null,
 	) {}
 
 	/**
 	 * Identity reported in initialize and in modern results.
 	 *
-	 * The version is the installed app version. Calling getAppVersion without disabling its cache
-	 * leaves the manifest read to the core, which already caches info.xml.
-	 *
-	 * @return array{name:string, version:string}
+	 * @return array{name:string, version:string, icons:list<array{src:string, mimeType:string, theme?:string}>}
 	 */
 	public function serverInfo(): array {
-		return ['name' => self::SERVER_NAME, 'version' => $this->apps->getAppVersion('mcp')];
+		return $this->identity->info();
 	}
 
 	/**

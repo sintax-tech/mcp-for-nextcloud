@@ -9,9 +9,11 @@ namespace OCA\Mcp\Tests\Unit\Mcp\Prompts;
 
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Mcp\Protocol\McpProtocol;
+use OCA\Mcp\Mcp\Protocol\ServerIdentity;
 use OCA\Mcp\Mcp\Prompts\PromptCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\InstalledApp;
+use OCA\Mcp\Tests\Unit\StubRequest;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\IUserManager;
@@ -44,7 +46,7 @@ final class PromptCatalogTest extends TestCase {
 		InstalledApp::mock($apps);
 		return new McpProtocol(new ToolRegistry([], $policy, $apps,
 			$this->createMock(IUserManager::class), $this->createMock(LoggerInterface::class)),
-			new PromptCatalog(), $policy, $this->createMock(LoggerInterface::class), $apps);
+			new PromptCatalog(), $policy, $this->createMock(LoggerInterface::class), new ServerIdentity($apps, StubRequest::urls($this)));
 	}
 
 	/**

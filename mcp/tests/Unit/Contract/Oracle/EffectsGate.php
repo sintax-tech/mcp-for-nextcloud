@@ -11,9 +11,11 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Mcp\Protocol\McpProtocol;
+use OCA\Mcp\Mcp\Protocol\ServerIdentity;
 use OCA\Mcp\Mcp\Prompts\PromptCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\InstalledApp;
+use OCA\Mcp\Tests\Unit\StubRequest;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Mcp\Tools\ToolModule;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
@@ -101,7 +103,7 @@ final class EffectsGate {
 		$registry = new ToolRegistry(($this->modules)(), $this->policy, $apps, $users, $logger, $guests, $this->capabilities === null ? null : ($this->capabilities)());
 		$installed = $this->mock(IAppManager::class);
 		InstalledApp::mock($installed);
-		return new McpProtocol($registry, new PromptCatalog(), $this->policy, $logger, $installed);
+		return new McpProtocol($registry, new PromptCatalog(), $this->policy, $logger, new ServerIdentity($installed, StubRequest::urls($this->test)));
 	}
 
 	/**

@@ -216,7 +216,7 @@ final class PromptCatalogTest extends TestCase {
 		$this->assertSame('complete', $result->resultType);
 		$this->assertSame([0, 'private'], [$result->ttlMs, $result->cacheScope]);
 		$version = InstalledApp::version();
-		$this->assertSame(['name' => McpProtocol::SERVER_NAME, 'version' => $version], (array)$result->_meta->{'io.modelcontextprotocol/serverInfo'});
+		$this->assertSame(['name' => McpProtocol::SERVER_NAME, 'version' => $version, 'icons' => [StubRequest::lightIcon(), StubRequest::darkIcon()]], json_decode(json_encode($result->_meta->{'io.modelcontextprotocol/serverInfo'}), true));
 		$this->assertSame([PromptCatalog::EDIT_LOCALLY], array_column($result->prompts, 'name'));
 	}
 

@@ -10,12 +10,14 @@ namespace OCA\Mcp\Tests\Unit\Mcp\Resources;
 use InvalidArgumentException;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Mcp\Protocol\McpProtocol;
+use OCA\Mcp\Mcp\Protocol\ServerIdentity;
 use OCA\Mcp\Mcp\Prompts\PromptCatalog;
 use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Mcp\Resources\ResourceRegistry;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\InstalledApp;
+use OCA\Mcp\Tests\Unit\StubRequest;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Platform\FileAccess\BinaryResourceMessages;
@@ -341,7 +343,7 @@ final class ResourceRegistryTest extends TestCase {
 			new PromptCatalog(),
 			$this->policy,
 			$this->createMock(LoggerInterface::class),
-			$this->installedApp(),
+			new ServerIdentity($this->installedApp(), StubRequest::urls($this)),
 			$this->registry,
 		);
 
@@ -489,7 +491,7 @@ final class ResourceRegistryTest extends TestCase {
 			new PromptCatalog(),
 			$this->policy,
 			$this->createMock(LoggerInterface::class),
-			$this->installedApp(),
+			new ServerIdentity($this->installedApp(), StubRequest::urls($this)),
 			$registry,
 		);
 
@@ -634,7 +636,7 @@ final class ResourceRegistryTest extends TestCase {
 	#[\PHPUnit\Framework\Attributes\DataProvider('erasProvider')]
 	public function testAHiddenNoteAnswersAsAMissingResourceInBothEras(int $code, string $version): void {
 		$protocol = new McpProtocol($this->toolRegistry, new PromptCatalog(), $this->policy, $this->createMock(LoggerInterface::class),
-			$this->installedApp(), $this->registryWith($this->guardHiding([$this->noteId])));
+			new ServerIdentity($this->installedApp(), StubRequest::urls($this)), $this->registryWith($this->guardHiding([$this->noteId])));
 		$params = ['uri' => 'nc://notes/' . $this->noteId]
 			+ ($version === McpProtocol::MODERN_VERSION ? ['_meta' => [McpProtocol::META_VERSION => McpProtocol::MODERN_VERSION]] : []);
 

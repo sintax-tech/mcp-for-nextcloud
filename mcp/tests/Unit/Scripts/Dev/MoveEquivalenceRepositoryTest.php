@@ -72,7 +72,7 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 		$this->assertCount(1, $problems);
 		// The old expression reaches a file under the app folder; the same text in the deeper folder reaches tests/.
 		$this->assertStringStartsWith("$test: not equivalent to ", $problems[0]);
-		$this->assertStringContainsString('`P:.|dirname(__DIR__)` became line 163 `P:tests|dirname(__DIR__)`', $problems[0]);
+		$this->assertStringContainsString('`P:.|dirname(__DIR__)` became line 165 `P:tests|dirname(__DIR__)`', $problems[0]);
 	}
 
 	/** The same move passes once the test climbs one more level, `dirname(__DIR__, 4)`: the path is proved the same. */

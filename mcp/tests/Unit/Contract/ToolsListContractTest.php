@@ -12,9 +12,11 @@ use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Access\Logs\LogsAccess;
 use OCA\Mcp\Mcp\Protocol\McpProtocol;
+use OCA\Mcp\Mcp\Protocol\ServerIdentity;
 use OCA\Mcp\Mcp\Prompts\PromptCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\InstalledApp;
+use OCA\Mcp\Tests\Unit\StubRequest;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Mcp\Tools\ToolPresentation;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
@@ -102,7 +104,7 @@ final class ToolsListContractTest extends TestCase {
 		$installed = $this->createMock(IAppManager::class);
 		InstalledApp::mock($installed);
 		$protocol = new McpProtocol(new ToolRegistry($modules, $policy, $apps, $users, $this->createMock(LoggerInterface::class)),
-			new PromptCatalog(), $policy, $this->createMock(LoggerInterface::class), $installed);
+			new PromptCatalog(), $policy, $this->createMock(LoggerInterface::class), new ServerIdentity($installed, StubRequest::urls($this)));
 		$out = $protocol->handle($request, $version, 'alice', json_decode($headers, true));
 		return json_encode($out['body'], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 	}
@@ -331,7 +333,7 @@ final class ToolsListContractTest extends TestCase {
 		InstalledApp::mock($apps);
 		$protocol = new McpProtocol(new ToolRegistry([], $policy, $apps,
 			$this->createMock(IUserManager::class), $this->createMock(LoggerInterface::class)),
-			new PromptCatalog(), $policy, $this->createMock(LoggerInterface::class), $apps);
+			new PromptCatalog(), $policy, $this->createMock(LoggerInterface::class), new ServerIdentity($apps, StubRequest::urls($this)));
 		$out = $protocol->handle(json_encode(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'initialize', 'params' => [
 			'protocolVersion' => '2025-11-25', 'capabilities' => new \stdClass(), 'clientInfo' => ['name' => 'Claude-User', 'version' => '1.0'],
 		]]), '', 'alice');

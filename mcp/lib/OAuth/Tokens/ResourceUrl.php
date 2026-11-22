@@ -32,6 +32,23 @@ class ResourceUrl {
 		return rtrim($this->base(), '/');
 	}
 
+	/**
+	 * @param string $path path inside the app directory, e.g. img/app.svg
+	 * @return string absolute URL of a static asset, which the web server serves without the front controller
+	 */
+	public function asset(string $path): string {
+		return $this->origin() . self::APP_PATH . ltrim($path, '/');
+	}
+
+	/** @return string scheme://host[/webroot] of the current request, without the front controller */
+	private function origin(): string {
+		$path = (string)parse_url($this->request->getRequestUri(), PHP_URL_PATH);
+		$pos = strpos($path, self::APP_PATH);
+		$prefix = $pos === false ? '' : substr($path, 0, $pos);
+		return $this->request->getServerProtocol() . '://' . $this->request->getServerHost()
+			. (string)preg_replace('~/index\.php$~', '', $prefix);
+	}
+
 	/** @return string URL of the protected resource metadata document */
 	public function resourceMetadata(): string {
 		return $this->base() . '.well-known/oauth-protected-resource';

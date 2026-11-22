@@ -12,6 +12,7 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Grants\GrantCatalog;
 use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Mcp\Protocol\McpProtocol;
+use OCA\Mcp\Mcp\Protocol\ServerIdentity;
 use OCA\Mcp\Mcp\Prompts\PromptCatalog;
 use OCA\Mcp\Mcp\Resources\ResourceRegistry;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
@@ -19,6 +20,7 @@ use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\ArrayGroupBackend;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\InstalledApp;
+use OCA\Mcp\Tests\Unit\StubRequest;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Modules\Files\Extraction\TextExtractor;
 use OCA\Mcp\Mcp\Resources\NoteResource;
@@ -87,7 +89,7 @@ final class DiscoveryHarness {
 			new \OCA\Mcp\Modules\Files\Extraction\ExtractedFileText($this->mock(TextExtractor::class)), $this->mock(NoteResource::class), $registry->guide(), $this->mock(FilesAccessGuard::class), $guests);
 		$installed = $this->mock(IAppManager::class);
 		InstalledApp::mock($installed);
-		$this->protocol = new McpProtocol($registry, new PromptCatalog(), $policy, $logger, $installed, $resources);
+		$this->protocol = new McpProtocol($registry, new PromptCatalog(), $policy, $logger, new ServerIdentity($installed, StubRequest::urls($test)), $resources);
 	}
 
 	/**

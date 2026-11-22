@@ -15,6 +15,7 @@ use OCA\Mcp\OAuth\Tokens\AccessTokenAuthenticator;
 use OCA\Mcp\OAuth\Tokens\ResourceUrl;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Mcp\Protocol\McpProtocol;
+use OCA\Mcp\Mcp\Protocol\ServerIdentity;
 use OCA\Mcp\Tests\Unit\ArrayGroupBackend;
 use OCP\IRequest;
 use OCP\IURLGenerator;
@@ -443,7 +444,8 @@ final class McpControllerTest extends TestCase {
 		InstalledApp::mock($apps);
 		return new McpProtocol(new \OCA\Mcp\Mcp\Tools\ToolRegistry([$module], $this->policy,
 			$apps, $this->createMock(\OCP\IUserManager::class), $this->createMock(\Psr\Log\LoggerInterface::class)),
-			new \OCA\Mcp\Mcp\Prompts\PromptCatalog(), $this->policy, $this->createMock(\Psr\Log\LoggerInterface::class), $apps);
+			new \OCA\Mcp\Mcp\Prompts\PromptCatalog(), $this->policy, $this->createMock(\Psr\Log\LoggerInterface::class),
+			new ServerIdentity($apps, StubRequest::urls($this)));
 	}
 
 	/** Alice eligible only through the Database group "team"; "staff" holds her too, without a policy. */

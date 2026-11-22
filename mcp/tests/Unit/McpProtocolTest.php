@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit;
 
 use OCA\Mcp\Mcp\Protocol\McpProtocol;
+use OCA\Mcp\Mcp\Protocol\ServerIdentity;
 use PHPUnit\Framework\TestCase;
 
 final class McpProtocolTest extends TestCase {
@@ -270,7 +271,8 @@ final class McpProtocolTest extends TestCase {
 		InstalledApp::mock($apps);
 		return new McpProtocol(new \OCA\Mcp\Mcp\Tools\ToolRegistry($modules, $policy,
 			$apps, $mock(\OCP\IUserManager::class), $mock(\Psr\Log\LoggerInterface::class)),
-			new \OCA\Mcp\Mcp\Prompts\PromptCatalog(), $policy, $logger ?? $mock(\Psr\Log\LoggerInterface::class), $apps);
+			new \OCA\Mcp\Mcp\Prompts\PromptCatalog(), $policy, $logger ?? $mock(\Psr\Log\LoggerInterface::class),
+			new ServerIdentity($apps, StubRequest::urls($test)));
 	}
 
 	private function codes(array $out): array {

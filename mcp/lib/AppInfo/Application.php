@@ -9,6 +9,7 @@ namespace OCA\Mcp\AppInfo;
 
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Mcp\Protocol\McpProtocol;
+use OCA\Mcp\Mcp\Protocol\ServerIdentity;
 use OCA\Mcp\Mcp\Prompts\PromptCatalog;
 use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Mcp\Resources\ResourceRegistry;
@@ -122,7 +123,7 @@ class Application extends App implements IBootstrap {
 			$c->get(PromptCatalog::class),
 			$c->get(GrantPolicy::class),
 			$c->get(LoggerInterface::class),
-			$c->get(IAppManager::class),
+			$c->get(ServerIdentity::class),
 			$c->get(ResourceRegistry::class),
 		));
 	}
